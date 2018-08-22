@@ -11,6 +11,8 @@ import "./Tab.scss";
 
 /** Properties of [[Tab]] component. */
 export interface TabProps extends CommonProps {
+  /** Tab icon. */
+  children?: React.ReactNode;
   /** Describes to which side the widget of this tab is anchored. */
   anchor?: Anchor;
   /** Describes if the tab is active. */
@@ -27,7 +29,7 @@ export default class Tab extends React.Component<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",
-      this.props.anchor === Anchor.Left && "nz-left-anchor",
+      (this.props.anchor === Anchor.Left || this.props.anchor === Anchor.BottomLeft) && "nz-left-anchor",
       this.props.isActive && "nz-is-active",
       this.props.className);
 

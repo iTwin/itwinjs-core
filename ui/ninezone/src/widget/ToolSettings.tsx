@@ -10,10 +10,10 @@ import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component. */
 export interface ToolSettingsProps extends CommonProps, NoChildrenProps {
-  /** Content of this ToolSettings widget. See: [[Nested]], [[Settings]], [[NoSettings]], [[Assistance]] */
+  /** Content of this ToolSettings widget. See: [[Nested]], [[Settings]] */
   content?: React.ReactNode;
-  /** Toolbar to control the content. See [[Toolbar]] */
-  toolbar?: React.ReactNode;
+  /** Tab to control the content. See [[ToolSettingsTab]] */
+  tab?: React.ReactNode;
 }
 
 /**
@@ -36,8 +36,8 @@ export const ToolSettings: React.StatelessComponent<ToolSettingsProps> = (props:
           {props.content}
         </div>
       }
-      <div className="nz-toolbar">
-        {props.toolbar}
+      <div className="nz-tab">
+        {props.tab}
       </div>
     </div>
   );

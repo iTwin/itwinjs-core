@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Draggable from "@src/widget/rectangular/tab/Draggable";
+import Draggable from "../../../../src/widget/rectangular/tab/Draggable";
 
 describe("<Draggable />", () => {
   it("should render", () => {

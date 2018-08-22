@@ -35,6 +35,7 @@ export interface ScrollableState {
 export default class Scrollable extends React.Component<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
   private static readonly _DESKTOP_ITEM_HEIGHT = Scrollable._DESKTOP_ITEM_WIDTH;
+  private static readonly _DESKTOP_SEPARATOR_SIZE = 1;
   private static readonly _BORDER_WIDTH = 1;
 
   public static readonly defaultProps: Partial<ScrollableDefaultProps> = {
@@ -61,7 +62,10 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
   }
 
   private getViewportLength(itemLength: number) {
-    let length = this.getVisibleItemCount() * itemLength;
+    const visibleItemCount = this.getVisibleItemCount();
+    const itemsLength = visibleItemCount * itemLength;
+    const separatorsLength = Math.max(0, visibleItemCount - 1) * Scrollable._DESKTOP_SEPARATOR_SIZE;
+    let length = itemsLength + separatorsLength;
     if (this.isLeftMostScrolled())
       length += Scrollable._BORDER_WIDTH;
     if (this.isRightMostScrolled())
@@ -69,42 +73,49 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return length;
   }
 
-  private getViewportStyle(direction: OrthogonalDirection) {
+  private getViewportStyle(direction: OrthogonalDirection): React.CSSProperties {
     switch (direction) {
       case OrthogonalDirection.Vertical: {
-        const verticalStyle: React.CSSProperties = {
+        return {
           height: this.getViewportLength(Scrollable._DESKTOP_ITEM_HEIGHT),
         };
-        return verticalStyle;
       }
       case OrthogonalDirection.Horizontal: {
-        const horizontalStyle: React.CSSProperties = {
+        return {
           width: this.getViewportLength(Scrollable._DESKTOP_ITEM_WIDTH),
         };
-        return horizontalStyle;
       }
     }
   }
 
-  private getHistoryViewportLength(itemLength: number) {
-    let length = this.getVisibleItemCount() * itemLength;
+  private getVisibleHistoryItemCount() {
+    let itemCount = this.getVisibleItemCount();
     if (this.isLeftScrollIndicatorVisible()) {
-      length -= itemLength;
+      itemCount -= 1;
     }
-    if (this.isRightScrollIndicatorVisible())
-      length -= itemLength;
+    if (this.isRightScrollIndicatorVisible()) {
+      itemCount -= 1;
+    }
+    return itemCount;
+  }
+
+  private getHistoryViewportLength(itemLength: number) {
+    const itemCount = this.getVisibleHistoryItemCount();
+    const itemsLength = itemCount * itemLength;
+    const separatorsLength = itemCount * Scrollable._DESKTOP_SEPARATOR_SIZE;
+    const length = itemsLength + separatorsLength;
     return length;
   }
 
   private getHistoryViewportOffset(itemLength: number) {
-    let top = 0;
+    let offset = 0;
     if (this.isLeftScrollIndicatorVisible()) {
-      top += itemLength - Scrollable._BORDER_WIDTH;
+      offset += itemLength + Scrollable._BORDER_WIDTH;
     }
     if (!this.isLeftMostScrolled() && this.isRightMostScrolled()) {
-      top -= Scrollable._BORDER_WIDTH;
+      offset -= Scrollable._BORDER_WIDTH;
     }
-    return top;
+    return offset;
   }
 
   private getHistoryViewportStyle(direction: OrthogonalDirection): React.CSSProperties {
@@ -129,25 +140,18 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
   }
 
   private getHistoryScrolledStyle(direction: OrthogonalDirection): React.CSSProperties {
-    const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
     switch (direction) {
       case OrthogonalDirection.Vertical: {
-        const marginTop = this.state.scrollOffset * -Scrollable._DESKTOP_ITEM_HEIGHT;
-        let top = 0;
-        if (isLeftScrollIndicatorVisible) {
-          top -= Scrollable._DESKTOP_ITEM_HEIGHT;
-        }
+        const marginTop = this.getScrollOffset(Scrollable._DESKTOP_ITEM_HEIGHT);
+        const top = -this.getHistoryViewportOffset(Scrollable._DESKTOP_ITEM_HEIGHT);
         return {
           marginTop,
           top,
         };
       }
       case OrthogonalDirection.Horizontal: {
-        const marginLeft = this.state.scrollOffset * -Scrollable._DESKTOP_ITEM_WIDTH;
-        let left = 0;
-        if (isLeftScrollIndicatorVisible) {
-          left -= Scrollable._DESKTOP_ITEM_WIDTH;
-        }
+        const marginLeft = this.getScrollOffset(Scrollable._DESKTOP_ITEM_WIDTH);
+        const left = -this.getHistoryViewportOffset(Scrollable._DESKTOP_ITEM_WIDTH);
         return {
           marginLeft,
           left,
@@ -157,25 +161,23 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
   }
 
   private getScrollOffset(itemLength: number) {
-    let offset = this.state.scrollOffset * itemLength;
-    if (this.isLeftScrollIndicatorVisible())
-      offset += Scrollable._BORDER_WIDTH;
+    const itemsLength = this.state.scrollOffset * itemLength;
+    const separatorsLength = this.state.scrollOffset * Scrollable._DESKTOP_SEPARATOR_SIZE;
+    let offset = itemsLength + separatorsLength;
     if (!this.isLeftMostScrolled() && this.isRightMostScrolled())
       offset += Scrollable._BORDER_WIDTH;
     return -offset;
   }
 
-  private getScrolledStyle(direction: OrthogonalDirection) {
+  private getScrolledStyle(direction: OrthogonalDirection): React.CSSProperties {
     switch (direction) {
       case OrthogonalDirection.Vertical: {
         const marginTop = this.getScrollOffset(Scrollable._DESKTOP_ITEM_HEIGHT);
-        const verticalStyle: React.CSSProperties = { marginTop };
-        return verticalStyle;
+        return { marginTop };
       }
       case OrthogonalDirection.Horizontal: {
         const marginLeft = this.getScrollOffset(Scrollable._DESKTOP_ITEM_WIDTH);
-        const horizontalStyle: React.CSSProperties = { marginLeft };
-        return horizontalStyle;
+        return { marginLeft };
       }
     }
   }

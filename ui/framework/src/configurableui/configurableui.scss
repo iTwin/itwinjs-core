@@ -27,3 +27,13 @@
     }
   }
 }
+.dragdrop-layer {
+  cursor: grabbing;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}

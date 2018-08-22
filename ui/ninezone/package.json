@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "0.117.0",
+  "version": "0.118.0",
   "description": "IModelJs Nine-zone React UI components",
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,7 @@
     "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
-    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.{ts,tsx}",
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.test.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "repository": {},
@@ -27,17 +27,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "0.117.0"
+    "@bentley/ui-core": "0.118.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.117.0",
+    "@bentley/bentleyjs-tools": "0.118.0",
     "@bentley/bwc": "^6.0.1",
     "@bentley/icons-webfont": "^6.5.0",
-    "@bentley/ui-core": "0.117.0",
+    "@bentley/ui-core": "0.118.0",
     "@bentley/svg-icons": "^6.4.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -83,7 +83,7 @@
     "tslint-loader": "^3.6.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "url-loader": "^1.0.1",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0",

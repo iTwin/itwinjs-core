@@ -112,22 +112,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const ab = vectorAB.magnitude();
     const bc = vectorAC.magnitude();
     const normal = vectorAB.sizedCrossProduct(vectorAC, Math.sqrt(ab * bc));
-    const vectorToCenter = SmallSystem.linearSystem3d(
-      normal.x, normal.y, normal.z,
-      vectorAB.x, vectorAB.y, vectorAB.z,
-      vectorAC.x, vectorAC.y, vectorAC.z,
-      0,              // vectorToCenter DOT normal = 0
-      0.5 * ab * ab,  // vectorToCenter DOT vectorBA = 0.5 * vectorBA DOT vectorBA  (Rayleigh quotient)
-      0.5 * bc * bc); // vectorToCenter DOT vectorBC = 0.5 * vectorBC DOT vectorBC  (Rayleigh quotient)
-    if (vectorToCenter) {
-      const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
-      const vectorX = Vector3d.createStartEnd(center, pointA);
-      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal);
-      if (vectorY) {
-        const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
-        const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
-        return Arc3d.create(center, vectorX, vectorY,
-          AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    if (normal) {
+      const vectorToCenter = SmallSystem.linearSystem3d(
+        normal.x, normal.y, normal.z,
+        vectorAB.x, vectorAB.y, vectorAB.z,
+        vectorAC.x, vectorAC.y, vectorAC.z,
+        0,              // vectorToCenter DOT normal = 0
+        0.5 * ab * ab,  // vectorToCenter DOT vectorBA = 0.5 * vectorBA DOT vectorBA  (Rayleigh quotient)
+        0.5 * bc * bc); // vectorToCenter DOT vectorBC = 0.5 * vectorBC DOT vectorBC  (Rayleigh quotient)
+      if (vectorToCenter) {
+        const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
+        const vectorX = Vector3d.createStartEnd(center, pointA);
+        const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees(90));
+        if (vectorY) {
+          const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
+          const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
+          return Arc3d.create(center, vectorX, vectorY,
+            AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+        }
       }
     }
     return LineString3d.create(pointA, pointB, pointC);

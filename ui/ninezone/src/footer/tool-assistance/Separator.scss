@@ -1,0 +1,11 @@
+@import "@bentley/ui-core/lib/colors";
+
+.nz-footer-toolAssistance-separator {
+  margin-bottom: 10px;
+
+  > .nz-separator {
+    height: 2px;
+    width: 100%;
+    background-color: $background-4;
+  }
+}

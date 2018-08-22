@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Title from "@src/toolbar/item/expandable/group/Title";
+import Title from "../../../../../src/toolbar/item/expandable/group/Title";
 
 describe("<Title />", () => {
   it("should render", () => {

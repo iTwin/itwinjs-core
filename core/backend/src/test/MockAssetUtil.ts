@@ -5,7 +5,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, SeedFileInitState,
+  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, InitializationState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
   ConnectRequestQueryOptions,
@@ -188,7 +188,7 @@ export class MockAssetUtil {
     const uploadSeedFileMock = TypeMoq.Mock.ofType(SeedFile);
     uploadSeedFileMock.object.downloadUrl = "www.bentley.com";
     uploadSeedFileMock.object.mergedChangeSetId = "";
-    uploadSeedFileMock.object.initializationState = SeedFileInitState.Successful;
+    uploadSeedFileMock.object.initializationState = InitializationState.Successful;
 
     const iModelHandlerMock = TypeMoq.Mock.ofType(IModelHandler);
     const briefcaseHandlerMock = TypeMoq.Mock.ofType(BriefcaseHandler);

@@ -33,6 +33,7 @@ export interface ColumnDescription {
   filterCaseSensitive?: boolean;         /* Defaults to false */
   editorAlwaysOn?: boolean;              /* Defaults to false */
   pressSelectsRow?: boolean;             /* Defaults to true */
+  icon?: boolean;                        /* Defaults to false */
 }
 
 /**
@@ -67,6 +68,8 @@ export interface ColorOverrides {
 export interface RowItem {
   key: any;             // InstanceKey or string
   cells: CellItem[];
+
+  extendedData?: any;
 
   isDisabled?: boolean;
   colorOverrides?: ColorOverrides;

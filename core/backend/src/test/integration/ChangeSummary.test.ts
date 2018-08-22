@@ -50,7 +50,7 @@ describe("ChangeSummary", () => {
       MockAssetUtil.tearDownOfflineFixture();
   });
 
-  it("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
+  it.skip("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
     const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
@@ -100,7 +100,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
+  it.skip("Attach / Detach ChangeCache file to readonly briefcase", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -148,7 +148,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("ECSqlStatementCache after detaching Changes Cache", async () => {
+  it.skip("ECSqlStatementCache after detaching Changes Cache", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -176,7 +176,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Attach / Detach ChangeCache file to closed imodel", async () => {
+  it.skip("Attach / Detach ChangeCache file to closed imodel", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -188,7 +188,7 @@ describe("ChangeSummary", () => {
     assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
   });
 
-  it("Extract ChangeSummaries", async () => {
+  it.skip("Extract ChangeSummaries", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -230,7 +230,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummary for single changeset", async () => {
+  it.skip("Extract ChangeSummary for single changeset", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -270,7 +270,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extracting ChangeSummaries for a range of changesets", async () => {
+  it.skip("Extracting ChangeSummaries for a range of changesets", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -317,7 +317,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Subsequent ChangeSummary extractions", async () => {
+  it.skip("Subsequent ChangeSummary extractions", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -384,7 +384,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Extract ChangeSummaries with invalid input", async () => {
+  it.skip("Extract ChangeSummaries with invalid input", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
@@ -446,7 +446,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Query ChangeSummary content", async () => {
+  it.skip("Query ChangeSummary content", async () => {
     // accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
     // testProjectId = "d46de192-6cad-4086-b968-71b517edc215";
     // const testIModelId: string = "a237be2f-7a59-4f40-a0bd-14bf9c0634f1";

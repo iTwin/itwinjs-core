@@ -46,10 +46,10 @@ export class ModelState extends EntityState implements ModelProps {
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
 
-  /** Runs when the iModel this iModelState represents closes. */
+  /** Runs when the iModel of this iModelState closes. */
   public onIModelConnectionClose() { }
 
-  /** Return whether this models range should be used for "fit" tool */
+  /** Return whether this model's range should be used for "fit" tool */
   public useRangeForFit(): boolean { return true; }
 }
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Footer from "@src/zones/Footer";
+import Footer from "../../src/zones/Footer";
 
 describe("<Footer />", () => {
   it("should render", () => {

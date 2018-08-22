@@ -5,7 +5,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import PointerCaptor, { PointerCaptorState } from "@src/base/PointerCaptor";
+import PointerCaptor, { PointerCaptorState } from "../../src/base/PointerCaptor";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {

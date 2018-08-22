@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { BlueButton } from "@bentley/bwc/lib/buttons/BlueButton";
 import Backstage from "@src/backstage/Backstage";
 import Item from "@src/backstage/Item";
 import Separator from "@src/backstage/Separator";
@@ -67,12 +67,11 @@ export default class BackstagePage extends React.Component<{}, State> {
   public render() {
     return (
       <>
-        <button
-          className="bwc-buttons-blue"
+        <BlueButton
           onClick={this._handleOpenBackstageButtonClick}
         >
           Open
-        </button>
+        </BlueButton>
         <Backstage
           isOpen={this.state.isOpen}
           items={this.getItems()}

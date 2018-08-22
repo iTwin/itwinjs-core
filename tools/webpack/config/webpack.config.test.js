@@ -52,7 +52,7 @@ const config = {
 
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
-  devtool: "inline-cheap-module-source-map",
+  devtool: "inline-source-map",
   output: {
     path: paths.appLib,
     publicPath: "",
@@ -126,7 +126,11 @@ const config = {
               loader: require.resolve("ts-loader"),
               options: {
                 // onlyCompileBundledFiles: true,
-                logLevel: "warn"
+                logLevel: "warn",
+                compilerOptions: {
+                  declaration: false,
+                  declarationMap: false,
+                }
               },
             }
           },

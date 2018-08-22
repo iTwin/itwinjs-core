@@ -8,7 +8,7 @@ import { IModelClient } from "../IModelClient";
 import { DeploymentEnv } from "..";
 import { FileHandler } from "../FileHandler";
 
-/** Class that allows access to different iModel Hub class handlers.
+/** Class that allows access to different iModelHub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
  */
 export class IModelBankClient extends IModelClient {

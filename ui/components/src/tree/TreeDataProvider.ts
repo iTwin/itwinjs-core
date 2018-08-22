@@ -5,6 +5,7 @@
 
 import { CheckBoxState } from "@bentley/ui-core";
 import { PageOptions } from "../common/PageOptions";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * A node item which can be displayed in a tree.
@@ -30,17 +31,25 @@ export interface TreeNodeItem {
  * TreeDataProvider provides data to the DataTree.
  */
 export interface TreeDataProvider {
+  onTreeNodeChanged?: TreeDataChangeEvent;
+
   getRootNodesCount(): Promise<number>;
   getRootNodes(options?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>>;
   getChildNodesCount(parentNode: TreeNodeItem): Promise<number>;
   getChildNodes(parentNode: TreeNodeItem, options?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>>;
 }
 
+/** An interface tree data change listeners */
+export declare type TreeDataChangesListener = () => void;
+
+export class TreeDataChangeEvent extends BeEvent<TreeDataChangesListener> { }
+
 /**
  * MutableTreeDataProvider provides manipulation processing for the DataTree.
  * Useful for Drag & Drop processing.
  */
 export interface MutableTreeDataProvider {
+
   AddRootNode(rootNode: TreeNodeItem): void;
   InsertRootNode(rootNode: TreeNodeItem, index: number): void;
   RemoveRootNode(rootNode: TreeNodeItem): void;

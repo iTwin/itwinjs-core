@@ -7,8 +7,8 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ToolUiProvider } from "@bentley/ui-framework";
 
-import AssistanceItem from "@bentley/ui-ninezone/lib/widget/tool-settings/assistance/Item";
-import AssistanceSeparator from "@bentley/ui-ninezone/lib/widget/tool-settings/assistance/Separator";
+import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
+import AssistanceSeparator from "@bentley/ui-ninezone/lib/footer/tool-assistance/Separator";
 import { SampleAppIModelApp } from "../..";
 
 class Tool1UiProvider extends ToolUiProvider {
@@ -63,14 +63,26 @@ class Tool1Settings extends React.Component {
 class Tool1Assistance extends React.Component {
   public render(): React.ReactNode {
     return (
-      <div>
-        <AssistanceItem>Identify piece to trim</AssistanceItem>
+      <>
+        <AssistanceItem>
+          <i className="icon icon-cursor" />
+          Identify piece to trim
+        </AssistanceItem>
         <AssistanceSeparator label="Inputs" />
-        <AssistanceItem>Drag across elements</AssistanceItem>
-        <AssistanceItem>Click on element</AssistanceItem>
+        <AssistanceItem>
+          <i className="icon icon-cursor-click" />
+          Clink on element
+        </AssistanceItem>
+        <AssistanceItem>
+          <i className="icon  icon-check-out" />
+          Drag across elements
+        </AssistanceItem>
         <AssistanceSeparator />
-        <AssistanceItem>Show prompt @ cursor</AssistanceItem>
-      </div>
+        <AssistanceItem>
+          <input type="checkbox" />
+          Show prompt @ cursor
+        </AssistanceItem>
+      </>
     );
   }
 }

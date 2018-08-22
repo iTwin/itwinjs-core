@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.117.0",
+  "version": "0.118.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -25,7 +25,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.117.0",
+    "@bentley/bentleyjs-tools": "0.118.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
@@ -34,7 +34,7 @@
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "ts-node": "^6.0.3",
     "nyc": "^13.0.1",
     "source-map-support": "^0.5.6"

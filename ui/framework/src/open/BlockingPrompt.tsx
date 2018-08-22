@@ -1,15 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import "./BlockingPrompt.scss";
-// import "../components.scss";
 import "./Common.scss";
 
-interface IBlockingPromptProps {
+interface BlockingPromptProps {
   prompt: string;
 }
 
-export class BlockingPrompt extends React.Component<IBlockingPromptProps> {
+export class BlockingPrompt extends React.Component<BlockingPromptProps> {
 
-  constructor(props: IBlockingPromptProps, context?: any) {
+  constructor(props: BlockingPromptProps, context?: any) {
     super(props, context);
   }
 

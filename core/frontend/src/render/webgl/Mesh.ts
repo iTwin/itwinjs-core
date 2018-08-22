@@ -78,6 +78,8 @@ export class MeshData extends MeshInfo implements IDisposable {
 
   public dispose() {
     dispose(this.lut);
+    if (this.texture !== undefined && this.texture.key === undefined)
+      this.texture.dispose();
   }
 }
 

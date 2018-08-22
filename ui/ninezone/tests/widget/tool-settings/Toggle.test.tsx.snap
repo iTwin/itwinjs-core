@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Toggle /> renders correctly 1`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;

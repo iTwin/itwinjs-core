@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ContentLayout, ContentGroup, ContentLayoutDef } from "@src/index";
+import { ContentLayout, ContentGroup, ContentLayoutDef } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("ContentLayout", () => {

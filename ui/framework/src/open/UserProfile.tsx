@@ -1,24 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Div, withOnOutsideClick } from "@bentley/ui-core";
 import { UserProfile } from "@bentley/imodeljs-clients";
+import { Popup } from "./Popup";
 import "./UserProfile.scss";
 
-// tslint:disable-next-line:variable-name
-const DivWithOnOutsideClick = withOnOutsideClick(Div);
-
-export interface IUserProfileProps {
+export interface UserProfileProps {
   accessToken: AccessToken;
 }
 
-interface IUserProfileState {
+interface UserProfileState {
   isDropdownOpen: boolean;
   userProfile?: UserProfile;
 }
 
-export class UserProfileButton extends React.Component<IUserProfileProps, IUserProfileState> {
+export class UserProfileButton extends React.Component<UserProfileProps, UserProfileState> {
 
-  constructor(props: IUserProfileProps, context?: any) {
+  constructor(props: UserProfileProps, context?: any) {
     super(props, context);
 
     this.state = {
@@ -27,18 +27,18 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
   }
 
   // called when a state change occurs.
-  public async componentWillReceiveProps(newProps: IUserProfileProps) {
+  public async componentWillReceiveProps(newProps: UserProfileProps) {
     if (newProps.accessToken) {
       this.setState ({userProfile: newProps.accessToken.getUserProfile()});
     }
   }
 
-  private splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
+  private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     _event.preventDefault();
     this.setState((_prevState) => ({ isDropdownOpen: !this.state.isDropdownOpen }));
   }
 
-  private handleOnOutsideClick = () => {
+  private _handleOnOutsideClick = () => {
     this.setState((_prevState) => ({ isDropdownOpen: false }));
   }
 
@@ -76,19 +76,21 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
       organization = this.state.userProfile.organization;
     }
     return (
-      <ul className="dropdown-menu fade-in-fast">
-        <li>
-          <div className="circle no-select" style={{ fontSize: "2em" }}>{this.getInitials()}</div>
-          <div className="profile-details">
-            <div className="profile-name">{this.getFullName()}</div>
-            <div className="profile-email">{email}</div>
-            <div className="profile-organization">{organization}</div>
-          </div>
-        </li>
-        <li className="divider" role="separator"></li>
-        <li className="profile-menuitem" onClick={this.splitterClicked.bind(this)}>Sign Out</li>
-      </ul>
-      );
+      <Popup className="dropdown-menu fade-in-fast" showShadow={true} onClose={this._handleOnOutsideClick}>
+        <ul>
+          <li>
+            <div className="circle no-select" style={{ fontSize: "2em" }}>{this.getInitials()}</div>
+            <div className="profile-details">
+              <div className="profile-name">{this.getFullName()}</div>
+              <div className="profile-email">{email}</div>
+              <div className="profile-organization">{organization}</div>
+            </div>
+          </li>
+          <li className="divider" role="separator"></li>
+          <li className="profile-menuitem" onClick={this._splitterClicked.bind(this)}>Sign Out</li>
+        </ul>
+      </Popup>
+    );
   }
 
   private renderContent() {
@@ -105,10 +107,10 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
 
   public render() {
     return (
-      <DivWithOnOutsideClick className="user-profile" onOutsideClick={this.handleOnOutsideClick}>
-        <div className="circle circle-button no-select" onClick={this.splitterClicked.bind(this)}>{this.renderContent()}</div>
+      <div>
+        <div className="circle circle-button no-select" onClick={this._splitterClicked.bind(this)}>{this.renderContent()}</div>
         {this.state.isDropdownOpen && this.renderDropdown()}
-      </DivWithOnOutsideClick>
+      </div>
     );
   }
 }
