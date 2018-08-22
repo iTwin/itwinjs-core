@@ -75,7 +75,7 @@ describe("BriefcaseManager", () => {
     validateBriefcaseCache();
   });
 
-  it("should open and close an iModel from the Hub", async () => {
+  it.skip("should open and close an iModel from the Hub", async () => {
     let onOpenCalled: boolean = false;
     const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openParams: OpenParams, _version: IModelVersion) => {
       onOpenCalled = true;
@@ -127,7 +127,7 @@ describe("BriefcaseManager", () => {
     }
   });
 
-  it("should reuse briefcases", async () => {
+  it.skip("should reuse briefcases", async () => {
     const iModel1: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
@@ -167,7 +167,7 @@ describe("BriefcaseManager", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it("should open iModels of specific versions from the Hub", async () => {
+  it.skip("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.briefcase.changeSetId, "");
@@ -215,7 +215,7 @@ describe("BriefcaseManager", () => {
     assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
   });
 
-  it("should be able to pull or reverse changes only if allowed", async () => {
+  it.skip("should be able to pull or reverse changes only if allowed", async () => {
     const secondChangeSetId = testIModels[0].changeSets[1].wsgId;
 
     const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
