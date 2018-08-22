@@ -17,26 +17,26 @@ export class Layout1 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(4).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(4).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(2).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(2).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0;
@@ -56,26 +56,26 @@ export class Layout2 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(1).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(1).getLayout();
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0.33;
@@ -95,19 +95,19 @@ export class Layout3 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(2).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(2).getLayout();
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   public get minWidth() {
@@ -119,10 +119,10 @@ export class Layout3 extends Layout {
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0.66;
@@ -142,26 +142,26 @@ export class Layout4 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0;
@@ -181,26 +181,26 @@ export class Layout6 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(4).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(4).getLayout();
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0.66;
@@ -220,30 +220,30 @@ export class Layout7 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
   }
 
   protected get _bottomZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
-    return this.zone.nineZone.getRoot();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+    return this.zone.nineZone.root;
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _rightZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
-    return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0;
@@ -263,29 +263,29 @@ export class Layout8 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   protected get _leftZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot();
-    return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root;
+    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
   }
 
   protected get _rightZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot();
-    return this.zone.nineZone.getRoot().nineZone.getZone(9).getLayout();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root;
+    return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
-    const parentBounds = this.zone.nineZone.getRoot().bounds;
+    const parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
+    if (this.zone.nineZone.root.isInFooterMode)
       return new Rectangle(parentBounds.left, parentBounds.bottom - Root.FOOTER_HEIGHT, parentBounds.right, parentBounds.bottom);
 
     const parentSize = parentBounds.getSize();
@@ -306,30 +306,30 @@ export class Layout9 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.getRoot().nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
   }
 
   protected get _bottomZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
-    return this.zone.nineZone.getRoot();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+    return this.zone.nineZone.root;
   }
 
   protected get _leftZone() {
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      return this.zone.nineZone.getRoot().nineZone.getZone(7).getLayout();
-    return this.zone.nineZone.getRoot().nineZone.getZone(8).getLayout();
+    if (this.zone.nineZone.root.isInFooterMode)
+      return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.getRoot();
+    return this.zone.nineZone.root;
   }
 
   public getInitialBounds(): RectangleProps {
-    let parentBounds = this.zone.nineZone.getRoot().bounds;
+    let parentBounds = this.zone.nineZone.root.bounds;
 
-    if (this.zone.nineZone.getRoot().isInFooterMode)
-      parentBounds = this.zone.nineZone.getRoot().bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
+    if (this.zone.nineZone.root.isInFooterMode)
+      parentBounds = this.zone.nineZone.root.bounds.inset(0, 0, 0, Root.FOOTER_HEIGHT);
 
     const parentSize = parentBounds.getSize();
     const left = parentBounds.left + parentSize.width * 0.66;

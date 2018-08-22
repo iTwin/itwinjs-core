@@ -5,18 +5,17 @@
 
 import { CellProps } from "../../utilities/Cell";
 import { SizeProps } from "../../utilities/Size";
-
 import Root from "./layout/Root";
-import TargetedZoneProps from "./TargetedZone";
+import Target, { TargetProps } from "./Target";
 import { Widget } from "./Widget";
 import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone } from "./Zone";
 
-export default interface NineZoneProps {
-  readonly zones: { [id: number]: ZoneProps };
+export interface NineZoneProps {
+  readonly zones: Readonly<{ [id: number]: ZoneProps }>;
   readonly isInFooterMode: boolean;
   readonly size: SizeProps;
-  readonly draggingWidgetId: number | undefined;
-  readonly targetedZone: TargetedZoneProps | undefined;
+  readonly draggingWidgetId?: number;
+  readonly target?: TargetProps;
 }
 
 export const getDefaultProps = (): NineZoneProps => (
@@ -36,14 +35,13 @@ export const getDefaultProps = (): NineZoneProps => (
       width: 0,
       height: 0,
     },
-    draggingWidgetId: undefined,
-    targetedZone: undefined,
   }
 );
 
-export class NineZone implements Iterable<Zone> {
+export default class NineZone implements Iterable<Zone> {
   private _zones: { [id: number]: Zone } = {};
   private _root: Root | undefined;
+  private _target?: Target;
 
   public constructor(public readonly props: NineZoneProps) {
   }
@@ -70,7 +68,7 @@ export class NineZone implements Iterable<Zone> {
     };
   }
 
-  public getRoot() {
+  public get root() {
     if (!this._root)
       this._root = new Root(this);
     return this._root;
@@ -105,9 +103,15 @@ export class NineZone implements Iterable<Zone> {
     throw new RangeError();
   }
 
-  public getDraggingWidget(): Widget | undefined {
+  public get draggingWidget(): Widget | undefined {
     if (this.props.draggingWidgetId)
       return this.getWidget(this.props.draggingWidgetId);
     return undefined;
+  }
+
+  public get target(): Target | undefined {
+    if (!this._target && this.props.target)
+      this._target = new Target(this, this.props.target);
+    return this._target;
   }
 }

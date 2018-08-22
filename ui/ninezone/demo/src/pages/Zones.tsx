@@ -70,9 +70,9 @@ import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import StackedWidget, { Anchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
-import NineZone, { getDefaultProps as getDefaultNineZone } from "@src/zones/state/NineZone";
-import NineZoneStateManagement, { DropTarget } from "@src/zones/state/Management";
-import Widget from "@src/zones/state/Widget";
+import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps } from "@src/zones/state/NineZone";
+import NineZoneManager from "@src/zones/state/Manager";
+import Widget, { DropTarget } from "@src/zones/state/Widget";
 import TargetContainer from "@src/zones/target/Container";
 import Merge from "@src/zones/target/Merge";
 import Unmerge from "@src/zones/target/Unmerge";
@@ -82,6 +82,7 @@ import ThemeContext from "@src/theme/Context";
 import GhostOutline from "@src/zones/GhostOutline";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import "./Zones.scss";
+import { TargetType } from "@src/zones/state/Target";
 
 export interface State {
   tools: Tools;
@@ -98,7 +99,7 @@ export interface State {
   toastMessageStage: ToastMessageStage;
   openWidget: FooterWidget;
   secondZoneContent: SecondZoneContent;
-  nineZone: NineZone;
+  nineZone: NineZoneProps;
   isOverflowItemOpen: boolean;
   currentTheme: Theme;
 }
@@ -175,7 +176,6 @@ const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup 
 
 export default class ZonesExample extends React.Component<{}, State> {
   private _temporaryMessageTimer = new Timer(2000);
-  private _nineZone = new NineZoneStateManagement();
   private _zones: React.RefObject<Zones>;
   private _app: React.RefObject<App>;
   private _content: React.RefObject<Content>;
@@ -971,7 +971,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private layout() {
     this.setState((prevState) => {
       const element = ReactDOM.findDOMNode(this);
-      const nineZone = this._nineZone.onInitialLayout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
+      const nineZone = NineZoneManager.handleInitialLayout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
       return {
         nineZone,
       };
@@ -980,7 +980,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onTabClick(widgetId, tabIndex, prevState.nineZone);
+      const nineZone = NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
       return {
         nineZone,
       };
@@ -989,7 +989,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onResize(zoneId, x, y, handle, prevState.nineZone);
+      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
       return {
         nineZone,
       };
@@ -998,7 +998,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleDragBehaviorChanged = (widgetId: number, isDragging: boolean) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onDragBehaviorChanged(widgetId, isDragging, prevState.nineZone);
+      const nineZone = NineZoneManager.handleDragBehaviorChanged(widgetId, isDragging, prevState.nineZone);
       return {
         nineZone,
       };
@@ -1007,20 +1007,17 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleWidgetTabDrag = (dragged: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onWidgetTabDrag(dragged, prevState.nineZone);
+      const nineZone = NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone);
       return {
         nineZone,
       };
     });
   }
 
-  private _handleTargetChanged = (widgetId: number, target: DropTarget, isTargeted: boolean) => {
+  private _handleTargetChanged = (widgetId: number, type: TargetType, isTargeted: boolean) => {
     this.setState((prevState) => {
-      let nineZone;
-      if (isTargeted)
-        nineZone = this._nineZone.onTargetChanged(widgetId, target, prevState.nineZone);
-      else
-        nineZone = this._nineZone.onTargetChanged(undefined, target, prevState.nineZone);
+      const nineZone = isTargeted ? NineZoneManager.handleTargetChanged({ widgetId, type }, prevState.nineZone) :
+        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone);
 
       return {
         nineZone,
@@ -1545,7 +1542,8 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getTarget(widgetId: number) {
-    const dropTarget = this._nineZone.getDropTarget(widgetId, this.state.nineZone);
+    const widget = new NineZone(this.state.nineZone).getWidget(widgetId);
+    const dropTarget = widget.getDropTarget();
     switch (dropTarget) {
       case DropTarget.Merge:
         return (
@@ -1553,8 +1551,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             key={widgetId}
             rows={3}
             columns={3}
-            cells={this._nineZone.getMergeTargetCells(widgetId, this.state.nineZone)}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, dropTarget, isTargeted)}
+            cells={widget.getMergeTargetCells()}
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Merge, isTargeted)}
           />
         );
       case DropTarget.Unmerge:
@@ -1563,8 +1561,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             key={widgetId}
             rows={3}
             columns={3}
-            cells={this._nineZone.getUnmergeTargetCells(widgetId, this.state.nineZone)}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, dropTarget, isTargeted)}
+            cells={widget.getUnmergeTargetCells()}
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Unmerge, isTargeted)}
           />
         );
       case DropTarget.None:
@@ -1574,11 +1572,11 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getTargets(zoneId: number) {
-    const zone = this._nineZone.getZone(zoneId, this.state.nineZone);
+    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
     return (
       <TargetContainer>
         {
-          zone.widgets.map((w) => {
+          zone.props.widgets.map((w) => {
             return this.getTarget(w.id);
           })
         }
@@ -1789,7 +1787,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             <BlueButton
               onClick={() => {
                 this.setState((prevState) => {
-                  const nineZone = this._nineZone.onChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
+                  const nineZone = NineZoneManager.handleChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
                   };
@@ -1900,21 +1898,20 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getWidget(zoneId: number) {
-    const zone = this._nineZone.getZone(zoneId, this.state.nineZone);
-    if (zone.widgets.length === 0)
+    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+    if (zone.props.widgets.length === 0)
       return undefined;
 
-    const isOpen = zone.widgets.some((w) => w.tabIndex !== -1);
-    const anchor = NineZoneStateManagement.getZoneAnchor(zoneId);
+    const isOpen = zone.props.widgets.some((w) => w.tabIndex !== -1);
     return (
       <StackedWidget
-        anchor={anchor}
+        anchor={zone.anchor}
         content={this.getZoneContent(zoneId)}
         isOpen={isOpen}
         onResize={(x, y, handle) => {
           this._handleOnWidgetResize(zoneId, x, y, handle);
         }}
-        tabs={this.getTabs(zoneId, anchor)}
+        tabs={this.getTabs(zoneId, zone.anchor)}
       />
     );
   }
@@ -1929,7 +1926,8 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getFloatingZone(zoneId: number) {
-    const outlineBounds = this._nineZone.getGhostOutlineBounds(zoneId, this.state.nineZone);
+    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+    const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
         <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
@@ -1955,7 +1953,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     if (isRectangular)
       return this.getFloatingZone(zoneId);
 
-    const outlineBounds = this._nineZone.getGhostOutlineBounds(zoneId, this.state.nineZone);
+    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+    const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
         <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>

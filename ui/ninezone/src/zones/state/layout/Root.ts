@@ -5,7 +5,7 @@
 
 import Rectangle from "../../../utilities/Rectangle";
 import Size from "../../../utilities/Size";
-import { NineZone } from "../NineZone";
+import NineZone from "../NineZone";
 
 import Layout from "./Layout";
 
