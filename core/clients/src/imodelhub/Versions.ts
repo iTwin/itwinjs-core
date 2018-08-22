@@ -15,41 +15,49 @@ import { ThumbnailSize } from "./Thumbnails";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** Version */
+/**
+ * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
+  /** Description of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
+  /** Name of the named Version. Must be unique per iModel. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
+  /** Id of the user that created the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UserCreated")
   public userCreated?: string;
 
+  /** Date when the named Version was created. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
   public createdDate?: string;
 
+  /** Id of the [[ChangeSet]] that the named Version was created for. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
   public changeSetId?: string;
 
+  /** Id of the [[SmallThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
   public smallThumbnailId?: string;
 
+  /** Id of the [[LargeThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
   public largeThumbnailId?: string;
 }
 
 /**
- * Query object for getting Versions. You can use this to modify the query.
- * @see VersionHandler.get()
+ * Query object for getting [[Version]]s. You can use this to modify the [[VersionHandler.get]] results.
  */
 export class VersionQuery extends InstanceIdQuery {
   /**
-   * Query version by its name.
-   * @param name Name of the version.
+   * Query [[Version]] by its name.
+   * @param name Name of the Version.
    * @returns This query.
-   * @throws [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
+   * @throws [IModelHubClientError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
    */
   public byName(name: string) {
     ArgumentCheck.defined("name", name);
@@ -58,10 +66,10 @@ export class VersionQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query version by its changeSet id.
-   * @param changesetId Id of the changeSet.
+   * Query version by its [[ChangeSet]] id.
+   * @param changesetId Id of the ChangeSet.
    * @returns This query.
-   * @throws [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
+   * @throws [IModelHubClientError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
    */
   public byChangeSet(changesetId: string) {
     ArgumentCheck.validChangeSetId("changesetId", changesetId);
@@ -70,7 +78,7 @@ export class VersionQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query will additionally select given sizes ids of thumbnails.
+   * Query will additionally select ids of [[Thumbnail]]s for given [[ThumbnailSize]]s.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if sizes array is undefined or empty.
    */
@@ -88,12 +96,13 @@ export class VersionQuery extends InstanceIdQuery {
 }
 
 /**
- * Handler for all methods related to @see Version instances.
+ * Handler for managing [[Version]]s. Use [[IModelClient.Versions]] to get an instance of this class.
  */
 export class VersionHandler {
   private _handler: IModelBaseHandler;
   /**
-   * Constructor for VersionHandler. Should use @see IModelClient instead of directly constructing this.
+   * Constructor for VersionHandler.
+   * @hidden
    * @param handler Handler for WSG requests.
    */
   constructor(handler: IModelBaseHandler) {
@@ -101,8 +110,9 @@ export class VersionHandler {
   }
 
   /**
-   * Gets relative url for Version requests.
-   * @param imodelId Id of the iModel.
+   * Get relative url for Version requests.
+   * @hidden
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param versionId Id of the version.
    */
   private getRelativeUrl(imodelId: string, versionId?: string) {
@@ -110,13 +120,13 @@ export class VersionHandler {
   }
 
   /**
-   * Gets the named [[Version]]s of an iModel.
+   * Get the named [[Version]]s of an iModel. Returned Versions are ordered from the latest [[ChangeSet]] to the oldest.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param query Object used to modify results of this query.
-   * @returns Resolves to array of versions.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param query Optional query object to filter the queried Versions or select different data from them.
+   * @returns Versions that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
     Logger.logInfo(loggingCategory, `Querying named versions for iModel ${imodelId}`);
@@ -131,18 +141,18 @@ export class VersionHandler {
   }
 
   /**
-   * Creates named version of an iModel.
+   * Create a named [[Version]] of an iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel.
-   * @param changeSetId Id of the ChangeSet.
-   * @param name Version name.
-   * @param description Version description.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param changeSetId Id of the [[ChangeSet]] to create a named Version for.
+   * @param name Name of the new named Version.
+   * @param description Description of the new named Version.
    * @returns Created Version instance.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
    * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetDoesNotExist]($bentley) if the [[ChangeSet]] with specified changeSetId does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
    * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, imodelId: string, changeSetId: string, name: string, description?: string): Promise<Version> {
     Logger.logInfo(loggingCategory, `Creating named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
@@ -164,14 +174,14 @@ export class VersionHandler {
   }
 
   /**
-   * Updates named version of an iModel.
+   * Update the named [[Version]] of an iModel. Only the description can be changed when updating the named Version.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel.
-   * @param version Named version.
-   * @returns Updated Version instance.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param version Named version to update.
+   * @returns Updated Version instance from iModelHub.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
    * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, version: Version): Promise<Version> {
     Logger.logInfo(loggingCategory, `Updating named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
