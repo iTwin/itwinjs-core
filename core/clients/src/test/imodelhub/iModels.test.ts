@@ -95,7 +95,7 @@ function mockGetSeedFile(imodelId: string, getFileUrl = false) {
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile",
-    getFileUrl ? "?$select=*,FileAccessKey-forward-AccessKey.DownloadURL&$orderby=Index+desc" : undefined);
+    getFileUrl ? "?$select=*,FileAccessKey-forward-AccessKey.DownloadURL&$orderby=Index+desc" : "?$orderby=Index+desc");
   const values = new Map<string, any>();
   if (getFileUrl) {
     values.set("downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile");

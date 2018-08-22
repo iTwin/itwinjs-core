@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelCard } from "./IModelCard";
 import { IModelInfo } from "../clientservices/IModelServices";
@@ -9,6 +12,7 @@ import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 import * as classnames from "classnames";
 import { ProjectDialog } from "./ProjectDialog";
 import { SwitchControl } from "./SwitchControl";
+import { ViewSelector } from "./ViewSelector";
 import { SearchBox } from "@bentley/ui-core";
 
 import "./IModelList.scss";
@@ -31,6 +35,7 @@ interface IModelListState {
   currentViews: ViewDefinitionProps[];
   iModelConnection?: IModelConnection;
   showDetails: boolean;
+  showViews: boolean;
   filter: string;
 }
 
@@ -45,6 +50,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       waitingForIModelConnection: true,
       currentViews: [],
       showDetails: false,
+      showViews: false,
       filter: "",
     };
   }
@@ -86,6 +92,27 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     }
   }
 
+  // tslint:disable-next-line:naming-convention
+  private onViewsClose = () => {
+    this.setState({ showViews: false });
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+    const viewIds: Id64Props[] = new Array<Id64Props>();
+    for (const view of views ) {
+      viewIds.push (view.id!);
+    }
+
+    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
+    this.props.setSelectedViews(viewIds);
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private onIModelClick = (iModelInfo: IModelInfo) => {
+    this.setState({ currentIModel: iModelInfo, showViews: true });
+  }
+
   private getFilteredIModels(): IModelInfo[] {
     let iModels: IModelInfo[] = [];
     if (this.props.iModels) {
@@ -99,10 +126,10 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     const checked = Math.random() > .5;
     return (
       <tr key={iModelInfo.wsgId}>
-        <td><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
-        <td>{size}</td>
-        <td>This device</td>
-        <td>{iModelInfo.createdDate.toLocaleString()}</td>
+        <td onClick={this.onIModelClick.bind(this, iModelInfo)}><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
+        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>{size}</td>
+        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>This device</td>
+        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
           <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this.onIModelOfflineChange}/>
         </td>
@@ -186,6 +213,8 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-scroll-y">
           {this.renderContent()}
         </div>
+        {this.state.showViews &&
+          <ViewSelector accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this.onViewsClose.bind(this)} OnViewsSelected={this.onViewsSelected.bind(this)} />}
       </div>
     );
   }

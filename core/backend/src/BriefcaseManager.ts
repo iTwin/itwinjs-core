@@ -5,7 +5,7 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ContainsSchemaChanges, Briefcase, Code, IModelHubError,
+  ChangesType, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository, IModelAccessContext,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
@@ -50,7 +50,7 @@ export const enum KeepBriefcase {
 
 /** A token that represents a ChangeSet */
 export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
+  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changesType: ChangesType) { }
 }
 
 /** Entry in the briefcase cache */
@@ -1000,7 +1000,7 @@ export class BriefcaseManager {
     const changeSetTokens = new Array<ChangeSetToken>();
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.containsSchemaChanges!));
+      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!));
     });
     return changeSetTokens;
   }
@@ -1104,7 +1104,7 @@ export class BriefcaseManager {
     const changeSetTokens: ChangeSetToken[] = BriefcaseManager.buildChangeSetTokens(changeSets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
 
     // Close Db before merge (if there are schema changes)
-    const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.containsSchemaChanges === ContainsSchemaChanges.Yes);
+    const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.changesType === ChangesType.Schema);
     if (containsSchemaChanges && briefcase.isOpen)
       briefcase.onBeforeClose.raiseEvent(briefcase);
 
@@ -1352,7 +1352,7 @@ export class BriefcaseManager {
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
-    changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
+    changeSet.changesType = changeSetToken.changesType;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;

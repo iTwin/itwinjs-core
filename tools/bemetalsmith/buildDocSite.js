@@ -24,7 +24,7 @@ runStagingCopy();
 if (runQuick) {
   clearReference();
 }
-//runBemetalsmith();
+runBemetalsmith();
 
 //Rush docs
 function runDocs() {

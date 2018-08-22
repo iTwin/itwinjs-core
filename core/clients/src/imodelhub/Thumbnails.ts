@@ -14,32 +14,37 @@ import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image */
+/** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image. */
 export type ThumbnailSize = "Small" | "Large";
 
-/** Thumbnail */
+/** Base class for Thumbnails. */
 export abstract class Thumbnail extends WsgInstance {
+  /** @hidden */
   @ECJsonTypeMap.propertyToJson("wsg", "workaround.to.add.class.to.map")
   public workaround?: string;
 }
+
+/** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image. */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
+/** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image. */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
 
-/** Tip Thumbnail download parameters */
+/** Tip [[Thumbnail]] download parameters. See [[ThumbnailHandler.download]]. Tip Thumbnail is generated for the periodically updated master file copy on iModelHub. */
 export interface TipThumbnail {
+  /** Id of the iModel's [[Project]]. */
   projectId: string;
+  /** Size of the [[Thumbnail]]. */
   size: ThumbnailSize;
 }
 
 /**
- * Query object for getting Thumbnails. You can use this to modify the query.
- * @see ThumbnailHandler.get()
+ * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
-   * Query thumbnails by version id.
+   * Query [[Thumbnail]]s by [[Version]] id.
    * @param versionId Id of the version.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if versionId is undefined or it is not a valid [Guid]($bentley) value.
@@ -52,13 +57,14 @@ export class ThumbnailQuery extends InstanceIdQuery {
 }
 
 /**
- * Handler for all methods related to thumbnails.
+ * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;
 
   /**
-   * Constructor for ThumbnailHandler. Should use @see IModelClient instead of directly constructing this.
+   * Constructor for ThumbnailHandler.
+   * @hidden
    * @param handler Handler for WSG requests.
    */
   constructor(handler: IModelBaseHandler) {
@@ -66,9 +72,10 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Gets relative url for tip Thumbnail requests.
-   * @param projectId Id of the project.
-   * @param imodelId Id of the imodel.
+   * Get relative url for tip Thumbnail requests.
+   * @hidden
+   * @param projectId Id of the [[Project]].
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param size Size of the thumbnail.
    */
   private getRelativeProjectUrl(projectId: string, imodelId: string, size: ThumbnailSize) {
@@ -76,8 +83,9 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Gets relative url for Thumbnail requests.
-   * @param imodelId Id of the iModel.
+   * Get relative url for Thumbnail requests.
+   * @hidden
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param size Size of the thumbnail.
    * @param thumbnailId Id of the thumbnail.
    */
@@ -86,7 +94,8 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Returns true if given thumbnail is TipThumbnail.
+   * Check if given thumbnail is TipThumbnail.
+   * @hidden
    * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
@@ -94,7 +103,8 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Downloads the thumbnail.
+   * Download the thumbnail.
+   * @hidden
    * @param token Delegation token of the authorized user.
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
@@ -119,10 +129,11 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Downloads the most latest iModel's thumbnail.
+   * Download the latest iModel's thumbnail.
+   * @hidden
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the connect project.
-   * @param imodelId Id of the iModel
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
@@ -141,13 +152,13 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Gets the thumbnails.
+   * Get the [[Thumbnail]]s. Returned Thumbnails are ordered from the latest [[ChangeSet]] to the oldest.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
-   * @param query Optional query object to filter the queried thumbnails.
-   * @return Resolves to array of thumbnails.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param size Size of the thumbnail.
+   * @param query Optional query object to filter the queried Thumbnails.
+   * @return Array of Thumbnails of the specified size that match the query.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
     Logger.logInfo(loggingCategory, `Querying iModel ${imodelId} thumbnails`);
@@ -166,14 +177,14 @@ export class ThumbnailHandler {
   }
 
   /**
-   * Downloads the thumbnail.
+   * Download a [[Thumbnail]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel.
-   * @param thumbnail Small, Large or Tip thumbnail. Use 'get' function to query thumbnails or create tip thumbnail object.
-   * @return String for the PNG image that includes the base64 encoded array of the image bytes.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param thumbnail Small, Large or Tip thumbnail. Use [[ThumbnailHandler.get]] to get a [[SmallThumbnail]] or [[LargeThumbnail]] instance or provide Tip thumbnail information by constructing a [[TipThumbnail]] instance.
+   * @return Base64 encoded string containing the PNG image.
    * @throws Error if a successful server response contains no content.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
-   * @throws [[ResponseError]] if a client-side or network issue occurs.
+   * @throws [[ResponseError]] if a network issue occurs.
    */
   public async download(token: AccessToken, imodelId: string, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
     ArgumentCheck.defined("token", token);

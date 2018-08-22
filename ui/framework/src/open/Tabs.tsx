@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
@@ -24,7 +27,7 @@ export class Tab extends React.Component<ITabProps> {
     selectedTabIndex: 0,
   };
 
-  private onClick = () => {
+  private _onClick = () => {
     if (this.props.onTabClicked) {
       this.props.onTabClicked();
     }
@@ -47,7 +50,7 @@ export class Tab extends React.Component<ITabProps> {
     const classes = classnames("tabs-style-linemove", isActive && "tab-active");
     const icon = classnames("icon", this.props.icon);
     return (
-      <li className={classes} onClick={this.onClick}>
+      <li className={classes} onClick={this._onClick}>
         <a>
           <span className={icon} />
           <span className="text">{this.props.label}</span>
@@ -75,7 +78,7 @@ export class Tabs extends React.Component<ITabsProps, ITabsState> {
   }
 
   // set active tab
-  private handleTabClick = (tabIndex: number, onTabClick: () => any) => {
+  private _handleTabClick = (tabIndex: number, onTabClick: () => any) => {
     this.setState( { activeTab: tabIndex });
 
     // fire the tab onClick
@@ -94,7 +97,7 @@ private renderChildren() {
       isActive: i === this.state.activeTab,
       index: i,
       selectedTabIndex: this.state.activeTab,
-      onTabClicked: this.handleTabClick.bind(this, i, child.props.onTabClicked) });
+      onTabClicked: this._handleTabClick.bind(this, i, child.props.onTabClicked) });
     });
   }
 

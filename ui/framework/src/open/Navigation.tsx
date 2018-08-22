@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
@@ -30,7 +33,7 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
     selectedTabIndex: 0,
   };
 
-  private onClick = () => {
+  private _onClick = () => {
     if (this.props.onClicked) {
       this.props.onClicked();
     }
@@ -56,7 +59,7 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
     const classes = classnames("navnode", isActive && "active");
     const icon = classnames("icon", this.props.icon);
     return (
-      <li className={classes} onClick={this.onClick}>
+      <li className={classes} onClick={this._onClick}>
         <span className={icon} />
         <span className="label">{this.props.label}</span>
         {this.props.highlightStyle === NavigationHighlightStyle.movingbar && this.props.index === 0 && this.renderMovebarIndicator()}
@@ -70,7 +73,7 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
     const classes = classnames(isActive && "active");
     const icon = classnames("icon", this.props.icon);
     return (
-      <li className={classes} onClick={this.onClick}>
+      <li className={classes} onClick={this._onClick}>
         <span className={icon} />
         <span className="label">{this.props.label}</span>
         <div className=".open-navbar-barindicator"></div>
@@ -111,17 +114,17 @@ export class NavigationList extends React.Component<INavigationListProps, INavig
   }
 
   // toggle currently active tab
-  private handleTabClick = (tabIndex: number) => {
+  private _handleTabClick = (tabIndex: number) => {
     this.setState( { activeTab: tabIndex });
   }
 
   // toggle pinned state
-  private handleExpandClick = () => {
-    this.setState({ isPinned: !this.state.isPinned }, () => { this.handleOnPinClick(); });
+  private _handleExpandClick = () => {
+    this.setState({ isPinned: !this.state.isPinned }, () => { this._handleOnPinClick(); });
   }
 
   // handle pin clicked
-  private handleOnPinClick = () => {
+  private _handleOnPinClick = () => {
     if (this.props.onExpandChanged)
       this.props.onExpandChanged(this.state.isPinned);
   }
@@ -133,7 +136,7 @@ export class NavigationList extends React.Component<INavigationListProps, INavig
         index: i,
         selectedTabIndex: this.state.activeTab,
         highlightStyle: this.props.highlightStyle,
-        onClicked: this.handleTabClick.bind(this, i) });
+        onClicked: this._handleTabClick.bind(this, i) });
       });
     }
 
@@ -142,9 +145,9 @@ export class NavigationList extends React.Component<INavigationListProps, INavig
     return (
       <div className={classNavbar}>
         <div className="expander">
-          <span className="icon icon-chevron-right" onClick={this.handleExpandClick}/>
-          <span className="icon icon-pin" title="Pin the navigation pane" onClick={this.handleExpandClick} />
-          <span className="icon icon-chevron-left" onClick={this.handleExpandClick} />
+          <span className="icon icon-chevron-right" onClick={this._handleExpandClick}/>
+          <span className="icon icon-pin" title="Pin the navigation pane" onClick={this._handleExpandClick} />
+          <span className="icon icon-chevron-left" onClick={this._handleExpandClick} />
         </div>
         <ul>
           {this.renderChildren()}

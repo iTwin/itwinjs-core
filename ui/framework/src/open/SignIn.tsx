@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -82,7 +85,7 @@ class SignInPageComponent extends React.Component<SignInProps, SignInState> {
           <span className="prompt">Please sign in to access your Bentley Services.</span>
           <button className={signinButtonClassName} type="button" onClick={this.onSignInClick.bind(this)}>Sign In</button>
           <span className="signin-register-div">Don't have a profile?<a onClick={this.onRegisterShow}>Register</a></span>
-          <button className="signin-offline" type="button" onClick={this.onOfflineClick.bind(this)}>Offline Content</button>
+          <a className="signin-offline" onClick={this.onOfflineClick.bind(this)}>Work Offline?</a>
         </div>
       </div>
     );

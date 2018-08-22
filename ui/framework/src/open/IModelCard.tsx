@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
@@ -59,23 +62,29 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ waitingForThumbnail: false });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onCardClicked = () => {
-    if (this.props.selectModel)
-      this.props.selectModel();
+    // if (this.props.selectModel)
+    //  this.props.selectModel();
+    this.setState({ showViews: true });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onShowOptions = () => {
     this.setState({ showOptions: true });
   }
 
+  // tslint:disable-next-line:naming-convention
   private handleOnOutsideClick = () => {
     this.setState((_prevState) => ({ showOptions: false }));
   }
 
+  // tslint:disable-next-line:naming-convention
   private onViewsClose = () => {
     this.setState({ showViews: false });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
     const viewIds: Id64Props[] = new Array<Id64Props>();
     for (const view of views ) {
@@ -86,11 +95,13 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.props.setSelectedViews(viewIds);
   }
 
+  // tslint:disable-next-line:naming-convention
   private onViewsClicked = () => {
     this.onCloseOptions();
     this.setState({ showViews: true });
   }
 
+  // tslint:disable-next-line:naming-convention
   private onCloseOptions = () => {
     this.setState({ showOptions: false });
   }
@@ -146,8 +157,8 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   public render() {
     return (
       <div className="imodel-card" /*onMouseEnter={this.handleMouseEnter}*/>
-        <div className="imodel-card-content" onClick={this.onCardClicked}>
-          <div className="imodel-card-preview">
+        <div className="imodel-card-content" >
+          <div className="imodel-card-preview" onClick={this.onCardClicked}>
             {this.renderThumbnail()}
           </div>
           <div className="imodel-card-name">
