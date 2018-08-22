@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import GhostOutline from "@src/zones/GhostOutline";
+import GhostOutline from "../../src/zones/GhostOutline";
 
 describe("<GhostOutline />", () => {
   it("should render", () => {

@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Face } from "@bentley/ui-core";
 import { Point3d } from "@bentley/geometry-core";
-import { CubeNavigationAid, NavCubeFace, FaceCell, HitBoxX, HitBoxY, HitBoxZ, CubeHover } from "@src/index";
+import { CubeNavigationAid, NavCubeFace, FaceCell, HitBoxX, HitBoxY, HitBoxZ, CubeHover } from "../../../src/index";
 import TestUtils from "../../TestUtils";
 
 describe("CubeNavigationAid", () => {
@@ -25,9 +25,9 @@ describe("CubeNavigationAid", () => {
   });
   describe("<NavCubeFace />", () => {
     it("should render", () => {
-      mount(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => {}} onFaceCellHoverChange={() => {}} />);
+      mount(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => { }} onFaceCellHoverChange={() => { }} />);
     });
-    const wrapper = shallow(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => {}} onFaceCellHoverChange={() => {}} />);
+    const wrapper = shallow(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => { }} onFaceCellHoverChange={() => { }} />);
     it("renders correctly", () => {
       wrapper.should.matchSnapshot();
     });
@@ -64,9 +64,9 @@ describe("CubeNavigationAid", () => {
       it("should be called when cell is clicked", () => {
         cellClick.should.not.have.been.calledOnce;
         const div = wrapper.find(".face-cell").at(0);
-        const e1 = new MouseEvent("mousedown", {clientX: 300, clientY: 400});
+        const e1 = new MouseEvent("mousedown", { clientX: 300, clientY: 400 });
         div.simulate("mousedown", e1);
-        const e2 = new MouseEvent("mouseup", {clientX: 300, clientY: 400});
+        const e2 = new MouseEvent("mouseup", { clientX: 300, clientY: 400 });
         div.simulate("mouseup", e2);
         cellClick.should.have.been.calledOnce;
         cellClick.should.have.been.calledWithExactly(pos, Face.None);
@@ -74,7 +74,7 @@ describe("CubeNavigationAid", () => {
     });
     describe("onFaceCellHoverChange", () => {
       const div = wrapper.find(".face-cell").at(0);
-      const e = new MouseEvent("", {clientX: 300, clientY: 400});
+      const e = new MouseEvent("", { clientX: 300, clientY: 400 });
       it("should be called when cell is hovered", () => {
         div.simulate("mouseover", e);
         cellHover.should.have.been.calledWithExactly(pos, CubeHover.Hover);

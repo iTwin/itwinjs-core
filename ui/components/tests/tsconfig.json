@@ -1,17 +1,18 @@
 {
   "extends": "../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
+    "declaration": false,
+    "skipLibCheck": true,
+    "baseUrl": "../node_modules",
     "outDir": "../lib",
-    "baseUrl": "../node_modules/",
-    "paths": {
-      "@src/*": [
-        "../src/*"
-      ]
-    },
-    "typeRoots": [
-      "../node_modules/@types",
-      "../../../typings"
-    ],
     "jsx": "react"
-  }
+  },
+  "include": [
+    "../src/**/*.ts*",
+    "./**/*.ts*"
+  ],
+  "exclude": [
+    "../lib",
+    "../node_modules"
+  ]
 }

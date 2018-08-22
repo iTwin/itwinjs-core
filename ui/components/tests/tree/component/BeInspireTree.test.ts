@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { BeInspireTree } from "@src/tree/component/BeInspireTree";
+import { BeInspireTree } from "../../../src/tree/component/BeInspireTree";
 
 describe("BeInspireTree", () => {
 

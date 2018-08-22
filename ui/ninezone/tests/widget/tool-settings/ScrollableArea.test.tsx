@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import ScrollableArea from "@src/widget/tool-settings/ScrollableArea";
+import ScrollableArea from "../../../src/widget/tool-settings/ScrollableArea";
 
 describe("<ScrollableArea />", () => {
   it("should render", () => {

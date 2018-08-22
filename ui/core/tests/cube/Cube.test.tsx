@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { RotMatrix } from "@bentley/geometry-core";
-import { Cube } from "@src/index";
+import { Cube } from "../../src/index";
 
 describe("Cube", () => {
   describe("<Cube />", () => {

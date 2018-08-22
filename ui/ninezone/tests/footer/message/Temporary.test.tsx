@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Temporary from "@src/footer/message/Temporary";
+import Temporary from "../../../src/footer/message/Temporary";
 
 describe("<Temporary />", () => {
   it("should render", () => {

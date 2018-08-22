@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "@src/tree/SimpleTreeDataProvider";
-import { TreeNodeItem } from "@src/tree/TreeDataProvider";
+import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "../../src/tree/SimpleTreeDataProvider";
+import { TreeNodeItem } from "../../src/tree/TreeDataProvider";
 
 describe("SimpleTreeDataProvider", () => {
 

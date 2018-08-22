@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Icon from "@src/footer/snap-mode/Icon";
+import Icon from "../../../src/footer/snap-mode/Icon";
 
 describe("<Icon />", () => {
   it("should render", () => {
