@@ -222,6 +222,7 @@ export namespace Attachments {
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
   abstract class AttachmentTileLoader extends TileLoader {
+    public abstract get is3d(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
     public async loadTileContents(_missing: MissingNodes): Promise<void> {
@@ -243,6 +244,7 @@ export namespace Attachments {
 
     public get maxDepth() { return 1; }
     public get viewFlagOverrides() { return this._viewFlagOverrides; }
+    public get is3d(): boolean { return false; }
   }
 
   class TileLoader3d extends AttachmentTileLoader {
@@ -259,6 +261,7 @@ export namespace Attachments {
 
     public get maxDepth() { return 32; }
     public get viewFlagOverrides() { return TileLoader3d._viewFlagOverrides; }
+    public get is3d(): boolean { return true; }
   }
 
   /** An extension of Tile specific to rendering 2d attachments. */
@@ -269,7 +272,7 @@ export namespace Attachments {
         "",
         new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
-        [],
+        true,
       ));
       this.setIsReady();
     }
@@ -304,11 +307,8 @@ export namespace Attachments {
         "",
         tileRange,
         .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
-        [],
+        false,
         parent,
-        undefined,
-        undefined,
-        undefined,
       ));
     }
 
@@ -572,8 +572,9 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: TileLoader, iModel: IModelConnection, modelId: Id64) {
+    public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
+      const is3d = loader.is3d;
       super(new TileTree.Params(
         modelId,
         {
@@ -583,10 +584,10 @@ export namespace Attachments {
             high: { x: 0, y: 0, z: 0 },
           },
           maximumSize: 512,
-          childIds: [],
+          isLeaf: !is3d,
         },
         iModel,
-        false,
+        is3d,
         loader,
         Transform.createIdentity(),
         undefined,

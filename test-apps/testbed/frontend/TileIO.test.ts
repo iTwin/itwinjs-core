@@ -871,11 +871,9 @@ describe("TileIO", () => {
     expect(rootTile.id.treeId).to.equal(tree.id);
     expect(rootTile.id.tileId).to.equal("0/0/0/0:1");
 
-    expect(rootTile.hasGeometry).to.be.true;
     expect(rootTile.contentRange).not.to.be.undefined;
 
-    expect(rootTile.childIds).not.to.be.undefined;
-
-    expect(rootTile.childIds.length).to.equal(1); // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+    expect(rootTile.isLeaf).to.be.false;
+    expect(rootTile.sizeMultiplier).not.to.be.undefined; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
   });
 });
