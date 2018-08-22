@@ -350,7 +350,24 @@
         "src/**/*.ts"
       ],
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run ConnectSettings Tests (Online)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test/",
+        "--debug",
+        "--recursive",
+        "--grep",
+        "Setting",
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
   ],
   "compounds": [
     {

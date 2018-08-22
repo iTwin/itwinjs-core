@@ -71,4 +71,5 @@
   "dependencies": {},
   "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
   "devDependencies": {}
+  "﻿{"errorId":"LoginFailed","errorMessage":"AudienceUri validation failed.","errorDescription":null}"
 }
