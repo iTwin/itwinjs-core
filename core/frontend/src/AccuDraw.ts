@@ -14,9 +14,10 @@ import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
 import { SnapMode, SnapDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
+import { Decoration } from "./render/System";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -1853,14 +1854,14 @@ export class AccuDraw {
     this.setIndexingTolerance(vp);
 
     // Display indexing lines, distance locks, etc. without compass transform...
-    let graphic = context.createWorldOverlay();
-    this.displayAlignments(graphic, vp);
-    context.addWorldOverlay(graphic.finish()!);
+    let builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    this.displayAlignments(builder, vp);
+    context.addDecoration(Decoration.fromBuilder(builder));
 
     const transform = this.getDisplayTransform(vp);
 
     // Create a new graphics with the compass transform and scale so that compass size is 1.0...
-    graphic = context.createWorldOverlay(transform);
+    builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
 
     const hasFocus = this.hasInputFocus;
     const bgColor = vp.view.backgroundColor;
@@ -1880,9 +1881,9 @@ export class AccuDraw {
     if (this.flags.animateRotation || 0.0 === this._percentChanged) {
       if (CompassMode.Polar === this.compassMode) {
         const ellipse = Arc3d.createXYEllipse(center, 1, 1);
-        graphic.activateGraphicParams(graphicParams);
-        graphic.addArc(ellipse, true, true);
-        graphic.addArc(ellipse, false, false);
+        builder.activateGraphicParams(graphicParams);
+        builder.addArc(ellipse, true, true);
+        builder.addArc(ellipse, false, false);
       } else {
         const shapePts: Point3d[] = [
           new Point3d(-1.0, 1.0, 0.0),
@@ -1891,10 +1892,10 @@ export class AccuDraw {
           new Point3d(-1.0, -1.0, 0.0)];
         shapePts[4] = shapePts[0];
         graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
-        graphic.activateGraphicParams(graphicParams);
-        graphic.addShape(shapePts);
+        builder.activateGraphicParams(graphicParams);
+        builder.addShape(shapePts);
         graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-        graphic.activateGraphicParams(graphicParams);
+        builder.activateGraphicParams(graphicParams);
       }
     } else {
       let nSides, radius;
@@ -1918,20 +1919,20 @@ export class AccuDraw {
       shapePtsP[nSides] = shapePtsP[0];
 
       graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
-      graphic.activateGraphicParams(graphicParams);
-      graphic.addShape(shapePtsP);
+      builder.activateGraphicParams(graphicParams);
+      builder.addShape(shapePtsP);
       graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-      graphic.activateGraphicParams(graphicParams);
-      graphic.addLineString(shapePtsP);
+      builder.activateGraphicParams(graphicParams);
+      builder.addLineString(shapePtsP);
     }
 
     // Display sticky z-lock indicator as frame inset...
     if (this._fieldLocked[ItemField.Z_Item] && this.stickyZLock && vp.view.is3d()) {
-      graphic.setSymbology(frameColor, fillColor, 1);
+      builder.setSymbology(frameColor, fillColor, 1);
 
       if (CompassMode.Polar === this.compassMode) {
         const ellipse = Arc3d.createXYEllipse(center, .5, .5);
-        graphic.addArc(ellipse, false, false);
+        builder.addArc(ellipse, false, false);
       } else {
         const shapePts: Point3d[] = [
           new Point3d(-0.5, 0.5, 0.0),
@@ -1939,44 +1940,44 @@ export class AccuDraw {
           new Point3d(0.5, -0.5, 0.0),
           new Point3d(-0.5, -0.5, 0.0)];
         shapePts[4] = shapePts[0];
-        graphic.addLineString(shapePts);
+        builder.addLineString(shapePts);
       }
     }
 
     // Display compass center mark...
-    graphic.setSymbology(frameColor, frameColor, 8);
-    graphic.addPointString([center]);
+    builder.setSymbology(frameColor, frameColor, 8);
+    builder.addPointString([center]);
 
     // Display positive "X" tick...
-    graphic.setSymbology(xColor, xColor, 4);
+    builder.setSymbology(xColor, xColor, 4);
 
     const linePts: Point3d[] = [];
     linePts[0] = new Point3d(1.2, 0.0, 0.0);
     linePts[1] = new Point3d(0.8, 0.0, 0.0);
-    graphic.addLineString(linePts);
+    builder.addLineString(linePts);
 
     // Display negative "X" tick...
-    graphic.setSymbology(frameColor, frameColor, 1);
+    builder.setSymbology(frameColor, frameColor, 1);
 
     linePts[0].set(-1.2, 0.0, 0.0);
     linePts[1].set(-0.8, 0.0, 0.0);
-    graphic.addLineString(linePts);
+    builder.addLineString(linePts);
 
     // Display positive "Y" tick...
-    graphic.setSymbology(yColor, yColor, 4);
+    builder.setSymbology(yColor, yColor, 4);
 
     linePts[0].set(0.0, 1.2, 0.0);
     linePts[1].set(0.0, 0.8, 0.0);
-    graphic.addLineString(linePts);
+    builder.addLineString(linePts);
 
     // Display negative "Y" tick...
-    graphic.setSymbology(frameColor, frameColor, 1);
+    builder.setSymbology(frameColor, frameColor, 1);
 
     linePts[0].set(0.0, -1.2, 0.0);
     linePts[1].set(0.0, -0.8, 0.0);
-    graphic.addLineString(linePts);
+    builder.addLineString(linePts);
 
-    context.addWorldOverlay(graphic.finish()!); // add compass as world overlay decorator
+    context.addDecoration(Decoration.fromBuilder(builder)); // add compass as world overlay decorator
   }
 
   private checkRotation(): void {

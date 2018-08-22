@@ -1501,7 +1501,7 @@ export namespace Hilite {
 /**
  * Describes a "feature" within a batched RenderGraphic. A batched RenderGraphic can
  * contain multiple features. Each feature is associated with a unique combination of
- * attributes (element ID, subcategory, geometry class). This allows geometry to be
+ * attributes (elementId, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *

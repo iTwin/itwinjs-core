@@ -8,6 +8,8 @@ import { Sprite, IconSprites } from "./Sprites";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorateContext } from "./ViewContext";
+import { GraphicType } from "./render/GraphicBuilder";
+import { Decoration } from "./render/System";
 
 export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
@@ -212,8 +214,8 @@ export class SnapDetail extends HitDetail {
 
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
-      const graphic = context.createWorldOverlay();
-      graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
 
       switch (this.snapMode) {
         case SnapMode.Center:
@@ -232,8 +234,8 @@ export class SnapDetail extends HitDetail {
               if (segmentNo >= nSegments)
                 segmentNo = nSegments - 1;
               const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
-              graphic.addLineString(points);
-              context.addWorldOverlay(graphic.finish());
+              builder.addLineString(points);
+              context.addDecoration(Decoration.fromBuilder(builder));
               return;
             }
           }
@@ -241,8 +243,8 @@ export class SnapDetail extends HitDetail {
         }
       }
 
-      graphic.addPath(Path.create(this.primitive));
-      context.addWorldOverlay(graphic.finish());
+      builder.addPath(Path.create(this.primitive));
+      context.addDecoration(Decoration.fromBuilder(builder));
       return;
     }
     super.draw(context);

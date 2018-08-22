@@ -5,7 +5,7 @@ import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext,
 } from "@bentley/imodeljs-frontend";
-import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology, PerformanceMetrics, GraphicType, Decoration } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   ElectronRpcManager,
@@ -523,14 +523,14 @@ export class ProjectExtentsDecoration {
       this.boxId = vp.view.iModel.transientIds.next;
 
     const range = vp.view.iModel.projectExtents.clone();
-    const graphic = context.createPickableDecoration(this.boxId);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
 
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone();
 
-    graphic.setSymbology(white, black, 1);
-    graphic.addRangeBox(range);
-    context.addWorldDecoration(graphic.finish());
+    builder.setSymbology(white, black, 1);
+    builder.addRangeBox(range);
+    context.addDecoration(Decoration.fromBuilder(builder));
   }
 
   public static add(): void {

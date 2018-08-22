@@ -8,16 +8,16 @@ import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
-import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
-import { ViewRect } from "../../Viewport";
+import { ViewRect, Viewport } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
@@ -403,7 +403,7 @@ export class System extends RenderSystem {
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
-  public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
   public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
     if (args.flags.isDisjoint)
       return PointStringPrimitive.create(args);

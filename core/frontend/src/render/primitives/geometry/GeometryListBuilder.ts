@@ -6,7 +6,7 @@
 import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
 import { GraphicParams, RenderTexture, Gradient, ElementAlignedBox3d, FeatureTable } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
-import { GraphicBuilder, GraphicBuilderCreateParams } from "../../GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { ViewContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
@@ -14,6 +14,7 @@ import { RenderSystem, RenderGraphic } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];
@@ -28,9 +29,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, accumulatorTf: Transform = Transform.createIdentity()) {
-    super(params);
-    this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
+  public constructor(system: RenderSystem, type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String, accumulatorTf: Transform = Transform.identity) {
+    super(placement, type, viewport, pickableId);
+    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTf);
   }
 
   protected _finish(): RenderGraphic {
@@ -70,17 +71,17 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
     if (isLoop)
-      this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
+      this.accum.addLoop(curve, displayParams, this.placement, false);
     else
-      this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
+      this.accum.addPath(curve, displayParams, this.placement, false);
   }
 
   /** take ownership of input points and add as a line string to this builder */
   public addLineString(points: Point3d[]): void {
     if (2 === points.length && points[0].isAlmostEqual(points[1]))
-      this.accum.addPointString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
+      this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
     else
-      this.accum.addLineString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
+      this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -90,7 +91,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   /** take ownership of input points and add as a point string to this builder */
   public addPointString(points: Point3d[]): void {
-    this.accum.addPointString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
+    this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
   }
 
   public addPointString2d(points: Point2d[], zDepth: number): void {
@@ -100,7 +101,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public addShape(points: Point3d[]): void {
     const loop = Loop.create(LineString3d.create(points));
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
   }
 
   public addShape2d(points: Point2d[], zDepth: number): void {
@@ -109,15 +110,15 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public addPath(path: Path): void {
-    this.accum.addPath(path, this.getLinearDisplayParams(), this.localToWorldTransform, false);
+    this.accum.addPath(path, this.getLinearDisplayParams(), this.placement, false);
   }
 
   public addLoop(loop: Loop): void {
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
   }
 
   public addPolyface(meshData: Polyface): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
+    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
   }
 
   public abstract reset(): void;
@@ -136,7 +137,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity()) {
     this.accum.reset(accumTf);
     this.activateGraphicParams(this.graphicParams);
-    this.createParams.placement = localToWorld;
+    this.placement = localToWorld;
     this.reset();
   }
 
@@ -147,11 +148,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
-  public params: GraphicBuilderCreateParams;
-  constructor(system: RenderSystem, params: GraphicBuilderCreateParams) {
-    super(system, params);
-    this.params = params;
-  }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     let featureTable: FeatureTable | undefined;
@@ -159,9 +155,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
-      const options = GeometryOptions.createForGraphicBuilder(this.params);
+      const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      featureTable = accum.saveToGraphicList(this.primitives, options, tolerance, this.createParams.pickableId);
+      featureTable = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
     }
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
@@ -175,12 +171,12 @@ export class PrimitiveBuilder extends GeometryListBuilder {
 
   public computeTolerance(accum: GeometryAccumulator): number {
     const toleranceMult = 0.25;
-    if (this.params.isViewCoordinates) return toleranceMult;
-    if (!this.params.viewport) return 20;
+    if (this.isViewCoordinates) return toleranceMult;
+    if (!this.viewport) return 20;
     const range = accum.geometries!.computeRange(); // NB: Already multiplied by transform...
     // NB: Geometry::CreateFacetOptions() will apply any scale factors from transform...no need to do it here.
     const pt = range.low.interpolate(0.5, range.high);
-    return this.params.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
+    return this.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
   }
 
   public reset(): void { this.primitives = []; }

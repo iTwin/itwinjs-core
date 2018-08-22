@@ -20,11 +20,12 @@ import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
+import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel, Decoration } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
+import { GraphicType } from "./render/GraphicBuilder";
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -1564,20 +1565,20 @@ export class Viewport {
     if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    const graphic = context.createWorldOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
     const colorFill = color.clone();
 
     color.setTransparency(100);
     colorFill.setTransparency(200);
-    graphic.setSymbology(color, colorFill, 1);
+    builder.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
     const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
     const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
 
-    graphic.addArc(ellipse, true, true);
-    graphic.addArc(ellipse, false, false);
+    builder.addArc(ellipse, true, true);
+    builder.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
     const normal = Vector3d.create();
@@ -1585,19 +1586,19 @@ export class Viewport {
     ellipse.vector0.normalize(normal);
     const pt1 = hit.snapPoint.plusScaled(normal, length);
     const pt2 = hit.snapPoint.plusScaled(normal, -length);
-    graphic.addLineString([pt1, pt2]);
+    builder.addLineString([pt1, pt2]);
 
     ellipse.vector90.normalize(normal);
     const pt3 = hit.snapPoint.plusScaled(normal, length);
     const pt4 = hit.snapPoint.plusScaled(normal, -length);
-    graphic.addLineString([pt3, pt4]);
+    builder.addLineString([pt3, pt4]);
 
-    context.addWorldOverlay(graphic.finish());
+    context.addDecoration(Decoration.fromBuilder(builder));
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
 
@@ -1607,18 +1608,18 @@ export class Viewport {
     const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
 
     white.setTransparency(165);
-    graphic.setSymbology(white, white, 1);
-    graphic.addArc2d(ellipse, true, true, 0.0);
+    builder.setSymbology(white, white, 1);
+    builder.addArc2d(ellipse, true, true, 0.0);
 
     black.setTransparency(100);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc2d(ellipse2, false, false, 0.0);
+    builder.setSymbology(black, black, 1);
+    builder.addArc2d(ellipse2, false, false, 0.0);
 
     white.setTransparency(20);
-    graphic.setSymbology(white, white, 1);
-    graphic.addArc2d(ellipse, false, false, 0.0);
+    builder.setSymbology(white, white, 1);
+    builder.addArc2d(ellipse, false, false, 0.0);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecoration(Decoration.fromBuilder(builder));
   }
 
   /** @hidden */
@@ -1755,7 +1756,6 @@ export class Viewport {
 
   /** @hidden */
   public decorate(context: DecorateContext): void {
-    this.view.decorate(context);
     this.view.drawGrid(context);
     if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));

@@ -27,7 +27,7 @@ import {
   isValidImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect, ViewFrustum } from "../Viewport";
-import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
@@ -111,34 +111,41 @@ export abstract class RenderClipVolume implements IDisposable {
 }
 
 export type GraphicList = RenderGraphic[];
+function disposeList(list?: IDisposable[]) {
+  if (undefined === list)
+    return;
+  for (const entry of list)
+    entry.dispose();
+  list.length = 0;
+}
 
 /** A graphic used for decorations, optionally with symbology overrides. */
 export class Decoration implements IDisposable {
   public readonly graphic: RenderGraphic;
   public readonly overrides?: FeatureSymbology.Appearance;
+  public readonly type: GraphicType;
+  public readonly pickId?: string;
 
-  public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
+  public constructor(type: GraphicType, graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance, pickId?: string) {
     this.graphic = graphic;
     this.overrides = overrides;
+    this.type = type;
+    this.pickId = pickId;
   }
-
+  public static fromBuilder(builder: GraphicBuilder, overrides?: FeatureSymbology.Appearance) {
+    return new this(builder.type, builder.finish()!, overrides, builder.pickId)
+  }
   public dispose() { dispose(this.graphic); }
 }
 
 export class DecorationList implements IDisposable {
   public readonly list: Decoration[] = [];
-  public dispose() {
-    for (const decoration of this.list)
-      dispose(decoration);
-    this.list.length = 0;
-  }
-
-  public add(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) { this.list.push(new Decoration(graphic, ovr)); }
+  public dispose() { disposeList(this.list); }
+  public add(decoration: Decoration) { this.list.push(decoration); }
 }
 
 /**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the RenderTarget,
- * in addition to the Scene.
+ * Various of lists of RenderGraphics that are "decorated" into the RenderTarget, in addition to the Scene.
  */
 export class Decorations implements IDisposable {
   private _skyBox?: RenderGraphic;
@@ -148,50 +155,26 @@ export class Decorations implements IDisposable {
   private _worldOverlay?: DecorationList; // drawn in overlay mode, world units
   private _viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 
-  // Getters & Setters - dispose of members before resetting
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
-  public set skyBox(skyBox: RenderGraphic | undefined) {
-    dispose(this._skyBox);
-    this._skyBox = skyBox;
-  }
+  public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
-  public set viewBackground(viewBackground: RenderGraphic | undefined) {
-    dispose(this._viewBackground);  // no effect if already disposed
-    this._viewBackground = viewBackground;
-  }
+  public set viewBackground(viewBackground: RenderGraphic | undefined) { dispose(this._viewBackground); this._viewBackground = viewBackground; }
   public get normal(): GraphicList | undefined { return this._normal; }
-  public set normal(normal: GraphicList | undefined) {
-    if (this._normal)
-      for (const graphic of this._normal)
-        dispose(graphic);
-    this._normal = normal;
-  }
+  public set normal(normal: GraphicList | undefined) { disposeList(this._normal); this._normal = normal; }
   public get world(): DecorationList | undefined { return this._world; }
-  public set world(world: DecorationList | undefined) {
-    dispose(this._world); // no effect if already disposed
-    this._world = world;
-  }
+  public set world(world: DecorationList | undefined) { dispose(this._world); this._world = world; }
   public get worldOverlay(): DecorationList | undefined { return this._worldOverlay; }
-  public set worldOverlay(worldOverlay: DecorationList | undefined) {
-    dispose(this._worldOverlay);  // no effect if already disposed
-    this._worldOverlay = worldOverlay;
-  }
+  public set worldOverlay(worldOverlay: DecorationList | undefined) { dispose(this._worldOverlay); this._worldOverlay = worldOverlay; }
   public get viewOverlay(): DecorationList | undefined { return this._viewOverlay; }
-  public set viewOverlay(viewOverlay: DecorationList | undefined) {
-    dispose(this._viewOverlay); // no effect if already disposed
-    this._viewOverlay = viewOverlay;
-  }
+  public set viewOverlay(viewOverlay: DecorationList | undefined) { dispose(this._viewOverlay); this._viewOverlay = viewOverlay; }
 
   public dispose() {
-    this._skyBox = dispose(this._skyBox);
-    this._viewBackground = dispose(this._viewBackground);
-    this._world = dispose(this._world);
-    this._worldOverlay = dispose(this._worldOverlay);
-    this._viewOverlay = dispose(this._viewOverlay);
-    if (this._normal)
-      for (const graphic of this._normal)
-        dispose(graphic);
-    this._normal = undefined;
+    this.skyBox = undefined;
+    this.viewBackground = undefined;
+    this.world = undefined;
+    this.worldOverlay = undefined;
+    this.viewOverlay = undefined;
+    this.normal = undefined;
   }
 }
 
@@ -204,23 +187,17 @@ export class GraphicBranch implements IDisposable {
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
   public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
-
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
-
   public clear() { this.entries.length = 0; }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 
   public dispose(): void {
-    if (this.ownsEntries) {
-      for (const entry of this.entries) {
-        entry.dispose();
-      }
-    }
-
-    this.clear();
+    if (this.ownsEntries)
+      disposeList(this.entries);
+    else
+      this.clear();
   }
 }
 
@@ -301,7 +278,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract get viewRect(): ViewRect;
   public abstract get wantInvertBlackBackground(): boolean;
 
-  public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
+  public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public abstract dispose(): void;
   public abstract reset(): void;
@@ -356,7 +333,7 @@ export abstract class RenderSystem implements IDisposable {
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a GraphicBuilder from parameters */
-  public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
+  public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
   // /** Create a Viewlet from parameters */
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
