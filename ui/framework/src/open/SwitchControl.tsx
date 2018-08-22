@@ -20,14 +20,14 @@ export class SwitchControl extends React.Component<ISwitchProps, ISwitchState> {
   }
 
   // checkbox state changed
-  private handleChange = () => {
+  private _handleChange = () => {
     this.setState({ checked: !this.state.checked }, () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }
 
   public render() {
     return (
       <React.Fragment>
-        <input className="sw" id={this.props.id} type="checkbox" onChange={this.handleChange} checked={this.state.checked} />
+        <input className="sw" id={this.props.id} type="checkbox" onChange={this._handleChange} checked={this.state.checked} />
         <label htmlFor={this.props.id}></label>
       </React.Fragment>
     );
