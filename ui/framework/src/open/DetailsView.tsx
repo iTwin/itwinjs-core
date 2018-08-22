@@ -26,10 +26,10 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
   constructor(props: IDetailsViewProps, context?: any) {
     super(props, context);
     /* start spinning */
-    this.state = { waitingForViews: true, waitingForVersions: true, waitingForUsers: true, numSelected: 0  };
+    this.state = { waitingForViews: true, waitingForVersions: true, waitingForUsers: true, numSelected: 0 };
   }
 
-  private onClose = () => {
+  private _onClose = () => {
     if (this.props.onClose)
       this.props.onClose();
   }
@@ -69,7 +69,7 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
   }
 
   private generateColor(): string {
-    return "#" +  Math.random().toString(16).substr(-6);
+    return "#" + Math.random().toString(16).substr(-6);
   }
 
   private getFullName(user: IModelUserInfo): string {
@@ -97,7 +97,7 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
         <ul>
           {this.state.users.map((user: IModelUserInfo) => (
             <li key={user.id}>
-              <div className="circle" style={{ backgroundColor: this.generateColor()}}>{this.getInitials(user)}</div>
+              <div className="circle" style={{ backgroundColor: this.generateColor() }}>{this.getInitials(user)}</div>
               <div><span className="fullname">{this.getFullName(user)}</span><span className="email">{user.email}</span></div>
             </li>
           ))}
@@ -110,14 +110,14 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
     }
   }
 
-  private renderVersionDescription (version: VersionInfo) {
+  private renderVersionDescription(version: VersionInfo) {
     if (version.description && version.description.length > 0) {
       return (
         <td>{version.description}</td>
       );
     } else {
       return (
-        <td style={{fontStyle: "italic"}}>No description</td>
+        <td style={{ fontStyle: "italic" }}>No description</td>
       );
     }
   }
@@ -129,23 +129,23 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
       );
     } else if (this.state.versions && this.state.versions.length > 0) {
       return (
-          <table>
-            <tbody>
-              <tr>
-                <th>Desciption</th>
-                <th>User</th>
-                <th>Time</th>
+        <table>
+          <tbody>
+            <tr>
+              <th>Desciption</th>
+              <th>User</th>
+              <th>Time</th>
+            </tr>
+            {this.state.versions.map((version: VersionInfo) => (
+              <tr key={version.changeSetId}>
+                {this.renderVersionDescription(version)}
+                <td>{version.name}</td>
+                <td>{version.createdDate.toLocaleDateString()}</td>
               </tr>
-              {this.state.versions.map((version: VersionInfo) => (
-                <tr key={version.changeSetId}>
-                  {this.renderVersionDescription(version)}
-                  <td>{version.name}</td>
-                  <td>{version.createdDate.toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          // <span style={{ color: "green" }} className="icon icon-status-success-hollow"/><span>You have the latest version.</span>
+            ))}
+          </tbody>
+        </table>
+        // <span style={{ color: "green" }} className="icon icon-status-success-hollow"/><span>You have the latest version.</span>
       );
     } else {
       return (
@@ -154,14 +154,14 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
     }
   }
 
-  public renderDescription () {
+  public renderDescription() {
     if (this.props.iModel.description && this.props.iModel.description.length > 0) {
       return (
         <span>{this.props.iModel.description}</span>
       );
     } else {
       return (
-        <span style={{fontStyle: "italic"}}>No description</span>
+        <span style={{ fontStyle: "italic" }}>No description</span>
       );
     }
   }
@@ -172,7 +172,7 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
       <div className="imdetails">
         <div className="imdetails-view animate">
           <div className="section header">
-            <img id="base64image" src={this.props.iModel.thumbnail}/>
+            <img id="base64image" src={this.props.iModel.thumbnail} />
             <div className="info">
               <span>{this.props.iModel.name}</span>
               {this.renderDescription()}
@@ -181,17 +181,17 @@ export class DetailsView extends React.Component<IDetailsViewProps, IDetailsView
             <div className="separator" />
             <div className="versioninfo">
             </div>
-            <span onClick={this.onClose.bind(this)} className="close icon icon-close" title="Close"></span>
+            <span onClick={this._onClose} className="close icon icon-close" title="Close"></span>
           </div>
           <div className="contentarea">
             <div className="leftside">
               <div className="section content-versions">
-                <div className="label"><span className="icon icon-versions"/><span>LATEST VERSIONS</span></div>
+                <div className="label"><span className="icon icon-versions" /><span>LATEST VERSIONS</span></div>
                 {this.renderVersions()}
               </div>
             </div>
             <div className="section users">
-              <div className="label"><span className="icon icon-users"/><span>TEAM MEMBERS</span><span>{count}</span></div>
+              <div className="label"><span className="icon icon-users" /><span>TEAM MEMBERS</span><span>{count}</span></div>
               {this.renderUsers()}
             </div>
           </div>

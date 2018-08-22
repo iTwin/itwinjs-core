@@ -70,7 +70,7 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
     const classes = classnames(isActive && "active");
     const icon = classnames("icon", this.props.icon);
     return (
-      <li className={classes} onClick={this.onClick}>
+      <li className={classes} onClick={this._onClick}>
         <span className={icon} />
         <span className="label">{this.props.label}</span>
         <div className=".open-navbar-barindicator"></div>
@@ -112,7 +112,7 @@ export class NavigationList extends React.Component<INavigationListProps, INavig
 
   // toggle currently active tab
   private _handleTabClick = (tabIndex: number) => {
-    this.setState( { activeTab: tabIndex });
+    this.setState({ activeTab: tabIndex });
   }
 
   // toggle pinned state
@@ -133,16 +133,17 @@ export class NavigationList extends React.Component<INavigationListProps, INavig
         index: i,
         selectedTabIndex: this.state.activeTab,
         highlightStyle: this.props.highlightStyle,
-        onClicked: this._handleTabClick.bind(this, i) });
+        onClicked: this._handleTabClick.bind(this, i),
       });
-    }
+    });
+  }
 
   public render() {
     const classNavbar = classnames("open-navbar", this.state.isPinned && "pinned");
     return (
       <div className={classNavbar}>
         <div className="expander">
-          <span className="icon icon-chevron-right" onClick={this._handleExpandClick}/>
+          <span className="icon icon-chevron-right" onClick={this._handleExpandClick} />
           <span className="icon icon-pin" title="Pin the navigation pane" onClick={this._handleExpandClick} />
           <span className="icon icon-chevron-left" onClick={this._handleExpandClick} />
         </div>

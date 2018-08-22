@@ -78,7 +78,7 @@ export class Configurable implements IConfigurable {
 /** The base class for all ConfigurableUi elements that belong to a stage.
  */
 export class StageConfigurable extends Configurable {
-  private _stage: FrontstageDef | undefined;
+  private _stage?: FrontstageDef;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
