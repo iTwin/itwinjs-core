@@ -1,0 +1,38 @@
+
+To Do:
+*Ensure that multiple tests run sucessfully - i.e. have both multiple describe and multiple it functions.
+*Get a set of good models to use for testing - these cannot all be old qv models, as some of those contain proprietary info only shared with the qv team, so some new models will have to be made.
+*Change the excel doc produced to only contain the averages of multiple runs instead of every individual run - this is because of the timing issue (timings are only accurate up to ~2ms, so must use the avg when looking at the data).
+*Change the default location of the performance results to be outside of the source tree.
+*Allow specific view flags to be selected.
+*Put models on 'iModelHub' (i.e. the cloud) and access models on 'iModelHub' within the performance test - i.e. don't depend on hard coded model paths.
+*Create a list of tests - should include a set of models, views, and view flags. (in json?)
+*Organize performance tests so you can input a list (in json?) containing models, views, and view flags, and the test will execute and collect performance data.
+*Organize performance tests so you can input a list (in json?) containing models, views, and view flags, and the test will execute and collect pngs/images of what is rendered onscreen.
+*Auto delete the .Tile and .TileCache files before execution starts and after execution ends.
+*Record the time it takes to load the tiles when there is NO .Tile file AND the time it takes to load the tiles when there IS a .Tile file already created.
+*Change the frame indices to utilize either an enum or key-value pairs with key=name of operation and value=timing info instead of just numbers - basically, redo the way performanceMetrics keeps track of the frameTimes / frameTimeIndex to be less confusing and to better handle later additions to the frame Times - this will involve changing the getFrameTimes function and everywhere that relies of the specific number of frame times (liek the PerformanceTests.test.ts and PerformanceReportWriter.ts files).
+*Figure out a better way to save a png/jpg/image of what is currently being rendered - i.e. this should save without requiring the user to click the save button on a popup menu.
+*Change the imodel name saved in the performance results to not include the entire file path.
+*Big End Goal: We can specify a set of test cases, ideally in json, each consisting of iModel, view, view flags, etc; run the tests; and get the output.
+
+
+Finished:
+*Make sure timing data being collected is accurate - done; data collected now matches data collected while running continuous rendering in the simpleview test app.
+*Figure out why gl.Finish isn't working and/or how to test the amount of time the gpu spends when doing a drawFrame - done; gl.Finish just doesn't seem to work, so instead we are reading back 1 pixel, which forces the gpu to completely finish all of the currently queued commands before reading the 1 pixel (thereby allowing us to see how much time the gpu spends finishing executing everything in the queue).
+*Figure out a way to save a png of what's getting rendered - done; however, needs to be better - currently good enough to verify that things are running correctly, but isn't good enough to run a test that saves multiple pngs without the user manually clicking the save button.
+*Wait until the all the tiles are fully loaded before continuing with the test - done.
+
+
+How to use the current performance tests:
+*Currently, I’ve committed what I’ve got in a separate branch called display-perf-testing.
+*To run what’s currently there, just run the command “npm run test:frontend:performance” to run all of the performance tests (‘all’ right now is just the startup test and the PerformanceTests.test.ts).
+*Right now, to change what model or view you want to use, you need to change the default configuration settings. Change “Wraith_MultiMulti.ibim” to whatever ibim file you wish to open. It will look in the test-apps/testbed/frontend/performance/imodels folder to find the imodel, or you can hardcode the imodel path to iModelName. Similarly, you can change the view by giving a different value to viewName.
+  configuration = {
+    userName: "bistroDEV_pmadm1@mailinator.com",
+    password: "pmadm1",
+    iModelName: path.join(iModelLocation, "Wraith_MultiMulti.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
+    viewName: "V0", // "Physical-Tag",
+  } as SVTConfiguration;
+*To save a png of what’s being run, just add a savePng() function call in the PerformanceTests.test.ts file, and then you will have to hit the save button when a popup comes up, and it’ll let you choose the file name and location at that time as well. You may need to uncomment the savePng() function definition if it is currently commented out.
+*The current timings will also get saved automatically to the performanceResults.xlsx file.
