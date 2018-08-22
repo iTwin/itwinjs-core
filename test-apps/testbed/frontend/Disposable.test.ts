@@ -9,7 +9,7 @@ import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
   MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan,
+  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -247,7 +247,7 @@ describe("Disposal of WebGL Resources", () => {
     const viewport = new Viewport(canvas, viewState);
     await viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
-    viewport.renderFrame(new UpdatePlan()); // force a frame to be rendered
+    viewport.renderFrame(); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;
     const exposedTarget = new ExposedTarget(target);
