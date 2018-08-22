@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import ExpansionToggle from "@src/tree/ExpansionToggle";
+import ExpansionToggle from "../../src/tree/ExpansionToggle";
 
 describe("<ExpansionToggle />", () => {
   it("should render", () => {

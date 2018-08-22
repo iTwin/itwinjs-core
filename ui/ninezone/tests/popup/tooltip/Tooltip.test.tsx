@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tooltip from "@src/popup/tooltip/Tooltip";
+import Tooltip from "../../../src/popup/tooltip/Tooltip";
 
 describe("<Tooltip />", () => {
   it("should render", () => {

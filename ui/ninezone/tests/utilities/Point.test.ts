@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import Point from "@src/utilities/Point";
+import Point from "../../src/utilities/Point";
 
 describe("Point", () => {
   it("unspecified coordinates should be 0", () => {

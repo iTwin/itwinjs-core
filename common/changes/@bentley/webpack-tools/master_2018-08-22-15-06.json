@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Simplified coverage setup. Apps are no longer required to define an nyc config in their package.json.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}

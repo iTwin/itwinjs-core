@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Message from "@src/footer/message-center/Message";
+import Message from "../../../src/footer/message-center/Message";
 
 describe("<Message />", () => {
   it("should render", () => {

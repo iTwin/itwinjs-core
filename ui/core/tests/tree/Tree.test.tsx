@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Tree from "@src/tree/Tree";
+import Tree from "../../src/tree/Tree";
 
 describe("<Tree />", () => {
   it("should render", () => {

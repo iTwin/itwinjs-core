@@ -3,10 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Scrollable, { ScrollableState } from "@src/toolbar/Scrollable";
-import { Direction } from "@src/utilities/Direction";
-import Chevron from "@src/toolbar/scroll/Chevron";
-import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
+
+import Scrollable, { ScrollableState } from "../../src/toolbar/Scrollable";
+import { Direction } from "../../src/utilities/Direction";
+import Chevron from "../../src/toolbar/scroll/Chevron";
+import { ToolbarPanelAlignment } from "../../src/toolbar/Toolbar";
 
 describe("<Scrollable />", () => {
   it("should render", () => {

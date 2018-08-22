@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Expandable from "@src/toolbar/item/expandable/Expandable";
+import Expandable from "../../../../src/toolbar/item/expandable/Expandable";
 
 describe("<Expandable />", () => {
   it("should render", () => {
