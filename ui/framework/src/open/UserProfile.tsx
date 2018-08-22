@@ -1,21 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { UserProfile } from "@bentley/imodeljs-clients";
 import { Popup } from "./Popup";
 import "./UserProfile.scss";
 
-export interface IUserProfileProps {
+export interface UserProfileProps {
   accessToken: AccessToken;
 }
 
-interface IUserProfileState {
+interface UserProfileState {
   isDropdownOpen: boolean;
   userProfile?: UserProfile;
 }
 
-export class UserProfileButton extends React.Component<IUserProfileProps, IUserProfileState> {
+export class UserProfileButton extends React.Component<UserProfileProps, UserProfileState> {
 
-  constructor(props: IUserProfileProps, context?: any) {
+  constructor(props: UserProfileProps, context?: any) {
     super(props, context);
 
     this.state = {
@@ -24,7 +27,7 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
   }
 
   // called when a state change occurs.
-  public async componentWillReceiveProps(newProps: IUserProfileProps) {
+  public async componentWillReceiveProps(newProps: UserProfileProps) {
     if (newProps.accessToken) {
       this.setState ({userProfile: newProps.accessToken.getUserProfile()});
     }

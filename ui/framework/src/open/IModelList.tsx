@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelCard } from "./IModelCard";
 import { IModelInfo } from "../clientservices/IModelServices";
@@ -57,45 +60,37 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       this.props.onIModelSelected!(iModelInfo);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onShowThumbnails = () => {
+  private _onShowThumbnails = () => {
     this.setState({ showDetails: false });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onShowDetails = () => {
+  private _onShowDetails = () => {
     this.setState({ showDetails: true });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onShowProjectsSelector = () => {
+  private _onShowProjectsSelector = () => {
     this.setState({ showProjectDialog: true });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onProjectsSelectorClose = () => {
+  private _onProjectsSelectorClose = () => {
     this.setState({ showProjectDialog: false });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private handleSearchValueChanged = (value: string): void => {
+  private _handleSearchValueChanged = (value: string): void => {
     this.setState( { filter: value} );
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onIModelOfflineChange = (checked: boolean): void => {
+  private _onIModelOfflineChange = (checked: boolean): void => {
     if (checked) {
     } else {
     }
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onViewsClose = () => {
+  private _onViewsClose = () => {
     this.setState({ showViews: false });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+  private _onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
     const viewIds: Id64Props[] = new Array<Id64Props>();
     for (const view of views ) {
       viewIds.push (view.id!);
@@ -105,8 +100,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.props.setSelectedViews(viewIds);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onIModelClick = (iModelInfo: IModelInfo) => {
+  private _onIModelClick = (iModelInfo: IModelInfo) => {
     this.setState({ currentIModel: iModelInfo, showViews: true });
   }
 
@@ -123,12 +117,12 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     const checked = Math.random() > .5;
     return (
       <tr key={iModelInfo.wsgId}>
-        <td onClick={this.onIModelClick.bind(this, iModelInfo)}><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
-        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>{size}</td>
-        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>This device</td>
-        <td onClick={this.onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
+        <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
+        <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{size}</td>
+        <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
+        <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
-          <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this.onIModelOfflineChange}/>
+          <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this._onIModelOfflineChange}/>
         </td>
       </tr>
     );
@@ -177,9 +171,9 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-empty">
           <div className="fade-in-fast">
             There are no iModels associated to this project.
-            <button onClick={this.onShowProjectsSelector}>Search for active projects in your Organization?</button>
+            <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
           </div>
-        {this.state.showProjectDialog && <ProjectDialog accessToken={this.props.accessToken} onClose={this.onProjectsSelectorClose}/>}
+        {this.state.showProjectDialog && <ProjectDialog accessToken={this.props.accessToken} onClose={this._onProjectsSelectorClose}/>}
       </div>
       );
     } else {
@@ -203,15 +197,15 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       <div className="cards-content">
         <div className="header">
           <span className="title">Recent</span>
-          <SearchBox placeholder="Search ..." onValueChanged={this.handleSearchValueChanged} valueChangedDelay={300} />
-          <span className={classThumbnails} title="Thumbnails" onClick={this.onShowThumbnails} />
-          <span className={classList} title="List" onClick={this.onShowDetails} />
+          <SearchBox placeholder="Search ..." onValueChanged={this._handleSearchValueChanged} valueChangedDelay={300} />
+          <span className={classThumbnails} title="Thumbnails" onClick={this._onShowThumbnails} />
+          <span className={classList} title="List" onClick={this._onShowDetails} />
         </div>
         <div className="cards-scroll-y">
           {this.renderContent()}
         </div>
         {this.state.showViews &&
-          <ViewSelector accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this.onViewsClose.bind(this)} OnViewsSelected={this.onViewsSelected.bind(this)} />}
+          <ViewSelector accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
       </div>
     );
   }

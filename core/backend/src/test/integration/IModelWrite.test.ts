@@ -456,7 +456,7 @@ describe("IModelWriteTest", () => {
     await iModel.close(accessToken);
   });
 
-  it("Run plain SQL against pull-only connection", async () => {
+  it.skip("Run plain SQL against pull-only connection", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly());
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
@@ -528,7 +528,7 @@ describe("IModelWriteTest", () => {
     }
   });
 
-  it("Run plain SQL against readonly connection", async () => {
+  it.skip("Run plain SQL against readonly connection", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {

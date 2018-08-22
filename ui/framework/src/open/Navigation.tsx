@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
@@ -9,7 +12,7 @@ export enum NavigationHighlightStyle {
   bar,       // bar will fill (animate)
 }
 
-export interface INavigationItemProps {
+export interface NavigationItemProps {
   label?: string;
   icon?: string;
   index?: number;
@@ -18,13 +21,13 @@ export interface INavigationItemProps {
   onClicked?: () => any;
 }
 
-export class NavigationItem extends React.Component<INavigationItemProps> {
+export class NavigationItem extends React.Component<NavigationItemProps> {
 
-  constructor(props: INavigationItemProps, context?: any) {
+  constructor(props: NavigationItemProps, context?: any) {
     super(props, context);
   }
 
-  public static defaultProps: Partial<INavigationItemProps> = {
+  public static defaultProps: Partial<NavigationItemProps> = {
     label: "",
     icon: "",
     selectedTabIndex: 0,
@@ -86,25 +89,25 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
   }
 }
 
-export interface INavigationListProps {
+export interface NavigationListProps {
   onClick?: (navItem: NavigationItem) => any;
   onExpandChanged?: (isPinned: boolean) => any;
   defaultTab: number;
   highlightStyle?: NavigationHighlightStyle;
 }
 
-export interface INavigationListState {
+export interface NavigationListState {
   activeTab: number;
   isPinned: boolean;
 }
 
-export class NavigationList extends React.Component<INavigationListProps, INavigationListState> {
+export class NavigationList extends React.Component<NavigationListProps, NavigationListState> {
 
-  public static defaultProps: Partial<INavigationListProps> = {
+  public static defaultProps: Partial<NavigationListProps> = {
     highlightStyle: NavigationHighlightStyle.movingbar,
   };
 
-  constructor(props: INavigationListProps, context?: any) {
+  constructor(props: NavigationListProps, context?: any) {
     super(props, context);
 
     this.state = { activeTab: this.props.defaultTab, isPinned: false };
