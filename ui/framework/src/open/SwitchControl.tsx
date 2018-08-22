@@ -4,25 +4,24 @@
 import * as React from "react";
 import "./SwitchControl.scss";
 
-export interface ISwitchProps {
+export interface SwitchProps {
   id: string;
   onChange?: (checked: boolean) => any;
   defaultValue?: boolean;
 }
 
-export interface ISwitchState {
+export interface SwitchState {
   checked: boolean;
 }
 
-export class SwitchControl extends React.Component<ISwitchProps, ISwitchState> {
+export class SwitchControl extends React.Component<SwitchProps, SwitchState> {
 
-  constructor(props: ISwitchProps, context?: any) {
+  constructor(props: SwitchProps, context?: any) {
     super(props, context);
 
     this.state = { checked: (props.defaultValue) ? props.defaultValue : false };
   }
 
-  // checkbox state changed
   private _handleChange = () => {
     this.setState({ checked: !this.state.checked }, () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }

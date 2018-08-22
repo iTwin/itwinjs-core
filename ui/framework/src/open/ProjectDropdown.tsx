@@ -10,7 +10,7 @@ import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { Popup } from "./Popup";
 import "./ProjectDropdown.scss";
 
-export interface IProjectDropdownProps {
+export interface ProjectDropdownProps {
   accessToken: AccessToken;
   numVisibleProjects?: number;
   recentProjects?: ProjectInfo[];
@@ -18,53 +18,48 @@ export interface IProjectDropdownProps {
   onProjectClicked: (project: ProjectInfo) => any;
 }
 
-interface IProjectDropdownState {
+interface ProjectDropdownState {
   isDropdownOpen: boolean;
   showProjectsDialog: boolean;
 }
 
-export class ProjectDropdown extends React.Component<IProjectDropdownProps, IProjectDropdownState> {
+export class ProjectDropdown extends React.Component<ProjectDropdownProps, ProjectDropdownState> {
   private _itemHeight: number = 3.25; // each item (project) height is (n-em) in the dropdown
 
-  public static defaultProps: Partial<IProjectDropdownProps> = {
+  public static defaultProps: Partial<ProjectDropdownProps> = {
     numVisibleProjects: 5, // default number of visible project to 5
   };
 
-  constructor(props: IProjectDropdownProps, context?: any) {
+  constructor(props: ProjectDropdownProps, context?: any) {
     super(props, context);
 
     this.state = { isDropdownOpen: false, showProjectsDialog: false };
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
     this.closeDropdown();
     this.setState((_prevState) => ({ showProjectsDialog: true }));
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onCloseProjectDialog = () => {
+  private _onCloseProjectDialog = () => {
     this.closeDialog();
   }
 
-  private onItemClick(project: ProjectInfo) {
+  private _onItemClick(project: ProjectInfo) {
     this.closeDropdown();
     this.props.onProjectClicked(project);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onProjectSelected = (project: ProjectInfo) => {
+  private _onProjectSelected = (project: ProjectInfo) => {
     this.closeDialog();
     this.props.onProjectClicked(project);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
+  private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     this.setState((_prevState) => ({ isDropdownOpen: !this.state.isDropdownOpen }));
   }
 
-  // tslint:disable-next-line:naming-convention
-  private handleOnOutsideClick = () => {
+  private _handleOnOutsideClick = () => {
     this.closeDropdown();
   }
 
@@ -100,7 +95,7 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
       return (
         <ul style={ulStyle}>
           {projects && projects.map((project: ProjectInfo, i: number) => (
-            <li style={liStyle} key={i} onClick={() => this.onItemClick(project)}>
+            <li style={liStyle} key={i} onClick={() => this._onItemClick(project)}>
               <span className="pp-icon icon icon-apps-connect" />
               <div className="pp-details">
                 <span>{project.projectNumber}</span>
@@ -118,10 +113,10 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
       height: this._itemHeight + "em",
     };
     return (
-      <Popup className="pp-dropdown fade-in-fast" showShadow={true} onClose={this.handleOnOutsideClick}>
+      <Popup className="pp-dropdown fade-in-fast" showShadow={true} onClose={this._handleOnOutsideClick}>
         {this.renderProjects()}
         <div className="pp-separator" />
-        <div className="pp-more" style={liStyle} onClick={this.onMoreClicked} >
+        <div className="pp-more" style={liStyle} onClick={this._onMoreClicked} >
           <span className="pp-icon icon icon-search" />
           More
         </div>
@@ -133,7 +128,7 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
     const splitterClassName = classnames("pp-splitter icon icon-chevron-down", this.state.isDropdownOpen && "opened");
     return (
       <div className="pp">
-        <div className="pp-content" onClick={this.splitterClicked}>
+        <div className="pp-content" onClick={this._splitterClicked}>
           <div>
             <span className="number">{this.props.currentProject ? this.props.currentProject.projectNumber : ""}</span>
             <span className="name">{this.props.currentProject ? this.props.currentProject.name : ""}</span>
@@ -143,7 +138,7 @@ export class ProjectDropdown extends React.Component<IProjectDropdownProps, IPro
         <div className="pp-highlight" />
         {this.state.isDropdownOpen && this.renderDropdown()}
         {this.state.showProjectsDialog &&
-          <ProjectDialog accessToken={this.props.accessToken} onClose={this.onCloseProjectDialog} onProjectSelected={this.onProjectSelected} />
+          <ProjectDialog accessToken={this.props.accessToken} onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
         }
       </div>
     );
