@@ -5,7 +5,7 @@ import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-fronten
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
-import { IModelConnection, IModelApp, Viewport, OffScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { Target, UpdatePlan, PerformanceMetrics/*, System*/ } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
@@ -29,45 +29,6 @@ function resolveAfterXMilSeconds(ms: number) { // must call await before this fu
     }, ms);
   });
 }
-
-async function nextFrame() {
-  return new Promise((resolve) => {
-    requestAnimationFrame(resolve);
-  });
-}
-
-// /** The main event processing loop for Tools (and rendering). */
-// let eventLoopCount = 0;
-// function eventLoop(): void {
-//   debugPrint("--start of event loop");
-//   (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
-//   theViewport!.sync.setRedrawPending;
-//   theViewport!.sync.invalidateScene();
-//   theViewport!.renderFrame(new UpdatePlan());
-
-//   if (eventLoopCount < 20)
-//     requestAnimationFrame(eventLoop);
-//   eventLoopCount++;
-// }
-
-// async function nextFrame() {
-//   debugPrint("--start of event loop");
-//   (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
-//   theViewport!.sync.setRedrawPending;
-//   theViewport!.sync.invalidateScene();
-//   theViewport!.renderFrame(new UpdatePlan());
-
-//   if (eventLoopCount < 20)
-//     requestAnimationFrame(eventLoop);
-
-//   return new Promise(resolve => {
-//       requestAnimationFrame(resolve)
-//   });
-//   eventLoopCount++;
-
-// }
-
-
 
 function createWindow() {
   const canv = document.createElement("canvas");
@@ -252,13 +213,11 @@ async function openView(state: SimpleViewState) {
   document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
-    theViewport = new OffScreenViewport(state.viewState!);
-    // theViewport = new Viewport(htmlCanvas, state.viewState!);
+    theViewport = new Viewport(htmlCanvas, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
     await _changeView(state.viewState!);
-    // IModelApp.viewManager.addViewport(theViewport);
   }
 }
 
@@ -300,7 +259,7 @@ async function mainBody() {
   configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
-    iModelName: "D:\\models\\ibim_bim0200dev\\Wraith_MultiMulti.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
+    iModelName: "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
     viewName: "V0",
   } as SVTConfiguration;
 
@@ -324,29 +283,18 @@ async function mainBody() {
   // now connect the view to the canvas
   await openView(activeViewState);
 
-  // Load all tiles ???
+  // Load all tiles
   await waitForTilesToLoad();
   debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
 
+  // debugPrint("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering);
   // await savePng();
-  // let gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl");
-  // if (!gl) gl = (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("experimental-webgl");
-  // const gl: WebGLRenderingContext = System.instance.context;
-  // debugPrint("gl: " + gl);
-  // await gl!.clearColor(0, 1, 0, 1);
-  // await gl!.clear(gl!.COLOR_BUFFER_BIT);
-  // await resolveAfterXMilSeconds(2000);
-  debugPrint("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering);
-  // await savePng();
-  debugPrint("1111111111111111111111 - after save png " + theViewport!.continuousRendering);
-  // await resolveAfterXMilSeconds(2000);
-
-  // savePng();
+  // debugPrint("1111111111111111111111 - after save png " + theViewport!.continuousRendering);
 
   const plan = new UpdatePlan();
-  theViewport!.renderFrame(plan);
+  // theViewport!.renderFrame(plan);
 
-  theViewport!.sync.setRedrawPending;
+  theViewport!.sync.setRedrawPending();
   theViewport!.renderFrame(plan);
   const target = (theViewport!.target as Target);
   const frameTimes = target.frameTimings;
@@ -354,45 +302,39 @@ async function mainBody() {
     debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
 
   debugPrint("///////////////////////////////// start extra renderFrames");
+  // await resolveAfterXMilSeconds(7000);
 
-  for (let i = 0; i < 10; ++i) {
-    (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
-    theViewport!.sync.setRedrawPending;
-    theViewport!.sync.invalidateScene();
-    theViewport!.renderFrame(plan);
-  }
   const finalFrameTimings: number[][] = [];
   const timer = new StopWatch(undefined, true);
-  // await requestAnimationFrame(eventLoop);
-
-
-  for (let i = 0; i < 20; ++i) {
-    // debugPrint("///////////////////////////////// extra renderFrames " + i + " " + glContext); // (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl"));
-    // await gl!.clearColor(0, 1, 0, 1);
-    // await gl!.clear(gl!.COLOR_BUFFER_BIT);
-    // await resolveAfterXMilSeconds(2000);
+  const numToRender = 50;
+  for (let i = 0; i < numToRender; ++i) {
     // await savePng();
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
-    theViewport!.sync.setRedrawPending;
-    theViewport!.sync.invalidateScene();
+    theViewport!.sync.setRedrawPending();
     // debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame(plan);
-    // await resolveAfterXMilSeconds(2000);
-    // render to an offscreen viewport // Nate sheet.ts has some offscreen rendering!!!!!!!!!!!!!!!!!!!!!!`
-
-    // await printResults(curTileLoadingTime, (theViewport!.target as Target).frameTimings);
-    finalFrameTimings[i] = (theViewport!.target as Target).frameTimings.slice();
-    // await savePng();
-    // await resolveAfterXMilSeconds(2000);
-    // debugPrint("///////////--- finish collecting timing data");
-    await nextFrame();
+    finalFrameTimings[i] = (theViewport!.target as Target).frameTimings; // .slice();
   }
   timer.stop();
-  debugPrint("88888888888888 Elapsed Time: " + timer.elapsed.milliseconds + "/20= " + timer.elapsed.milliseconds / 20.0);
+  debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
   for (const t of finalFrameTimings) {
     await printResults(curTileLoadingTime, t);
   }
 
+  const nt = finalFrameTimings.length;
+  let na = 1;
+  for (let i = nt - 2; i >= 0 && i >= nt - 50; --i) {
+    for (let j = 0; j < finalFrameTimings[i].length; ++j) {
+      finalFrameTimings[nt - 1][j] += finalFrameTimings[i][j];
+    }
+    na++;
+  }
+  debugPrint("Average of last " + na + "timings:");
+  for (let i = 0; i < finalFrameTimings[nt - 1].length; ++i) {
+    finalFrameTimings[nt - 1][i] /= na;
+    debugPrint(i + "  " + finalFrameTimings[nt - 1][i]);
+  }
+  await printResults(curTileLoadingTime, finalFrameTimings[nt - 1]);
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
