@@ -41,7 +41,7 @@ export class EcefLocation implements EcefLocationProps {
   /** The orientation of the ECEF transform */
   public readonly orientation: YawPitchRollAngles;
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toRotMatrix()); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d()); }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -85,8 +85,8 @@ export interface CreateIModelProps extends IModelProps {
 export interface FilePropertyProps {
   namespace: string;
   name: string;
-  id?: number;
-  subId?: number;
+  id?: number | string;
+  subId?: number | string;
 }
 
 /** Represents an iModel in JavaScript. */
@@ -143,13 +143,13 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @hidden */
-  protected token: IModelToken;
+  protected _token: IModelToken;
 
   /** The token that can be used to find this iModel instance. */
-  public get iModelToken(): IModelToken { return this.token; }
+  public get iModelToken(): IModelToken { return this._token; }
 
   /** @hidden */
-  protected constructor(iModelToken: IModelToken) { this.token = iModelToken; }
+  protected constructor(iModelToken: IModelToken) { this._token = iModelToken; }
 
   /** @hidden */
   protected initialize(name: string, props: IModelProps) {

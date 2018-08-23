@@ -127,6 +127,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run EC Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/ecschema-metadata",
+      "args": [
+        "--testDir=${workspaceFolder}/core/ecschema-metadata/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",
@@ -212,6 +226,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[Presentation] Tests: Common",
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
@@ -220,19 +252,13 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
         "--file",
         "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -245,19 +271,13 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
         "--file",
         "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -270,19 +290,13 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
         "--file",
         "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -295,23 +309,17 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
         "-r",
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "--full-trace",
         "--file",
         "tests/index.test.ts",
-        "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+        "tests/**/*.{ts,tsx}"
+      ]
     },
     {
       "type": "node",
@@ -320,22 +328,29 @@
       "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
       "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
+        "TS_NODE_PROJECT": "./tsconfig.json"
       },
       "args": [
-        "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
-        "--file",
-        "src/index.test.ts",
+        "--opts",
+        "mocha.opts",
         "src/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
+    },
+    {
+      "name": "UI Test - Browser (frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}/test-apps/ui-test-app",
+      "sourceMapPathOverrides": {
+        // map sources from node_modules to our source directory
+        "webpack:///../frontend/*": "${workspaceFolder}test-apps/ui-test-app/lib/frontend/*",
+        // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "*",
+        "webpack:///packages/*": "${webRoot}/*",
+      }
     }
   ],
   "compounds": [

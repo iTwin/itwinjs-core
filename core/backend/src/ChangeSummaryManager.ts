@@ -68,14 +68,14 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  private static readonly currentIModelChangeSchemaVersion = { read: 1, write: 0, minor: 1 };
+  private static readonly _currentIModelChangeSchemaVersion = { read: 1, write: 0, minor: 1 };
 
   /** Determines whether the *Change Cache file* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Change Cache file* is attached
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     return iModel.nativeDb.isChangeCacheAttached();
@@ -87,7 +87,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common)
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
@@ -111,7 +111,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     iModel.clearStatementCache();
@@ -132,7 +132,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if the iModel is standalone
    */
   public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
     const ctx = new ChangeSummaryExtractContext(accessToken, iModel);
@@ -316,9 +316,9 @@ export class ChangeSummaryManager {
         return stmt.getRow();
       });
 
-    if (actualSchemaVersion.read === ChangeSummaryManager.currentIModelChangeSchemaVersion.read &&
-      actualSchemaVersion.write === ChangeSummaryManager.currentIModelChangeSchemaVersion.write &&
-      actualSchemaVersion.minor === ChangeSummaryManager.currentIModelChangeSchemaVersion.minor)
+    if (actualSchemaVersion.read === ChangeSummaryManager._currentIModelChangeSchemaVersion.read &&
+      actualSchemaVersion.write === ChangeSummaryManager._currentIModelChangeSchemaVersion.write &&
+      actualSchemaVersion.minor === ChangeSummaryManager._currentIModelChangeSchemaVersion.minor)
       return;
 
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());

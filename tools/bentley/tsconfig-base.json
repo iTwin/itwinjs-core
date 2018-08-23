@@ -24,6 +24,7 @@
     "noFallthroughCasesInSwitch": false, /* DON'T Report errors for fallthrough cases in switch statement. It is possible to use this feature safely, and we have been doing that for years. */
     "experimentalDecorators": true,
     "sourceMap": true,
-    "jsx": "React"
+    "declarationMap": true,
+    "jsx": "react"
   }
 }

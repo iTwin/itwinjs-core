@@ -7,6 +7,7 @@ import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelStat
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/");
 
@@ -14,6 +15,7 @@ describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   before(async () => {
+    MaybeRenderApp.startup();
     imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
     imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
   });
@@ -21,6 +23,7 @@ describe("ModelState", () => {
   after(async () => {
     if (imodel) imodel.closeStandalone();
     if (imodel2) imodel2.closeStandalone();
+    MaybeRenderApp.shutdown();
   });
 
   it("ModelSelectors should hold models", () => {
@@ -66,13 +69,39 @@ describe("ModelState", () => {
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
 
-    // TODO: Re-enable when new version is available
-    // await imodel2.models.load(["0x28", "0x1c"]);
-    // assert.equal(imodel2.models.loaded.size, 2);
-    // const scalableMesh = imodel2.models.getLoaded("0x28");
-    // assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
-    // assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
-
+    await imodel2.models.load(["0x28", "0x1c"]);
+    assert.equal(imodel2.models.loaded.size, 2);
+    const scalableMesh = imodel2.models.getLoaded("0x28");
+    assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
+    assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
   });
 
+  it("view thumbnails", async () => {
+    const thumbnail = await imodel2.views.getThumbnail("0x24");
+    assert.equal(thumbnail.format, "jpeg");
+    assert.equal(thumbnail.height, 768);
+    assert.equal(thumbnail.width, 768);
+    assert.equal(thumbnail.image.length, 18062);
+    assert.equal(thumbnail.image[3], 224);
+    assert.equal(thumbnail.image[18061], 217);
+
+    try {
+      await imodel2.views.getThumbnail("0x25");
+      assert.fail("getThumbnail should not return");
+    } catch (_err) { } // thumbnail doesn't exist
+
+    thumbnail.format = "png";
+    thumbnail.height = 100;
+    thumbnail.width = 200;
+    thumbnail.image = new Uint8Array(300);
+    thumbnail.image.fill(33);
+
+    // await imodel2.views.saveThumbnail("0x24", thumbnail);
+    // const thumbnail2 = await imodel2.views.getThumbnail("0x24");
+    // assert.equal(thumbnail2.format, "png");
+    // assert.equal(thumbnail2.height, 100);
+    // assert.equal(thumbnail2.width, 200);
+    // assert.equal(thumbnail2.image.length, 300);
+    // assert.equal(thumbnail2.image[3], 33);
+  });
 });

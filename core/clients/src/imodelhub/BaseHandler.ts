@@ -15,29 +15,30 @@ import { Config, FileHandler } from "..";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 
 /**
- * Provides default options for iModel Hub requests.
+ * Provides default options for iModelHub requests.
  */
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelHubError.parse;
-    this.defaultOptions.retryCallback = IModelHubError.shouldRetry;
-    this.defaultOptions.agent = agent;
+    this._defaultOptions.errorCallback = IModelHubError.parse;
+    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
+    this._defaultOptions.agent = agent;
   }
 }
 
 /**
- * This class acts as the WsgClient for other iModel Hub Handlers.
+ * This class acts as the WsgClient for other iModelHub Handlers.
+ * @hidden
  */
 export class IModelBaseHandler extends WsgClient {
-  protected url?: string;
+  protected _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
   protected _agent: https.Agent;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
     QA: "https://qa-imodelhubapi.bentley.com",
     PROD: "https://imodelhubapi.bentley.com",
@@ -45,14 +46,14 @@ export class IModelBaseHandler extends WsgClient {
   };
 
   /**
-   * Creates an instance of IModelBaseHandler.
+   * Create an instance of IModelBaseHandler.
    * @hidden
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
     this._fileHandler = fileHandler;
-    if (!Config.isBrowser())
+    if (!Config.isBrowser)
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
@@ -61,9 +62,8 @@ export class IModelBaseHandler extends WsgClient {
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
-   * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
-   * Note that the options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * Augment request options with defaults returned by the DefaultIModelHubRequestOptionsProvider. Note that the options passed in by clients override any defaults where necessary.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
@@ -74,7 +74,7 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
+   * Get name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
@@ -82,26 +82,23 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Gets the default URL for the service.
+   * Get the default URL for the service.
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelBaseHandler._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
-   * Gets the agenet used for imodelhub connection pooling.
-   * @returns The agenet used for imodelhub connection pooling.
+   * Get the agent used for imodelhub connection pooling.
+   * @returns The agent used for imodelhub connection pooling.
    */
   public getAgent(): https.Agent {
     return this._agent;
   }
 
   /**
-   * Gets the URL of the service.
-   * Attempts to discover and cache the URL from the URL Discovery Service. If not
-   * found uses the default URL provided by client implementations. Note that for consistency
-   * sake, the URL is stripped of any trailing "/"
+   * Get the URL of the service. This method attempts to discover and cache the URL from the URL Discovery Service. If not found uses the default URL provided by client implementations. Note that for consistency sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
   public getUrl(): Promise<string> {
@@ -109,7 +106,7 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Get the (delegation) access token to access the service
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
@@ -119,8 +116,8 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to send delete requests without body.
-   * @param token Delegation token
+   * Send a delete request. Sends a request without body.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
@@ -129,15 +126,15 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to delete strongly typed instances through the standard WSG REST API
-   * @param token Delegation token
+   * Delete a strongly typed instance. Sends a request body with a WSG instance.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Instance to be deleted.
    * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
   public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
@@ -147,16 +144,16 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to post strongly typed instances through standard WSG REST API
-   * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
-   * @param token Delegation token
+   * Post a strongly typed instance. Sends a request body with a WSG instance.
+   * @param typedConstructor Used to construct the resulting instances from the response.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
    * @param requestOptions WSG options for the request.
    * @returns The posted instance that's returned back from the server.
    */
   public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
-    if (this._customRequestOptions.isSet()) {
+    if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
@@ -166,9 +163,9 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to post multiple strongly typed instances through standard WSG REST API
-   * @param typedConstructor Used by clients to post a strongly typed instances through the REST API that's expected to return a standard response.
-   * @param token Delegation token
+   * Post multiple strongly typed instances. Sends a request body with WSG instances.
+   * @param typedConstructor Used to construct the resulting instances from the response.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
    * @param requestOptions WSG options for the request.
@@ -179,9 +176,9 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param typedConstructor Constructor function for the type
-   * @param token Delegation token
+   * Get multiple strongly typed instances.
+   * @param typedConstructor Used to construct the resulting instances from the response.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
@@ -191,9 +188,9 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param typedConstructor Constructor function for the type
-   * @param token Delegation token
+   * Get multiple strongly typed instances. Sends query in the request's body. This can be used for queries that are too long to fit in URL.
+   * @param typedConstructor Used to construct the resulting instances from the response.
+   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
@@ -203,7 +200,7 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Used by clients to set custom request parameters for all future requests made by this handler.
+   * Get an instance of [[CustomRequestOptions]]. It can be used to set custom request parameters for all future requests made by this handler.
    */
   public getCustomRequestOptions(): CustomRequestOptions {
     return this._customRequestOptions;

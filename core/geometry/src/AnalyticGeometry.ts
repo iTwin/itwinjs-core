@@ -5,7 +5,7 @@
 /** @module CartesianGeometry */
 
 import { Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix } from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 
 import { AxisOrder, BeJSONFunctions, Geometry } from "./Geometry";
 
@@ -16,12 +16,12 @@ import { AxisOrder, BeJSONFunctions, Geometry } from "./Geometry";
  * * a unit normal.
  */
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
-  private origin: Point3d;
-  private normal: Vector3d;
+  private _origin: Point3d;
+  private _normal: Vector3d;
   // constructor captures references !!!
   private constructor(origin: Point3d, normal: Vector3d) {
-    this.origin = origin;
-    this.normal = normal;
+    this._origin = origin;
+    this._normal = normal;
   }
 
   // This is private because it does not check validity of the unit vector.
@@ -81,80 +81,80 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     return undefined;
   }
   public isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean {
-    return this.origin.isAlmostEqual(other.origin) && this.normal.isAlmostEqual(other.normal);
+    return this._origin.isAlmostEqual(other._origin) && this._normal.isAlmostEqual(other._normal);
   }
   public setFromJSON(json?: any) {
     if (!json) {
-      this.origin.set(0, 0, 0);
-      this.normal.set(0, 0, 1);
+      this._origin.set(0, 0, 0);
+      this._normal.set(0, 0, 1);
     } else {
-      this.origin.setFromJSON(json.origin);
-      this.normal.setFromJSON(json.normal);
+      this._origin.setFromJSON(json.origin);
+      this._normal.setFromJSON(json.normal);
     }
   }
   /**
    * Convert to a JSON object.
    * @return {*} [origin,normal]
    */
-  public toJSON(): any { return { origin: this.origin.toJSON(), normal: this.normal.toJSON() }; }
+  public toJSON(): any { return { origin: this._origin.toJSON(), normal: this._normal.toJSON() }; }
   public static fromJSON(json?: any): Plane3dByOriginAndUnitNormal {
     const result = Plane3dByOriginAndUnitNormal.createXYPlane();
     result.setFromJSON(json);
     return result;
   }
   /** @returns a reference to the origin. */
-  public getOriginRef(): Point3d { return this.origin; }
+  public getOriginRef(): Point3d { return this._origin; }
   /** @returns a reference to the unit normal. */
-  public getNormalRef(): Vector3d { return this.normal; }
+  public getNormalRef(): Vector3d { return this._normal; }
   /** Copy coordinates from the given origin and normal. */
   public set(origin: Point3d, normal: Vector3d): void {
-    this.origin.setFrom(origin);
-    this.normal.setFrom(normal);
+    this._origin.setFrom(origin);
+    this._normal.setFrom(normal);
   }
 
   public clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal {
     if (result) {
-      result.set(this.origin, this.normal);
+      result.set(this._origin, this._normal);
       return result;
     }
-    return new Plane3dByOriginAndUnitNormal(this.origin.clone(), this.normal.clone());
+    return new Plane3dByOriginAndUnitNormal(this._origin.clone(), this._normal.clone());
   }
   /** Create a clone and return the transform of the clone. */
   public cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
-    transform.multiplyPoint3d(result.origin, result.origin);
-    transform.matrix.multiplyInverseTranspose(result.normal, result.normal);
-    if (result.normal.normalizeInPlace())
+    transform.multiplyPoint3d(result._origin, result._origin);
+    transform.matrix.multiplyInverseTranspose(result._normal, result._normal);
+    if (result._normal.normalizeInPlace())
       return result;
     return undefined;
   }
 
   /** Copy data from the given plane. */
   public setFrom(source: Plane3dByOriginAndUnitNormal): void {
-    this.set(source.origin, source.normal);
+    this.set(source._origin, source._normal);
   }
   /** @returns Return the altitude of spacePoint above or below the plane.  (Below is negative) */
-  public altitude(spacePoint: Point3d): number { return this.normal.dotProductStartEnd(this.origin, spacePoint); }
+  public altitude(spacePoint: Point3d): number { return this._normal.dotProductStartEnd(this._origin, spacePoint); }
   /** @returns return a point at specified (signed) altitude */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
-    return this.origin.plusScaled(this.normal, altitude, result);
+    return this._origin.plusScaled(this._normal, altitude, result);
   }
   /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
-  public velocity(spaceVector: Vector3d): number { return this.normal.dotProduct(spaceVector); }
+  public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }
   /** @returns the altitude of a point given as separate x,y,z components. */
   public altitudeXYZ(x: number, y: number, z: number): number {
-    return this.normal.dotProductStartEndXYZ(this.origin, x, y, z);
+    return this._normal.dotProductStartEndXYZ(this._origin, x, y, z);
   }
   /** @returns the altitude of a point given as separate x,y,z,w components. */
   public altitudeXYZW(x: number, y: number, z: number, w: number): number {
-    return this.normal.dotProductStartEndXYZW(this.origin, x, y, z, w);
+    return this._normal.dotProductStartEndXYZW(this._origin, x, y, z, w);
   }
 
   /** @returns Return the projection of spacePoint onto the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    return spacePoint.plusScaled(this.normal, -this.normal.dotProductStartEnd(this.origin, spacePoint), result);
+    return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
   /** @return Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
@@ -295,7 +295,7 @@ export class Ray3d implements BeJSONFunctions {
    * at ray origin with z in ray direction.  If the direction vector is zero, axes default to identity (from createHeadsUpTriad)
    */
   public toRigidZFrame(): Transform | undefined {
-    const axes = RotMatrix.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
+    const axes = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
     return Transform.createOriginAndMatrix(this.origin, axes);
   }
   /**
@@ -494,11 +494,11 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     // The w parts of the formal xyzw sums are identically 0.
     // Here the X' and its w' are taken from each vectorUw and vectorVw
     result.origin.set(originw[0] * dw, originw[1] * dw, originw[2] * dw);
-    Vector3d.add2ScaledXYZ(
+    Vector3d.createAdd2ScaledXYZ(
       vectorUw[0], vectorUw[1], vectorUw[2], dw,
       originw[0], originw[1], originw[2], -au,
       result.vectorU);
-    Vector3d.add2ScaledXYZ(
+    Vector3d.createAdd2ScaledXYZ(
       vectorVw[0], vectorVw[1], vectorVw[2], dw,
       originw[0], originw[1], originw[2], -av,
       result.vectorV);
@@ -516,7 +516,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     return this.origin.plus2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
   public fractionToVector(u: number, v: number, result?: Vector3d): Vector3d {
-    return Vector3d.add2Scaled(this.vectorU, u, this.vectorV, v, result);
+    return Vector3d.createAdd2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
   public setFromJSON(json?: any) {
     if (!json || !json.origin || !json.vectorV) {

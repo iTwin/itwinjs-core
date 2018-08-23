@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import Backstage from "@src/backstage/Backstage";
+import Backstage from "../../src/backstage/Backstage";
 
 describe("<Backstage />", () => {
   it("should render", () => {
@@ -36,6 +36,6 @@ describe("<Backstage />", () => {
 
     items.simulate("click");
 
-    handler.should.not.have.been.called();
+    handler.should.not.have.been.called;
   });
 });

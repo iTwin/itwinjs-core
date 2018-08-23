@@ -87,10 +87,10 @@ export class Permission extends WsgInstance {
 
 /** Options to request connect projects */
 export interface ConnectRequestQueryOptions extends RequestQueryOptions {
-  /** Set to true to request the most recently used projets */
+  /** Set to true to request the most recently used projects */
   isMRU?: boolean;
 
-  /** Set to true to request the favourite projects */
+  /** Set to true to request the favorite projects */
   isFavorite?: boolean;
 }
 
@@ -111,7 +111,7 @@ export enum IModelHubPermissions {
 export class RbacClient extends WsgClient {
   public static readonly searchKey: string = "RBAC.URL";
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-rbac-eus.cloudapp.net",
     QA: "https://qa-connect-rbac.bentley.com",
     PROD: "https://connect-rbac.bentley.com",
@@ -135,7 +135,7 @@ export class RbacClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return RbacClient.defaultUrlDescriptor[this.deploymentEnv];
+    return RbacClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -218,9 +218,9 @@ export class RbacClient extends WsgClient {
 /** Client API to access the connect services. */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  private readonly rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
+  private readonly _rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-wsg20-eus.cloudapp.net",
     QA: "https://qa-connect-wsg20.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
@@ -244,7 +244,7 @@ export class ConnectClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ConnectClient.defaultUrlDescriptor[this.deploymentEnv];
+    return ConnectClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -287,7 +287,7 @@ export class ConnectClient extends WsgClient {
       $filter: "rbaconly+eq+true",
     };
 
-    const invitedProjectIds: string[] = await this.rbacClient.getProjects(token, rbacQueryOptions)
+    const invitedProjectIds: string[] = await this._rbacClient.getProjects(token, rbacQueryOptions)
       .then((invitedProjects: RbacProject[]) => invitedProjects.map((val: RbacProject) => val.wsgId));
 
     const filterStr = "$id+in+[" + invitedProjectIds.reduce((sum: string, value: string) => {

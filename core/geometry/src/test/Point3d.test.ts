@@ -19,14 +19,14 @@ describe("Point3d", () => {
     const pointB = Point3d.create(pointA.x, pointA.x + 0.01);
     ck.testFalse(Point3d.create(epsilon, epsilon).isAlmostEqualMetric(pointB), "is almost zero (epsilon)");
 
-    ck.testFalse(pointA.isAlmostZero(), "is almost zero");
+    ck.testFalse(pointA.isAlmostZero, "is almost zero");
 
     ck.testFalse(alwaysZero.isExactEqual(pointA));
     pointA.setZero();
     ck.testPoint3d(alwaysZero, pointA);
 
-    ck.testTrue(alwaysZero.isAlmostZero(), "is almost zero");
-    ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostZero(), "is almost zero (epsilon)");
+    ck.testTrue(alwaysZero.isAlmostZero, "is almost zero");
+    ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostZero, "is almost zero (epsilon)");
     ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
     ck.testPoint3d(alwaysZero, alwaysZeroA);
 
@@ -96,7 +96,7 @@ describe("Point3d", () => {
       for (const pointJ of boxJ) {
         const vectorJ = origin.vectorTo(pointJ);
         const sizeQ0 = 0.754;
-        const vectorIJcross = vectorI.sizedCrossProduct(vectorJ, sizeQ0);
+        const vectorIJcross = vectorI.sizedCrossProduct(vectorJ, sizeQ0)!;
         ck.testCoordinate(sizeQ0, vectorIJcross.magnitude());
         const signedAngle = vectorI.signedAngleTo(vectorJ, vectorIJcross);
         ck.testAngleNoShift(

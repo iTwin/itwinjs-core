@@ -3,3 +3,4 @@
 !/lib/**/*.d.ts
 !/lib/**/*.js
 !/lib/**/*.scss
+lib/test

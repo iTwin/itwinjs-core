@@ -7,7 +7,7 @@ import { Sample } from "../serialization/GeometrySamples";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Point2d, Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { Range3d } from "../Range";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
@@ -22,11 +22,6 @@ import { GeometryCoreTestIO } from "./IModelJson.test";
 import { StrokeOptions } from "../geometry-core";
 import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
-let outputFolderPath = "./src/test/output";
-// Output folder typically not tracked by git... make directory if not there
-if (!fs.existsSync(outputFolderPath))
-  fs.mkdirSync(outputFolderPath);
-outputFolderPath = outputFolderPath + "/";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -145,7 +140,7 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
     const faceData = polyface.getFaceDataByFacetIndex(i);  // Ensures we do not get out of bounds exception
     ck.testTrue(faceData !== undefined);
     if (shouldCheckParamDistance)
-      ck.testFalse(faceData.paramDistanceRange.isNull(), "paramDistanceRange should not be null");
+      ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
   }
 }
 
@@ -183,7 +178,7 @@ describe("Polyface.HelloWorld", () => {
     ck.testExactNumber(1, polyface0.normalCount, "single normal for planar grid");
     const polyface1 = polyface0.clone();
     const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(),
-      RotMatrix.createScale(-1, 1, 1));
+      Matrix3d.createScale(-1, 1, 1));
     const polyface2 = polyface0.cloneTransformed(mirrorX);
     const expectedArea = (numX - 1) * (numY - 1);
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad .  .
@@ -247,7 +242,7 @@ describe("Polyface.Box", () => {
     const expectedVolume = a * b * c;
     const expectedArea = 2 * (a * b + b * c + c * a);
     builder.addTransformedUnitBox(Transform.createFixedPointAndMatrix(Point3d.createZero(),
-      RotMatrix.createScale(2, 3, 4)));
+      Matrix3d.createScale(2, 3, 4)));
 
     const polyface = builder.claimPolyface();
     //    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);
@@ -285,7 +280,7 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string) {
     dy = 4.0 * gRange.yLength();
     const transformX = Transform.createTranslationXYZ(dx, 0, 0);
 
-    if (!gRange.isNull()) {
+    if (!gRange.isNull) {
       const corners = gRange.corners();
       const ls = LineString3d.create(
         corners[0], corners[1],

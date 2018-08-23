@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { RadialMenu } from "@src/index";
+import { RadialMenu } from "../../src/index";
 
 describe("<RadialMenu />", () => {
   it("should render", () => {

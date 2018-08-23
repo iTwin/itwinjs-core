@@ -1,10 +1,9 @@
-@import "@bentley/bwc/lib/index.scss";
 @import "@bentley/ui-core/lib/colors";
 @import "_customTheme";
 
 .nzdemo-pages-zones {
-  @include bwc-font-family;
-  @include bwc-text;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
 
   .nzdemo-success {
     color: $accent-base;

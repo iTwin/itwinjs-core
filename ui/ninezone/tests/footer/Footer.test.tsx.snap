@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Footer /> renders correctly 1`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;

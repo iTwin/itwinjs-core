@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Toolbar /> renders correctly 1`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Toolbar /> renders with expandsTo 1`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Toolbar /> renders with panelAlignment 1`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;

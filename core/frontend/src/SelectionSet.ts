@@ -43,7 +43,7 @@ export class SelectionSet {
   public get size() { return this.elements.size; }
 
   /** Check whether there are any selected elements. */
-  public isActive() { return this.size !== 0; }
+  public get isActive() { return this.size !== 0; }
 
   /** Return true if elemId is in this SelectionSet.
    * @see [[isSelected]]
@@ -59,7 +59,7 @@ export class SelectionSet {
    * @note raises the [[onChanged]] event with [[SelectEventType.Clear]].
    */
   public emptyAll(): void {
-    if (!this.isActive())
+    if (!this.isActive)
       return;
     this.elements.clear();
     this.sendChangedEvent(SelectEventType.Clear);

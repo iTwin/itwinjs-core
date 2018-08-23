@@ -5,7 +5,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-
 import UiCore from "../UiCore";
 
 import "./SearchBox.scss";
@@ -26,8 +25,6 @@ export interface SearchBoxProps {
   onEscPressed?: () => void;
   /** listens for onClick event for Clear (x) icon */
   onClear?: () => void;
-  /** width of SearchBox, measured in em */
-  size?: number;
 }
 
 /** @hidden */
@@ -41,10 +38,6 @@ export interface SearchBoxState {
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _inputElement: HTMLInputElement | null = null;
   private _timeoutId: number = 0;
-
-  public static defaultProps: Partial<SearchBoxProps> = {
-    size: 12,
-  };
 
   /** @hidden */
   public readonly state: Readonly<SearchBoxState> = { value: this.props.initialValue || "" };
@@ -60,29 +53,24 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         "icon-close": !emptyString,
       },
     );
-    const sizeStyle = {
-      width: this.props.size ? this.props.size.toString() + "em" : "12em",
-    };
     return (
-      <div className={"searchbox"} style={sizeStyle}>
+      <div className={"searchbox"}>
         <input
-          className={"searchbox-input"}
           ref={(el) => { this._inputElement = el; }}
-          onChange={this.trackChange}
-          onKeyUp={this.trackChange}
-          onPaste={this.trackChange}
-          onCut={this.trackChange}
+          onChange={this._trackChange}
+          onKeyUp={this._trackChange}
+          onPaste={this._trackChange}
+          onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
-          style={sizeStyle}
         ></input>
-        <div
-          className={iconClassName}
-          onClick={this.handleIconClick}></div>
+        <div onClick={this._handleIconClick}>
+          <span className={iconClassName} />
+        </div>
       </div>
     );
   }
 
-  private trackChange = (event?: any): void => {
+  private _trackChange = (event?: any): void => {
     let value = "";
 
     if (this._inputElement)
@@ -94,7 +82,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       };
     }, () => {
       if (this.props.valueChangedDelay) {
-        this.unsetTimeout();
+        this._unsetTimeout();
         this._timeoutId = window.setTimeout(() => { this.props.onValueChanged(this.state.value); }, this.props.valueChangedDelay);
       } else {
         this.props.onValueChanged(this.state.value);
@@ -112,17 +100,17 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     }
   }
 
-  private handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
+  private _handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
     if (this._inputElement) {
       const clear = this.state.value !== "";
       this._inputElement.value = "";
       if (clear && this.props.onClear) this.props.onClear();
       this._inputElement.focus();
     }
-    this.trackChange();
+    this._trackChange();
   }
 
-  private unsetTimeout = (): void => {
+  private _unsetTimeout = (): void => {
     if (this._timeoutId) {
       window.clearTimeout(this._timeoutId);
       this._timeoutId = 0;
@@ -130,7 +118,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   }
 
   public componentWillUnmount() {
-    this.unsetTimeout();
+    this._unsetTimeout();
   }
 }
 

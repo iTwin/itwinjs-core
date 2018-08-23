@@ -18,12 +18,12 @@ class ProjectInfoImpl implements ProjectInfo {
  * Provides default [[ProjectServices]]
  */
 export class DefaultProjectServices implements ProjectServices {
-  private connectClient: ConnectClient;
+  private _connectClient: ConnectClient;
   public deploymentEnv: DeploymentEnv;
 
   constructor(deploymentEnvironment: DeploymentEnv) {
     this.deploymentEnv = deploymentEnvironment;
-    this.connectClient = new ConnectClient(deploymentEnvironment);
+    this._connectClient = new ConnectClient(deploymentEnvironment);
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {
@@ -33,18 +33,19 @@ export class DefaultProjectServices implements ProjectServices {
   }
 
   /** Get projects accessible to the user based on various scopes/criteria */
-  public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number): Promise<ProjectInfo[]> {
+  public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
 
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
       $top: top,
       $skip: skip,
+      $filter: filter,
     };
 
     let projectList: Project[];
     try {
       if (projectScope === ProjectScope.Invited) {
-        projectList = await this.connectClient.getInvitedProjects(accessToken, queryOptions);
+        projectList = await this._connectClient.getInvitedProjects(accessToken, queryOptions);
       }
 
       if (projectScope === ProjectScope.Favorites) {
@@ -53,7 +54,7 @@ export class DefaultProjectServices implements ProjectServices {
         queryOptions.isMRU = true;
       }
 
-      projectList = await this.connectClient.getProjects(accessToken, queryOptions);
+      projectList = await this._connectClient.getProjects(accessToken, queryOptions);
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);

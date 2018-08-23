@@ -2,11 +2,11 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiFramework } from "@src/index";
+import { UiFramework } from "../src/index";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
-import { DeepReadonly, ActionsUnion, createAction } from "@src/utils/redux-ts";
+import { DeepReadonly, ActionsUnion, createAction } from "../src/utils/redux-ts";
 
 export interface SampleAppState {
   placeHolder?: boolean;

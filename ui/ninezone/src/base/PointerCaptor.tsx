@@ -30,13 +30,13 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
   };
 
   public componentDidMount() {
-    document.addEventListener("mouseup", this.handleDocumentMouseUp);
-    document.addEventListener("mousemove", this.handleDocumentMouseMove);
+    document.addEventListener("mouseup", this._handleDocumentMouseUp);
+    document.addEventListener("mousemove", this._handleDocumentMouseMove);
   }
 
   public componentWillUnmount() {
-    document.removeEventListener("mouseup", this.handleDocumentMouseUp);
-    document.removeEventListener("mousemove", this.handleDocumentMouseMove);
+    document.removeEventListener("mouseup", this._handleDocumentMouseUp);
+    document.removeEventListener("mousemove", this._handleDocumentMouseMove);
   }
 
   public render() {
@@ -48,7 +48,7 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
     return (
       <div
         className={className}
-        onMouseDown={this.handleMouseDown}
+        onMouseDown={this._handleMouseDown}
       >
         <div className="nz-overlay" />
         {this.props.children}
@@ -64,12 +64,12 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
     });
   }
 
-  private handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  private _handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     this.setIsMouseDown(true);
     this.props.onMouseDown && this.props.onMouseDown(e.nativeEvent);
   }
 
-  private handleDocumentMouseUp = (e: MouseEvent) => {
+  private _handleDocumentMouseUp = (e: MouseEvent) => {
     if (!this.state.isMouseDown)
       return;
 
@@ -77,7 +77,7 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
     this.props.onMouseUp && this.props.onMouseUp(e);
   }
 
-  private handleDocumentMouseMove = (e: MouseEvent) => {
+  private _handleDocumentMouseMove = (e: MouseEvent) => {
     if (!this.state.isMouseDown)
       return;
 

@@ -21,14 +21,14 @@ describe("Point2d", () => {
     const pointB = Point2d.create(pointA.x, pointA.x + 0.01);
     ck.testFalse(Point2d.create(epsilon, epsilon).isAlmostEqualMetric(pointB), "is almost zero (epsilon)");
 
-    ck.testFalse(pointA.isAlmostZero(), "is almost zero");
+    ck.testFalse(pointA.isAlmostZero, "is almost zero");
 
     ck.testFalse(alwaysZero.isExactEqual(pointA));
     pointA.setZero();
     ck.testPoint2d(alwaysZero, pointA);
 
-    ck.testTrue(alwaysZero.isAlmostZero(), "is almost zero");
-    ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostZero(), "is almost zero (epsilon)");
+    ck.testTrue(alwaysZero.isAlmostZero, "is almost zero");
+    ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostZero, "is almost zero (epsilon)");
     ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
     ck.testPoint2d(alwaysZero, alwaysZeroA);
 
@@ -223,8 +223,8 @@ describe("Point2d", () => {
     const fTangent = 1.8;
     const fPerp = 0.1;
     const pointD = pointA.addForwardLeft(fTangent, fPerp, vectorU);
-    const gTangent = pointD.fractionOfProjectionToLine (pointA, pointB);
-    ck.testCoordinate (fTangent, gTangent, "proejct to 2d line");
+    const gTangent = pointD.fractionOfProjectionToLine(pointA, pointB);
+    ck.testCoordinate(fTangent, gTangent, "proejct to 2d line");
     ck.checkpoint("Point2d.Misc");
     expect(ck.getNumErrors()).equals(0);
   });

@@ -4,8 +4,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import ExpansionToggle from "@src/tree/ExpansionToggle";
-import Node from "@src/tree/Node";
+import ExpansionToggle from "../../src/tree/ExpansionToggle";
+import Node from "../../src/tree/Node";
 
 describe("<Node />", () => {
   it("should render", () => {

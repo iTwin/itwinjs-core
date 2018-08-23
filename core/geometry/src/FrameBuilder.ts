@@ -8,7 +8,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry, AxisOrder, AxisScaleSelect } from "./Geometry";
 import { Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix} from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 import { Range3d } from "./Range";
 import { CurvePrimitive } from "./curve/CurvePrimitive";
 import { CurveCollection } from "./curve/CurveChain";
@@ -35,12 +35,12 @@ import { Point3dArray } from "./PointHelpers";
  * **  this will use the third vector to select right or left handed frame.
  */
 export class FrameBuilder {
-  private origin: undefined | Point3d;
-  private vector0: undefined | Vector3d;
-  private vector1: undefined | Vector3d;
-  private vector2: undefined | Vector3d;
+  private _origin: undefined | Point3d;
+  private _vector0: undefined | Vector3d;
+  private _vector1: undefined | Vector3d;
+  private _vector2: undefined | Vector3d;
 
-  public clear() { this.origin = undefined; this.vector0 = undefined; this.vector1 = undefined; this.vector2 = undefined; }
+  public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
   constructor() { this.clear(); }
   /** Try to assemble the data into a nonsingular transform.
    *
@@ -48,23 +48,23 @@ export class FrameBuilder {
    * * if allowLeftHanded is true, the z vector of the right handed system can be flipped to agree with vector2 direction.
    */
   public getValidatedFrame(allowLeftHanded: boolean = false): Transform | undefined {
-    if (this.origin && this.vector0 && this.vector1) {
+    if (this._origin && this._vector0 && this._vector1) {
       if (!allowLeftHanded) {
-        const matrix = RotMatrix.createRigidFromColumns(this.vector0, this.vector1, AxisOrder.XYZ);
+        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
         if (matrix)
-          return Transform.createOriginAndMatrix(this.origin, matrix);
+          return Transform.createOriginAndMatrix(this._origin, matrix);
         // uh oh -- vector1 was not really independent.  clear everything after vector0.
-        this.vector1 = this.vector2 = undefined;
-      } else if (this.vector2) {
-        const matrix = RotMatrix.createRigidFromColumns(this.vector0, this.vector1, AxisOrder.XYZ);
+        this._vector1 = this._vector2 = undefined;
+      } else if (this._vector2) {
+        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
         if (matrix) {
-          if (this.vector0.tripleProduct(this.vector1, this.vector2) < 0)
+          if (this._vector0.tripleProduct(this._vector1, this._vector2) < 0)
             matrix.scaleColumns(1.0, 1.0, -1.0);
-          return Transform.createOriginAndMatrix(this.origin, matrix);
+          return Transform.createOriginAndMatrix(this._origin, matrix);
         }
         // uh oh again -- clear vector1 and vector2, reannounce vector2 as possible vector1??
-        const vector2 = this.vector2;
-        this.vector1 = this.vector2 = undefined;
+        const vector2 = this._vector2;
+        this._vector1 = this._vector2 = undefined;
         this.announceVector(vector2);
       }
     }
@@ -72,51 +72,52 @@ export class FrameBuilder {
   }
   // If vector0 is known but vector1 is not, make vector1 the cross of the upvector and vector0
   public applyDefaultUpVector(vector?: Vector3d) {
-    if (vector && this.vector0 && !this.vector1 && !vector.isParallelTo(this.vector0)) {
-      this.vector1 = vector.crossProduct(this.vector0);
+    if (vector && this._vector0 && !this._vector1 && !vector.isParallelTo(this._vector0)) {
+      this._vector1 = vector.crossProduct(this._vector0);
     }
   }
-  public hasOrigin(): boolean { return this.origin !== undefined; }
+  public get hasOrigin(): boolean { return this._origin !== undefined; }
   /** Return the number of vectors saved.   Because the save process checkes numerics, this should be the rank of the system.
    */
   public savedVectorCount(): number {
-    if (!this.vector0)
+    if (!this._vector0)
       return 0;
-    if (!this.vector1)
+    if (!this._vector1)
       return 1;
-    if (!this.vector2)
+    if (!this._vector2)
       return 2;
     return 3;
   }
   /** announce a new point.  If this point is different from the origin, also announce the vector from the origin.*/
   public announcePoint(point: Point3d): number {
-    if (!this.origin) {
-      this.origin = point.clone();
+    if (!this._origin) {
+      this._origin = point.clone();
       return this.savedVectorCount();
     }
     // the new point may provide an additional vector
-    if (this.origin.isAlmostEqual(point))
+    if (this._origin.isAlmostEqual(point))
       return this.savedVectorCount();
-    return this.announceVector(this.origin.vectorTo(point));
+    return this.announceVector(this._origin.vectorTo(point));
   }
   public announceVector(vector: Vector3d): number {
-    if (vector.isAlmostZero())
+    if (vector.isAlmostZero)
       return this.savedVectorCount();
 
-    if (!this.vector0) { this.vector0 = vector; return 1; }
+    if (!this._vector0) { this._vector0 = vector; return 1; }
 
-    if (!this.vector1) {
-      if (!vector.isParallelTo(this.vector0)) { this.vector1 = vector; return 2; }
+    if (!this._vector1) {
+      if (!vector.isParallelTo(this._vector0)) { this._vector1 = vector; return 2; }
       return 1;
     }
 
     // vector0 and vector1 are independent.
-    if (!this.vector2) {
-      const unitPerpendicular = this.vector0.unitCrossProduct(this.vector1);
+    if (!this._vector2) {
+      const unitPerpendicular = this._vector0.unitCrossProduct(this._vector1);
       if (unitPerpendicular && !Geometry.isSameCoordinate(0, unitPerpendicular.dotProduct(vector))) {
-        this.vector2 = vector;
+        this._vector2 = vector;
         return 3;
       }
+      return 2;
     }
     // fall through if prior vectors are all there -- no need for the new one.
     return 3;
@@ -213,7 +214,7 @@ export class FrameBuilder {
       builder.announce(data);
       const localToWorld = builder.getValidatedFrame(false);
       if (localToWorld !== undefined)
-      return localToWorld;
+        return localToWorld;
     }
     return undefined;
   }
@@ -232,7 +233,7 @@ export class FrameBuilder {
       Point3dArray.vectorToMostDistantPoint(points, points[0], vector01);
       const vector02 = Vector3d.create();
       Point3dArray.vectorToPointWithMaxCrossProductMangitude(points, origin, vector01, vector02);
-      const matrix = RotMatrix.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
+      const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
       if (matrix)
         return Transform.createRefs(origin, matrix);
     }
@@ -254,7 +255,7 @@ export class FrameBuilder {
     fractionY: number = 0,
     fractionZ: number = 0,
     defaultAxisLength: number = 1.0): Transform {
-    if (range.isNull())
+    if (range.isNull)
       return Transform.createIdentity();
     let a = 1.0;
     let b = 1.0;
@@ -266,7 +267,7 @@ export class FrameBuilder {
       b = Geometry.correctSmallMetricDistance(range.yLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionY, 0, 1);
       c = Geometry.correctSmallMetricDistance(range.zLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionZ, 0, 1);
     }
-    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), RotMatrix.createScale(a, b, c));
+    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), Matrix3d.createScale(a, b, c));
   }
 
 }

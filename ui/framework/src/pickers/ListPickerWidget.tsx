@@ -2,23 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-// import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
-// import Title from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Title";
 import Panel from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Panel";
 import Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-// import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
 import WithContainInViewport from "@bentley/ui-ninezone/lib/base/WithContainInViewport";
-// import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import * as classnames from "classnames";
 
 import "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 
 import { UiFramework } from "../UiFramework";
-
-// tslint:disable-next-line:variable-name
-// const ContainedGroup = WithContainInViewport(Group);
 
 export enum ListItemType {
   Item = 0,
@@ -128,13 +121,13 @@ export class ListPickerWidgetBase extends React.Component<ListPickerWidgetProps,
     };
   }
 
-  private toggleIsExpanded = () => {
+  private _toggleIsExpanded = () => {
     const expand = !this.state.expanded;
 
     // Minimize any other list picker that has been opened
     // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
     if (expand) {
-      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.toggleIsExpanded())
+      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker._toggleIsExpanded())
         lastOpenedPicker!.minimize();
 
       lastOpenedPicker = this;
@@ -217,7 +210,6 @@ export class ListPickerWidgetBase extends React.Component<ListPickerWidgetProps,
     return (
       <div
         title={this.props.title}
-        // noVerticalContainment={true}
         children={
           <Column>
             {this.props.items.map(listItemToElement)}

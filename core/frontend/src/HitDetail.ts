@@ -8,6 +8,7 @@ import { Sprite, IconSprites } from "./Sprites";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorateContext } from "./ViewContext";
+import { GraphicType } from "./render/GraphicBuilder";
 
 export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
@@ -97,9 +98,6 @@ export class HitDetail {
    */
   public getPoint(): Point3d { return this.hitPoint; }
 
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return false; }
-
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
@@ -115,9 +113,8 @@ export class HitDetail {
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
-    if (!this.isElementHit) {
-      return Promise.resolve(""); // ###TODO: Ask PickableDecoration to supply tooltip...
-    }
+    if (!this.isElementHit)
+      return IModelApp.viewManager.getDecorationToolTip(this);
 
     const msg: string[] = await this.viewport.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
@@ -161,13 +158,11 @@ export class SnapDetail extends HitDetail {
   /** Returns `HitDetailType.Snap` */
   public getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot() ? this.snapPoint : super.getPoint(); }
-  /** Type guard for SnapDetail. */
-  public isSnapDetail(): this is SnapDetail { return true; }
+  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
   /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
-  public isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
-  public isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
 
@@ -217,8 +212,8 @@ export class SnapDetail extends HitDetail {
 
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
-      const graphic = context.createWorldOverlay();
-      graphic.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
 
       switch (this.snapMode) {
         case SnapMode.Center:
@@ -237,8 +232,8 @@ export class SnapDetail extends HitDetail {
               if (segmentNo >= nSegments)
                 segmentNo = nSegments - 1;
               const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
-              graphic.addLineString(points);
-              context.addWorldOverlay(graphic.finish());
+              builder.addLineString(points);
+              context.addDecorationFromBuilder(builder);
               return;
             }
           }
@@ -246,8 +241,8 @@ export class SnapDetail extends HitDetail {
         }
       }
 
-      graphic.addPath(Path.create(this.primitive));
-      context.addWorldOverlay(graphic.finish());
+      builder.addPath(Path.create(this.primitive));
+      context.addDecorationFromBuilder(builder);
       return;
     }
     super.draw(context);

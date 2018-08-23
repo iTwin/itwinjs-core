@@ -7,7 +7,7 @@
 import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Matrix4d } from "../numerics/Geometry4d";
 import { Geometry, Angle } from "../Geometry";
 import { PolygonOps } from "../PointHelpers";
@@ -294,9 +294,9 @@ export class ConvexClipPlaneSet implements Clipper {
     return false;
   }
 
-  private static sClipArcFractionArray = new GrowableFloat64Array();
+  private static _clipArcFractionArray = new GrowableFloat64Array();
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ConvexClipPlaneSet.sClipArcFractionArray;
+    const breaks = ConvexClipPlaneSet._clipArcFractionArray;
     breaks.clear();
     for (const clipPlane of this.planes) {
       clipPlane.appendIntersectionRadians(arc, breaks);
@@ -472,7 +472,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * Note: If given a range for output, this will overwrite it, NOT extend it.
    */
   public getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined {
-    const idMatrix: RotMatrix = RotMatrix.createIdentity();
+    const idMatrix: Matrix3d = Matrix3d.createIdentity();
     const bigRange: Range3d = Range3d.createXYZXYZ(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
     const range = bigRange.clone(result);

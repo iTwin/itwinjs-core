@@ -6,10 +6,12 @@
 import * as _ from "lodash";
 import * as React from "react";
 import * as ReactDataGrid from "react-data-grid";
-import { DisposableList } from "@bentley/bentleyjs-core";
+import { DisposableList, Guid } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { TableDataProvider, ColumnDescription, RowItem } from "../TableDataProvider";
+import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments } from "../../dragdrop";
+import { DragDropRow } from "./DragDropRowRenderer";
 import "./Grid.scss";
 
 /** Props for the Table React component */
@@ -25,28 +27,39 @@ export interface TableProps {
   onRowsSelected?: (rows: RowItem[], replace: boolean) => boolean;
   /** Callback for when rows are deselected */
   onRowsDeselected?: (rows: RowItem[]) => boolean;
+
+  canDropOn?: boolean;
+  onDropTargetDrop?: (data: DropTargetArguments) => DropTargetArguments;
+  onDropTargetOver?: (data: DropTargetArguments) => void;
+  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[];
 }
 
-export interface TableState {
+interface TableState {
   selectedRowKeys: string[];
   columns: ReactDataGridColumn[];
   rows: TableRow[];
   rowsCount: number;
 }
 
-export interface ReactDataGridColumn {
+interface ReactDataGridColumn {
   key: string;
   name: string;
+  formatter?: any;
+  width?: number;
   resizable?: boolean;
   sortable?: boolean;
 }
 
-export interface ReactDataGridRow {
+interface ReactDataGridRow {
   __key: string;
   [columnKey: string]: string | undefined;
 }
 
-export interface TableRow {
+interface TableRow {
   row: ReactDataGridRow;
   item: RowItem;
 }
@@ -71,7 +84,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
-
+  private _rowLoadGuid = new Guid(true);
   public readonly state: Readonly<TableState> = initialState;
 
   constructor(props: TableProps, context?: any) {
@@ -80,8 +93,8 @@ export class Table extends React.Component<TableProps, TableState> {
     if (props.pageAmount)
       this._pageAmount = props.pageAmount;
 
-    this._disposableListeners.add(props.dataProvider.onColumnsChanged.addListener(this.onColumnsChanged));
-    this._disposableListeners.add(props.dataProvider.onRowsChanged.addListener(this.onRowsChanged));
+    this._disposableListeners.add(props.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
+    this._disposableListeners.add(props.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
   }
 
   public componentWillReceiveProps(_newProps: TableProps) {
@@ -111,7 +124,7 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   }
 
-  private onColumnsChanged = async () => {
+  private _onColumnsChanged = async () => {
     await this.updateColumns();
   }
 
@@ -120,19 +133,20 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    this.rowGetterAsync.cache.clear();
+    this._rowGetterAsync.cache.clear();
     this.setState((prev: TableState) => ({
       ...prev,
       rowsCount,
     }));
-    this.rowGetterAsync(0);
+    await this._rowGetterAsync(0);
   }
 
-  private onRowsChanged = async () => {
+  private _onRowsChanged = async () => {
     await this.updateRows();
   }
 
-  private async update() {
+  /** @hidden */
+  public async update() {
     await this.updateColumns();
     await this.updateRows();
   }
@@ -160,6 +174,10 @@ export class Table extends React.Component<TableProps, TableState> {
     return {
       key: columnDescription.key,
       name: label,
+      ...(columnDescription.icon ? {
+        width: 32,
+        formatter: IconCell,
+      } : {}),
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
     };
@@ -188,20 +206,20 @@ export class Table extends React.Component<TableProps, TableState> {
     return row ? row.item : undefined;
   }
 
-  private rowGetter = (i: number): ReactDataGridRow => {
+  private _rowGetter = (i: number): ReactDataGridRow => {
     if (this.state.rows[i])
       return this.state.rows[i].row;
 
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this.rowGetterAsync(i - (i % this._pageAmount));
+    this._rowGetterAsync(i - (i % this._pageAmount));
 
     // Return placeholder object
     return { __key: "" };
   }
 
-  private rowGetterAsync = _.memoize(async (index: number): Promise<void> => {
+  private _rowGetterAsync = _.memoize(async (index: number): Promise<void> => {
     if (index < 0)
       return;
 
@@ -221,21 +239,36 @@ export class Table extends React.Component<TableProps, TableState> {
   });
 
   private async loadRows(beginIndex: number, endIndex: number): Promise<RowsLoadResult> {
-    const result: RowsLoadResult = {
-      rows: [],
-      selectedKeys: [],
-    };
+    this._rowLoadGuid = new Guid(true);
+    const currentSelectedRowGuid = new Guid(this._rowLoadGuid);
+
+    const promises = new Array<Promise<TableRow>>();
     for (let i = beginIndex; i < endIndex; ++i) {
-      const rowData = await this.props.dataProvider.getRow(i);
-      const gridRow = await this.rowItemToReactGridRow(rowData);
-      result.rows.push({ row: gridRow, item: rowData });
-      if (this.props.isRowSelected && this.props.isRowSelected(rowData))
-        result.selectedKeys.push(gridRow.__key);
+      promises.push(
+        this.props.dataProvider.getRow(i).then((rowData) =>
+          this.rowItemToReactGridRow(rowData).then((row) => ({ item: rowData, row })),
+        ));
     }
-    return result;
+
+    let rows: TableRow[] = [];
+    const selectedKeys: string[] = [];
+
+    try {
+      rows = await Promise.all(promises);
+    } catch { }
+
+    // Check if another loadRows got called while this one was still going
+    if (currentSelectedRowGuid.equals(this._rowLoadGuid)) {
+      rows.forEach((row) => {
+        if (this.props.isRowSelected && this.props.isRowSelected(row.item))
+          selectedKeys.push(row.row.__key);
+      });
+    }
+
+    return { rows, selectedKeys };
   }
 
-  private handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
+  private _handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
     let directionEnum: SortDirection;
 
     switch (sortDirection) {
@@ -289,25 +322,25 @@ export class Table extends React.Component<TableProps, TableState> {
     this.updateRows();
   }
 
-  private onRowClick = (rowIdx: number, row: ReactDataGridRow) => {
-    if (this.isRowSelected(row.__key))
-      this.onRowsDeselected([{ rowIdx, row }]);
+  private _onRowClick = (rowIdx: number, row: ReactDataGridRow) => {
+    if (this._isRowSelected(row.__key))
+      this._onRowsDeselected([{ rowIdx, row }]);
     else
-      this.onRowsSelected([{ rowIdx, row }]);
+      this._onRowsSelected([{ rowIdx, row }]);
   }
 
-  private isRowSelected = (key: string): boolean => {
+  private _isRowSelected = (key: string): boolean => {
     return -1 !== this.state.selectedRowKeys.indexOf(key);
   }
 
-  private getRowItems = (rows: ReactDataGrid.SelectionParams[]): RowItem[] => {
+  private _getRowItems = (rows: ReactDataGrid.SelectionParams[]): RowItem[] => {
     return rows
       .map((r) => this.getRowItem(r.rowIdx))
       .filter((r) => (undefined !== r)) as RowItem[];
   }
 
-  private onRowsSelected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsSelected && !this.props.onRowsSelected(this.getRowItems(rows), true))
+  private _onRowsSelected = (rows: ReactDataGrid.SelectionParams[]): void => {
+    if (this.props.onRowsSelected && !this.props.onRowsSelected(this._getRowItems(rows), true))
       return;
 
     // wip: add or replace? for now just replace...
@@ -317,8 +350,8 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ selectedRowKeys });
   }
 
-  private onRowsDeselected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsDeselected && !this.props.onRowsDeselected(this.getRowItems(rows)))
+  private _onRowsDeselected = (rows: ReactDataGrid.SelectionParams[]): void => {
+    if (this.props.onRowsDeselected && !this.props.onRowsDeselected(this._getRowItems(rows)))
       return;
 
     const keepSelected = (key: string): boolean => !rows.some((r) => ((r.row as ReactDataGridRow).__key === key));
@@ -327,29 +360,160 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public render() {
-    return (
-      <div className="react-data-grid-wrapper">
-        <ReactDataGrid
-          columns={this.state.columns}
-          rowGetter={this.rowGetter}
-          rowsCount={this.state.rowsCount}
-          enableCellSelect={false}
-          minHeight={500}
-          headerRowHeight={25}
-          rowHeight={25}
-          rowSelection={{
-            showCheckbox: false,
-            enableShiftSelect: true,
-            onRowsSelected: this.onRowsSelected,
-            onRowsDeselected: this.onRowsDeselected,
-            selectBy: {
-              keys: { rowKey: "__key", values: this.state.selectedRowKeys },
-            },
+    const {
+      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
+      onDragSourceBegin, onDragSourceEnd,
+    } = this.props;
+    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
+      onDragSourceBegin || onDragSourceEnd) {
+      // tslint:disable-next-line:variable-name
+      const DragDropWrapper =
+        withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
+          public render(): React.ReactNode {
+            const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
+            return (<div className="react-data-grid-wrapper" {...props} />);
+          }
+        });
+      return (
+        <DragDropWrapper
+          dropStyle={{
+            height: "100%",
           }}
-          onRowClick={(index, row) => this.onRowClick(index, row as ReactDataGridRow)}
-          onGridSort={this.handleGridSort}
-        />
-      </div>
-    );
+          onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+            args.dropLocation = this.props.dataProvider;
+            if (onDropTargetDrop) return onDropTargetDrop(args);
+            return args;
+          }}
+          onDropTargetOver={(args: DropTargetArguments) => {
+            args.dropLocation = this.props.dataProvider;
+            if (onDropTargetOver) onDropTargetOver(args);
+          }}
+          canDropTargetDrop={(args: DropTargetArguments) => {
+            args.dropLocation = this.props.dataProvider;
+            if (canDropTargetDrop) return canDropTargetDrop(args);
+            return true;
+          }}
+          objectTypes={this.props.objectTypes}
+        >
+          <ReactDataGrid
+            columns={this.state.columns}
+            rowGetter={this._rowGetter}
+            rowsCount={this.state.rowsCount}
+            enableCellSelect={true}
+            minHeight={500}
+            headerRowHeight={25}
+            rowHeight={25}
+            rowRenderer={
+              <DragDropRow
+                canDropOn={this.props.canDropOn}
+                onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+                  args.dropLocation = this.props.dataProvider;
+                  if (onDropTargetDrop) return onDropTargetDrop(args);
+                  return args;
+                }}
+                onDropTargetOver={(args: DropTargetArguments) => {
+                  args.dropLocation = this.props.dataProvider;
+                  if (onDropTargetOver) onDropTargetOver(args);
+                }}
+                canDropTargetDrop={(args: DropTargetArguments) => {
+                  args.dropLocation = this.props.dataProvider;
+                  if (canDropTargetDrop) return canDropTargetDrop(args);
+                  return true;
+                }}
+                onDragSourceBegin={(args: DragSourceArguments) => {
+                  args.parentObject = this.props.dataProvider;
+                  if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
+                    const { row } = args;
+                    if (row < this.state.rowsCount && this.state.rows[row]) {
+                      const rowItem = this.state.rows[row];
+                      if (rowItem !== undefined && rowItem.item !== undefined) {
+                        args.dataObject = rowItem.item.extendedData;
+                        args.dataObject.id = rowItem.item.key;
+                        args.dataObject.parentId = this.props.dataProvider;
+                      }
+                    }
+                  }
+                  if (onDragSourceBegin) return onDragSourceBegin(args);
+                  return args;
+                }}
+                onDragSourceEnd={(args: DragSourceArguments) => {
+                  args.parentObject = this.props.dataProvider;
+                  if (onDragSourceEnd) onDragSourceEnd(args);
+                }}
+                objectType={(data: any) => {
+                  if (this.props.objectType) {
+                    if (typeof this.props.objectType === "function") {
+                      if (data) {
+                        const { row } = data;
+                        if (row >= 0 && row < this.state.rows.length) {
+                          const rowItem = this.state.rows[row];
+                          if (rowItem !== undefined && rowItem.item !== undefined) {
+                            const d = rowItem.item.extendedData || {};
+                            d.id = rowItem.item.key;
+                            d.parentId = this.props.dataProvider;
+                            return this.props.objectType(d);
+                          }
+                        }
+                      }
+                    } else {
+                      return this.props.objectType;
+                    }
+                  }
+                  return "";
+                }}
+                objectTypes={this.props.objectTypes}
+              />
+            }
+            rowSelection={{
+              showCheckbox: false,
+              enableShiftSelect: true,
+              onRowsSelected: this._onRowsSelected,
+              onRowsDeselected: this._onRowsDeselected,
+              selectBy: {
+                keys: { rowKey: "__key", values: this.state.selectedRowKeys },
+              },
+            }}
+            onRowClick={(index, row) => this._onRowClick(index, row as ReactDataGridRow)}
+            onGridSort={this._handleGridSort}
+          />
+        </DragDropWrapper>
+      );
+    } else
+      return (
+          <ReactDataGrid
+            columns={this.state.columns}
+            rowGetter={this._rowGetter}
+            rowsCount={this.state.rowsCount}
+            enableCellSelect={true}
+            minHeight={500}
+            headerRowHeight={25}
+            rowHeight={25}
+            rowSelection={{
+              showCheckbox: false,
+              enableShiftSelect: true,
+              onRowsSelected: this._onRowsSelected,
+              onRowsDeselected: this._onRowsDeselected,
+              selectBy: {
+                keys: { rowKey: "__key", values: this.state.selectedRowKeys },
+              },
+            }}
+            onRowClick={(index, row) => this._onRowClick(index, row as ReactDataGridRow)}
+            onGridSort={this._handleGridSort}
+          />
+      );
+  }
+}
+
+export interface IconCellProps {
+  /** Icon name */
+  value: string;
+}
+
+/**
+ * Formatter for Bentley icons.
+ */
+export class IconCell extends React.Component<IconCellProps> {
+  public render() {
+    return <div className={`icon ${this.props.value}`} />;
   }
 }

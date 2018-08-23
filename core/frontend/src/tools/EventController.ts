@@ -14,22 +14,22 @@ import { IModelApp } from "../IModelApp";
  * ViewManager.dropViewport.
  */
 export class EventController {
-  private readonly removals: VoidFunction[] = [];
+  private readonly _removals: VoidFunction[] = [];
 
   constructor(public vp: Viewport) {
     const element = vp.canvas;
     if (element === undefined)
       return;
 
-    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element, true);
+    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 
     element.oncontextmenu = () => false;
     element.onselectstart = () => false;
   }
 
   public destroy() {
-    this.removals.forEach((remove) => remove());
-    this.removals.length = 0;
+    this._removals.forEach((remove) => remove());
+    this._removals.length = 0;
   }
 
   /**
@@ -37,17 +37,14 @@ export class EventController {
    * Records the listener in the [[removals]] member so they are removed when this EventController is destroyed.
    * @param domType An array of DOM event types to pass to element.addEventListener
    * @param element The HTML element to which the listeners are added
-   * @param preventDefault If true, the listener will call `preventDefault` when the event is received.
    */
-  private addDomListeners(domType: string[], element: HTMLElement, preventDefault: boolean) {
+  private addDomListeners(domType: string[], element: HTMLElement) {
     const vp = this.vp;
     const { toolAdmin } = IModelApp;
-    const listener = preventDefault ?
-      (ev: Event) => { ev.preventDefault(); toolAdmin.addEvent(ev, vp); } :
-      (ev: Event) => toolAdmin.addEvent(ev, vp);
+    const listener = (ev: Event) => { ev.preventDefault(); toolAdmin.addEvent(ev, vp); };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
-      this.removals.push(() => { element.removeEventListener(type, listener, false); });
+      this._removals.push(() => { element.removeEventListener(type, listener, false); });
     });
   }
 }

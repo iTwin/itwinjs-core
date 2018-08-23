@@ -46,7 +46,7 @@ export default class MessageCenterIndicator extends React.Component<MessageCente
           </div>
           <div
             className="nz-balloon"
-            onClick={this.handleOnIndicatorClick}
+            onClick={this._handleOnIndicatorClick}
           >
             <div className="nz-arrow" />
             <div className="nz-content">
@@ -58,7 +58,7 @@ export default class MessageCenterIndicator extends React.Component<MessageCente
     );
   }
 
-  private handleOnIndicatorClick = () => {
+  private _handleOnIndicatorClick = () => {
     this.props.onClick && this.props.onClick();
   }
 }

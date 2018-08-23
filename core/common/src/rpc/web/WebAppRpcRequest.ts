@@ -16,10 +16,10 @@ export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head
 
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
-  private request: RequestInit = {};
-  private responseText: string = "";
-  private responseBytes: Uint8Array = emptyBuffer;
-  private connectionResponse: Response | undefined;
+  private _request: RequestInit = {};
+  private _responseText: string = "";
+  private _responseBytes: Uint8Array = emptyBuffer;
+  private _connectionResponse: Response | undefined;
 
   /** The underlying HTTP connection object. */
   public connection: Promise<Response> | undefined;
@@ -69,34 +69,34 @@ export class WebAppRpcRequest extends RpcRequest {
     if (this._loading)
       throw new IModelError(BentleyStatus.ERROR, `Loading in progress.`);
 
-    this.request.method = this.method;
-    this.request.headers = {};
+    this._request.method = this.method;
+    this._request.headers = {};
   }
 
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
-    const headers = this.request.headers as { [key: string]: string };
+    const headers = this._request.headers as { [key: string]: string };
     headers[name] = value;
   }
 
   /** Sends the request. */
   protected send(): void {
     this._loading = true;
-    this.request.body = this.protocol.serialize(this).parameters;
-    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
-    this.connection = fetch(new Request(this.path, this.request));
+    this._request.body = this.protocol.serialize(this).parameters;
+    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, typeof (this._request.body) === "string" ? WEB_RPC_CONSTANTS.TEXT : WEB_RPC_CONSTANTS.BINARY);
+    this.connection = fetch(new Request(this.path, this._request));
 
     this.connection.then(async (response) => {
       if (!this._loading)
         return;
 
-      this.connectionResponse = response;
+      this._connectionResponse = response;
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
 
       if (this.getResponseType() === RpcResponseType.Text) {
-        this.responseText = await response.text();
+        this._responseText = await response.text();
       } else if (this.getResponseType() === RpcResponseType.Binary) {
-        this.responseBytes = new Uint8Array(await response.arrayBuffer());
+        this._responseBytes = new Uint8Array(await response.arrayBuffer());
       } else {
         throw new IModelError(BentleyStatus.ERROR, "Unknown response type");
       }
@@ -116,25 +116,25 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Supplies response status code. */
   public getResponseStatusCode(): number {
-    return this.connectionResponse ? this.connectionResponse.status : 0;
+    return this._connectionResponse ? this._connectionResponse.status : 0;
   }
 
   /** Supplies response text. */
   public getResponseText(): string {
-    return this.responseText;
+    return this._responseText;
   }
 
   /** Supplies response bytes. */
   public getResponseBytes(): Uint8Array {
-    return this.responseBytes;
+    return this._responseBytes;
   }
 
   /** Supplies response type. */
   public getResponseType(): RpcResponseType {
-    if (!this.connectionResponse)
+    if (!this._connectionResponse)
       return RpcResponseType.Unknown;
 
-    const type = this.connectionResponse.headers.get(WEB_RPC_CONSTANTS.CONTENT);
+    const type = this._connectionResponse.headers.get(WEB_RPC_CONSTANTS.CONTENT);
     if (!type)
       return RpcResponseType.Unknown;
 

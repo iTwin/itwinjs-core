@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Config, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
+import {
+  IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
+  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder, BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail,
+} from "@bentley/imodeljs-frontend";
+import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   ElectronRpcManager,
   ElectronRpcConfiguration,
@@ -21,8 +24,9 @@ import {
   LinePixels,
   RgbColor,
   ColorDef,
-} from "@bentley/imodeljs-common/lib/common";
-import { Point3d, XAndY, Transform } from "@bentley/geometry-core";
+} from "@bentley/imodeljs-common";
+import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -329,7 +333,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (StandardViewId.Top !== rotationId && !theViewport.view.allow3dManipulations())
     return;
 
-  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired());
+  const rMatrix = AccuDraw.getStandardRotation(rotationId, theViewport, theViewport.isContextRotationRequired);
   const inverse = rMatrix.inverse();
   if (undefined === inverse)
     return;
@@ -377,6 +381,33 @@ function changeRenderMode(): void {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
+enum MapType { Street = 0, Aerial = 1, Hybrid = 2 } // ###TODO - this is duplicated from WebMercatorTileTree.ts - needs common location
+
+function stringToMapType(s: string): MapType {
+  if ("Street" === s) return MapType.Street;
+  if ("Aerial" === s) return MapType.Aerial;
+  return MapType.Hybrid;
+}
+
+function mapTypeToString(m: MapType): string {
+  if (MapType.Street === m) return "Street";
+  if (MapType.Aerial === m) return "Aerial";
+  return "Hybrid";
+}
+
+function changeBackgroundMapState(): void {
+  if (!theViewport!.view.is3d())
+    return;
+  const mapProviderString = (document.getElementById("mapProviderList") as HTMLSelectElement)!.value;
+  const mapTypeString = (document.getElementById("mapTypeList") as HTMLSelectElement)!.value;
+  const mapTypeVal = stringToMapType(mapTypeString);
+  const view = theViewport!.view as ViewState3d;
+  const ds = view.getDisplayStyle3d();
+  ds.setStyle("backgroundMap", { providerName: mapProviderString, mapType: mapTypeVal });
+  ds.syncBackgroundMapState();
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
+}
+
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
   options.set(id, enabled);
@@ -386,11 +417,16 @@ function updateRenderModeOption(id: string, enabled: boolean, options: Map<strin
 function updateRenderModeOptionsMap() {
   let skybox = false;
   let groundplane = false;
+  let providerName = "BingProvider";
+  let mapType = MapType.Hybrid;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
     const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
+    const backgroundMap = view.getDisplayStyle3d().getStyle("backgroundMap");
+    providerName = JsonUtils.asString(backgroundMap.mapType, "BingProvider");
+    mapType = JsonUtils.asInt(backgroundMap.mapType, MapType.Hybrid);
   }
 
   const viewflags = theViewport!.view.viewFlags;
@@ -413,6 +449,13 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
   updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
   updateRenderModeOption("backgroundMap", viewflags.backgroundMap, renderModeOptions.flags);
+  (document.getElementById("mapProviderList") as HTMLSelectElement)!.value = providerName;
+  (document.getElementById("mapTypeList") as HTMLSelectElement)!.value = mapTypeToString(mapType);
+
+  const backgroundMapDisabled = !theViewport!.iModel.isGeoLocated;
+  (document.getElementById("backgroundMap")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapProviderList")! as HTMLInputElement).disabled = backgroundMapDisabled;
+  (document.getElementById("mapTypeList")! as HTMLInputElement).disabled = backgroundMapDisabled;
 
   renderModeOptions.mode = viewflags.renderMode;
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
@@ -445,20 +488,133 @@ export class MeasurePointsTool extends PrimitiveTool {
   public readonly points: Point3d[] = [];
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableSnap(true); }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+
+  public setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+
+    if (0 === this.points.length)
+      return;
+
+    const hints = new AccuDrawHintBuilder();
+    hints.enableSmartRotation = true;
+
+    if (this.points.length > 1 && !(this.points[this.points.length - 1].isAlmostEqual(this.points[this.points.length - 2])))
+      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 1], this.points[this.points.length - 2])); // Rotate AccuDraw to last segment...
+
+    hints.setOrigin(this.points[this.points.length - 1]);
+    hints.sendHints();
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    this.points.push(ev.point.clone());
+    this.setupAndPromptForNextAction();
+
+    if (!this.isDynamicsStarted)
+      this.beginDynamics();
+
+    return EventHandled.No;
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public onUndoPreviousStep(): boolean {
+    if (0 === this.points.length)
+      return false;
+
+    this.points.pop();
+    if (0 === this.points.length)
+      this.onReinitialize();
+    else
+      this.setupAndPromptForNextAction();
+    return true;
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (wentDown) {
+      switch (keyEvent.key) {
+        case " ":
+          AccuDrawShortcuts.changeCompassMode();
+          break;
+        case "Enter":
+          AccuDrawShortcuts.lockSmart();
+          break;
+      }
+    }
+    return EventHandled.No;
+  }
 
   public onRestartTool(): void {
-    this.exitTool();
+    const tool = new MeasurePointsTool();
+    if (!tool.run())
+      this.exitTool();
   }
 }
 
-// starts Mesure between points tool
+let activeExtentsDeco: ProjectExtentsDecoration | undefined;
+export class ProjectExtentsDecoration {
+  public boxId?: Id64;
+
+  public constructor() { IModelApp.viewManager.addDecorator(this); }
+  protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
+
+  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
+  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
+
+  public decorate(context: DecorateContext): void {
+    const vp = context.viewport;
+
+    if (!vp.view.isSpatialView())
+      return;
+
+    if (undefined === this.boxId)
+      this.boxId = vp.view.iModel.transientIds.next;
+
+    const range = vp.view.iModel.projectExtents.clone();
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
+
+    const black = ColorDef.black.clone();
+    const white = ColorDef.white.clone();
+
+    builder.setSymbology(white, black, 1);
+    builder.addRangeBox(range);
+    context.addDecorationFromBuilder(builder);
+  }
+
+  public static add(): void {
+    if (undefined !== activeExtentsDeco)
+      return;
+    activeExtentsDeco = new ProjectExtentsDecoration();
+  }
+
+  public static remove(): void {
+    if (undefined === activeExtentsDeco)
+      return;
+    activeExtentsDeco.stop();
+    activeExtentsDeco = undefined;
+  }
+
+  public static toggle(): void {
+    if (undefined === activeExtentsDeco)
+      this.add();
+    else
+      this.remove();
+  }
+}
+
+// starts Measure between points tool
 function startMeasurePoints(_event: any) {
-  IModelApp.tools.run("Measure.Points", theViewport!);
+  // IModelApp.tools.run("Measure.Points", theViewport!);
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startToggleCamera(_event: any) {
+  const togglingOff = theViewport!.isCameraOn;
+  showStatus("Camera", togglingOff ? "off" : "on");
   IModelApp.tools.run("View.ToggleCamera", theViewport!);
 }
 
@@ -676,6 +832,8 @@ function wireIconsToFunctions() {
   boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
+  document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());
+  document.getElementById("mapTypeList")!.addEventListener("change", () => changeBackgroundMapState());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
@@ -724,17 +882,18 @@ class SVTAccuSnap extends AccuSnap {
 }
 
 class SVTNotifications extends NotificationManager {
-  private toolTip?: Tooltip;
+  private _toolTip?: Tooltip;
 
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public isToolTipOpen(): boolean { return !!this.toolTip && this.toolTip._isOpen; }
+  protected toolTipIsOpen(): boolean { return !!this._toolTip && this._toolTip._isOpen; }
+
   public clearToolTip(): void {
-    if (this.isToolTipOpen())
-      this.toolTip!.hide();
+    if (this.isToolTipOpen)
+      this._toolTip!.hide();
   }
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
@@ -743,10 +902,10 @@ class SVTNotifications extends NotificationManager {
     if (!position)
       return;
 
-    if (!this.toolTip)
-      this.toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
+    if (!this._toolTip)
+      this._toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
 
-    this.toolTip!.updateTitleContent(message);
+    this._toolTip!.updateTitleContent(message);
 
     const rect = el.getBoundingClientRect();
     if (undefined === pt) {
@@ -759,7 +918,7 @@ class SVTNotifications extends NotificationManager {
     position.style.width = width + "px";
     position.style.height = height + "px";
 
-    this.toolTip!.show();
+    this._toolTip!.show();
   }
 }
 

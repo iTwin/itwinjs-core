@@ -143,12 +143,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "bemetalsmith",
-      "projectFolder": "tools/bemetalsmith",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",

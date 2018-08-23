@@ -22,6 +22,7 @@ export const enum TechniqueId {
   CopyPickBuffers,
   CopyColor,
   CopyColorNoAlpha,
+  CopyStencil,
   ClearPickAndColor,
   ClipMask,
   SkyBox,

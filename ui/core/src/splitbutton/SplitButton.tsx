@@ -20,7 +20,7 @@ export enum SplitButtonActionType {
 /** Property interface for SplitButton */
 export interface SplitButtonProps {
   /** Label to display in click area. */
-  label: string;
+  label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
   className?: string;
@@ -38,7 +38,7 @@ export interface SplitButtonState {
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement: HTMLElement | null = null;
   private _menu: ContextMenu | null = null;
-  private closing: boolean = false;
+  private _closing: boolean = false;
 
   /** @hidden */
   public readonly state: Readonly<SplitButtonState> = { expanded: false };
@@ -53,15 +53,15 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     return (
       <div className={classnames("split-button", this.props.className, { expanded: this.state.expanded })}>
         <div onClick={this.props.onClick} className={"split-button-label"}>{icon} {this.props.label}</div>
-        <div className={"split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this.handleClick} tabIndex={0} onKeyUp={this.handleKeyUp}>
+        <div className={"split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
           <div className={classnames("split-button-arrow-icon", "icon", "icon-chevron-down")} >
           </div>
           <ContextMenu
             ref={(el) => { this._menu = el; }}
             selected={0}
-            onSelect={this.handleClose}
-            onBlur={this.handleClose}
-            onEsc={this.handleClose}
+            onSelect={this._handleClose}
+            onBlur={this._handleClose}
+            onEsc={this._handleClose}
             opened={this.state.expanded}
             autoflip={false}>
             {this.props.children}
@@ -71,37 +71,37 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     );
   }
 
-  private handleKeyUp = (event: any) => {
+  private _handleKeyUp = (event: any) => {
     if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 40 /*<Down>*/) && !this.state.expanded) {
-      this.closing = false;
-      this.open();
+      this._closing = false;
+      this._open();
     }
   }
 
-  private open = () => {
-    if (!this.state.expanded && !this.closing) {
+  private _open = () => {
+    if (!this.state.expanded && !this._closing) {
       this.setState({ expanded: true }, () => {
         if (this._menu && this.state.expanded)
           this._menu.focus();
       });
     } else {
-      this.closing = false;
+      this._closing = false;
     }
   }
 
-  private handleClick = (event: any) => {
+  private _handleClick = (event: any) => {
     if (this.state.expanded) {
       event.stopPropagation();
       this.setState({ expanded: false });
     } else {
-      this.open();
+      this._open();
     }
   }
 
-  private handleClose = (event: any) => {
+  private _handleClose = (event: any) => {
     if (this._arrowElement) {
       if (this.state.expanded && "target" in event && this._arrowElement.contains(event.target))
-        this.closing = true;
+        this._closing = true;
       this.setState((_prevState) => ({ expanded: false }));
       this._arrowElement.focus();
     }

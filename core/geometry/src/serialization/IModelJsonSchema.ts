@@ -7,7 +7,7 @@
 // import { Geometry, Angle, AxisOrder, BSIJSONValues } from "../Geometry";
 import { Geometry, Angle, AngleSweep, AngleProps, AngleSweepProps, AxisOrder } from "../Geometry";
 import { Point2d, Point3d, XYZ, Vector3d, XYProps, XYZProps, YawPitchRollProps, YawPitchRollAngles, Segment1d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
 
 import { CurveCollection } from "../curve/CurveChain";
@@ -510,9 +510,9 @@ export namespace IModelJson {
       return undefined;
     }
 
-    private static parseYawPitchRollAngles(json: any): RotMatrix | undefined {
+    private static parseYawPitchRollAngles(json: any): Matrix3d | undefined {
       const ypr = YawPitchRollAngles.fromJSON(json);
-      return ypr.toRotMatrix();
+      return ypr.toMatrix3d();
     }
 
     private static parseStringProperty(json: any, propertyName: string, defaultValue?: string | undefined): string | undefined {
@@ -524,19 +524,19 @@ export namespace IModelJson {
       return defaultValue;
     }
 
-    private static parseAxesFromVectors(json: any, axisOrder: AxisOrder, createDefaultIdentity: boolean): RotMatrix | undefined {
+    private static parseAxesFromVectors(json: any, axisOrder: AxisOrder, createDefaultIdentity: boolean): Matrix3d | undefined {
       if (Array.isArray(json) && json.length === 2) {
         const xVector = Vector3d.fromJSON(json[0]);
         const yVector = Vector3d.fromJSON(json[1]);
-        const matrix = RotMatrix.createRigidFromColumns(xVector, yVector, axisOrder);
+        const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, axisOrder);
         if (matrix) return matrix;
       }
       if (createDefaultIdentity)
-        return RotMatrix.createIdentity();
+        return Matrix3d.createIdentity();
       return undefined;
     }
     /**
-     * Look for orientation data and convert to RotMatrix.
+     * Look for orientation data and convert to Matrix3d.
      * * Search order is:
      * * * yawPitchRollAngles
      * * * xyVectors
@@ -544,7 +544,7 @@ export namespace IModelJson {
      * @param json [in] json source data
      * @param createDefaultIdentity [in] If true and no orientation is present, return an identity matrix.  If false and no orientation is present, return undefined.
      */
-    private static parseOrientation(json: any, createDefaultIdentity: boolean): RotMatrix | undefined {
+    private static parseOrientation(json: any, createDefaultIdentity: boolean): Matrix3d | undefined {
       if (json.yawPitchRollAngles) {
         return Reader.parseYawPitchRollAngles(json.yawPitchRollAngles);
       } else if (json.xyVectors) {
@@ -553,7 +553,7 @@ export namespace IModelJson {
         return Reader.parseAxesFromVectors(json.zxVectors, AxisOrder.ZXY, createDefaultIdentity);
       }
       if (createDefaultIdentity)
-        return RotMatrix.createIdentity();
+        return Matrix3d.createIdentity();
       return undefined;
     }
 
@@ -781,7 +781,7 @@ export namespace IModelJson {
         && endRadius !== undefined) {
         if (axes === undefined) {
           const axisVector = Vector3d.createStartEnd(start, end);
-          const frame = RotMatrix.createRigidHeadsUp(axisVector, AxisOrder.ZXY);
+          const frame = Matrix3d.createRigidHeadsUp(axisVector, AxisOrder.ZXY);
           const vectorX = frame.columnX();
           const vectorY = frame.columnY();
           return Cone.createBaseAndTarget(start, end, vectorX, vectorY, startRadius, endRadius, capped);
@@ -860,7 +860,7 @@ export namespace IModelJson {
       const axes = Reader.parseOrientation(json, true)!;
 
       if (baseOrigin && !topOrigin)
-        topOrigin = RotMatrix.XYZMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+        topOrigin = Matrix3d.XYZMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined
@@ -1026,11 +1026,11 @@ export namespace IModelJson {
      * @param omitIfIdentity omit the axis data if the matrix is an identity.
      * @param data AxesProps object to be annotated.
      */
-    private static insertOrientationFromMatrix(data: AxesProps, matrix: RotMatrix | undefined, omitIfIdentity: boolean) {
+    private static insertOrientationFromMatrix(data: AxesProps, matrix: Matrix3d | undefined, omitIfIdentity: boolean) {
       if (omitIfIdentity) {
         if (matrix === undefined)
           return;
-        if (matrix.isIdentity())
+        if (matrix.isIdentity)
           return;
       }
       if (matrix)
@@ -1082,7 +1082,7 @@ export namespace IModelJson {
       };
       Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
-      if (!data.activeFractionInterval.isExact01())
+      if (!data.activeFractionInterval.isExact01)
         Object.defineProperty(value, "fractionInterval", [data.activeFractionInterval.x0, data.activeFractionInterval.x1]);
 
       // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
@@ -1158,9 +1158,9 @@ export namespace IModelJson {
         const value: SphereProps = {
           "center": data.cloneCenter().toJSON(),
         };
-        if (!(data.getConstructiveFrame()!).matrix.isIdentity())
+        if (!(data.getConstructiveFrame()!).matrix.isIdentity)
           value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
-        const fullSweep = latitudeSweep.isFullLatitudeSweep();
+        const fullSweep = latitudeSweep.isFullLatitudeSweep;
 
         if (data.capped && !fullSweep)
           value.capped = data.capped;
@@ -1196,7 +1196,7 @@ export namespace IModelJson {
         "minorRadius": radiusB,
         "xyVectors": [vectorX.toJSON(), vectorY.toJSON()],
       };
-      if (!sweep.isFullCircle()) {
+      if (!sweep.isFullCircle) {
         value.sweepAngle = sweep.degrees;
         value.capped = data.capped;
       }
@@ -1399,7 +1399,7 @@ export namespace IModelJson {
     public handleBSplineCurve3d(curve: BSplineCurve3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (curve.isClosable()) {
+      if (curve.isClosable) {
         const knots = curve.copyKnots(true);
         const poles = curve.copyPoints();
         const degree = curve.degree;

@@ -18,7 +18,7 @@
  * raw JSON that's being generated or consumed.
  *
  * #### example
- * The BriefcaseManager API requires that a briefcase be fetched from the server (based on the "wsg" ECSChema-s),
+ * The BriefcaseManager API requires that a briefcase be fetched from the server (based on the "wsg" ECSchema-s),
  * kept in memory as a strongly typed TypeScript object, and then saved locally in a ECDb cache (based on
  * the ECSchema in the ECDb). The JSON would need to be transformed between WSG, ECDb and in-memory TypeScript
  * objects. Listed below are:
@@ -239,11 +239,11 @@ type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
 
 /** Manages the mapping between TypeScript and EC Classes/Properties */
 export class ECJsonTypeMap {
-  private static classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
+  private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
 
   /** Gets an existing entry for a mapped class from the name of the TypeScript class */
   private static getClassByType(typedConstructor: ConstructorType): ClassEntry | undefined {
-    return ECJsonTypeMap.classesByTypedName.get(typedConstructor);
+    return ECJsonTypeMap._classesByTypedName.get(typedConstructor);
   }
 
   /** Recursively gathers all class entries for base classes starting with the specified class */
@@ -258,7 +258,7 @@ export class ECJsonTypeMap {
 
   private static addClassPlaceholder(typedConstructor: ConstructorType): ClassEntry {
     const classEntry = new ClassEntry(typedConstructor);
-    ECJsonTypeMap.classesByTypedName.set(typedConstructor, classEntry);
+    ECJsonTypeMap._classesByTypedName.set(typedConstructor, classEntry);
     ECJsonTypeMap.gatherBaseClassEntries(classEntry.baseClassEntries, classEntry);
     return classEntry;
   }
@@ -304,7 +304,7 @@ export class ECJsonTypeMap {
   public static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined {
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!mappedClassEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decroator`);
+      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
       return undefined;
     }
 
@@ -389,7 +389,7 @@ export class ECJsonTypeMap {
     return typedInstance;
   }
 
-  /** Create an untyped intance from a typed instance */
+  /** Create an untyped instance from a typed instance */
   public static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined {
     const lowCaseApplicationKey = applicationKey.toLowerCase();
     const typedConstructor = Object.getPrototypeOf(typedInstance).constructor;
@@ -488,7 +488,7 @@ export class ECJsonTypeMap {
    * Decorator function for mapping TypeScript classes to JSON
    * @param applicationKey Identifies the application for which the mapping is specified. e.g., "ecdb", "wsg", etc.
    * @param classKey Identifies the ec class backing the JSON instance. (e.g., "ServiceStore.Briefcase" (ecdb) or "iModelScope.Briefcase" (wsg))
-   * @param classKeyMapInfo Information on how the class key is persistend in the JSON instance (e.g., as two properties "schemaName" and "className")
+   * @param classKeyMapInfo Information on how the class key is persisted in the JSON instance (e.g., as two properties "schemaName" and "className")
    */
   public static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo) {
     return (typedConstructor: ConstructorType): void => {

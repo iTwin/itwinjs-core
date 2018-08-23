@@ -4,8 +4,8 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -92,29 +92,29 @@ export class FrustumUniforms {
 /** Interface for 3d GPU clipping. */
 export class Clips {
   private _texture?: TextureHandle;
-  private clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
-  private clipCount: number = 0;
+  private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
+  private _clipCount: number = 0;
 
   public get texture(): TextureHandle | undefined { return this._texture; }
-  public get count(): number { return this.clipCount; }
-  public get isValid(): boolean { return this.clipCount > 0; }
+  public get count(): number { return this._clipCount; }
+  public get isValid(): boolean { return this._clipCount > 0; }
 
   public set(numPlanes: number, texture: TextureHandle) {
-    this.clipActive++;
-    if (this.clipActive !== 1)
+    this._clipActive++;
+    if (this._clipActive !== 1)
       return;
 
-    this.clipCount = numPlanes;
+    this._clipCount = numPlanes;
     this._texture = texture;
   }
 
   public clear() {
-    if (this.clipActive === 1) {
-      this.clipCount = 0;
+    if (this._clipActive === 1) {
+      this._clipCount = 0;
       this._texture = undefined;
     }
-    if (this.clipActive > 0)
-      this.clipActive--;
+    if (this._clipActive > 0)
+      this._clipActive--;
   }
 }
 
@@ -144,7 +144,7 @@ export abstract class Target extends RenderTarget {
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
   private _decorations?: Decorations;
-  private _dynamics?: DecorationList;
+  private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: Set<string>;
@@ -222,11 +222,10 @@ export abstract class Target extends RenderTarget {
   public get shaderLights(): ShaderLights | undefined { return this._shaderLights; }
 
   public get scene(): GraphicList { return this._scene; }
-  public get dynamics(): DecorationList | undefined { return this._dynamics; }
+  public get dynamics(): GraphicList | undefined { return this._dynamics; }
 
-  public getWorldDecorations(decs: DecorationList): WorldDecorations {
+  public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
-      assert(0 < decs.list.length);
 
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
@@ -276,7 +275,7 @@ export abstract class Target extends RenderTarget {
   public dispose() {
     dispose(this._decorations);
     dispose(this.compositor);
-    this._dynamics = dispose(this._dynamics);
+    this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
@@ -368,10 +367,10 @@ export abstract class Target extends RenderTarget {
   public changeTerrain(terrain: GraphicList) {
     this._terrain = terrain;
   }
-  public changeDynamics(dynamics?: DecorationList) {
+  public changeDynamics(dynamics?: GraphicList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
-    dispose(this._dynamics);
+    disposeArray(this._dynamics);
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
@@ -517,10 +516,8 @@ export abstract class Target extends RenderTarget {
       }
       case RenderMode.SmoothShade: {
         // Hidden edges require visible edges
-        if (!vf.visibleEdges) {
+        if (!vf.visibleEdges)
           vf.hiddenEdges = false;
-        }
-
         break;
       }
       case RenderMode.SolidFill: {

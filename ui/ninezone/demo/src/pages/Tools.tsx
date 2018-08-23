@@ -45,14 +45,14 @@ export default class Tools extends React.Component<{}, State> {
     direction: Direction.Right,
   };
 
-  private toggleIsPanelVisible = () => {
+  private _toggleIsPanelVisible = () => {
     this.setState((prevState) => ({
       ...prevState,
       isPanelVisible: !prevState.isPanelVisible,
     }));
   }
 
-  private toggleDirection = () => {
+  private _toggleDirection = () => {
     this.setState((prevState) => {
       let direction = prevState.direction;
       switch (direction) {
@@ -81,17 +81,28 @@ export default class Tools extends React.Component<{}, State> {
   }
 
   private getToolbarIcons1(direction: Direction) {
+    const historyItem1 = (
+      <HistoryIcon>
+        <i className="icon icon-3d-cube" />
+      </HistoryIcon>
+    );
+    const historyItems = (
+      <>
+        {historyItem1}
+        <HistoryIcon
+          isActive
+        >
+          <i className="icon icon-3d-cube" />
+        </HistoryIcon>
+      </>
+    );
     return [
       <Expandable
         key={0}
         history={
           <Tray
             direction={direction}
-            items={
-              <HistoryIcon>
-                <i className="icon icon-3d-cube" />
-              </HistoryIcon>
-            }
+            items={historyItem1}
           />
         }
       >
@@ -108,19 +119,11 @@ export default class Tools extends React.Component<{}, State> {
             Other Tools
           </Panel>
         }
+        isActive
         history={this.state.isPanelVisible ? undefined :
           <Tray
             direction={direction}
-            items={
-              <>
-                <HistoryIcon>
-                  <i className="icon icon-3d-cube" />
-                </HistoryIcon>
-                <HistoryIcon>
-                  <i className="icon icon-2d" />
-                </HistoryIcon>
-              </>
-            }
+            items={historyItems}
           />
         }
       >
@@ -128,29 +131,42 @@ export default class Tools extends React.Component<{}, State> {
           icon={
             <i className="icon icon-2d" />
           }
-          onClick={this.toggleIsPanelVisible}
+          isActive
+          onClick={this._toggleIsPanelVisible}
+        />
+      </Expandable>,
+      <Expandable
+        key={2}
+        history={
+          <Tray
+            direction={direction}
+            isExtended
+            items={historyItems}
+          />
+        }
+      >
+        <Icon
+          icon={
+            <i className="icon icon-3d-cube" />
+          }
         />
       </Expandable>,
       <Icon
         icon={
-          <i className="icon icon-3d-cube" />
-        }
-        key={2} />,
-    ];
-  }
-
-  private getToolbarIcons2(direction: Direction) {
-    return [
-      <Icon
-        icon={
           <i className="icon icon-angle" />
         }
+        isActive
         key={3} />,
       <Icon
         icon={
           <i className="icon icon-apps-generic" />
         }
         key={4} />,
+    ];
+  }
+
+  private getToolbarIcons2(direction: Direction) {
+    return [
       <Icon
         icon={
           <i className="icon icon-filter" />
@@ -189,7 +205,6 @@ export default class Tools extends React.Component<{}, State> {
             items={this.getToolbarIcons1(Direction.Left)}
           />
           <Toolbar
-            expandsTo={Direction.Bottom}
             items={this.getToolbarIcons1(Direction.Bottom)}
           />
           <Toolbar
@@ -203,7 +218,7 @@ export default class Tools extends React.Component<{}, State> {
           items={
             <Overflow
               key="0"
-              onClick={this.toggleIsPanelVisible}
+              onClick={this._toggleIsPanelVisible}
               panel={!this.state.isPanelVisible ? undefined :
                 <Panel>
                   Other Tools
@@ -219,7 +234,6 @@ export default class Tools extends React.Component<{}, State> {
             items={this.getToolbarIcons2(Direction.Left)}
           />
           <Scrollable
-            expandsTo={Direction.Bottom}
             items={this.getToolbarIcons2(Direction.Bottom)}
           />
           <Scrollable
@@ -227,7 +241,6 @@ export default class Tools extends React.Component<{}, State> {
             items={this.getToolbarIcons2(Direction.Right)}
           />
           <Scrollable
-            expandsTo={Direction.Bottom}
             items={this.getToolbarIcons1(Direction.Bottom)}
           />
         </div>
@@ -262,10 +275,10 @@ export default class Tools extends React.Component<{}, State> {
             button={
               <IconButton
                 onClick={() => {
-                  this.toggleIsPanelVisible();
+                  this._toggleIsPanelVisible();
                   if (!this.state.isPanelVisible)
                     return;
-                  this.toggleDirection();
+                  this._toggleDirection();
                 }}
                 icon={
                   <i className="icon icon-camera-animation" />

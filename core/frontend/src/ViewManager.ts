@@ -9,10 +9,28 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
+import { HitDetail } from "./HitDetail";
+
+/** Interface for drawing "decorations" into, or on top of, the active views. */
+export interface Decorator {
+  /** Implement this method to draw decorations into the supplied DecorateContext */
+  decorate(context: DecorateContext): void;
+
+  /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator. Optional.
+   * @param id The Id of the currently selected pickable graphics.
+   * @returns true if 'id' belongs to this Decorator
+   */
+  testDecorationHit?(id: string): boolean;
+
+  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @returns A promise with the string with the tooltip message. May contain HTML.
+   */
+  getDecorationToolTip?(hit: HitDetail): Promise<string>;
+}
 
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -27,8 +45,9 @@ export class ViewManager {
   private _selectedView?: Viewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  private readonly _decorators: Decorator[] = [];
 
-  public onInitialized(): void {
+  public onInitialized() {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
     IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
@@ -39,6 +58,18 @@ export class ViewManager {
     IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
     IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);
     IModelConnection.registerClass(SheetViewState.getClassFullName(), SheetViewState as any);
+
+    this.addDecorator(IModelApp.accuSnap);
+    this.addDecorator(IModelApp.tentativePoint);
+    this.addDecorator(IModelApp.accuDraw);
+    this.addDecorator(IModelApp.toolAdmin);
+  }
+
+  public onShutDown() {
+    this._viewports.length = 0;
+    this._decorators.length = 0;
+    this._selectedView = undefined;
+    this.cursor = undefined;
   }
 
   /** Called after the selected view changes.
@@ -199,24 +230,53 @@ export class ViewManager {
     this._invalidateScenes = false;
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
-    const plan = new UpdatePlan();
 
-    if (undefined === cursorVp || cursorVp.renderFrame(plan))
+    if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)
-        if (vp !== cursorVp && !vp.renderFrame(plan))
+        if (vp !== cursorVp && !vp.renderFrame())
           break;
   }
 
-  /** Called when rendering a frame to allow decorations to be added */
-  public readonly onDecorate = new BeEvent<(context: DecorateContext) => void>();
+  /** Add a new [[Decorator]] to display decorations into the active views.
+   * @param decorator The new decorator to add.
+   * @throws Error if decorator is already active.
+   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropDecorator]].)
+   * @see [[dropDecorator]]
+   */
+  public addDecorator(decorator: Decorator): () => void {
+    if (this._decorators.includes(decorator))
+      throw new Error("decorator already registered");
 
+    this._decorators.push(decorator);
+    this.invalidateDecorationsAllViews();
+    return () => { this.dropDecorator(decorator); };
+  }
+
+  /** Drop (remove) a Decorator so it is no longer active.
+   * @param decorator The Decorator to drop.
+   * @note Does nothing if decorator is not currently active.
+   *
+   */
+  public dropDecorator(decorator: Decorator) {
+    const index = this._decorators.indexOf(decorator);
+    if (index >= 0)
+      this._decorators.splice(index, 1);
+    this.invalidateDecorationsAllViews();
+  }
+
+  /** @hidden */
+  public async getDecorationToolTip(hit: HitDetail): Promise<string> {
+    for (const decorator of this._decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
+        return decorator.getDecorationToolTip(hit);
+    }
+    return " ";
+  }
+
+  /** @hidden */
   public callDecorators(context: DecorateContext) {
-    IModelApp.accuSnap.decorate(context);
-    IModelApp.tentativePoint.decorate(context);
-    IModelApp.accuDraw.decorate(context);
-    IModelApp.toolAdmin.decorate(context);
     context.viewport.decorate(context);
-    this.onDecorate.raiseEvent(context);
+    this._decorators.forEach((decorator) => decorator.decorate(context));
   }
 
   public setViewCursor(cursor: BeCursor | undefined): void {

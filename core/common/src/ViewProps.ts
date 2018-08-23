@@ -7,12 +7,14 @@ import { Id64Props, Id64Array } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
+import { ColorDef } from "./ColorDef";
+import { ViewFlags } from "./Render";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
 export interface ViewStateData {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
-  displayStyleProps: ElementProps;
+  displayStyleProps: DisplayStyleProps;
   modelSelectorProps?: ModelSelectorProps;
   sheetProps?: SheetProps;
   sheetAttachments?: Id64Array;
@@ -25,6 +27,13 @@ export interface ModelSelectorProps extends ElementProps {
 /** Properties that define a CategorySelector */
 export interface CategorySelectorProps extends ElementProps {
   categories: string[];
+}
+
+/** Properties that define a DisplayStyle */
+export interface DisplayStyleProps extends ElementProps {
+  viewFlags: ViewFlags;
+  backgroundColor: ColorDef;
+  monochromeColor: ColorDef;
 }
 
 export interface ViewQueryParams extends EntityQueryParams {
@@ -103,7 +112,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   origin: XYZProps;
   /** The extent of the view frustum. */
   extents: XYZProps;
-  /** Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll). */
+  /** Rotation of the view frustum (could be undefined if going Matrix3d -> YawPitchRoll). */
   angles?: YawPitchRollProps;
   /** The camera used for this view. */
   camera: CameraProps;

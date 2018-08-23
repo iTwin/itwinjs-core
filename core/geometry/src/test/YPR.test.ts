@@ -40,8 +40,8 @@ describe("YPR", () => {
       ck.testCoordinate(maxDegrees, degrees.maxAbs());
       ck.testCoordinate(yprA.maxAbsRadians(), Angle.degreesToRadians(maxDegrees), "maxAbsRadians");
 
-      const matrixA = yprA.toRotMatrix();
-      const yprAI = YawPitchRollAngles.createFromRotMatrix(matrixA);
+      const matrixA = yprA.toMatrix3d();
+      const yprAI = YawPitchRollAngles.createFromMatrix3d(matrixA);
       if (ck.testPointer(yprAI, "matrix to YPR") && yprAI) {
         ck.testTrue(yprA.isAlmostEqual(yprAI), "YPR-matrix-YPR round trip.");
       }

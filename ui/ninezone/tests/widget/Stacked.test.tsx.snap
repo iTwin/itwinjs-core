@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Stacked /> renders correctly 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;

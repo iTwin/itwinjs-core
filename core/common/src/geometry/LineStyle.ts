@@ -106,7 +106,7 @@ export namespace LineStyle {
     }
 
     public applyTransform(transform: Transform): boolean {
-      if (transform.isIdentity())
+      if (transform.isIdentity)
         return true;
       if (this.normal) {
         transform.matrix.multiplyVector(this.normal, this.normal);
@@ -117,11 +117,11 @@ export namespace LineStyle {
           return false;
       }
       if (this.rotation) {
-        const newTransform = this.rotation.toRotMatrix().multiplyMatrixTransform(transform);
+        const newTransform = this.rotation.toMatrix3d().multiplyMatrixTransform(transform);
         const scales = new Vector3d();
         if (!newTransform.matrix.normalizeColumnsInPlace(scales))
           return false;
-        const newRotation = YawPitchRollAngles.createFromRotMatrix(newTransform.matrix);
+        const newRotation = YawPitchRollAngles.createFromMatrix3d(newTransform.matrix);
         if (undefined === newRotation)
           return false;
         this.rotation.setFrom(newRotation);

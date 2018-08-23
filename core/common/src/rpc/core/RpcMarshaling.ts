@@ -27,7 +27,7 @@ export enum RpcMarshalingDirective {
   ErrorStack = "__error_stack__",
 }
 
-/** @hidden @internal */
+/** @hidden */
 export class RpcMarshaling {
   private constructor() { }
 
@@ -35,10 +35,6 @@ export class RpcMarshaling {
   public static serialize(operation: RpcOperation | string, _protocol: RpcProtocol | undefined, value: any) {
     if (typeof (value) === "undefined") {
       return "";
-    }
-
-    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot serialize binary data.");
     }
 
     marshalingScope = typeof (operation) === "string" ? operation : operation.interfaceDefinition.name;
@@ -56,6 +52,10 @@ export class RpcMarshaling {
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
   private static marshal(this: any, key: string, value: any) {
+    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot serialize binary data.");
+    }
+
     if (key === RpcMarshalingDirective.Name || key === RpcMarshalingDirective.Undefined || key === RpcMarshalingDirective.Unregistered) {
       delete this[key];
     }

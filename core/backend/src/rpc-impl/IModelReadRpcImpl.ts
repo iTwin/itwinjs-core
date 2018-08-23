@@ -7,7 +7,7 @@ import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
-  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData,
+  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
@@ -33,19 +33,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
     await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
 
-    if (qp.isPending()) {
+    if (qp.isPending) {
       Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    if (qp.isFulfilled()) {
+    if (qp.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => ({ ...iModelToken, pathname: qp.result!.briefcase.pathname }));
       return qp.result!;
     }
 
-    assert(qp.isRejected());
+    assert(qp.isRejected);
     Logger.logTrace(loggingCategory, "Rejected open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
     throw qp.error!;
   }
@@ -165,9 +165,21 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
-  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<string> { return IModelDb.loadNativeAsset(assetName); }
+  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> { return IModelDb.loadNativeAsset(assetName); }
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
     const el = IModelDb.find(iModelToken).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
+  }
+
+  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in an 8-byte prefix header. */
+  public async getViewThumbnail(iModelToken: IModelToken, viewId: string): Promise<Uint8Array> {
+    const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
+    if (undefined === thumbnail || 0 === thumbnail.image.length)
+      return Promise.reject(new Error("no thumbnail"));
+
+    const val = new Uint8Array(thumbnail.image.length + 8); // allocate a new buffer 8 bytes larger than the image size
+    new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 8 bytes.
+    new Uint8Array(val.buffer, 8).set(thumbnail.image); // put the image data at offset 8 after metadata
+    return val;
   }
 }

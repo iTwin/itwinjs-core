@@ -165,7 +165,7 @@ export interface LogPostingResponse {
  */
 export class UlasClient extends Client {
   public static readonly searchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
@@ -193,10 +193,10 @@ export class UlasClient extends Client {
   /**
    * @returns Default URL for the service.
    */
-  protected getDefaultUrl(): string { return UlasClient.defaultUrlDescriptor[this.deploymentEnv]; }
+  protected getDefaultUrl(): string { return UlasClient._defaultUrlDescriptor[this.deploymentEnv]; }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Gets the (delegation) access token to access the service
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
@@ -209,7 +209,7 @@ export class UlasClient extends Client {
    * Logs a usage entry via the ULAS service
    * @param token Access token.
    * @param entry Usage log entry.
-   * @returns Reponse from the service.
+   * @returns Response from the service.
    */
   public async logUsage(token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
     const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
@@ -220,7 +220,7 @@ export class UlasClient extends Client {
    * Logs one ore more feature entries via the ULAS service
    * @param token Access token.
    * @param entries One or more feature log entries.
-   * @returns Reponse from the service.
+   * @returns Response from the service.
    */
   public async logFeature(token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
     if (entries.length === 0)

@@ -25,22 +25,22 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
 
     const qp1 = memoizeOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     const qp2 = memoizeOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.isTrue(qp1.isPending());
+    assert.isTrue(qp1.isPending);
     assert.strictEqual(qp2, qp1);
 
     const qp3 = memoizeOpenIModelDb(accessToken, testProjectId, rwIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.isTrue(qp1.isPending());
+    assert.isTrue(qp1.isPending);
     assert.notStrictEqual(qp3, qp1);
 
     await pause(5000); // Hopefully it won't take more than 5 seconds to re-establish the cache from scratch (if necessary)
-    assert.isTrue(qp1.isFulfilled());
-    assert.isTrue(qp3.isFulfilled());
+    assert.isTrue(qp1.isFulfilled);
+    assert.isTrue(qp3.isFulfilled);
     assert.exists(qp1.result);
     assert.exists(qp3.result);
 
     deleteMemoizedOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     const qp4 = memoizeOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.isTrue(qp4.isPending());
+    assert.isTrue(qp4.isPending);
   });
 
 });

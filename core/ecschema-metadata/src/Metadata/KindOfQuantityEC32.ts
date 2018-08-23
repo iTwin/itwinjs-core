@@ -7,11 +7,12 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import Schema from "./Schema";
-import Format, { MutableFormat } from "./Format";
+import Format, { IFormat } from "./Format";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
+import OverrideFormat from "./OverrideFormat";
 
 export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
@@ -26,17 +27,17 @@ interface FormatOverride {
  */
 export default class KindOfQuantityEC32 extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
-  protected _precision: number = 1.0;
-  protected _presentationUnits: Format[];
+  protected _relativeError: number = 1.0;
+  protected _presentationUnits: Array<Format | OverrideFormat>;
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
-  get precision() { return this._precision; }
+  get relativeError() { return this._relativeError; }
 
-  get presentationUnits(): Format[] | undefined { return this._presentationUnits; }
+  get presentationUnits(): Array<Format | OverrideFormat> | undefined { return this._presentationUnits; }
 
   get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
 
-  set persistenceUnit(persistenceUnit: LazyLoadedUnit| LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
+  set persistenceUnit(persistenceUnit: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -44,56 +45,43 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     this._presentationUnits = [];
   }
 
-  public get defaultPresentationFormat(): undefined | Format {
+  public get defaultPresentationFormat(): undefined | Format | OverrideFormat {
     return this!.presentationUnits!.length === 0 ? undefined : this!.presentationUnits![0];
   }
 
   /**
    *
-   * @param parent
+   * @param format The Format to add to this KindOfQuantity
+   * @param isDefault
+   */
+  protected addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean = false) {
+    // TODO: Add some sort of validation?
+    (isDefault) ? this._presentationUnits.splice(0, 0, format) : this._presentationUnits.push(format);
+  }
+
+  /**
+   *
+   * @param parent The Format to override.
+   * @param name The name of the new Format.  In most cases should be the FormatString representing the override.
    * @param precision
    * @param unitLabelOverrides
    * @param isDefault
    */
-  protected addPresentationFormat(parent: Format, precision: number | undefined, unitLabelOverrides: Array<[Unit|InvertedUnit, string | undefined]> | undefined, isDefault: boolean = false): Format {
+  protected createFormatOverride(parent: Format, name: string, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>) {
     // TODO need to verify that the format provided isn't already an override
 
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presetantion format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presetantion format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
 
-    // no overrides
-    if (undefined === precision && (undefined === unitLabelOverrides || 0 === unitLabelOverrides.length)) {
-      (isDefault) ? this._presentationUnits.splice(0, 0, parent) : this._presentationUnits.push(parent);
-      return parent;
-    }
-
-    if (parent.units && parent.units.length === 0 && unitLabelOverrides && unitLabelOverrides.length > 0 )
+    if (parent.units && 0 === parent.units.length && unitLabelOverrides && 0 < unitLabelOverrides.length)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presetantion format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
 
     // TODO check compatibility of Unit overrides with the persisitence unit
 
-    // TODO fix the name to be overrideString, or possibly change to ???
-    // const overrideString = createOverrideString(parent);
-    let newFormat = new Format(parent.schema, parent.name);
-    newFormat = Object.assign(newFormat, parent);
+    if (undefined === name)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName, ``);
 
-    if (isDefault)
-      this._presentationUnits.splice(0, 0, newFormat); // inserting the format at the front of the array
-    else
-      this._presentationUnits.push(newFormat);
-
-    if (precision) {
-      // TODO need to verify against the type
-      (newFormat as MutableFormat).setPrecision(precision);
-    }
-
-    if (unitLabelOverrides) {
-      if (unitLabelOverrides.length > 4)
-        throw new ECObjectsError(ECObjectsStatus.ECOBJECTS_ERROR_BASE, `Cannot add a presentation format to KindOfQuantity '${this.name}' it has more than 4 units.`);
-      (newFormat as MutableFormat).setUnits(unitLabelOverrides);
-    }
-
-    return newFormat;
+    return new OverrideFormat(parent, name, precision, unitLabelOverrides);
   }
 
   private async processPresentationUnits(presentationUnitsJson: string | string[]) {
@@ -105,8 +93,17 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       if (undefined === format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormatOverride.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
-      const unitAndLabels: Array<[Unit|InvertedUnit, string | undefined]> = [];
+      if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitLabels) {
+        this.addPresentationFormat(format);
+        continue;
+      }
+
+      let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.unitLabels) {
+        if (4 < presFormatOverride.unitLabels.length)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+        unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitLabels) {
           const unit = await this.schema.lookupItem<Unit | InvertedUnit>(unitOverride[0]);
           if (undefined === unit)
@@ -116,22 +113,32 @@ export default class KindOfQuantityEC32 extends SchemaItem {
         }
       }
 
-      this.addPresentationFormat(format, presFormatOverride.precision, unitAndLabels);
+      const overrideFormat: OverrideFormat = this.createFormatOverride(format, formatString, presFormatOverride.precision, unitAndLabels);
+      this.addPresentationFormat(overrideFormat);
     }
   }
 
   private processPresentationUnitsSync(presentationUnitsJson: string | string[]) {
     const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
-      const presFormat = this.parseFormatString(formatString);
+      const presFormatOverride: FormatOverride = this.parseFormatString(formatString);
 
-      const format = this.schema.lookupItemSync<Format>(presFormat.formatName);
+      const format = this.schema.lookupItemSync<Format>(presFormatOverride.formatName);
       if (undefined === format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormat.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormatOverride.formatName}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
-      const unitAndLabels: Array<[Unit|InvertedUnit, string | undefined]> = [];
-      if (undefined !== presFormat.unitLabels) {
-        for (const unitOverride of presFormat.unitLabels) {
+      if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitLabels) {
+        this.addPresentationFormat(format);
+        continue;
+      }
+
+      let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+      if (undefined !== presFormatOverride.unitLabels) {
+        if (4 < presFormatOverride.unitLabels.length)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+        unitAndLabels = [];
+        for (const unitOverride of presFormatOverride.unitLabels) {
           const unit = this.schema.lookupItemSync<Unit | InvertedUnit>(unitOverride[0]);
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -140,17 +147,18 @@ export default class KindOfQuantityEC32 extends SchemaItem {
         }
       }
 
-      this.addPresentationFormat(format, presFormat.precision, unitAndLabels);
+      const overrideFormat: OverrideFormat = this.createFormatOverride(format, formatString, presFormatOverride.precision, unitAndLabels);
+      this.addPresentationFormat(overrideFormat);
     }
   }
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.precision = this.precision;
+    schemaJson.relativeError = this.relativeError;
     schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
     if (this.presentationUnits !== undefined) {
       schemaJson.presentationUnits = [];
-      this.presentationUnits.forEach((unit: Format) => {
+      this.presentationUnits.forEach((unit: IFormat) => {
         schemaJson.presentationUnits.push(unit.name);
       });
     }
@@ -162,7 +170,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     this.loadKOQProperties(jsonObj);
     if (undefined === jsonObj.persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
-    if (typeof(jsonObj.persistenceUnit) !== "string")
+    if (typeof (jsonObj.persistenceUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
 
     const persistenceUnit = await this.schema.lookupItem<Unit>(jsonObj.persistenceUnit);
@@ -171,7 +179,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof (jsonObj.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
       await this.processPresentationUnits(jsonObj.presentationUnits);
     }
@@ -182,7 +190,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     this.loadKOQProperties(jsonObj);
     if (undefined === jsonObj.persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
-    if (typeof(jsonObj.persistenceUnit) !== "string")
+    if (typeof (jsonObj.persistenceUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
     const persistenceUnit = this.schema.lookupItemSync<Unit>(jsonObj.persistenceUnit);
     if (!persistenceUnit)
@@ -190,7 +198,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
     this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof (jsonObj.presentationUnits) !== "string") // must be a string or an array
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
       this.processPresentationUnitsSync(jsonObj.presentationUnits);
     }
@@ -221,7 +229,7 @@ export default class KindOfQuantityEC32 extends SchemaItem {
 
       if (overrideString.length > 0 && undefined === tokens.find((token) => {
         return "" !== token; // there is at least one token that is not empty.
-        })) {
+      })) {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       }
 
@@ -238,8 +246,6 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       }
     }
 
-    returnValue.unitLabels = [];
-
     let i = 4;
     while (i < match.length) {
       if (undefined === match[i])
@@ -247,6 +253,9 @@ export default class KindOfQuantityEC32 extends SchemaItem {
       // Unit override required
       if (undefined === match[i + 1])
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+      if (undefined === returnValue.unitLabels)
+        returnValue.unitLabels = [];
 
       if (undefined !== match[i + 2]) // matches '|'
         returnValue.unitLabels.push([match[i + 1], match[i + 3]]); // add unit name and label override
@@ -260,11 +269,11 @@ export default class KindOfQuantityEC32 extends SchemaItem {
   }
 
   private loadKOQProperties(jsonObj: any) {
-    if (undefined === jsonObj.precision)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'precision'.`);
-    if (typeof(jsonObj.precision) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-    this._precision = jsonObj.precision;
+    if (undefined === jsonObj.relativeError)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'relativeError'.`);
+    if (typeof (jsonObj.relativeError) !== "number")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
+    this._relativeError = jsonObj.relativeError;
   }
 
   public async accept(visitor: SchemaItemVisitor) {

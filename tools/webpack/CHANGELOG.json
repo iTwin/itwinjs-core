@@ -2,6 +2,63 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.119.0",
+      "tag": "@bentley/webpack-tools_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed sourcemapping in test runs."
+          },
+          {
+            "comment": "Fixed errors in tests when SCSS/CSS files are imported from packages in node_modules."
+          },
+          {
+            "comment": "Stopped creating TypeScript declaration files in test, start, and build scripts."
+          },
+          {
+            "comment": "Simplified coverage setup. Apps are no longer required to define an nyc config in their package.json."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.118.0",
+      "tag": "@bentley/webpack-tools_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.117.0",
+      "tag": "@bentley/webpack-tools_v0.117.0",
+      "date": "Wed, 15 Aug 2018 17:08:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.116.0",
+      "tag": "@bentley/webpack-tools_v0.116.0",
+      "date": "Wed, 15 Aug 2018 15:13:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.115.0",
+      "tag": "@bentley/webpack-tools_v0.115.0",
+      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.114.0",
+      "tag": "@bentley/webpack-tools_v0.114.0",
+      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.113.0",
       "tag": "@bentley/webpack-tools_v0.113.0",
       "date": "Fri, 10 Aug 2018 05:06:20 GMT",

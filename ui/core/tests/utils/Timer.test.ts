@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import Timer from "@src/utils/Timer";
+import Timer from "../../src/utils/Timer";
 
 describe("Timer", () => {
   it("should create timer with specified delay", () => {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
+import { ImsFederatedAuthenticationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UserProfile } from "../UserProfile";
 import { TestConfig, TestUsers, UserCredentials } from "./TestConfig";
 
@@ -13,7 +13,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 chai.should();
 
 export class FederatedImsUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com",
     QA: "https://qa-ims.bentley.com",
     PROD: "https://ims.bentley.com",
@@ -21,36 +21,36 @@ export class FederatedImsUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(ImsFederatedAuthentiationClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(ImsFederatedAuthenticationClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 
-describe("ImsFederatedAuthentiationClient", () => {
+describe("ImsFederatedAuthenticationClient", () => {
   it("should setup its URLs correctly", async () => {
     FederatedImsUrlMock.mockGetUrl("DEV");
-    let url: string = await new ImsFederatedAuthentiationClient("DEV").getUrl();
+    let url: string = await new ImsFederatedAuthenticationClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("QA");
-    url = await new ImsFederatedAuthentiationClient("QA").getUrl();
+    url = await new ImsFederatedAuthenticationClient("QA").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PROD");
-    url = await new ImsFederatedAuthentiationClient("PROD").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PROD").getUrl();
     chai.expect(url).equals("https://ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PERF");
-    url = await new ImsFederatedAuthentiationClient("PERF").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PERF").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
   });
 });
 
 export class ActiveImsUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
     QA: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
     PROD: "https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
@@ -58,11 +58,11 @@ export class ActiveImsUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(ImsActiveSecureTokenClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(ImsActiveSecureTokenClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 
@@ -124,7 +124,7 @@ describe("ImsActiveSecureTokenClient", () => {
 });
 
 export class DelegationImsUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://qa-ims.bentley.com/rest/DelegationSTSService",
     QA: "https://qa-ims.bentley.com/rest/DelegationSTSService",
     PROD: "https://ims.bentley.com/rest/DelegationSTSService",
@@ -132,11 +132,11 @@ export class DelegationImsUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(ImsDelegationSecureTokenClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(ImsDelegationSecureTokenClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

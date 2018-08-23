@@ -8,6 +8,7 @@ import { Point2d, Vector2d, Point3d, Vector3d } from "../PointVector";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../GrowableArray";
+import { Point4d } from "./Geometry4d";
 // import { Arc3d } from "../curve/Arc3d";
 
 /* tslint:disable:variable-name*/
@@ -1205,6 +1206,44 @@ export class SmallSystem {
     }
     result.set(0, 0);
     return false;
+  }
+
+  /**
+   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts of WEIGHTED 4D Points
+   * Return the fractional (not xy) coordinates in result.x, result.y
+   * @param hA0 homogeneous start point of line a
+   * @param hA1 homogeneous end point of line a
+   * @param hB0 homogeneous start point of line b
+   * @param hB1 homogeneous end point of line b
+   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   */
+  public static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined {
+    // Considering only x,y,w parts....
+    // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
+    // PointQ is colinear with A0,A1 when the determinat det (A0,A1,Q) is zero.  (Each column takes xyw parts)
+    const alpha0 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB0.x,
+      hA0.y, hA1.y, hB0.y,
+      hA0.w, hA1.w, hB0.w);
+    const alpha1 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB1.x,
+      hA0.y, hA1.y, hB1.y,
+      hA0.w, hA1.w, hB1.w);
+    const fractionB = Geometry.conditionalDivideFraction(-alpha0, alpha1 - alpha0);
+    if (fractionB !== undefined) {
+      const beta0 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA0.x,
+        hB0.y, hB1.y, hA0.y,
+        hB0.w, hB1.w, hA0.w);
+      const beta1 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA1.x,
+        hB0.y, hB1.y, hA1.y,
+        hB0.w, hB1.w, hA1.w);
+      const fractionA = Geometry.conditionalDivideFraction(-beta0, beta1 - beta0);
+      if (fractionA !== undefined)
+        return Vector2d.create(fractionA, fractionB, result);
+    }
+    return undefined;
   }
 
   /**

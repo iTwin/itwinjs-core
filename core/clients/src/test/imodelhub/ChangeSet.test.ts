@@ -38,7 +38,7 @@ describe("iModelHub ChangeSetHandler", () => {
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
       if (changeSetCount > 9) {
-        // Recreate iModel if can't create any new changesets
+        // Recreate iModel if can not create any new changesets
         await utils.createIModel(accessToken, imodelName, undefined, true);
         iModelId = await utils.getIModelId(accessToken, imodelName);
       }

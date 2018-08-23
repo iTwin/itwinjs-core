@@ -6,10 +6,39 @@ import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, GeometricModel, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
-  IModelDb, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType, Entity,
-  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
+  ClassRegistry,
+  BisCore,
+  Element,
+  GeometricElement2d,
+  GeometricElement3d,
+  GeometricModel,
+  InformationPartitionElement,
+  DefinitionPartition,
+  LinkPartition,
+  PhysicalPartition,
+  GroupInformationPartition,
+  DocumentPartition,
+  Subject,
+  ElementPropertyFormatter,
+  IModelDb,
+  ECSqlStatement,
+  SqliteStatement,
+  SqliteValue,
+  SqliteValueType,
+  Entity,
+  Model,
+  DictionaryModel,
+  Category,
+  SubCategory,
+  SpatialCategory,
+  ElementGroupsMembers,
+  LightLocation,
+  PhysicalModel,
+  AutoPushEventType,
+  AutoPush,
+  AutoPushState,
+  AutoPushEventHandler,
+  ViewDefinition,
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
@@ -63,7 +92,7 @@ describe("iModel", () => {
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
-    assert(!extents.isNull());
+    assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
@@ -277,7 +306,7 @@ describe("iModel", () => {
     expect(tree.rootTile).not.to.be.undefined;
 
     const tf = Transform.fromJSON(tree.location);
-    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.matrix.isIdentity).to.be.true;
     expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
 
     expect(tree.rootTile.id.treeId).to.equal(tree.id);
@@ -334,7 +363,7 @@ describe("iModel", () => {
       if (defaultSubCategory instanceof SubCategory) {
         assert.isTrue(defaultSubCategory.parent!.id.equals(categoryId), "defaultSubCategory id should be prescribed value");
         assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
-        assert.isTrue(defaultSubCategory.isDefaultSubCategory(), "isDefaultSubCategory should return true");
+        assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
       }
 
       // get the subcategories
@@ -391,6 +420,37 @@ describe("iModel", () => {
     viewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition"); // limit query to SpatialViewDefinitions
     assert.isAtLeast(viewDefinitionProps.length, 3);
     assert.exists(viewDefinitionProps[2].modelSelectorId);
+  });
+
+  it("should iterate ViewDefinitions", () => {
+    // imodel2 contains 3 SpatialViewDefinitions and no other views.
+    let numViews = 0;
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for spatial views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
+      if (view.isSpatialView())
+        ++numViews;
+
+      return view.isSpatialView();
+    });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(3);
+
+    // Query specifically for 2d views
+    numViews = 0;
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    expect(result).to.be.true;
+    expect(numViews).to.equal(0);
+
+    // Terminate iteration on first view
+    numViews = 0;
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    expect(result).to.be.false;
+    expect(numViews).to.equal(1);
   });
 
   it("should be children of RootSubject", () => {
@@ -564,6 +624,35 @@ describe("iModel", () => {
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
+  });
+
+  it("read view thumbnail", () => {
+    const viewId = "0x24";
+    const thumbnail = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail);
+    if (!thumbnail)
+      return;
+    assert.equal(thumbnail.format, "jpeg");
+    assert.equal(thumbnail.height, 768);
+    assert.equal(thumbnail.width, 768);
+    assert.equal(thumbnail.image!.length, 18062);
+
+    thumbnail.width = 100;
+    thumbnail.height = 200;
+    thumbnail.format = "png";
+    thumbnail.image = new Uint8Array(200);
+    thumbnail.image.fill(12);
+    const stat = imodel5.views.saveThumbnail(viewId, thumbnail);
+    assert.equal(stat, 0, "save thumbnail");
+    const thumbnail2 = imodel5.views.getThumbnail(viewId);
+    assert.exists(thumbnail2);
+    if (!thumbnail2)
+      return;
+    assert.equal(thumbnail2.format, "png");
+    assert.equal(thumbnail2.height, 200);
+    assert.equal(thumbnail2.width, 100);
+    assert.equal(thumbnail2.image!.length, 200);
+    assert.equal(thumbnail2.image![0], 12);
   });
 
   it("ecefLocation for iModels", () => {
@@ -1011,20 +1100,19 @@ describe("iModel", () => {
     assert.equal(readFromDb, myStrVal, "query string after save");
 
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
-    const testRange = new Uint32Array(500);
+    const testRange = new Uint8Array(500);
     testRange.fill(11);
-    const blobVal = testRange.buffer as ArrayBuffer;
-    stat = iModel.saveFileProperty(myPropsBlob, blobVal);
+    stat = iModel.saveFileProperty(myPropsBlob, undefined, testRange);
     assert.equal(stat, 0, "saveFileProperty as blob");
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
-    assert.deepEqual(blobFromDb, blobVal, "query blob after save");
+    assert.deepEqual(blobFromDb, testRange, "query blob after save");
 
     let next = iModel.queryNextAvailableFileProperty(myPropsBlob);
     assert.equal(11, next, "queryNextAvailableFileProperty blob");
 
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(2, next, "queryNextAvailableFileProperty str");
-    assert.equal(0, iModel.deleteFileProperty(myPropsStr));
+    assert.equal(0, iModel.deleteFileProperty(myPropsStr), "do deleteFileProperty");
     assert.equal(stat, 0, "deleteFileProperty");
     assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
@@ -1053,9 +1141,9 @@ describe("iModel", () => {
 
   // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
   it.skip("should test AutoPush", async () => {
-    let isIdle: boolean = true;
+    let idle: boolean = true;
     const activityMonitor = {
-      isIdle: () => isIdle,
+      isIdle: idle,
     };
 
     const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
@@ -1139,14 +1227,14 @@ describe("iModel", () => {
     assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
 
     // Test auto-push when isIdle returns false
-    isIdle = false;
+    idle = false;
     lastPushTimeMillis = 0;
     autoPush.autoSchedule = true; // start running AutoPush...
     await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
     assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
     assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
     autoPush.cancel();
-    isIdle = true;
+    idle = true;
 
     // Test auto-push when Txn.hasLocalChanges returns false
     iModel.txns.hasLocalChanges = () => false;
@@ -1258,19 +1346,19 @@ describe("iModel", () => {
         const val0: SqliteValue = stmt.getValue(0);
         assert.equal(val0.columnName, "Id");
         assert.equal(val0.type, SqliteValueType.Integer);
-        assert.isFalse(val0.isNull());
+        assert.isFalse(val0.isNull);
         assert.equal(val0.getInteger(), i);
 
         const val1: SqliteValue = stmt.getValue(1);
         assert.equal(val1.columnName, "Name");
         assert.equal(val1.type, SqliteValueType.String);
-        assert.isFalse(val1.isNull());
+        assert.isFalse(val1.isNull);
         assert.equal(val1.getString(), `Dummy ${i}`);
 
         const val2: SqliteValue = stmt.getValue(2);
         assert.equal(val2.columnName, "Code");
         assert.equal(val2.type, SqliteValueType.Integer);
-        assert.isFalse(val2.isNull());
+        assert.isFalse(val2.isNull);
         assert.equal(val2.getInteger(), i * 100);
 
         const row: any = stmt.getRow();
@@ -1296,13 +1384,13 @@ describe("iModel", () => {
         const nameVal: SqliteValue = stmt.getValue(0);
         assert.equal(nameVal.columnName, "Name");
         assert.equal(nameVal.type, SqliteValueType.String);
-        assert.isFalse(nameVal.isNull());
+        assert.isFalse(nameVal.isNull);
         const name: string = nameVal.getString();
 
         const versionVal: SqliteValue = stmt.getValue(1);
         assert.equal(versionVal.columnName, "StrData");
         assert.equal(versionVal.type, SqliteValueType.String);
-        assert.isFalse(versionVal.isNull());
+        assert.isFalse(versionVal.isNull);
         const profileVersion: any = JSON.parse(versionVal.getString());
 
         assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");

@@ -17,6 +17,7 @@
     "**/*.test.tsx",
     "**/*.d.ts",
     "**/*.d.tsx",
+    "demo/**/*",
     "tests/**/*",
     "lib/**/*",
     "node_modules/**/*"
@@ -32,5 +33,6 @@
     "lcov",
     "cobertura"
   ],
-  "all": true
+  "all": true,
+  "cache": false
 }

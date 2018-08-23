@@ -7,7 +7,7 @@
 import { CurvePrimitive } from "./CurvePrimitive";
 import { Transform } from "../Transform";
 import { RecursiveCurveProcessor, RecursiveCurveProcessorWithStack } from "./CurveProcessor";
-import {CurveCollection, CurveChain, BagOfCurves} from "./CurveChain";
+import { CurveCollection, CurveChain, BagOfCurves } from "./CurveChain";
 import { LineString3d } from "./LineString3d";
 import { LineSegment3d } from "./LineSegment3d";
 
@@ -22,8 +22,8 @@ export class GapSearchContext extends RecursiveCurveProcessorWithStack {
     return context.maxGap;
   }
   public announceCurvePrimitive(curve: CurvePrimitive, _indexInParent: number): void {
-    if (this.stack.length > 0) {
-      const parent = this.stack[this.stack.length - 1];
+    if (this._stack.length > 0) {
+      const parent = this._stack[this._stack.length - 1];
       if (parent instanceof CurveChain) {
         const chain = parent as CurveChain;
         const nextCurve = chain.cyclicCurvePrimitive(_indexInParent + 1);
@@ -83,15 +83,15 @@ export class TransformInPlaceContext extends RecursiveCurveProcessor {
 }
 /** Algorithmic class: Sum lengths of curves */
 export class SumLengthsContext extends RecursiveCurveProcessor {
-  private sum: number;
-  private constructor() { super(); this.sum = 0.0; }
+  private _sum: number;
+  private constructor() { super(); this._sum = 0.0; }
   public static sumLengths(target: CurveCollection): number {
     const context = new SumLengthsContext();
     target.announceToCurveProcessor(context);
-    return context.sum;
+    return context._sum;
   }
   public announceCurvePrimitive(curvePrimitive: CurvePrimitive, _indexInParent: number): void {
-    this.sum += curvePrimitive.curveLength();
+    this._sum += curvePrimitive.curveLength();
   }
 }
 /**
@@ -100,17 +100,17 @@ export class SumLengthsContext extends RecursiveCurveProcessor {
  * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
  */
 export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
-  private result: CurveCollection | undefined;
-  private transform: Transform | undefined;
+  private _result: CurveCollection | undefined;
+  private _transform: Transform | undefined;
   private constructor(transform?: Transform) {
     super();
-    this.transform = transform;
-    this.result = undefined;
+    this._transform = transform;
+    this._result = undefined;
   }
   public static clone(target: CurveCollection, transform?: Transform): CurveCollection | undefined {
     const context = new CloneCurvesContext(transform);
     target.announceToCurveProcessor(context);
-    return context.result;
+    return context._result;
   }
   public enter(c: CurveCollection) {
     if (c instanceof CurveCollection)
@@ -119,24 +119,24 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
   public leave(): CurveCollection | undefined {
     const result = super.leave();
     if (result) {
-      if (this.stack.length === 0) // this should only happen once !!!
-        this.result = result as BagOfCurves;
+      if (this._stack.length === 0) // this should only happen once !!!
+        this._result = result as BagOfCurves;
       else // push this result to top of stack.
-        this.stack[this.stack.length - 1].tryAddChild(result);
+        this._stack[this._stack.length - 1].tryAddChild(result);
     }
     return result;
   }
   // specialized cloners override this (and allow announceCurvePrimitive to insert to parent)
   protected doClone(primitive: CurvePrimitive): CurvePrimitive {
-    if (this.transform)
-      return primitive.cloneTransformed(this.transform) as CurvePrimitive;
+    if (this._transform)
+      return primitive.cloneTransformed(this._transform) as CurvePrimitive;
     return primitive.clone() as CurvePrimitive;
   }
 
   public announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
     const c = this.doClone(primitive);
-    if (c && this.stack.length > 0) {
-      const parent = this.stack[this.stack.length - 1];
+    if (c && this._stack.length > 0) {
+      const parent = this._stack[this._stack.length - 1];
       if (parent instanceof CurveChain) {
         parent.tryAddChild(c);
       } else if (parent instanceof BagOfCurves) {

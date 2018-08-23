@@ -1,0 +1,270 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
+<div
+  className="cube-container"
+  onMouseDown={[Function]}
+>
+  <div
+    className="cube-element-container"
+  >
+    <Cube
+      className="nav-cube"
+      faces={
+        Object {
+          "1": <NavCubeFace
+            face={1}
+            hoverMap={Object {}}
+            label="cube.left"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "2": <NavCubeFace
+            face={2}
+            hoverMap={Object {}}
+            label="cube.right"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "3": <NavCubeFace
+            face={3}
+            hoverMap={Object {}}
+            label="cube.back"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "4": <NavCubeFace
+            face={4}
+            hoverMap={Object {}}
+            label="cube.front"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "5": <NavCubeFace
+            face={5}
+            hoverMap={Object {}}
+            label="cube.bottom"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "6": <NavCubeFace
+            face={6}
+            hoverMap={Object {}}
+            label="cube.top"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+        }
+      }
+      rotMatrix={
+        Array [
+          Array [
+            1,
+            0,
+            0,
+          ],
+          Array [
+            0,
+            1,
+            0,
+          ],
+          Array [
+            0,
+            0,
+            1,
+          ],
+        ]
+      }
+    />
+  </div>
+  <PointerButton
+    onArrowClick={[Function]}
+    pointerType={1}
+    visible={true}
+  />
+  <PointerButton
+    onArrowClick={[Function]}
+    pointerType={2}
+    visible={true}
+  />
+  <PointerButton
+    onArrowClick={[Function]}
+    pointerType={3}
+    visible={true}
+  />
+  <PointerButton
+    onArrowClick={[Function]}
+    pointerType={4}
+    visible={true}
+  />
+</div>
+`;
+
+exports[`CubeNavigationAid <FaceCell /> should render correctly 1`] = `
+<div
+  className="face-cell"
+  onMouseDown={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
+<div
+  className="nav-cube-face"
+>
+  <FaceRow
+    center={false}
+    key="-1"
+  >
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="-1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          -1,
+          1,
+          1,
+        ]
+      }
+    />
+    <FaceCell
+      center={true}
+      face={0}
+      hoverMap={Object {}}
+      key="0"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          0,
+          1,
+          1,
+        ]
+      }
+    />
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          1,
+          1,
+          1,
+        ]
+      }
+    />
+  </FaceRow>
+  <FaceRow
+    center={true}
+    key="0"
+  >
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="-1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          -1,
+          0,
+          1,
+        ]
+      }
+    />
+    <FaceCell
+      center={true}
+      face={6}
+      hoverMap={Object {}}
+      key="0"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          0,
+          0,
+          1,
+        ]
+      }
+    >
+      test
+    </FaceCell>
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          1,
+          0,
+          1,
+        ]
+      }
+    />
+  </FaceRow>
+  <FaceRow
+    center={false}
+    key="1"
+  >
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="-1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          -1,
+          -1,
+          1,
+        ]
+      }
+    />
+    <FaceCell
+      center={true}
+      face={0}
+      hoverMap={Object {}}
+      key="0"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          0,
+          -1,
+          1,
+        ]
+      }
+    />
+    <FaceCell
+      center={false}
+      face={0}
+      hoverMap={Object {}}
+      key="1"
+      onFaceCellClick={[Function]}
+      onFaceCellHoverChange={[Function]}
+      position={
+        Array [
+          1,
+          -1,
+          1,
+        ]
+      }
+    />
+  </FaceRow>
+</div>
+`;

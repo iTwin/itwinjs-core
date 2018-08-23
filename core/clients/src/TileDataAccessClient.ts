@@ -20,7 +20,7 @@ export class InstanceData extends WsgInstance {
  */
 export class TileDataAccessClient extends WsgClient {
   public static readonly searchKey: string = "tilesdataaccess";
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-tilesdataaccess.bentley.com",
     QA: "https://qa-connect-tilesdataaccess.bentley.com",
     PROD: "https://connect-tilesdataaccess.bentley.com",
@@ -32,7 +32,7 @@ export class TileDataAccessClient extends WsgClient {
    * @param deploymentEnv Deployment environment.
    */
   public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", TileDataAccessClient.defaultUrlDescriptor[deploymentEnv] + "/");
+    super(deploymentEnv, "v2.5", TileDataAccessClient._defaultUrlDescriptor[deploymentEnv] + "/");
   }
 
   /**
@@ -48,7 +48,7 @@ export class TileDataAccessClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return TileDataAccessClient.defaultUrlDescriptor[this.deploymentEnv];
+    return TileDataAccessClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**

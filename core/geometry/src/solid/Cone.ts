@@ -6,7 +6,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { GeometryHandler, UVSurface } from "../GeometryHandler";
@@ -26,19 +26,19 @@ import { LineString3d } from "../curve/LineString3d";
  * *
  */
 export class Cone extends SolidPrimitive implements UVSurface {
-  private localToWorld: Transform;       // Transform from local to global.
-  private radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
-  private radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
+  private _localToWorld: Transform;       // Transform from local to global.
+  private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
+  private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
   private _maxRadius: number; // maximum radius anywhere on the cone.
   protected constructor(map: Transform, radiusA: number, radiusB: number, capped: boolean) {
     super(capped);
-    this.localToWorld = map;
-    this.radiusA = radiusA;
-    this.radiusB = radiusB;
-    this._maxRadius = Math.max(this.radiusA, this.radiusB);  // um... should resolve elliptical sections
+    this._localToWorld = map;
+    this._radiusA = radiusA;
+    this._radiusB = radiusB;
+    this._maxRadius = Math.max(this._radiusA, this._radiusB);  // um... should resolve elliptical sections
   }
   public clone(): Cone {
-    return new Cone(this.localToWorld.clone(), this.radiusA, this.radiusB, this.capped);
+    return new Cone(this._localToWorld.clone(), this._radiusA, this._radiusB, this.capped);
   }
   /** Return a coordinate frame (right handed unit vectors)
    * * origin at center of the base circle.
@@ -46,15 +46,15 @@ export class Cone extends SolidPrimitive implements UVSurface {
    * * z axis by right hand rule.
    */
   public getConstructiveFrame(): Transform | undefined {
-    return this.localToWorld.cloneRigid();
+    return this._localToWorld.cloneRigid();
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    transform.multiplyTransformTransform(this.localToWorld, this.localToWorld);
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
   public cloneTransformed(transform: Transform): Cone | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(result.localToWorld, result.localToWorld);
+    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
   /** create a cylinder or cone from two endpoints and their radii.   The circular cross sections are perpendicular to the axis line
@@ -71,7 +71,7 @@ export class Cone extends SolidPrimitive implements UVSurface {
     if (radiusA * radiusB < 0.0) return undefined;
     // at least one must be nonzero.
     if (radiusA + radiusB === 0.0) return undefined;
-    const matrix = RotMatrix.createRigidHeadsUp(zDirection);
+    const matrix = Matrix3d.createRigidHeadsUp(zDirection);
     matrix.scaleColumns(1.0, 1.0, a, matrix);
     const localToWorld = Transform.createOriginAndMatrix(centerA, matrix);
     return new Cone(localToWorld, radiusA, radiusB, capped);
@@ -87,21 +87,21 @@ export class Cone extends SolidPrimitive implements UVSurface {
     return new Cone(localToWorld, radiusA, radiusB, capped);
   }
 
-  public getCenterA(): Point3d { return this.localToWorld.multiplyXYZ(0, 0, 0); }
-  public getCenterB(): Point3d { return this.localToWorld.multiplyXYZ(0, 0, 1); }
-  public getVectorX(): Vector3d { return this.localToWorld.matrix.columnX(); }
-  public getVectorY(): Vector3d { return this.localToWorld.matrix.columnY(); }
-  public getRadiusA(): number { return this.radiusA; }
-  public getRadiusB(): number { return this.radiusB; }
+  public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  public getCenterB(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  public getRadiusA(): number { return this._radiusA; }
+  public getRadiusB(): number { return this._radiusB; }
   public getMaxRadius(): number { return this._maxRadius; }
-  public vFractionToRadius(v: number): number { return Geometry.interpolate(this.radiusA, v, this.radiusB); }
+  public vFractionToRadius(v: number): number { return Geometry.interpolate(this._radiusA, v, this._radiusB); }
   public isSameGeometryClass(other: any): boolean { return other instanceof Cone; }
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Cone) {
       if (this.capped !== other.capped) return false;
-      if (!this.localToWorld.isAlmostEqual(other.localToWorld)) return false;
-      return Geometry.isSameCoordinate(this.radiusA, other.radiusA)
-        && Geometry.isSameCoordinate(this.radiusB, other.radiusB);
+      if (!this._localToWorld.isAlmostEqual(other._localToWorld)) return false;
+      return Geometry.isSameCoordinate(this._radiusA, other._radiusA)
+        && Geometry.isSameCoordinate(this._radiusB, other._radiusB);
     }
     return false;
   }
@@ -128,7 +128,7 @@ export class Cone extends SolidPrimitive implements UVSurface {
     const result = LineString3d.create();
     const deltaRadians = Math.PI * 2.0 / strokeCount;
     let radians = 0;
-    const transform = this.localToWorld;
+    const transform = this._localToWorld;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
@@ -145,7 +145,7 @@ export class Cone extends SolidPrimitive implements UVSurface {
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
     const r = this.vFractionToRadius(vFraction);
-    const transform = this.localToWorld;
+    const transform = this._localToWorld;
     const center = transform.multiplyXYZ(0, 0, vFraction);
     const vector0 = transform.matrix.multiplyXYZ(r, 0, 0);
     const vector90 = transform.matrix.multiplyXYZ(0, r, 0);
@@ -160,22 +160,22 @@ export class Cone extends SolidPrimitive implements UVSurface {
 
   public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
-    const r = Geometry.interpolate(this.radiusA, vFraction, this.radiusB);
+    const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const cosTheta = Math.cos(theta);
     const sinTheta = Math.sin(theta);
-    return this.localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
+    return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
   public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
-    const r = Geometry.interpolate(this.radiusA, vFraction, this.radiusB);
-    const drdv = this.radiusB - this.radiusA;
+    const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
+    const drdv = this._radiusB - this._radiusA;
     const cosTheta = Math.cos(theta);
     const sinTheta = Math.sin(theta);
     const fTheta = 2.0 * Math.PI;
     return Plane3dByOriginAndVectors.createOriginAndVectors(
-      this.localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction),
-      this.localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
-      this.localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
+      this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction),
+      this._localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
+      this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result);
   }
 }

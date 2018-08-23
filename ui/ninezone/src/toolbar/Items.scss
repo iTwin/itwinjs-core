@@ -1,65 +1,66 @@
 @import "@bentley/ui-core/lib/colors";
-@import "item/_variables";
 @import "scroll/_variables";
 @import "_variables";
 
 .nz-toolbar-items {
-  $desktop-space-between-toolbar-items: 1px;
   $divider-color: $background-4;
   $border-color: $background-5;
   $border-radius: 3px;
-  $size: $desktop-item-height;
 
   border-color: $border-color;
-  border-width: $items-border-width;
+  border-width: $nz-items-border-width;
   border-radius: $border-radius;
   border-style: solid;
   overflow: hidden;
   display: inline-block;
   vertical-align: bottom;
+  box-sizing: border-box;
 
   &.nz-vertical {
-    width: $size;
+    width: $nz-desktop-item-width;
 
     > * {
+      height: $nz-desktop-item-height;
+
       &:not(:first-child) {
-        &:not(:only-child) {
-          &:after {
-            content: '';
-            background-color: $divider-color;
-            display: block;
-            position: absolute;
-            pointer-events: none;
-            height: $desktop-space-between-toolbar-items;
-            width: 100%;
-            left: 0;
-            top: 0;
-          }
+        margin-top: $nz-desktop-space-between-toolbar-items;
+
+        &:before {
+          content: '';
+          background-color: $divider-color;
+          display: block;
+          position: absolute;
+          pointer-events: none;
+          height: $nz-desktop-space-between-toolbar-items;
+          width: 100%;
+          left: 0;
+          top: -$nz-desktop-space-between-toolbar-items;
         }
       }
     }
   }
 
   &.nz-horizontal {
-    height: $size;
+    height: $nz-desktop-item-height;
 
     > * {
       display: inline-block;
       height: 100%;
+      width: $nz-desktop-item-width;
 
       &:not(:first-child) {
-        &:not(:only-child) {
-          &:after {
-            content: '';
-            background-color: $divider-color;
-            display: block;
-            position: absolute;
-            pointer-events: none;
-            width: $desktop-space-between-toolbar-items;
-            height: 100%;
-            left: 0;
-            top: 0;
-          }
+        margin-left: $nz-desktop-space-between-toolbar-items;
+
+        &:before {
+          content: '';
+          background-color: $divider-color;
+          display: block;
+          position: absolute;
+          pointer-events: none;
+          width: $nz-desktop-space-between-toolbar-items;
+          height: 100%;
+          left: -$nz-desktop-space-between-toolbar-items;
+          top: 0;
         }
       }
     }

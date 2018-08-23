@@ -1,0 +1,65 @@
+{
+  "name": "@bentley/ecschema-metadata",
+  "entries": [
+    {
+      "version": "0.119.0",
+      "tag": "@bentley/ecschema-metadata_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.118.0",
+      "tag": "@bentley/ecschema-metadata_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update KindOfQuantity in ecschema-metadata to use relativeError instead of precision"
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.117.0",
+      "tag": "@bentley/ecschema-metadata_v0.117.0",
+      "date": "Wed, 15 Aug 2018 17:08:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.116.0",
+      "tag": "@bentley/ecschema-metadata_v0.116.0",
+      "date": "Wed, 15 Aug 2018 15:13:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Split the functionality of overriding Formats within a KindOfQuantity into a separate class."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.115.0",
+      "tag": "@bentley/ecschema-metadata_v0.115.0",
+      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.114.0",
+      "tag": "@bentley/ecschema-metadata_v0.114.0",
+      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "First revision of ecschema-metadata (formerly called ecjs)"
+          }
+        ]
+      }
+    }
+  ]
+}

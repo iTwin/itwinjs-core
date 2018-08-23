@@ -114,7 +114,6 @@ public getFirstUser(): Person | undefined {
 
   if (!this.usersValidated() && !this.validateUsers())
       return undefined;
-  }
 
   return return this.getUser(0);
 }
@@ -224,6 +223,12 @@ class Role {
   public description?: string; // Correct !!
 }
 ```
+
+## Enforcing getters for certain function names
+
+If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). By doing this, the method may be accessed as a property of the object rather than as a function. This avoids confusion over whether it is necessary to include parenthesis when using the method to gain access to the value.
+
+This rule will be enforced by the Typescript linter. If the value being returned is expensive to compute, consider using a different name for the method to reflect this. Possible examples may include prefixing the name with words such as "compute" or "calculate".
 
 ## Don't repeat type names unnecessarily
 

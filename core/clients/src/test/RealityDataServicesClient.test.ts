@@ -14,7 +14,7 @@ import { IModelHubClient } from "..";
 chai.should();
 
 export class RealityDataUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-realitydataservices-eus.cloudapp.net",
     QA: "https://qa-connect-realitydataservices.bentley.com",
     PROD: "https://connect-realitydataservices.bentley.com",
@@ -22,11 +22,11 @@ export class RealityDataUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(RealityDataServicesClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(RealityDataServicesClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

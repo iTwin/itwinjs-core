@@ -265,7 +265,7 @@ describe("EntityClass", () => {
       const schemaJson = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
@@ -283,7 +283,7 @@ describe("EntityClass", () => {
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
         const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
-        assert.isTrue(await navProp.relationshipClass === relClass);
+        assert.isTrue(await navProp.relationshipClass === relClass);  // << For some reason type guard was failing..?
       } else {
         assert.fail();
       }
@@ -293,7 +293,7 @@ describe("EntityClass", () => {
       const schemaJson = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
@@ -342,42 +342,42 @@ describe("EntityClass", () => {
 
     it("should throw for property with missing name", async () => {
       const json = createSchemaJson({
-        properties: [{ propertyType: "PrimitiveProperty" }],
+        properties: [{ type: "PrimitiveProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'name' property.`);
     });
 
     it("should throw for property with invalid name", async () => {
       const json = createSchemaJson({
-        properties: [{ propertyType: "PrimitiveProperty", name: 0 }],
+        properties: [{ type: "PrimitiveProperty", name: 0 }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass has an invalid 'name' property. It should be of type 'string'.`);
     });
 
-    it("should throw for property with missing propertyType", async () => {
+    it("should throw for property with missing type", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp" }],
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'propertyType' property.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'type' property.`);
     });
 
-    it("should throw for property with invalid propertyType", async () => {
+    it("should throw for property with invalid type", async () => {
       const json = createSchemaJson({
-        properties: [{ name: "badProp", propertyType: 0 }],
+        properties: [{ name: "badProp", type: 0 }],
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'propertyType' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'type' property. It should be of type 'string'.`);
     });
 
     it("should throw for property with missing typeName", async () => {
       const json = createSchemaJson({
-        properties: [{ name: "badProp", propertyType: "PrimitiveProperty" }],
+        properties: [{ name: "badProp", type: "PrimitiveProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' property.`);
     });
 
     it("should throw for property with invalid typeName", async () => {
       const json = createSchemaJson({
-        properties: [{ name: "badProp", propertyType: "PrimitiveProperty", typeName: 0 }],
+        properties: [{ name: "badProp", type: "PrimitiveProperty", typeName: 0 }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'typeName' property. It should be of type 'string'.`);
     });
@@ -386,7 +386,7 @@ describe("EntityClass", () => {
       const json = createSchemaJson({
         properties: [
           {
-            propertyType: "PrimitiveProperty",
+            type: "PrimitiveProperty",
             typeName: "double",
             name: "testProp",
             category: 0,
@@ -400,7 +400,7 @@ describe("EntityClass", () => {
       const json = createSchemaJson({
         properties: [
           {
-            propertyType: "PrimitiveProperty",
+            type: "PrimitiveProperty",
             typeName: "double",
             name: "testProp",
             kindOfQuantity: 0,
@@ -414,7 +414,7 @@ describe("EntityClass", () => {
       const json = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             direction: "forward",
           },
@@ -427,7 +427,7 @@ describe("EntityClass", () => {
       const json = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             direction: "forward",
             relationshipName: 0,
@@ -441,7 +441,7 @@ describe("EntityClass", () => {
       const json = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             direction: "forward",
             relationshipName: "BadSchema.ThisDoesNotExist",
@@ -455,7 +455,7 @@ describe("EntityClass", () => {
       const json = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
           },
@@ -468,7 +468,7 @@ describe("EntityClass", () => {
       const json = createNavPropSchemaJson({
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: 0,

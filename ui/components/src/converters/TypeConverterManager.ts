@@ -10,25 +10,25 @@ import { TypeConverter } from "./TypeConverter";
  * manager.
  */
 export class TypeConverterManager {
-  private static converters: { [index: string]: (TypeConverter) } = {};
-  private static defaultTypeConverter: TypeConverter;
+  private static _converters: { [index: string]: (TypeConverter) } = {};
+  private static _defaultTypeConverter: TypeConverter;
 
   public static registerConverter(typename: string, converter: typeof TypeConverter): void {
-    if (TypeConverterManager.converters.hasOwnProperty(typename))
+    if (TypeConverterManager._converters.hasOwnProperty(typename))
       return;
 
     const instance = new converter();
-    TypeConverterManager.converters[typename] = instance;
+    TypeConverterManager._converters[typename] = instance;
   }
 
   public static getConverter(typename: string): TypeConverter {
-    if (TypeConverterManager.converters.hasOwnProperty(typename))
-      return TypeConverterManager.converters[typename];
+    if (TypeConverterManager._converters.hasOwnProperty(typename))
+      return TypeConverterManager._converters[typename];
 
-    if (!TypeConverterManager.defaultTypeConverter) {
+    if (!TypeConverterManager._defaultTypeConverter) {
       const { StringTypeConverter } = require("../converters/StringTypeConverter");
-      TypeConverterManager.defaultTypeConverter = new StringTypeConverter();
+      TypeConverterManager._defaultTypeConverter = new StringTypeConverter();
     }
-    return TypeConverterManager.defaultTypeConverter;
+    return TypeConverterManager._defaultTypeConverter;
   }
 }

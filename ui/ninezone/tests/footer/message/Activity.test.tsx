@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Activity from "@src/footer/message/Activity";
+import Activity from "../../../src/footer/message/Activity";
 
 describe("<Activity />", () => {
   it("should render", () => {

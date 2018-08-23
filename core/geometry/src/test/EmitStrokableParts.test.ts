@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-// import { Point3d, Vector3d, Transform, RotMatrix, Range1d } from "../PointVector";
+// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
 import { Sample } from "../serialization/GeometrySamples";
 import { Point3d, Vector3d } from "../PointVector";
 import { LineString3d } from "../curve/LineString3d";
@@ -23,25 +23,25 @@ function maxSegmentLength(linestring: LineString3d): number {
 }
 
 class StrokeVerifier implements IStrokeHandler {
-  private myCP: CurvePrimitive | undefined;
-  private myParent: CurvePrimitive | undefined;
-  private ck: Checker;
+  private _myCP: CurvePrimitive | undefined;
+  private _myParent: CurvePrimitive | undefined;
+  private _ck: Checker;
   public frameBuilder: FrameBuilder;
   public constructor(ck: Checker) {
-    this.ck = ck;
-    this.myParent = undefined;
-    this.myCP = undefined;
+    this._ck = ck;
+    this._myParent = undefined;
+    this._myCP = undefined;
     this.frameBuilder = new FrameBuilder();
   }
-  public startCurvePrimitive(cp: CurvePrimitive): void { this.myCP = cp; }
+  public startCurvePrimitive(cp: CurvePrimitive): void { this._myCP = cp; }
   public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.frameBuilder.announcePoint(xyz);
-    this.ck.testTrue(this.frameBuilder.hasOrigin(), "frameBuilder.hasOrigin after a point is announced");
+    this._ck.testTrue(this.frameBuilder.hasOrigin, "frameBuilder.hasOrigin after a point is announced");
     this.frameBuilder.announceVector(tangent);
-    if (this.ck.testPointer(this.myCP) && this.myCP) {
-      const ray = this.myCP.fractionToPointAndDerivative(fraction);
-      this.ck.testPoint3d(xyz, ray.origin, "Stroke validator point");
-      this.ck.testVector3d(tangent, ray.direction, "Stroke validator point");
+    if (this._ck.testPointer(this._myCP) && this._myCP) {
+      const ray = this._myCP.fractionToPointAndDerivative(fraction);
+      this._ck.testPoint3d(xyz, ray.origin, "Stroke validator point");
+      this._ck.testVector3d(tangent, ray.direction, "Stroke validator point");
     }
   }
 
@@ -63,12 +63,12 @@ class StrokeVerifier implements IStrokeHandler {
     _fraction1: number): void {
     //
   }
-  public endCurvePrimitive(_cp: CurvePrimitive): void { this.myCP = undefined; }
+  public endCurvePrimitive(_cp: CurvePrimitive): void { this._myCP = undefined; }
   public startParentCurvePrimitive(_cp: CurvePrimitive): void {
-    this.ck.testUndefined(this.myParent, "Stroker parentCurve cannot be recursive");
-    this.myParent = _cp;
+    this._ck.testUndefined(this._myParent, "Stroker parentCurve cannot be recursive");
+    this._myParent = _cp;
   }
-  public endParentCurvePrimitive(_cp: CurvePrimitive): void { this.myParent = undefined; }
+  public endParentCurvePrimitive(_cp: CurvePrimitive): void { this._myParent = undefined; }
 
 }
 

@@ -6,7 +6,7 @@
 
 import { Geometry, Angle, BeJSONFunctions, AngleProps } from "./Geometry";
 import { Ray3d } from "./AnalyticGeometry";
-import { RotMatrix, Transform } from "./Transform";
+import { Matrix3d, Transform } from "./Transform";
 
 export interface IsNullCheck { isNull(): boolean; }
 export interface WritableXAndY { x: number; y: number; }
@@ -23,8 +23,8 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
 export type XYZProps = { x?: number; y?: number; z?: number } | number[];
 export type XYProps = { x?: number; y?: number; } | number[];
-export type RotMatrixProps = number[][] | RotMatrix | number[];
-export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: RotMatrixProps; };
+export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: Matrix3dProps; };
 export type Range3dProps = { low: XYZProps; high: XYZProps; } | XYZProps[];
 export type Range2dProps = { low: XYProps; high: XYProps; } | XYProps[];
 export type Range1dProps = { low: number; high: number } | number[];
@@ -88,7 +88,7 @@ export class XY implements XAndY {
     return Math.max(Math.abs(this.x - other.x), Math.abs(this.y - other.y));
   }
   /** @returns true if the x,y components are both small by metric metric tolerance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
   }
 
@@ -245,7 +245,7 @@ export class XYZ implements XYAndZ {
     return index;
   }
   /** Return true if the if x,y,z components are all nearly zero to tolerance Geometry.smallMetricDistance */
-  public isAlmostZero(): boolean {
+  public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y) && Geometry.isSmallMetricDistance(this.z);
   }
 
@@ -522,7 +522,7 @@ export class Point3d extends XYZ {
    * @param scale scale factor to apply to its x,y,z parts
    * @param result optional point to receive coordinates
    */
-  public static createScale(source: XYZ, scale: number, result?: Point3d): Point3d {
+  public static createScale(source: XYAndZ, scale: number, result?: Point3d): Point3d {
     return Point3d.create(source.x * scale, source.y * scale, source.z * scale, result);
   }
   /** create a point that is a linear combination (weighted sum) of 2 input points.
@@ -531,7 +531,7 @@ export class Point3d extends XYZ {
    * @param pointB second input point
    * @param scaleB scale factor for pointB
    */
-  public static add2Scaled(pointA: XYZ, scaleA: number, pointB: XYZ, scaleB: number, result?: Point3d): Point3d {
+  public static createAdd2Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB,
       pointA.y * scaleA + pointB.y * scaleB,
@@ -547,7 +547,7 @@ export class Point3d extends XYZ {
    * @param pointC third input point.
    * @param scaleC scale factor for pointC
    */
-  public static add3Scaled(pointA: XYZ, scaleA: number, pointB: XYZ, scaleB: number, pointC: XYZ, scaleC: number, result?: Point3d): Point3d {
+  public static createAdd3Scaled(pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
       pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC,
@@ -738,7 +738,7 @@ export class Vector3d extends XYZ {
       if (angle) {
         const c = angle.cos();
         const s = angle.sin();
-        return Vector3d.add3Scaled(vector, c, xProduct, s, unitAxis, unitAxis.dotProduct(vector) * (1.0 - c));
+        return Vector3d.createAdd3Scaled(vector, c, xProduct, s, unitAxis, unitAxis.dotProduct(vector) * (1.0 - c));
       } else {
         // implied c = 0, s = 1 . . .
         return vector.plusScaled(unitAxis, unitAxis.dotProduct(vector));
@@ -761,12 +761,12 @@ export class Vector3d extends XYZ {
   /** Return a vector with 000 xyz parts. */
   public static createZero(result?: Vector3d): Vector3d { return Vector3d.create(0, 0, 0, result); }
 
-  /** Return a unit X vector  */
-  public static unitX(): Vector3d { return new Vector3d(1, 0, 0); }
+  /** Return a unit X vector optionally multiplied by a scale  */
+  public static unitX(scale: number = 1): Vector3d { return new Vector3d(scale, 0, 0); }
   /** Return a unit Y vector  */
-  public static unitY(): Vector3d { return new Vector3d(0, 1, 0); }
+  public static unitY(scale: number = 1): Vector3d { return new Vector3d(0, scale, 0); }
   /** Return a unit Z vector  */
-  public static unitZ(): Vector3d { return new Vector3d(0, 0, 1); }
+  public static unitZ(scale: number = 1): Vector3d { return new Vector3d(0, 0, scale); }
 
   /** Divide by denominator, but return undefined if denominator is zero. */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
@@ -933,7 +933,7 @@ export class Vector3d extends XYZ {
   }
 
   /** Return `point + vectorA * scalarA + vectorB * scalarB` */
-  public static add2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, result?: Vector3d): Vector3d {
+  public static createAdd2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
       vectorA.x * scaleA + vectorB.x * scaleB,
       vectorA.y * scaleA + vectorB.y * scaleB,
@@ -942,7 +942,7 @@ export class Vector3d extends XYZ {
   }
 
   /** Return `point + vectorA * scalarA + vectorB * scalarB` with all components presented as numbers */
-  public static add2ScaledXYZ(ax: number, ay: number, az: number, scaleA: number, bx: number, by: number, bz: number, scaleB: number, result?: Vector3d): Vector3d {
+  public static createAdd2ScaledXYZ(ax: number, ay: number, az: number, scaleA: number, bx: number, by: number, bz: number, scaleB: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
       ax * scaleA + bx * scaleB,
       ay * scaleA + by * scaleB,
@@ -950,7 +950,7 @@ export class Vector3d extends XYZ {
       result);
   }
 
-  public static add3Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, vectorC: XYAndZ, scaleC: number, result?: Vector3d): Vector3d {
+  public static createAdd3Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, vectorC: XYAndZ, scaleC: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
       vectorA.x * scaleA + vectorB.x * scaleB + vectorC.x * scaleC,
       vectorA.y * scaleA + vectorB.y * scaleB + vectorC.y * scaleC,
@@ -1000,12 +1000,13 @@ export class Vector3d extends XYZ {
     return true;
   }
 
-  public sizedCrossProduct(vectorB: Vector3d, productLength: number, result?: Vector3d): Vector3d {
+  public sizedCrossProduct(vectorB: Vector3d, productLength: number, result?: Vector3d): Vector3d | undefined {
     result = this.crossProduct(vectorB, result);
-    const length: number = result.magnitude();
-    if (length !== 0)
-      result.scale(productLength / length, result);
-    return result;
+    if (result.tryNormalizeInPlace()) {
+      result.scaleInPlace(productLength);
+      return result;
+    }
+    return undefined;
   }
 
   // products
@@ -1063,7 +1064,7 @@ export class Vector3d extends XYZ {
       + this.y * (dw * y - pointA.y)
       + this.z * (dw * z - pointA.z);
   }
-
+  /** Return the dot product of the instance and vectorB, using only the x and y parts. */
   public dotProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.x + this.y * vectorB.y;
   }
@@ -1077,12 +1078,14 @@ export class Vector3d extends XYZ {
     return this.x * x + this.y * y + this.z * z;
   }
 
+  /** Return the triple product of the instance, vectorB, and vectorC  */
   public tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number {
     return Geometry.tripleProduct(this.x, this.y, this.z,
       vectorB.x, vectorB.y, vectorB.z,
       vectorC.x, vectorC.y, vectorC.z);
   }
 
+  /** Return the cross product of the instance and vectorB, using only the x and y parts. */
   public crossProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.y - this.y * vectorB.x;
   }
@@ -1199,7 +1202,7 @@ export class Segment1d {
   /**
    * Return true if the segment limits are (exactly) 0 and 1
    */
-  public isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+  public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
 }
 
 /** The properties that define [[YawPitchRollAngles]]. */
@@ -1251,9 +1254,9 @@ export class YawPitchRollAngles {
   /** Convert to a JSON object of form { pitch: 20 , roll: 29.999999999999996 , yaw: 10 }. Any values that are exactly zero (with tolerance `Geometry.smallAngleRadians`) are omitted. */
   public toJSON(): YawPitchRollProps {
     const val: YawPitchRollProps = {};
-    if (!this.pitch.isAlmostZero()) val.pitch = this.pitch.toJSON();
-    if (!this.roll.isAlmostZero()) val.roll = this.roll.toJSON();
-    if (!this.yaw.isAlmostZero()) val.yaw = this.yaw.toJSON();
+    if (!this.pitch.isAlmostZero) val.pitch = this.pitch.toJSON();
+    if (!this.roll.isAlmostZero) val.roll = this.roll.toJSON();
+    if (!this.yaw.isAlmostZero) val.yaw = this.yaw.toJSON();
     return val;
   }
   /**
@@ -1284,22 +1287,22 @@ export class YawPitchRollAngles {
    *
    * * The returned matrix is "rigid" -- unit length rows and columns, and its transpose is its inverse.
    * * The "rigid" matrix is always a right handed coordinate system.
-   * @param result optional pre-allocated `RotMatrix`
+   * @param result optional pre-allocated `Matrix3d`
    */
-  public toRotMatrix(result?: RotMatrix) {
+  public toMatrix3d(result?: Matrix3d) {
     const c0 = Math.cos(this.yaw.radians);
     const s0 = Math.sin(this.yaw.radians);
     const c1 = Math.cos(this.pitch.radians);
     const s1 = Math.sin(this.pitch.radians);
     const c2 = Math.cos(this.roll.radians);
     const s2 = Math.sin(this.roll.radians);
-    return RotMatrix.createRowValues
+    return Matrix3d.createRowValues
       (
       c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2),
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
       s1, c1 * s2, c1 * c2,
       result,
-    );
+      );
   }
   /** @returns Return the largest angle in radians */
   public maxAbsRadians(): number {
@@ -1328,7 +1331,7 @@ export class YawPitchRollAngles {
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
       this.roll.radians - other.roll.radians,
-    );
+      );
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number { return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees); }
@@ -1338,17 +1341,17 @@ export class YawPitchRollAngles {
   public static tryFromTransform(transform: Transform): { origin: Point3d, angles: YawPitchRollAngles | undefined } {
     // bundle up the transform's origin with the angle data extracted from the transform
     return {
-      angles: YawPitchRollAngles.createFromRotMatrix(transform.matrix),
+      angles: YawPitchRollAngles.createFromMatrix3d(transform.matrix),
       origin: Point3d.createFrom(transform.origin),
     };
   }
 
-  /** Attempts to create a YawPitchRollAngles object from an RotMatrix
+  /** Attempts to create a YawPitchRollAngles object from an Matrix3d
    * * This conversion fails if the matrix is not rigid (unit rows and columns, transpose is inverse)
    * * In the failure case the method's return value is `undefined`.
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with a set of angles.
    */
-  public static createFromRotMatrix(matrix: RotMatrix, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
+  public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     const s1 = matrix.at(2, 0);
     const c1 = Math.sqrt(matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2));
 
@@ -1387,7 +1390,7 @@ export class YawPitchRollAngles {
         }
       }
     }
-    const matrix1 = angles.toRotMatrix();
+    const matrix1 = angles.toMatrix3d();
     return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 
@@ -1545,10 +1548,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
 
   // unit X vector
-  public static unitX(): Vector2d { return new Vector2d(1, 0); }
+  public static unitX(scale: number = 1): Vector2d { return new Vector2d(scale, 0); }
 
   // unit Y vector
-  public static unitY(): Vector2d { return new Vector2d(0, 1); }
+  public static unitY(scale: number = 1): Vector2d { return new Vector2d(0, scale); }
 
   // zero vector
   public static createZero(result?: Vector2d): Vector2d { return Vector2d.create(0, 0, result); }
@@ -1578,13 +1581,18 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return new Vector2d(point1.x - point0.x, point1.y - point0.y);
   }
-
+  /**
+   * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
+   * @param unitPerpA unit perpendicular to incoming direction
+   * @param unitPerpB  unit perpendicular to outgoing direction
+   * @param offset offset distance
+   */
   public static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined {
     let bisector: Vector2d | undefined = unitPerpA.plus(unitPerpB);
     bisector = bisector.normalize();
     if (bisector) {
       const c = offset * bisector.dotProduct(unitPerpA);
-      return bisector.scale(c);
+      return bisector.safeDivideOrNull(c);
     }
     return undefined;
   }
@@ -1776,7 +1784,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
     /* For small theta, sin^2(theta)~~theta^2 */
     return cross * cross <= Geometry.smallAngleRadiansSquared * a2 * b2;
   }
-
+  /**
+   * @returns `true` if `this` vector is perpendicular to `other`.
+   * @param other second vector.
+   */
   public isPerpendicularTo(other: Vector2d): boolean {
     return Angle.isPerpendicularDotSet(this.magnitudeSquared(), other.magnitudeSquared(), this.dotProduct(other));
   }

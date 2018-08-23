@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Indicator /> renders correctly 1`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;

@@ -4,7 +4,7 @@
 
 import { Point3d } from "../PointVector";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -13,7 +13,7 @@ function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
   const expectValidResults = lsA.numPoints() > 1;
   const a = 4.2;
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
-    RotMatrix.createScale(a, a, a));
+    Matrix3d.createScale(a, a, a));
   const lsB = lsA.clone();
   lsB.reverseInPlace();
   const lsC = lsA.clone()!;
