@@ -15,6 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
@@ -110,6 +111,7 @@ class WebMercatorTileProps implements TileProps {
   }
 }
 class WebMercatorTileLoader extends TileLoader {
+  private providerInitializing?: Promise<void>;
   private providerInitialized: boolean = false;
   public mercatorToDb: Transform;
   constructor(private imageryProvider: ImageryProvider, private iModel: IModelConnection, groundBias: number) {
@@ -140,14 +142,18 @@ class WebMercatorTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+    if (!this.providerInitialized) {
+      if (undefined === this.providerInitializing)
+        this.providerInitializing = this.imageryProvider.initialize();
+      await this.providerInitializing;
+      this.providerInitialized = true;
+      this.providerInitializing = undefined;
+    }
+
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
         missingTile.setIsQueued();
-        if (!this.providerInitialized) {
-          await this.imageryProvider.initialize();
-          this.providerInitialized = true;
-        }
 
         const quadId = new QuadId(missingTile.id);
         const corners = quadId.getCorners(this.mercatorToDb);
@@ -197,7 +203,7 @@ abstract class ImageryProvider {
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
   public abstract getCopyrightMessage(): string;
-  public abstract getCopyrightImage(): Uint8Array | undefined;
+  public abstract getCopyrightImage(): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -264,7 +270,7 @@ class BingMapProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  public _logoByteArray?: Uint8Array;
+  public _logoImage?: HTMLImageElement;
 
   constructor(mapType: MapType) {
     super(mapType);
@@ -311,7 +317,7 @@ class BingMapProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return this._logoByteArray; }
+  public getCopyrightImage(): HTMLImageElement | undefined { return this._logoImage; }
   public getCopyrightMessage(): string { return ""; }    // NEEDSWORK
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
@@ -362,7 +368,11 @@ class BingMapProvider extends ImageryProvider {
       this.readAttributions(thisResourceProps.imageryProviders);
 
       // read the Bing logo data, used in getCopyrightImage
-      this.readLogo().then((logoByteArray) => { this._logoByteArray = logoByteArray; });
+      this.readLogo().then((logoByteArray) => {
+        this._logoImage = new Image();
+        const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
+        this._logoImage.src = "data:image/png;base64," + base64Data;
+      });
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
@@ -452,7 +462,7 @@ class MapBoxProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return undefined; }
+  public getCopyrightImage(): HTMLImageElement | undefined { return undefined; }
 
   public getCopyrightMessage(): string { return "(c) Mapbox, (c) OpenStreetMap contributors"; }
 
@@ -464,10 +474,12 @@ class MapBoxProvider extends ImageryProvider {
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  private provider?: ImageryProvider;
   private providerName: string;
   /// private providerData: string;
   private groundBias: number;
   private mapType: MapType;
+  private logoImageAddedToDOM: boolean = false;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this.iModel, true, loader));
@@ -491,21 +503,20 @@ export class BackgroundMapState {
       return this._loadStatus;
     }
 
-    let provider: ImageryProvider | undefined;
-
     if ("BingProvider" === this.providerName) {
-      provider = new BingMapProvider(this.mapType);
+      this.provider = new BingMapProvider(this.mapType);
     } else if ("MapBoxProvider" === this.providerName) {
-      provider = new MapBoxProvider(this.mapType);
+      this.provider = new MapBoxProvider(this.mapType);
     }
-    if (provider === undefined)
+    if (this.provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this.iModel, JsonUtils.asDouble(this.groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this.provider, this.iModel, JsonUtils.asDouble(this.groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
+
   public addToScene(context: SceneContext) {
     if (!context.viewFlags.backgroundMap)
       return;
@@ -513,5 +524,31 @@ export class BackgroundMapState {
     this.loadTileTree();
     if (undefined !== this._tileTree)
       this._tileTree.drawScene(context);
+
+    this.displayLogoImage(context);
+  }
+
+  public displayLogoImage(context: SceneContext) {
+    const logoImage: HTMLImageElement | undefined = this.provider!.getCopyrightImage();
+    if (!logoImage)
+      return;
+
+    if (this.logoImageAddedToDOM)
+      return;
+
+    const vp: Viewport = context.viewport;
+    // const clientRect: ClientRect = vp.getClientRect();
+    const canvas: HTMLCanvasElement = vp.canvas;
+    const parent: HTMLElement | null = canvas.parentElement;
+    if (!parent)
+      return;
+
+    const logoDiv: HTMLDivElement = document.createElement("div");
+    parent.appendChild(logoDiv);
+    logoDiv.style.position = "absolute";
+    logoDiv.appendChild(logoImage);
+
+    // insert the image into the scene inside a div
+    this.logoImageAddedToDOM = true;
   }
 }
