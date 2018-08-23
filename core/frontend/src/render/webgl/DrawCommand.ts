@@ -17,7 +17,6 @@ import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
-import { FeatureSymbology } from "../FeatureSymbology";
 
 export class ShaderProgramParams {
   public readonly target: Target;
@@ -103,13 +102,10 @@ export abstract class DrawCommand {
     return PushOrPop.Pop === this.pushOrPop && (undefined === branch || this.branch === branch);
   }
 
+  public static createForBranch(branch: Branch, pushOrPop: PushOrPop): DrawCommand { return new BranchCommand(branch, pushOrPop); }
   public static createForPrimitive(primitive: Primitive, batch?: Batch): DrawCommand {
     return undefined !== batch ? new BatchPrimitiveCommand(primitive, batch) : new PrimitiveCommand(primitive);
   }
-  public static createForDecoration(primitive: Primitive, ovrs?: FeatureSymbology.Appearance): DrawCommand {
-    return undefined !== ovrs ? new OvrPrimitiveCommand(primitive, ovrs) : new PrimitiveCommand(primitive);
-  }
-  public static createForBranch(branch: Branch, pushOrPop: PushOrPop): DrawCommand { return new BranchCommand(branch, pushOrPop); }
 }
 
 class BranchCommand extends DrawCommand {
@@ -168,23 +164,6 @@ class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 }
 
-/** Draws a decoration primitive with symbology overriden */
-class OvrPrimitiveCommand extends PrimitiveCommand {
-  private readonly _params: FeatureSymbology.Appearance;
-
-  public constructor(primitive: Primitive, params: FeatureSymbology.Appearance) {
-    super(primitive);
-    this._params = params;
-  }
-
-  public preExecute(_exec: ShaderProgramExecutor): void {
-    assert(undefined !== this._params); // ###TODO
-  }
-  public postExecute(_exec: ShaderProgramExecutor): void {
-    // ###TODO
-  }
-}
-
 /** For a single RenderPass, an ordered list of commands to be executed during that pass. */
 export type DrawCommands = DrawCommand[];
 
@@ -195,7 +174,6 @@ export class RenderCommands {
   private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
-  private _curOvrParams?: FeatureSymbology.Appearance = undefined;
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
@@ -210,7 +188,6 @@ export class RenderCommands {
     return true;
   }
 
-  public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {
     let flags = CompositeFlags.None;
@@ -331,7 +308,7 @@ export class RenderCommands {
 
     let ovrType = FeatureIndexType.Empty;
     if (this._opaqueOverrides || this._translucentOverrides)
-      ovrType = this.hasDecorationOverrides ? FeatureIndexType.Uniform : command.featureIndexType;
+      ovrType = command.featureIndexType;
 
     const haveFeatureOverrides = FeatureIndexType.Empty !== ovrType;
 
@@ -385,27 +362,6 @@ export class RenderCommands {
     this.getCommands(pass).push(command);
   }
 
-  // // #TODO: implement FeatureOverrides
-  // public addDecoration(gf: Graphic, _ovr?: FeatureSymbology.Appearance): void {
-  //   const anyOvr = false; // FeatureOverrides.anyOverrides(ovr);
-  //   if (!anyOvr) {
-  //     gf.addCommands(this);
-  //     return;
-  //   }
-
-  //   // this._curOvrParams = ovr;
-
-  //   // if (0 !== (ovr.flags & OvrGraphicParams.FLAGS_FillColorTransparency)) {
-  //   //   this._opaqueOverrides = 0 === ovr.fillColor.alpha;
-  //   //   this._translucentOverrides = !this._opaqueOverrides;
-  //   // }
-
-  //   // gf.addCommands(this);
-
-  //   this._curOvrParams = undefined;
-  //   this._opaqueOverrides = this._translucentOverrides = false;
-  // }
-
   public getRenderPass(command: DrawCommand): RenderPass { return command.getRenderPass(this.target); }
 
   public getCommands(pass: RenderPass): DrawCommands {
@@ -448,7 +404,6 @@ export class RenderCommands {
 
   public clear(): void {
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
-    assert(undefined === this._curOvrParams);
   }
 
   public initForPickOverlays(overlays: GraphicList): void {
@@ -518,9 +473,7 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
-    assert(undefined === this._curOvrParams || undefined === this._curBatch);
-
-    const command = undefined !== this._curOvrParams ? DrawCommand.createForDecoration(prim, this._curOvrParams) : DrawCommand.createForPrimitive(prim, this._curBatch);
+    const command = DrawCommand.createForPrimitive(prim, this._curBatch);
     this.addDrawCommand(command);
 
     if (RenderPass.None === this._forcedRenderPass && prim.isEdge) {
