@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY, Vector3d, Transform, RotMatrix, Angle, Constant } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Vector3d, Transform, Matrix3d, Angle, Constant } from "@bentley/geometry-core";
 import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
@@ -1387,7 +1387,7 @@ export class WheelEventProcessor {
       }
 
       const cameraView = vp.view as ViewState3d;
-      const transform = Transform.createFixedPointAndMatrix(target, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldCameraPos = cameraView.getEyePoint();
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
       const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
@@ -1413,7 +1413,7 @@ export class WheelEventProcessor {
       vp.synchWithView(false);
     } else {
       const targetNpc = vp.worldToNpc(target);
-      const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
+      const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
       const viewCenter = Point3d.create(.5, .5, .5);
 
       trans.multiplyPoint3d(viewCenter, viewCenter);

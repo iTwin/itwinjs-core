@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Geometry, Angle } from "../Geometry";
 import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../PointVector";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 
 import { GrowableFloat64Array } from "../GrowableArray";
 import { Range3d } from "../Range";
@@ -243,10 +243,10 @@ export class Checker {
     return this.announceError(" expect same Matrix4d", dataA, dataB, params);
   }
 
-  public testRotMatrix(dataA: RotMatrix, dataB: RotMatrix, ...params: any[]): boolean {
+  public testMatrix3d(dataA: Matrix3d, dataB: Matrix3d, ...params: any[]): boolean {
     if (dataA.maxDiff(dataB) < Geometry.smallMetricDistance)
       return this.announceOK();
-    return this.announceError("expect same RotMatrix", dataA, dataB, params);
+    return this.announceError("expect same Matrix3d", dataA, dataB, params);
   }
 
   public testTransform(dataA: Transform, dataB: Transform, ...params: any[]): boolean {

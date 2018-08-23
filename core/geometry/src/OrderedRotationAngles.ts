@@ -5,7 +5,7 @@
 /** @module CartesianGeometry */
 
 import { Angle, AxisOrder } from "./Geometry";
-import { RotMatrix } from "./Transform";
+import { Matrix3d } from "./Transform";
 
 /** OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them. */
 export class OrderedRotationAngles {
@@ -78,7 +78,7 @@ export class OrderedRotationAngles {
   }
 
   /** Create an OrderedRotationAngles from a 3x3 rotational matrix, given the ordering of axis rotations that the matrix derives from. */
-  public static createFromRotMatrix(matrix: RotMatrix, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
+  public static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles {
 
     let m11 = matrix.coffs[0], m12 = matrix.coffs[3], m13 = matrix.coffs[6];
     let m21 = matrix.coffs[1], m22 = matrix.coffs[4], m23 = matrix.coffs[7];
@@ -174,8 +174,8 @@ export class OrderedRotationAngles {
   }
 
   /** Create a 3x3 rotational matrix from this OrderedRotationAngles. */
-  public toRotMatrix(result?: RotMatrix): RotMatrix {
-    const rot = result !== undefined ? result : new RotMatrix();
+  public toMatrix3d(result?: Matrix3d): Matrix3d {
+    const rot = result !== undefined ? result : new Matrix3d();
     const axisOrder = this.order;
     const x = this.xAngle, y = this.yAngle, z = this.zAngle;
     const a = x.cos(); let b = x.sin();

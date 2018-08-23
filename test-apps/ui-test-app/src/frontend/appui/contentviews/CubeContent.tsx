@@ -4,7 +4,7 @@
 import * as React from "react";
 
 import { Cube } from "@bentley/ui-core";
-import { RotMatrix } from "@bentley/geometry-core";
+import { Matrix3d } from "@bentley/geometry-core";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { ViewportManager, CubeRotationChangeEventArgs } from "@bentley/ui-components";
 
@@ -19,13 +19,13 @@ class CubeContentControl extends ContentControl {
 }
 
 interface CubeContentState {
-  rotMatrix: RotMatrix;
+  rotMatrix: Matrix3d;
 }
 
 class CubeContent extends React.Component<{}, CubeContentState> {
 
   public readonly state: CubeContentState = {
-    rotMatrix: RotMatrix.createIdentity(),
+    rotMatrix: Matrix3d.createIdentity(),
   };
 
   public render(): React.ReactNode {

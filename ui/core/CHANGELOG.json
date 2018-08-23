@@ -2,6 +2,18 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.119.0",
+      "tag": "@bentley/ui-core_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Cube component for use in the CubeNavigationAid and CubeContent."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.118.0",
       "tag": "@bentley/ui-core_v0.118.0",
       "date": "Tue, 21 Aug 2018 17:20:41 GMT",

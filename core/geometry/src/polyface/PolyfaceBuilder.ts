@@ -8,7 +8,7 @@
 import { IndexedPolyface } from "./Polyface";
 import { GrowableFloat64Array } from "../GrowableArray";
 import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { BoxTopology } from "./BoxTopology";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { GeometryQuery } from "../curve/CurvePrimitive";
@@ -225,7 +225,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {
     const vectorAB = pointA.vectorTo(pointB);
     const vectorAC = pointA.vectorTo(pointC);
-    const unitAxes = RotMatrix.createRigidFromColumns(vectorAB, vectorAC, AxisOrder.XYZ);
+    const unitAxes = Matrix3d.createRigidFromColumns(vectorAB, vectorAC, AxisOrder.XYZ);
     const localToWorld = Transform.createOriginAndMatrix(pointA, unitAxes);
     return localToWorld.inverse();
   }

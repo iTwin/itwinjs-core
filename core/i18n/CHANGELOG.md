@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Tue, 21 Aug 2018 17:20:41 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Aug 2018 15:25:49 GMT and should not be manually modified.
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- Use bentley logger to log i18n messages
 
 ## 0.118.0
 Tue, 21 Aug 2018 17:20:41 GMT

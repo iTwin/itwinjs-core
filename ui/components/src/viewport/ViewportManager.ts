@@ -7,7 +7,7 @@ import { Viewport } from "@bentley/imodeljs-frontend";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { ViewportComponent } from "./ViewportComponent";
-import { RotMatrix } from "@bentley/geometry-core";
+import { Matrix3d } from "@bentley/geometry-core";
 
 /** ActiveViewportChanged Event Args class.
  */
@@ -22,7 +22,7 @@ export class ActiveViewportChangedEvent extends UiEvent<ActiveViewportChangedEve
 /** CubeRotationChangeEvent Event Args class.
  */
 export interface CubeRotationChangeEventArgs {
-    rotMatrix: RotMatrix;
+    rotMatrix: Matrix3d;
     animationTime?: number;
 }
 
@@ -44,7 +44,7 @@ export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeE
  */
 export interface ViewRotationChangeEventArgs {
     viewport: Viewport;
-    rotMatrix: RotMatrix;
+    rotMatrix: Matrix3d;
     animationTime?: number;
 }
 
@@ -56,7 +56,7 @@ export class ViewRotationChangeEvent extends UiEvent<ViewRotationChangeEventArgs
  */
 export class ViewportManager {
     private static _activeViewport?: Viewport;
-    private static _viewportRotMatrix: RotMatrix;
+    private static _viewportMatrix3d: Matrix3d;
 
     private static _activeViewportChangedEvent: ActiveViewportChangedEvent = new ActiveViewportChangedEvent();
     private static _cubeRotationChangeEvent: CubeRotationChangeEvent = new CubeRotationChangeEvent();
@@ -82,15 +82,15 @@ export class ViewportManager {
             ViewportManager.ActiveViewportChangedEvent.emit({ activeViewport });
 
             if (activeViewport) {
-                const rotMatrix = ViewportComponent.getViewportRotMatrix(activeViewport);
-                if (rotMatrix && (!ViewportManager._viewportRotMatrix || !rotMatrix.isAlmostEqual(ViewportManager._viewportRotMatrix)))
-                    ViewportManager.setViewRotMatrix(activeViewport, rotMatrix);
+                const rotMatrix = ViewportComponent.getViewportMatrix3d(activeViewport);
+                if (rotMatrix && (!ViewportManager._viewportMatrix3d || !rotMatrix.isAlmostEqual(ViewportManager._viewportMatrix3d)))
+                    ViewportManager.setViewMatrix3d(activeViewport, rotMatrix);
             }
         }
     }
 
-    public static setCubeRotMatrix(rotMatrix: RotMatrix, animationTime?: number): void {
-        this._viewportRotMatrix = rotMatrix;
+    public static setCubeMatrix3d(rotMatrix: Matrix3d, animationTime?: number): void {
+        this._viewportMatrix3d = rotMatrix;
         this.CubeRotationChangeEvent.emit({ rotMatrix, animationTime });
     }
 
@@ -98,10 +98,10 @@ export class ViewportManager {
         this.StandardRotationChangeEvent.emit({ standardRotation });
     }
 
-    public static getViewRotMatrix(): RotMatrix { return this._viewportRotMatrix; }
+    public static getViewMatrix3d(): Matrix3d { return this._viewportMatrix3d; }
 
-    public static setViewRotMatrix(viewport: Viewport, rotMatrix: RotMatrix, animationTime?: number): void {
-        this._viewportRotMatrix = rotMatrix;
+    public static setViewMatrix3d(viewport: Viewport, rotMatrix: Matrix3d, animationTime?: number): void {
+        this._viewportMatrix3d = rotMatrix;
         this.ViewRotationChangeEvent.emit({ viewport, rotMatrix, animationTime });
     }
 

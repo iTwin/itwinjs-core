@@ -69,12 +69,12 @@ export namespace EditManipulator {
         IModelApp.viewManager.invalidateDecorationsAllViews();
       } else if (add) {
         if (!this.removeDecorationListener)
-          this.removeDecorationListener = IModelApp.viewManager.onDecorate.addListener(this.drawControls, this);
+          this.removeDecorationListener = IModelApp.viewManager.addDecorator(this);
         IModelApp.viewManager.invalidateDecorationsAllViews();
       }
     }
 
-    protected drawControls(_context: DecorateContext): void { }
+    public decorate(_context: DecorateContext): void { }
     protected abstract selectControls(_ev: BeButtonEvent): boolean;
     protected abstract modifyControls(_ev: BeButtonEvent): boolean; // run EditManipulator.Tool to handle interactive drag/click modification.
     protected async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; } // IModelApp.locateManager.currHit holds located element or pickable decoration

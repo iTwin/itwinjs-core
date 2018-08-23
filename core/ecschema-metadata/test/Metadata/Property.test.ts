@@ -131,7 +131,7 @@ describe("Property", () => {
         label: "SomeDisplayLabel",
         description: "A really long description...",
         priority: 1000,
-        readOnly: false,
+        isReadOnly: false,
         category: "TestSchema.TestCategory",
         kindOfQuantity: "TestSchema.TestKoQ",        // FIXME: kindOfQuantity: "TestSchema.1.0.0.TestKoQ",
       };
@@ -258,7 +258,7 @@ describe("Property", () => {
     it("should throw for invalid label", async () => testInvalidAttribute(new MockProperty("BadProp"), "label", "string", 0));
     it("should throw for invalid description", async () => testInvalidAttribute(new MockProperty("BadProp"), "description", "string", 0));
     it("should throw for invalid priority", async () => testInvalidAttribute(new MockProperty("BadProp"), "priority", "number", "0"));
-    it("should throw for invalid readOnly", async () => testInvalidAttribute(new MockProperty("BadProp"), "readOnly", "boolean", 0));
+    it("should throw for invalid isReadOnly", async () => testInvalidAttribute(new MockProperty("BadProp"), "isReadOnly", "boolean", 0));
     it("should throw for invalid category", async () => {
       await testInvalidAttribute(new MockProperty("BadProp"), "category", "string", 0);
 
@@ -287,8 +287,8 @@ describe("Property", () => {
         name: "ValidProp",
         description: "A really long description...",
         label: "SomeDisplayLabel",
-        propertyType: "PrimitiveProperty",
-        readOnly: true,
+        type: "PrimitiveProperty",
+        isReadOnly: true,
         priority: 100,
       };
       const testProp = new MockProperty("ValidProp");
@@ -298,8 +298,8 @@ describe("Property", () => {
       assert(serialized.name, "ValidProp");
       assert(serialized.description, "A really long description...");
       assert(serialized.label, "SomeDisplayLabel");
-      assert(serialized.propertyType, "PrimitiveProperty");
-      assert(serialized.readOnly === true);
+      assert(serialized.type, "PrimitiveProperty");
+      assert(serialized.isReadOnly === true);
       assert(serialized.priority === 100);
     });
     it("Serialization with one custom attribute- only class name", async () => {
@@ -449,7 +449,7 @@ describe("PrimitiveProperty", () => {
     const propertyJson = {
       kindOfQuantity: "Reference.MyKindOfQuantity",
       name: "Primitive",
-      propertyType: "PrimitiveProperty",
+      type: "PrimitiveProperty",
       typeName: "double",
     };
 
@@ -484,7 +484,7 @@ describe("PrimitiveProperty", () => {
     const propertyJson = {
       category: "Reference.MyCategory",
       name: "Primitive",
-      propertyType: "PrimitiveProperty",
+      type: "PrimitiveProperty",
       typeName: "double",
     };
 

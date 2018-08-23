@@ -5,7 +5,7 @@
 /** @module CartesianGeometry */
 
 import { Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix } from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 
 import { AxisOrder, BeJSONFunctions, Geometry } from "./Geometry";
 
@@ -295,7 +295,7 @@ export class Ray3d implements BeJSONFunctions {
    * at ray origin with z in ray direction.  If the direction vector is zero, axes default to identity (from createHeadsUpTriad)
    */
   public toRigidZFrame(): Transform | undefined {
-    const axes = RotMatrix.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
+    const axes = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
     return Transform.createOriginAndMatrix(this.origin, axes);
   }
   /**

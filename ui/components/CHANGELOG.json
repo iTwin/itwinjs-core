@@ -2,6 +2,21 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.119.0",
+      "tag": "@bentley/ui-components_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed."
+          },
+          {
+            "comment": "Bugfix for: uncaught Promise rejection when spamming viewport selection"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.118.0",
       "tag": "@bentley/ui-components_v0.118.0",
       "date": "Tue, 21 Aug 2018 17:20:41 GMT",
