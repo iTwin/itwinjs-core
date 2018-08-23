@@ -9,7 +9,7 @@ import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
   MeshArgs, OnScreenTarget, GraphicType,
-  Target, Decorations, Batch, WorldDecorations, TextureHandle,
+  Target, Decorations, Batch, WorldDecorations, TextureHandle, GraphicList,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
