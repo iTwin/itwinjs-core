@@ -17,7 +17,6 @@ import { AuxCoordSystemState } from "./AuxCoordSys";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
-import { Decoration } from "./render/System";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -1856,7 +1855,7 @@ export class AccuDraw {
     // Display indexing lines, distance locks, etc. without compass transform...
     let builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     this.displayAlignments(builder, vp);
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
 
     const transform = this.getDisplayTransform(vp);
 
@@ -1977,7 +1976,7 @@ export class AccuDraw {
     linePts[1].set(0.0, -0.8, 0.0);
     builder.addLineString(linePts);
 
-    context.addDecoration(Decoration.fromBuilder(builder)); // add compass as world overlay decorator
+    context.addDecorationFromBuilder(builder); // add compass as world overlay decorator
   }
 
   private checkRotation(): void {

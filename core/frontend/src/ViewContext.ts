@@ -10,8 +10,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, Decoration } from "./render/System";
-import { FeatureSymbology } from "./render/FeatureSymbology";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
 import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -130,8 +129,10 @@ export class DecorateContext extends RenderContext {
     return intersections.map((cld: CurveLocationDetail) => cld.point.clone());
   }
 
-  public addDecoration(decoration: Decoration) {
-    switch (decoration.type) {
+  public addDecorationFromBuilder(builder: GraphicBuilder) { this.addDecoration(builder.type, builder.finish()); }
+
+  public addDecoration(type: GraphicType, decoration: RenderGraphic) {
+    switch (type) {
       case GraphicType.Scene:
         if (undefined === this._decorations.normal)
           this._decorations.normal = [];
@@ -140,19 +141,20 @@ export class DecorateContext extends RenderContext {
 
       case GraphicType.WorldDecoration:
         if (!this._decorations.world)
-          this._decorations.world = new DecorationList();
-        this._decorations.world.add(decoration);
+          this._decorations.world = [];
+        this._decorations.world.push(decoration);
         break;
 
       case GraphicType.WorldOverlay:
         if (!this._decorations.worldOverlay)
-          this._decorations.worldOverlay = new DecorationList();
-        this._decorations.worldOverlay.add(decoration);
+          this._decorations.worldOverlay = [];
+        this._decorations.worldOverlay.push(decoration);
         break;
+
       case GraphicType.ViewOverlay:
         if (!this._decorations.viewOverlay)
-          this._decorations.viewOverlay = new DecorationList();
-        this._decorations.viewOverlay.add(decoration);
+          this._decorations.viewOverlay = [];
+        this._decorations.viewOverlay.push(decoration);
         break;
     }
   }
@@ -162,9 +164,8 @@ export class DecorateContext extends RenderContext {
    * @param sprite The sprite to draw
    * @param location The location of the sprite, in view coordinates
    * @param xVec The orientation of the sprite, in view coordinates
-   * @param transparency The transparency of the sprite (0-255, 0 == fully opaque)
    */
-  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY, transparency: number) {
+  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY) {
     if (!sprite.texture)
       return; // sprite not loaded
 
@@ -176,11 +177,7 @@ export class DecorateContext extends RenderContext {
     const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
     const xCorn = org.plus(xVector);
 
-    let ovr: FeatureSymbology.Appearance | undefined;
-    if (transparency > 0)
-      ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
-
-    this.addDecoration(new Decoration(GraphicType.ViewOverlay, this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!, ovr));
+    this.addDecoration(GraphicType.ViewOverlay, this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!);
   }
 
   private _pickableGrid: boolean = false; // ###TODO: Remove - testing only...
@@ -260,7 +257,7 @@ export class DecorateContext extends RenderContext {
     const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickableGrid ? "0xffffff0000000002" : undefined);
 
     DecorateContext.drawGrid(builder, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
-    this.addDecoration(Decoration.fromBuilder(builder));
+    this.addDecorationFromBuilder(builder);
   }
 
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
@@ -449,13 +446,6 @@ export class DecorateContext extends RenderContext {
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
   public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
-
-  // public createViewBackground(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphicBuilder(tf, GraphicType.ViewBackground)!; }
-  // public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphicBuilder(tf, GraphicType.WorldDecoration)!; }
-  // public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphicBuilder(tf, GraphicType.WorldOverlay)!; }
-  // public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphicBuilder(tf, GraphicType.ViewOverlay)!; }
-  // public createPickableDecoration(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, false); }
-  // public createPickableOverlay(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, true); }
 }
 
 export class SceneContext extends RenderContext {

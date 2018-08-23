@@ -15,7 +15,7 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
-import { GraphicList, DecorationList, Decorations, RenderGraphic } from "../System";
+import { GraphicList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
 import { FeatureSymbology } from "../FeatureSymbology";
 
@@ -250,21 +250,20 @@ export class RenderCommands {
     this._forcedRenderPass = RenderPass.None;
   }
 
-  public addDecorations(dec: DecorationList, forcedPass: RenderPass = RenderPass.None): void {
+  public addDecorations(dec: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
-    for (const entry of dec.list) {
-      this.addDecoration(entry.graphic as Graphic, entry.overrides);
+    for (const entry of dec) {
+      (entry as Graphic).addCommands(this);
     }
 
     this._forcedRenderPass = RenderPass.None;
   }
 
-  public addWorldDecorations(decs: DecorationList): void {
+  public addWorldDecorations(decs: GraphicList): void {
     const world = this.target.getWorldDecorations(decs);
-    assert(world.branch.entries.length === world.overrides.length);
     this.pushAndPopBranch(world, () => {
-      for (let i = 0; i < world.branch.entries.length; i++) {
-        this.addDecoration(world.branch.entries[i] as Graphic, world.overrides[i]);
+      for (const entry of world.branch.entries) {
+        (entry as Graphic).addCommands(this);
       }
     });
   }
@@ -281,10 +280,9 @@ export class RenderCommands {
     if (undefined !== decs.world) {
       const world = this.target.getWorldDecorations(decs.world);
       this.pushAndPopBranch(world, () => {
-        for (let i = 0; i < world.branch.entries.length; i++) {
-          const gf = (world.branch.entries[i] as Graphic);
-          if (gf.isPickable)
-            this.addDecoration(gf, world.overrides[i]);
+        for (const gf of world.branch.entries) {
+          if ((gf as Graphic).isPickable)
+            (gf as Graphic).addCommands(this);
         }
       });
     }
@@ -387,26 +385,26 @@ export class RenderCommands {
     this.getCommands(pass).push(command);
   }
 
-  // #TODO: implement FeatureOverrides
-  public addDecoration(gf: Graphic, _ovr?: FeatureSymbology.Appearance): void {
-    const anyOvr = false; // FeatureOverrides.anyOverrides(ovr);
-    if (!anyOvr) {
-      gf.addCommands(this);
-      return;
-    }
+  // // #TODO: implement FeatureOverrides
+  // public addDecoration(gf: Graphic, _ovr?: FeatureSymbology.Appearance): void {
+  //   const anyOvr = false; // FeatureOverrides.anyOverrides(ovr);
+  //   if (!anyOvr) {
+  //     gf.addCommands(this);
+  //     return;
+  //   }
 
-    // this._curOvrParams = ovr;
+  //   // this._curOvrParams = ovr;
 
-    // if (0 !== (ovr.flags & OvrGraphicParams.FLAGS_FillColorTransparency)) {
-    //   this._opaqueOverrides = 0 === ovr.fillColor.alpha;
-    //   this._translucentOverrides = !this._opaqueOverrides;
-    // }
+  //   // if (0 !== (ovr.flags & OvrGraphicParams.FLAGS_FillColorTransparency)) {
+  //   //   this._opaqueOverrides = 0 === ovr.fillColor.alpha;
+  //   //   this._translucentOverrides = !this._opaqueOverrides;
+  //   // }
 
-    // gf.addCommands(this);
+  //   // gf.addCommands(this);
 
-    this._curOvrParams = undefined;
-    this._opaqueOverrides = this._translucentOverrides = false;
-  }
+  //   this._curOvrParams = undefined;
+  //   this._opaqueOverrides = this._translucentOverrides = false;
+  // }
 
   public getRenderPass(command: DrawCommand): RenderPass { return command.getRenderPass(this.target); }
 
@@ -453,28 +451,27 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  public initForPickOverlays(overlays: DecorationList): void {
+  public initForPickOverlays(overlays: GraphicList): void {
     this.clear();
 
     this._addTranslucentAsOpaque = true;
     this._stack.pushState(this.target.decorationState);
 
-    for (const overlay of overlays.list) {
-      const gf = overlay.graphic as Graphic;
+    for (const overlay of overlays) {
+      const gf = overlay as Graphic;
       if (gf.isPickable)
-        this.addDecoration(gf, overlay.overrides);
+        gf.addCommands(this);
     }
 
     this._stack.pop();
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
-      // Set flag to force translucent gometry to be put into the opaque pass.
-      this._addTranslucentAsOpaque = true;
+      this._addTranslucentAsOpaque = true;      // Set flag to force translucent geometry to be put into the opaque pass.
 
       // Add the scene graphics.
       this.addGraphics(scene);
@@ -490,7 +487,7 @@ export class RenderCommands {
     this.addGraphics(scene);
     this.addTerrain(terrain);
 
-    if (undefined !== dynamics && 0 < dynamics.list.length) {
+    if (undefined !== dynamics && 0 < dynamics.length) {
       this.addDecorations(dynamics);
     }
 
@@ -503,16 +500,16 @@ export class RenderCommands {
         this.addGraphics(dec.normal);
       }
 
-      if (undefined !== dec.world && 0 < dec.world.list.length) {
+      if (undefined !== dec.world && 0 < dec.world.length) {
         this.addWorldDecorations(dec.world);
       }
 
       this._stack.pushState(this.target.decorationState);
-      if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.list.length) {
+      if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
         this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
       }
 
-      if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.list.length) {
+      if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
         this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
       }
 

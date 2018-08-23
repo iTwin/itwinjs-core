@@ -5,7 +5,7 @@ import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext,
 } from "@bentley/imodeljs-frontend";
-import { Target, FeatureSymbology, PerformanceMetrics, GraphicType, Decoration } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   ElectronRpcManager,
@@ -497,23 +497,12 @@ export class MeasurePointsTool extends PrimitiveTool {
 
 let activeExtentsDeco: ProjectExtentsDecoration | undefined;
 export class ProjectExtentsDecoration {
-  public removeDecorationListener?: () => void;
   public boxId?: Id64;
 
-  public constructor() {
-    this.removeDecorationListener = IModelApp.viewManager.onDecorate.addListener(this.decorate, this);
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-  }
+  public constructor() { IModelApp.viewManager.addDecorator(this); }
+  protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
 
-  protected stop(): void {
-    if (this.removeDecorationListener) {
-      this.removeDecorationListener();
-      this.removeDecorationListener = undefined;
-      IModelApp.viewManager.invalidateDecorationsAllViews();
-    }
-  }
-
-  protected decorate(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     const vp = context.viewport;
 
     if (!vp.view.isSpatialView())
@@ -530,7 +519,7 @@ export class ProjectExtentsDecoration {
 
     builder.setSymbology(white, black, 1);
     builder.addRangeBox(range);
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   public static add(): void {
@@ -554,10 +543,10 @@ export class ProjectExtentsDecoration {
   }
 }
 
-// starts Mesure between points tool
+// starts Measure between points tool
 function startMeasurePoints(_event: any) {
-  IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+  // IModelApp.tools.run("Measure.Points", theViewport!);
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions

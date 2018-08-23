@@ -13,7 +13,6 @@ import { HitListHolder } from "./ElementLocateManager";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { IModelApp } from "./IModelApp";
-import { Decoration } from "./render/System";
 
 export class TentativePoint {
   public isActive = false;
@@ -161,7 +160,7 @@ export class TentativePoint {
     builder.setSymbology(color, color, 1, this.isSnapped ? LinePixels.Solid : LinePixels.Code2);
 
     this.drawTpCross(builder, tpSize, center.x, center.y);
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
 
     // Draw snapped segment...
     if (this.currSnap)

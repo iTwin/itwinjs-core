@@ -13,7 +13,6 @@ import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { GraphicBuilder, GraphicType } from "../rendering";
 import { ToolSettings } from "./ToolAdmin";
-import { Decoration } from "../render/System";
 
 export const enum ViewHandleWeight {
   Thin = 1,
@@ -702,7 +701,7 @@ class ViewTargetCenter extends ViewingToolHandle {
     builder.setSymbology(cross, cross, hasFocus ? 3 : 1);
     this.addCross(builder, pixelSize, targetPt.x, targetPt.y);
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
@@ -1017,7 +1016,7 @@ class ViewScroll extends ViewingToolHandle {
       builder.addLineString2d(slashPts, 0.0);
     }
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1130,7 +1129,7 @@ class ViewZoom extends ViewingToolHandle {
       builder.addLineString2d(lineVertPts, 0.0);
     }
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1548,7 +1547,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     builder.setSymbology(white, black, 5);
     builder.addPointString2d(points, 0.0);
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -1821,7 +1820,7 @@ export class WindowAreaTool extends ViewTool {
       builder.setSymbology(color, color, ViewHandleWeight.FatDot);
       builder.addPointString([this._firstPtWorld]);
 
-      context.addDecoration(Decoration.fromBuilder(builder));
+      context.addDecorationFromBuilder(builder);
       return;
     }
 
@@ -1847,7 +1846,7 @@ export class WindowAreaTool extends ViewTool {
     this._lineVertPts[1].y = viewRect.bottom;
     gf.addLineString(this._lineVertPts);
 
-    context.addDecoration(Decoration.fromBuilder(gf));
+    context.addDecorationFromBuilder(gf);
   }
 
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {

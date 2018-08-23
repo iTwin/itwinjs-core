@@ -12,7 +12,6 @@ import { ViewState } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
-import { Decoration } from "./render/System";
 
 export const enum ACSType {
   None = 0,
@@ -294,7 +293,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public display(context: DecorateContext, options: ACSDisplayOptions) {
     const builder = this.createGraphicBuilder(context, options);
     if (undefined !== builder)
-      context.addDecoration(Decoration.fromBuilder(builder));
+      context.addDecorationFromBuilder(builder);
   }
 }
 

@@ -17,6 +17,16 @@ export function dispose(disposable?: IDisposable) {
   return undefined;
 }
 
+/** Function for disposing of a list of disposable objects. The list may be undefined. */
+export function disposeList(list?: IDisposable[]) {
+  if (undefined === list)
+    return undefined;
+  for (const entry of list)
+    entry.dispose();
+  list.length = 0;
+  return undefined;
+}
+
 /** A 'using' function which is a substitution for .NET's using statement. It makes sure that 'dispose'
  * is called on the resource no matter if the func returns or throws. If func returns, the return value
  * of this function is equal to return value of func. If func throws, this function also throws (after

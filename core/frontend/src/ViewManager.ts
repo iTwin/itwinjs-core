@@ -14,6 +14,11 @@ import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
 
+export interface Decorator {
+  decorate(context: DecorateContext): void;
+  onPick?(id: string): void;
+}
+
 /**
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
@@ -27,6 +32,7 @@ export class ViewManager {
   private _selectedView?: Viewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  private readonly _decorators: Decorator[] = [];
 
   public onInitialized(): void {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
@@ -39,6 +45,11 @@ export class ViewManager {
     IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
     IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);
     IModelConnection.registerClass(SheetViewState.getClassFullName(), SheetViewState as any);
+
+    this.addDecorator(IModelApp.accuSnap);
+    this.addDecorator(IModelApp.tentativePoint);
+    this.addDecorator(IModelApp.accuDraw);
+    this.addDecorator(IModelApp.toolAdmin);
   }
 
   /** Called after the selected view changes.
@@ -214,16 +225,25 @@ export class ViewManager {
     // ###TODO: pre-compile shaders?
   }
 
-  /** Called when rendering a frame to allow decorations to be added */
-  public readonly onDecorate = new BeEvent<(context: DecorateContext) => void>();
+  public addDecorator(decorator: Decorator): () => void {
+    if (this._decorators.includes(decorator))
+      throw new Error("decorator already registered");
+
+    this._decorators.push(decorator);
+    this.invalidateDecorationsAllViews();
+    return () => { this.dropDecorator(decorator); };
+  }
+
+  public dropDecorator(decorator: Decorator) {
+    const index = this._decorators.indexOf(decorator);
+    if (index >= 0)
+      this._decorators.splice(index, 1);
+    this.invalidateDecorationsAllViews();
+  }
 
   public callDecorators(context: DecorateContext) {
-    IModelApp.accuSnap.decorate(context);
-    IModelApp.tentativePoint.decorate(context);
-    IModelApp.accuDraw.decorate(context);
-    IModelApp.toolAdmin.decorate(context);
     context.viewport.decorate(context);
-    this.onDecorate.raiseEvent(context);
+    this._decorators.forEach((decorator) => decorator.decorate(context));
   }
 
   public setViewCursor(cursor: BeCursor | undefined): void {

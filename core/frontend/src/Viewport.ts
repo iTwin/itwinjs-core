@@ -20,7 +20,7 @@ import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel, Decoration } from "./render/System";
+import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
@@ -941,7 +941,7 @@ export class Viewport {
   /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
   /** @hidden */
-  public changeDynamics(dynamics: DecorationList | undefined): void {
+  public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
   }
@@ -1593,7 +1593,7 @@ export class Viewport {
     const pt4 = hit.snapPoint.plusScaled(normal, -length);
     builder.addLineString([pt3, pt4]);
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
@@ -1619,7 +1619,7 @@ export class Viewport {
     builder.setSymbology(white, white, 1);
     builder.addArc2d(ellipse, false, false, 0.0);
 
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 
   /** @hidden */

@@ -9,7 +9,6 @@ import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorateContext } from "./ViewContext";
 import { GraphicType } from "./render/GraphicBuilder";
-import { Decoration } from "./render/System";
 
 export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
@@ -235,7 +234,7 @@ export class SnapDetail extends HitDetail {
                 segmentNo = nSegments - 1;
               const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
               builder.addLineString(points);
-              context.addDecoration(Decoration.fromBuilder(builder));
+              context.addDecorationFromBuilder(builder);
               return;
             }
           }
@@ -244,7 +243,7 @@ export class SnapDetail extends HitDetail {
       }
 
       builder.addPath(Path.create(this.primitive));
-      context.addDecoration(Decoration.fromBuilder(builder));
+      context.addDecorationFromBuilder(builder);
       return;
     }
     super.draw(context);

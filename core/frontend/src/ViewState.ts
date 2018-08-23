@@ -24,7 +24,7 @@ import { Viewport } from "./Viewport";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { RenderGraphic, Decoration } from "./render/System";
+import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree } from "./tile/TileTree";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -1476,7 +1476,7 @@ export abstract class ViewState3d extends ViewState {
     const polyface = polyfaceBuilder.claimPolyface(false);
 
     builder.addPolyface(polyface, true);
-    context.addDecoration(Decoration.fromBuilder(builder));
+    context.addDecorationFromBuilder(builder);
   }
 }
 
