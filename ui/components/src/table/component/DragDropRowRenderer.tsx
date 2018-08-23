@@ -111,9 +111,8 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
             args.row = this.props.idx;
             if (args.dropRect) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-              if (relativeY > 1 / 2) {
-                args.row = this.props.idx + 1;
-              }
+              if ((this.props.canDropOn && relativeY > 2 / 3) || (!this.props.canDropOn && relativeY > 1 / 2))
+                  args.row = this.props.idx + 1;
             }
           }
           if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
@@ -124,9 +123,8 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
             args.row = this.props.idx;
             if (args.dropRect) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-              if (relativeY > 1 / 2) {
-                args.row = this.props.idx + 1;
-              }
+              if ((this.props.canDropOn && relativeY > 2 / 3) || (!this.props.canDropOn && relativeY > 1 / 2))
+                  args.row = this.props.idx + 1;
             }
           }
           if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);

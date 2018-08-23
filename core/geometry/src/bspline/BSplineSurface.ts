@@ -9,7 +9,7 @@
 import { AxisOrder } from "../Geometry";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Point3dArray, Point4dArray } from "../PointHelpers";
 import { Plane3dByOriginAndUnitNormal, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { KnotVector } from "./KnotVector";
@@ -210,9 +210,9 @@ export abstract class BSpline2dNd extends GeometryQuery {
     const skewVectors = this.fractionToPointAndDerivatives(fractionU, fractionV);
     if (!skewVectors)
       return undefined;
-    const axes = RotMatrix.createColumnsInAxisOrder(AxisOrder.XYZ,
+    const axes = Matrix3d.createColumnsInAxisOrder(AxisOrder.XYZ,
       skewVectors.vectorU, skewVectors.vectorV, undefined);
-    const axes1 = RotMatrix.createRigidFromRotMatrix(axes, AxisOrder.XYZ, axes);
+    const axes1 = Matrix3d.createRigidFromMatrix3d(axes, AxisOrder.XYZ, axes);
     if (axes1)
       result = Transform.createOriginAndMatrix(skewVectors.origin, axes1, result);
     return result;

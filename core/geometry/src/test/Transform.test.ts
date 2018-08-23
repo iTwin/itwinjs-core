@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d } from "../PointVector";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Checker } from "./Checker";
 // import { prettyPrint } from "./testFunctions";
 import { Sample } from "../serialization/GeometrySamples";
@@ -86,7 +86,7 @@ describe("Transform", () => {
 
   it("Misc", () => {
     const ck = new Checker();
-    const matrixArray = Sample.createRotMatrixArray();
+    const matrixArray = Sample.createMatrix3dArray();
     for (const origin of [
       Point3d.create(0, 0, 0),
       Point3d.create(2, 0, 0),
@@ -121,7 +121,7 @@ describe("Transform", () => {
 
   it("Singular", () => {
     const ck = new Checker();
-    const matrices = Sample.createSingularRotMatrix();
+    const matrices = Sample.createSingularMatrix3d();
     const origin = Point3d.create(4, 1, 9);
     const pointA = Point3d.create(3, 2, -2);
     for (const matrix of matrices) {
@@ -137,17 +137,17 @@ describe("Transform", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("MultiplyTransformRotMatrix", () => {
+  it("MultiplyTransformMatrix3d", () => {
     const ck = new Checker();
     const points = Sample.createPoint3dLattice(-2, 1, 2);
     const transformA = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      RotMatrix.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
-    const matrixB = RotMatrix.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
+    const matrixB = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
     const transformB = Transform.createOriginAndMatrix(undefined, matrixB);
-    const transformC = transformA.multiplyTransformRotMatrix(matrixB);
+    const transformC = transformA.multiplyTransformMatrix3d(matrixB);
     // inplace update of uninvolved transform . .
-    const transformD = transformA.multiplyTransformRotMatrix(matrixB, Transform.createIdentity());
+    const transformD = transformA.multiplyTransformMatrix3d(matrixB, Transform.createIdentity());
     const transformE = transformA.multiplyTransformTransform(transformB);
     ck.testTransform(transformC, transformD);
     ck.testTransform(transformC, transformE);
@@ -159,20 +159,20 @@ describe("Transform", () => {
     // inplace update of primary transform
     const transformA1 = transformA.clone();
     ck.testTransform(transformA, transformA1, "clone transform");
-    transformA1.multiplyTransformRotMatrix(matrixB, transformA1);
+    transformA1.multiplyTransformMatrix3d(matrixB, transformA1);
     ck.testFalse(transformA.isAlmostEqual(transformA1), "inplace multiply changes input");
     ck.testTransform(transformA1, transformE);
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("MultiplyRotMatrixTransform", () => {
+  it("MultiplyMatrix3dTransform", () => {
     const ck = new Checker();
     const points = Sample.createPoint3dLattice(-2, 1, 2);
-    const matrixA = RotMatrix.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
+    const matrixA = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
     const transformA = Transform.createOriginAndMatrix(undefined, matrixA);
     const transformB = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      RotMatrix.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11));
 
     const transformC = matrixA.multiplyMatrixTransform(transformB);
     // inplace update of uninvolved transform . .

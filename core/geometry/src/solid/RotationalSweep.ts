@@ -6,7 +6,7 @@
 
 import { } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { CurveCollection } from "../curve/CurveChain";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Ray3d } from "../AnalyticGeometry";
@@ -41,7 +41,7 @@ export class RotationalSweep extends SolidPrimitive {
    */
   public getConstructiveFrame(): Transform | undefined {
     const contourPerpendicular = this._contour.localToWorld.matrix.columnZ();
-    const axes = RotMatrix.createRigidFromColumns(contourPerpendicular, this._normalizedAxis.direction, AxisOrder.YZX);
+    const axes = Matrix3d.createRigidFromColumns(contourPerpendicular, this._normalizedAxis.direction, AxisOrder.YZX);
     if (axes) {
       return Transform.createOriginAndMatrix(this._normalizedAxis.origin, axes);
     }
@@ -85,8 +85,8 @@ export class RotationalSweep extends SolidPrimitive {
   public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
     const rotation = Transform.createOriginAndMatrix(this._normalizedAxis.origin,
-      RotMatrix.createRotationAroundVector(this._normalizedAxis.direction, Angle.createRadians(radians),
-        result ? result.matrix : undefined) as RotMatrix);
+      Matrix3d.createRotationAroundVector(this._normalizedAxis.direction, Angle.createRadians(radians),
+        result ? result.matrix : undefined) as Matrix3d);
     return rotation;
   }
   /**

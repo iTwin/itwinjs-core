@@ -474,7 +474,7 @@ export class PolyfaceData {
     this.point.transformInPlace(transform);
 
     if (inverseTranspose) {
-      // apply simple RotMatrix to normals ...
+      // apply simple Matrix3d to normals ...
       if (this.normal) {
         inverseTranspose.multiplyVectorArrayInPlace(this.normal);
       }

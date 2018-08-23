@@ -4,7 +4,7 @@
 
 import { expect, assert } from "chai";
 import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Vector3d, Point3d, RotMatrix, Transform, Matrix4d } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {
@@ -12,10 +12,10 @@ describe("Matrix3", () => {
     const mat = Matrix3.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
     mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
   });
-  it("toRotMatrix works as expected", () => {
+  it("toMatrix3d works as expected", () => {
     const mat = Matrix3.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    const rotMat = mat.toRotMatrix();
-    assert.isTrue(rotMat instanceof RotMatrix, "is an instance of RotMatrix");
+    const rotMat = mat.toMatrix3d();
+    assert.isTrue(rotMat instanceof Matrix3d, "is an instance of Matrix3d");
     assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
     assert.isTrue(mat.data[3] === rotMat.coffs[1], "(0,1) is equivalent");
     assert.isTrue(mat.data[6] === rotMat.coffs[2], "(0,2) is equivalent");
@@ -26,9 +26,9 @@ describe("Matrix3", () => {
     assert.isTrue(mat.data[5] === rotMat.coffs[7], "(2,1) is equivalent");
     assert.isTrue(mat.data[8] === rotMat.coffs[8], "(2,2) is equivalent");
   });
-  it("fromRotMatrix works as expected", () => {
-    const rotMat = RotMatrix.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    const mat = Matrix3.fromRotMatrix(rotMat);
+  it("fromMatrix3d works as expected", () => {
+    const rotMat = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    const mat = Matrix3.fromMatrix3d(rotMat);
     assert.isTrue(mat instanceof Matrix3, "is an instance of Matrix3");
     assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
     assert.isTrue(mat.data[3] === rotMat.coffs[1], "(0,1) is equivalent");
@@ -95,7 +95,7 @@ describe("Matrix4", () => {
   });
   it("initFromTransform works as expected", () => {
     const origin = new Vector3d(10, 11, 12);
-    const rotMat = RotMatrix.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    const rotMat = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const tran = Transform.createOriginAndMatrix(origin, rotMat);
     const mat4 = Matrix4.fromIdentity();
     mat4.initFromTransform(tran);

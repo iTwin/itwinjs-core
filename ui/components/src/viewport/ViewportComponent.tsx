@@ -21,7 +21,7 @@ import {
 } from "./ViewportManager";
 
 import {
-  RotMatrix,
+  Matrix3d,
   Transform,
 } from "@bentley/geometry-core";
 
@@ -122,12 +122,12 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   private _handleViewChanged = (vp: Viewport) => {
-    const rotMatrix = ViewportComponent.getViewportRotMatrix(vp);
+    const rotMatrix = ViewportComponent.getViewportMatrix3d(vp);
     if (rotMatrix)
-      ViewportManager.setViewRotMatrix(vp, rotMatrix);
+      ViewportManager.setViewMatrix3d(vp, rotMatrix);
   }
 
-  public static getViewportRotMatrix(vp: Viewport): RotMatrix | undefined {
+  public static getViewportMatrix3d(vp: Viewport): Matrix3d | undefined {
     return vp.rotMatrix;
   }
 
