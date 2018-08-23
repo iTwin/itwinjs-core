@@ -26,6 +26,9 @@
   cursor: pointer;
   pointer-events: auto;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.nz-left-anchor {
     margin-left: 0;

@@ -26,25 +26,23 @@ export default class Draggable extends React.Component<DraggableProps> {
   private _last = new Point(0, 0);
 
   public render() {
+    const { className, onClick, children, ...props } = this.props;
     const tabClassName = classnames(
       "nz-widget-rectangular-tab-draggable",
-      this.props.className);
-
-    const { className, onClick, children, ...props } = this.props;
+      className);
 
     return (
       <Tab
         className={tabClassName}
         {...props}
       >
+        {children}
         <PointerCaptor
           className="nz-draggable"
           onMouseDown={this._handleMouseDown}
           onMouseUp={this._handleMouseUp}
           onMouseMove={this._handleMouseMove}
-        >
-          {children}
-        </PointerCaptor>
+        />
       </Tab>
     );
   }
