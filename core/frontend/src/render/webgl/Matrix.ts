@@ -42,15 +42,15 @@ export class Matrix3 {
     return mat;
   }
 
-  public initFromRotMatrix(rot: Matrix3d): void {
+  public initFromMatrix3d(rot: Matrix3d): void {
     this.setValues(
       rot.at(0, 0), rot.at(0, 1), rot.at(0, 2),
       rot.at(1, 0), rot.at(1, 1), rot.at(1, 2),
       rot.at(2, 0), rot.at(2, 1), rot.at(2, 2));
   }
-  public static fromRotMatrix(rot: Matrix3d, out?: Matrix3): Matrix3 {
+  public static fromMatrix3d(rot: Matrix3d, out?: Matrix3): Matrix3 {
     const mat = undefined !== out ? out : new Matrix3();
-    mat.initFromRotMatrix(rot);
+    mat.initFromMatrix3d(rot);
     return mat;
   }
   public toMatrix3d(): Matrix3d {

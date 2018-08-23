@@ -26,9 +26,9 @@ describe("Matrix3", () => {
     assert.isTrue(mat.data[5] === rotMat.coffs[7], "(2,1) is equivalent");
     assert.isTrue(mat.data[8] === rotMat.coffs[8], "(2,2) is equivalent");
   });
-  it("fromRotMatrix works as expected", () => {
+  it("fromMatrix3d works as expected", () => {
     const rotMat = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    const mat = Matrix3.fromRotMatrix(rotMat);
+    const mat = Matrix3.fromMatrix3d(rotMat);
     assert.isTrue(mat instanceof Matrix3, "is an instance of Matrix3");
     assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
     assert.isTrue(mat.data[3] === rotMat.coffs[1], "(0,1) is equivalent");

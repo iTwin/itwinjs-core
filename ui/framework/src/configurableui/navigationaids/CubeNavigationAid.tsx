@@ -145,7 +145,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animation += delta / this.state.animationTime;
     if (animation > 1) {
       animation = 1;
-      ViewportManager.setCubeRotMatrix(this.state.endRotMatrix, -1);
+      ViewportManager.setCubeMatrix3d(this.state.endRotMatrix, -1);
     } else
       requestAnimationFrame(this._animate);
     this.setState({ animation });
@@ -173,7 +173,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
                 const newMatrix = newDiff.multiplyMatrixMatrix(startRotMatrix);
                 if (newMatrix) {
                   rotMatrix = newMatrix;
-                  ViewportManager.setCubeRotMatrix(rotMatrix, 0);
+                  ViewportManager.setCubeMatrix3d(rotMatrix, 0);
                 }
               }
             }
@@ -359,7 +359,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   private _animateRotation = (startRotMatrix: Matrix3d, endRotMatrix: Matrix3d, animationTime: number, currentFace: Face = Face.None) => {
     // set animation variables, let css transitions animate it.
-    ViewportManager.setCubeRotMatrix(startRotMatrix, 0);
+    ViewportManager.setCubeMatrix3d(startRotMatrix, 0);
     this._then = Date.now();
     requestAnimationFrame(this._animate);
     this.setState({
@@ -369,7 +369,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     });
   }
   private _setRotation = (endRotMatrix: Matrix3d, startRotMatrix?: Matrix3d, currentFace: Face = Face.None) => {
-    ViewportManager.setCubeRotMatrix(endRotMatrix, 0);
+    ViewportManager.setCubeMatrix3d(endRotMatrix, 0);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRotMatrix: startRotMatrix || endRotMatrix,

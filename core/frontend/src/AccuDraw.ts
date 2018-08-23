@@ -181,14 +181,14 @@ export class ThreeAxes {
     this.y.setFrom(other.y);
     this.z.setFrom(other.z);
   }
-  public fromRotMatrix(rMatrix: Matrix3d): void {
+  public fromMatrix3d(rMatrix: Matrix3d): void {
     rMatrix.getRow(0, this.x);
     rMatrix.getRow(1, this.y);
     rMatrix.getRow(2, this.z);
   }
   public static createFromMatrix3d(rMatrix: Matrix3d, result?: ThreeAxes): ThreeAxes {
     result = result ? result : new ThreeAxes();
-    result.fromRotMatrix(rMatrix);
+    result.fromMatrix3d(rMatrix);
     return result;
   }
   public toMatrix3d(out?: Matrix3d) { return Matrix3d.createRows(this.x, this.y, this.z, out); }
@@ -670,32 +670,32 @@ export class AccuDraw {
     switch (this.rotationMode) {
       case RotationMode.Top:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Top, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Top, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.Front:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Front, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Front, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.Side:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Right, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Right, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.ACS:
         rMatrix = vp ? vp.getAuxCoordRotation() : Matrix3d.createIdentity();
-        newRotation.fromRotMatrix(rMatrix);
+        newRotation.fromMatrix3d(rMatrix);
         this.accountForAuxRotationPlane(newRotation, this.flags.auxRotationPlane);
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.View:
         rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
-        newRotation.fromRotMatrix(rMatrix);
+        newRotation.fromMatrix3d(rMatrix);
         this.flags.lockedRotation = false;
         break;
 
@@ -2835,7 +2835,7 @@ export class AccuDraw {
     const vp = this.currentView;
     // Do Context Rotation
     if (this.published.flags & AccuDrawFlags.SetRMatrix) {
-      this.axes.fromRotMatrix(this.published.rMatrix);
+      this.axes.fromMatrix3d(this.published.rMatrix);
       this.flags.lockedRotation = true;
       this.flags.contextRotMode = ContextMode.Locked;
       this.setRotationMode(RotationMode.Context);

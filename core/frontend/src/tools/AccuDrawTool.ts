@@ -139,7 +139,7 @@ export class AccuDrawShortcuts {
     rMatrix.multiplyVectorInPlace(accudraw.vector);
     const angleMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
     rMatrix.multiplyMatrixMatrix(angleMatrix, rMatrix); // NEEDS_WORK - verify order
-    accudraw.axes.fromRotMatrix(rMatrix);
+    accudraw.axes.fromMatrix3d(rMatrix);
     accudraw.flags.lockedRotation = true;
   }
 
