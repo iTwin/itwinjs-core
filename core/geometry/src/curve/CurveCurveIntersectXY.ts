@@ -89,25 +89,21 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private acceptLineSegmentPoint(
     localFractionA: number,
     cpA: CurvePrimitive,
-    pointA0: Point3d,
     fractionA0: number,
-    pointA1: Point3d,
     fractionA1: number,
     localFractionB: number,   // Computed intersection fraction
     cpB: CurvePrimitive,
-    pointB0: Point3d,
     fractionB0: number,
-    pointB1: Point3d,
     fractionB1: number,
     reversed: boolean,
   ) {
+    const globalFractionA = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
+    const globalFractionB = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
     const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
-      Geometry.interpolate(fractionA0, localFractionA, fractionA1),
-      pointA0.interpolate(localFractionA, pointA1));
+      globalFractionA, cpA.fractionToPoint(globalFractionA));
     detailA.setIntervalRole(CurveIntervalRole.isolated);
     const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
-      Geometry.interpolate(fractionB0, localFractionB, fractionB1),
-      pointB0.interpolate(localFractionB, pointB1));
+      globalFractionB, cpB.fractionToPoint(globalFractionB));
     detailB.setIntervalRole(CurveIntervalRole.isolated);
     if (reversed) {
       this._results.dataA.push(detailB);
@@ -146,8 +142,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       && this.acceptFraction(extendA0, uv.x, extendA1)
       && this.acceptFraction(extendB0, uv.y, extendB1)
     ) {
-      this.acceptLineSegmentPoint(uv.x, cpA, pointA0, fractionA0, pointA1, fractionA1,
-        uv.y, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed);
+      this.acceptLineSegmentPoint(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
     }
   }
   private static _workPointA0H = Point4d.create();
@@ -180,32 +175,14 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     this._worldToLocalPerspective!.multiplyPoint3d(pointA1, 1, hA1);
     this._worldToLocalPerspective!.multiplyPoint3d(pointB0, 1, hB0);
     this._worldToLocalPerspective!.multiplyPoint3d(pointB1, 1, hB1);
-    // Considering only x,y,w parts....
-    // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
-    // PointQ is colinear with A0,A1 when the determinat det (A0,A1,Q) is zero.  (Each column takes xyw parts)
-    const alpha0 = Geometry.tripleProduct(
-      hA0.x, hA1.x, hB0.x,
-      hA0.y, hA1.y, hB0.y,
-      hA0.w, hA1.w, hB0.w);
-    const alpha1 = Geometry.tripleProduct(
-      hA0.x, hA1.x, hB1.x,
-      hA0.y, hA1.y, hB1.y,
-      hA0.w, hA1.w, hB1.w);
-    const fractionB = Geometry.conditionalDivideFraction(alpha1 - alpha0, alpha0);
-    if (fractionB !== undefined && this.acceptFraction(extendB0, fractionB, extendB1)) {
-      const beta0 = Geometry.tripleProduct(
-        hB0.x, hB1.x, hA0.x,
-        hB0.y, hB1.y, hA0.y,
-        hB0.w, hB1.w, hA0.w);
-      const beta1 = Geometry.tripleProduct(
-        hB0.x, hB1.x, hA1.x,
-        hB0.y, hB1.y, hA1.y,
-        hB0.w, hB1.w, hA1.w);
-      const fractionA = Geometry.conditionalDivideFraction(beta1 - beta0, beta0);
-      if (fractionA !== undefined && this.acceptFraction(extendA0, fractionA, extendA1)) {
+    const fractionAB = SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(hA0, hA1, hB0, hB1);
+    if (fractionAB !== undefined) {
+      const fractionA = fractionAB.x;
+      const fractionB = fractionAB.y;
+      if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
         // final fraction acceptance uses original world points, with perspective-aware fractions
-        this.acceptLineSegmentPoint(fractionA, cpA, pointA0, fractionA0, pointA1, fractionA1,
-          fractionB, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed);
+        this.acceptLineSegmentPoint(fractionA, cpA, fractionA0, fractionA1,
+          fractionB, cpB, fractionB0, fractionB1, reversed);
       }
     }
   }

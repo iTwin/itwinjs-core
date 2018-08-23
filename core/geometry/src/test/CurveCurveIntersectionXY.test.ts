@@ -1,14 +1,28 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../PointVector";
+import { Point3d, Vector3d } from "../PointVector";
 import { CurveCurve, CurveLocationDetailArrayPair } from "../curve/CurveCurveIntersectXY";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d, Map4d } from "../numerics/Geometry4d";
+import { Transform } from "../Transform";
 
+function createSamplePerspectiveMaps(): Map4d[] {
+  const origin = Point3d.create(-20, -20, -10);
+  const vectorU = Vector3d.create(100, 0, 0);
+  const vectorV = Vector3d.create(0, 100, 0);
+  const vectorW = Vector3d.create(0, 0, 100);
+
+  const transform1 = Transform.createOriginAndMatrixColumns(origin, vectorU, vectorV, vectorW);
+  const inverse1 = transform1.inverse()!;
+  return [
+    Map4d.createIdentity(),
+    Map4d.createTransform(inverse1, transform1)!,
+    Map4d.createVectorFrustum(origin, vectorU, vectorV, vectorW, 0.8)!];
+}
 /* tslint:disable:no-console */
 function testIntersectionsXY(
   ck: Checker,
@@ -43,12 +57,25 @@ function testIntersectionsXY(
 }
 
 describe("CurveCurve", () => {
-  it("LineLine", () => {
+  it.only("LineLine", () => {
     const ck = new Checker();
     const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
     const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
     const intersections = CurveCurve.IntersectionXY(segment0, false, segment1, false);
     testIntersectionsXY(ck, undefined, intersections, 1, 1);
+    ck.checkpoint("CurveCurve.LineLine");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("LineLineMapped", () => {
+    const ck = new Checker();
+    for (const map of createSamplePerspectiveMaps()) {
+      const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
+      const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
+      const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
+      const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, segment1, false);
+      testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
+    }
     ck.checkpoint("CurveCurve.LineLine");
     expect(ck.getNumErrors()).equals(0);
   });

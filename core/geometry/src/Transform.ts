@@ -2036,7 +2036,7 @@ export class Transform implements BeJSONFunctions {
       result._matrix.setRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz);
       return result;
     }
-    return new Transform(Point3d.create (ax, ay, az), RotMatrix.createRowValues (qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
+    return new Transform(Point3d.create (ax, ay, az), Matrix3d.createRowValues (qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
   }
   /**
    * create a Transform with translation provided by x,y,z parts.
