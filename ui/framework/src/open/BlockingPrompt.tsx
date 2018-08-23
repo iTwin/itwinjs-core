@@ -5,13 +5,13 @@ import * as React from "react";
 import "./BlockingPrompt.scss";
 import "./Common.scss";
 
-interface IBlockingPromptProps {
+interface BlockingPromptProps {
   prompt: string;
 }
 
-export class BlockingPrompt extends React.Component<IBlockingPromptProps> {
+export class BlockingPrompt extends React.Component<BlockingPromptProps> {
 
-  constructor(props: IBlockingPromptProps, context?: any) {
+  constructor(props: BlockingPromptProps, context?: any) {
     super(props, context);
   }
 

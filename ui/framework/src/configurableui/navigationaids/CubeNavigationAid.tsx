@@ -83,7 +83,7 @@ export const rotateRouteByIndex = (route: RotationMap, index: number): RotationM
   };
 };
 
-enum Hover {
+export enum CubeHover {
   None = 0,
   Hover,
   Active,
@@ -96,7 +96,7 @@ export interface CubeNavigationState {
   endRotMatrix: RotMatrix;
   animation: number;
   animationTime: number;
-  hoverMap: { [key: string]: Hover };
+  hoverMap: { [key: string]: CubeHover };
 }
 
 /** A Cube Navigation Aid */
@@ -224,7 +224,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     );
   }
 
-  private _handleCellHoverChange = (pos: Point3d, state: Hover) => {
+  private _handleCellHoverChange = (pos: Point3d, state: CubeHover) => {
     const hoverMap = this.state.hoverMap;
     hoverMap[pos.x + "|" + pos.y + "|" + pos.z] = state;
     this.setState({ hoverMap });
@@ -380,15 +380,15 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 }
 
-interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face: Face;
   label: string;
-  hoverMap: { [key: string]: Hover };
+  hoverMap: { [key: string]: CubeHover };
   onFaceCellClick: (position: Point3d, face?: Face) => void;
-  onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
+  onFaceCellHoverChange: (position: Point3d, state: CubeHover) => void;
 }
 
-class NavCubeFace extends React.Component<NavCubeFaceProps> {
+export class NavCubeFace extends React.Component<NavCubeFaceProps> {
   public render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
     return (
@@ -403,7 +403,7 @@ class NavCubeFace extends React.Component<NavCubeFaceProps> {
                     onFaceCellHoverChange={onFaceCellHoverChange}
                     onFaceCellClick={onFaceCellClick}
                     hoverMap={hoverMap}
-                    position={this._faceCellToPos(face, x, y)}
+                    position={NavCubeFace.faceCellToPos(face, x, y)}
                     face={(x === 0 && y === 0 && face) || Face.None}
                     center={x === 0}>
                     {x === 0 && y === 0 &&
@@ -417,7 +417,7 @@ class NavCubeFace extends React.Component<NavCubeFaceProps> {
       </div>
     );
   }
-  private _faceCellToPos = (face: Face, x: number, y: number) => {
+  public static faceCellToPos = (face: Face, x: number, y: number) => {
     const facePos = faceLocations[face];
     const route = routes[face];
 
@@ -444,22 +444,22 @@ class FaceRow extends React.Component<FaceRowProps> {
   }
 }
 
-interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
   onFaceCellClick: (position: Point3d, face?: Face) => void;
-  onFaceCellHoverChange: (position: Point3d, state: Hover) => void;
-  hoverMap: { [key: string]: Hover };
+  onFaceCellHoverChange: (position: Point3d, state: CubeHover) => void;
+  hoverMap: { [key: string]: CubeHover };
   position: Point3d;
   face?: Face;
 }
 
-class FaceCell extends React.Component<FaceCellProps> {
+export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {
     const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, position, ...props } = this.props;
     const { x, y, z } = position;
-    const hover = hoverMap[x + "|" + y + "|" + z] === Hover.Hover;
-    const active = hoverMap[x + "|" + y + "|" + z] === Hover.Active;
+    const hover = hoverMap[x + "|" + y + "|" + z] === CubeHover.Hover;
+    const active = hoverMap[x + "|" + y + "|" + z] === CubeHover.Active;
     return <div
       onMouseDown={this._handleMouseDown}
       onMouseUp={this._handleMouseUp}
@@ -470,22 +470,22 @@ class FaceCell extends React.Component<FaceCellProps> {
   }
   private _handleMouseOver = () => {
     const { position } = this.props;
-    this.props.onFaceCellHoverChange(position, Hover.Hover);
+    this.props.onFaceCellHoverChange(position, CubeHover.Hover);
   }
   private _handleMouseOut = () => {
     const { position } = this.props;
-    this.props.onFaceCellHoverChange(position, Hover.None);
+    this.props.onFaceCellHoverChange(position, CubeHover.None);
   }
   private _handleMouseDown = (event: React.MouseEvent) => {
     const { position } = this.props;
     const { clientX, clientY } = event;
     this._startMouse = Point2d.create(clientX, clientY);
-    this.props.onFaceCellHoverChange(position, Hover.Active);
+    this.props.onFaceCellHoverChange(position, CubeHover.Active);
   }
   private _handleMouseUp = (event: React.MouseEvent) => {
     const { position, face } = this.props;
     const { clientX, clientY } = event;
-    this.props.onFaceCellHoverChange(position, Hover.None);
+    this.props.onFaceCellHoverChange(position, CubeHover.None);
     const mouse = Point2d.create(clientX, clientY);
     if (this._startMouse && this._startMouse.isAlmostEqual(mouse))
       this.props.onFaceCellClick(position, face);

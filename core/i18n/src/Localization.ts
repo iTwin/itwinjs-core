@@ -42,6 +42,7 @@ export class I18N {
 
     // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
     this._i18n.use(i18nextXHRBackend)
+      .use(BentleyLogger)
       .init(initOptions, renderFunction)
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
@@ -116,4 +117,21 @@ export class I18N {
 
 export class I18NNamespace {
   public constructor(public name: string, public readFinished: Promise<void>) { }
+}
+
+class BentleyLogger {
+  public static readonly type = "logger";
+  public log(args: string[]) { Logger.logInfo("i18n", this.createLogMessage(args)); }
+  public warn(args: string[]) { Logger.logWarning("i18n", this.createLogMessage(args)); }
+  public error(args: string[]) { Logger.logError("i18n", this.createLogMessage(args)); }
+  private createLogMessage(args: string[]) {
+    let message = args[0];
+    for (let i = 1; i < args.length; ++i) {
+      message += "\n";
+      for (let j = 0; j < i; ++j)
+        message += "    ";
+      message += args[i];
+    }
+    return message;
+  }
 }

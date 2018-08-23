@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tab from "@src/widget/rectangular/tab/Tab";
+import Tab from "../../../../src/widget/rectangular/tab/Tab";
 
 describe("<Tab />", () => {
   it("should render", () => {

@@ -9,7 +9,6 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
@@ -200,11 +199,10 @@ export class ViewManager {
     this._invalidateScenes = false;
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
-    const plan = new UpdatePlan();
 
-    if (undefined === cursorVp || cursorVp.renderFrame(plan))
+    if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)
-        if (vp !== cursorVp && !vp.renderFrame(plan))
+        if (vp !== cursorVp && !vp.renderFrame())
           break;
 
     this.processIdle();

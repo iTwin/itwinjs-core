@@ -13,7 +13,7 @@
     "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
-    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.{ts,tsx}",
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.test.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "repository": {},

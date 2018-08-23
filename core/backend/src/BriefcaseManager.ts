@@ -50,7 +50,7 @@ export const enum KeepBriefcase {
 
 /** A token that represents a ChangeSet */
 export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changesType: ChangesType) { }
+  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean) { }
 }
 
 /** Entry in the briefcase cache */
@@ -1000,7 +1000,7 @@ export class BriefcaseManager {
     const changeSetTokens = new Array<ChangeSetToken>();
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!));
+      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema));
     });
     return changeSetTokens;
   }
@@ -1352,7 +1352,7 @@ export class BriefcaseManager {
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
-    changeSet.changesType = changeSetToken.changesType;
+    changeSet.changesType = changeSetToken.containsSchemaChanges ? ChangesType.Schema : ChangesType.Regular;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Columns from "@src/toolbar/item/expandable/group/Columns";
+import Columns from "../../../../../src/toolbar/item/expandable/group/Columns";
 
 describe("<Columns />", () => {
   it("should render", () => {

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Snap from "@src/footer/snap-mode/Snap";
+import Snap from "../../../src/footer/snap-mode/Snap";
 
 describe("<Snap />", () => {
   it("should render", () => {

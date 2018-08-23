@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "@src/footer/tool-assistance/Indicator";
+import Indicator from "../../../src/footer/tool-assistance/Indicator";
 
 describe("<Indicator />", () => {
   it("should render", () => {

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Settings from "@src/widget/tool-settings/Settings";
+import Settings from "../../../src/widget/tool-settings/Settings";
 
 describe("<Settings />", () => {
   it("should render", () => {

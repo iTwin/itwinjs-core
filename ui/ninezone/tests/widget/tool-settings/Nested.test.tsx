@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Nested from "@src/widget/tool-settings/Nested";
+import Nested from "../../../src/widget/tool-settings/Nested";
 
 describe("<Nested />", () => {
   it("should render", () => {

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Merge from "@src/zones/target/Merge";
+import Merge from "../../../src/zones/target/Merge";
 
 describe("<Merge />", () => {
   it("should render", () => {

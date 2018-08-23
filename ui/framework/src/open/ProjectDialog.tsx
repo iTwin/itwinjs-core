@@ -49,42 +49,35 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onClose = () => {
+  private _onClose = () => {
     if (this.props.onClose)
       this.props.onClose();
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onMyProjectsClicked = () => {
+  private _onMyProjectsClicked = () => {
     this.getRecentProjects(ProjectScope.Invited);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onFavoritesClicked = () => {
+  private _onFavoritesClicked = () => {
     this.getRecentProjects(ProjectScope.Favorites);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onRecentClicked = () => {
+  private _onRecentClicked = () => {
     this.getRecentProjects(ProjectScope.MostRecentlyUsed);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onSearchClicked = () => {
+  private _onSearchClicked = () => {
     this.setState({ projects: undefined, activeFilter: ProjectScope.All });
     // this.getRecentProjects(ProjectScope.All);
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onProjectSelected = (projectInfo: ProjectInfo) => {
+  private _onProjectSelected = (projectInfo: ProjectInfo) => {
     if (this.props.onProjectSelected) {
       this.props.onProjectSelected(projectInfo);
     }
   }
 
-  // tslint:disable-next-line:naming-convention
-  private handleSearchValueChanged = (value: string): void => {
+  private _handleSearchValueChanged = (value: string): void => {
     if (!value || value.trim().length === 0) {
       this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
     } else {
@@ -125,7 +118,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   private renderProject(project: ProjectInfo) {
     return (
-      <tr key={project.wsgId} onClick={this.onProjectSelected.bind(this, project)}>
+      <tr key={project.wsgId} onClick={this._onProjectSelected.bind(this, project)}>
         <td>{project.projectNumber}</td>
         <td>{project.name}</td>
         <td />
@@ -141,18 +134,18 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
         <div className="projects animate">
           <div className="header">
             <h3>Select Project</h3>
-            <span onClick={this.onClose.bind(this)} className="icon icon-close" title="Close" />
+            <span onClick={this._onClose.bind(this)} className="icon icon-close" title="Close" />
           </div>
           <div className="projects-content">
             <div className="tabs-container">
               <Tabs defaultTab={this.getTabIndexFromProjectScope()}>
-                <Tab label="My Projects" icon="icon-manager" onTabClicked={this.onMyProjectsClicked} />
-                <Tab label="Favorites" icon="icon-star" onTabClicked={this.onFavoritesClicked} />
-                <Tab label="Recent" icon="icon-history" onTabClicked={this.onRecentClicked} />
-                <Tab label="Search" icon="icon-search" onTabClicked={this.onSearchClicked} />
+                <Tab label="My Projects" icon="icon-manager" onTabClicked={this._onMyProjectsClicked} />
+                <Tab label="Favorites" icon="icon-star" onTabClicked={this._onFavoritesClicked} />
+                <Tab label="Recent" icon="icon-history" onTabClicked={this._onRecentClicked} />
+                <Tab label="Search" icon="icon-search" onTabClicked={this._onSearchClicked} />
               </Tabs>
               <div className={searchClassName}>
-                <SearchBox placeholder="Search..." onValueChanged={this.handleSearchValueChanged} valueChangedDelay={400} />
+                <SearchBox placeholder="Search..." onValueChanged={this._handleSearchValueChanged} valueChangedDelay={400} />
               </div>
             </div>
             <div className="table-container">

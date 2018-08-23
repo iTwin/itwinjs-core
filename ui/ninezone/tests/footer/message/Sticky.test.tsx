@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Sticky from "@src/footer/message/Sticky";
+import Sticky from "../../../src/footer/message/Sticky";
 
 describe("<Sticky />", () => {
   it("should render", () => {

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import Direction, { DirectionHelpers } from "@src/utilities/Direction";
+import Direction, { DirectionHelpers } from "../../src/utilities/Direction";
 
 describe("Direction", () => {
   it("should get css class name for bottom direction", () => {
