@@ -7,10 +7,12 @@ import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+import { Matrix4d } from "../numerics/Geometry4d";
 
 /* tslint:disable:no-console */
 function testIntersectionsXY(
   ck: Checker,
+  worldToLocal: Matrix4d | undefined,
   intersections: CurveLocationDetailArrayPair, minExpected: number, maxExpected: number) {
   if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
     const n = intersections.dataA.length;
@@ -20,7 +22,13 @@ function testIntersectionsXY(
     }
 
     for (let i = 0; i < n; i++) {
-      ck.testPoint3dXY(intersections.dataA[i].point, intersections.dataB[i].point, "CLD coordinate match");
+      if (worldToLocal) {
+        const pointA = worldToLocal.multiplyPoint3d(intersections.dataA[i].point, 1);
+        const pointB = worldToLocal.multiplyPoint3d(intersections.dataB[i].point, 1);
+        ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
+      } else {
+        ck.testPoint3dXY(intersections.dataA[i].point, intersections.dataB[i].point, "CLD coordinate match");
+      }
       const fA = intersections.dataA[i].fraction;
       const fB = intersections.dataB[i].fraction;
       const cpA = intersections.dataA[i].curve;
@@ -40,7 +48,7 @@ describe("CurveCurve", () => {
     const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
     const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
     const intersections = CurveCurve.IntersectionXY(segment0, false, segment1, false);
-    testIntersectionsXY(ck, intersections, 1, 1);
+    testIntersectionsXY(ck, undefined, intersections, 1, 1);
     ck.checkpoint("CurveCurve.LineLine");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -51,15 +59,15 @@ describe("CurveCurve", () => {
     const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
     const linestring1 = LineString3d.create(Point3d.create(2, 4), Point3d.create(4, 1), Point3d.create(2, 5));
     const intersections = CurveCurve.IntersectionXY(segment0, false, linestring0, false);
-    testIntersectionsXY(ck, intersections, 1, 1);
+    testIntersectionsXY(ck, undefined, intersections, 1, 1);
     const intersections1 = CurveCurve.IntersectionXY(linestring0, false, segment0, false);
-    testIntersectionsXY(ck, intersections1, 1, 1);
+    testIntersectionsXY(ck, undefined, intersections1, 1, 1);
 
     const intersections2 = CurveCurve.IntersectionXY(linestring0, false, linestring1, false);
-    testIntersectionsXY(ck, intersections2, 2, 2);
+    testIntersectionsXY(ck, undefined, intersections2, 2, 2);
 
     const intersectionsX = CurveCurve.IntersectionXY(segment0, true, linestring0, true);
-    testIntersectionsXY(ck, intersectionsX, 2, 2);
+    testIntersectionsXY(ck, undefined, intersectionsX, 2, 2);
     expect(ck.getNumErrors()).equals(0);
   });
 });

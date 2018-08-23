@@ -14,6 +14,8 @@ import { LineString3d } from "./LineString3d";
 import { Point3d, Vector2d } from "../PointVector";
 // import { LineString3d } from "./LineString3d";
 import { SmallSystem } from "../numerics/Polynomials";
+import { Matrix4d, Point4d } from "../numerics/Geometry4d";
+import { Transform } from "../Transform";
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -37,17 +39,25 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private _geometryB: GeometryQuery;
   private _extendB: boolean;
   private _results!: CurveLocationDetailArrayPair;
-
+  private _worldToLocalPerspective: Matrix4d | undefined;
+  private _worldToLocalAffine: Transform | undefined;
   private reinitialize() {
     this._results = new CurveLocationDetailArrayPair();
   }
 
-  public constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
     super();
     // this.geometryA = _geometryA;
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;
+    this._worldToLocalPerspective = undefined;
+    this._worldToLocalAffine = undefined;
+    if (worldToLocal !== undefined) {
+      this._worldToLocalAffine = worldToLocal.asTransform;
+      if (!this._worldToLocalAffine)
+        this._worldToLocalPerspective = worldToLocal.clone();
+    }
     this.reinitialize();
   }
   /**
@@ -71,11 +81,47 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       return false;
     return true;
   }
+
   /** compute intersection of two line segments.
    * filter by extension rules.
    * record with fraction mapping.
    */
-  private computeSegmentSegment(
+  private acceptLineSegmentPoint(
+    localFractionA: number,
+    cpA: CurvePrimitive,
+    pointA0: Point3d,
+    fractionA0: number,
+    pointA1: Point3d,
+    fractionA1: number,
+    localFractionB: number,   // Computed intersection fraction
+    cpB: CurvePrimitive,
+    pointB0: Point3d,
+    fractionB0: number,
+    pointB1: Point3d,
+    fractionB1: number,
+    reversed: boolean,
+  ) {
+    const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
+      Geometry.interpolate(fractionA0, localFractionA, fractionA1),
+      pointA0.interpolate(localFractionA, pointA1));
+    detailA.setIntervalRole(CurveIntervalRole.isolated);
+    const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
+      Geometry.interpolate(fractionB0, localFractionB, fractionB1),
+      pointB0.interpolate(localFractionB, pointB1));
+    detailB.setIntervalRole(CurveIntervalRole.isolated);
+    if (reversed) {
+      this._results.dataA.push(detailB);
+      this._results.dataB.push(detailA);
+    } else {
+      this._results.dataA.push(detailA);
+      this._results.dataB.push(detailB);
+    }
+  }
+  /** compute intersection of two line segments.
+   * filter by extension rules.
+   * record with fraction mapping.
+   */
+  private computeSegmentSegment3D(
     cpA: CurvePrimitive,
     extendA0: boolean,
     pointA0: Point3d,
@@ -100,20 +146,66 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       && this.acceptFraction(extendA0, uv.x, extendA1)
       && this.acceptFraction(extendB0, uv.y, extendB1)
     ) {
-      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
-        Geometry.interpolate(fractionA0, uv.x, fractionA1),
-        pointA0.interpolate(uv.x, pointA1));
-      detailA.setIntervalRole(CurveIntervalRole.isolated);
-      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
-        Geometry.interpolate(fractionB0, uv.y, fractionB1),
-        pointB0.interpolate(uv.y, pointB1));
-      detailB.setIntervalRole(CurveIntervalRole.isolated);
-      if (reversed) {
-        this._results.dataA.push(detailB);
-        this._results.dataB.push(detailA);
-      } else {
-        this._results.dataA.push(detailA);
-        this._results.dataB.push(detailB);
+      this.acceptLineSegmentPoint(uv.x, cpA, pointA0, fractionA0, pointA1, fractionA1,
+        uv.y, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed);
+    }
+  }
+  private static _workPointA0H = Point4d.create();
+  private static _workPointA1H = Point4d.create();
+  private static _workPointB0H = Point4d.create();
+  private static _workPointB1H = Point4d.create();
+  // intersection of PROJECTED homogeneous segments ...  assumes caller knows the _worldToLocal is present
+  private computeSegmentSegment3DH(
+    cpA: CurvePrimitive,
+    extendA0: boolean,
+    pointA0: Point3d,
+    fractionA0: number,
+    pointA1: Point3d,
+    fractionA1: number,
+    extendA1: boolean,
+    cpB: CurvePrimitive,
+    extendB0: boolean,
+    pointB0: Point3d,
+    fractionB0: number,
+    pointB1: Point3d,
+    fractionB1: number,
+    extendB1: boolean,
+    reversed: boolean,
+  ) {
+    const hA0 = CurveCurveIntersectXY._workPointA0H;
+    const hA1 = CurveCurveIntersectXY._workPointA1H;
+    const hB0 = CurveCurveIntersectXY._workPointB0H;
+    const hB1 = CurveCurveIntersectXY._workPointB1H;
+    this._worldToLocalPerspective!.multiplyPoint3d(pointA0, 1, hA0);
+    this._worldToLocalPerspective!.multiplyPoint3d(pointA1, 1, hA1);
+    this._worldToLocalPerspective!.multiplyPoint3d(pointB0, 1, hB0);
+    this._worldToLocalPerspective!.multiplyPoint3d(pointB1, 1, hB1);
+    // Considering only x,y,w parts....
+    // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
+    // PointQ is colinear with A0,A1 when the determinat det (A0,A1,Q) is zero.  (Each column takes xyw parts)
+    const alpha0 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB0.x,
+      hA0.y, hA1.y, hB0.y,
+      hA0.w, hA1.w, hB0.w);
+    const alpha1 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB1.x,
+      hA0.y, hA1.y, hB1.y,
+      hA0.w, hA1.w, hB1.w);
+    const fractionB = Geometry.conditionalDivideFraction(alpha1 - alpha0, alpha0);
+    if (fractionB !== undefined && this.acceptFraction(extendB0, fractionB, extendB1)) {
+      const beta0 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA0.x,
+        hB0.y, hB1.y, hA0.y,
+        hB0.w, hB1.w, hA0.w);
+      const beta1 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA1.x,
+        hB0.y, hB1.y, hA1.y,
+        hB0.w, hB1.w, hA1.w);
+      const fractionA = Geometry.conditionalDivideFraction(beta1 - beta0, beta0);
+      if (fractionA !== undefined && this.acceptFraction(extendA0, fractionA, extendA1)) {
+        // final fraction acceptance uses original world points, with perspective-aware fractions
+        this.acceptLineSegmentPoint(fractionA, cpA, pointA0, fractionA0, pointA1, fractionA1,
+          fractionB, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed);
       }
     }
   }
@@ -133,7 +225,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       for (let ib = 1; ib < numB; ib++ , pointB0.setFrom(pointB1), fB0 = fB1) {
         lsB.pointAt(ib, pointB1);
         fB1 = ib * dfB;
-        this.computeSegmentSegment(
+        this.computeSegmentSegment3D(
           lsA, extendA, pointA0, 0.0, pointA1, 1.0, extendA,
           lsB, ib === 1 && extendB, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB,
           reversed);
@@ -146,14 +238,34 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private static _workPointA1 = Point3d.create();
   private static _workPointB0 = Point3d.create();
   private static _workPointB1 = Point3d.create();
+  private static setTransformedWorkPoints(transform: Transform, pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d) {
+    transform.multiplyPoint3d(pointA0, this._workPointA0);
+    transform.multiplyPoint3d(pointA1, this._workPointA1);
+    transform.multiplyPoint3d(pointB0, this._workPointB0);
+    transform.multiplyPoint3d(pointB1, this._workPointB1);
+  }
 
   public handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       const segmentB = this._geometryB;
-      this.computeSegmentSegment(
-        segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
-        segmentB, this._extendB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB,
-        false);
+      if (this._worldToLocalAffine) {
+        // non-perspective projection
+        CurveCurveIntersectXY.setTransformedWorkPoints(this._worldToLocalAffine, segmentA.point0Ref, segmentA.point1Ref, segmentB.point0Ref, segmentB.point1Ref);
+        this.computeSegmentSegment3D(
+          segmentA, this._extendA, CurveCurveIntersectXY._workPointA0, 0.0, CurveCurveIntersectXY._workPointA1, 1.0, this._extendA,
+          segmentB, this._extendB, CurveCurveIntersectXY._workPointB0, 0.0, CurveCurveIntersectXY._workPointB1, 1.0, this._extendB,
+          false);
+      } else if (this._worldToLocalPerspective) {
+        this.computeSegmentSegment3DH(
+          segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
+          segmentB, this._extendB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB,
+          false);
+      } else {
+        this.computeSegmentSegment3D(
+          segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
+          segmentB, this._extendB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB,
+          false);
+      }
     } else if (this._geometryB instanceof LineString3d) {
       this.computeSegmentLineString(segmentA, this._extendA, this._geometryB, this._extendB, false);
     }
@@ -187,7 +299,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
           for (let ib = 1; ib < numB; ib++ , pointB0.setFrom(pointB1), fB0 = fB1) {
             lsB.pointAt(ib, pointB1);
             fB1 = ib * dfB;
-            this.computeSegmentSegment(
+            this.computeSegmentSegment3D(
               lsA, ia === 1 && extendA, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && extendA,
               lsB, ib === 1 && extendB, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB,
               false);
@@ -208,8 +320,16 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
 }
 export class CurveCurve {
   public static IntersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXY(geometryA, extendA, geometryB, extendB);
+    const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
   }
+
+  public static IntersectionProjectedXY(worldToLocal: Matrix4d,
+    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
+    const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB);
+    geometryA.dispatchToGeometryHandler(handler);
+    return handler.grabResults();
+  }
+
 }
