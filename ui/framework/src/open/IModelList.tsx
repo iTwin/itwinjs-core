@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import * as classnames from "classnames";
 import { IModelCard } from "./IModelCard";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -9,11 +10,10 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
-import * as classnames from "classnames";
 import { ProjectDialog } from "./ProjectDialog";
-import { SwitchControl } from "./SwitchControl";
+// import { SwitchControl } from "./SwitchControl";
 import { ViewSelector } from "./ViewSelector";
-import { SearchBox } from "@bentley/ui-core";
+import { SearchBox, Toggle } from "@bentley/ui-core";
 
 import "./IModelList.scss";
 
@@ -80,11 +80,13 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.setState( { filter: value} );
   }
 
+  /*
   private _onIModelOfflineChange = (checked: boolean): void => {
     if (checked) {
     } else {
     }
   }
+*/
 
   private _onViewsClose = () => {
     this.setState({ showViews: false });
@@ -114,7 +116,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private renderIModel(iModelInfo: IModelInfo) {
     const size = Math.floor(Math.random() * 100).toString() + " MB";
-    const checked = Math.random() > .5;
+    // const checked = Math.random() > .5;
     return (
       <tr key={iModelInfo.wsgId}>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
@@ -122,11 +124,13 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
-          <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this._onIModelOfflineChange}/>
+          <Toggle className="toggle-offline" showCheckmark={true} />
         </td>
       </tr>
     );
   }
+
+  // <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this._onIModelOfflineChange}/>
 
   private renderThumbnails(iModels: IModelInfo[]) {
     return  (

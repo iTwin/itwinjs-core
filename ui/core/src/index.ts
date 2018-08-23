@@ -12,6 +12,7 @@ export * from "./messagebox";
 export * from "./radialmenu";
 export * from "./searchbox";
 export * from "./splitbutton";
+export * from "./toggle";
 export * from "./tree";
 export * from "./utils";
 export * from "./validationTextbox";
