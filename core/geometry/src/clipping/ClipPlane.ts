@@ -6,7 +6,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Geometry, Angle } from "../Geometry";
@@ -275,7 +275,7 @@ export class ClipPlane implements Clipper {
   // Returns true if successful
   public transformInPlace(transform: Transform): boolean {
     const plane: Plane3dByOriginAndUnitNormal = this.getPlane3d();
-    const matrix: RotMatrix = transform.matrix;
+    const matrix: Matrix3d = transform.matrix;
     const newPoint = transform.multiplyPoint3d(plane.getOriginRef());
     // Normal transforms as the inverse transpose of the matrix part
     // BTW: If the matrix is orthogonal, this is a long way to multiply by the matrix part (mumble grumble)

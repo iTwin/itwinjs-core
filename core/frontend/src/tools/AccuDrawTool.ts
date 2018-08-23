@@ -9,7 +9,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Vector3d, Point3d, RotMatrix, Geometry, Angle } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Matrix3d, Geometry, Angle } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { AuxCoordSystemState } from "../AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -96,7 +96,7 @@ export class AccuDrawShortcuts {
           }
 
           LegacyMath.normalizedCrossProduct(vec[0], vec[1], vec[2]);
-          acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+          acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
 
           if (!isDynamics) {
             accudraw.published.origin.setFrom(points[0]);
@@ -108,7 +108,7 @@ export class AccuDrawShortcuts {
 
         vec[2].set(0.0, 0.0, 1.0);
         LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
-        acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+        acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;
 
@@ -121,7 +121,7 @@ export class AccuDrawShortcuts {
         }
 
         LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
-        acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+        acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;
       }
@@ -137,7 +137,7 @@ export class AccuDrawShortcuts {
 
     const rMatrix = accudraw.getRotation();
     rMatrix.multiplyVectorInPlace(accudraw.vector);
-    const angleMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
+    const angleMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
     rMatrix.multiplyMatrixMatrix(angleMatrix, rMatrix); // NEEDS_WORK - verify order
     accudraw.axes.fromRotMatrix(rMatrix);
     accudraw.flags.lockedRotation = true;
@@ -710,7 +710,7 @@ export class AccuDrawShortcuts {
     } else if (RotationMode.Context === rotation) {
       const axes = accudraw.baseAxes.clone();
       accudraw.accountForAuxRotationPlane(axes, accudraw.flags.auxRotationPlane);
-      accudraw.setContextRotation(axes.toRotMatrix(), false, true);
+      accudraw.setContextRotation(axes.toMatrix3d(), false, true);
       accudraw.refreshDecorationsAndDynamics();
       return;
     } else {
@@ -739,7 +739,7 @@ export class AccuDrawShortcuts {
         0.0 !== accudraw.savedState.axes.x.magnitude() &&
         0.0 !== accudraw.savedState.axes.y.magnitude() &&
         0.0 !== accudraw.savedState.axes.z.magnitude())
-        accudraw.savedState.axes.toRotMatrix(newMatrix);
+        accudraw.savedState.axes.toMatrix3d(newMatrix);
       else
         AccuDraw.getStandardRotation(vp.view.is3d() ? StandardViewId.Iso : StandardViewId.Top, vp, false, newMatrix);
 
@@ -748,7 +748,7 @@ export class AccuDrawShortcuts {
     }
 
     // Save old view rotation in saved axes so RV can toggle between old/new rotations...
-    accudraw.savedState.axes.setFrom(ThreeAxes.createFromRotMatrix(oldMatrix));
+    accudraw.savedState.axes.setFrom(ThreeAxes.createFromMatrix3d(oldMatrix));
 
     // NEEDS_WORK: Frustum morph doesn't keep fixed origin during transitional frames...
     //            Compare to behavior using mdlView_rotateToRMatrixAboutPoint which looked better...
@@ -758,7 +758,7 @@ export class AccuDrawShortcuts {
     // Transform   fromTrans, toTrans;
 
     // const origin = accudraw.origin;
-    // fromTrans.InitFromMatrixAndFixedPoint(vp -> GetRotMatrix(), origin);
+    // fromTrans.InitFromMatrixAndFixedPoint(vp -> getMatrix3d(), origin);
     // frustum.Multiply(fromTrans);
     // toTrans.InitFromMatrixAndFixedPoint(newMatrix, origin);
     // toTrans.InverseOf(toTrans);
@@ -872,7 +872,7 @@ export class AccuDrawShortcuts {
         accudraw.flags.auxRotationPlane = RotationMode.Top;
 
       // AuxCoordSystemPtr acsPtr = AuxCoordSystem:: CreateFrom(vp -> GetViewController().GetAuxCoordinateSystem());
-      // RotMatrix auxRMatrix;
+      // Matrix3d auxRMatrix;
 
       // accudraw.GetRotation(auxRMatrix);
       // acsPtr -> SetRotation(auxRMatrix);
@@ -933,7 +933,7 @@ export class AccuDrawShortcuts {
         break;
     }
 
-    accudraw.setContextRotation(newRotation.toRotMatrix(), true, true);
+    accudraw.setContextRotation(newRotation.toMatrix3d(), true, true);
     accudraw.refreshDecorationsAndDynamics();
   }
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Vector3d, Point3d, RotMatrix, Transform, Matrix4d } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
 export class Matrix3 {
@@ -42,20 +42,20 @@ export class Matrix3 {
     return mat;
   }
 
-  public initFromRotMatrix(rot: RotMatrix): void {
+  public initFromRotMatrix(rot: Matrix3d): void {
     this.setValues(
       rot.at(0, 0), rot.at(0, 1), rot.at(0, 2),
       rot.at(1, 0), rot.at(1, 1), rot.at(1, 2),
       rot.at(2, 0), rot.at(2, 1), rot.at(2, 2));
   }
-  public static fromRotMatrix(rot: RotMatrix, out?: Matrix3): Matrix3 {
+  public static fromRotMatrix(rot: Matrix3d, out?: Matrix3): Matrix3 {
     const mat = undefined !== out ? out : new Matrix3();
     mat.initFromRotMatrix(rot);
     return mat;
   }
-  public toRotMatrix(): RotMatrix {
+  public toMatrix3d(): Matrix3d {
     const data = this.data;
-    return RotMatrix.createRowValues(data[0], data[3], data[6], data[1], data[4], data[7], data[2], data[5], data[8]);
+    return Matrix3d.createRowValues(data[0], data[3], data[6], data[1], data[4], data[7], data[2], data[5], data[8]);
   }
 
   public swap(firstIndex: number, secondIndex: number) {
@@ -169,7 +169,7 @@ export class Matrix4 {
     const data = this.data;
     assert(0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]);
     const origin = new Point3d(data[12], data[13], data[14]);
-    const rotMat = RotMatrix.createIdentity();
+    const rotMat = Matrix3d.createIdentity();
     for (let i = 0; i < 3; i++)
       for (let j = 0; j < 3; j++)
         rotMat.setAt(i, j, data[i + j * 4]);

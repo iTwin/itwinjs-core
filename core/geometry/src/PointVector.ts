@@ -6,7 +6,7 @@
 
 import { Geometry, Angle, BeJSONFunctions, AngleProps } from "./Geometry";
 import { Ray3d } from "./AnalyticGeometry";
-import { RotMatrix, Transform } from "./Transform";
+import { Matrix3d, Transform } from "./Transform";
 
 export interface IsNullCheck { isNull(): boolean; }
 export interface WritableXAndY { x: number; y: number; }
@@ -23,8 +23,8 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
 export type XYZProps = { x?: number; y?: number; z?: number } | number[];
 export type XYProps = { x?: number; y?: number; } | number[];
-export type RotMatrixProps = number[][] | RotMatrix | number[];
-export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: RotMatrixProps; };
+export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: Matrix3dProps; };
 export type Range3dProps = { low: XYZProps; high: XYZProps; } | XYZProps[];
 export type Range2dProps = { low: XYProps; high: XYProps; } | XYProps[];
 export type Range1dProps = { low: number; high: number } | number[];
@@ -1285,16 +1285,16 @@ export class YawPitchRollAngles {
    *
    * * The returned matrix is "rigid" -- unit length rows and columns, and its transpose is its inverse.
    * * The "rigid" matrix is always a right handed coordinate system.
-   * @param result optional pre-allocated `RotMatrix`
+   * @param result optional pre-allocated `Matrix3d`
    */
-  public toRotMatrix(result?: RotMatrix) {
+  public toMatrix3d(result?: Matrix3d) {
     const c0 = Math.cos(this.yaw.radians);
     const s0 = Math.sin(this.yaw.radians);
     const c1 = Math.cos(this.pitch.radians);
     const s1 = Math.sin(this.pitch.radians);
     const c2 = Math.cos(this.roll.radians);
     const s2 = Math.sin(this.roll.radians);
-    return RotMatrix.createRowValues
+    return Matrix3d.createRowValues
       (
       c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2),
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
@@ -1339,17 +1339,17 @@ export class YawPitchRollAngles {
   public static tryFromTransform(transform: Transform): { origin: Point3d, angles: YawPitchRollAngles | undefined } {
     // bundle up the transform's origin with the angle data extracted from the transform
     return {
-      angles: YawPitchRollAngles.createFromRotMatrix(transform.matrix),
+      angles: YawPitchRollAngles.createFromMatrix3d(transform.matrix),
       origin: Point3d.createFrom(transform.origin),
     };
   }
 
-  /** Attempts to create a YawPitchRollAngles object from an RotMatrix
+  /** Attempts to create a YawPitchRollAngles object from an Matrix3d
    * * This conversion fails if the matrix is not rigid (unit rows and columns, transpose is inverse)
    * * In the failure case the method's return value is `undefined`.
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with a set of angles.
    */
-  public static createFromRotMatrix(matrix: RotMatrix, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
+  public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     const s1 = matrix.at(2, 0);
     const c1 = Math.sqrt(matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2));
 
@@ -1388,7 +1388,7 @@ export class YawPitchRollAngles {
         }
       }
     }
-    const matrix1 = angles.toRotMatrix();
+    const matrix1 = angles.toMatrix3d();
     return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 

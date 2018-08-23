@@ -7,7 +7,7 @@ import { Sample } from "../serialization/GeometrySamples";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Point2d, Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { Range3d } from "../Range";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
@@ -178,7 +178,7 @@ describe("Polyface.HelloWorld", () => {
     ck.testExactNumber(1, polyface0.normalCount, "single normal for planar grid");
     const polyface1 = polyface0.clone();
     const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(),
-      RotMatrix.createScale(-1, 1, 1));
+      Matrix3d.createScale(-1, 1, 1));
     const polyface2 = polyface0.cloneTransformed(mirrorX);
     const expectedArea = (numX - 1) * (numY - 1);
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad .  .
@@ -242,7 +242,7 @@ describe("Polyface.Box", () => {
     const expectedVolume = a * b * c;
     const expectedArea = 2 * (a * b + b * c + c * a);
     builder.addTransformedUnitBox(Transform.createFixedPointAndMatrix(Point3d.createZero(),
-      RotMatrix.createScale(2, 3, 4)));
+      Matrix3d.createScale(2, 3, 4)));
 
     const polyface = builder.claimPolyface();
     //    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);

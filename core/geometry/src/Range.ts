@@ -6,7 +6,7 @@
 
 import { Geometry, BeJSONFunctions } from "./Geometry";
 import { Point2d, Vector2d, Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix } from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 import { Range1dProps, Range2dProps, Range3dProps } from "./PointVector";
 import { LowAndHighXYZ, LowAndHighXY } from "./PointVector";
 import { XAndY, XYAndZ } from "./PointVector";
@@ -606,7 +606,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Create a local to world transform from this range. */
   public getLocalToWorldTransform(result?: Transform): Transform {
-    return Transform.createOriginAndMatrix(Point3d.create(this.low.x, this.low.y, this.low.z), RotMatrix.createRowValues(
+    return Transform.createOriginAndMatrix(Point3d.create(this.low.x, this.low.y, this.low.z), Matrix3d.createRowValues(
       this.high.x - this.low.x, 0, 0,
       0, this.high.y - this.low.y, 0,
       0, 0, this.high.z - this.low.z,

@@ -7,7 +7,7 @@ import { StrokeOptions } from "./StrokeOptions";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
 import { Quadrature } from "../numerics/Quadrature";
@@ -292,12 +292,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public fractionToFrenetFrame(fraction: number, result?: Transform): Transform | undefined {
     const plane = this.fractionToPointAnd2Derivatives(fraction);
     if (!plane) return undefined;
-    let axes = RotMatrix.createRigidFromColumns(plane.vectorU, plane.vectorV, AxisOrder.XYZ);
+    let axes = Matrix3d.createRigidFromColumns(plane.vectorU, plane.vectorV, AxisOrder.XYZ);
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
     // 2nd derivative not distinct -- do arbitrary headsup ...
-    const perpVector = RotMatrix.createRigidHeadsUpFavorXYPlane(plane.vectorU, plane.vectorV);
-    axes = RotMatrix.createRigidFromColumns(plane.vectorU, perpVector, AxisOrder.XYZ);
+    const perpVector = Matrix3d.createRigidHeadsUpFavorXYPlane(plane.vectorU, plane.vectorV);
+    axes = Matrix3d.createRigidFromColumns(plane.vectorU, perpVector, AxisOrder.XYZ);
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
     return undefined;

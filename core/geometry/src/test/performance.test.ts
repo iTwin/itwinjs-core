@@ -3,42 +3,42 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
 import { Point3d } from "../PointVector";
 /* tslint:disable:no-console no-unused-variable */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
-  const savedFlag = RotMatrix.useCachedInverse;
-  const matrix = RotMatrixOps.createRowValues(
+  const savedFlag = Matrix3d.useCachedInverse;
+  const matrix = Matrix3dOps.createRowValues(
     5, 1, 2,
     3, 8, 2,
-    1, -2, 8) as RotMatrix;
+    1, -2, 8) as Matrix3d;
   // Give result storage a temporary value
-  let inverse: RotMatrix = RotMatrix.createIdentity();
+  let inverse: Matrix3d = Matrix3d.createIdentity();
 
   if (usingCache)
-    RotMatrix.useCachedInverse = true;
+    Matrix3d.useCachedInverse = true;
   else
-    RotMatrix.useCachedInverse = false;
-  const name: string = "RotMatrix inverse "
+    Matrix3d.useCachedInverse = false;
+  const name: string = "Matrix3d inverse "
     + (usingCache ? "Cache" : "NoCache") + " " + (usingResult ? "preallocate" : "new");
 
   if (usingResult) {
     console.time(name);
     for (let k = 0; k < numTest; k++) {
-      inverse = matrix.inverse(inverse) as RotMatrix;
+      inverse = matrix.inverse(inverse) as Matrix3d;
     }
     console.timeEnd(name);
   } else {
     console.time(name);
     for (let k = 0; k < numTest; k++) {
-      inverse = matrix.inverse() as RotMatrix;
+      inverse = matrix.inverse() as Matrix3d;
     }
     console.timeEnd(name);
   }
-  RotMatrix.useCachedInverse = savedFlag;
+  Matrix3d.useCachedInverse = savedFlag;
 }
 
 function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
@@ -309,11 +309,11 @@ function arrayCheck(numTest: number, type: number) {
   }
 }
 
-export class RotMatrixOps extends RotMatrix {
+export class Matrix3dOps extends Matrix3d {
   /** Multiply two matrices.* */
-  public static multiplyMatrixMatrix_directAssignment(matrixA: RotMatrix, matrixB: RotMatrix, result?: RotMatrix): RotMatrix {
+  public static multiplyMatrixMatrix_directAssignment(matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
     // WARNING -- matrixA does not allow result to be the same as one of the inputs . . .
-    result = result ? result : new RotMatrix();
+    result = result ? result : new Matrix3d();
     result.coffs[0] = (matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6]);
     result.coffs[1] = (matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7]);
     result.coffs[2] = (matrixA.coffs[0] * matrixB.coffs[2] + matrixA.coffs[1] * matrixB.coffs[5] + matrixA.coffs[2] * matrixB.coffs[8]);
@@ -325,9 +325,9 @@ export class RotMatrixOps extends RotMatrix {
     result.coffs[8] = (matrixA.coffs[6] * matrixB.coffs[2] + matrixA.coffs[7] * matrixB.coffs[5] + matrixA.coffs[8] * matrixB.coffs[8]);
     return result;
   }
-  public static multiplyMatrixMatrix_directAssignmentN(numReps: number, matrixA: RotMatrix, matrixB: RotMatrix, result?: RotMatrix): RotMatrix {
+  public static multiplyMatrixMatrix_directAssignmentN(numReps: number, matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
     // WARNING -- matrixA does not allow result to be the same as one of the inputs . . .
-    result = result ? result : new RotMatrix();
+    result = result ? result : new Matrix3d();
     for (let i = 0; i < numReps; i++) {
       result.coffs[0] = (matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6]);
       result.coffs[1] = (matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7]);
@@ -344,8 +344,8 @@ export class RotMatrixOps extends RotMatrix {
   }
 
   /** Multiply two matrices */
-  public static multiplyMatrixMatrix(matrixA: RotMatrix, matrixB: RotMatrix, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues(
+  public static multiplyMatrixMatrix(matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues(
       (matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6]),
       (matrixA.coffs[0] * matrixB.coffs[1] + matrixA.coffs[1] * matrixB.coffs[4] + matrixA.coffs[2] * matrixB.coffs[7]),
       (matrixA.coffs[0] * matrixB.coffs[2] + matrixA.coffs[1] * matrixB.coffs[5] + matrixA.coffs[2] * matrixB.coffs[8]),
@@ -362,8 +362,8 @@ class TimingTests {
 
   public static RunTestA(numTest: number) {
     console.log("\n performance reps ", numTest);
-    const matrixA = RotMatrix.createScale(1, 2, 3);
-    const matrixB = RotMatrix.createScale(2, -1, 2);
+    const matrixA = Matrix3d.createScale(1, 2, 3);
+    const matrixB = Matrix3d.createScale(2, -1, 2);
 
     // Non direct assignment with no pre-allocated result. let defined inside loop
     console.time("multiplyMatrixMatrix");
@@ -372,7 +372,7 @@ class TimingTests {
     console.timeEnd("multiplyMatrixMatrix");
 
     // Non direct assignment with pre-allocated result. let defined inside loop
-    let matrixD = RotMatrix.createIdentity();
+    let matrixD = Matrix3d.createIdentity();
     console.time("multiplyMatrixMatrix(result)");
     for (let k = 0; k < numTest; k++)
       matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
@@ -380,10 +380,10 @@ class TimingTests {
 
   }
   public static RunTestB(numTest: number) {
-    const matrixA = RotMatrixOps.createScale(1, 2, 3);
-    const matrixB = RotMatrixOps.createScale(2, -1, 2);
+    const matrixA = Matrix3dOps.createScale(1, 2, 3);
+    const matrixB = Matrix3dOps.createScale(2, -1, 2);
 
-    let matrixD = RotMatrixOps.createIdentity();
+    let matrixD = Matrix3dOps.createIdentity();
 
     // Non direct assignment with no pre-allocated result
     console.log("\n performance reps ", numTest);
@@ -397,16 +397,16 @@ class TimingTests {
       matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
     console.timeEnd("Test_pre-allocated_result_static_Outside");
 
-    console.time("RotMatrixOps.multiplyMatrixMatrix_directAssignment");
+    console.time("Matrix3dOps.multiplyMatrixMatrix_directAssignment");
     for (let k = 0; k < numTest; k++)
-      matrixD = RotMatrixOps.multiplyMatrixMatrix_directAssignment(matrixA, matrixB, matrixD);
-    console.timeEnd("RotMatrixOps.multiplyMatrixMatrix_directAssignment");
+      matrixD = Matrix3dOps.multiplyMatrixMatrix_directAssignment(matrixA, matrixB, matrixD);
+    console.timeEnd("Matrix3dOps.multiplyMatrixMatrix_directAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
-      const name = "RotMatrixOps.multiplyMatrixMatrix_directAssignment (numReps " + numReps + ")";
+      const name = "Matrix3dOps.multiplyMatrixMatrix_directAssignment (numReps " + numReps + ")";
       console.time(name);
       for (let k = 0; k < numTest; k++)
-        matrixD = RotMatrixOps.multiplyMatrixMatrix_directAssignmentN(numReps, matrixA, matrixB, matrixD);
+        matrixD = Matrix3dOps.multiplyMatrixMatrix_directAssignmentN(numReps, matrixA, matrixB, matrixD);
       console.timeEnd(name);
     }
   }
