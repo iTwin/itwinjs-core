@@ -47,7 +47,7 @@ export class ViewManager {
   private _skipSceneCreation = false;
   private readonly _decorators: Decorator[] = [];
 
-  public onInitialized(): void {
+  public onInitialized() {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
     IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
@@ -63,6 +63,13 @@ export class ViewManager {
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
+  }
+
+  public onShutDown() {
+    this._viewports.length = 0;
+    this._decorators.length = 0;
+    this._selectedView = undefined;
+    this.cursor = undefined;
   }
 
   /** Called after the selected view changes.
