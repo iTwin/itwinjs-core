@@ -6,7 +6,7 @@
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
-import { RotMatrix, Transform } from "../Transform";
+import { Matrix3d, Transform } from "../Transform";
 
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
@@ -573,8 +573,8 @@ export class Matrix4d implements BeJSONFunctions {
   }
   public diagonal(): Point4d { return this.getSteppedPoint(0, 5); }
   public weight(): number { return this._coffs[15]; }
-  public matrixPart(): RotMatrix {
-    return RotMatrix.createRowValues(
+  public matrixPart(): Matrix3d {
+    return Matrix3d.createRowValues(
       this._coffs[0], this._coffs[1], this._coffs[2],
       this._coffs[4], this._coffs[5], this._coffs[6],
       this._coffs[8], this._coffs[9], this._coffs[10]);
@@ -947,7 +947,7 @@ export class Map4d implements BeJSONFunctions {
    */
   public static createVectorFrustum(origin: Point3d, uVector: Vector3d, vVector: Vector3d, wVector: Vector3d, fraction: number): Map4d | undefined {
     fraction = Math.max(fraction, 1.0e-8);
-    const slabToWorld = Transform.createOriginAndMatrix(origin, RotMatrix.createColumns(uVector, vVector, wVector));
+    const slabToWorld = Transform.createOriginAndMatrix(origin, Matrix3d.createColumns(uVector, vVector, wVector));
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab)
       return undefined;

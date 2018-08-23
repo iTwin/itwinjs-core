@@ -8,7 +8,7 @@ import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles, Segment1d } f
 import { Range1d } from "../Range";
 import { Range2d } from "../Range";
 import { Range3d } from "../Range";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { BagOfCurves, Path, Loop, ParityRegion, UnionRegion } from "../curve/CurveChain";
 
@@ -349,14 +349,14 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
     {
       let a;
-      for (a of Sample.createRotMatrixArray()) {
+      for (a of Sample.createMatrix3dArray()) {
         exercise(a);
-        let a1 = RotMatrix.fromJSON(a.toJSON());
+        let a1 = Matrix3d.fromJSON(a.toJSON());
         // console.log (a.toJSON ());
         // console.log(a, a1);
         if (!a.isAlmostEqual(a1)) {
           console.log("FAIL", a, a1);
-          a1 = RotMatrix.fromJSON(a.toJSON());
+          a1 = Matrix3d.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
       }
@@ -461,9 +461,9 @@ describe("BSIJSONValuesQuick", () => {
       (Point3d.create(1, 2, 3), Vector3d.create(5, 6, 3), Vector3d.create(-6, 5, 1)));
     exerciseBSIJSONValuesQuick("YawPitchRollAngles", YawPitchRollAngles.createDegrees(10, 20, 30));
     exerciseBSIJSONValuesQuick("Range3d", Range3d.createXYZXYZ(1, 2, 3, 10, 11, 20));
-    exerciseBSIJSONValuesQuick("RotMatrix", RotMatrix.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9));
+    exerciseBSIJSONValuesQuick("Matrix3d", Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9));
     exerciseBSIJSONValuesQuick("Transform", Transform.createOriginAndMatrix(
-      Point3d.create(10, 20, 30), RotMatrix.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9)));
+      Point3d.create(10, 20, 30), Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9)));
     exerciseBSIJSONValuesQuick("Matrix4d", Matrix4d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
     exerciseBSIJSONValuesQuick("Complex", Complex.create(1, 2));
 

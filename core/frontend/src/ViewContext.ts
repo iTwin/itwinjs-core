@@ -5,7 +5,7 @@
 
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -193,7 +193,7 @@ export class DecorateContext extends RenderContext {
   private _pickableGrid: boolean = false; // ###TODO: Remove - testing only...
 
   /** @private */
-  public drawStandardGrid(gridOrigin: Point3d, rMatrix: RotMatrix, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
+  public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
 
     // rotMatrix returns new Vectors instead of references

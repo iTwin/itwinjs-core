@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-// import { Point3d, Vector3d, Transform, RotMatrix, Range1d } from "../PointVector";
+// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
 import { Sample } from "../serialization/GeometrySamples";
 import { Point3d, Vector3d } from "../PointVector";
 import { LineString3d } from "../curve/LineString3d";

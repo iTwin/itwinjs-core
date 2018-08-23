@@ -5,7 +5,7 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
+  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
@@ -366,7 +366,7 @@ export class ViewFrustum {
   /** View delta (from ViewState, unexpanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new RotMatrix();
+  public readonly rotMatrix = new Matrix3d();
   /** @hidden */
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
@@ -430,7 +430,7 @@ export class ViewFrustum {
       return;
     const r = this.rotMatrix.transpose();
     r.setColumn(2, zUp);
-    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
+    Matrix3d.createRigidFromMatrix3d(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
     this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
   }
@@ -842,7 +842,7 @@ export class Viewport {
 
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
-  public get rotMatrix(): RotMatrix { return this._viewFrustum.rotMatrix; }
+  public get rotMatrix(): Matrix3d { return this._viewFrustum.rotMatrix; }
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
@@ -967,7 +967,7 @@ export class Viewport {
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
-  public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem.getRotation(result); }
+  public getAuxCoordRotation(result?: Matrix3d) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
   /** @hidden */
@@ -1288,7 +1288,7 @@ export class Viewport {
 
     if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
-      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, RotMatrix.createScale(factor, factor, 1.0));
+      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
       const offset = centerNpc.minus(NpcCenter); // offset by difference of old/new center
       offset.z = 0.0;     // z center stays the same.
@@ -1454,7 +1454,7 @@ export class Viewport {
     return units * sign * Math.floor(num);
   }
 
-  private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
+  private getGridOrientation(origin: Point3d, rMatrix: Matrix3d) {
     if (this.view.isSpatialView())
       origin.setFrom(this.iModel!.globalOrigin);
 
@@ -1472,18 +1472,18 @@ export class Viewport {
         break;
 
       case GridOrientationType.WorldYZ: {
-        RotMatrix.createRows(rMatrix.getRow(1), rMatrix.getRow(2), rMatrix.getRow(0), rMatrix);
+        Matrix3d.createRows(rMatrix.getRow(1), rMatrix.getRow(2), rMatrix.getRow(0), rMatrix);
         break;
       }
 
       case GridOrientationType.WorldXZ: {
-        RotMatrix.createRows(rMatrix.getRow(0), rMatrix.getRow(2), rMatrix.getRow(1), rMatrix);
+        Matrix3d.createRows(rMatrix.getRow(0), rMatrix.getRow(2), rMatrix.getRow(1), rMatrix);
         break;
       }
     }
   }
 
-  private pointToStandardGrid(point: Point3d, rMatrix: RotMatrix, origin: Point3d): void {
+  private pointToStandardGrid(point: Point3d, rMatrix: Matrix3d, origin: Point3d): void {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
@@ -1527,7 +1527,7 @@ export class Viewport {
     }
 
     const origin = new Point3d();
-    const rMatrix = RotMatrix.createIdentity();
+    const rMatrix = Matrix3d.createIdentity();
     this.getGridOrientation(origin, rMatrix);
     this.pointToStandardGrid(point, rMatrix, origin);
   }
@@ -1572,7 +1572,7 @@ export class Viewport {
     graphic.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
-    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
     const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
 
     graphic.addArc(ellipse, true, true);

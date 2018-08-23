@@ -6,7 +6,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-// import { Point3d, Vector3d, RotMatrix } from "../PointVector";
+// import { Point3d, Vector3d, Matrix3d } from "../PointVector";
 import { Geometry } from "../Geometry";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery } from "./CurvePrimitive";

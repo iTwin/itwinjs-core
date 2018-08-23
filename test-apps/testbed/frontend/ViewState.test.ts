@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, RotMatrix } from "@bentley/geometry-core";
+import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
 import { SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
@@ -88,7 +88,7 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(-5, -5, 0));
     viewState.setExtents(Vector3d.create(10, 10, 1));
-    viewState.setRotation(RotMatrix.createIdentity());
+    viewState.setRotation(Matrix3d.createIdentity());
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
@@ -100,7 +100,7 @@ describe("ViewState", () => {
     // LookAtVolume test #3
     viewState.setOrigin(Point3d.create(100, 1000, -2));
     viewState.setExtents(Vector3d.create(314, 1, -.00001));
-    viewState.setRotation(YawPitchRollAngles.createDegrees(25, 25, 0.1).toRotMatrix());
+    viewState.setRotation(YawPitchRollAngles.createDegrees(25, 25, 0.1).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(108));
     viewState.setFocusDistance(89);
     viewState.setEyePoint(Point3d.create(1, 1000, 2));
@@ -136,7 +136,7 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(-5, -5, 0));
     viewState.setExtents(Vector3d.create(10, 10, 1));
-    viewState.setRotation(RotMatrix.createIdentity());
+    viewState.setRotation(Matrix3d.createIdentity());
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
@@ -146,7 +146,7 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
     viewState.setExtents(Vector3d.create(55, 0.01, 23));
-    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(11));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
@@ -171,7 +171,7 @@ describe("ViewState", () => {
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
     viewState.setExtents(Vector3d.create(55, 0.01, 23));
-    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toRotMatrix());
+    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
     viewState.setLensAngle(Angle.createDegrees(11));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
