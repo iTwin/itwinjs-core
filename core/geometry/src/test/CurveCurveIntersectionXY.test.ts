@@ -57,15 +57,6 @@ function testIntersectionsXY(
 }
 
 describe("CurveCurve", () => {
-  it.only("LineLine", () => {
-    const ck = new Checker();
-    const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
-    const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
-    const intersections = CurveCurve.IntersectionXY(segment0, false, segment1, false);
-    testIntersectionsXY(ck, undefined, intersections, 1, 1);
-    ck.checkpoint("CurveCurve.LineLine");
-    expect(ck.getNumErrors()).equals(0);
-  });
 
   it.only("LineLineMapped", () => {
     const ck = new Checker();
@@ -80,21 +71,26 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("LineLineString", () => {
+  it.only("LineLineString", () => {
     const ck = new Checker();
-    const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
-    const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
-    const linestring1 = LineString3d.create(Point3d.create(2, 4), Point3d.create(4, 1), Point3d.create(2, 5));
-    const intersections = CurveCurve.IntersectionXY(segment0, false, linestring0, false);
-    testIntersectionsXY(ck, undefined, intersections, 1, 1);
-    const intersections1 = CurveCurve.IntersectionXY(linestring0, false, segment0, false);
-    testIntersectionsXY(ck, undefined, intersections1, 1, 1);
+    for (const map of createSamplePerspectiveMaps()) {
+      const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
 
-    const intersections2 = CurveCurve.IntersectionXY(linestring0, false, linestring1, false);
-    testIntersectionsXY(ck, undefined, intersections2, 2, 2);
+      const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
+      const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
+      const linestring1 = LineString3d.create(Point3d.create(2, 4, 2), Point3d.create(4, 1, 0), Point3d.create(2, 5, 0));
+      
+      const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, linestring0, false);
+      testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
+      const intersections1 = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring0, false, segment0, false);
+      testIntersectionsXY(ck, worldToLocal, intersections1, 1, 1);
 
-    const intersectionsX = CurveCurve.IntersectionXY(segment0, true, linestring0, true);
-    testIntersectionsXY(ck, undefined, intersectionsX, 2, 2);
+      const intersections2 = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring0, false, linestring1, false);
+      testIntersectionsXY(ck, worldToLocal, intersections2, 2, 2);
+
+      const intersectionsX = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, true, linestring0, true);
+      testIntersectionsXY(ck, worldToLocal, intersectionsX, 2, 2);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });
