@@ -26,7 +26,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",

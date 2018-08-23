@@ -11,6 +11,7 @@
   "scripts": {
     "build": "npm run extract",
     "clean": "rimraf lib",
+    "docs": "",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./",
     "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --no-timeouts --file ./src/index.test.ts ./src/**/*.ts",

@@ -11,8 +11,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "npm run test:backend",
-    "pretest:backend": "npm run copy:assets",
-    "test:backend": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib\""
+    "test:backend": "npm run copy:assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib\""
   },
   "repository": {},
   "dependencies": {

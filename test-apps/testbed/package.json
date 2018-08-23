@@ -10,11 +10,17 @@
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../../core/frontend/src/public/**/* ./lib/backend/public",
     "copy:testpublic": "cpx ./public/**/* ./lib/backend/public",
+    "cover": "node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend:perf": "webpack --config ./webpack_performance.config.js 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
-    "runExcel": "tsc && node ./lib/frontend/performance/PerformanceReportWriter.js"
+    "runExcel": "tsc && node ./lib/frontend/performance/PerformanceReportWriter.js",
+    "test": "node bin/testbed.js --fgrep #integration --invert",
+    "test:debug": "node bin/testbed.js --debug --fgrep #integration --invert",
+    "test:integration": "node bin/testbed.js --fgrep #integration",
+    "test:integration-debug": "node bin/testbed.js --debug --fgrep #integration",
+    "test:performance": "npm run build:perf && node bin/testbed.js --usePerfWriterServer"
   },
   "repository": {},
   "dependencies": {

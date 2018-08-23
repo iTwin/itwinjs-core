@@ -8,7 +8,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json ../../generated_docs/bentley",
+    "clean": "rimraf lib package-deps.json",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",

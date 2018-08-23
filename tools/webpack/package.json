@@ -12,7 +12,8 @@
     "build": "",
     "clean": "",
     "docs": "",
-    "lint": ""
+    "lint": "",
+    "test": ""
   },
   "bin": {
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"

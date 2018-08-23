@@ -10,9 +10,10 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json ../../generated-docs/common",
+    "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./common.ts --onlyJson %TYPEDOC_THEME%",
-    "lint": "tslint --project . 1>&2"
+    "lint": "tslint --project . 1>&2",
+    "test": ""
   },
   "repository": {},
   "keywords": [

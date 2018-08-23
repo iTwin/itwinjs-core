@@ -8,7 +8,8 @@
     "build": "tsc 1>&2",
     "clean": "",
     "docs": "",
-    "lint": ""
+    "lint": "",
+    "test": ""
   },
   "dependencies": {
     "cache-require-paths": "^0.3.0",
