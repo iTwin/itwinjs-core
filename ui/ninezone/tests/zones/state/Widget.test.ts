@@ -15,6 +15,7 @@ describe("Widget", () => {
     it("should return merge drop target for adjacent zone in same row", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
+        isInFooterMode: false,
         draggingWidgetId: 7,
       };
 
@@ -108,6 +109,7 @@ describe("Widget", () => {
     it("should return merge target for first widget in zone with multiple widgets", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To8,
+        isInFooterMode: false,
         draggingWidgetId: 7,
       };
       const nineZone = new NineZone(props);

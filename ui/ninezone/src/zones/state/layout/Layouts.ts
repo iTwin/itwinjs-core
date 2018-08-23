@@ -220,7 +220,7 @@ export class Layout7 extends Layout {
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
   }
 
   protected get _bottomZone() {

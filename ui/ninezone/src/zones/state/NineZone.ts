@@ -8,10 +8,11 @@ import { SizeProps } from "../../utilities/Size";
 import Root from "./layout/Root";
 import Target, { TargetProps } from "./Target";
 import { Widget } from "./Widget";
-import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone, ContentZone, WidgetZone } from "./Zone";
+import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone, ContentZone, WidgetZone, StatusZone } from "./Zone";
 
 export type ContentZoneIndex = 5;
-export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
+export type StatusZoneIndex = 8;
+export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 
 export type ZonesType = { [id in WidgetZoneIndex]: ZoneProps };
@@ -87,6 +88,8 @@ export default class NineZone implements Iterable<Zone> {
 
     if (zoneId === 5)
       this._zones[zoneId] = new ContentZone(this);
+    else if (zoneId === 8)
+      this._zones[zoneId] = new StatusZone(this, this.props.zones[zoneId]);
     else
       this._zones[zoneId] = new WidgetZone(this, this.props.zones[zoneId]);
     return this._zones[zoneId];

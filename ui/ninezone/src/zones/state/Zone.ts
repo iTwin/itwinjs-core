@@ -286,6 +286,18 @@ export class WidgetZone extends Zone {
   }
 }
 
+export class StatusZone extends WidgetZone {
+  public constructor(nineZone: NineZone, props: ZoneProps) {
+    super(nineZone, props);
+  }
+
+  public get isMergeable(): boolean {
+    if (this.nineZone.props.isInFooterMode)
+      return false;
+    return true;
+  }
+}
+
 export class ContentZone extends Zone {
   public constructor(nineZone: NineZone) {
     super(nineZone, 5);
