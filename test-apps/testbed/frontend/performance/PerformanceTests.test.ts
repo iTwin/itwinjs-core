@@ -126,62 +126,65 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
   await PerformanceWriterClient.addEntry(new PerformanceEntry(tileLoadingTime, frameTimes, configuration.iModelName, configuration.viewName));
 }
 
-// export function savePng() {
-//   // write((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob().toString(), "demo.png", "image/png");
+export function savePng() {
+  const fs = require("fs");
+  let img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0"
+    + "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO"
+    + "3gAAAABJRU5ErkJggg==";
+  img = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+  const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
+  const buf = new Buffer(data, "base64");
+  fs.writeFile("image2.png", buf);
 
+  //   // write((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob().toString(), "demo.png", "image/png");
 
-//   (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob((blob) => {
-//     // IModelApp.renderSystem.canvas!.toBlob((blob) => {
-//     const url = URL.createObjectURL(blob);
-//     // localStorage.setItem("elephant.png", url);
+  //   (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob((blob) => {
+  //     // IModelApp.renderSystem.canvas!.toBlob((blob) => {
+  //     const url = URL.createObjectURL(blob);
+  //     // localStorage.setItem("elephant.png", url);
 
-//     const a = document.createElement("a");
-//     a.href = url, a.download = "demoModel.png";
-//     document.body.appendChild(a);
-//     a.click();
-//     setTimeout(() => {
-//       document.body.removeChild(a);
-//       window.URL.revokeObjectURL(url);
-//     }, 0);
-//   });
+  //     const a = document.createElement("a");
+  //     a.href = url, a.download = "demoModel.png";
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     setTimeout(() => {
+  //       document.body.removeChild(a);
+  //       window.URL.revokeObjectURL(url);
+  //     }, 0);
+  //   });
 
-//   // const a = document.createElement("a");
-//   // const url = URL.createObjectURL((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob());
-//   // a.href = url, a.download = "demoModel.png";
-//   // document.body.appendChild(a);
-//   // a.click();
-//   // setTimeout(() => {
-//   //   document.body.removeChild(a);
-//   //   window.URL.revokeObjectURL(url);
-//   // }, 0);
+  //   // const a = document.createElement("a");
+  //   // const url = URL.createObjectURL((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob());
+  //   // a.href = url, a.download = "demoModel.png";
+  //   // document.body.appendChild(a);
+  //   // a.click();
+  //   // setTimeout(() => {
+  //   //   document.body.removeChild(a);
+  //   //   window.URL.revokeObjectURL(url);
+  //   // }, 0);
 
+  //   // (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob();
 
+  //   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+  //   // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
+  //   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
+  //   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
+  //   const newlink = document.createElement("a");
+  //   // newlink.innerHTML = "Google";
+  //   // newlink.setAttribute("title", "Google");
 
+  //   newlink.setAttribute("href", tempUrl);
+  //   newlink.setAttribute("id", "download");
+  //   newlink.setAttribute("download", defaultFileLocation);
+  //   newlink.setAttribute("target", "_blank");
+  //   document.body.appendChild(newlink);
 
+  //   // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
+  //   document.body.appendChild(newlink);
+  //   (document.getElementById("download") as HTMLCanvasElement).click();
+  //   // $("#download").get(0).click();
 
-//   // (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob();
-
-
-//   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
-//   // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
-//   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
-//   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
-//   const newlink = document.createElement("a");
-//   // newlink.innerHTML = "Google";
-//   // newlink.setAttribute("title", "Google");
-
-//   newlink.setAttribute("href", tempUrl);
-//   newlink.setAttribute("id", "download");
-//   newlink.setAttribute("download", defaultFileLocation);
-//   newlink.setAttribute("target", "_blank");
-//   document.body.appendChild(newlink);
-
-//   // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
-//   document.body.appendChild(newlink);
-//   (document.getElementById("download") as HTMLCanvasElement).click();
-//   // $("#download").get(0).click();
-
-// }
+}
 
 class SimpleViewState {
   public accessToken?: AccessToken;
@@ -287,9 +290,9 @@ async function mainBody() {
   await waitForTilesToLoad();
   debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
 
-  // debugPrint("1111111111111111111111 - b4 save png " + theViewport!.continuousRendering);
+  // debugPrint("1111111111111111111111 - b4 save png ");
   // await savePng();
-  // debugPrint("1111111111111111111111 - after save png " + theViewport!.continuousRendering);
+  // debugPrint("1111111111111111111111 - after save png ");
 
   const plan = new UpdatePlan();
   // theViewport!.renderFrame(plan);

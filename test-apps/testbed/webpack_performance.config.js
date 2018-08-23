@@ -28,13 +28,12 @@ module.exports = {
     minimizer: [
       new UglifyJSPlugin({
         uglifyOptions: {
-        keep_classnames: true,
+          keep_classnames: true,
         },
       })
     ],
   },
   externals: {
-    electron: "require('electron')",
     fs: "require('fs')"
   }
 };

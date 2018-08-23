@@ -4,20 +4,20 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { TestbedConfig, TestbedIpcMessage } from "../../common/TestbedConfig";
-import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "../../backend/TestRpcImpl";
-import { CONSTANTS } from "../../common/Testbed";
-import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { TestbedConfig/*, TestbedIpcMessage*/ } from "../../common/TestbedConfig";
+// import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "../../backend/TestRpcImpl";
+// import { CONSTANTS } from "../../common/Testbed";
+import { RpcConfiguration/*, IModelReadRpcInterface*/ } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-const compatibleVersion = IModelReadRpcInterface.version;
+// const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;
-let pendingResponseQuota = 0;
+const pendingResponseQuota = 0;
 
 RpcConfiguration.developmentMode = true;
 
 // tslint:disable-next-line:no-var-requires
-const { ipcMain } = require("electron");
+/*const { ipcMain } = require("electron");
 ipcMain.on("testbed", (event: any, arg: any) => {
   const msg: TestbedIpcMessage = arg;
   if (msg.name === CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE) {
@@ -45,13 +45,13 @@ ipcMain.on("testbed", (event: any, arg: any) => {
     IModelHost.startup();
     event.returnValue = true;
   }
-});
+});*/
 
 // Start the backend
 IModelHost.startup();
 
-TestRpcImpl.register();
-TestRpcImpl3.register();
+// TestRpcImpl.register();
+// TestRpcImpl3.register();
 TestbedConfig.initializeRpcBackend();
 
 Logger.initializeToConsole();
