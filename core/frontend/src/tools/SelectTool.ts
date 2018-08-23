@@ -16,6 +16,7 @@ import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { ViewRect } from "../Viewport";
 import { Pixel } from "../rendering";
 import { EditManipulator } from "./EditManipulator";
+import { GraphicType } from "../render/GraphicBuilder";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -81,7 +82,8 @@ export class SelectionTool extends PrimitiveTool {
 
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.locateManager.initToolLocate();
-    IModelApp.locateManager.options.allowDecorations = (undefined !== this.manipulator && this.manipulator.allowTransientControls());
+    // IModelApp.locateManager.options.allowDecorations = (undefined !== this.manipulator && this.manipulator.allowTransientControls());
+    IModelApp.locateManager.options.allowDecorations = true;
 
     IModelApp.accuSnap.enableLocate(enableLocate);
     IModelApp.accuSnap.enableSnap(false);
@@ -161,7 +163,7 @@ export class SelectionTool extends PrimitiveTool {
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
 
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const vp = context.viewport!;
     const origin = vp.worldToView(this.points[0]);
@@ -173,17 +175,17 @@ export class SelectionTool extends PrimitiveTool {
       viewPts[0] = origin;
       viewPts[1] = corner;
 
-      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
-      graphic.addLineString(viewPts);
+      builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
+      builder.addLineString(viewPts);
     } else {
       viewPts[0] = viewPts[4] = origin;
       viewPts[1] = new Point3d(corner.x, origin.y, corner.z);
       viewPts[2] = corner;
       viewPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useOverlapSelection(ev) ? LinePixels.Code2 : LinePixels.Solid);
-      graphic.addLineString(viewPts);
+      builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useOverlapSelection(ev) ? LinePixels.Code2 : LinePixels.Solid);
+      builder.addLineString(viewPts);
     }
-    context.addViewOverlay(graphic.finish()!);
+    context.addDecorationFromBuilder(builder);
   }
 
   protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean) {

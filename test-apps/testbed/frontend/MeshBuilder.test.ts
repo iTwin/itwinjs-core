@@ -21,7 +21,6 @@ import {
   MeshBuilder,
   Mesh,
   ToleranceRatio,
-  GraphicBuilderCreateParams,
   System,
   GraphicType,
   PrimitiveBuilder,
@@ -86,8 +85,7 @@ describe("Mesh Builder Tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);

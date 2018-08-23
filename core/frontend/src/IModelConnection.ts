@@ -366,16 +366,17 @@ export namespace IModelConnection {
     constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [RepositoryModel]($backend). */
-    public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+    public get repositoryModelId(): string { return "0x1"; }
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
+    /** Find a ModelState in the set of loaded Models by ModelId. */
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
-    /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
+    /** load a set of Models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
       for (const id of Id64.toIdSet(modelIds)) {

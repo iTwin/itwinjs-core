@@ -12,7 +12,7 @@ import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
-import { Id64, assert } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { FeatureTable } from "@bentley/imodeljs-common";
 
 export class GeometryAccumulator {
@@ -116,7 +116,7 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshBuilderMap {
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: string): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
     const { wantSurfacesOnly, wantPreserveOrder } = options;
 
@@ -126,7 +126,7 @@ export class GeometryAccumulator {
     return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder, pickableId);
   }
 
-  public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: Id64): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: string): MeshList {
     if (this.geometries.isEmpty)
       return new MeshList();
 
@@ -138,7 +138,7 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: Id64): FeatureTable | undefined {
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: string): FeatureTable | undefined {
     const meshes = this.toMeshes(options, tolerance, pickableId);
     if (0 === meshes.length)
       return undefined;

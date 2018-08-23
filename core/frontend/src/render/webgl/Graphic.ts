@@ -7,7 +7,7 @@ import { assert, Id64, Id64String, BeTimePoint, IndexedValue, IDisposable, dispo
 import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList } from "../System";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -523,21 +523,16 @@ export class Branch extends Graphic {
 }
 
 export class WorldDecorations extends Branch {
-  public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
+  public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.identity, undefined, viewFlags); }
 
-  public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
-
-  public init(decs: DecorationList): void {
+  public init(decs: GraphicList): void {
     this.branch.clear();
-    this.overrides.length = 0;
-    for (const dec of decs.list) {
-      this.branch.add(dec.graphic);
-      this.overrides.push(dec.overrides);
+    for (const dec of decs) {
+      this.branch.add(dec);
     }
   }
 }
-
-export class GraphicsList extends Graphic {
+export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[]) { super(); }
 

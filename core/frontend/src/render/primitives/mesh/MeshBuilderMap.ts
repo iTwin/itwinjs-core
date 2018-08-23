@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Comparable, compareNumbers, compareBooleans, Dictionary, Id64 } from "@bentley/bentleyjs-core";
+import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { PolyfacePrimitive } from "../Polyface";
 import { DisplayParams } from "../DisplayParams";
@@ -17,7 +17,6 @@ import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
   public readonly range: Range3d;
-  // @ts-ignore (vertexTolerance unused so far)
   public readonly vertexTolerance: number;
   public readonly facetAreaTolerance: number;
   public readonly tolerance: number;
@@ -26,9 +25,9 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
   /** if true the order of keys created to store meshBuilders maintain order */
   private readonly _preserveKeyOrder: boolean;
-  private _keyOrder: number = 0;
+  private _keyOrder = 0;
 
-  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false, id?: Id64) {
+  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false, id?: string) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
@@ -36,14 +35,14 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     this.range = range;
     this.is2d = is2d;
     this._preserveKeyOrder = preserveKeyOrder;
-    if (undefined !== id && id.isValid) {
+    if (undefined !== id) {
       const table = new FeatureTable(1);
       this.features = new Mesh.Features(table);
       this.features.add(new Feature(id), 0);
     }
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean, id?: Id64): MeshBuilderMap {
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean, id?: string): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder, id);
 
     for (const geom of geometries)
