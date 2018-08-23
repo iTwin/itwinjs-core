@@ -85,9 +85,12 @@ export class Widget {
 
     const draggingCell = draggingZone.cell;
     const targetCell = targetZone.cell;
-    const zone5Cell = this.nineZone.getZone(5).cell;
-    if (zone5Cell.isBetween(draggingCell, targetCell))
-      return DropTarget.None;
+    const cellsBetween = draggingCell.getAlignedCellsTo(targetCell);
+    for (const cell of cellsBetween) {
+      const zone = this.nineZone.findZone(cell);
+      if (!zone.isMergeable)
+        return DropTarget.None;
+    }
 
     if (draggingCell.isRowAlignedWith(targetCell))
       if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)

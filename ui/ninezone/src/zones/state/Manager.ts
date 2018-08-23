@@ -255,6 +255,7 @@ export class StateManager {
     const contentZone = model.getContentZone();
     const statusZone = model.getStatusZone();
     const alignedCells = targetZone.cell.getAlignedCellsTo(draggingZone.cell);
+    alignedCells.push(targetZone.cell, draggingZone.cell);
     const alignedCellsFiltered = alignedCells.filter((cell) => {
       if (contentZone.cell.equals(cell))
         return false;
