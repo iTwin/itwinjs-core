@@ -6,7 +6,7 @@ import * as geometry from "../geometry-core";
 import { Vector3d, Point3d } from "../PointVector";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { YawPitchRollAngles } from "../geometry-core";
-import { RotMatrix } from "../geometry-core";
+import { Matrix3d } from "../geometry-core";
 // import { LineSegment3d } from "../curve/LineSegment3d";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
 // import { LineString3d } from "../curve/LineString3d";
@@ -101,11 +101,11 @@ describe("Snippets", () => {
     const rollDegrees = 10.0;
     // build rotation matrices via the YawPitchRollAngles class and then via direct multiplication of matrices with the fussy sign and direction rules
     const ypr = YawPitchRollAngles.createDegrees(yawDegrees, pitchDegrees, rollDegrees);
-    const yprMatrix = ypr.toRotMatrix();
+    const yprMatrix = ypr.toMatrix3d();
 
-    const yawMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), geometry.Angle.createDegrees(yawDegrees))!;
-    const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitY(), geometry.Angle.createDegrees(-pitchDegrees))!;
-    const rollMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), geometry.Angle.createDegrees(rollDegrees))!;
+    const yawMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), geometry.Angle.createDegrees(yawDegrees))!;
+    const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitY(), geometry.Angle.createDegrees(-pitchDegrees))!;
+    const rollMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), geometry.Angle.createDegrees(rollDegrees))!;
 
     const directMatrix = yawMatrix.multiplyMatrixMatrix(pitchMatrix.multiplyMatrixMatrix(rollMatrix));
 

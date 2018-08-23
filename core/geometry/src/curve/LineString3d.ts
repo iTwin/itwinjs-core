@@ -7,7 +7,7 @@
 import { Geometry, BeJSONFunctions, Angle } from "../Geometry";
 import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Plane3dByOriginAndUnitNormal, Plane3dByOriginAndVectors, Ray3d } from "../AnalyticGeometry";
 import { GrowableXYZArray, GrowableFloat64Array } from "../GrowableArray";
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
@@ -324,7 +324,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (n === 2)
       return Transform.createRefs(
         this._points.interpolate(0, fraction, 1)!,
-        RotMatrix.createRigidHeadsUp(this._points.vectorIndexIndex(0, 1)!, AxisOrder.XYZ));
+        Matrix3d.createRigidHeadsUp(this._points.vectorIndexIndex(0, 1)!, AxisOrder.XYZ));
 
     /** 3 or more points. */
     const numSegment = n - 1;
@@ -352,7 +352,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     // if interior, both produce candidates, both can succeed and will be weighted.
     accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, localFraction, normal, workVector);
     accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, (1.0 - localFraction), normal, workVector);
-    const matrix = RotMatrix.createRigidFromColumns(normal, vectorA, AxisOrder.ZXY);
+    const matrix = Matrix3d.createRigidFromColumns(normal, vectorA, AxisOrder.ZXY);
     if (matrix)
       return Transform.createOriginAndMatrix(origin, matrix, result);
     return Transform.createTranslation(origin, result);

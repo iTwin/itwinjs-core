@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Separator from "@src/footer/tool-assistance/Separator";
+import Separator from "../../../src/footer/tool-assistance/Separator";
 
 describe("<Separator />", () => {
   it("should render", () => {

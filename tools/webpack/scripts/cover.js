@@ -19,19 +19,13 @@ exports.handler = (argv) => {
   const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
   (async () => {
-    // Some additional options are required for CI builds
-    const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [] : [
-      "--reporter=cobertura"
-    ];
-
     const forwardedArgs = process.argv.slice(3);
+    const nycrcPath = path.relative(process.cwd(), require.resolve("../config/.nycrc"));
     const reportDir = (argv.subdirectory) ? path.join(paths.appCoverage, argv.subdirectory) : paths.appCoverage;
 
     // Start the tests
     const args = [
-      "--reporter=lcov",
-      "--reporter=text-summary",
-      ...reporterOptions,
+      "--nycrc-path", nycrcPath,
       "--report-dir", reportDir,
       "node",
       path.resolve(__dirname, "..", "bin", "bentley-webpack-tools.js"),
@@ -50,12 +44,11 @@ exports.handler = (argv) => {
 
       console.log();
       console.log(`You can view a detailed ${chalk.cyan("LCOV Report")} at:   ${chalk.bold(path.relative(process.cwd(), appLcovReport))}`);
+      console.log(`You can also find a ${chalk.cyan("Cobertura Report")} at:  ${chalk.bold(path.relative(process.cwd(), appCoberturaReport))}`);
 
-      if (CONTINUOUS_INTEGRATION) {
-        console.log(`You can also find a ${chalk.cyan("Cobertura Report")} at:  ${chalk.bold(path.relative(process.cwd(), appCoberturaReport))}`);
-      } else {
+      if (!CONTINUOUS_INTEGRATION) {
         openBrowser(url);
-        await new Promise((r) => setTimeout(r, 100));
+        await new Promise((r) => setTimeout(r, 750));
       }
     }
 

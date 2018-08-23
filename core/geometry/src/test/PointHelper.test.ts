@@ -7,7 +7,7 @@ import { Matrix4d } from "../numerics/Geometry4d";
 import { Point2d, Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -214,8 +214,8 @@ describe("MomentData.HelloWorld", () => {
     for (const radiusA of [1, 2, 3.5]) {
       for (const degreesY of [0, 10, 78]) {
         for (const degreesZ of [0, -5, 20]) {
-          const rotateZ = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degreesZ)) as RotMatrix;
-          const rotateY = RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(degreesY)) as RotMatrix;
+          const rotateZ = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degreesZ)) as Matrix3d;
+          const rotateY = Matrix3d.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(degreesY)) as Matrix3d;
           const axes0 = rotateY.multiplyMatrixMatrix(rotateZ);
 
           const arc = Arc3d.createXYEllipse(Point3d.create(0, 0), radiusA, radiusB);
@@ -323,7 +323,7 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      RotMatrix.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
 
     const map = FrameBuilder.createRightHandedLocalToWorld(pointsA);
@@ -366,7 +366,7 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      RotMatrix.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
     const weights = [];
     const amplitude = 0.25;

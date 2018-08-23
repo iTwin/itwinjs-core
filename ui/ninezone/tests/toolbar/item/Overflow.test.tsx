@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Overflow from "@src/toolbar/item/Overflow";
+import Overflow from "../../../src/toolbar/item/Overflow";
 
 describe("<Overflow />", () => {
   it("should render", () => {

@@ -6,7 +6,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { GeometryHandler, UVSurface } from "../GeometryHandler";
@@ -71,7 +71,7 @@ export class Cone extends SolidPrimitive implements UVSurface {
     if (radiusA * radiusB < 0.0) return undefined;
     // at least one must be nonzero.
     if (radiusA + radiusB === 0.0) return undefined;
-    const matrix = RotMatrix.createRigidHeadsUp(zDirection);
+    const matrix = Matrix3d.createRigidHeadsUp(zDirection);
     matrix.scaleColumns(1.0, 1.0, a, matrix);
     const localToWorld = Transform.createOriginAndMatrix(centerA, matrix);
     return new Cone(localToWorld, radiusA, radiusB, capped);

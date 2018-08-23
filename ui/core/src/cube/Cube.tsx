@@ -8,7 +8,7 @@ import * as classnames from "classnames";
 
 import "./Cube.scss";
 
-import { RotMatrix } from "@bentley/geometry-core";
+import { Matrix3d } from "@bentley/geometry-core";
 
 export enum Face {
   None = 0,
@@ -22,7 +22,7 @@ export enum Face {
 
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
   faces?: {[key: string]: React.ReactNode};
-  rotMatrix: RotMatrix;
+  rotMatrix: Matrix3d;
   className?: string;
 }
 
@@ -59,7 +59,7 @@ const faceNames: { [key: number]: string } = {
 };
 
 interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-  rotMatrix: RotMatrix;
+  rotMatrix: Matrix3d;
   face: Face;
 }
 
@@ -72,29 +72,29 @@ class CubeFace extends React.Component<CubeFaceProps> {
     const name = faceNames[face];
     const classes = classnames("face", name);
     // orient face (flip because of y axis reversal, rotate as neccesary)
-    let reorient: RotMatrix = RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
+    let reorient: Matrix3d = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
     // Position face correctly (applies to rotation, as well as translation)
-    let reposition: RotMatrix = RotMatrix.createIdentity();
+    let reposition: Matrix3d = Matrix3d.createIdentity();
     switch (this.props.face) {
       case Face.Bottom:
-        reposition = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, -1);
-        reorient = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+        reposition = Matrix3d.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, -1);
+        reorient = Matrix3d.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
         break;
       case Face.Right:
-        reposition = RotMatrix.createRowValues(0, 0, 1, 0, 1, 0, -1, 0, 0);
-        reorient = RotMatrix.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, 1);
+        reposition = Matrix3d.createRowValues(0, 0, 1, 0, 1, 0, -1, 0, 0);
+        reorient = Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, 1);
         break;
       case Face.Left:
-        reposition = RotMatrix.createRowValues(0, 0, -1, 0, 1, 0, 1, 0, 0);
-        reorient = RotMatrix.createRowValues(0, -1, 0, -1, 0, 0, 0, 0, 1);
+        reposition = Matrix3d.createRowValues(0, 0, -1, 0, 1, 0, 1, 0, 0);
+        reorient = Matrix3d.createRowValues(0, -1, 0, -1, 0, 0, 0, 0, 1);
         break;
       case Face.Back:
-        reposition = RotMatrix.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
-        reorient = RotMatrix.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+        reposition = Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
+        reorient = Matrix3d.createRowValues(-1, 0, 0, 0, 1, 0, 0, 0, 1);
         break;
       case Face.Front:
-        reposition = RotMatrix.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0);
-        reorient = RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
+        reposition = Matrix3d.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0);
+        reorient = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
         break;
     }
     const repositioned = rotMatrix.multiplyMatrixMatrix(reposition);

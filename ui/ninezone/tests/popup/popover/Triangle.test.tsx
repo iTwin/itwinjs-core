@@ -4,8 +4,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Triangle from "@src/popup/popover/Triangle";
-import { Direction } from "@src/utilities/Direction";
+import Triangle from "../../../src/popup/popover/Triangle";
+import { Direction } from "../../../src/utilities/Direction";
 
 describe("<Triangle />", () => {
   it("should render", () => {

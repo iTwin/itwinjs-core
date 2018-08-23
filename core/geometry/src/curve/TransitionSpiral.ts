@@ -7,7 +7,7 @@
 import { Geometry, AngleSweep, Angle, AxisOrder } from "../Geometry";
 import { Segment1d, Point3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Quadrature } from "../numerics/Quadrature";
 import { GeometryHandler } from "../GeometryHandler";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -398,7 +398,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public fractionToFrenetFrame(fraction: number, result?: Transform): Transform {
     result = result ? result : Transform.createIdentity();
     result.origin.setFrom(this.fractionToPoint(fraction));
-    RotMatrix.createRigidFromRotMatrix(this.localToWorld.matrix, AxisOrder.XYZ, result.matrix);
+    Matrix3d.createRigidFromMatrix3d(this.localToWorld.matrix, AxisOrder.XYZ, result.matrix);
 
     const radians = this.fractionToBearingRadians(fraction);
     const c = Math.cos(radians);

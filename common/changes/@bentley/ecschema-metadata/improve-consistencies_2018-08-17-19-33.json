@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "improve the consistency between the specifications and the Typescript values in ec-js",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Corey.Ruderman@bentley.com"
+}

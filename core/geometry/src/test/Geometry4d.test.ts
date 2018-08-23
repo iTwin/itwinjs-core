@@ -5,7 +5,7 @@ import { Point4d, Matrix4d, Map4d, Plane4dByOriginAndVectors } from "../numerics
 import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -609,7 +609,7 @@ describe("Map4d", () => {
 
     const rotationTransform = Transform.createFixedPointAndMatrix(
       Point3d.create(4, 2, 8),
-      RotMatrix.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
     const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse()!)!;
     verifySandwich(ck, rotationMap, mapI);
     verifySandwich(ck, mapI, rotationMap);

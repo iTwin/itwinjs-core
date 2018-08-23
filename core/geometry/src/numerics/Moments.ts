@@ -8,7 +8,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 
 import { XYZ, Point3d, Vector3d } from "../PointVector";
-import { RotMatrix, Transform } from "../Transform";
+import { Matrix3d, Transform } from "../Transform";
 import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 
 export class MomentData {
@@ -28,14 +28,14 @@ export class MomentData {
     this.localToWorldMap = Transform.createIdentity();
     this.radiusOfGyration = Vector3d.create();
   }
-  public static momentTensorFromInertiaProducts(products: RotMatrix): RotMatrix {
+  public static momentTensorFromInertiaProducts(products: Matrix3d): Matrix3d {
     const rr = products.sumDiagonal();
-    const result = RotMatrix.createScale(rr, rr, rr);
+    const result = Matrix3d.createScale(rr, rr, rr);
     result.addScaledInPlace(products, -1.0);
     return result;
   }
 
-  public static sortColumnsForIncreasingMoments(axes: RotMatrix, moments: Vector3d) {
+  public static sortColumnsForIncreasingMoments(axes: Matrix3d, moments: Vector3d) {
     const points = [
       axes.indexedColumnWithWeight(0, moments.x),
       axes.indexedColumnWithWeight(1, moments.y),
@@ -58,7 +58,7 @@ export class MomentData {
       const products = moments.sums.matrixPart();
       const tensor = MomentData.momentTensorFromInertiaProducts(products);
       const moment2 = Vector3d.create();
-      const axisVectors = RotMatrix.createZero();
+      const axisVectors = Matrix3d.createZero();
       tensor.fastSymmetricEigenvalues(axisVectors, moment2);
       MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
       moments.localToWorldMap = Transform.createOriginAndMatrix (moments.origin, axisVectors);
@@ -82,7 +82,7 @@ export class MomentData {
     const products = moments.sums.matrixPart();
     const tensor = MomentData.momentTensorFromInertiaProducts(products);
     const moment2 = Vector3d.create();
-    const axisVectors = RotMatrix.createZero();
+    const axisVectors = Matrix3d.createZero();
     tensor.fastSymmetricEigenvalues(axisVectors, moment2);
     MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
     moments.localToWorldMap = Transform.createOriginAndMatrix (moments.origin, axisVectors);

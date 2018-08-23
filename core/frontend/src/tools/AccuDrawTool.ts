@@ -9,7 +9,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { Vector3d, Point3d, RotMatrix, Geometry, Angle } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Matrix3d, Geometry, Angle } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { AuxCoordSystemState } from "../AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -96,7 +96,7 @@ export class AccuDrawShortcuts {
           }
 
           LegacyMath.normalizedCrossProduct(vec[0], vec[1], vec[2]);
-          acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+          acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
 
           if (!isDynamics) {
             accudraw.published.origin.setFrom(points[0]);
@@ -108,7 +108,7 @@ export class AccuDrawShortcuts {
 
         vec[2].set(0.0, 0.0, 1.0);
         LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
-        acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+        acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;
 
@@ -121,7 +121,7 @@ export class AccuDrawShortcuts {
         }
 
         LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
-        acs.setRotation(RotMatrix.createRows(vec[0], vec[1], vec[2]));
+        acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;
       }
@@ -130,22 +130,23 @@ export class AccuDrawShortcuts {
     return accept;
   }
 
-  public counterRotate(angle: number): void {
+  public static counterRotate(angle: number): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
 
     const rMatrix = accudraw.getRotation();
     rMatrix.multiplyVectorInPlace(accudraw.vector);
-    const angleMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
+    const angleMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(-angle))!;
     rMatrix.multiplyMatrixMatrix(angleMatrix, rMatrix); // NEEDS_WORK - verify order
-    accudraw.axes.fromRotMatrix(rMatrix);
+    accudraw.axes.fromMatrix3d(rMatrix);
     accudraw.flags.lockedRotation = true;
   }
+
   public static processPendingHints() { IModelApp.accuDraw.processHints(); }
+
   public static saveToolState(restore: boolean, ignoreFlags: AccuDrawFlags, stateBuffer?: SavedState) {
     const accudraw = IModelApp.accuDraw;
-
     if (restore) {
       if (!stateBuffer)
         stateBuffer = accudraw.savedState;
@@ -233,9 +234,9 @@ export class AccuDrawShortcuts {
   }
 
   public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
+
   public static itemFieldAcceptInput(index: ItemField, str: string): void {
     const accudraw = IModelApp.accuDraw;
-
     accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
 
@@ -364,7 +365,7 @@ export class AccuDrawShortcuts {
   }
 
   //   //! Shortcut implementations for GUI entry points...
-  public setOrigin(explicitOrigin?: Point3d): void {
+  public static setOrigin(explicitOrigin?: Point3d): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -410,7 +411,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public changeCompassMode(): void {
+  public static changeCompassMode(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -445,7 +446,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockSmart(): void {
+  public static lockSmart(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -534,7 +535,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockX(): void {
+  public static lockX(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -561,7 +562,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockY(): void {
+  public static lockY(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -588,7 +589,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockZ(): void {
+  public static lockZ(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -612,7 +613,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockDistance(): void {
+  public static lockDistance(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -643,7 +644,7 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public lockAngle(): void {
+  public static lockAngle(): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -658,7 +659,7 @@ export class AccuDrawShortcuts {
 
     if (accudraw.flags.indexLocked) {
       if (accudraw.locked)
-        this.lockSmart();
+        AccuDrawShortcuts.lockSmart();
 
       accudraw.flags.indexLocked = false;
     } else {
@@ -669,27 +670,27 @@ export class AccuDrawShortcuts {
         }
 
         if (accudraw.indexed & LockedStates.DIST_BM)
-          this.lockDistance();
+          AccuDrawShortcuts.lockDistance();
       } else {
         if (accudraw.indexed & LockedStates.X_BM) {
-          this.lockX();
+          AccuDrawShortcuts.lockX();
 
           if (accudraw.indexed & LockedStates.DIST_BM)
-            this.lockY();
+            AccuDrawShortcuts.lockY();
         }
 
         if (accudraw.indexed & LockedStates.Y_BM) {
-          this.lockY();
+          AccuDrawShortcuts.lockY();
 
           if (accudraw.indexed & LockedStates.DIST_BM)
-            this.lockX();
+            AccuDrawShortcuts.lockX();
         }
 
         if (accudraw.indexed & LockedStates.DIST_BM && !(accudraw.indexed & LockedStates.XY_BM)) {
           if (accudraw.locked & LockedStates.X_BM)
-            this.lockY();
+            AccuDrawShortcuts.lockY();
           else
-            this.lockX();
+            AccuDrawShortcuts.lockX();
         }
       }
 
@@ -698,6 +699,7 @@ export class AccuDrawShortcuts {
 
     accudraw.refreshDecorationsAndDynamics();
   }
+
   public static setStandardRotation(rotation: RotationMode, restoreContext: boolean = false): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
@@ -708,7 +710,7 @@ export class AccuDrawShortcuts {
     } else if (RotationMode.Context === rotation) {
       const axes = accudraw.baseAxes.clone();
       accudraw.accountForAuxRotationPlane(axes, accudraw.flags.auxRotationPlane);
-      accudraw.setContextRotation(axes.toRotMatrix(), false, true);
+      accudraw.setContextRotation(axes.toMatrix3d(), false, true);
       accudraw.refreshDecorationsAndDynamics();
       return;
     } else {
@@ -737,7 +739,7 @@ export class AccuDrawShortcuts {
         0.0 !== accudraw.savedState.axes.x.magnitude() &&
         0.0 !== accudraw.savedState.axes.y.magnitude() &&
         0.0 !== accudraw.savedState.axes.z.magnitude())
-        accudraw.savedState.axes.toRotMatrix(newMatrix);
+        accudraw.savedState.axes.toMatrix3d(newMatrix);
       else
         AccuDraw.getStandardRotation(vp.view.is3d() ? StandardViewId.Iso : StandardViewId.Top, vp, false, newMatrix);
 
@@ -746,7 +748,7 @@ export class AccuDrawShortcuts {
     }
 
     // Save old view rotation in saved axes so RV can toggle between old/new rotations...
-    accudraw.savedState.axes.setFrom(ThreeAxes.createFromRotMatrix(oldMatrix));
+    accudraw.savedState.axes.setFrom(ThreeAxes.createFromMatrix3d(oldMatrix));
 
     // NEEDS_WORK: Frustum morph doesn't keep fixed origin during transitional frames...
     //            Compare to behavior using mdlView_rotateToRMatrixAboutPoint which looked better...
@@ -756,7 +758,7 @@ export class AccuDrawShortcuts {
     // Transform   fromTrans, toTrans;
 
     // const origin = accudraw.origin;
-    // fromTrans.InitFromMatrixAndFixedPoint(vp -> GetRotMatrix(), origin);
+    // fromTrans.InitFromMatrixAndFixedPoint(vp -> getMatrix3d(), origin);
     // frustum.Multiply(fromTrans);
     // toTrans.InitFromMatrixAndFixedPoint(newMatrix, origin);
     // toTrans.InverseOf(toTrans);
@@ -769,6 +771,7 @@ export class AccuDrawShortcuts {
   }
 
   public static rotateToBase(restoreContext: boolean): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation, restoreContext); }
+
   public static rotateToACS(restoreContext: boolean): void {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
@@ -869,7 +872,7 @@ export class AccuDrawShortcuts {
         accudraw.flags.auxRotationPlane = RotationMode.Top;
 
       // AuxCoordSystemPtr acsPtr = AuxCoordSystem:: CreateFrom(vp -> GetViewController().GetAuxCoordinateSystem());
-      // RotMatrix auxRMatrix;
+      // Matrix3d auxRMatrix;
 
       // accudraw.GetRotation(auxRMatrix);
       // acsPtr -> SetRotation(auxRMatrix);
@@ -930,7 +933,7 @@ export class AccuDrawShortcuts {
         break;
     }
 
-    accudraw.setContextRotation(newRotation.toRotMatrix(), true, true);
+    accudraw.setContextRotation(newRotation.toMatrix3d(), true, true);
     accudraw.refreshDecorationsAndDynamics();
   }
 
@@ -1047,7 +1050,7 @@ export class AccuDrawShortcuts {
     return BentleyStatus.SUCCESS;
   }
 
-  public writeACS(_acsName: string): BentleyStatus {
+  public static writeACS(_acsName: string): BentleyStatus {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return BentleyStatus.ERROR;

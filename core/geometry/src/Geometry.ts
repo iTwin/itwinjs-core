@@ -31,7 +31,7 @@ export const enum AxisIndex {
   Z = 2,
 }
 
-/* Standard views.   Used in `RotMatrix.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+/* Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
 */
 export const enum StandardViewIndex {
   Top = 1,

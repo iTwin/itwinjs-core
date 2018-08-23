@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import Size from "@src/utilities/Size";
+import Size from "../../src/utilities/Size";
 
 describe("Rectangle", () => {
   it("unspecified size should be 0", () => {

@@ -5,13 +5,13 @@
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { GraphicBuilder } from "../rendering";
+import { GraphicBuilder, GraphicType } from "../rendering";
 import { ToolSettings } from "./ToolAdmin";
 
 export const enum ViewHandleWeight {
@@ -574,7 +574,7 @@ export abstract class ViewManip extends ViewTool {
 
     const view = vp.view;
     const viewY = view.getYVector();
-    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ());
+    const rotMatrix = Matrix3d.createRotationVectorToVector(viewY, Vector3d.unitZ());
     if (!rotMatrix)
       return false;
 
@@ -687,21 +687,21 @@ class ViewTargetCenter extends ViewingToolHandle {
 
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
     const pixelSize = context.viewport.pixelsFromInches(sizeInches);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const shadow = ColorDef.from(0, 0, 0, 225);
-    graphic.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
-    this.addCross(graphic, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
+    builder.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
+    this.addCross(builder, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
 
     const outline = ColorDef.from(0, 0, 0, 10);
-    graphic.setSymbology(outline, outline, hasFocus ? 5 : 3);
-    this.addCross(graphic, pixelSize + 1, targetPt.x, targetPt.y);
+    builder.setSymbology(outline, outline, hasFocus ? 5 : 3);
+    this.addCross(builder, pixelSize + 1, targetPt.x, targetPt.y);
 
     const cross = ColorDef.from(254, 255, 255, 10);
-    graphic.setSymbology(cross, cross, hasFocus ? 3 : 1);
-    this.addCross(graphic, pixelSize, targetPt.x, targetPt.y);
+    builder.setSymbology(cross, cross, hasFocus ? 3 : 1);
+    this.addCross(builder, pixelSize, targetPt.x, targetPt.y);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
@@ -879,8 +879,8 @@ class ViewRotate extends ViewingToolHandle {
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
 
-      const xRMatrix = xDelta ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.createIdentity();
-      const yRMatrix = yDelta ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.createIdentity();
+      const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.createIdentity();
+      const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.createIdentity();
       const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
       const result = worldRMatrix.getAxisAndAngleOfRotation();
       radians = Angle.createRadians(-result.angle.radians);
@@ -894,7 +894,7 @@ class ViewRotate extends ViewingToolHandle {
   }
 
   private rotateViewWorld(worldOrigin: Point3d, worldAxisVector: Vector3d, primaryAngle: Angle) {
-    const worldMatrix = RotMatrix.createRotationAroundVector(worldAxisVector, primaryAngle);
+    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxisVector, primaryAngle);
     if (!worldMatrix)
       return;
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
@@ -907,7 +907,7 @@ class ViewRotate extends ViewingToolHandle {
 class ViewLook extends ViewingToolHandle {
   private _eyePoint = new Point3d();
   private _firstPtView = new Point3d();
-  private _rotation = new RotMatrix();
+  private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
@@ -958,8 +958,8 @@ class ViewLook extends ViewingToolHandle {
     const yAngle = -(yDelta / yExtent) * Math.PI;
 
     const inverseRotation = this._rotation.inverse();
-    const horizontalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle));
-    const verticalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createRadians(yAngle));
+    const horizontalRotation = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle));
+    const verticalRotation = Matrix3d.createRotationAroundVector(Vector3d.unitX(), Angle.createRadians(yAngle));
 
     if (undefined === inverseRotation || undefined === horizontalRotation || undefined === verticalRotation)
       return Transform.createIdentity();
@@ -993,18 +993,18 @@ class ViewScroll extends ViewingToolHandle {
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone(); white.setAlpha(100);
     const green = ColorDef.green.clone(); green.setAlpha(200);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const points = [new Point2d(this._anchorPtView.x, this._anchorPtView.y), new Point2d(this._lastPtView.x, this._lastPtView.y)];
-    graphic.setSymbology(green, green, 2);
-    graphic.addLineString2d(points, 0.0);
+    builder.setSymbology(green, green, 2);
+    builder.addLineString2d(points, 0.0);
 
     const radius = context.viewport.pixelsFromInches(0.15);
     const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    graphic.setBlankingFill(white);
-    graphic.addArc(ellipse, true, true);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc(ellipse, false, false);
+    builder.setBlankingFill(white);
+    builder.addArc(ellipse, true, true);
+    builder.setSymbology(black, black, 1);
+    builder.addArc(ellipse, false, false);
 
     const dvec = Vector2d.createStartEnd(points[0], points[1]);
     if (dvec.magnitude() > 0.1) {
@@ -1012,11 +1012,11 @@ class ViewScroll extends ViewingToolHandle {
       dvec.normalize(dvec);
       points[0].plusScaled(dvec, radius, slashPts[0]);
       points[0].plusScaled(dvec, -radius, slashPts[1]);
-      graphic.setSymbology(black, black, 2);
-      graphic.addLineString2d(slashPts, 0.0);
+      builder.setSymbology(black, black, 2);
+      builder.addLineString2d(slashPts, 0.0);
     }
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1104,21 +1104,21 @@ class ViewZoom extends ViewingToolHandle {
     const white = ColorDef.white.clone(); white.setAlpha(100);
     const radius = context.viewport.pixelsFromInches(0.15);
     const plusMinus = context.viewport.pixelsFromInches(0.075);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    graphic.setBlankingFill(white);
-    graphic.addArc(ellipse, true, true);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc(ellipse, false, false);
+    builder.setBlankingFill(white);
+    builder.addArc(ellipse, true, true);
+    builder.setSymbology(black, black, 1);
+    builder.addArc(ellipse, false, false);
 
     const lineHorzPts = [new Point2d(), new Point2d()];
     lineHorzPts[0].x = this._anchorPtView.x - plusMinus;
     lineHorzPts[0].y = this._anchorPtView.y;
     lineHorzPts[1].x = this._anchorPtView.x + plusMinus;
     lineHorzPts[1].y = this._anchorPtView.y;
-    graphic.setSymbology(black, black, 2);
-    graphic.addLineString2d(lineHorzPts, 0.0);
+    builder.setSymbology(black, black, 2);
+    builder.addLineString2d(lineHorzPts, 0.0);
 
     if (this._lastZoomRatio < 1.0) {
       const lineVertPts = [new Point2d(), new Point2d()];
@@ -1126,10 +1126,10 @@ class ViewZoom extends ViewingToolHandle {
       lineVertPts[0].y = this._anchorPtView.y - plusMinus;
       lineVertPts[1].x = this._anchorPtView.x;
       lineVertPts[1].y = this._anchorPtView.y + plusMinus;
-      graphic.addLineString2d(lineVertPts, 0.0);
+      builder.addLineString2d(lineVertPts, 0.0);
     }
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1196,7 +1196,7 @@ class ViewZoom extends ViewingToolHandle {
     if (view.is3d() && view.isCameraOn) {
       const anchorPtWorld = viewport.npcToWorld(this._anchorPtNpc);
 
-      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldEyePoint = view.getEyePoint();
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = newEyePoint.minus(oldEyePoint);
@@ -1205,7 +1205,7 @@ class ViewZoom extends ViewingToolHandle {
       frustum.transformBy(cameraOffsetTransform, frustum);
       viewport.setupViewFromFrustum(frustum);
     } else {
-      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1.0));
       const frustum = viewport.getFrustum(CoordSystem.Npc, true);
       frustum.transformBy(transform, frustum);
       viewport.npcToWorldArray(frustum.points);
@@ -1273,10 +1273,10 @@ class NavigateMotion {
     const viewRot = vp.rotMatrix;
     const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
-    const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
+    const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
     const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
     const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
-    const yawMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
+    const yawMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
     const yawTimesInverseViewTimesPitchTimesView = yawMatrix.multiplyMatrixMatrix(inverseViewTimesPitchTimesView);
     return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView, result);
   }
@@ -1337,9 +1337,9 @@ class NavigateMotion {
     const view = this.viewport.view;
     if (!view.is3d() || !view.isCameraOn)
       return;
-    const angles = YawPitchRollAngles.createFromRotMatrix(this.viewport.rotMatrix)!;
+    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.rotMatrix)!;
     angles.pitch.setRadians(0); // reset pitch to zero
-    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toRotMatrix(), this.transform);
+    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toMatrix3d(), this.transform);
   }
 }
 
@@ -1539,15 +1539,15 @@ abstract class ViewNavigate extends ViewingToolHandle {
     const points = [point];
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone();
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
-    graphic.setSymbology(black, black, 9);
-    graphic.addPointString2d(points, 0.0);
+    builder.setSymbology(black, black, 9);
+    builder.addPointString2d(points, 0.0);
 
-    graphic.setSymbology(white, black, 5);
-    graphic.addPointString2d(points, 0.0);
+    builder.setSymbology(white, black, 5);
+    builder.addPointString2d(points, 0.0);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -1809,25 +1809,25 @@ export class WindowAreaTool extends ViewTool {
       this._shapePts[4].setFrom(this._shapePts[0]);
       this._viewport.viewToWorldArray(this._shapePts);
 
-      const graphic = context.createWorldOverlay();
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
-      graphic.setBlankingFill(this._fillColor);
-      graphic.addShape(this._shapePts);
+      builder.setBlankingFill(this._fillColor);
+      builder.addShape(this._shapePts);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.Thin);
-      graphic.addLineString(this._shapePts);
+      builder.setSymbology(color, color, ViewHandleWeight.Thin);
+      builder.addLineString(this._shapePts);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
-      graphic.addPointString([this._firstPtWorld]);
+      builder.setSymbology(color, color, ViewHandleWeight.FatDot);
+      builder.addPointString([this._firstPtWorld]);
 
-      context.addWorldOverlay(graphic.finish());
+      context.addDecorationFromBuilder(builder);
       return;
     }
 
     if (undefined === this._lastPtView)
       return;
 
-    const gf = context.createViewOverlay();
+    const gf = context.createGraphicBuilder(GraphicType.ViewOverlay);
     gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
     const viewRect = this._viewport.viewRect;
@@ -1846,7 +1846,7 @@ export class WindowAreaTool extends ViewTool {
     this._lineVertPts[1].y = viewRect.bottom;
     gf.addLineString(this._lineVertPts);
 
-    context.addViewOverlay(gf.finish());
+    context.addDecorationFromBuilder(gf);
   }
 
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
@@ -2011,7 +2011,7 @@ export class DefaultViewTouchTool extends ViewManip {
     const zoomRatio = this.computeZoomRatio(ev);
     const targetWorld = vp.viewToWorld(this._lastPtView);
     const translateTransform = Transform.createTranslation(this._startPtWorld.minus(targetWorld));
-    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, RotMatrix.createRotationAroundVector(vp.view.getZVector(), rotation)!);
+    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, Matrix3d.createRotationAroundVector(vp.view.getZVector(), rotation)!);
     const scaleTransform = Transform.createScaleAboutPoint(this._startPtWorld, zoomRatio);
     const transform = translateTransform.multiplyTransformTransform(rotationTransform);
 
@@ -2030,15 +2030,15 @@ export class DefaultViewTouchTool extends ViewManip {
 
     const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
-    const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
-    const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
+    const xRMatrix = (0.0 !== xDelta) ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.identity;
+    const yRMatrix = (0.0 !== yDelta) ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
 
     const result = worldRMatrix.getAxisAndAngleOfRotation();
     const radians = Angle.createRadians(-result.angle.radians);
     const worldAxis = result.axis;
 
-    const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
+    const rotationMatrix = Matrix3d.createRotationAroundVector(worldAxis, radians);
     if (!rotationMatrix)
       return;
 
@@ -2072,7 +2072,7 @@ export class DefaultViewTouchTool extends ViewManip {
     }
 
     const targetNpc = vp.viewToNpc(this._lastPtView);
-    const transform = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+    const transform = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1.0));
     const viewCenter = Point3d.create(.5, .5, .5);
     const startPtNpc = vp.viewToNpc(this._startPtView);
     const shift = startPtNpc.minus(targetNpc); shift.z = 0.0;

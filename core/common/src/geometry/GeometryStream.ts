@@ -4,7 +4,7 @@
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props, IModelStatus } from "@bentley/bentleyjs-core";
@@ -143,12 +143,12 @@ export class GeometryStreamBuilder {
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles */
   public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
+    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
   }
 
   /** Supply local to world transform from Point2d and Angle */
   public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!));
   }
 
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of locate and range testing for elements with a GeometryStream
@@ -225,14 +225,14 @@ export class GeometryStreamBuilder {
       this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
       return true;
     }
-    const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toRotMatrix() : RotMatrix.createIdentity());
+    const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
     if (undefined !== instanceScale)
       partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
     const resultTrans = partTrans.multiplyTransformTransform(this._worldToLocal);
     const scales = new Vector3d();
     if (!resultTrans.matrix.normalizeColumnsInPlace(scales))
       return false;
-    const newRotation = YawPitchRollAngles.createFromRotMatrix(resultTrans.matrix);
+    const newRotation = YawPitchRollAngles.createFromMatrix3d(resultTrans.matrix);
     if (undefined === newRotation)
       return false;
     this.geometryStream.push({ geomPart: { part: partId, origin: resultTrans.getOrigin(), rotation: newRotation, scale: scales.x } });
@@ -345,12 +345,12 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 
   /** Supply local to world transform from Point3d and YawPitchRollAngles of Placement3d */
   public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
+    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
   }
 
   /** Supply local to world transform from Point2d and Angle of Placement2d */
   public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!));
   }
 
   /** Create a new GeometryStream iterator for a GeometricElement3d.
@@ -459,10 +459,10 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         this.entry.partId = new Id64(entry.geomPart.part);
         if (entry.geomPart.origin !== undefined || entry.geomPart.rotation !== undefined || entry.geomPart.scale !== undefined) {
           const origin = entry.geomPart.origin ? Point3d.fromJSON(entry.geomPart.origin) : Point3d.createZero();
-          const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toRotMatrix() : RotMatrix.createIdentity();
+          const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toMatrix3d() : Matrix3d.createIdentity();
           this.entry.partToLocal = Transform.createRefs(origin, rotation);
           if (entry.geomPart.scale)
-            this.entry.partToLocal.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), RotMatrix.createUniformScale(entry.geomPart.scale)), this.entry.partToLocal);
+            this.entry.partToLocal.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)), this.entry.partToLocal);
         }
         return { value: this.entry, done: false };
       } else if (entry.textString) {

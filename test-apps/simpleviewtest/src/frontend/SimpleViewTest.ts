@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
-  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext,
+  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder, BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail,
 } from "@bentley/imodeljs-frontend";
-import { Target, FeatureSymbology, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   ElectronRpcManager,
@@ -26,7 +26,7 @@ import {
   ColorDef,
 } from "@bentley/imodeljs-common";
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY, Transform } from "@bentley/geometry-core";
+import { Point3d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -488,32 +488,83 @@ export class MeasurePointsTool extends PrimitiveTool {
   public readonly points: Point3d[] = [];
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableSnap(true); }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+
+  public setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+
+    if (0 === this.points.length)
+      return;
+
+    const hints = new AccuDrawHintBuilder();
+    hints.enableSmartRotation = true;
+
+    if (this.points.length > 1 && !(this.points[this.points.length - 1].isAlmostEqual(this.points[this.points.length - 2])))
+      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 1], this.points[this.points.length - 2])); // Rotate AccuDraw to last segment...
+
+    hints.setOrigin(this.points[this.points.length - 1]);
+    hints.sendHints();
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    this.points.push(ev.point.clone());
+    this.setupAndPromptForNextAction();
+
+    if (!this.isDynamicsStarted)
+      this.beginDynamics();
+
+    return EventHandled.No;
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public onUndoPreviousStep(): boolean {
+    if (0 === this.points.length)
+      return false;
+
+    this.points.pop();
+    if (0 === this.points.length)
+      this.onReinitialize();
+    else
+      this.setupAndPromptForNextAction();
+    return true;
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (wentDown) {
+      switch (keyEvent.key) {
+        case " ":
+          AccuDrawShortcuts.changeCompassMode();
+          break;
+        case "Enter":
+          AccuDrawShortcuts.lockSmart();
+          break;
+      }
+    }
+    return EventHandled.No;
+  }
 
   public onRestartTool(): void {
-    this.exitTool();
+    const tool = new MeasurePointsTool();
+    if (!tool.run())
+      this.exitTool();
   }
 }
 
 let activeExtentsDeco: ProjectExtentsDecoration | undefined;
 export class ProjectExtentsDecoration {
-  public removeDecorationListener?: () => void;
   public boxId?: Id64;
 
-  public constructor() {
-    this.removeDecorationListener = IModelApp.viewManager.onDecorate.addListener(this.decorate, this);
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-  }
+  public constructor() { IModelApp.viewManager.addDecorator(this); }
+  protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
 
-  protected stop(): void {
-    if (this.removeDecorationListener) {
-      this.removeDecorationListener();
-      this.removeDecorationListener = undefined;
-      IModelApp.viewManager.invalidateDecorationsAllViews();
-    }
-  }
+  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
+  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
 
-  protected decorate(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     const vp = context.viewport;
 
     if (!vp.view.isSpatialView())
@@ -523,14 +574,14 @@ export class ProjectExtentsDecoration {
       this.boxId = vp.view.iModel.transientIds.next;
 
     const range = vp.view.iModel.projectExtents.clone();
-    const graphic = context.createPickableDecoration(this.boxId);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
 
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone();
 
-    graphic.setSymbology(white, black, 1);
-    graphic.addRangeBox(range);
-    context.addWorldDecoration(graphic.finish());
+    builder.setSymbology(white, black, 1);
+    builder.addRangeBox(range);
+    context.addDecorationFromBuilder(builder);
   }
 
   public static add(): void {
@@ -554,10 +605,10 @@ export class ProjectExtentsDecoration {
   }
 }
 
-// starts Mesure between points tool
+// starts Measure between points tool
 function startMeasurePoints(_event: any) {
-  IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+  // IModelApp.tools.run("Measure.Points", theViewport!);
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions

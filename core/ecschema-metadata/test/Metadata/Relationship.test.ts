@@ -147,7 +147,7 @@ describe("RelationshipClass", () => {
         target: {},
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.TestRelationship",
             direction: "backward",
@@ -175,7 +175,7 @@ describe("RelationshipClass", () => {
         target: {},
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.TestRelationship",
             direction: "backward",

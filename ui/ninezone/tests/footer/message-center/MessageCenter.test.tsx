@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "@src/footer/message-center/MessageCenter";
+import Dialog from "../../../src/footer/message-center/MessageCenter";
 
 describe("<Dialog />", () => {
   it("should render", () => {

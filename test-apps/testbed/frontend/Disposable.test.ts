@@ -8,8 +8,8 @@ import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, 
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
-  MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan,
+  MeshArgs, OnScreenTarget, GraphicType,
+  Target, Decorations, Batch, WorldDecorations, TextureHandle, GraphicList,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -37,7 +37,7 @@ class ExposedTarget {
   }
 
   public get decorations(): Decorations | undefined { return (this.target as any)._decorations; }
-  public get dynamics(): DecorationList | undefined { return (this.target as any)._dynamics; }
+  public get dynamics(): GraphicList | undefined { return (this.target as any)._dynamics; }
   public get worldDecorations(): WorldDecorations | undefined { return (this.target as any)._worldDecorations; }
   public get clipMask(): TextureHandle | undefined { return (this.target as any)._clipMask; }
   public get environmentMap(): TextureHandle | undefined { return (this.target as any)._environmentMap; }
@@ -247,7 +247,7 @@ describe("Disposal of WebGL Resources", () => {
     const viewport = new Viewport(canvas, viewState);
     await viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
-    viewport.renderFrame(new UpdatePlan()); // force a frame to be rendered
+    viewport.renderFrame(); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;
     const exposedTarget = new ExposedTarget(target);
@@ -255,8 +255,7 @@ describe("Disposal of WebGL Resources", () => {
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const graphicBuilder = target.createGraphic(gfParams);
+    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
 

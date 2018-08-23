@@ -2,6 +2,21 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.119.0",
+      "tag": "@bentley/ui-framework_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Enabled Sign In and IModel Open"
+          },
+          {
+            "comment": "Migrated CubeNavigationCube to use CSS3D to elliminate three.js dependency."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.118.0",
       "tag": "@bentley/ui-framework_v0.118.0",
       "date": "Tue, 21 Aug 2018 17:20:41 GMT",

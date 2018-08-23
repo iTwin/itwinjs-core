@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Panel from "@src/toolbar/item/expandable/group/Panel";
+import Panel from "../../../../../src/toolbar/item/expandable/group/Panel";
 
 describe("<Panel />", () => {
   it("should render", () => {

@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorByName, LinePixels, FillFlags, GraphicParams } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
 import { SnapMode, SnapDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 
@@ -108,7 +108,7 @@ export class AccudrawData {
   public flags = 0;      // AccuDrawFlags
   public readonly origin = new Point3d();     // used if ACCUDRAW_SetOrigin
   public readonly delta = new Point3d();      // if ACCUDRAW_Lock_X, etc.
-  public readonly rMatrix = new RotMatrix();    // if ACCUDRAW_SetRMatrix/ACCUDRAW_Set3dMatrix
+  public readonly rMatrix = new Matrix3d();    // if ACCUDRAW_SetRMatrix/ACCUDRAW_Set3dMatrix
   public readonly vector = new Vector3d();     // if ACCUDRAW_SetXAxis, etc.
   public distance = 0;   // if ACCUDRAW_SetDistance
   public angle = 0;      // if ACCUDRAW_SetAngle
@@ -181,17 +181,17 @@ export class ThreeAxes {
     this.y.setFrom(other.y);
     this.z.setFrom(other.z);
   }
-  public fromRotMatrix(rMatrix: RotMatrix): void {
+  public fromMatrix3d(rMatrix: Matrix3d): void {
     rMatrix.getRow(0, this.x);
     rMatrix.getRow(1, this.y);
     rMatrix.getRow(2, this.z);
   }
-  public static createFromRotMatrix(rMatrix: RotMatrix, result?: ThreeAxes): ThreeAxes {
+  public static createFromMatrix3d(rMatrix: Matrix3d, result?: ThreeAxes): ThreeAxes {
     result = result ? result : new ThreeAxes();
-    result.fromRotMatrix(rMatrix);
+    result.fromMatrix3d(rMatrix);
     return result;
   }
-  public toRotMatrix(out?: RotMatrix) { return RotMatrix.createRows(this.x, this.y, this.z, out); }
+  public toMatrix3d(out?: Matrix3d) { return Matrix3d.createRows(this.x, this.y, this.z, out); }
   public clone(): ThreeAxes { const out = new ThreeAxes(); out.setFrom(this); return out; }
   public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
@@ -237,7 +237,7 @@ export class AccuDraw {
   private _yIsExplicit = false; // Sign of delta.y established from user input input, don't allow +/- side flip.
   public dontMoveFocus = false; // Disable automatic focus change when user is entering input.
   public newFocus = ItemField.X_Item; // Item to move focus to (X_Item or Y_Item) for automatic focus change.
-  private readonly _rMatrix = new RotMatrix();
+  private readonly _rMatrix = new Matrix3d();
 
   // Compass Display Preferences...
   protected _compassSizeInches = 0.44;
@@ -248,6 +248,8 @@ export class AccuDraw {
   protected readonly _xColor = new ColorDef(ColorByName.red);
   protected readonly _yColor = new ColorDef(ColorByName.green);
   protected readonly _indexColor = new ColorDef(ColorByName.white);
+  protected readonly _frameColorNoFocus = new ColorDef(ColorByName.darkGrey);
+  protected readonly _fillColorNoFocus = new ColorDef(ColorByName.lightGrey);
 
   // User Preference Settings...
   public smartKeyin = true;
@@ -259,10 +261,10 @@ export class AccuDraw {
   public distanceIndexing = true;
   public autoFocusFields = true;
   public autoPointPlacement = false;
-  private static _tempRot = new RotMatrix();
+  private static _tempRot = new Matrix3d();
 
   public onInitialized() { this.enableForSession(); }
-  public getRotation(rMatrix?: RotMatrix): RotMatrix { if (!rMatrix) rMatrix = this._rMatrix; RotMatrix.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
+  public getRotation(rMatrix?: Matrix3d): Matrix3d { if (!rMatrix) rMatrix = this._rMatrix; Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
   public get isActive(): boolean { return CurrentState.Active === this.currentState; }
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
@@ -512,7 +514,7 @@ export class AccuDraw {
   /** Gets X, Y or Z vector from top, front, (right) side, ACS, or View. */
   private getStandardVector(whichVec: number): Vector3d {
     const vp = this.currentView;
-    let rMatrix: RotMatrix;
+    let rMatrix: Matrix3d;
     let myAxes: ThreeAxes;
     const vecP = Vector3d.createZero();
     switch (this.flags.baseRotation) {
@@ -544,8 +546,8 @@ export class AccuDraw {
         break;
 
       case RotationMode.ACS:
-        rMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
-        myAxes = ThreeAxes.createFromRotMatrix(rMatrix);
+        rMatrix = vp ? vp.getAuxCoordRotation() : Matrix3d.createIdentity();
+        myAxes = ThreeAxes.createFromMatrix3d(rMatrix);
         this.accountForAuxRotationPlane(myAxes, this.flags.auxRotationPlane);
         switch (whichVec) {
           case 0: vecP.setFrom(myAxes.x); break;
@@ -555,7 +557,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : RotMatrix.createIdentity();
+        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
         rMatrix.getRow(whichVec, vecP);
         break;
 
@@ -645,16 +647,16 @@ export class AccuDraw {
     }
   }
 
-  public updateRotation(animate: boolean = false, newRotationIn?: RotMatrix): void {
+  public updateRotation(animate: boolean = false, newRotationIn?: Matrix3d): void {
     let clearLocks = true;
     const oldRotation = this.axes.clone();
-    let rMatrix: RotMatrix;
+    let rMatrix: Matrix3d;
     let newRotation: ThreeAxes;
 
     if (!newRotationIn)
       newRotation = this.axes.clone(); // for axis based
     else
-      newRotation = ThreeAxes.createFromRotMatrix(newRotationIn); // for animating context rotation change...
+      newRotation = ThreeAxes.createFromMatrix3d(newRotationIn); // for animating context rotation change...
 
     const vp = this.currentView;
     const useACS = vp ? vp.isContextRotationRequired : false;
@@ -668,32 +670,32 @@ export class AccuDraw {
     switch (this.rotationMode) {
       case RotationMode.Top:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Top, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Top, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.Front:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Front, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Front, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.Side:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
-        newRotation.fromRotMatrix(AccuDraw.getStandardRotation(StandardViewId.Right, vp, useACS));
+        newRotation.fromMatrix3d(AccuDraw.getStandardRotation(StandardViewId.Right, vp, useACS));
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.ACS:
-        rMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
-        newRotation.fromRotMatrix(rMatrix);
+        rMatrix = vp ? vp.getAuxCoordRotation() : Matrix3d.createIdentity();
+        newRotation.fromMatrix3d(rMatrix);
         this.accountForAuxRotationPlane(newRotation, this.flags.auxRotationPlane);
         this.flags.lockedRotation = true;
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : RotMatrix.createIdentity();
-        newRotation.fromRotMatrix(rMatrix);
+        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        newRotation.fromMatrix3d(rMatrix);
         this.flags.lockedRotation = false;
         break;
 
@@ -745,7 +747,7 @@ export class AccuDraw {
 
     // AccuDrawAnimatorPtr animator = AccuDrawAnimator:: Create();
     // viewport -> SetAnimator(* animator);
-    // animator -> ChangeOfRotation(RotMatrix:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
+    // animator -> ChangeOfRotation(Matrix3d:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
   public enableForSession(): void { if (CurrentState.NotEnabled === this.currentState) this.currentState = CurrentState.Inactive; }
@@ -1250,8 +1252,8 @@ export class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
-  public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: RotMatrix): RotMatrix {
-    const rMatrix = out ? out : new RotMatrix();
+  public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d {
+    const rMatrix = out ? out : new Matrix3d();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : IModelApp.viewManager.selectedView;
     if (!useACS || !useVp)
@@ -1261,13 +1263,13 @@ export class AccuDraw {
     return rMatrix;
   }
 
-  public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: RotMatrix): RotMatrix | undefined {
+  public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined {
     if (checkAccuDraw && IModelApp.accuDraw.isActive)
       return IModelApp.accuDraw.getRotation(rMatrix);
 
     const useVp = vp ? vp : IModelApp.viewManager.selectedView;
     if (!useVp)
-      return RotMatrix.createIdentity(rMatrix);
+      return Matrix3d.createIdentity(rMatrix);
 
     if (checkACS && useVp.isContextRotationRequired)
       return useVp.getAuxCoordRotation(rMatrix);
@@ -1415,9 +1417,9 @@ export class AccuDraw {
     this.flags.baseRotation = mode;
   }
 
-  private getBaseRotation(): RotMatrix {
+  private getBaseRotation(): Matrix3d {
     const vp = this.currentView;
-    let baseRMatrix: RotMatrix;
+    let baseRMatrix: Matrix3d;
     const useAcs = vp ? vp.isContextRotationRequired : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
@@ -1436,15 +1438,15 @@ export class AccuDraw {
       }
 
       case RotationMode.ACS: {
-        baseRMatrix = vp ? vp.getAuxCoordRotation() : RotMatrix.createIdentity();
-        const axes = ThreeAxes.createFromRotMatrix(baseRMatrix);
+        baseRMatrix = vp ? vp.getAuxCoordRotation() : Matrix3d.createIdentity();
+        const axes = ThreeAxes.createFromMatrix3d(baseRMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        axes.toRotMatrix(baseRMatrix);
+        axes.toMatrix3d(baseRMatrix);
         break;
       }
 
       case RotationMode.View: {
-        baseRMatrix = vp ? vp.rotMatrix : RotMatrix.createIdentity();
+        baseRMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
         break;
       }
 
@@ -1452,19 +1454,19 @@ export class AccuDraw {
         const axes = new ThreeAxes();
         axes.setFrom(this.baseAxes);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        baseRMatrix = axes.toRotMatrix();
+        baseRMatrix = axes.toMatrix3d();
         break;
       }
 
       default: {
-        baseRMatrix = RotMatrix.createIdentity();
+        baseRMatrix = Matrix3d.createIdentity();
         break;
       }
     }
     return baseRMatrix;
   }
 
-  public setContextRotation(rMatrix: RotMatrix, locked: boolean, animate: boolean): void {
+  public setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void {
     this.flags.lockedRotation = locked;
     this.flags.contextRotMode = locked ? ContextMode.Locked : ContextMode.None;
     this.setRotationMode(RotationMode.Context);
@@ -1486,7 +1488,7 @@ export class AccuDraw {
       this.setCompassMode(this.flags.baseMode);
   }
 
-  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: RotMatrix | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
+  public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
     this.published.flags |= flags;
 
     if (flags & AccuDrawFlags.SetOrigin && originP) {
@@ -1522,7 +1524,7 @@ export class AccuDraw {
 
         this.published.vector.normalizeInPlace();
       } else if (flags & AccuDrawFlags.SetRMatrix) {
-        this.published.rMatrix.setFrom(orientationP as RotMatrix);
+        this.published.rMatrix.setFrom(orientationP as Matrix3d);
 
         if (transP) {
           this.published.rMatrix.multiplyMatrixMatrix(transP.matrix, this.published.rMatrix);
@@ -1646,10 +1648,11 @@ export class AccuDraw {
   }
 
   private getDisplayTransform(vp: Viewport): Transform {
-    const rMatrix = (!this.flags.animateRotation || 0.0 === this._percentChanged) ? this.axes.toRotMatrix() : this.lastAxes.toRotMatrix();
+    const rMatrix = (!this.flags.animateRotation || 0.0 === this._percentChanged) ? this.axes.toMatrix3d() : this.lastAxes.toMatrix3d();
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
     const scale = vp.pixelsFromInches(this._compassSizeInches) * vp.getPixelSizeAtPoint(origin);
+    rMatrix.transposeInPlace();
     rMatrix.scaleColumns(scale, scale, scale, rMatrix);
     return Transform.createRefs(origin, rMatrix);
   }
@@ -1664,30 +1667,25 @@ export class AccuDraw {
 
   private displayAlignments(graphic: GraphicBuilder, vp: Viewport): void {
     const bgColor = vp.view.backgroundColor;
-    const colorIndex = this._indexColor.adjustForContrast(bgColor, 125);
-    const pts: Point3d[] = [];
-
-    pts[0] = new Point3d();
+    const colorIndex = this._indexColor.adjustForContrast(bgColor, 130);
+    const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     // For non-zero Z value draw indicator line from plane point to compass origin...
-    if (this.getCompassPlanePoint(pts[0], vp)) {
-      const colorZ = this._frameColor.adjustForContrast(bgColor, 100);
-      pts[1] = this.origin;
+    if (this.getCompassPlanePoint(origin, vp)) {
+      const colorZ = this._frameColor.adjustForContrast(bgColor, 155);
       graphic.setSymbology(colorZ, colorZ, 2);
-      graphic.addLineString(pts);
-      pts[0] = pts[1];
+      graphic.addLineString([origin, this.origin]);
       graphic.setSymbology(colorZ, colorZ, 4);
-      graphic.addLineString(pts);
+      graphic.addPointString([this.origin]);
     }
 
     // Get snap point from AccuSnap/Tentative or use raw point...
     let distance = 0.0;
     let snapPt = this._rawPoint;
-    const ptP = this.point;
 
     const snap = TentativeOrAccuSnap.getCurrentSnap();
     if (snap) {
       snapPt = snap.snapPoint;
-      distance = ptP.distance(snapPt);
+      distance = this.point.distance(snapPt);
     }
 
     const isRectMode = (CompassMode.Rectangular === this.compassMode);
@@ -1695,11 +1693,8 @@ export class AccuDraw {
 
     // XY Offset:
     if (offsetSnap) {
-      pts[0] = ptP;
       if (isRectMode) {
-        pts[1] = this._rawPointOnPlane;
-        const vec = pts[0].vectorTo(pts[1]);
-
+        const vec = this.point.vectorTo(this._rawPointOnPlane);
         const xOffset = vec.dotProduct(this.axes.x);
         const yOffset = vec.dotProduct(this.axes.y);
         const xIsOffset = (Math.abs(xOffset) > 1.0);
@@ -1707,21 +1702,21 @@ export class AccuDraw {
 
         if (xIsOffset) {
           if (yIsOffset) {  /* both */
-            pts[2] = pts[1];
-            pts[1] = pts[0].plusScaled(this.axes.y, yOffset);
-            pts[3] = pts[0].plusScaled(this.axes.x, xOffset);
+            const pts: Point3d[] = [
+              this.point,
+              this.point.plusScaled(this.axes.y, yOffset),
+              this._rawPointOnPlane,
+              this.point.plusScaled(this.axes.x, xOffset)];
             pts[4] = pts[0];
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString(pts);
-
-            pts[1] = pts[2];  /* used by z offset */
           } else {  /* just X */
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(pts);
+            graphic.addLineString([this.point, this._rawPointOnPlane]);
           }
         } else if (yIsOffset) {  /* just Y */
           graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-          graphic.addLineString(pts);
+          graphic.addLineString([this.point, this._rawPointOnPlane]);
         }
       }
     }
@@ -1733,51 +1728,37 @@ export class AccuDraw {
       if (isOnCompassPlane) {
         if (isRectMode) {
           const zOffset = snapPt.distance(this._rawPointOnPlane);
-
           if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE) {
-            pts[2] = this._rawPoint;
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString([pts[1], pts[2]]);
+            graphic.addLineString([this._rawPointOnPlane, this._rawPoint]);
           }
         } else {
-          pts[1] = this._rawPoint;
           graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-          graphic.addLineString(pts);
+          graphic.addLineString([this.point, this._rawPoint]);
         }
       }
     }
 
     // Fat Point:
     if (offsetSnap) {
-      pts[0] = ptP;
-      pts[1] = ptP;
-      const graphicParams = GraphicParams.fromSymbology(colorIndex, colorIndex, 8);
-      graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
-      graphic.activateGraphicParams(graphicParams);
-      graphic.addPointString(pts);
-      graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-      graphic.activateGraphicParams(graphicParams);
+      graphic.setSymbology(colorIndex, colorIndex, 8);
+      graphic.addPointString([this.point]);
     }
 
     let axisIsIndexed = false;
 
     // Axis Indexing:
     if (isRectMode) {
-      if ((this.indexed & LockedStates.XY_BM) && (this.flags.pointIsOnPlane || this._fieldLocked[ItemField.Z_Item])) {
-        pts[1] = this.planePt;
+      if ((this.indexed & LockedStates.XY_BM) && (this.flags.pointIsOnPlane || this._fieldLocked[ItemField.Z_Item]))
         axisIsIndexed = true;
-      }
     } else {
-      if ((this.indexed & LockedStates.ANGLE_BM || this.locked & LockedStates.ANGLE_BM) && (this.flags.pointIsOnPlane || this._fieldLocked[ItemField.Z_Item])) {
-        pts[1] = this.planePt;
+      if ((this.indexed & LockedStates.ANGLE_BM || this.locked & LockedStates.ANGLE_BM) && (this.flags.pointIsOnPlane || this._fieldLocked[ItemField.Z_Item]))
         axisIsIndexed = true;
-      }
     }
 
     if (axisIsIndexed) {
-      pts[0] = ptP;
       graphic.setSymbology(colorIndex, colorIndex, 4);
-      graphic.addLineString(pts);
+      graphic.addLineString([this.point, this.planePt]);
     }
 
     // Distance Indexing:
@@ -1793,15 +1774,13 @@ export class AccuDraw {
 
         vec = (index === LockedStates.X_BM) ? this.axes.x : this.axes.y;
       } else {
-        const deltaVec = this.origin.vectorTo(ptP);
+        const deltaVec = this.origin.vectorTo(this.point);
         vec = this.axes.z.crossProduct(deltaVec);
         vec.normalizeInPlace();
       }
 
-      pts[0] = ptP.plusScaled(vec, len);
-      pts[1] = ptP.plusScaled(vec, -len);
       graphic.setSymbology(colorIndex, colorIndex, 3);
-      graphic.addLineString(pts);
+      graphic.addLineString([this.point.plusScaled(vec, len), this.point.plusScaled(vec, -len)]);
     }
 
     // XY Lock:
@@ -1809,13 +1788,13 @@ export class AccuDraw {
       const locked = this.locked & LockedStates.XY_BM;
 
       if ((0 !== locked) && isOnCompassPlane) {
+        const pts: Point3d[] = [this.point, this.point, this.point];
+
         if (locked & LockedStates.X_BM)
-          pts[2] = this.planePt.plusScaled(this.axes.x, this.delta.x);
+          pts[2].setFrom(this.planePt.plusScaled(this.axes.x, this.delta.x));
 
         if (locked & LockedStates.Y_BM)
-          pts[0] = this.planePt.plusScaled(this.axes.y, this.delta.y);
-
-        pts[1] = ptP;
+          pts[0].setFrom(this.planePt.plusScaled(this.axes.y, this.delta.y));
 
         switch (locked) {
           case LockedStates.X_BM:
@@ -1825,7 +1804,7 @@ export class AccuDraw {
 
           case LockedStates.Y_BM:
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(pts);
+            graphic.addLineString([pts[0], pts[1]]);
             break;
 
           case LockedStates.XY_BM:
@@ -1837,13 +1816,12 @@ export class AccuDraw {
     }
   }
 
-  public enableDisplay: boolean = false; // ###TODO: Don't try to display yet...we will throw an exception...
   public decorate(context: DecorateContext) {
     // Make sure this is cleared even if we do nothing...redraw might have been to make compass go away...
     this.flags.redrawCompass = false;
 
     // Check that AccuDraw is enabled...
-    if (!this.isActive || !this.enableDisplay)
+    if (!this.isActive)
       return;
 
     const vp = context.viewport!;
@@ -1853,48 +1831,39 @@ export class AccuDraw {
     this.setIndexingTolerance(vp);
 
     // Display indexing lines, distance locks, etc. without compass transform...
-    let graphic = context.createWorldOverlay();
-    this.displayAlignments(graphic, vp);
-    context.addWorldOverlay(graphic.finish()!);
-
-    const transform = this.getDisplayTransform(vp);
+    let builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    this.displayAlignments(builder, vp);
+    context.addDecorationFromBuilder(builder);
 
     // Create a new graphics with the compass transform and scale so that compass size is 1.0...
-    graphic = context.createWorldOverlay(transform);
+    builder = context.createGraphicBuilder(GraphicType.WorldOverlay, this.getDisplayTransform(vp));
 
     const hasFocus = this.hasInputFocus;
     const bgColor = vp.view.backgroundColor;
-    const darkGrey = new ColorDef(ColorByName.darkGrey);
-    const lightGrey = new ColorDef(ColorByName.lightGrey);
-    const frameColor = (hasFocus ? this._frameColor : darkGrey).adjustForContrast(bgColor, 100);
-    const fillColor = (hasFocus ? this._fillColor : lightGrey).adjustForContrast(bgColor, 180);
-    const xColor = (hasFocus ? this._xColor : darkGrey).adjustForContrast(bgColor, 100);
-    const yColor = (hasFocus ? this._yColor : darkGrey).adjustForContrast(bgColor, 100);
+    const frameColor = (hasFocus ? this._frameColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
+    const fillColor = (hasFocus ? this._fillColor : this._fillColorNoFocus).adjustForContrast(bgColor, 75);
+    const xColor = (hasFocus ? this._xColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
+    const yColor = (hasFocus ? this._yColor : this._frameColorNoFocus).adjustForContrast(bgColor, 155);
     const shadowColor = frameColor;
 
     // Display compass frame...
-    const graphicParams = GraphicParams.fromSymbology(shadowColor, fillColor, 1);
-
+    builder.setSymbology(shadowColor, fillColor, 1);
     const center = Point3d.createZero();
 
     if (this.flags.animateRotation || 0.0 === this._percentChanged) {
       if (CompassMode.Polar === this.compassMode) {
         const ellipse = Arc3d.createXYEllipse(center, 1, 1);
-        graphic.activateGraphicParams(graphicParams);
-        graphic.addArc(ellipse, true, true);
-        graphic.addArc(ellipse, false, false);
+        builder.addArc(ellipse, true, true);
+        builder.addArc(ellipse, false, false);
       } else {
-        const shapePts: Point3d[] = [
+        const pts: Point3d[] = [
           new Point3d(-1.0, 1.0, 0.0),
           new Point3d(1.0, 1.0, 0.0),
           new Point3d(1.0, -1.0, 0.0),
           new Point3d(-1.0, -1.0, 0.0)];
-        shapePts[4] = shapePts[0];
-        graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
-        graphic.activateGraphicParams(graphicParams);
-        graphic.addShape(shapePts);
-        graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-        graphic.activateGraphicParams(graphicParams);
+        pts[4] = pts[0].clone();
+        builder.addShape(pts);
+        builder.addLineString(pts);
       }
     } else {
       let nSides, radius;
@@ -1910,73 +1879,55 @@ export class AccuDraw {
       }
 
       let angle = 0.0; const delta = (Math.PI * 2) / nSides;
-      const shapePtsP: Point3d[] = [];
+      const pts: Point3d[] = [];
 
       for (let iSide = 0; iSide < nSides; iSide++ , angle += delta)
-        shapePtsP[iSide] = new Point3d(radius * Math.cos(angle), radius * Math.sin(angle), 0.0);
+        pts[iSide] = new Point3d(radius * Math.cos(angle), radius * Math.sin(angle), 0.0);
+      pts[nSides] = pts[0].clone();
 
-      shapePtsP[nSides] = shapePtsP[0];
-
-      graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
-      graphic.activateGraphicParams(graphicParams);
-      graphic.addShape(shapePtsP);
-      graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-      graphic.activateGraphicParams(graphicParams);
-      graphic.addLineString(shapePtsP);
+      builder.addShape(pts);
+      builder.addLineString(pts);
     }
 
     // Display sticky z-lock indicator as frame inset...
     if (this._fieldLocked[ItemField.Z_Item] && this.stickyZLock && vp.view.is3d()) {
-      graphic.setSymbology(frameColor, fillColor, 1);
+      builder.setSymbology(frameColor, fillColor, 1);
 
       if (CompassMode.Polar === this.compassMode) {
         const ellipse = Arc3d.createXYEllipse(center, .5, .5);
-        graphic.addArc(ellipse, false, false);
+        builder.addArc(ellipse, false, false);
       } else {
-        const shapePts: Point3d[] = [
+        const pts: Point3d[] = [
           new Point3d(-0.5, 0.5, 0.0),
           new Point3d(0.5, 0.5, 0.0),
           new Point3d(0.5, -0.5, 0.0),
           new Point3d(-0.5, -0.5, 0.0)];
-        shapePts[4] = shapePts[0];
-        graphic.addLineString(shapePts);
+        pts[4] = pts[0].clone();
+        builder.addLineString(pts);
       }
     }
 
     // Display compass center mark...
-    graphic.setSymbology(frameColor, frameColor, 8);
-    graphic.addPointString([center]);
+    builder.setSymbology(frameColor, frameColor, 8);
+    builder.addPointString([center]);
 
     // Display positive "X" tick...
-    graphic.setSymbology(xColor, xColor, 4);
-
-    const linePts: Point3d[] = [];
-    linePts[0] = new Point3d(1.2, 0.0, 0.0);
-    linePts[1] = new Point3d(0.8, 0.0, 0.0);
-    graphic.addLineString(linePts);
+    builder.setSymbology(xColor, xColor, 4);
+    builder.addLineString([new Point3d(1.2, 0.0, 0.0), new Point3d(0.8, 0.0, 0.0)]);
 
     // Display negative "X" tick...
-    graphic.setSymbology(frameColor, frameColor, 1);
-
-    linePts[0].set(-1.2, 0.0, 0.0);
-    linePts[1].set(-0.8, 0.0, 0.0);
-    graphic.addLineString(linePts);
+    builder.setSymbology(frameColor, frameColor, 1);
+    builder.addLineString([new Point3d(-1.2, 0.0, 0.0), new Point3d(-0.8, 0.0, 0.0)]);
 
     // Display positive "Y" tick...
-    graphic.setSymbology(yColor, yColor, 4);
-
-    linePts[0].set(0.0, 1.2, 0.0);
-    linePts[1].set(0.0, 0.8, 0.0);
-    graphic.addLineString(linePts);
+    builder.setSymbology(yColor, yColor, 4);
+    builder.addLineString([new Point3d(0.0, 1.2, 0.0), new Point3d(0.0, 0.8, 0.0)]);
 
     // Display negative "Y" tick...
-    graphic.setSymbology(frameColor, frameColor, 1);
+    builder.setSymbology(frameColor, frameColor, 1);
+    builder.addLineString([new Point3d(0.0, -1.2, 0.0), new Point3d(0.0, -0.8, 0.0)]);
 
-    linePts[0].set(0.0, -1.2, 0.0);
-    linePts[1].set(0.0, -0.8, 0.0);
-    graphic.addLineString(linePts);
-
-    context.addWorldOverlay(graphic.finish()!); // add compass as world overlay decorator
+    context.addDecorationFromBuilder(builder); // add compass as world overlay decorator
   }
 
   private checkRotation(): void {
@@ -2070,7 +2021,7 @@ export class AccuDraw {
     if (perpendicular) {
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
-        const axes = ThreeAxes.createFromRotMatrix(rMatrix);
+        const axes = ThreeAxes.createFromMatrix3d(rMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
         LegacyMath.linePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
@@ -2642,7 +2593,7 @@ export class AccuDraw {
 
       //   if (hitDetail) {
       //     DPoint3d                origin;
-      //     RotMatrix               rMatrix;
+      //     Matrix3d               rMatrix;
       //     RotateToElemToolHelper  rotateHelper;
 
       //     // NOTE: Surface normal stored in HitDetail is for hit point, not snap/adjusted point...get normal at correct location...
@@ -2768,7 +2719,7 @@ export class AccuDraw {
   }
 
   private intersectCircle(snap: SnapDetail, center: Point3d, normal: Vector3d, radius: number) {
-    const matrix = RotMatrix.createRigidHeadsUp(normal);
+    const matrix = Matrix3d.createRigidHeadsUp(normal);
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
     vector0.scaleToLength(radius);
@@ -2884,7 +2835,7 @@ export class AccuDraw {
     const vp = this.currentView;
     // Do Context Rotation
     if (this.published.flags & AccuDrawFlags.SetRMatrix) {
-      this.axes.fromRotMatrix(this.published.rMatrix);
+      this.axes.fromMatrix3d(this.published.rMatrix);
       this.flags.lockedRotation = true;
       this.flags.contextRotMode = ContextMode.Locked;
       this.setRotationMode(RotationMode.Context);
@@ -2999,7 +2950,7 @@ export class AccuDrawHintBuilder {
   private _flagModeRectangular = false;
   private _origin?: Point3d;
   private _axis?: Vector3d;
-  private _rMatrix?: RotMatrix;
+  private _rMatrix?: Matrix3d;
   private _distance = 0;
   private _angle = 0;
 
@@ -3012,7 +2963,7 @@ export class AccuDrawHintBuilder {
   public setLockZ = false;
   public enableSmartRotation = false;
   public setOrigin(origin: Point3d) { this._origin = origin.clone(); this._flagOrigin = true; }
-  public setRotation(rMatrix: RotMatrix) { this._rMatrix = rMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
+  public setRotation(rMatrix: Matrix3d) { this._rMatrix = rMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
   public setXAxis(xAxis: Vector3d) { this._axis = xAxis.clone(); this._flagXAxis = true; this._flagRotation = this._flagNormal = this._flagXAxis2 = false; }
   public setXAxis2(xAxis: Vector3d) { this._axis = xAxis.clone(); this._flagXAxis2 = true; this._flagRotation = this._flagNormal = this._flagXAxis = false; }
   public setNormal(normal: Vector3d) { this._axis = normal.clone(); this._flagNormal = true; this._flagRotation = this._flagXAxis = this._flagXAxis2 = false; }

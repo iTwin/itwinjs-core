@@ -557,7 +557,7 @@ describe("Schema", () => {
             modifier: "sealed",
             properties: [
               {
-                propertyType: "PrimitiveArrayProperty",
+                type: "PrimitiveArrayProperty",
                 name: "ExamplePrimitiveArray",
                 typeName: "TestSchema.testEnum",
                 minOccurs: 7,
@@ -567,7 +567,7 @@ describe("Schema", () => {
           },
           testEnum: {
             schemaItemType: "Enumeration",
-            backingTypeName: "integer",
+            type: "integer",
             enumerators: [
               {
                 name: "ZeroValue",

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "@src/footer/snap-mode/Dialog";
+import Dialog from "../../../src/footer/snap-mode/Dialog";
 
 describe("<Dialog />", () => {
   it("should render", () => {
