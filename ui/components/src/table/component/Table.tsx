@@ -6,7 +6,7 @@
 import * as _ from "lodash";
 import * as React from "react";
 import * as ReactDataGrid from "react-data-grid";
-import { DisposableList } from "@bentley/bentleyjs-core";
+import { DisposableList, Guid } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { TableDataProvider, ColumnDescription, RowItem } from "../TableDataProvider";
@@ -84,7 +84,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
-
+  private _rowLoadGuid = new Guid(true);
   public readonly state: Readonly<TableState> = initialState;
 
   constructor(props: TableProps, context?: any) {
@@ -138,14 +138,15 @@ export class Table extends React.Component<TableProps, TableState> {
       ...prev,
       rowsCount,
     }));
-    this._rowGetterAsync(0);
+    await this._rowGetterAsync(0);
   }
 
   private _onRowsChanged = async () => {
     await this.updateRows();
   }
 
-  private async update() {
+  /** @hidden */
+  public async update() {
     await this.updateColumns();
     await this.updateRows();
   }
@@ -238,18 +239,33 @@ export class Table extends React.Component<TableProps, TableState> {
   });
 
   private async loadRows(beginIndex: number, endIndex: number): Promise<RowsLoadResult> {
-    const result: RowsLoadResult = {
-      rows: [],
-      selectedKeys: [],
-    };
+    this._rowLoadGuid = new Guid(true);
+    const currentSelectedRowGuid = new Guid(this._rowLoadGuid);
+
+    const promises = new Array<Promise<TableRow>>();
     for (let i = beginIndex; i < endIndex; ++i) {
-      const rowData = await this.props.dataProvider.getRow(i);
-      const gridRow = await this.rowItemToReactGridRow(rowData);
-      result.rows.push({ row: gridRow, item: rowData });
-      if (this.props.isRowSelected && this.props.isRowSelected(rowData))
-        result.selectedKeys.push(gridRow.__key);
+      promises.push(
+        this.props.dataProvider.getRow(i).then((rowData) =>
+          this.rowItemToReactGridRow(rowData).then((row) => ({ item: rowData, row })),
+        ));
     }
-    return result;
+
+    let rows: TableRow[] = [];
+    const selectedKeys: string[] = [];
+
+    try {
+      rows = await Promise.all(promises);
+    } catch { }
+
+    // Check if another loadRows got called while this one was still going
+    if (currentSelectedRowGuid.equals(this._rowLoadGuid)) {
+      rows.forEach((row) => {
+        if (this.props.isRowSelected && this.props.isRowSelected(row.item))
+          selectedKeys.push(row.row.__key);
+      });
+    }
+
+    return { rows, selectedKeys };
   }
 
   private _handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
