@@ -5,11 +5,11 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
     "propertyDescription": Object {
       "displayLabel": "£ábêl",
-      "name": "DisplayLabel",
+      "name": "/DisplayLabel/",
       "typename": "string",
     },
     "sortable": true,
@@ -34,11 +34,11 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
     "propertyDescription": Object {
       "displayLabel": "£ábêl",
-      "name": "DisplayLabel",
+      "name": "/DisplayLabel/",
       "typename": "string",
     },
     "sortable": true,
@@ -62,14 +62,14 @@ exports[`TableDataProvider getRow returns first row 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "DisplayLabel",
+      "key": "/DisplayLabel/",
       "record": PropertyRecord {
         "description": "Functional Model-0-H",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "£ábêl",
-          "name": "DisplayLabel",
+          "name": "/DisplayLabel/",
           "typename": "string",
         },
         "value": Object {
@@ -110,14 +110,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Functional Model-0-H",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -154,14 +154,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Physical Model-0-I",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -198,14 +198,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -247,14 +247,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -291,14 +291,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Physical Model-0-I",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -335,14 +335,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Functional Model-0-H",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
