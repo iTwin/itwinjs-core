@@ -6,18 +6,12 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
-import { Target, UpdatePlan, PerformanceMetrics/*, System*/ } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, PerformanceMetrics/*, System*/ } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
 // import { CONSTANTS } from "../../common/Testbed";
 // import * as path from "path";
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
-import { IModelApi } from "./IModelApi"; // @ts-ignore
-import { ProjectApi } from "./ProjectApi"; // @ts-ignore
-import { CONSTANTS } from "../../common/Testbed";
-import * as path from "path";
 
 // const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 // const glContext: WebGLRenderingContext | null = null;
@@ -51,11 +45,10 @@ async function waitForTilesToLoad() {
   // Start timer for tile loading time
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
-  const plan = new UpdatePlan();
   while (haveNewTiles) {
     theViewport!.sync.setRedrawPending;
     theViewport!.sync.invalidateScene();
-    theViewport!.renderFrame(plan);
+    theViewport!.renderFrame();
 
     const requests = new TileRequests();
     const sceneContext = new SceneContext(theViewport!, requests);
@@ -69,7 +62,7 @@ async function waitForTilesToLoad() {
     await resolveAfterXMilSeconds(100);
   }
   theViewport!.continuousRendering = false;
-  theViewport!.renderFrame(plan);
+  theViewport!.renderFrame();
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
 }
@@ -300,11 +293,8 @@ async function mainBody() {
   // await savePng();
   // debugPrint("1111111111111111111111 - after save png ");
 
-  const plan = new UpdatePlan();
-  // theViewport!.renderFrame(plan);
-
   theViewport!.sync.setRedrawPending();
-  theViewport!.renderFrame(plan);
+  theViewport!.renderFrame();
   const target = (theViewport!.target as Target);
   const frameTimes = target.frameTimings;
   for (let i = 0; i < 11 && frameTimes.length; ++i)
@@ -321,7 +311,7 @@ async function mainBody() {
     (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     theViewport!.sync.setRedrawPending();
     // debugPrint("///////////--- start collecting timing data");
-    theViewport!.renderFrame(plan);
+    theViewport!.renderFrame();
     finalFrameTimings[i] = (theViewport!.target as Target).frameTimings; // .slice();
   }
   timer.stop();
@@ -329,12 +319,6 @@ async function mainBody() {
   for (const t of finalFrameTimings) {
     await printResults(curTileLoadingTime, t);
   }
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
   const nt = finalFrameTimings.length;
   let na = 1;
@@ -350,39 +334,6 @@ async function mainBody() {
     debugPrint(i + "  " + finalFrameTimings[nt - 1][i]);
   }
   await printResults(curTileLoadingTime, finalFrameTimings[nt - 1]);
-    await printResults(frameTimes);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
@@ -398,93 +349,5 @@ describe("PerformanceTests - 1", () => {
     }).catch((error) => {
       debugPrint("Exception in mainBody: " + error.toString());
     });
-  it("Test 1 - Wraith Model - W1", async () => {
-    await PerformanceWriterClient.startup();
-
-    // this is the default configuration
-    configuration = {
-      userName: "bistroDEV_pmadm1@mailinator.com",
-      password: "pmadm1",
-      iModelName: path.join(iModelLocation, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-      viewName: "W1", // "Physical-Tag",
-    } as SVTConfiguration;
-    // override anything that's in the configuration
-    // retrieveConfigurationOverrides(configuration);
-    // applyConfigurationOverrides(configuration);
-
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
-
-    // Start the backend
-    // const config = new IModelHostConfiguration();
-    // config.hubDeploymentEnv = "QA";
-    // await IModelHost.startup(config);
-    console.log("Starting create Window"); // tslint:disable-line
-
-    await createWindow();
-
-    // start the app.
-    await IModelApp.startup();
-    console.log("IModelApp Started up"); // tslint:disable-line
-
-    // initialize the Project and IModel Api
-    console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-    await ProjectApi.init();
-    await IModelApi.init();
-    console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
-
-    activeViewState = new SimpleViewState();
-
-    // showStatus("Opening", configuration.iModelName);
-    console.log("Opening standaloneImodel"); // tslint:disable-line
-    await openStandaloneIModel(activeViewState, configuration.iModelName);
-
-    // open the specified view
-    // showStatus("opening View", configuration.viewName);
-    console.log("Build the view list"); // tslint:disable-line
-    await buildViewList(activeViewState, configuration);
-
-    // now connect the view to the canvas
-    console.log("Open the view"); // tslint:disable-line
-    await openView(activeViewState);
-    console.log("This is from frontend/main"); // tslint:disable-line
-
-    await theViewport!.renderFrame();
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-
-    await printResults(frameTimes);
-    await theViewport!.renderFrame();
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-
-    console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-    if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-    await IModelApp.shutdown();
-    await PerformanceWriterClient.finishSeries();
-    // WebGLTestContext.shutdown();
-    // TestApp.shutdown();
-    console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
   });
 });
