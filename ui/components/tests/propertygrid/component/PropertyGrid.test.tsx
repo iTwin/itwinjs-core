@@ -9,7 +9,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid } from "../../../src/propertygrid/component/PropertyGrid";
 import { PropertyDataProvider, PropertyDataChangeEvent } from "../../../src/propertygrid/PropertyDataProvider";
 
-describe.only("PropertyGrid", () => {
+describe("PropertyGrid", () => {
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();

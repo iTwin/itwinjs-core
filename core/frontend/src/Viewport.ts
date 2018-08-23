@@ -21,7 +21,6 @@ import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
@@ -1658,7 +1657,7 @@ export class Viewport {
   }
 
   /** @hidden */
-  public renderFrame(plan: UpdatePlan): boolean {
+  public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1727,7 +1726,7 @@ export class Viewport {
 
     if (!sync.isValidDecorations) {
       const decorations = new Decorations();
-      this.prepareDecorations(plan, decorations);
+      this.prepareDecorations(decorations);
       target.changeDecorations(decorations);
       isRedrawNeeded = true;
     }
@@ -1745,12 +1744,10 @@ export class Viewport {
   }
 
   /** @hidden */
-  public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
+  public prepareDecorations(decorations: Decorations): void {
     this.sync.setValidDecorations();
-    if (plan.wantDecorators) {
-      const context = new DecorateContext(this, decorations);
-      IModelApp.viewManager.callDecorators(context);
-    }
+    const context = new DecorateContext(this, decorations);
+    IModelApp.viewManager.callDecorators(context);
   }
 
   /** @hidden */
@@ -1762,7 +1759,7 @@ export class Viewport {
   }
 
   /** @hidden */
-  public requestScene(_plan: UpdatePlan): void { }
+  public requestScene(): void { }
 
   /**
    * Read selected data about each pixel within a rectangular region of this Viewport.
@@ -1848,7 +1845,7 @@ export class OffScreenViewport extends Viewport {
   }
 
   /** @hidden */
-  public prepareDecorations(_plan: UpdatePlan, _decorations: Decorations): void { }
+  public prepareDecorations(_decorations: Decorations): void { }
 
   /** @hidden */
   public decorate(_context: DecorateContext): void { }

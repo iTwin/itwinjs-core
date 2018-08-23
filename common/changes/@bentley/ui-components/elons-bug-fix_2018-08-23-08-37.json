@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Bugfix for: uncaught Promise rejection when spamming viewport selection",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}
