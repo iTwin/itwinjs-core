@@ -5,7 +5,7 @@ import { Point4d, Matrix4d, Map4d, Plane4dByOriginAndVectors } from "../numerics
 import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -197,11 +197,11 @@ describe("Geometry4d.HelloWorld", () => {
     const pointC = Point4d.create(11, 7, -4, 9);
     const a = 3.1;
     const b = 2.9;
-    const pointAaBb = Point4d.add2Scaled(pointA, a, pointB, b);
-    const pointAaBbC0 = Point4d.add3Scaled(pointA, a, pointB, b, pointC, 0);
-    const pointC0ABb = Point4d.add3Scaled(pointC, 0, pointA, a, pointB, b);
-    ck.testPoint4d(pointAaBb, pointAaBbC0, "add2Scaled");
-    ck.testPoint4d(pointAaBb, pointC0ABb, "add2Scaled");
+    const pointAaBb = Point4d.createAdd2Scaled(pointA, a, pointB, b);
+    const pointAaBbC0 = Point4d.createAdd3Scaled(pointA, a, pointB, b, pointC, 0);
+    const pointC0ABb = Point4d.createAdd3Scaled(pointC, 0, pointA, a, pointB, b);
+    ck.testPoint4d(pointAaBb, pointAaBbC0, "createAdd2Scaled");
+    ck.testPoint4d(pointAaBb, pointC0ABb, "createAdd2Scaled");
     ck.checkpoint("Set");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -343,8 +343,8 @@ describe("Matrix4d", () => {
     for (let i = 0; i < point3dArray.length; i++) {
       const p = point3dArray[i];
       const pointQ =
-        Point4d.add2Scaled(CX, p.x, CY, p.y).plus(
-          Point4d.add2Scaled(CZ, p.z, CW, weight));
+        Point4d.createAdd2Scaled(CX, p.x, CY, p.y).plus(
+          Point4d.createAdd2Scaled(CZ, p.z, CW, weight));
       ck.testPoint4d(pointQ, point4dArray[i]);
     }
 
@@ -609,7 +609,7 @@ describe("Map4d", () => {
 
     const rotationTransform = Transform.createFixedPointAndMatrix(
       Point3d.create(4, 2, 8),
-      RotMatrix.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
     const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse()!)!;
     verifySandwich(ck, rotationMap, mapI);
     verifySandwich(ck, mapI, rotationMap);

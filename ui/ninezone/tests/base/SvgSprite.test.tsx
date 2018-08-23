@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import SvgSprite from "@src/base/SvgSprite";
+import SvgSprite from "../../src/base/SvgSprite";
 
 describe("<SvgSprite />", () => {
   it("should render", () => {

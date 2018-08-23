@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import BackArrow from "@src/toolbar/item/expandable/group/BackArrow";
+import BackArrow from "../../../../../src/toolbar/item/expandable/group/BackArrow";
 
 describe("<BackArrow />", () => {
   it("should render", () => {

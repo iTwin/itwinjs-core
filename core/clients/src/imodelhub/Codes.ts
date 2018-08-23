@@ -18,37 +18,39 @@ import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** Code State enumeration */
+/**
+ * [[Code]] state describes whether the code is currently in use or owned by a [[Briefcase]].
+ */
 export enum CodeState {
-  /** Code with this state is not persisted in the database. Code that is updated to 'Available' state is deleted from the database */
+  /** Code with this state is not persisted in iModelHub. Code that is updated to 'Available' state is deleted from the iModelHub. */
   Available = 0,
-  /** Code is reserved by the briefcase, no one else is allowed to change its state */
+  /** Code is reserved by the [[Briefcase]], no one else is allowed to change its state. */
   Reserved = 1,
-  /** Code is used in the changeSet committed to the server */
+  /** Code is used in a [[ChangeSet]] committed to the iModelHub. */
   Used = 2,
-  /** Retired code can't be reserved or used. It can only be deleted and then reserved again */
+  /** Retired Code can not be reserved or used. It can only be deleted and then reserved again */
   Retired = 3,
 }
 
-/** Base class for Code and MultiCode */
+/** Base class for [[Code]]s. */
 export class CodeBase extends WsgInstance {
-  /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)) */
+  /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
   public codeSpecId?: string;
 
-  /** Code scope */
+  /** Code scope. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")
   public codeScope?: string;
 
-  /** Code state */
+  /** Code state. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
   public state?: CodeState;
 
-  /** Date the code was created */
+  /** Date the Code was created. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
   public createdDate?: string;
 
-  /** Id of the briefcase that owns/should-own code */
+  /** Id of the Briefcase that owns the Code. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
   public briefcaseId?: number;
 
@@ -57,10 +59,12 @@ export class CodeBase extends WsgInstance {
   public queryOnly?: boolean;
 }
 
-/** Code */
+/**
+ * Code instance. Codes ensure uniqueness of names in the file.
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Code extends CodeBase {
-  /** Code value */
+  /** The unique string that can be used as a name value in iModel. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
   public value?: string;
 }
@@ -68,6 +72,7 @@ export class Code extends CodeBase {
 /**
  * MultiCode
  * Data about codes grouped by CodeSpecId, State and Briefcase
+ * @hidden
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiCode", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiCode extends CodeBase {
@@ -77,6 +82,7 @@ export class MultiCode extends CodeBase {
 
 /**
  * Encodes part of the code to be used in URI
+ * @hidden
  * @param str Part of the code.
  * @returns Encoded part of a code.
  */
@@ -89,6 +95,7 @@ function encodeForCodeId(str: string): string {
 
 /**
  * Gets encoded instance id for a code to be used in an URI.
+ * @hidden
  * @param code Code to get instance id for.
  * @returns Encoded code instance id.
  */
@@ -100,21 +107,22 @@ function getCodeInstanceId(code: Code): string | undefined {
 }
 
 /**
- * Object for specifying options when sending code update requests.
+ * Object for specifying options when sending [[Code]] update requests. See [[CodeHandler.update]].
  */
 export interface CodeUpdateOptions {
-  /** Return codes that couldn't be acquired. */
+  /** Return [[Code]]s that could not be acquired. Conflicting Codes will be set to [[ConflictingCodesError.conflictingCodes]]. If unlimitedReporting is enabled and CodesPerRequest value is high, some conflicting Codes could be missed.  */
   deniedCodes?: boolean;
-  /** Attempt to send all failed codes, ignoring iModel Hub limits. */
+  /** Attempt to get all failed [[Code]]s, ignoring iModelHub limits. Server responses might fail when trying to return large number of conflicting Codes. */
   unlimitedReporting?: boolean;
-  /** Number of codes per single request. Multiple requests will be sent if there are more codes. */
+  /** Number of [[Code]]s per single request. Multiple requests will be sent if there are more Codes. If an error happens on a subsequent request, previous successful updates will not be reverted. */
   codesPerRequest?: number;
-  /** If conflict happens, continue updating remaining codes instead of reverting everything. */
+  /** Don't fail request on a conflict. If conflict occurs, [[Code]]s that didn't have conflicts will be updated and any remaining subsequent requests will still be sent. */
   continueOnConflict?: boolean;
 }
 
 /**
  * Provider for default CodeUpdateOptions, used by CodeHandler to set defaults.
+ * @hidden
  */
 export class DefaultCodeUpdateOptionsProvider {
   protected _defaultOptions: CodeUpdateOptions;
@@ -128,8 +136,7 @@ export class DefaultCodeUpdateOptionsProvider {
   }
 
   /**
-   * Augments options with the provider's default values.
-   * @note The options passed in override any defaults where necessary.
+   * Augments options with the provider's default values. The options passed in override any defaults where necessary.
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: CodeUpdateOptions): Promise<void> {
@@ -140,12 +147,18 @@ export class DefaultCodeUpdateOptionsProvider {
   }
 }
 
-/** Error for conflicting codes */
+/**
+ * Error for conflicting [[Code]]s. It contains an array of Codes that failed to acquire. This is returned when calling [[CodeHandler.update]] with [[CodeUpdateOptions.deniedCodes]] set to true.
+ */
 export class ConflictingCodesError extends IModelHubError {
+  /**
+   * Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]].
+   */
   public conflictingCodes?: Code[];
 
   /**
    * Create ConflictingCodesError from IModelHubError instance.
+   * @hidden
    * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a code conflict, otherwise newly created error instance.
    */
@@ -161,9 +174,9 @@ export class ConflictingCodesError extends IModelHubError {
   }
 
   /**
-   * Amends this error instance with conflicting codes from another IModelHubError.
-   * @param error Error to get additional conflicting codes from.
+   * Amend this error instance with conflicting codes from another IModelHubError.
    * @hidden
+   * @param error Error to get additional conflicting codes from.
    */
   public addCodes(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingCodes) {
@@ -183,21 +196,21 @@ export class ConflictingCodesError extends IModelHubError {
 }
 
 /**
- * Query object for getting Codes. You can use this to modify the query.
- * @see CodeHandler.get()
+ * Query object for getting [[Code]]s. You can use this to modify the query. See [[CodeHandler.get]].
  */
 export class CodeQuery extends Query {
   private _isMultiCodeQuery = true;
 
   /**
-   * Used by the hanlder to check whether codes in query can be grouped.
+   * Used by the handler to check whether codes in query can be grouped.
+   * @hidden
    */
   public get isMultiCodeQuery() {
     return this._isMultiCodeQuery;
   }
 
   /**
-   * Query Codes by Briefcase id.
+   * Query Codes by [[Briefcase]] id.
    * @param briefcaseId Id of the Briefcase.
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
@@ -221,7 +234,7 @@ export class CodeQuery extends Query {
   }
 
   /**
-   * Query Codes by Code Scope.
+   * Query Codes by Code scope.
    * @param codeScope Scope of the Code.
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeScope is undefined or empty.
@@ -233,11 +246,10 @@ export class CodeQuery extends Query {
   }
 
   /**
-   * Query Codes by their instance ids.
-   * @param codes Codes to query. They must have their CodeSpec, Scope and Value set.
+   * Query [[Code]]s by their instance ids.
+   * @param codes Codes to query. They must have their codeSpec, scope and value set.
    * @returns This query.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it
-   * contains not valid [[Code]] values.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it contains invalid [[Code]] values.
    */
   public byCodes(codes: Code[]) {
     ArgumentCheck.nonEmptyArray("codes", codes);
@@ -265,8 +277,7 @@ export class CodeQuery extends Query {
   }
 
   /**
-   * Select only top entries from the query.
-   * This is applied after @see Query.skip parameter.
+   * Select only top entries from the query. This is applied after [[Query.skip]] parameter.
    * @param n Number of top entries to select.
    * @returns This query.
    */
@@ -276,8 +287,8 @@ export class CodeQuery extends Query {
   }
 
   /**
-   * Query unavailable Codes.
-   * @param briefcaseId Id of the briefcase.
+   * Query unavailable [[Code]]s. It will include all Codes owned by other [[Briefcase]]s.
+   * @param briefcaseId Id of the Briefcase.
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
    */
@@ -290,14 +301,15 @@ export class CodeQuery extends Query {
 }
 
 /**
- * Handler for all methods related to @see Code instances.
+ * Handler for managing [[Code]]s. Use [[IModelClient.Codes]] to get an instance of this class. In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
  */
 export class CodeHandler {
   private _handler: IModelBaseHandler;
   private static _defaultUpdateOptionsProvider: DefaultCodeUpdateOptionsProvider;
 
   /**
-   * Constructor for CodeHandler. Should use @see IModelClient instead of directly constructing this.
+   * Constructor for CodeHandler.
+   * @hidden
    * @param handler Handler for WSG requests.
    */
   constructor(handler: IModelBaseHandler) {
@@ -305,8 +317,8 @@ export class CodeHandler {
   }
 
   /**
-   * Gets relative url for Code requests.
-   * @param imodelId Id of the iModel.
+   * Get relative url for Code requests.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param codeId Id of the code.
    */
   private getRelativeUrl(imodelId: string, multiCode = true, codeId?: string) {
@@ -355,9 +367,8 @@ export class CodeHandler {
   }
 
   /**
-   * Augments update options with defaults returned by the DefaultCodeUpdateOptionsProvider.
-   * @note The options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * Augment update options with defaults returned by the DefaultCodeUpdateOptionsProvider. The options passed in by clients override any defaults where necessary.
+   * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
   private async setupOptionDefaults(options: CodeUpdateOptions): Promise<void> {
@@ -389,17 +400,19 @@ export class CodeHandler {
     return CodeHandler.convertMultiCodesToCodes(result);
   }
 
-  // CodeReservedByAnotherBriefcaseException, CodeStateInvalidException, CodeDoesNotExistException, iModelHubOperationFailedException
-
   /**
-   * Updates multiple codes.
+   * Update multiple [[Code]]s. This call can simultaneously reserve new Codes and update states of already owned Codes. If large amount of Codes are updated, they are split across multiple requests. See [[CodeUpdateOptions.codesPerRequest]]. Default is 2000 Codes per request.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param codes Code to reserve. Requires briefcaseId to be set in the code. Can also set state, codeSpecId, codeScope and value. Set queryOnly to true
-   * to just check if a code can be reserved.
-   * @param updateOptions Options for the update request.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param codes Codes to update. Requires briefcaseId, state, codeSpecId, codeScope and value to be set on every instance. briefcaseId must be the same for every Code. Set queryOnly to true to just check if a Code can be reserved.
+   * @param updateOptions Options for the update request. You can set this to change how conflicts are handled or to handle different amount of Codes per request.
    * @returns The code that was just obtained from the server.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [[ConflictingCodesError]] when [[CodeUpdateOptions.deniedCodes]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/Codes/#handling-conflicts) section for more information.
+   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
+   * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/Codes/#handling-conflicts) section for more information.
+   * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including Codes with different briefcaseId values in the request.
+   * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical Codes in the request.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
@@ -452,12 +465,12 @@ export class CodeHandler {
   }
 
   /**
-   * Gets the codes that have been issued for the iModel.
+   * Get the [[Code]]s that have been issued for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param query Object used to modify results of this query.
-   * @returns Resolves to an array of codes.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param query Optional query object to filter the queried Codes or select different data from them.
+   * @returns Resolves to an array of Codes matching the query.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
@@ -478,11 +491,13 @@ export class CodeHandler {
   }
 
   /**
-   * Deletes all codes owned by the specified briefcase
+   * Delete all [[Code]]s owned by the specified [[Briefcase]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param briefcaseId Id of the briefcacase
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param briefcaseId Id of the Briefcacase.
+   * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);

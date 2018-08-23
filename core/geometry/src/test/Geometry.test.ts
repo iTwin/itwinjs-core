@@ -7,7 +7,7 @@ import { expect, assert } from "chai";
 import { Degree2PowerPolynomial } from "../numerics/Polynomials";
 import { Geometry, Angle } from "../Geometry";
 import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Checker } from "./Checker";
 /* tslint:disable:no-console */
 
@@ -173,7 +173,7 @@ describe("Vector3d.CrossProduct", () => {
     const W = U.crossProduct(V);
     ck.testPerpendicular(U, W);
     ck.testPerpendicular(V, W);
-    const frame = RotMatrix.createRigidHeadsUp(W);
+    const frame = Matrix3d.createRigidHeadsUp(W);
     ck.testPerpendicular(frame.columnX(), W);
     ck.testPerpendicular(frame.columnY(), W);
     ck.testParallel(frame.columnZ(), W);

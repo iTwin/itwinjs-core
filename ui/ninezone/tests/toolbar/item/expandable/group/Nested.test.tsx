@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Nested from "@src/toolbar/item/expandable/group/Nested";
+import Nested from "../../../../../src/toolbar/item/expandable/group/Nested";
 
 describe("<Nested />", () => {
   it("should render", () => {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ContextMenu } from "@src/index";
+import { ContextMenu } from "../../src/index";
 
 describe("<ContextMenu />", () => {
   it("should render", () => {

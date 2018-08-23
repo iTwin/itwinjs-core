@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, Matrix3d, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -29,7 +29,6 @@ import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/T
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
@@ -165,7 +164,7 @@ export namespace Attachments {
       }
 
       this.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
-      this.renderFrame(new UpdatePlan());
+      this.renderFrame();
 
       this._texture = undefined;
       return this.readImage();
@@ -619,7 +618,7 @@ export namespace Attachments {
       const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
       worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
-      const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
+      const location = Transform.createOriginAndMatrix(worldToAttachment, Matrix3d.createIdentity());
       this.location.setFrom(location);
 
       const aspectRatioSkew = view.getAspectRatioSkew();
@@ -731,7 +730,7 @@ export namespace Attachments {
       this.viewport.setRect(new ViewRect(0, 0, dim, dim));
       this.viewport.setupFromView();
 
-      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), RotMatrix.createScale(scale.x, scale.y, 1)));
+      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), Matrix3d.createScale(scale.x, scale.y, 1)));
       this.viewport.npcToWorldArray(frust.points);
       this.viewport.setupViewFromFrustum(frust);
 

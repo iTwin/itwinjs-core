@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelApp, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MaybeRenderApp, WebGLTestContext } from "./WebGLTestContext";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -143,4 +143,15 @@ describe("IModelApp", () => {
     assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
   });
 
+  // Still failing to acquire WebGLRenderingContext on CI server.
+  it.skip("Should support WebGL", () => {
+    expect(TestApp.hasRenderSystem).to.be.true;
+    const canvas = WebGLTestContext.createCanvas();
+    expect(canvas).not.to.be.undefined;
+    if (undefined !== canvas) {
+      const context = canvas.getContext("webgl");
+      expect(context).not.to.be.null;
+      expect(context).not.to.be.undefined;
+    }
+  });
 });

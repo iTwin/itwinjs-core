@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Target from "@src/zones/target/Target";
+import Target from "../../../src/zones/target/Target";
 
 describe("<Target />", () => {
   it("should render", () => {

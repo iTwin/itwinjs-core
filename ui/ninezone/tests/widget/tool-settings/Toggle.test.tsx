@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Toggle from "@src/widget/tool-settings/Toggle";
+import Toggle from "../../../src/widget/tool-settings/Toggle";
 
 describe("<Toggle />", () => {
   it("should render", () => {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, SeparatorBackstageItem, TaskLaunchBackstageItem } from "@src/index";
+import { Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, SeparatorBackstageItem, TaskLaunchBackstageItem } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("Backstage", () => {

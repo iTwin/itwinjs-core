@@ -33,5 +33,6 @@
     "lcov",
     "cobertura"
   ],
-  "all": true
+  "all": true,
+  "cache": false
 }

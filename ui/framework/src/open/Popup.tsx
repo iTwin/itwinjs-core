@@ -1,4 +1,6 @@
-// import * as classnames from "classnames";
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { Div, withOnOutsideClick } from "@bentley/ui-core";

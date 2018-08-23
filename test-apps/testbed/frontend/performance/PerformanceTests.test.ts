@@ -6,7 +6,7 @@ import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { Target, UpdatePlan, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi"; // @ts-ignore
 import { ProjectApi } from "./ProjectApi"; // @ts-ignore
 import { CONSTANTS } from "../../common/Testbed";
@@ -235,9 +235,8 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    const plan = new UpdatePlan();
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     const target = (theViewport!.target as Target);
     const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
@@ -245,36 +244,36 @@ describe("PerformanceTests - 1", () => {
 
     await printResults(frameTimes);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
 
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
@@ -337,35 +336,34 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    const plan = new UpdatePlan();
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     const target = (theViewport!.target as Target);
     const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
     await printResults(frameTimes);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
 
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line

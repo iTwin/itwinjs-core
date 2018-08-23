@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.119.0",
+      "tag": "@bentley/imodeljs-frontend_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw fixes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.118.0",
+      "tag": "@bentley/imodeljs-frontend_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "convertTouchMoveStartToButtonDownAndMotion now calls onMouseStartDrag. Added SelectTool touch support."
+          },
+          {
+            "comment": "ViewManip touch event support. Don't disable snapping when touch move converted to mouse motion."
+          },
+          {
+            "comment": "Fix TransientIdSequence. Fix AccuSnap.findLocatableHit not setting filtered status."
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.117.0",
       "tag": "@bentley/imodeljs-frontend_v0.117.0",
       "date": "Wed, 15 Aug 2018 17:08:54 GMT",

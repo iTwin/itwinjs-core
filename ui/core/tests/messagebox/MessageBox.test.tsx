@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "@src/index";
+import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("MessageBox", () => {

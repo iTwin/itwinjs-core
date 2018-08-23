@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { Direction } from "@src/utilities/Direction";
+
+import Toolbar, { ToolbarPanelAlignment } from "../../src/toolbar/Toolbar";
+import { Direction } from "../../src/utilities/Direction";
 
 describe("<Toolbar />", () => {
   it("should render", () => {

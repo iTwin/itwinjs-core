@@ -110,7 +110,12 @@ $signin-hyperlink-hover-color: $bwc-blue-5;
 
 /* "Register" container */
 .signin2 .signin-offline {
-  @extend .bwc-buttons-hollow;
   align-self: center;
   margin-top: 2.25em;
+
+  &:hover {
+    color: $signin-hyperlink-hover-color;
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }

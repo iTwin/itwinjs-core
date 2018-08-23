@@ -6,7 +6,7 @@
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
-import { RotMatrix, Transform } from "../Transform";
+import { Matrix3d, Transform } from "../Transform";
 
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
@@ -210,7 +210,7 @@ export class Point4d implements BeJSONFunctions {
   }
 
   /** Return point + vectorA \* scalarA + vectorB \* scalarB */
-  public static add2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
+  public static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
     return Point4d.create(
       vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB,
       vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB,
@@ -220,7 +220,7 @@ export class Point4d implements BeJSONFunctions {
   }
 
   /** Return point + vectorA \* scalarA + vectorB \* scalarB + vectorC \* scalarC */
-  public static add3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
+  public static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
     return Point4d.create(
       vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC,
       vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC,
@@ -543,8 +543,8 @@ export class Matrix4d implements BeJSONFunctions {
 
   public diagonal(): Point4d { return this.getSteppedPoint(0, 5); }
   public weight(): number { return this._coffs[15]; }
-  public matrixPart(): RotMatrix {
-    return RotMatrix.createRowValues(
+  public matrixPart(): Matrix3d {
+    return Matrix3d.createRowValues(
       this._coffs[0], this._coffs[1], this._coffs[2],
       this._coffs[4], this._coffs[5], this._coffs[6],
       this._coffs[8], this._coffs[9], this._coffs[10]);
@@ -910,7 +910,7 @@ export class Map4d implements BeJSONFunctions {
    */
   public static createVectorFrustum(origin: Point3d, uVector: Vector3d, vVector: Vector3d, wVector: Vector3d, fraction: number): Map4d | undefined {
     fraction = Math.max(fraction, 1.0e-8);
-    const slabToWorld = Transform.createOriginAndMatrix(origin, RotMatrix.createColumns(uVector, vVector, wVector));
+    const slabToWorld = Transform.createOriginAndMatrix(origin, Matrix3d.createColumns(uVector, vVector, wVector));
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab)
       return undefined;

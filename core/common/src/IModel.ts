@@ -41,7 +41,7 @@ export class EcefLocation implements EcefLocationProps {
   /** The orientation of the ECEF transform */
   public readonly orientation: YawPitchRollAngles;
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toRotMatrix()); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d()); }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {

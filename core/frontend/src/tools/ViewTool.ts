@@ -5,7 +5,7 @@
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, RotMatrix, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
@@ -574,7 +574,7 @@ export abstract class ViewManip extends ViewTool {
 
     const view = vp.view;
     const viewY = view.getYVector();
-    const rotMatrix = RotMatrix.createRotationVectorToVector(viewY, Vector3d.unitZ());
+    const rotMatrix = Matrix3d.createRotationVectorToVector(viewY, Vector3d.unitZ());
     if (!rotMatrix)
       return false;
 
@@ -879,8 +879,8 @@ class ViewRotate extends ViewingToolHandle {
       // Movement in screen y == rotation about screen X...
       const yAxis = viewport.rotMatrix.getRow(0);
 
-      const xRMatrix = xDelta ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.createIdentity();
-      const yRMatrix = yDelta ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.createIdentity();
+      const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.createIdentity();
+      const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.createIdentity();
       const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
       const result = worldRMatrix.getAxisAndAngleOfRotation();
       radians = Angle.createRadians(-result.angle.radians);
@@ -894,7 +894,7 @@ class ViewRotate extends ViewingToolHandle {
   }
 
   private rotateViewWorld(worldOrigin: Point3d, worldAxisVector: Vector3d, primaryAngle: Angle) {
-    const worldMatrix = RotMatrix.createRotationAroundVector(worldAxisVector, primaryAngle);
+    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxisVector, primaryAngle);
     if (!worldMatrix)
       return;
     const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
@@ -907,7 +907,7 @@ class ViewRotate extends ViewingToolHandle {
 class ViewLook extends ViewingToolHandle {
   private _eyePoint = new Point3d();
   private _firstPtView = new Point3d();
-  private _rotation = new RotMatrix();
+  private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
@@ -958,8 +958,8 @@ class ViewLook extends ViewingToolHandle {
     const yAngle = -(yDelta / yExtent) * Math.PI;
 
     const inverseRotation = this._rotation.inverse();
-    const horizontalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle));
-    const verticalRotation = RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createRadians(yAngle));
+    const horizontalRotation = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle));
+    const verticalRotation = Matrix3d.createRotationAroundVector(Vector3d.unitX(), Angle.createRadians(yAngle));
 
     if (undefined === inverseRotation || undefined === horizontalRotation || undefined === verticalRotation)
       return Transform.createIdentity();
@@ -1196,7 +1196,7 @@ class ViewZoom extends ViewingToolHandle {
     if (view.is3d() && view.isCameraOn) {
       const anchorPtWorld = viewport.npcToWorld(this._anchorPtNpc);
 
-      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const transform = Transform.createFixedPointAndMatrix(anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldEyePoint = view.getEyePoint();
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = newEyePoint.minus(oldEyePoint);
@@ -1205,7 +1205,7 @@ class ViewZoom extends ViewingToolHandle {
       frustum.transformBy(cameraOffsetTransform, frustum);
       viewport.setupViewFromFrustum(frustum);
     } else {
-      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+      const transform = Transform.createFixedPointAndMatrix(this._anchorPtNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1.0));
       const frustum = viewport.getFrustum(CoordSystem.Npc, true);
       frustum.transformBy(transform, frustum);
       viewport.npcToWorldArray(frustum.points);
@@ -1273,10 +1273,10 @@ class NavigateMotion {
     const viewRot = vp.rotMatrix;
     const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
-    const pitchMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
+    const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
     const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
     const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
-    const yawMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
+    const yawMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(yawRate * this.deltaTime))!;
     const yawTimesInverseViewTimesPitchTimesView = yawMatrix.multiplyMatrixMatrix(inverseViewTimesPitchTimesView);
     return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView, result);
   }
@@ -1337,9 +1337,9 @@ class NavigateMotion {
     const view = this.viewport.view;
     if (!view.is3d() || !view.isCameraOn)
       return;
-    const angles = YawPitchRollAngles.createFromRotMatrix(this.viewport.rotMatrix)!;
+    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.rotMatrix)!;
     angles.pitch.setRadians(0); // reset pitch to zero
-    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toRotMatrix(), this.transform);
+    Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toMatrix3d(), this.transform);
   }
 }
 
@@ -2011,7 +2011,7 @@ export class DefaultViewTouchTool extends ViewManip {
     const zoomRatio = this.computeZoomRatio(ev);
     const targetWorld = vp.viewToWorld(this._lastPtView);
     const translateTransform = Transform.createTranslation(this._startPtWorld.minus(targetWorld));
-    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, RotMatrix.createRotationAroundVector(vp.view.getZVector(), rotation)!);
+    const rotationTransform = Transform.createFixedPointAndMatrix(targetWorld, Matrix3d.createRotationAroundVector(vp.view.getZVector(), rotation)!);
     const scaleTransform = Transform.createScaleAboutPoint(this._startPtWorld, zoomRatio);
     const transform = translateTransform.multiplyTransformTransform(rotationTransform);
 
@@ -2030,15 +2030,15 @@ export class DefaultViewTouchTool extends ViewManip {
 
     const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
     const yAxis = vp.rotMatrix.getRow(0);
-    const xRMatrix = (0.0 !== xDelta) ? RotMatrix.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : RotMatrix.identity;
-    const yRMatrix = (0.0 !== yDelta) ? RotMatrix.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : RotMatrix.identity;
+    const xRMatrix = (0.0 !== xDelta) ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.identity;
+    const yRMatrix = (0.0 !== yDelta) ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
 
     const result = worldRMatrix.getAxisAndAngleOfRotation();
     const radians = Angle.createRadians(-result.angle.radians);
     const worldAxis = result.axis;
 
-    const rotationMatrix = RotMatrix.createRotationAroundVector(worldAxis, radians);
+    const rotationMatrix = Matrix3d.createRotationAroundVector(worldAxis, radians);
     if (!rotationMatrix)
       return;
 
@@ -2072,7 +2072,7 @@ export class DefaultViewTouchTool extends ViewManip {
     }
 
     const targetNpc = vp.viewToNpc(this._lastPtView);
-    const transform = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1.0));
+    const transform = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1.0));
     const viewCenter = Point3d.create(.5, .5, .5);
     const startPtNpc = vp.viewToNpc(this._startPtView);
     const shift = startPtNpc.minus(targetNpc); shift.z = 0.0;
