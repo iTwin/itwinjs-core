@@ -79,7 +79,7 @@ describe("CurveCurve", () => {
       const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
       const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
       const linestring1 = LineString3d.create(Point3d.create(2, 4, 2), Point3d.create(4, 1, 0), Point3d.create(2, 5, 0));
-      
+
       const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, linestring0, false);
       testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
       const intersections1 = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring0, false, segment0, false);
