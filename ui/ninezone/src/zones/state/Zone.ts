@@ -7,17 +7,22 @@ import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 
 import Layout from "./layout/Layout";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
-import NineZone, { WidgetZoneIndex, ZoneIndex } from "./NineZone";
+import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex } from "./NineZone";
 import WidgetProps, { Widget, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import Cell from "../../utilities/Cell";
 import { Anchor } from "../../widget/Stacked";
 import { TargetType } from "./Target";
 
-export default interface ZoneProps {
+export interface ZoneProps {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
   readonly floatingBounds?: RectangleProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
+}
+
+export interface StatusZoneProps extends ZoneProps {
+  readonly id: StatusZoneIndex;
+  readonly isInFooterMode: boolean;
 }
 
 export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
@@ -31,6 +36,22 @@ export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
     },
     widgets: [
       getDefaultWidgetProps(id),
+    ],
+  };
+};
+
+export const getDefaultStatusZoneProps = (): StatusZoneProps => {
+  return {
+    id: 8,
+    isInFooterMode: true,
+    bounds: {
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+    },
+    widgets: [
+      getDefaultWidgetProps(8),
     ],
   };
 };
@@ -70,7 +91,7 @@ export class LayoutFactory {
   }
 }
 
-export class Zone {
+export default class Zone {
   protected _layout: Layout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
@@ -95,6 +116,12 @@ export class Zone {
     if (this.id === 5)
       return false;
     return true;
+  }
+
+  public isStatusZone(): this is WidgetZone {
+    if (this.id === 8)
+      return true;
+    return false;
   }
 }
 
@@ -240,6 +267,8 @@ export class WidgetZone extends Zone {
           if (last.defaultZone.props.id === this.props.id)
             return unmergedZoneBounds;
         } else {
+          const contentZone = this.nineZone.getContentZone();
+          const statusZone = this.nineZone.getStatusZone();
           const zoneToWidgetArray =
             (
               [
@@ -247,12 +276,12 @@ export class WidgetZone extends Zone {
                   zoneId: widget.defaultZone.props.id,
                   widget,
                 })),
-                ...(Widget.isCellBetweenWidgets(new Cell(1, 1), widgets) ? [{
-                  zoneId: 5,
+                ...(Widget.isCellBetweenWidgets(contentZone.cell, widgets) ? [{
+                  zoneId: contentZone.id,
                   widget: undefined,
                 }] : []),
-                ...(this.nineZone.props.isInFooterMode && Widget.isCellBetweenWidgets(new Cell(2, 1), widgets) ? [{
-                  zoneId: 8,
+                ...(statusZone.props.isInFooterMode && Widget.isCellBetweenWidgets(statusZone.cell, widgets) ? [{
+                  zoneId: statusZone.id,
                   widget: undefined,
                 }] : []),
               ] as ZoneIdToWidget[]
@@ -287,18 +316,22 @@ export class WidgetZone extends Zone {
 }
 
 export class StatusZone extends WidgetZone {
-  public constructor(nineZone: NineZone, props: ZoneProps) {
+  public static readonly id = 8;
+
+  public constructor(nineZone: NineZone, public readonly props: StatusZoneProps) {
     super(nineZone, props);
   }
 
   public get isMergeable(): boolean {
-    if (this.nineZone.props.isInFooterMode)
+    if (this.props.isInFooterMode)
       return false;
     return true;
   }
 }
 
 export class ContentZone extends Zone {
+  public static readonly id = 5;
+
   public constructor(nineZone: NineZone) {
     super(nineZone, 5);
   }

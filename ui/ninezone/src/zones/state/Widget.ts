@@ -126,12 +126,12 @@ export class Widget {
         cells.push(cell);
       }
 
-      const zone5Cell = new Cell(1, 1);
-      if (Widget.isCellBetweenWidgets(zone5Cell, draggingZone.getWidgets()))
-        cells.push(zone5Cell);
-      const zone8Cell = new Cell(2, 1);
-      if (this.nineZone.props.isInFooterMode && Widget.isCellBetweenWidgets(zone8Cell, draggingZone.getWidgets()))
-        cells.push(zone8Cell);
+      const contentZone = this.nineZone.getContentZone();
+      if (Widget.isCellBetweenWidgets(contentZone.cell, draggingZone.getWidgets()))
+        cells.push(contentZone.cell);
+      const statusZone = this.nineZone.getStatusZone();
+      if (statusZone.props.isInFooterMode && Widget.isCellBetweenWidgets(statusZone.cell, draggingZone.getWidgets()))
+        cells.push(statusZone.cell);
     } else
       if (draggingCell.isRowAlignedWith(targetCell)) {
         const min = Math.min(draggingCell.col, targetCell.col);

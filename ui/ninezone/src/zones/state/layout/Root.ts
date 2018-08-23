@@ -16,7 +16,7 @@ export default class Root extends Layout {
   public constructor(public readonly nineZone: NineZone) {
     super();
 
-    this._isInFooterMode = nineZone.props.isInFooterMode;
+    this._isInFooterMode = nineZone.getStatusZone().props.isInFooterMode;
     this.setSize(nineZone.props.size);
   }
 

@@ -575,11 +575,11 @@ export default class ZonesExample extends React.Component<{}, State> {
         {this.getZone(6)}
         {this.getZone(7)}
         <FooterZone
-          isInFooterMode={this.state.nineZone.isInFooterMode}
+          isInFooterMode={this.state.nineZone.zones[8].isInFooterMode}
           bounds={this.state.nineZone.zones[8].bounds}
         >
           <Footer
-            isInWidgetMode={!this.state.nineZone.isInFooterMode}
+            isInWidgetMode={!this.state.nineZone.zones[8].isInFooterMode}
             message={this.getFooterMessage()}
             indicators={
               <>
@@ -618,14 +618,14 @@ export default class ZonesExample extends React.Component<{}, State> {
                       <i className="icon icon-add" />
                     </>
                   }
-                  isStepStringVisible={this.state.nineZone.isInFooterMode}
+                  isStepStringVisible={this.state.nineZone.zones[8].isInFooterMode}
                   onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
                   stepString="Start Point"
                 />
                 <MessageCenterIndicator
                   ref={this._footerMessages}
                   label="Message(s):"
-                  isLabelVisible={this.state.nineZone.isInFooterMode}
+                  isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
                   balloonLabel="9+"
                   onClick={this._handleMessageIndicatorIsDialogOpenChange}
                   dialog={
@@ -669,7 +669,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 />
                 <SnapModeIndicator
                   label="Snap Mode"
-                  isLabelVisible={this.state.nineZone.isInFooterMode}
+                  isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
                   onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
                   icon={
                     <SnapModeIcon text="k" />
@@ -1787,7 +1787,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             <BlueButton
               onClick={() => {
                 this.setState((prevState) => {
-                  const nineZone = NineZoneManager.handleChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
+                  const nineZone = NineZoneManager.handleChangeFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
                   };

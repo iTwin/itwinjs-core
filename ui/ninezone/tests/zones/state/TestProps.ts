@@ -6,6 +6,17 @@ import { NineZoneProps, getDefaultProps } from "@src/zones/state/NineZone";
 export namespace TestProps {
   export const defaultProps = getDefaultProps();
 
+  export const inWidgetMode: NineZoneProps = {
+    ...defaultProps,
+    zones: {
+      ...defaultProps.zones,
+      [8]: {
+        ...defaultProps.zones[8],
+        isInFooterMode: false,
+      },
+    },
+  };
+
   export const openedZone6: NineZoneProps = {
     ...defaultProps,
     zones: {

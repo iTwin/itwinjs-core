@@ -9,7 +9,7 @@ import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
 import { Widget } from "./Widget";
-import ZoneProps, { ZoneIdToWidget, WidgetZone } from "./Zone";
+import { ZoneIdToWidget, WidgetZone, StatusZone, StatusZoneProps } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
 export class StateManager {
@@ -89,7 +89,7 @@ export class StateManager {
       ...model.props,
       zones: {
         ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: { [id: number]: Partial<ZoneProps> }, key) => {
+        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
           const bounds = model.getWidgetZone(id).getLayout().bounds;
           acc[id] = {
@@ -114,16 +114,19 @@ export class StateManager {
 
     const newState: NineZoneProps = {
       ...model.props,
-      isInFooterMode,
       zones: {
         ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: { [id: number]: ZoneProps }, key) => {
+        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
+          const zone = model.getWidgetZone(id);
+          const bounds = zone.getLayout().getInitialBounds();
+
           acc[id] = {
             ...model.props.zones[id],
             bounds,
+            ...(id === StatusZone.id && { isInFooterMode } as StatusZoneProps),
           };
+
           return acc;
         }, {}),
       },
@@ -246,14 +249,16 @@ export class StateManager {
         draggingWidgetId: undefined,
       };
 
-    const zonesToUpdate: { [id: number]: ZoneProps } = {};
+    const zonesToUpdate: Partial<ZonesType> = {};
     const bounds = Rectangle.create(draggingZone.props.bounds).outerMergeWith(targetZone.props.bounds);
 
+    const contentZone = model.getContentZone();
+    const statusZone = model.getStatusZone();
     const alignedCells = targetZone.cell.getAlignedCellsTo(draggingZone.cell);
     const alignedCellsFiltered = alignedCells.filter((cell) => {
-      if (cell.col === 1 && cell.row === 1)
+      if (contentZone.cell.equals(cell))
         return false;
-      if (model.props.isInFooterMode && cell.col === 1 && cell.row === 2)
+      if (statusZone.props.isInFooterMode && statusZone.cell.equals(cell))
         return false;
       return true;
     });
@@ -306,7 +311,7 @@ export class StateManager {
     if (!draggingWidget)
       return { ...state };
 
-    const zonesToUpdate: { [id: number]: ZoneProps } = {};
+    const zonesToUpdate: Partial<ZonesType> = {};
     const draggingZone = draggingWidget.zone;
     const targetWidget = model.getWidget(targetWidgetId);
 
@@ -346,8 +351,8 @@ export class StateManager {
       const targetIndex = draggingZone.getWidgets().findIndex((w) => w.equals(targetWidget));
       const widgetsToUnmerge = draggingZone.getWidgets().slice().filter((w) => !w.equals(draggingWidget));
       const zoneSlots = widgets.map((w) => w.defaultZone.props.id).filter((_id, index) => index !== targetIndex);
-      const zone5 = model.getZone(5);
-      const zone8 = model.getZone(8);
+      const contentZone = model.getContentZone();
+      const statusZone = model.getStatusZone();
 
       const zoneToWidgetArray: ZoneIdToWidget[] = [
         ...zoneSlots.map((zoneSlot, index) => ({
@@ -359,17 +364,17 @@ export class StateManager {
           widget: draggingWidget,
         },
 
-        ...(Widget.isCellBetweenWidgets(zone5.cell, widgets) ?
+        ...(Widget.isCellBetweenWidgets(contentZone.cell, widgets) ?
           [
             {
-              zoneId: zone5.id,
+              zoneId: contentZone.id,
               widget: undefined,
             } as ZoneIdToWidget,
           ] : []),
-        ...(model.props.isInFooterMode && Widget.isCellBetweenWidgets(zone8.cell, widgets) ?
+        ...(statusZone.props.isInFooterMode && Widget.isCellBetweenWidgets(statusZone.cell, widgets) ?
           [
             {
-              zoneId: zone8.id,
+              zoneId: statusZone.id,
               widget: undefined,
             } as ZoneIdToWidget,
           ] : []),

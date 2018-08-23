@@ -8,18 +8,19 @@ import { SizeProps } from "../../utilities/Size";
 import Root from "./layout/Root";
 import Target, { TargetProps } from "./Target";
 import { Widget } from "./Widget";
-import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone, ContentZone, WidgetZone, StatusZone } from "./Zone";
+import Zone, { getDefaultProps as getDefaultZoneProps, ZoneProps, ContentZone, WidgetZone, StatusZone, StatusZoneProps, getDefaultStatusZoneProps } from "./Zone";
 
 export type ContentZoneIndex = 5;
 export type StatusZoneIndex = 8;
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 
-export type ZonesType = { [id in WidgetZoneIndex]: ZoneProps };
+export type ZonesType =
+  { [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZoneProps } &
+  { [id in StatusZoneIndex]: StatusZoneProps };
 
 export interface NineZoneProps {
   readonly zones: Readonly<ZonesType>;
-  readonly isInFooterMode: boolean;
   readonly size: SizeProps;
   readonly draggingWidgetId?: WidgetZoneIndex;
   readonly target?: TargetProps;
@@ -33,7 +34,7 @@ export const getDefaultZonesProps = (): Readonly<ZonesType> => {
     4: getDefaultZoneProps(4),
     6: getDefaultZoneProps(6),
     7: getDefaultZoneProps(7),
-    8: getDefaultZoneProps(8),
+    8: getDefaultStatusZoneProps(),
     9: getDefaultZoneProps(9),
   };
 };
@@ -41,7 +42,6 @@ export const getDefaultZonesProps = (): Readonly<ZonesType> => {
 export const getDefaultProps = (): NineZoneProps => (
   {
     zones: getDefaultZonesProps(),
-    isInFooterMode: true,
     size: {
       width: 0,
       height: 0,
@@ -97,6 +97,14 @@ export default class NineZone implements Iterable<Zone> {
 
   public getWidgetZone(zoneId: WidgetZoneIndex): WidgetZone {
     return this.getZone(zoneId) as WidgetZone;
+  }
+
+  public getStatusZone(): StatusZone {
+    return this.getZone(StatusZone.id) as StatusZone;
+  }
+
+  public getContentZone(): ContentZone {
+    return this.getZone(ContentZone.id) as ContentZone;
   }
 
   public getWidget(widgetId: number): Widget {
