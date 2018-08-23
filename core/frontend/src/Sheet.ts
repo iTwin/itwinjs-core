@@ -29,7 +29,6 @@ import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/T
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
@@ -165,7 +164,7 @@ export namespace Attachments {
       }
 
       this.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
-      this.renderFrame(new UpdatePlan());
+      this.renderFrame();
 
       this._texture = undefined;
       return this.readImage();
