@@ -9,10 +9,4 @@ describe("NineZone", () => {
   it("should construct an instance", () => {
     new NineZone(defaultProps);
   });
-
-  it("should throw if zone id is unknown", () => {
-    const sut = new NineZone(defaultProps);
-    (() => sut.getZone(0)).should.throw();
-    (() => sut.getZone(10)).should.throw();
-  });
 });

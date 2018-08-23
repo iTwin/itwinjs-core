@@ -441,7 +441,7 @@ describe("Layout", () => {
       };
       sut.tryShrinkLeft(150);
 
-      shrunkBy.should.be.eq(50);
+      shrunkBy.should.eq(50);
     });
 
     it("Should move right by shrunk amount", () => {
@@ -548,7 +548,7 @@ describe("Layout", () => {
       };
       sut.tryShrinkRight(150);
 
-      shrunkBy.should.be.eq(50);
+      shrunkBy.should.eq(50);
     });
 
     it("Should move left by shrunk amount", () => {

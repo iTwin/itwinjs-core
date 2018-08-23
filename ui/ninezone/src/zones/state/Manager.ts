@@ -3,14 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Cell from "../../utilities/Cell";
 import { PointProps } from "../../utilities/Point";
 import Rectangle from "../../utilities/Rectangle";
 import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
-import NineZone, { NineZoneProps } from "./NineZone";
+import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
 import { Widget } from "./Widget";
-import ZoneProps, { ZoneIdToWidget } from "./Zone";
+import ZoneProps, { ZoneIdToWidget, WidgetZone } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
 export class StateManager {
@@ -64,35 +63,42 @@ export class StateManager {
       size: {
         ...size,
       },
-      zones: Object.keys(model.props.zones).reduce((acc: { [id: number]: ZoneProps }, key) => {
-        const id = Number(key);
-        const bounds = model.getZone(id).getLayout().getInitialBounds();
-        acc[id] = {
-          ...model.props.zones[id],
-          bounds,
-        };
-        return acc;
-      }, {}),
+      zones: {
+        ...model.props.zones,
+        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
+          const id = Number(key) as WidgetZoneIndex;
+          const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
+          acc[id] = {
+            ...model.props.zones[id],
+            bounds,
+          };
+          return acc;
+        }, {}),
+      },
+
     };
 
     return newState;
   }
 
-  public handleResize(zoneId: number, x: number, y: number, handle: ResizeHandle, state: NineZoneProps): NineZoneProps {
+  public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
-    model.getZone(zoneId).getLayout().resize(x, y, handle);
+    model.getWidgetZone(zoneId).getLayout().resize(x, y, handle);
 
     const newState: NineZoneProps = {
       ...model.props,
-      zones: Object.keys(model.props.zones).reduce((acc: { [id: number]: ZoneProps }, key) => {
-        const id = Number(key);
-        const bounds = model.getZone(id).getLayout().bounds;
-        acc[id] = {
-          ...model.props.zones[id],
-          bounds,
-        };
-        return acc;
-      }, {}),
+      zones: {
+        ...model.props.zones,
+        ...Object.keys(model.props.zones).reduce((acc: { [id: number]: Partial<ZoneProps> }, key) => {
+          const id = Number(key) as WidgetZoneIndex;
+          const bounds = model.getWidgetZone(id).getLayout().bounds;
+          acc[id] = {
+            ...model.props.zones[id],
+            bounds,
+          };
+          return acc;
+        }, {}),
+      },
     };
 
     return newState;
@@ -109,21 +115,24 @@ export class StateManager {
     const newState: NineZoneProps = {
       ...model.props,
       isInFooterMode,
-      zones: Object.keys(model.props.zones).reduce((acc: { [id: number]: ZoneProps }, key) => {
-        const id = Number(key);
-        const bounds = model.getZone(id).getLayout().getInitialBounds();
-        acc[id] = {
-          ...model.props.zones[id],
-          bounds,
-        };
-        return acc;
-      }, {}),
+      zones: {
+        ...model.props.zones,
+        ...Object.keys(model.props.zones).reduce((acc: { [id: number]: ZoneProps }, key) => {
+          const id = Number(key) as WidgetZoneIndex;
+          const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
+          acc[id] = {
+            ...model.props.zones[id],
+            bounds,
+          };
+          return acc;
+        }, {}),
+      },
     };
 
     return newState;
   }
 
-  public handleDragBehaviorChanged(widgetId: number, isDragging: boolean, state: NineZoneProps): NineZoneProps {
+  public handleDragBehaviorChanged(widgetId: WidgetZoneIndex, isDragging: boolean, state: NineZoneProps): NineZoneProps {
     if (state.target) {
       switch (state.target.type) {
         case TargetType.Merge: {
@@ -185,7 +194,7 @@ export class StateManager {
     };
   }
 
-  public setDraggingWidget(widgetId: number, isDragging: boolean, state: NineZoneProps): NineZoneProps {
+  public setDraggingWidget(widgetId: WidgetZoneIndex, isDragging: boolean, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
 
     const widget = model.getWidget(widgetId);
@@ -240,7 +249,7 @@ export class StateManager {
     const zonesToUpdate: { [id: number]: ZoneProps } = {};
     const bounds = Rectangle.create(draggingZone.props.bounds).outerMergeWith(targetZone.props.bounds);
 
-    const alignedCells = targetZone.getCell().getAlignedCellsTo(draggingZone.getCell());
+    const alignedCells = targetZone.cell.getAlignedCellsTo(draggingZone.cell);
     const alignedCellsFiltered = alignedCells.filter((cell) => {
       if (cell.col === 1 && cell.row === 1)
         return false;
@@ -248,7 +257,8 @@ export class StateManager {
         return false;
       return true;
     });
-    const alignedZones = alignedCellsFiltered.map((cell) => model.findZone(cell));
+    const alignedZones = alignedCellsFiltered.map((cell) => model.findZone(cell))
+      .filter<WidgetZone>((z): z is WidgetZone => z.isWidgetZone());
     const zoneWidgets = alignedZones.map((z) => z.getWidgets());
     let widgets: Widget[] = [];
     widgets = widgets.concat(...zoneWidgets);
@@ -336,6 +346,8 @@ export class StateManager {
       const targetIndex = draggingZone.getWidgets().findIndex((w) => w.equals(targetWidget));
       const widgetsToUnmerge = draggingZone.getWidgets().slice().filter((w) => !w.equals(draggingWidget));
       const zoneSlots = widgets.map((w) => w.defaultZone.props.id).filter((_id, index) => index !== targetIndex);
+      const zone5 = model.getZone(5);
+      const zone8 = model.getZone(8);
 
       const zoneToWidgetArray: ZoneIdToWidget[] = [
         ...zoneSlots.map((zoneSlot, index) => ({
@@ -346,19 +358,20 @@ export class StateManager {
           zoneId: widgets[targetIndex].defaultZone.props.id,
           widget: draggingWidget,
         },
-        ...(Widget.isCellBetweenWidgets(new Cell(1, 1), widgets) ?
+
+        ...(Widget.isCellBetweenWidgets(zone5.cell, widgets) ?
           [
             {
-              zoneId: 5,
+              zoneId: zone5.id,
               widget: undefined,
-            },
+            } as ZoneIdToWidget,
           ] : []),
-        ...(model.props.isInFooterMode && Widget.isCellBetweenWidgets(new Cell(2, 1), widgets) ?
+        ...(model.props.isInFooterMode && Widget.isCellBetweenWidgets(zone8.cell, widgets) ?
           [
             {
-              zoneId: 8,
+              zoneId: zone8.id,
               widget: undefined,
-            },
+            } as ZoneIdToWidget,
           ] : []),
       ].sort(ZoneIdToWidget.sortAscending);
 
@@ -367,7 +380,7 @@ export class StateManager {
 
       for (let i = 0; i < zoneToWidgetArray.length; i++) {
         const zoneToWidget = zoneToWidgetArray[i];
-        if (!zoneToWidget.widget)
+        if (!zoneToWidget.widget || zoneToWidget.zoneId === 5)
           continue;
 
         const topInset = i * widgetHeight;

@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import { Zone } from "./Zone";
+import { WidgetZone } from "./Zone";
 import Cell, { CellProps } from "../../utilities/Cell";
 import { UnmergeCell, CellType } from "../target/Unmerge";
+import { WidgetZoneIndex } from "./NineZone";
 
 export enum DropTarget {
   None,
@@ -14,12 +15,12 @@ export enum DropTarget {
 }
 
 export default interface WidgetProps {
-  readonly id: number;
-  readonly defaultZoneId?: number;
+  readonly id: WidgetZoneIndex;
+  readonly defaultZoneId?: WidgetZoneIndex;
   readonly tabIndex: number;
 }
 
-export const getDefaultProps = (id: number): WidgetProps => {
+export const getDefaultProps = (id: WidgetZoneIndex): WidgetProps => {
   return {
     id,
     tabIndex: -1,
@@ -37,24 +38,24 @@ export class Widget {
 
     const w0 = widgets[0];
     const w1 = widgets[1];
-    if (cell.isBetween(w0.defaultZone.getCell(), w1.defaultZone.getCell()))
+    if (cell.isBetween(w0.defaultZone.cell, w1.defaultZone.cell))
       return true;
 
     return false;
   }
 
-  private _defaultZone: Zone | undefined = undefined;
+  private _defaultZone: WidgetZone | undefined = undefined;
 
-  public constructor(public readonly zone: Zone, public readonly props: WidgetProps) {
+  public constructor(public readonly zone: WidgetZone, public readonly props: WidgetProps) {
   }
 
   public get nineZone() {
     return this.zone.nineZone;
   }
 
-  public get defaultZone(): Zone {
+  public get defaultZone(): WidgetZone {
     if (!this._defaultZone)
-      this._defaultZone = this.nineZone.getZone(this.props.defaultZoneId || this.props.id);
+      this._defaultZone = this.nineZone.getWidgetZone(this.props.defaultZoneId || this.props.id);
     return this._defaultZone;
   }
 
@@ -69,6 +70,8 @@ export class Widget {
 
     const draggingZone = draggingWidget.zone;
     const targetZone = this.zone;
+    if (!targetZone.isMergeable)
+      return DropTarget.None;
 
     // Widgets are in the same zone
     if (draggingZone.equals(targetZone))
@@ -80,8 +83,12 @@ export class Widget {
     if (targetZone.props.widgets.length > 1 && !targetZone.isFirstWidget(this))
       return DropTarget.None;
 
-    const draggingCell = draggingZone.getCell();
-    const targetCell = targetZone.getCell();
+    const draggingCell = draggingZone.cell;
+    const targetCell = targetZone.cell;
+    const zone5Cell = this.nineZone.getZone(5).cell;
+    if (zone5Cell.isBetween(draggingCell, targetCell))
+      return DropTarget.None;
+
     if (draggingCell.isRowAlignedWith(targetCell))
       if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
         if (targetZone.isMergedHorizontally || targetZone.props.widgets.length === 1)
@@ -103,18 +110,18 @@ export class Widget {
       return cells;
 
     const draggingZone = draggingWidget.zone;
-    const draggingCell = draggingZone.getCell();
+    const draggingCell = draggingZone.cell;
     const targetZone = this.zone;
-    const targetCell = targetZone.getCell();
+    const targetCell = targetZone.cell;
 
     if (draggingZone.isFirstWidget(this)) {
-      cells.push(draggingZone.getCell());
+      cells.push(draggingZone.cell);
       for (const widget of draggingZone.getWidgets()) {
         if (cells.length === draggingZone.props.widgets.length)
           break;
 
-        const cell = widget.defaultZone.getCell();
-        if (cell.equals(draggingZone.getCell()))
+        const cell = widget.defaultZone.cell;
+        if (cell.equals(draggingZone.cell))
           continue;
         cells.push(cell);
       }
@@ -160,15 +167,15 @@ export class Widget {
           type = CellType.Unmerge;
 
         const unmergeCell = {
-          row: widget.defaultZone.getCell().row,
-          col: widget.defaultZone.getCell().col,
+          row: widget.defaultZone.cell.row,
+          col: widget.defaultZone.cell.col,
           type,
         };
         cells.push(unmergeCell);
       }
     } else
       for (const widget of draggingZone.getWidgets()) {
-        const cell = widget.defaultZone.getCell();
+        const cell = widget.defaultZone.cell;
         const unmergeCell = {
           row: cell.row,
           col: cell.col,

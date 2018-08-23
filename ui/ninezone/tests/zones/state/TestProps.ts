@@ -5,6 +5,7 @@ import { NineZoneProps, getDefaultProps } from "@src/zones/state/NineZone";
 
 export namespace TestProps {
   export const defaultProps = getDefaultProps();
+
   export const openedZone6: NineZoneProps = {
     ...defaultProps,
     zones: {
@@ -123,6 +124,36 @@ export namespace TestProps {
             tabIndex: 1,
           },
         ],
+      },
+    },
+  };
+
+  export const merged9To8: NineZoneProps = {
+    ...defaultProps,
+    zones: {
+      ...defaultProps.zones,
+      8: {
+        ...defaultProps.zones[8],
+        bounds: {
+          left: 10,
+          top: 20,
+          right: 99,
+          bottom: 110,
+        },
+        widgets: [
+          {
+            id: 8,
+            tabIndex: -1,
+          },
+          {
+            id: 9,
+            tabIndex: 1,
+          },
+        ],
+      },
+      9: {
+        ...defaultProps.zones[9],
+        widgets: [],
       },
     },
   };

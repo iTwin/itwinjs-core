@@ -70,7 +70,7 @@ import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import StackedWidget, { Anchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
-import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps } from "@src/zones/state/NineZone";
+import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import NineZoneManager from "@src/zones/state/Manager";
 import Widget, { DropTarget } from "@src/zones/state/Widget";
 import TargetContainer from "@src/zones/target/Container";
@@ -987,7 +987,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
+  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
       return {
@@ -996,7 +996,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private _handleDragBehaviorChanged = (widgetId: number, isDragging: boolean) => {
+  private _handleDragBehaviorChanged = (widgetId: WidgetZoneIndex, isDragging: boolean) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleDragBehaviorChanged(widgetId, isDragging, prevState.nineZone);
       return {
@@ -1571,8 +1571,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     }
   }
 
-  private getTargets(zoneId: number) {
-    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+  private getTargets(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     return (
       <TargetContainer>
         {
@@ -1868,7 +1868,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTabs(zoneId: number, anchor: Anchor) {
+  private getTabs(zoneId: WidgetZoneIndex, anchor: Anchor) {
     let tabs: JSX.Element[] = [];
     let i = -1;
 
@@ -1887,7 +1887,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     return tabs;
   }
 
-  private getZoneContent(zoneId: number) {
+  private getZoneContent(zoneId: WidgetZoneIndex) {
     const zone = this.state.nineZone.zones[zoneId];
     const activeWidget = zone.widgets.find((widget) => widget.tabIndex !== -1);
 
@@ -1897,8 +1897,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getWidget(zoneId: number) {
-    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+  private getWidget(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     if (zone.props.widgets.length === 0)
       return undefined;
 
@@ -1916,7 +1916,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private getZone(zoneId: number) {
+  private getZone(zoneId: WidgetZoneIndex) {
     switch (zoneId) {
       case 3:
         return this.getZone3();
@@ -1925,8 +1925,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     }
   }
 
-  private getFloatingZone(zoneId: number) {
-    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+  private getFloatingZone(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
@@ -1953,7 +1953,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     if (isRectangular)
       return this.getFloatingZone(zoneId);
 
-    const zone = new NineZone(this.state.nineZone).getZone(zoneId);
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>

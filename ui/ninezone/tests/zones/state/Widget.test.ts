@@ -4,7 +4,7 @@
 import * as chai from "chai";
 import { UnmergeCell, CellType } from "@src/zones/target/Unmerge";
 import TestProps from "./TestProps";
-import NineZone from "@src/zones/state/NineZone";
+import NineZone, { NineZoneProps } from "@src/zones/state/NineZone";
 import { DropTarget } from "@src/zones/state/Widget";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
@@ -13,129 +13,146 @@ const expect = chai.expect;
 describe("Widget", () => {
   describe("getDropTarget", () => {
     it("should return merge drop target for adjacent zone in same row", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidgetId: 1,
+        draggingWidgetId: 7,
       };
 
-      new NineZone(props).getWidget(2).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(8).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge drop target for adjacent zone in same col", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 1,
       };
-      new NineZone(props).getWidget(4).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(4).getDropTarget().should.eq(DropTarget.Merge);
     });
 
-    it("should return merge drop target for any zone in same row", () => {
-      const props = {
+    it("should return merge drop target for distant zone in same row", () => {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidgetId: 1,
+        draggingWidgetId: 7,
       };
-      new NineZone(props).getWidget(2).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(9).getDropTarget().should.eq(DropTarget.Merge);
     });
 
-    it("should return merge drop target for any zone in same col", () => {
-      const props = {
+    it("should return merge drop target for distant zone in same col", () => {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 1,
       };
-      new NineZone(props).getWidget(7).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(7).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge drop target for same zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidgetId: 1,
+        draggingWidgetId: 4,
       };
-      new NineZone(props).getWidget(1).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(4).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge drop target for swapped zones", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
       const nineZone = new NineZone(props);
-      nineZone.getWidget(6).getDropTarget().should.be.eq(DropTarget.Merge);
-      nineZone.getWidget(9).getDropTarget().should.be.eq(DropTarget.Merge);
+      nineZone.getWidget(6).getDropTarget().should.eq(DropTarget.Merge);
+      nineZone.getWidget(9).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return no drop target for zones merged diagonally", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 8,
       };
       const nineZone = new NineZone(props);
-      nineZone.getWidget(1).getDropTarget().should.be.eq(DropTarget.None);
-      nineZone.getWidget(4).getDropTarget().should.be.eq(DropTarget.None);
+      nineZone.getWidget(1).getDropTarget().should.eq(DropTarget.None);
+      nineZone.getWidget(4).getDropTarget().should.eq(DropTarget.None);
     });
 
     it("should return unmerge target", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To6,
         draggingWidgetId: 9,
       };
-      new NineZone(props).getWidget(9).getDropTarget().should.be.eq(DropTarget.Unmerge);
+      new NineZone(props).getWidget(9).getDropTarget().should.eq(DropTarget.Unmerge);
     });
 
     it("should return no horizontal target if dragging vertically merged zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To6,
         draggingWidgetId: 9,
       };
-      new NineZone(props).getWidget(7).getDropTarget().should.be.eq(DropTarget.None);
+      new NineZone(props).getWidget(7).getDropTarget().should.eq(DropTarget.None);
     });
 
     it("should return merge target for horizontal zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 9,
       };
-      new NineZone(props).getWidget(7).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(7).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge target for horizontal zone (swapped widgets)", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
-      new NineZone(props).getWidget(6).getDropTarget().should.be.eq(DropTarget.Merge);
+      new NineZone(props).getWidget(6).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge target for first widget in zone with multiple widgets", () => {
-      const props = {
-        ...TestProps.merged9To6,
-        draggingWidgetId: 3,
+      const props: NineZoneProps = {
+        ...TestProps.merged9To8,
+        draggingWidgetId: 7,
       };
       const nineZone = new NineZone(props);
-      nineZone.getWidget(3).getDropTarget().should.be.eq(DropTarget.Merge);
-      nineZone.getWidget(6).getDropTarget().should.be.eq(DropTarget.Merge);
-      nineZone.getWidget(9).getDropTarget().should.be.eq(DropTarget.None);
+      nineZone.getWidget(7).getDropTarget().should.eq(DropTarget.Merge, "w7");
+      nineZone.getWidget(8).getDropTarget().should.eq(DropTarget.Merge, "w8");
+      nineZone.getWidget(9).getDropTarget().should.eq(DropTarget.None, "w9");
     });
 
     it("should return no merge target for zone 4 if dragging widget 6 in zone 9", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
-      new NineZone(props).getWidget(4).getDropTarget().should.be.eq(DropTarget.None);
+      new NineZone(props).getWidget(4).getDropTarget().should.eq(DropTarget.None);
     });
 
     it("should return no merge target if target widget is merged horizontally", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To7,
         draggingWidgetId: 4,
       };
-      new NineZone(props).getWidget(7).getDropTarget().should.be.eq(DropTarget.None);
+      new NineZone(props).getWidget(7).getDropTarget().should.eq(DropTarget.None);
+    });
+
+    it("should return no drop target for zones around zone5", () => {
+      const props: NineZoneProps = {
+        ...TestProps.defaultProps,
+        draggingWidgetId: 6,
+      };
+      new NineZone(props).getWidget(4).getDropTarget().should.eq(DropTarget.None);
+    });
+
+    it("should return no drop target for non mergeable zone", () => {
+      const props: NineZoneProps = {
+        ...TestProps.defaultProps,
+        draggingWidgetId: 4,
+      };
+
+      new NineZone(props).getWidget(1).getDropTarget().should.eq(DropTarget.None);
     });
   });
 
   describe("getMergeTargetCells", () => {
     it("should get target cells for same zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 9,
       };
@@ -147,7 +164,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for vertically adjacent zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 6,
       };
@@ -156,7 +173,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for horizontally adjacent zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 3,
       };
@@ -165,7 +182,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for horizontal zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 6,
       };
@@ -174,7 +191,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for vertical zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidgetId: 6,
       };
@@ -183,7 +200,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for vertical zone (swapped zones)", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 9,
       };
@@ -192,7 +209,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells if dragging zone has merged widgets", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To6,
         draggingWidgetId: 6,
       };
@@ -206,7 +223,7 @@ describe("Widget", () => {
     });
 
     it("should get target cell for swapped widgets", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
@@ -215,7 +232,7 @@ describe("Widget", () => {
     });
 
     it("should get correct target cell for swapped widgets", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
@@ -225,7 +242,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells for swapped widgets", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.swapped6and9,
         draggingWidgetId: 6,
       };
@@ -234,7 +251,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells with zone 5", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged6To4,
         draggingWidgetId: 6,
       };
@@ -247,7 +264,7 @@ describe("Widget", () => {
     });
 
     it("should get target cells with zone 8 if is in footer mode", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To7,
         draggingWidgetId: 9,
       };
@@ -260,7 +277,7 @@ describe("Widget", () => {
     });
 
     it("should get cells based on widget zone", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged4To9,
         draggingWidgetId: 9,
       };
@@ -274,7 +291,7 @@ describe("Widget", () => {
 
   describe("getUnmergeTargetCells", () => {
     it("should get unmerge target cells for merged widget", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9To6,
         draggingWidgetId: 9,
       };
@@ -288,7 +305,7 @@ describe("Widget", () => {
     });
 
     it("should get unmerge target with all cells unmerged", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
         draggingWidgetId: 9,
       };
@@ -309,7 +326,7 @@ describe("Widget", () => {
     });
 
     it("should get unmerge target with one cell unmerged and 2 cells merged", () => {
-      const props = {
+      const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
         draggingWidgetId: 9,
       };

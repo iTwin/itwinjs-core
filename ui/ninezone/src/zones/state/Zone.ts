@@ -7,20 +7,20 @@ import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 
 import Layout from "./layout/Layout";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
-import NineZone from "./NineZone";
+import NineZone, { WidgetZoneIndex, ZoneIndex } from "./NineZone";
 import WidgetProps, { Widget, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import Cell from "../../utilities/Cell";
 import { Anchor } from "../../widget/Stacked";
 import { TargetType } from "./Target";
 
 export default interface ZoneProps {
-  readonly id: number;
+  readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
   readonly floatingBounds?: RectangleProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
 }
 
-export const getDefaultProps = (id: number): ZoneProps => {
+export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
   return {
     id,
     bounds: {
@@ -36,7 +36,7 @@ export const getDefaultProps = (id: number): ZoneProps => {
 };
 
 export interface ZoneIdToWidget {
-  zoneId: number;
+  zoneId: ZoneIndex;
   widget: Widget | undefined;
 }
 
@@ -47,7 +47,7 @@ export namespace ZoneIdToWidget {
 }
 
 export class LayoutFactory {
-  public create(zone: Zone): Layout {
+  public create(zone: WidgetZone): Layout {
     switch (zone.props.id) {
       case 1:
         return new Layout1(zone);
@@ -73,16 +73,39 @@ export class LayoutFactory {
 export class Zone {
   protected _layout: Layout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
+  protected _isWidgetOpen: boolean | undefined = undefined;
+  public readonly cell: Cell;
+
+  public constructor(
+    public readonly nineZone: NineZone,
+    public readonly id: ZoneIndex,
+  ) {
+    this.cell = new Cell(Math.floor((id - 1) / 3), (id - 1) % 3);
+  }
+
+  public get isMergeable(): boolean {
+    return false;
+  }
+
+  public equals(other: Zone) {
+    return this.id === other.id;
+  }
+
+  public isWidgetZone(): this is WidgetZone {
+    if (this.id === 5)
+      return false;
+    return true;
+  }
+}
+
+export class WidgetZone extends Zone {
+  protected _layout: Layout | undefined = undefined;
+  protected _widgets: Widget[] | undefined = undefined;
   protected _cell: Cell | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
 
   public constructor(public readonly nineZone: NineZone, public readonly props: ZoneProps) {
-  }
-
-  public getCell() {
-    if (!this._cell)
-      this._cell = new Cell(Math.floor((this.props.id - 1) / 3), (this.props.id - 1) % 3);
-    return this._cell;
+    super(nineZone, props.id);
   }
 
   public getLayout(): Layout {
@@ -122,12 +145,12 @@ export class Zone {
 
   public get isMergedVertically(): boolean {
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.getCell().isColumnAlignedWith(widgets[1].defaultZone.getCell());
+    return widgets.length > 1 && widgets[0].defaultZone.cell.isColumnAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get isMergedHorizontally(): boolean {
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.getCell().isRowAlignedWith(widgets[1].defaultZone.getCell());
+    return widgets.length > 1 && widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get anchor(): Anchor {
@@ -144,6 +167,18 @@ export class Zone {
     }
   }
 
+  public get isMergeable(): boolean {
+    switch (this.props.id) {
+      case 4:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+        return true;
+    }
+    return false;
+  }
+
   public isFirstWidget(widget: Widget): boolean {
     if (this.props.widgets.length > 0 && this.props.widgets[0].id === widget.props.id)
       return true;
@@ -154,10 +189,6 @@ export class Zone {
     if (this.props.widgets.length > 0 && this.props.widgets[this.props.widgets.length - 1].id === widget.props.id)
       return true;
     return false;
-  }
-
-  public equals(other: Zone) {
-    return this.props.id === other.props.id;
   }
 
   public getGhostOutlineBounds(): RectangleProps | undefined {
@@ -252,5 +283,11 @@ export class Zone {
     }
 
     return undefined;
+  }
+}
+
+export class ContentZone extends Zone {
+  public constructor(nineZone: NineZone) {
+    super(nineZone, 5);
   }
 }

@@ -8,28 +8,38 @@ import { SizeProps } from "../../utilities/Size";
 import Root from "./layout/Root";
 import Target, { TargetProps } from "./Target";
 import { Widget } from "./Widget";
-import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone } from "./Zone";
+import ZoneProps, { getDefaultProps as getDefaultZoneProps, Zone, ContentZone, WidgetZone } from "./Zone";
+
+export type ContentZoneIndex = 5;
+export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
+export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
+
+export type ZonesType = { [id in WidgetZoneIndex]: ZoneProps };
 
 export interface NineZoneProps {
-  readonly zones: Readonly<{ [id: number]: ZoneProps }>;
+  readonly zones: Readonly<ZonesType>;
   readonly isInFooterMode: boolean;
   readonly size: SizeProps;
-  readonly draggingWidgetId?: number;
+  readonly draggingWidgetId?: WidgetZoneIndex;
   readonly target?: TargetProps;
 }
 
+export const getDefaultZonesProps = (): Readonly<ZonesType> => {
+  return {
+    1: getDefaultZoneProps(1),
+    2: getDefaultZoneProps(2),
+    3: getDefaultZoneProps(3),
+    4: getDefaultZoneProps(4),
+    6: getDefaultZoneProps(6),
+    7: getDefaultZoneProps(7),
+    8: getDefaultZoneProps(8),
+    9: getDefaultZoneProps(9),
+  };
+};
+
 export const getDefaultProps = (): NineZoneProps => (
   {
-    zones: {
-      1: getDefaultZoneProps(1),
-      2: getDefaultZoneProps(2),
-      3: getDefaultZoneProps(3),
-      4: getDefaultZoneProps(4),
-      6: getDefaultZoneProps(6),
-      7: getDefaultZoneProps(7),
-      8: getDefaultZoneProps(8),
-      9: getDefaultZoneProps(9),
-    },
+    zones: getDefaultZonesProps(),
     isInFooterMode: true,
     size: {
       width: 0,
@@ -51,9 +61,6 @@ export default class NineZone implements Iterable<Zone> {
     const zones = this;
     return {
       next(): IteratorResult<Zone> {
-        if (currentId === 5)
-          currentId++;
-
         if (currentId > 10)
           return {
             done: true,
@@ -62,7 +69,7 @@ export default class NineZone implements Iterable<Zone> {
 
         return {
           done: false,
-          value: zones.getZone(currentId++),
+          value: zones.getZone(currentId++ as ZoneIndex),
         };
       },
     };
@@ -74,18 +81,26 @@ export default class NineZone implements Iterable<Zone> {
     return this._root;
   }
 
-  public getZone(zoneId: number) {
-    if (zoneId < 1 || zoneId === 5 || zoneId > 9)
-      throw new RangeError();
+  public getZone(zoneId: ZoneIndex): Zone {
+    if (this._zones[zoneId])
+      return this._zones[zoneId];
 
-    if (!this._zones[zoneId])
-      this._zones[zoneId] = new Zone(this, this.props.zones[zoneId]);
-
+    if (zoneId === 5)
+      this._zones[zoneId] = new ContentZone(this);
+    else
+      this._zones[zoneId] = new WidgetZone(this, this.props.zones[zoneId]);
     return this._zones[zoneId];
+  }
+
+  public getWidgetZone(zoneId: WidgetZoneIndex): WidgetZone {
+    return this.getZone(zoneId) as WidgetZone;
   }
 
   public getWidget(widgetId: number): Widget {
     for (const zone of this) {
+      if (!zone.isWidgetZone())
+        continue;
+
       const widget = zone.getWidgets().find((w) => w.props.id === widgetId);
       if (widget)
         return widget;
@@ -96,7 +111,7 @@ export default class NineZone implements Iterable<Zone> {
 
   public findZone(cell: CellProps): Zone {
     for (const zone of this) {
-      if (zone.getCell().equals(cell))
+      if (zone.cell.equals(cell))
         return zone;
     }
 

@@ -4,13 +4,13 @@
 /** @module Zone */
 
 import Rectangle, { RectangleProps } from "../../../utilities/Rectangle";
-import { Zone } from "../Zone";
+import { WidgetZone } from "../Zone";
 
 import Layout from "./Layout";
 import Root from "./Root";
 
 export class Layout1 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
@@ -21,7 +21,7 @@ export class Layout1 extends Layout {
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.root.nineZone.getZone(4).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
   }
 
   protected get _leftZone() {
@@ -29,7 +29,7 @@ export class Layout1 extends Layout {
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.root.nineZone.getZone(2).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
@@ -49,7 +49,7 @@ export class Layout1 extends Layout {
 }
 
 export class Layout2 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
@@ -60,15 +60,15 @@ export class Layout2 extends Layout {
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.root.nineZone.getZone(1).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(1).getLayout();
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
@@ -88,7 +88,7 @@ export class Layout2 extends Layout {
 }
 
 export class Layout3 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
@@ -99,11 +99,11 @@ export class Layout3 extends Layout {
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.root.nineZone.getZone(2).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
   }
 
   protected get _rightZone() {
@@ -135,18 +135,18 @@ export class Layout3 extends Layout {
 }
 
 export class Layout4 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
   protected get _leftZone() {
@@ -154,7 +154,7 @@ export class Layout4 extends Layout {
   }
 
   protected get _rightZone() {
-    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
@@ -174,22 +174,22 @@ export class Layout4 extends Layout {
 }
 
 export class Layout6 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getZone(3).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 
   protected get _bottomZone() {
-    return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
   }
 
   protected get _leftZone() {
-    return this.zone.nineZone.root.nineZone.getZone(4).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
   }
 
   protected get _rightZone() {
@@ -213,19 +213,19 @@ export class Layout6 extends Layout {
 }
 
 export class Layout7 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
   protected get _bottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
     return this.zone.nineZone.root;
   }
 
@@ -235,8 +235,8 @@ export class Layout7 extends Layout {
 
   protected get _rightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
-    return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
@@ -256,14 +256,14 @@ export class Layout7 extends Layout {
 }
 
 export class Layout8 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
   protected get _bottomZone() {
@@ -273,13 +273,13 @@ export class Layout8 extends Layout {
   protected get _leftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root;
-    return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
   protected get _rightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root;
-    return this.zone.nineZone.root.nineZone.getZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
   }
 
   public getInitialBounds(): RectangleProps {
@@ -299,26 +299,26 @@ export class Layout8 extends Layout {
 }
 
 export class Layout9 extends Layout {
-  public constructor(public readonly zone: Zone) {
+  public constructor(public readonly zone: WidgetZone) {
     super();
 
     this._bounds = Rectangle.create(zone.props.bounds);
   }
 
   protected get _topZone() {
-    return this.zone.nineZone.root.nineZone.getZone(6).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
   protected get _bottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
     return this.zone.nineZone.root;
   }
 
   protected get _leftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getZone(7).getLayout();
-    return this.zone.nineZone.root.nineZone.getZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
   }
 
   protected get _rightZone() {
