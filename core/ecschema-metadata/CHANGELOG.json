@@ -2,6 +2,21 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.120.0",
+      "tag": "@bentley/ecschema-metadata_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "improve the consistency between the specifications and the Typescript values in ec-js"
+          },
+          {
+            "comment": "improve naming consistency with enum and property"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.119.0",
       "tag": "@bentley/ecschema-metadata_v0.119.0",
       "date": "Thu, 23 Aug 2018 15:25:49 GMT",

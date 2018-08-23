@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.120.0",
+      "tag": "@bentley/imodeljs-frontend_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.119.0",
       "tag": "@bentley/imodeljs-frontend_v0.119.0",
       "date": "Thu, 23 Aug 2018 15:25:49 GMT",

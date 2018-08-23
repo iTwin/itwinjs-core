@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 23 Aug 2018 15:25:49 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Aug 2018 20:51:32 GMT and should not be manually modified.
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+### Updates
+
+- rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager.
 
 ## 0.119.0
 Thu, 23 Aug 2018 15:25:49 GMT
