@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use bentley logger to log i18n messages",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "grigas.petraitis@bentley.com"
+}
