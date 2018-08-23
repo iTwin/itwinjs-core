@@ -11,7 +11,7 @@ import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { GraphicBuilder } from "../rendering";
+import { GraphicBuilder, GraphicType } from "../rendering";
 import { ToolSettings } from "./ToolAdmin";
 
 export const enum ViewHandleWeight {
@@ -687,21 +687,21 @@ class ViewTargetCenter extends ViewingToolHandle {
 
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
     const pixelSize = context.viewport.pixelsFromInches(sizeInches);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const shadow = ColorDef.from(0, 0, 0, 225);
-    graphic.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
-    this.addCross(graphic, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
+    builder.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
+    this.addCross(builder, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
 
     const outline = ColorDef.from(0, 0, 0, 10);
-    graphic.setSymbology(outline, outline, hasFocus ? 5 : 3);
-    this.addCross(graphic, pixelSize + 1, targetPt.x, targetPt.y);
+    builder.setSymbology(outline, outline, hasFocus ? 5 : 3);
+    this.addCross(builder, pixelSize + 1, targetPt.x, targetPt.y);
 
     const cross = ColorDef.from(254, 255, 255, 10);
-    graphic.setSymbology(cross, cross, hasFocus ? 3 : 1);
-    this.addCross(graphic, pixelSize, targetPt.x, targetPt.y);
+    builder.setSymbology(cross, cross, hasFocus ? 3 : 1);
+    this.addCross(builder, pixelSize, targetPt.x, targetPt.y);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
@@ -993,18 +993,18 @@ class ViewScroll extends ViewingToolHandle {
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone(); white.setAlpha(100);
     const green = ColorDef.green.clone(); green.setAlpha(200);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const points = [new Point2d(this._anchorPtView.x, this._anchorPtView.y), new Point2d(this._lastPtView.x, this._lastPtView.y)];
-    graphic.setSymbology(green, green, 2);
-    graphic.addLineString2d(points, 0.0);
+    builder.setSymbology(green, green, 2);
+    builder.addLineString2d(points, 0.0);
 
     const radius = context.viewport.pixelsFromInches(0.15);
     const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    graphic.setBlankingFill(white);
-    graphic.addArc(ellipse, true, true);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc(ellipse, false, false);
+    builder.setBlankingFill(white);
+    builder.addArc(ellipse, true, true);
+    builder.setSymbology(black, black, 1);
+    builder.addArc(ellipse, false, false);
 
     const dvec = Vector2d.createStartEnd(points[0], points[1]);
     if (dvec.magnitude() > 0.1) {
@@ -1012,11 +1012,11 @@ class ViewScroll extends ViewingToolHandle {
       dvec.normalize(dvec);
       points[0].plusScaled(dvec, radius, slashPts[0]);
       points[0].plusScaled(dvec, -radius, slashPts[1]);
-      graphic.setSymbology(black, black, 2);
-      graphic.addLineString2d(slashPts, 0.0);
+      builder.setSymbology(black, black, 2);
+      builder.addLineString2d(slashPts, 0.0);
     }
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1104,21 +1104,21 @@ class ViewZoom extends ViewingToolHandle {
     const white = ColorDef.white.clone(); white.setAlpha(100);
     const radius = context.viewport.pixelsFromInches(0.15);
     const plusMinus = context.viewport.pixelsFromInches(0.075);
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
     const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    graphic.setBlankingFill(white);
-    graphic.addArc(ellipse, true, true);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc(ellipse, false, false);
+    builder.setBlankingFill(white);
+    builder.addArc(ellipse, true, true);
+    builder.setSymbology(black, black, 1);
+    builder.addArc(ellipse, false, false);
 
     const lineHorzPts = [new Point2d(), new Point2d()];
     lineHorzPts[0].x = this._anchorPtView.x - plusMinus;
     lineHorzPts[0].y = this._anchorPtView.y;
     lineHorzPts[1].x = this._anchorPtView.x + plusMinus;
     lineHorzPts[1].y = this._anchorPtView.y;
-    graphic.setSymbology(black, black, 2);
-    graphic.addLineString2d(lineHorzPts, 0.0);
+    builder.setSymbology(black, black, 2);
+    builder.addLineString2d(lineHorzPts, 0.0);
 
     if (this._lastZoomRatio < 1.0) {
       const lineVertPts = [new Point2d(), new Point2d()];
@@ -1126,10 +1126,10 @@ class ViewZoom extends ViewingToolHandle {
       lineVertPts[0].y = this._anchorPtView.y - plusMinus;
       lineVertPts[1].x = this._anchorPtView.x;
       lineVertPts[1].y = this._anchorPtView.y + plusMinus;
-      graphic.addLineString2d(lineVertPts, 0.0);
+      builder.addLineString2d(lineVertPts, 0.0);
     }
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1539,15 +1539,15 @@ abstract class ViewNavigate extends ViewingToolHandle {
     const points = [point];
     const black = ColorDef.black.clone();
     const white = ColorDef.white.clone();
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
-    graphic.setSymbology(black, black, 9);
-    graphic.addPointString2d(points, 0.0);
+    builder.setSymbology(black, black, 9);
+    builder.addPointString2d(points, 0.0);
 
-    graphic.setSymbology(white, black, 5);
-    graphic.addPointString2d(points, 0.0);
+    builder.setSymbology(white, black, 5);
+    builder.addPointString2d(points, 0.0);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -1809,25 +1809,25 @@ export class WindowAreaTool extends ViewTool {
       this._shapePts[4].setFrom(this._shapePts[0]);
       this._viewport.viewToWorldArray(this._shapePts);
 
-      const graphic = context.createWorldOverlay();
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
-      graphic.setBlankingFill(this._fillColor);
-      graphic.addShape(this._shapePts);
+      builder.setBlankingFill(this._fillColor);
+      builder.addShape(this._shapePts);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.Thin);
-      graphic.addLineString(this._shapePts);
+      builder.setSymbology(color, color, ViewHandleWeight.Thin);
+      builder.addLineString(this._shapePts);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
-      graphic.addPointString([this._firstPtWorld]);
+      builder.setSymbology(color, color, ViewHandleWeight.FatDot);
+      builder.addPointString([this._firstPtWorld]);
 
-      context.addWorldOverlay(graphic.finish());
+      context.addDecorationFromBuilder(builder);
       return;
     }
 
     if (undefined === this._lastPtView)
       return;
 
-    const gf = context.createViewOverlay();
+    const gf = context.createGraphicBuilder(GraphicType.ViewOverlay);
     gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
     const viewRect = this._viewport.viewRect;
@@ -1846,7 +1846,7 @@ export class WindowAreaTool extends ViewTool {
     this._lineVertPts[1].y = viewRect.bottom;
     gf.addLineString(this._lineVertPts);
 
-    context.addViewOverlay(gf.finish());
+    context.addDecorationFromBuilder(gf);
   }
 
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {

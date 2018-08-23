@@ -110,99 +110,113 @@ export default class DataTree extends React.Component<DataTreeProps> {
         this.props.onNodesDeselected(nodes.map((node) => (node as InspireTreeNavNode)._treeNode));
     };
 
-    return (
-      <Tree
-        dataProvider={(node) => (node) ? getChildNodes(node as InspireTreeNavNode) : getRootNodes()}
-        selectedNodes={isNodeSelected} onNodesSelected={onNodesSelected} onNodesDeselected={onNodesDeselected}
-        onDropTargetOver={(args: DropTargetArguments) => {
-          if (args.dropLocation && typeof args.dropLocation === "object" && this.props.onDropTargetOver) {
-            const treeNode = args.dropLocation as InspireTreeNavNode;
-            if ("_treeNode" in treeNode) { // dropLocation has _treeNode prop
-              args.dropLocation = treeNode._treeNode;
-            } else { // else, must be root node; set it to TreeDataProvider
-              args.dropLocation = this.props.dataProvider;
-            }
-            this.props.onDropTargetOver(args);
-          }
-        }}
-        onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-          if (args.dropLocation) {
-            const treeNode = args.dropLocation as InspireTreeNavNode;
-            if ("_treeNode" in treeNode) {
-              args.dropLocation = treeNode._treeNode;
-            } else {
-              args.dropLocation = this.props.dataProvider;
-            }
-          }
-          if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-          return args;
-        }}
-        canDropTargetDrop={(args: DropTargetArguments) => {
-          if (args.dropLocation && typeof args.dropLocation === "object") {
-            const treeNode = args.dropLocation as InspireTreeNavNode;
-            if ("_treeNode" in treeNode) {
-              args.dropLocation = treeNode._treeNode;
-            } else {
-              args.dropLocation = this.props.dataProvider;
-            }
-          }
-          if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-          return true;
-        }}
-        onDragSourceBegin={(args: DragSourceArguments) => {
-          if (args.dataObject && typeof args.dataObject === "object") {
-            const treeNode = args.dataObject as InspireTreeNavNode;
-            if ("_treeNode" in treeNode && treeNode._treeNode && treeNode._treeNode.extendedData) {
-              args.dataObject = treeNode._treeNode.extendedData;
-              if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
-                args.dataObject.parentId = this.props.dataProvider;
+    const {
+      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
+      onDragSourceBegin, onDragSourceEnd,
+    } = this.props;
+    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
+      onDragSourceBegin || onDragSourceEnd)
+      return (
+        <Tree
+          dataProvider={(node) => (node) ? getChildNodes(node as InspireTreeNavNode) : getRootNodes()}
+          selectedNodes={isNodeSelected} onNodesSelected={onNodesSelected} onNodesDeselected={onNodesDeselected}
+          onDropTargetOver={(args: DropTargetArguments) => {
+            if (args.dropLocation && typeof args.dropLocation === "object" && this.props.onDropTargetOver) {
+              const treeNode = args.dropLocation as InspireTreeNavNode;
+              if ("_treeNode" in treeNode) { // dropLocation has _treeNode prop
+                args.dropLocation = treeNode._treeNode;
+              } else { // else, must be root node; set it to TreeDataProvider
+                args.dropLocation = this.props.dataProvider;
               }
-              // if there is a parentObject, narrow it to a TreeNodeItem
-              if (args.parentObject && typeof args.parentObject === "object") {
-                const parentNode = args.parentObject as InspireTreeNavNode;
-                if ("_treeNode" in parentNode) {
-                  args.parentObject = parentNode._treeNode;
-                } else {
-                  args.parentObject = this.props.dataProvider;
+              this.props.onDropTargetOver(args);
+            }
+          }}
+          onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+            if (args.dropLocation) {
+              const treeNode = args.dropLocation as InspireTreeNavNode;
+              if ("_treeNode" in treeNode) {
+                args.dropLocation = treeNode._treeNode;
+              } else {
+                args.dropLocation = this.props.dataProvider;
+              }
+            }
+            if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+            return args;
+          }}
+          canDropTargetDrop={(args: DropTargetArguments) => {
+            if (args.dropLocation && typeof args.dropLocation === "object") {
+              const treeNode = args.dropLocation as InspireTreeNavNode;
+              if ("_treeNode" in treeNode) {
+                args.dropLocation = treeNode._treeNode;
+              } else {
+                args.dropLocation = this.props.dataProvider;
+              }
+            }
+            if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+            return true;
+          }}
+          onDragSourceBegin={(args: DragSourceArguments) => {
+            if (args.dataObject && typeof args.dataObject === "object") {
+              const treeNode = args.dataObject as InspireTreeNavNode;
+              if ("_treeNode" in treeNode && treeNode._treeNode && treeNode._treeNode.extendedData) {
+                args.dataObject = treeNode._treeNode.extendedData;
+                if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+                  args.dataObject.parentId = this.props.dataProvider;
                 }
+                // if there is a parentObject, narrow it to a TreeNodeItem
+                if (args.parentObject && typeof args.parentObject === "object") {
+                  const parentNode = args.parentObject as InspireTreeNavNode;
+                  if ("_treeNode" in parentNode) {
+                    args.parentObject = parentNode._treeNode;
+                  } else {
+                    args.parentObject = this.props.dataProvider;
+                  }
 
-              }
-            }
-            if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-          }
-          return args;
-        }}
-        onDragSourceEnd={(args: DragSourceArguments) => {
-          // if there is a parentObject, narrow it to a TreeNodeItem
-          if (args.parentObject && typeof args.parentObject === "object") {
-            const parentNode = args.parentObject as InspireTreeNavNode;
-            if ("_treeNode" in parentNode) {
-              args.parentObject = parentNode._treeNode;
-            } else {
-              args.parentObject = this.props.dataProvider;
-            }
-          }
-          if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
-        }}
-        objectType={(data: any) => {
-          if (this.props.objectType) {
-            if (typeof this.props.objectType === "function") {
-              if (data) {
-                const treeNode = data as InspireTreeNavNode;
-                if ("_treeNode" in treeNode) {
-                  const d = treeNode._treeNode.extendedData;
-                  return this.props.objectType(d);
                 }
               }
-            } else {
-              return this.props.objectType;
+              if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
             }
-          }
-          return "";
-        }}
-        objectTypes={this.props.objectTypes}
-        expandedNodes={this.props.expandedNodes}
-      />
-    );
+            return args;
+          }}
+          onDragSourceEnd={(args: DragSourceArguments) => {
+            // if there is a parentObject, narrow it to a TreeNodeItem
+            if (args.parentObject && typeof args.parentObject === "object") {
+              const parentNode = args.parentObject as InspireTreeNavNode;
+              if ("_treeNode" in parentNode) {
+                args.parentObject = parentNode._treeNode;
+              } else {
+                args.parentObject = this.props.dataProvider;
+              }
+            }
+            if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
+          }}
+          objectType={(data: any) => {
+            if (this.props.objectType) {
+              if (typeof this.props.objectType === "function") {
+                if (data) {
+                  const treeNode = data as InspireTreeNavNode;
+                  if ("_treeNode" in treeNode) {
+                    const d = treeNode._treeNode.extendedData;
+                    return this.props.objectType(d);
+                  }
+                }
+              } else {
+                return this.props.objectType;
+              }
+            }
+            return "";
+          }}
+          objectTypes={this.props.objectTypes}
+          expandedNodes={this.props.expandedNodes}
+        />
+      );
+    else
+      return (
+        <Tree
+          dataProvider={(node) => (node) ? getChildNodes(node as InspireTreeNavNode) : getRootNodes()}
+          selectedNodes={isNodeSelected} onNodesSelected={onNodesSelected} onNodesDeselected={onNodesDeselected}
+          expandedNodes={this.props.expandedNodes}
+        />
+      );
   }
 }

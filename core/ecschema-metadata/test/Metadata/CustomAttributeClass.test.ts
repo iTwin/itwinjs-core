@@ -46,7 +46,7 @@ describe("CustomAttributeClass", () => {
     it("should throw for NavigationProperty", async () => {
       const json = createSchemaJson({
         appliesTo: "Schema",
-        properties: [{ name: "navProp", propertyType: "NavigationProperty" }],
+        properties: [{ name: "navProp", type: "NavigationProperty" }],
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
     });

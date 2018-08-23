@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { assert, SortedArray } from "@bentley/bentleyjs-core";
-import { GraphicBuilderCreateParams } from "../GraphicBuilder";
+import { GraphicBuilder } from "../GraphicBuilder";
 
 export namespace ToleranceRatio {
   export const vertex = 0.1;
@@ -35,7 +35,7 @@ export class GeometryOptions {
   public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
   public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
 
-  public static createForGraphicBuilder(params: GraphicBuilderCreateParams, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
+  public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
     return new GeometryOptions(normals, surfaces, (params.isOverlay || params.isViewBackground) ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic ? GenerateEdges.Yes : GenerateEdges.No);
   }
 }
