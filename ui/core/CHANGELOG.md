@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 21 Aug 2018 17:20:41 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Aug 2018 15:25:49 GMT and should not be manually modified.
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- Added Cube component for use in the CubeNavigationAid and CubeContent.
 
 ## 0.118.0
 Tue, 21 Aug 2018 17:20:41 GMT
