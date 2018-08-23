@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeList } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -275,7 +275,7 @@ export abstract class Target extends RenderTarget {
   public dispose() {
     dispose(this._decorations);
     dispose(this.compositor);
-    this._dynamics = disposeList(this._dynamics);
+    this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
@@ -370,7 +370,7 @@ export abstract class Target extends RenderTarget {
   public changeDynamics(dynamics?: GraphicList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
-    disposeList(this._dynamics);
+    disposeArray(this._dynamics);
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

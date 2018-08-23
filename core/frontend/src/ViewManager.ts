@@ -13,10 +13,24 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
+import { HitDetail } from "./HitDetail";
 
+/** Interface for drawing "decorations" into, or on top of, the active views. */
 export interface Decorator {
+  /** Implement this method to draw decorations into the supplied DecorateContext */
   decorate(context: DecorateContext): void;
-  onPick?(id: string): void;
+
+  /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator. Optional.
+   * @param id The Id of the currently selected pickable graphics.
+   * @returns true if 'id' belongs to this Decorator
+   */
+  testDecorationHit?(id: string): boolean;
+
+  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @returns A promise with the string with the tooltip message. May contain HTML.
+   */
+  getDecorationToolTip?(hit: HitDetail): Promise<string>;
 }
 
 /**
@@ -225,6 +239,12 @@ export class ViewManager {
     // ###TODO: pre-compile shaders?
   }
 
+  /** Add a new [[Decorator]] to display decorations into the active views.
+   * @param decorator The new decorator to add.
+   * @throws Error if decorator is already active.
+   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropDecorator]].)
+   * @see [[dropDecorator]]
+   */
   public addDecorator(decorator: Decorator): () => void {
     if (this._decorators.includes(decorator))
       throw new Error("decorator already registered");
@@ -234,6 +254,11 @@ export class ViewManager {
     return () => { this.dropDecorator(decorator); };
   }
 
+  /** Drop (remove) a Decorator so it is no longer active.
+   * @param decorator The Decorator to drop.
+   * @note Does nothing if decorator is not currently active.
+   *
+   */
   public dropDecorator(decorator: Decorator) {
     const index = this._decorators.indexOf(decorator);
     if (index >= 0)
@@ -241,6 +266,16 @@ export class ViewManager {
     this.invalidateDecorationsAllViews();
   }
 
+  /** @hidden */
+  public async getDecorationToolTip(hit: HitDetail): Promise<string> {
+    for (const decorator of this._decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
+        return decorator.getDecorationToolTip(hit);
+    }
+    return " ";
+  }
+
+  /** @hidden */
   public callDecorators(context: DecorateContext) {
     context.viewport.decorate(context);
     this._decorators.forEach((decorator) => decorator.decorate(context));

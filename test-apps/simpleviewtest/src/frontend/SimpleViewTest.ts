@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
-  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext,
+  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, HitDetail,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -501,6 +501,9 @@ export class ProjectExtentsDecoration {
 
   public constructor() { IModelApp.viewManager.addDecorator(this); }
   protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
+
+  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
+  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;

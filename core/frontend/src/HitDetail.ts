@@ -113,9 +113,8 @@ export class HitDetail {
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<string> {
-    if (!this.isElementHit) {
-      return Promise.resolve(""); // ###TODO: Ask PickableDecoration to supply tooltip...
-    }
+    if (!this.isElementHit)
+      return IModelApp.viewManager.getDecorationToolTip(this);
 
     const msg: string[] = await this.viewport.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
