@@ -55,7 +55,7 @@ export class TestbedConfig {
     return `${protocol}://localhost:${port}`;
   }
 
-  public static useIPC = true;
+  public static useIPC = false;
   public static useDirect = false;
   public static rpcInterfaces = [IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelUnitTestRpcInterface, TestRpcInterface, TestRpcInterface2];
 
