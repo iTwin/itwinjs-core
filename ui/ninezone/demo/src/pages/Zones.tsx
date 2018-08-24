@@ -574,150 +574,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         {this.getZone(4)}
         {this.getZone(6)}
         {this.getZone(7)}
-        <FooterZone
-          isInFooterMode={this.state.nineZone.zones[8].isInFooterMode}
-          bounds={this.state.nineZone.zones[8].bounds}
-        >
-          <Footer
-            isInWidgetMode={!this.state.nineZone.zones[8].isInFooterMode}
-            message={this.getFooterMessage()}
-            indicators={
-              <>
-                <ToolAssistanceIndicator
-                  dialog={
-                    this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
-                      <ToolAssistanceDialog
-                        title="Trim Multiple - Tool Assistance"
-                        items={
-                          <>
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor" />
-                              Identify piece to trim
-                            </ToolAssistanceItem>
-                            <ToolAssistanceSeparator label="Inputs" />
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor-click" />
-                              Clink on element
-                            </ToolAssistanceItem>
-                            <ToolAssistanceItem>
-                              <i className="icon  icon-check-out" />
-                              Drag across elements
-                            </ToolAssistanceItem>
-                            <ToolAssistanceSeparator />
-                            <ToolAssistanceItem>
-                              <input type="checkbox" />
-                              Show prompt @ cursor
-                            </ToolAssistanceItem>
-                          </>
-                        }
-                      />
-                  }
-                  icons={
-                    <>
-                      <i className="icon icon-cursor" />
-                      <i className="icon icon-add" />
-                    </>
-                  }
-                  isStepStringVisible={this.state.nineZone.zones[8].isInFooterMode}
-                  onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
-                  stepString="Start Point"
-                />
-                <MessageCenterIndicator
-                  ref={this._footerMessages}
-                  label="Message(s):"
-                  isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
-                  balloonLabel="9+"
-                  onClick={this._handleMessageIndicatorIsDialogOpenChange}
-                  dialog={
-                    this.state.openWidget !== FooterWidget.Messages ? undefined :
-                      <MessageCenter
-                        title="Messages"
-                        buttons={
-                          <>
-                            <MessageCenterButton>
-                              <i className={"icon icon-export"} />
-                            </MessageCenterButton>
-                            <MessageCenterButton onClick={() => {
-                              this.setState((prevState) => ({
-                                ...prevState,
-                                openWidget: FooterWidget.None,
-                              }));
-                            }}>
-                              <i className={"icon icon-close"} />
-                            </MessageCenterButton>
-                          </>
-                        }
-                        tabs={
-                          <>
-                            <MessageCenterTab
-                              isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                              onClick={this._handleOnAllMessagesTabClick}
-                            >
-                              All
-                          </MessageCenterTab>
-                            <MessageCenterTab
-                              isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                              onClick={this._handleOnProblemsTabClick}
-                            >
-                              Problems
-                          </MessageCenterTab>
-                          </>
-                        }
-                        messages={this.getMessagesCenterMessages()}
-                      />
-                  }
-                />
-                <SnapModeIndicator
-                  label="Snap Mode"
-                  isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
-                  onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
-                  icon={
-                    <SnapModeIcon text="k" />
-                  }
-                  dialog={
-                    this.state.openWidget !== FooterWidget.SnapMode ? undefined :
-                      <SnapModeDialog
-                        title="Snap Mode"
-                        snaps={
-                          <>
-                            <SnapRow
-                              key="1"
-                              isActive
-                              label="Keypoint"
-                              icon={
-                                <SnapModeIcon isActive text="k" />
-                              }
-                            />
-                            <SnapRow
-                              key="2"
-                              label="Intersection"
-                              icon={
-                                <SnapModeIcon text="i" />
-                              }
-                            />
-                            <SnapRow
-                              key="3"
-                              label="Center"
-                              icon={
-                                <SnapModeIcon text="c" />
-                              }
-                            />
-                            <SnapRow
-                              key="4"
-                              label="Nearest"
-                              icon={
-                                <SnapModeIcon text="n" />
-                              }
-                            />
-                          </>
-                        }
-                      />
-                  }
-                />
-              </>
-            }
-          />
-        </FooterZone>
+        {this.getStatusZone()}
         {this.getZone(9)}
       </Zones>
     );
@@ -1652,6 +1509,20 @@ export default class ZonesExample extends React.Component<{}, State> {
           </WidgetTab>,
         ]);
       }
+      case 8: {
+        return ([
+          <WidgetTab
+            key="8_1"
+            isActive={widget.tabIndex === 1}
+            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
+            onDrag={this._handleWidgetTabDrag}
+            anchor={anchor}
+          >
+            <i className="icon icon-records" />
+          </WidgetTab>,
+        ]);
+      }
       case 9: {
         return ([
           <WidgetTab
@@ -1798,6 +1669,9 @@ export default class ZonesExample extends React.Component<{}, State> {
             </BlueButton>
           </>
         );
+      }
+      case 8: {
+        return "Footer :)";
       }
       case 9: {
         switch (tabIndex) {
@@ -2023,6 +1897,185 @@ export default class ZonesExample extends React.Component<{}, State> {
         </Zone>
         <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
           {this.getTargets(zoneId)}
+        </Zone>
+        {!outlineBounds ? undefined :
+          <Zone bounds={outlineBounds}>
+            <GhostOutline />
+          </Zone>
+        }
+      </>
+    );
+  }
+
+  private getStatusZone() {
+    const statusZone = new NineZone(this.state.nineZone).getStatusZone();
+    const outlineBounds = statusZone.getGhostOutlineBounds();
+
+    if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
+      return (
+        <>
+          <FooterZone
+            isInFooterMode={statusZone.props.isInFooterMode}
+            bounds={statusZone.props.bounds}
+          >
+            <Footer
+              isInWidgetMode={!statusZone.props.isInFooterMode}
+              message={this.getFooterMessage()}
+              indicators={
+                <>
+                  <ToolAssistanceIndicator
+                    dialog={
+                      this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
+                        <ToolAssistanceDialog
+                          title="Trim Multiple - Tool Assistance"
+                          items={
+                            <>
+                              <ToolAssistanceItem>
+                                <i className="icon icon-cursor" />
+                                Identify piece to trim
+                            </ToolAssistanceItem>
+                              <ToolAssistanceSeparator label="Inputs" />
+                              <ToolAssistanceItem>
+                                <i className="icon icon-cursor-click" />
+                                Clink on element
+                            </ToolAssistanceItem>
+                              <ToolAssistanceItem>
+                                <i className="icon  icon-check-out" />
+                                Drag across elements
+                            </ToolAssistanceItem>
+                              <ToolAssistanceSeparator />
+                              <ToolAssistanceItem>
+                                <input type="checkbox" />
+                                Show prompt @ cursor
+                            </ToolAssistanceItem>
+                            </>
+                          }
+                        />
+                    }
+                    icons={
+                      <>
+                        <i className="icon icon-cursor" />
+                        <i className="icon icon-add" />
+                      </>
+                    }
+                    isStepStringVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
+                    stepString="Start Point"
+                  />
+                  <MessageCenterIndicator
+                    ref={this._footerMessages}
+                    label="Message(s):"
+                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    balloonLabel="9+"
+                    onClick={this._handleMessageIndicatorIsDialogOpenChange}
+                    dialog={
+                      this.state.openWidget !== FooterWidget.Messages ? undefined :
+                        <MessageCenter
+                          title="Messages"
+                          buttons={
+                            <>
+                              <MessageCenterButton>
+                                <i className={"icon icon-export"} />
+                              </MessageCenterButton>
+                              <MessageCenterButton onClick={() => {
+                                this.setState((prevState) => ({
+                                  ...prevState,
+                                  openWidget: FooterWidget.None,
+                                }));
+                              }}>
+                                <i className={"icon icon-close"} />
+                              </MessageCenterButton>
+                            </>
+                          }
+                          tabs={
+                            <>
+                              <MessageCenterTab
+                                isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
+                                onClick={this._handleOnAllMessagesTabClick}
+                              >
+                                All
+                          </MessageCenterTab>
+                              <MessageCenterTab
+                                isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
+                                onClick={this._handleOnProblemsTabClick}
+                              >
+                                Problems
+                          </MessageCenterTab>
+                            </>
+                          }
+                          messages={this.getMessagesCenterMessages()}
+                        />
+                    }
+                  />
+                  <SnapModeIndicator
+                    label="Snap Mode"
+                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
+                    icon={
+                      <SnapModeIcon text="k" />
+                    }
+                    dialog={
+                      this.state.openWidget !== FooterWidget.SnapMode ? undefined :
+                        <SnapModeDialog
+                          title="Snap Mode"
+                          snaps={
+                            <>
+                              <SnapRow
+                                key="1"
+                                isActive
+                                label="Keypoint"
+                                icon={
+                                  <SnapModeIcon isActive text="k" />
+                                }
+                              />
+                              <SnapRow
+                                key="2"
+                                label="Intersection"
+                                icon={
+                                  <SnapModeIcon text="i" />
+                                }
+                              />
+                              <SnapRow
+                                key="3"
+                                label="Center"
+                                icon={
+                                  <SnapModeIcon text="c" />
+                                }
+                              />
+                              <SnapRow
+                                key="4"
+                                label="Nearest"
+                                icon={
+                                  <SnapModeIcon text="n" />
+                                }
+                              />
+                            </>
+                          }
+                        />
+                    }
+                  />
+                </>
+              }
+            />
+          </FooterZone>
+          <Zone bounds={statusZone.props.bounds}>
+            {this.getTargets(statusZone.id)}
+          </Zone>
+          {!outlineBounds ? undefined :
+            <Zone bounds={outlineBounds}>
+              <GhostOutline />
+            </Zone>
+          }
+        </>
+      );
+
+    return (
+      <>
+        <FooterZone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
+          {this.getWidget(statusZone.id)}
+        </FooterZone>
+        <Zone bounds={statusZone.props.bounds}>
+          {this.getTargets(statusZone.id)}
         </Zone>
         {!outlineBounds ? undefined :
           <Zone bounds={outlineBounds}>

@@ -7,7 +7,7 @@ import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 
 import Layout from "./layout/Layout";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
-import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex } from "./NineZone";
+import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import WidgetProps, { Widget, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import Cell from "../../utilities/Cell";
 import { Anchor } from "../../widget/Stacked";
@@ -92,6 +92,7 @@ export class LayoutFactory {
 }
 
 export default class Zone {
+  private readonly _id: ZoneIndex;
   protected _layout: Layout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
@@ -99,9 +100,14 @@ export default class Zone {
 
   public constructor(
     public readonly nineZone: NineZone,
-    public readonly id: ZoneIndex,
+    id: ZoneIndex,
   ) {
+    this._id = id;
     this.cell = new Cell(Math.floor((id - 1) / 3), (id - 1) % 3);
+  }
+
+  public get id(): ZoneIndex {
+    return this._id;
   }
 
   public get isMergeable(): boolean {
@@ -133,6 +139,10 @@ export class WidgetZone extends Zone {
 
   public constructor(public readonly nineZone: NineZone, public readonly props: ZoneProps) {
     super(nineZone, props.id);
+  }
+
+  public get id(): WidgetZoneIndex {
+    return this.props.id;
   }
 
   public getLayout(): Layout {
@@ -316,10 +326,13 @@ export class WidgetZone extends Zone {
 }
 
 export class StatusZone extends WidgetZone {
-  public static readonly id = 8;
-
+  public static readonly id: StatusZoneIndex = 8;
   public constructor(nineZone: NineZone, public readonly props: StatusZoneProps) {
     super(nineZone, props);
+  }
+
+  public get id(): StatusZoneIndex {
+    return this.props.id;
   }
 
   public get isMergeable(): boolean {
@@ -330,9 +343,13 @@ export class StatusZone extends WidgetZone {
 }
 
 export class ContentZone extends Zone {
-  public static readonly id = 5;
+  public static readonly id: ContentZoneIndex = 5;
 
   public constructor(nineZone: NineZone) {
-    super(nineZone, 5);
+    super(nineZone, ContentZone.id);
+  }
+
+  public get id(): ContentZoneIndex {
+    return super.id as ContentZoneIndex;
   }
 }
