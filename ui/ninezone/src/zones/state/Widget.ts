@@ -10,7 +10,7 @@ import { WidgetZoneIndex } from "./NineZone";
 export enum DropTarget {
   None,
   Merge,
-  Unmerge,
+  Back,
 }
 
 export default interface WidgetProps {
@@ -72,12 +72,8 @@ export class Widget {
     if (!targetZone.isMergeable)
       return DropTarget.None;
 
-    // Widgets are in the same zone
     if (draggingZone.equals(targetZone))
-      if (draggingZone.isFirstWidget(this))
-        return DropTarget.Merge;
-      else
-        return DropTarget.Unmerge;
+      return DropTarget.Back;
 
     if (targetZone.props.widgets.length > 1 && !targetZone.isFirstWidget(this))
       return DropTarget.None;

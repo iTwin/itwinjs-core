@@ -1409,7 +1409,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Merge, isTargeted)}
           />
         );
-      case DropTarget.Unmerge:
+      case DropTarget.Back:
         return (
           <BackTarget
             key={widgetId}
