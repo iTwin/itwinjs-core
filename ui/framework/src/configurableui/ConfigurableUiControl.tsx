@@ -41,7 +41,7 @@ export class Configurable implements IConfigurable {
     this._name = (options && options.hasOwnProperty("name")) ? options.name : info.uniqueId;
   }
 
-  /** @private */
+  /** @hidden */
   public adopt(other: IConfigurable): boolean {
     if (this === other)
       return true;
@@ -64,7 +64,7 @@ export class Configurable implements IConfigurable {
   protected _canAdopt(other: IConfigurable): boolean { return this._classId === other.classId; }
   protected _adopt(other: IConfigurable): void { this._uniqueId = other.uniqueId; }
 
-  /** @private */
+  /** @hidden */
   public get uniqueId(): string { return this._uniqueId; }
 
   public get classId(): string { return this._classId; }
@@ -91,8 +91,7 @@ export class StageConfigurable extends Configurable {
     this.currentStage = otherStageConfigurable.currentStage;
   }
 
-  /** @private
-   */
+  /** @hidden */
   public set currentStage(stage: FrontstageDef | undefined) {
     if (stage === this._stage)
       return;
@@ -138,7 +137,7 @@ export abstract class ConfigurableUiControl extends StageConfigurable {
     this._cid = info.id;
   }
 
-  /** @private
+  /** @hidden
    */
   public initialize(): void { this._initialize(); }
 

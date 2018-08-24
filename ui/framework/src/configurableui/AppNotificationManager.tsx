@@ -3,39 +3,27 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
 
-import * as React from "react";
-
 import {
-  NotificationManager,
-  MessageBoxValue,
-  NotifyMessageDetails,
-  MessageBoxType,
-  MessageBoxIconType,
   ActivityMessageDetails,
   ActivityMessageEndReason,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
   ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";
 
-import { ModalDialogManager } from "./ModalDialogManager";
-import { StandardMessageBox } from "./StandardMessageBox";
 import { MessageManager } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 import { ElementTooltip } from "./ElementTooltip";
 
-class MessageBoxCallbacks {
-  constructor(
-    public readonly onFulfilled: (result: MessageBoxValue) => void,
-    public readonly onRejected: (result: any) => void,
-  ) { }
-
-  public handleMessageBoxResult = (result: MessageBoxValue) => {
-    this.onFulfilled(result);
-  }
-}
-
 /**
+ * The AppNotificationManager class is a subclass of NotificationManager. This implementation uses
+ * the iModelJs UI library to display alerts, messages, prompts and tooltips.
+ *
  * The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
  * Implementations of the NotificationManager may present the information in different ways. For example, in
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
@@ -64,26 +52,7 @@ export class AppNotificationManager extends NotificationManager {
    * @return the response from the user.
    */
   public openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
-    const title = UiFramework.i18n.translate("UiFramework:general.alert");
-
-    return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
-      const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
-      ModalDialogManager.openModalDialog(this.standardMessageBox(mbType, icon, title, message, messageBoxCallbacks));
-    });
-  }
-
-  private standardMessageBox(mbType: MessageBoxType, iconType: MessageBoxIconType, title: string, message: string, callbacks: MessageBoxCallbacks): React.ReactNode {
-    return (
-      <StandardMessageBox
-        opened={true}
-        messageBoxType={mbType}
-        iconType={iconType}
-        title={title}
-        onResult={callbacks.handleMessageBoxResult}
-      >
-        {message}
-      </StandardMessageBox>
-    );
+    return MessageManager.openMessageBox(mbType, message, icon);
   }
 
   /**
@@ -118,20 +87,20 @@ export class AppNotificationManager extends NotificationManager {
     return ElementTooltip.isTooltipVisible;
   }
 
-  /** Clear the ToolTip if it is current open. If not open, does nothing. */
+  /** Clear the ToolTip if it is currently open. If not open, does nothing. */
   public clearToolTip(): void {
     if (this.isToolTipOpen)
       ElementTooltip.hideTooltip();
   }
 
   /** Show a ToolTip window.
-   * @param _el      The HTMLElement that that anchors the toolTip.
+   * @param el       The HTMLElement that that anchors the toolTip.
    * @param message  The message to display inside the ToolTip
-   * @param _pt      An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
-   * @param _options Options that supply additional information about how the ToolTip should function.
+   * @param pt       An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
+   * @param options  Options that supply additional information about how the ToolTip should function.
    */
-  public showToolTip(_el: HTMLElement, message: string, _pt?: XAndY, _options?: ToolTipOptions): void {
-    ElementTooltip.showTooltip(message);
+  public showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
+    ElementTooltip.showTooltip(el, message, pt, options);
   }
 
 }
