@@ -46,15 +46,19 @@
     }
   }
 
-  &.nz-is-active > * {
-    color: $active-icon-color;
-    filter: $no-shadow;
-    transition-duration: 0s;
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+  &.nz-is-active {
+    &:not(:active) {
+      > * {
+        color: $active-icon-color;
+        filter: $no-shadow;
+        transition-duration: 0s;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
 
-    svg {
-      filter: $no-shadow;
+        svg {
+          filter: $no-shadow;
+        }
+      }
     }
   }
 

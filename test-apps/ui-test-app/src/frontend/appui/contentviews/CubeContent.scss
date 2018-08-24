@@ -1,0 +1,44 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/index.scss";
+
+$example-cube-width: 256px;
+.example-cube-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: black;
+  .example-cube {
+    perspective: 600px;
+    width: $example-cube-width;
+    height: $example-cube-width;
+    .face {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      color: $bwc-text-color;
+      box-shadow: 0px 0px .0px 1px #000;
+    }
+    .top {
+      background: blue;
+    }
+    .front{
+      background: red;
+    }
+    .right {
+      background: limegreen;
+    }
+    .left {
+      background: darkviolet;
+    }
+    .back {
+      background: yellow;
+    }
+    .bottom {
+      background: orange;
+    }
+  }
+}

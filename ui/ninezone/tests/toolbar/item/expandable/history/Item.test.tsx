@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "@src/toolbar/item/expandable/history/Item";
+import Item from "../../../../../src/toolbar/item/expandable/history/Item";
 
 describe("<Item />", () => {
   it("should render", () => {

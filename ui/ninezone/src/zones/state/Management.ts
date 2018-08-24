@@ -35,8 +35,11 @@ export default class Management {
     switch (zoneId) {
       case 1:
       case 4:
-      case 7:
         return Anchor.Left;
+      case 7:
+        return Anchor.BottomLeft;
+      case 9:
+        return Anchor.BottomRight;
       default:
         return Anchor.Right;
     }
@@ -70,13 +73,13 @@ export default class Management {
     const draggingCell = draggingZone.getCell();
     const targetCell = targetZone.getCell();
     if (draggingCell.isRowAlignedWith(targetCell))
-      if (draggingZone.isMergedHorizontally() || draggingZone.props.widgets.length === 1)
-        if (targetZone.isMergedHorizontally() || targetZone.props.widgets.length === 1)
+      if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
+        if (targetZone.isMergedHorizontally || targetZone.props.widgets.length === 1)
           return DropTarget.Merge;
 
     if (draggingCell.isColumnAlignedWith(targetCell))
-      if (draggingZone.isMergedVertically() || draggingZone.props.widgets.length === 1)
-        if (targetZone.isMergedVertically() || targetZone.props.widgets.length === 1)
+      if (draggingZone.isMergedVertically || draggingZone.props.widgets.length === 1)
+        if (targetZone.isMergedVertically || targetZone.props.widgets.length === 1)
           return DropTarget.Merge;
 
     return DropTarget.None;
@@ -179,7 +182,7 @@ export default class Management {
 
     const isClosing = tabIndex === widget.props.tabIndex;
 
-    if (isClosing && zone.isFloating())
+    if (isClosing && zone.isFloating)
       return { ...model.props };
 
     // Close all widgets
@@ -304,7 +307,7 @@ export default class Management {
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
 
-    if (!zone.isWidgetOpen())
+    if (!zone.isWidgetOpen)
       return { ...model.props };
 
     let floatingBounds = zone.props.floatingBounds;
@@ -415,7 +418,7 @@ export default class Management {
 
     const widgets = Widget.sort(draggingZone.getWidgets());
     const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
-    const isHorizontal = draggingZone.isMergedHorizontally();
+    const isHorizontal = draggingZone.isMergedHorizontally;
 
     if (draggingZone.getWidgets().length > 2 && draggingZone.isLastWidget(targetWidget)) {
       const widgetHeight = draggingZoneBounds.getHeight() / widgets.length;
@@ -594,7 +597,7 @@ export default class Management {
       case DropTarget.Unmerge: {
         const widgets = Widget.sort(draggingZone.getWidgets());
         const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
-        const isHorizontal = draggingZone.isMergedHorizontally();
+        const isHorizontal = draggingZone.isMergedHorizontally;
 
         if (draggingZone.props.widgets.length > 2 && draggingZone.isLastWidget(targetWidget)) {
           const widgetHeight = draggingZoneBounds.getHeight() / widgets.length;

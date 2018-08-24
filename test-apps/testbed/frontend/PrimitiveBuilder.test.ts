@@ -12,7 +12,6 @@ import {
   StrokesPrimitivePointList,
   PrimitiveBuilder,
   System,
-  GraphicBuilderCreateParams,
   GraphicType,
   GeometryAccumulator,
   DisplayParams,
@@ -52,8 +51,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -113,8 +111,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     // const pointA = new Point3d(-100, 0, 0);
     // const pointB = new Point3d(0, 100, 0);
@@ -150,8 +147,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -177,8 +173,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -204,8 +199,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -264,8 +258,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -324,8 +317,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -384,8 +376,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const scenegGfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, scenegGfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
     const accum = new GeometryAccumulator(imodel, System.instance);
 
     const gfParams: GraphicParams = new GraphicParams();

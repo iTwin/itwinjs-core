@@ -18,11 +18,11 @@ export class Ray2d {
   }
 
   public static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d {
-    return new Ray2d(origin.clone (), origin.vectorTo(target));
+    return new Ray2d(origin.clone(), origin.vectorTo(target));
   }
 
   public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
-    return new Ray2d(origin.clone (), direction.clone ());
+    return new Ray2d(origin.clone(), direction.clone());
   }
 
   public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
@@ -101,13 +101,13 @@ export class Ray2d {
 
 export class ConvexPolygon2d {
   // hull points in CCW order, WITHOUT final duplicate...
-  private hullPoints: Point2d[];
+  private _hullPoints: Point2d[];
 
   constructor(points: Point2d[]) {
-    this.hullPoints = [];
+    this._hullPoints = [];
     // Deep copy of points array given
     for (const point of points) {
-      this.hullPoints.push(point);
+      this._hullPoints.push(point);
     }
   }
 
@@ -126,7 +126,7 @@ export class ConvexPolygon2d {
 
   /** Return a reference of the hull points. */
   public get points(): Point2d[] {
-    return this.hullPoints;
+    return this._hullPoints;
   }
 
   /** Test if hull points are a convex, CCW polygon */
@@ -145,9 +145,9 @@ export class ConvexPolygon2d {
 
   /** Return true if the convex hull (to the left of the edges) contains the test point */
   public containsPoint(point: Point2d): boolean {
-    let xy0 = this.hullPoints[this.hullPoints.length - 1];
+    let xy0 = this._hullPoints[this._hullPoints.length - 1];
     // double tol = -1.0e-20;  negative tol!!
-    for (const i of this.hullPoints) {
+    for (const i of this._hullPoints) {
       const xy1 = i;
       const c = xy0.crossProductToPoints(xy1, point);
       if (c < 0.0)
@@ -160,11 +160,11 @@ export class ConvexPolygon2d {
   /** Return the largest outside. (return 0 if in or on) */
   public distanceOutside(xy: Point2d): number {
     let maxDistance = 0.0;
-    const n = this.hullPoints.length;
-    let xy0 = this.hullPoints[n - 1];
+    const n = this._hullPoints.length;
+    let xy0 = this._hullPoints[n - 1];
     // double tol = -1.0e-20;  // negative tol!!
     for (let i = 0; i < n; i++) {
-      const xy1 = this.hullPoints[i];
+      const xy1 = this._hullPoints[i];
       const c = xy0.crossProductToPoints(xy1, xy);
       if (c < 0.0) {
         const ray = Ray2d.createOriginAndTarget(xy0, xy1);
@@ -180,7 +180,7 @@ export class ConvexPolygon2d {
         if (d > maxDistance)
           maxDistance = d;
       }
-      xy0 = this.hullPoints[i];
+      xy0 = this._hullPoints[i];
     }
     return maxDistance;
   }
@@ -189,10 +189,10 @@ export class ConvexPolygon2d {
    * Returns false if an undefined occurred from normalizing (could occur after changing some hull points already)
    */
   public offsetInPlace(distance: number): boolean {
-    const n = this.hullPoints.length;
+    const n = this._hullPoints.length;
     if (n >= 3) {
-      const hullPoint0 = this.hullPoints[0];
-      let edgeA: Vector2d | undefined = this.hullPoints[n - 1].vectorTo(hullPoint0);
+      const hullPoint0 = this._hullPoints[0];
+      let edgeA: Vector2d | undefined = this._hullPoints[n - 1].vectorTo(hullPoint0);
       edgeA = edgeA.normalize();
       if (edgeA === undefined) { return false; }
 
@@ -201,7 +201,7 @@ export class ConvexPolygon2d {
       let perpB: Vector2d;
       for (let i = 0; i < n; i++) {
         const j = i + 1;
-        edgeB = this.hullPoints[i].vectorTo(j < n ? this.hullPoints[j] : hullPoint0);
+        edgeB = this._hullPoints[i].vectorTo(j < n ? this._hullPoints[j] : hullPoint0);
         edgeB = edgeB.normalize();
         if (edgeB === undefined) { return false; }
 
@@ -209,7 +209,7 @@ export class ConvexPolygon2d {
         const offsetBisector = Vector2d.createOffsetBisector(perpA, perpB, distance);
         if (offsetBisector === undefined) { return false; }
 
-        this.hullPoints[i] = this.hullPoints[i].plus(offsetBisector);
+        this._hullPoints[i] = this._hullPoints[i].plus(offsetBisector);
         // PerpA takes up reference to perpB, as perpB will die in new iteration
         perpA = perpB;
       }
@@ -227,13 +227,13 @@ export class ConvexPolygon2d {
     let distanceA = - Number.MAX_VALUE;
     let distanceB = Number.MAX_VALUE;
 
-    const n = this.hullPoints.length;
+    const n = this._hullPoints.length;
 
     if (n < 3)
       return Range1d.createNull();
 
-    let xy0 = this.hullPoints[n - 1];
-    for (const xy1 of this.hullPoints) {
+    let xy0 = this._hullPoints[n - 1];
+    for (const xy1 of this._hullPoints) {
       const distance: number[] = [];
       const dhds: number[] = [];
       if (ray.intersectUnboundedLine(xy0, xy1, distance, dhds)) {
@@ -265,7 +265,7 @@ export class ConvexPolygon2d {
   /** Return the range of (fractional) ray postions for projections of all points from the arrays. */
   public rangeAlongRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
-    for (const xy1 of this.hullPoints)
+    for (const xy1 of this._hullPoints)
       range.extendX(ray.projectionFraction(xy1));
     return range;
   }
@@ -273,7 +273,7 @@ export class ConvexPolygon2d {
   /** Return the range of (fractional) ray postions for projections of all points from the arrays. */
   public rangePerpendicularToRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
-    for (const xy1 of this.hullPoints)
+    for (const xy1 of this._hullPoints)
       range.extendX(ray.perpendicularProjectionFraction(xy1));
     return range;
   }

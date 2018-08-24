@@ -5,19 +5,19 @@
 @import "../../_variables";
 
 .nz-widget-rectangular-tab-tab {
-  $width: 32px;
   $active-width: 36px;
+  $border-width: $nz-widget-border-width;
 
   box-sizing: border-box;
-  width: $width;
-  height: $tab-height;
-  background-color: $background-3;
-  border-color: $background-5;
-  border-top-left-radius: $tab-border-radius;
-  border-bottom-left-radius: $tab-border-radius;
-  border-top-width: $tab-border-width;
-  border-left-width: $tab-border-width;
-  border-bottom-width: $tab-border-width;
+  width: $nz-tab-width;
+  height: $nz-tab-height;
+  background-color: $nz-tab-background-color;
+  border-color: $nz-widget-border-color;
+  border-top-left-radius: $nz-widget-border-radius;
+  border-bottom-left-radius: $nz-widget-border-radius;
+  border-top-width: $border-width;
+  border-left-width: $border-width;
+  border-bottom-width: $border-width;
   border-right-width: 0;
   border-style: solid;
   margin-left: auto;
@@ -31,15 +31,15 @@
     margin-left: 0;
     margin-right: unset;
     border-left-width: 0;
-    border-right-width: $tab-border-width;
+    border-right-width: $border-width;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    border-top-right-radius: $tab-border-radius;
-    border-bottom-right-radius: $tab-border-radius;
+    border-top-right-radius: $nz-widget-border-radius;
+    border-bottom-right-radius: $nz-widget-border-radius;
 
     &.nz-is-active {
       &::before {
-        right: $tab-strip-margin;
+        right: $nz-tab-strip-margin;
         left: unset;
       }
     }
@@ -51,7 +51,7 @@
 
   &.nz-is-active {
     width: $active-width;
-    background-color: $background-2;
+    background-color: $nz-widget-background-color;
     color: $primary-base;
 
     > * {
@@ -63,10 +63,10 @@
       display: block;
       position: absolute;
       background-color: $primary-base;
-      left: $tab-strip-margin;
-      top: $tab-strip-margin;
-      width: $tab-strip-width;
-      height: $tab-height - $tab-strip-margin * 2 - $tab-border-width * 2;
+      left: $nz-tab-strip-margin;
+      top: $nz-tab-strip-margin;
+      width: $nz-tab-strip-width;
+      height: $nz-tab-height - $nz-tab-strip-margin * 2 - $border-width * 2;
     }
   }
 }

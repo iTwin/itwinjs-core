@@ -65,8 +65,8 @@ export class SweepContour {
     return false;
   }
 
-  private xyStrokes?: AnyCurve;
-  private facets?: IndexedPolyface;
+  private _xyStrokes?: AnyCurve;
+  private _facets?: IndexedPolyface;
 
   /**
    * build the (cached) internal facets.
@@ -74,11 +74,11 @@ export class SweepContour {
    * @param options options for stroking the curves.
    */
   public buildFacets(_builder: PolyfaceBuilder, options: StrokeOptions | undefined): void {
-    if (!this.facets) {
+    if (!this._facets) {
       if (this.curves instanceof Loop) {
-        this.xyStrokes = this.curves.cloneStroked(options);
-        if (this.xyStrokes instanceof Loop && this.xyStrokes.children.length === 1) {
-          const children = this.xyStrokes.children;
+        this._xyStrokes = this.curves.cloneStroked(options);
+        if (this._xyStrokes instanceof Loop && this._xyStrokes.children.length === 1) {
+          const children = this._xyStrokes.children;
           const linestring = children[0] as LineString3d;
           const points = linestring.points;
           this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
@@ -86,15 +86,15 @@ export class SweepContour {
             points.reverse();
           const graph = Triangulator.earcutFromPoints(points);
           const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
-          this.facets = unflippedPoly;
-          this.facets.tryTransformInPlace(this.localToWorld);
+          this._facets = unflippedPoly;
+          this._facets.tryTransformInPlace(this.localToWorld);
         }
       } else if (this.curves instanceof ParityRegion) {
-        this.xyStrokes = this.curves.cloneStroked(options);
-        if (this.xyStrokes instanceof (ParityRegion)) {
-          this.xyStrokes.tryTransformInPlace(this.localToWorld);
+        this._xyStrokes = this.curves.cloneStroked(options);
+        if (this._xyStrokes instanceof (ParityRegion)) {
+          this._xyStrokes.tryTransformInPlace(this.localToWorld);
           const strokes = [];
-          for (const childLoop of this.xyStrokes.children) {
+          for (const childLoop of this._xyStrokes.children) {
             const loopCurves = childLoop.children;
             if (loopCurves.length === 1) {
               const c = loopCurves[0];
@@ -105,8 +105,8 @@ export class SweepContour {
           const graph = Triangulator.triangulateStrokedLoops(strokes);
           if (graph) {
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
-            this.facets = unflippedPoly;
-            this.facets.tryTransformInPlace(this.localToWorld);
+            this._facets = unflippedPoly;
+            this._facets.tryTransformInPlace(this.localToWorld);
           }
         }
       }
@@ -117,7 +117,7 @@ export class SweepContour {
    */
   public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
     this.buildFacets(builder, builder.options);
-    if (this.facets)
-      builder.addIndexedPolyface(this.facets, reverse, transform);
+    if (this._facets)
+      builder.addIndexedPolyface(this._facets, reverse, transform);
   }
 }

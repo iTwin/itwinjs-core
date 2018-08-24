@@ -6,7 +6,7 @@
 
 import { } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform} from "../Transform";
+import { Transform } from "../Transform";
 
 import { CurveCollection } from "../curve/CurveChain";
 import { GeometryQuery, CurvePrimitive } from "../curve/CurvePrimitive";
@@ -17,10 +17,10 @@ import { SweepContour } from "./SweepContour";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 
 export class RuledSweep extends SolidPrimitive {
-  private contours: SweepContour[];
+  private _contours: SweepContour[];
   private constructor(contours: SweepContour[], capped: boolean) {
     super(capped);
-    this.contours = contours;
+    this._contours = contours;
   }
 
   public static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined {
@@ -33,18 +33,18 @@ export class RuledSweep extends SolidPrimitive {
     return new RuledSweep(sweepContours, capped);
   }
   /** @returns Return a reference to the array of sweep contours. */
-  public sweepContoursRef(): SweepContour[] { return this.contours; }
+  public sweepContoursRef(): SweepContour[] { return this._contours; }
 
   public cloneSweepContours(): SweepContour[] {
     const result = [];
-    for (const sweepable of this.contours) {
+    for (const sweepable of this._contours) {
       result.push(sweepable.clone());
     }
     return result;
   }
   public cloneContours(): CurveCollection[] {
     const result = [];
-    for (const sweepable of this.contours) {
+    for (const sweepable of this._contours) {
       result.push(sweepable.curves.clone() as CurveCollection);
     }
     return result;
@@ -54,7 +54,7 @@ export class RuledSweep extends SolidPrimitive {
     return new RuledSweep(this.cloneSweepContours(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    for (const contour of this.contours) {
+    for (const contour of this._contours) {
       contour.tryTransformInPlace(transform);
     }
     return true;
@@ -70,17 +70,17 @@ export class RuledSweep extends SolidPrimitive {
    * * z direction perpenedicular
    */
   public getConstructiveFrame(): Transform | undefined {
-    if (this.contours.length === 0) return undefined;
-    return this.contours[0].localToWorld.cloneRigid();
+    if (this._contours.length === 0) return undefined;
+    return this._contours[0].localToWorld.cloneRigid();
   }
 
   public isSameGeometryClass(other: any): boolean { return other instanceof RuledSweep; }
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RuledSweep) {
       if (this.capped !== other.capped) return false;
-      if (this.contours.length !== other.contours.length) return false;
-      for (let i = 0; i < this.contours.length; i++) {
-        if (!this.contours[i].isAlmostEqual(other.contours[i]))
+      if (this._contours.length !== other._contours.length) return false;
+      for (let i = 0; i < this._contours.length; i++) {
+        if (!this._contours[i].isAlmostEqual(other._contours[i]))
           return false;
       }
       return true;
@@ -96,7 +96,7 @@ export class RuledSweep extends SolidPrimitive {
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
-    const numSection = this.contours.length;
+    const numSection = this._contours.length;
     if (numSection < 2)
       return undefined;
     const q = vFraction * numSection;
@@ -109,7 +109,7 @@ export class RuledSweep extends SolidPrimitive {
       section0 = numSection - 2;
     const section1 = section0 + 1;
     const localFraction = Geometry.clampToStartEnd(q - section0, 0, 1);
-    return CurveCollection.mutatePartners(this.contours[section0].curves, this.contours[section1].curves,
+    return CurveCollection.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
       (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
         const newPrimitive = ConstructCurveBetweenCurves.InterpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
@@ -118,7 +118,7 @@ export class RuledSweep extends SolidPrimitive {
   }
 
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    for (const contour of this.contours)
+    for (const contour of this._contours)
       contour.curves.extendRange(rangeToExtend, transform);
   }
 

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import ResizeGrip, { ResizeDirection } from "@src/widget/rectangular/ResizeGrip";
+import ResizeGrip, { ResizeDirection } from "../../../src/widget/rectangular/ResizeGrip";
 
 describe("<ResizeGrip />", () => {
   it("should render", () => {

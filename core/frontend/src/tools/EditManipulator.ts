@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, EventHandled } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource } from "./Tool";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides } from "./ToolAdmin";
@@ -33,6 +33,9 @@ export namespace EditManipulator {
     public onPostInstall(): void { super.onPostInstall(); this.init(); }
     public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (!this.accept(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Accept); return EventHandled.Yes; }
     public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (!this.cancel(ev)) return EventHandled.No; this.exitTool(); this.manipulator.onManipulatorEvent(EventType.Cancel); return EventHandled.Yes; }
+    public async onTouchMove(ev: BeTouchEvent): Promise<void> { IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+    public async onTouchComplete(ev: BeTouchEvent): Promise<void> { IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+    public async onTouchCancel(ev: BeTouchEvent): Promise<void> { IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
   }
 
   export abstract class Provider {
@@ -66,12 +69,12 @@ export namespace EditManipulator {
         IModelApp.viewManager.invalidateDecorationsAllViews();
       } else if (add) {
         if (!this.removeDecorationListener)
-          this.removeDecorationListener = IModelApp.viewManager.onDecorate.addListener(this.drawControls, this);
+          this.removeDecorationListener = IModelApp.viewManager.addDecorator(this);
         IModelApp.viewManager.invalidateDecorationsAllViews();
       }
     }
 
-    protected drawControls(_context: DecorateContext): void { }
+    public decorate(_context: DecorateContext): void { }
     protected abstract selectControls(_ev: BeButtonEvent): boolean;
     protected abstract modifyControls(_ev: BeButtonEvent): boolean; // run EditManipulator.Tool to handle interactive drag/click modification.
     protected async onDoubleClick(_ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; } // IModelApp.locateManager.currHit holds located element or pickable decoration
@@ -89,7 +92,7 @@ export namespace EditManipulator {
       if (ev.isDragging && ev.isControlKey)
         return EventHandled.No; // Don't select or modify controls with ctrl+drag...
 
-      if ((ev.isDown && !ev.isDragging) || !this.selectControls(ev))
+      if (((ev.isDown || InputSource.Touch === ev.inputSource) && !ev.isDragging) || !this.selectControls(ev))
         return EventHandled.No; // Select controls on up event or down event only after drag started...
 
       if (ev.isControlKey)
@@ -101,7 +104,6 @@ export namespace EditManipulator {
       return EventHandled.No;
     }
 
-    //    public async onGestureEvent(_ev: BeGestureEvent): Promise<EventHandled> { return EventHandled.No; }
     public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); }
     public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
 

@@ -1,14 +1,15 @@
 {
   "name": "@bentley/bentleyjs-tools",
-  "version": "0.117.0",
+  "version": "0.120.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {},
   "scripts": {
-    "build": "",
+    "build": "tsc 1>&2",
     "clean": "",
     "docs": "",
-    "lint": ""
+    "lint": "",
+    "test": ""
   },
   "dependencies": {
     "cache-require-paths": "^0.3.0",
@@ -35,8 +36,9 @@
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
+    "tslint-consistent-codestyle": "^1.11.0",
     "typedoc": "^0.11.1",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "yargs": "^12.0.0",
     "obj-traverse": "^1.0.0"
   },

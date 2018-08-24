@@ -142,5 +142,9 @@
     "viewstate",
     "zbuffer"
   ],
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "files.associations": {
+    "*.snap": "javascript",
+    ".nycrc": "json"
+  }
 }

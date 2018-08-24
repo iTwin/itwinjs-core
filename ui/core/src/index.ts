@@ -5,12 +5,14 @@ export { default as UiCore } from "./UiCore";
 export * from "./enums";
 export * from "./base";
 export * from "./contextmenu";
+export * from "./cube";
 export * from "./dialog";
 export * from "./hocs";
 export * from "./messagebox";
 export * from "./radialmenu";
 export * from "./searchbox";
 export * from "./splitbutton";
+export * from "./toggle";
 export * from "./tree";
 export * from "./utils";
 export * from "./validationTextbox";
@@ -30,6 +32,10 @@ export * from "./validationTextbox";
 /**
  * @docs-group-description ContextMenu
  * Classes for working with a Context Menu.
+ */
+/**
+ * @docs-group-description Cube
+ * Component for 3D Cube.
  */
 /**
  * @docs-group-description Dialog

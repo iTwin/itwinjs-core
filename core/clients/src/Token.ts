@@ -10,47 +10,47 @@ import { Base64 } from "js-base64";
 
 /** Token base class */
 export abstract class Token {
-  protected samlAssertion: string;
+  protected _samlAssertion: string;
 
-  protected userProfile?: UserProfile;
-  private startsAt?: Date;
-  private expiresAt?: Date;
-  protected x509Certificate?: string;
+  protected _userProfile?: UserProfile;
+  private _startsAt?: Date;
+  private _expiresAt?: Date;
+  protected _x509Certificate?: string;
 
   protected constructor(samlAssertion: string) {
-    this.samlAssertion = samlAssertion;
+    this._samlAssertion = samlAssertion;
   }
 
   public getSamlAssertion(): string | undefined {
-    return this.samlAssertion;
+    return this._samlAssertion;
   }
 
   public getUserProfile(): UserProfile | undefined {
-    return this.userProfile;
+    return this._userProfile;
   }
 
   public getExpiresAt(): Date | undefined {
-    return this.expiresAt;
+    return this._expiresAt;
   }
 
   public getStartsAt(): Date | undefined {
-    return this.startsAt;
+    return this._startsAt;
   }
 
   protected parseSamlAssertion(): boolean {
-    if (!this.samlAssertion)
+    if (!this._samlAssertion)
       return false;
 
     const select: xpath.XPathSelect = xpath.useNamespaces({
       ds: "http://www.w3.org/2000/09/xmldsig#",
       saml: "urn:oasis:names:tc:SAML:1.0:assertion",
     });
-    const dom: Document = (new DOMParser()).parseFromString(this.samlAssertion);
+    const dom: Document = (new DOMParser()).parseFromString(this._samlAssertion);
 
-    this.x509Certificate = select("/saml:Assertion/ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate/text()", dom).toString();
+    this._x509Certificate = select("/saml:Assertion/ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate/text()", dom).toString();
 
     const startsAtStr: string = select("string(/saml:Assertion/saml:Conditions/@NotBefore)", dom).toString();
-    this.startsAt = new Date(startsAtStr);
+    this._startsAt = new Date(startsAtStr);
 
     const expiresAtStr: string = select("string(/saml:Assertion/saml:Conditions/@NotOnOrAfter)", dom).toString();
 
@@ -58,7 +58,7 @@ export abstract class Token {
       select("/saml:Assertion/saml:AttributeStatement/saml:Attribute[@AttributeName='" +
         attributeName + "']/saml:AttributeValue/text()", dom).toString();
 
-    this.userProfile = {
+    this._userProfile = {
       firstName: extractAttribute("givenname"),
       lastName: extractAttribute("surname"),
       email: extractAttribute("emailaddress"),
@@ -68,10 +68,10 @@ export abstract class Token {
       usageCountryIso: extractAttribute("usagecountryiso"),
     };
 
-    this.startsAt = new Date(startsAtStr);
-    this.expiresAt = new Date(expiresAtStr);
+    this._startsAt = new Date(startsAtStr);
+    this._expiresAt = new Date(expiresAtStr);
 
-    return !!this.x509Certificate && !!this.startsAt && !!this.expiresAt && !!this.userProfile;
+    return !!this._x509Certificate && !!this._startsAt && !!this._expiresAt && !!this._userProfile;
   }
 }
 
@@ -84,13 +84,13 @@ export class AuthorizationToken extends Token {
   }
 
   public toTokenString(): string | undefined {
-    if (!this.x509Certificate)
+    if (!this._x509Certificate)
       return undefined;
-    return "X509 access_token=" + Buffer.from(this.x509Certificate, "utf8").toString("base64");
+    return "X509 access_token=" + Buffer.from(this._x509Certificate, "utf8").toString("base64");
   }
 
   public static clone(unTypedObj: any): AuthorizationToken {
-    const authToken = new AuthorizationToken(unTypedObj.samlAssertion);
+    const authToken = new AuthorizationToken(unTypedObj._samlAssertion);
     Object.assign(authToken, unTypedObj);
     return authToken;
   }
@@ -98,8 +98,8 @@ export class AuthorizationToken extends Token {
 
 /** Token issued by DelegationSecureTokenService for API access  */
 export class AccessToken extends Token {
-  private accessTokenString?: string;
-  private static tokenPrefix = "Token";
+  private _accessTokenString?: string;
+  private static _tokenPrefix = "Token";
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
   public static fromSamlAssertion(samlAssertion: string): AuthorizationToken | undefined {
@@ -114,12 +114,12 @@ export class AccessToken extends Token {
     if (props[this.foreignProjectAccessTokenJsonProperty] === undefined)
       return undefined;
     const tok = new AccessToken(foreignJsonStr);
-    tok.userProfile = props[this.foreignProjectAccessTokenJsonProperty].userProfile;
+    tok._userProfile = props[this.foreignProjectAccessTokenJsonProperty].userProfile;
     return tok;
   }
 
   public static fromTokenString(accessTokenString: string): AccessToken | undefined {
-    const index = accessTokenString.toLowerCase().indexOf(AccessToken.tokenPrefix.toLowerCase());
+    const index = accessTokenString.toLowerCase().indexOf(AccessToken._tokenPrefix.toLowerCase());
     if (index < 0)
       return undefined;
 
@@ -136,21 +136,21 @@ export class AccessToken extends Token {
   }
 
   public toTokenString(): string | undefined {
-    if (this.accessTokenString)
-      return this.accessTokenString;
+    if (this._accessTokenString)
+      return this._accessTokenString;
 
-    if (!this.samlAssertion)
+    if (!this._samlAssertion)
       return undefined;
 
-    const tokenStr: string = Base64.btoa(this.samlAssertion);
-    return AccessToken.tokenPrefix + " " + tokenStr;
+    const tokenStr: string = Base64.btoa(this._samlAssertion);
+    return AccessToken._tokenPrefix + " " + tokenStr;
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {
-    const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj.samlAssertion);
+    const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj._samlAssertion);
     if (foreignTok !== undefined)
       return foreignTok;
-    return AccessToken.fromSamlAssertion(jsonObj.samlAssertion);
+    return AccessToken.fromSamlAssertion(jsonObj._samlAssertion);
   }
 
 }

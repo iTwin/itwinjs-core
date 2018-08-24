@@ -4,7 +4,7 @@
 
 import { Point3d } from "../PointVector";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -12,7 +12,7 @@ import { expect } from "chai";
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
-    RotMatrix.createScale(a, a, a));
+    Matrix3d.createScale(a, a, a));
 
   const segment0 = LineSegment3d.create(Point3d.create(), Point3d.create());
   const segmentB = segment0.clone(); // zeros!!

@@ -4,4 +4,4 @@
 
 export * from "./Breadcrumb";
 export * from "./BreadcrumbPath";
-export * from "./BreadcrumbTreeData";
+export * from "./BreadcrumbTreeUtils";

@@ -10,7 +10,7 @@ import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Triangulator } from "../topology/Triangulation";
@@ -283,7 +283,7 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
     const planei1 = convexSet.planes[i + 1];
 
     // Intersection of plane 0 with plane 1
-    const planeMatrix = RotMatrix.createRowValues(
+    const planeMatrix = Matrix3d.createRowValues(
       planei0.inwardNormalRef.x, planei0.inwardNormalRef.y, planei0.inwardNormalRef.z,
       planei1.inwardNormalRef.x, planei1.inwardNormalRef.y, planei1.inwardNormalRef.z,
       0, 0, 1,
@@ -298,7 +298,7 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
   const plane1 = convexSet.planes[convexSet.planes.length - 1];
 
   // Intersection of plane 0 with plane 1
-  const plane01Matrix = RotMatrix.createRowValues(
+  const plane01Matrix = Matrix3d.createRowValues(
     plane0.inwardNormalRef.x, plane0.inwardNormalRef.y, plane0.inwardNormalRef.z,
     plane1.inwardNormalRef.x, plane1.inwardNormalRef.y, plane1.inwardNormalRef.z,
     0, 0, 1,
@@ -410,7 +410,7 @@ describe("ClipPrimitive", () => {
       ck.testTrue(clipPrimitiveRange !== undefined);
       ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
 
-      ck.testTrue(clipPrimitive.isValidPolygon());
+      ck.testTrue(clipPrimitive.isValidPolygon);
 
       // Test with negative box
       ConvexClipPlaneSet.createXYBox(-p - 1, -p - 1, -p, -p, convexSet);
@@ -549,7 +549,7 @@ describe("ClipPrimitive", () => {
     const maxZ = 5;
     // Test point location
     const clipPrimitive0 = ClipShape.createEmpty();
-    ck.testFalse(clipPrimitive0.isXYPolygon(), "ClipShape does not contain polygon when no points are present");
+    ck.testFalse(clipPrimitive0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
     ck.testTrue(ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, true, true, clipPrimitive0) !== undefined);
     const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
     ck.testFalse(clipPrimitive0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");

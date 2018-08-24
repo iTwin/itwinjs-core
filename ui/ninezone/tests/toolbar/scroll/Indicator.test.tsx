@@ -4,8 +4,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "@src/toolbar/scroll/Indicator";
-import { Direction } from "@src/utilities/Direction";
+import Indicator from "../../../src/toolbar/scroll/Indicator";
+import { Direction } from "../../../src/utilities/Direction";
 
 describe("<Indicator />", () => {
   it("should render", () => {

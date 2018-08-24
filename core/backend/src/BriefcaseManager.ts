@@ -5,7 +5,7 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ContainsSchemaChanges, Briefcase, Code, IModelHubError,
+  ChangesType, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository, IModelAccessContext,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
@@ -26,20 +26,20 @@ const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
 /** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
-  private value: number;
+  private _value: number;
   public static get Illegal(): number { return 0xffffffff; }
   public static get Master(): number { return 0; }
   public static get Standalone(): number { return 1; }
   constructor(value?: number) {
     if (value === undefined)
-      this.value = BriefcaseId.Illegal;
-    else this.value = value;
+      this._value = BriefcaseId.Illegal;
+    else this._value = value;
   }
-  public isValid(): boolean { return this.value !== BriefcaseId.Illegal; }
-  public isMaster(): boolean { return this.value !== BriefcaseId.Master; }
-  public isStandaloneId(): boolean { return this.value !== BriefcaseId.Standalone; }
-  public getValue(): number { return this.value; }
-  public toString(): string { return this.value.toString(); }
+  public get isValid(): boolean { return this._value !== BriefcaseId.Illegal; }
+  public get isMaster(): boolean { return this._value !== BriefcaseId.Master; }
+  public get isStandaloneId(): boolean { return this._value !== BriefcaseId.Standalone; }
+  public getValue(): number { return this._value; }
+  public toString(): string { return this._value.toString(); }
 }
 
 /** Option to keep briefcase when the imodel is closed */
@@ -50,7 +50,7 @@ export const enum KeepBriefcase {
 
 /** A token that represents a ChangeSet */
 export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
+  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean) { }
 }
 
 /** Entry in the briefcase cache */
@@ -144,7 +144,7 @@ export class BriefcaseEntry {
 
 /** In-memory cache of briefcases */
 class BriefcaseCache {
-  private readonly briefcases = new Map<string, BriefcaseEntry>();
+  private readonly _briefcases = new Map<string, BriefcaseEntry>();
 
   /** Find a briefcase in the cache by token */
   public findBriefcaseByToken({ key }: IModelToken): BriefcaseEntry | undefined {
@@ -154,26 +154,26 @@ class BriefcaseCache {
 
   /** Find a briefcase in the cache by key */
   public findBriefcaseByKey(key: string): BriefcaseEntry | undefined {
-    return this.briefcases.get(key);
+    return this._briefcases.get(key);
   }
 
   /** Find a briefcase in the cache */
   public findBriefcase(briefcase: BriefcaseEntry): BriefcaseEntry | undefined {
-    return this.briefcases.get(briefcase.getKey());
+    return this._briefcases.get(briefcase.getKey());
   }
 
   /** Add a briefcase to the cache */
   public addBriefcase(briefcase: BriefcaseEntry) {
     const key = briefcase.getKey();
 
-    if (this.briefcases.get(key)) {
+    if (this._briefcases.get(key)) {
       const msg = `Briefcase ${key} already exists in the cache.`;
       Logger.logError(loggingCategory, msg);
       throw new IModelError(DbResult.BE_SQLITE_ERROR, msg);
     }
 
     Logger.logTrace(loggingCategory, `Added briefcase ${key} (${briefcase.pathname}) to the cache`);
-    this.briefcases.set(key, briefcase);
+    this._briefcases.set(key, briefcase);
   }
 
   /** Delete a briefcase from the cache */
@@ -183,7 +183,7 @@ class BriefcaseCache {
 
   /** Delete a briefcase from the cache by key */
   public deleteBriefcaseByKey(key: string) {
-    const briefcase = this.briefcases.get(key);
+    const briefcase = this._briefcases.get(key);
     if (!briefcase) {
       const msg = `Briefcase ${key} not found in cache`;
       Logger.logError(loggingCategory, msg);
@@ -191,13 +191,13 @@ class BriefcaseCache {
     }
 
     Logger.logTrace(loggingCategory, `Removed briefcase ${key} (${briefcase.pathname}) from the cache`);
-    this.briefcases.delete(key);
+    this._briefcases.delete(key);
   }
 
   /** Get a subset of entries in the cache */
   public getFilteredBriefcases(filterFn: (value: BriefcaseEntry) => boolean): BriefcaseEntry[] {
     const filteredBriefcases = new Array<BriefcaseEntry>();
-    this.briefcases.forEach((value: BriefcaseEntry) => {
+    this._briefcases.forEach((value: BriefcaseEntry) => {
       if (filterFn(value))
         filteredBriefcases.push(value);
     });
@@ -205,16 +205,16 @@ class BriefcaseCache {
   }
 
   /** Checks if the cache is empty */
-  public isEmpty(): boolean { return this.briefcases.size === 0; }
+  public get isEmpty(): boolean { return this._briefcases.size === 0; }
 
   /** Clears all entries in the cache */
-  public clear() { this.briefcases.clear(); }
+  public clear() { this._briefcases.clear(); }
 }
 
 /** Utility to manage briefcases */
 export class BriefcaseManager {
-  private static cache: BriefcaseCache = new BriefcaseCache();
-  private static isCacheInitialized?: boolean;
+  private static _cache: BriefcaseCache = new BriefcaseCache();
+  private static _isCacheInitialized?: boolean;
   private static _defaultHubClient?: IModelHubClient;
   private static _imodelClient?: IModelClient;
   private static _lastIModelClientContext: string | undefined; // Used to optimize IModelClient context-switching. See setClientFromIModelTokenContext
@@ -288,7 +288,7 @@ export class BriefcaseManager {
   }
 
   private static buildStandalonePathname(iModelId: string, iModelName: string): string {
-    const briefcases = BriefcaseManager.cache.getFilteredBriefcases((entry: BriefcaseEntry) => {
+    const briefcases = BriefcaseManager._cache.getFilteredBriefcases((entry: BriefcaseEntry) => {
       return entry.iModelId === iModelId && entry.briefcaseId === BriefcaseId.Standalone;
     });
 
@@ -311,8 +311,8 @@ export class BriefcaseManager {
 
   /** Clear the briefcase manager cache */
   private static clearCache() {
-    BriefcaseManager.cache.clear();
-    BriefcaseManager.isCacheInitialized = undefined;
+    BriefcaseManager._cache.clear();
+    BriefcaseManager._isCacheInitialized = undefined;
   }
 
   private static onIModelHostShutdown() {
@@ -369,7 +369,7 @@ export class BriefcaseManager {
         BriefcaseManager.closeBriefcase(briefcase);
     }
 
-    BriefcaseManager.cache.addBriefcase(briefcase);
+    BriefcaseManager._cache.addBriefcase(briefcase);
   }
 
   /** Get basic information on all briefcases on disk under the specified path */
@@ -392,11 +392,11 @@ export class BriefcaseManager {
     }
   }
 
-  private static readonly cacheMajorVersion: number = 1;
-  private static readonly cacheMinorVersion: number = 0;
+  private static readonly _cacheMajorVersion: number = 1;
+  private static readonly _cacheMinorVersion: number = 0;
 
   private static buildCacheSubDir(): string {
-    return `v${BriefcaseManager.cacheMajorVersion}_${BriefcaseManager.cacheMinorVersion}`;
+    return `v${BriefcaseManager._cacheMajorVersion}_${BriefcaseManager._cacheMinorVersion}`;
   }
 
   private static findCacheSubDir(): string | undefined {
@@ -407,7 +407,7 @@ export class BriefcaseManager {
     const cacheDir = IModelHost.configuration.briefcaseCacheDir;
     let dirs: string[] | undefined;
     try {
-      dirs = glob.sync(`v${BriefcaseManager.cacheMajorVersion}_*`, { cwd: cacheDir });
+      dirs = glob.sync(`v${BriefcaseManager._cacheMajorVersion}_*`, { cwd: cacheDir });
       assert(dirs.length === 1, "Expected *only* a single directory for a major version");
     } catch (error) {
     }
@@ -446,7 +446,7 @@ export class BriefcaseManager {
    * Note: Callers should use memoizedInitCache() instead
    */
   private static async initCache(accessToken?: AccessToken): Promise<void> {
-    if (BriefcaseManager.isCacheInitialized)
+    if (BriefcaseManager._isCacheInitialized)
       return;
 
     if (!IModelHost.configuration)
@@ -462,7 +462,7 @@ export class BriefcaseManager {
     }
     perfLogger.dispose();
 
-    BriefcaseManager.isCacheInitialized = true;
+    BriefcaseManager._isCacheInitialized = true;
   }
 
   private static _memoizedInitCache?: Promise<void>;
@@ -560,7 +560,7 @@ export class BriefcaseManager {
     if (isNewBriefcase) {
       // Note: This cannot be done right after creation since the version (that's part of the key to the cache)
       // is not established until the change sets are merged
-      BriefcaseManager.cache.addBriefcase(briefcase);
+      BriefcaseManager._cache.addBriefcase(briefcase);
     }
 
     return briefcase;
@@ -615,7 +615,7 @@ export class BriefcaseManager {
     };
 
     // Narrow the cache down to the entries for the specified imodel, with the specified openMode (if defined) and those that don't have any change sets reversed
-    const briefcases = this.cache.getFilteredBriefcases(filterBriefcaseFn);
+    const briefcases = this._cache.getFilteredBriefcases(filterBriefcaseFn);
     if (!briefcases || briefcases.length === 0)
       return undefined;
 
@@ -801,10 +801,10 @@ export class BriefcaseManager {
 
   /** Deletes a briefcase from the cache (if it exists) */
   private static deleteBriefcaseFromCache(briefcase: BriefcaseEntry) {
-    if (!BriefcaseManager.cache.findBriefcase(briefcase))
+    if (!BriefcaseManager._cache.findBriefcase(briefcase))
       return;
 
-    BriefcaseManager.cache.deleteBriefcase(briefcase);
+    BriefcaseManager._cache.deleteBriefcase(briefcase);
   }
 
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
@@ -876,7 +876,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
-    if (BriefcaseManager.cache.findBriefcaseByToken(new IModelToken(pathname)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
@@ -904,13 +904,13 @@ export class BriefcaseManager {
     briefcase.isStandalone = true;
     briefcase.nativeDb = nativeDb;
 
-    BriefcaseManager.cache.addBriefcase(briefcase);
+    BriefcaseManager._cache.addBriefcase(briefcase);
     return briefcase;
   }
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
-    if (BriefcaseManager.cache.findBriefcaseByToken(new IModelToken(fileName)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
@@ -931,7 +931,7 @@ export class BriefcaseManager {
     briefcase.isStandalone = true;
     briefcase.nativeDb = nativeDb;
 
-    BriefcaseManager.cache.addBriefcase(briefcase);
+    BriefcaseManager._cache.addBriefcase(briefcase);
     return briefcase;
   }
 
@@ -940,15 +940,15 @@ export class BriefcaseManager {
     assert(briefcase.isStandalone, "Cannot use IModelDb.closeStandalone() to close a non-standalone iModel. Use IModelDb.close() instead");
     briefcase.onBeforeClose.raiseEvent(briefcase);
     BriefcaseManager.closeBriefcase(briefcase);
-    if (BriefcaseManager.cache.findBriefcase(briefcase))
-      BriefcaseManager.cache.deleteBriefcase(briefcase);
+    if (BriefcaseManager._cache.findBriefcase(briefcase))
+      BriefcaseManager._cache.deleteBriefcase(briefcase);
   }
 
   /** Purge closed briefcases */
   public static async purgeClosed(accessToken: AccessToken) {
     await BriefcaseManager.memoizedInitCache(accessToken);
 
-    const briefcases = BriefcaseManager.cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => !briefcase.isOpen);
+    const briefcases = BriefcaseManager._cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => !briefcase.isOpen);
     for (const briefcase of briefcases) {
       await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
     }
@@ -993,14 +993,14 @@ export class BriefcaseManager {
 
   /** Find the existing briefcase */
   public static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined {
-    return BriefcaseManager.cache.findBriefcaseByToken(iModelToken);
+    return BriefcaseManager._cache.findBriefcaseByToken(iModelToken);
   }
 
   private static buildChangeSetTokens(changeSets: ChangeSet[], changeSetsPath: string): ChangeSetToken[] {
     const changeSetTokens = new Array<ChangeSetToken>();
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.containsSchemaChanges!));
+      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema));
     });
     return changeSetTokens;
   }
@@ -1104,7 +1104,7 @@ export class BriefcaseManager {
     const changeSetTokens: ChangeSetToken[] = BriefcaseManager.buildChangeSetTokens(changeSets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
 
     // Close Db before merge (if there are schema changes)
-    const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.containsSchemaChanges === ContainsSchemaChanges.Yes);
+    const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.changesType === ChangesType.Schema);
     if (containsSchemaChanges && briefcase.isOpen)
       briefcase.onBeforeClose.raiseEvent(briefcase);
 
@@ -1151,9 +1151,9 @@ export class BriefcaseManager {
     briefcase.changeSetIndex = changeSetIndex;
 
     // Update cache if necessary
-    if (BriefcaseManager.cache.findBriefcaseByKey(oldKey)) {
-      BriefcaseManager.cache.deleteBriefcaseByKey(oldKey);
-      BriefcaseManager.cache.addBriefcase(briefcase);
+    if (BriefcaseManager._cache.findBriefcaseByKey(oldKey)) {
+      BriefcaseManager._cache.deleteBriefcaseByKey(oldKey);
+      BriefcaseManager._cache.addBriefcase(briefcase);
     }
   }
 
@@ -1352,7 +1352,7 @@ export class BriefcaseManager {
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
-    changeSet.containsSchemaChanges = changeSetToken.containsSchemaChanges;
+    changeSet.changesType = changeSetToken.containsSchemaChanges ? ChangesType.Schema : ChangesType.Regular;
     changeSet.seedFileId = briefcase.fileId!;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;

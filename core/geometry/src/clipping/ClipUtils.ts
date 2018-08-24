@@ -44,7 +44,7 @@ export interface Clipper {
 
 /** Static class whose various methods are functions for clipping geometry. */
 export class ClipUtilities {
-  private static sSelectIntervals01TestPoint = Point3d.create();
+  private static _selectIntervals01TestPoint = Point3d.create();
   public static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     unsortedFractions.push(0);
     unsortedFractions.push(1);
@@ -52,7 +52,7 @@ export class ClipUtilities {
     let f0 = unsortedFractions.at(0);
     let f1;
     let fMid;
-    const testPoint = ClipUtilities.sSelectIntervals01TestPoint;
+    const testPoint = ClipUtilities._selectIntervals01TestPoint;
     const n = unsortedFractions.length;
     for (let i = 1; i < n; i++ , f0 = f1) {
       f1 = unsortedFractions.at(i);

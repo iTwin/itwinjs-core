@@ -156,9 +156,9 @@ export class HalfEdge {
   // z-order curve value
   public zOrder!: number;
 
-  private static totalNodesCreated = 0;
+  private static _totalNodesCreated = 0;
   public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
-    this._id = HalfEdge.totalNodesCreated++;
+    this._id = HalfEdge._totalNodesCreated++;
     this.i = i;
     this.maskBits = 0x00000000;
     this.x = x;

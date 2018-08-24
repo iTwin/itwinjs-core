@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
-import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsArray, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass, ModelProps, RelatedElementProps, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
@@ -140,7 +140,7 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(4);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(0);
+        expect(mesh.features!.indices.length).to.equal(0);
 
         // Validate mesh triangles
         expect(mesh.triangles).not.to.be.undefined;
@@ -249,10 +249,10 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(9);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(9);
+        expect(mesh.features!.indices.length).to.equal(9);
         const expectedFeatureIndices0 = [0, 0, 0, 2, 2, 2, 4, 4, 4];
-        for (let i = 0; i < mesh.features!._indices.length; i++)
-          expect(mesh.features!._indices[i]).to.equal(expectedFeatureIndices0[i]);
+        for (let i = 0; i < mesh.features!.indices.length; i++)
+          expect(mesh.features!.indices[i]).to.equal(expectedFeatureIndices0[i]);
 
         // Validate mesh triangles
         expect(mesh.triangles).not.to.be.undefined;
@@ -314,10 +314,10 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(9);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(9);
+        expect(mesh.features!.indices.length).to.equal(9);
         const expectedFeatureIndices1 = [1, 1, 1, 3, 3, 3, 5, 5, 5];
-        for (let i = 0; i < mesh.features!._indices.length; i++)
-          expect(mesh.features!._indices[i]).to.equal(expectedFeatureIndices1[i]);
+        for (let i = 0; i < mesh.features!.indices.length; i++)
+          expect(mesh.features!.indices[i]).to.equal(expectedFeatureIndices1[i]);
 
         // Validate mesh triangles
         expect(mesh.triangles).not.to.be.undefined;
@@ -377,8 +377,8 @@ describe("TileIO", () => {
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.length).to.equal(6);
         expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsList);
-        const list = batch.graphic as GraphicsList;
+        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        const list = batch.graphic as GraphicsArray;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(MeshGraphic);
@@ -464,7 +464,7 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(0);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(0);
+        expect(mesh.features!.indices.length).to.equal(0);
 
         // Validate mesh polylines
         expect(mesh.triangles).to.be.undefined;
@@ -585,7 +585,7 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(0);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(0);
+        expect(mesh.features!.indices.length).to.equal(0);
 
         // Validate mesh polylines
         expect(mesh.triangles).to.be.undefined;
@@ -633,10 +633,10 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(0);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(12);
+        expect(mesh.features!.indices.length).to.equal(12);
         const expectedFeatureIndices1 = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2];
-        for (let i = 0; i < mesh.features!._indices.length; i++)
-          expect(mesh.features!._indices[i]).to.equal(expectedFeatureIndices1[i]);
+        for (let i = 0; i < mesh.features!.indices.length; i++)
+          expect(mesh.features!.indices[i]).to.equal(expectedFeatureIndices1[i]);
 
         // Validate mesh polylines
         expect(mesh.triangles).to.be.undefined;
@@ -694,8 +694,8 @@ describe("TileIO", () => {
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.length).to.equal(3);
         expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsList);
-        const list = batch.graphic as GraphicsList;
+        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        const list = batch.graphic as GraphicsArray;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(PolylinePrimitive);
@@ -783,7 +783,7 @@ describe("TileIO", () => {
         expect(mesh.normals.length).to.equal(146);
         expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
-        expect(mesh.features!._indices.length).to.equal(0);
+        expect(mesh.features!.indices.length).to.equal(0);
 
         // Validate mesh triangles
         expect(mesh.triangles).not.to.be.undefined;

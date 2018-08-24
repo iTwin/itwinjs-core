@@ -222,12 +222,12 @@ export namespace VertexLUT {
    * The color index is left uninitialized as it is unused.
    */
   export class TexturedMeshBuilder extends MeshBuilder {
-    private qparams: QParams2d;
-    private qpoint = new QPoint2d();
+    private _qparams: QParams2d;
+    private _qpoint = new QPoint2d();
 
     public constructor(args: MeshArgs, qparams: QParams2d) {
       super(args);
-      this.qparams = qparams;
+      this._qparams = qparams;
       assert(undefined !== args.textureUv);
     }
 
@@ -243,9 +243,9 @@ export namespace VertexLUT {
     protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
-      this.qpoint.init(this.args.textureUv![vertIndex], this.qparams);
-      this.append16(this.qpoint.x);
-      this.append16(this.qpoint.y);
+      this._qpoint.init(this.args.textureUv![vertIndex], this._qparams);
+      this.append16(this._qpoint.x);
+      this.append16(this._qpoint.y);
     }
   }
 

@@ -9,23 +9,19 @@ import { CSSProperties } from "react";
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDef } from "./ZoneDef";
 
-import AssistanceToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/assistance/Assistance";
-import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/settings/Settings";
 import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
+import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
+import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/Settings";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
 import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
-import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 /** State for the ToolSettingsZone content.
  */
 export enum ToolSettingsZoneContent {
   Closed,
   ToolSettings,
-  ToolAssistance,
 }
 
 /** State for the ToolSettingsZone.
@@ -77,39 +73,15 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   }
 
   private getToolSettingsWidget() {
-    const toolbar = (
-      <Toolbar
-        expandsTo={Direction.Bottom}
-        items={
-          this.getToolSettingsButton()
-          /* {this.getToolAssistanceButton()} */
-        }
-      />
+    const tab = (
+      <ToolSettingsTab
+        isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
+      >
+        {this.getToolSettingsButton()}
+        {/*this.getToolAssistanceButton()*/}
+      </ToolSettingsTab>
     );
     switch (this.state.toolSettingsZoneContent) {
-      case ToolSettingsZoneContent.ToolAssistance: {
-        if (FrontstageManager.activeToolAssistanceNode) {
-          const assistanceStyle: CSSProperties = {
-            borderWidth: "thin",
-            borderStyle: "solid",
-            borderRadius: "3px",
-            paddingLeft: "10px",
-            paddingRight: "10px",
-          };
-
-          return (
-            <ToolSettingsWidget
-              toolbar={toolbar}
-              content={
-                <AssistanceToolSettings style={assistanceStyle}>
-                  {FrontstageManager.activeToolAssistanceNode}
-                </AssistanceToolSettings>
-              }
-            />
-          );
-        }
-        break;
-      }
       case ToolSettingsZoneContent.ToolSettings: {
         if (FrontstageManager.activeToolSettingsNode) {
           const settingsStyle: CSSProperties = {
@@ -122,7 +94,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
           return (
             <ToolSettingsWidget
-              toolbar={toolbar}
+              tab={tab}
               content={
                 <ToolSettings style={settingsStyle} >
                   {FrontstageManager.activeToolSettingsNode}
@@ -136,7 +108,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       case ToolSettingsZoneContent.Closed: {
         return (
           <ToolSettingsWidget
-            toolbar={toolbar}
+            tab={tab}
           />
         );
       }
@@ -190,9 +162,6 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
                 if (prevState.toolSettingsZoneContent === ToolSettingsZoneContent.Closed)
                   toolSettingsZoneContent = ToolSettingsZoneContent.ToolSettings;
-                else if (prevState.toolSettingsZoneContent === ToolSettingsZoneContent.ToolAssistance)
-                  toolSettingsZoneContent = ToolSettingsZoneContent.ToolSettings;
-
                 return {
                   toolSettingsZoneContent,
                 };

@@ -39,9 +39,9 @@ export default class Draggable extends React.Component<DraggableProps> {
       >
         <PointerCaptor
           className="nz-draggable"
-          onMouseDown={this.handleMouseDown}
-          onMouseUp={this.handleMouseUp}
-          onMouseMove={this.handleMouseMove}
+          onMouseDown={this._handleMouseDown}
+          onMouseUp={this._handleMouseUp}
+          onMouseMove={this._handleMouseMove}
         >
           {children}
         </PointerCaptor>
@@ -49,14 +49,14 @@ export default class Draggable extends React.Component<DraggableProps> {
     );
   }
 
-  private handleMouseDown = (e: MouseEvent) => {
+  private _handleMouseDown = (e: MouseEvent) => {
     this._isMouseDown = true;
     e.preventDefault();
 
     this._last = this._initial = new Point(e.clientX, e.clientY);
   }
 
-  private handleMouseUp = () => {
+  private _handleMouseUp = () => {
     if (!this._isMouseDown)
       return;
 
@@ -67,7 +67,7 @@ export default class Draggable extends React.Component<DraggableProps> {
     this.setIsDragging(false);
   }
 
-  private handleMouseMove = (e: MouseEvent) => {
+  private _handleMouseMove = (e: MouseEvent) => {
     if (!this._isMouseDown)
       return;
 

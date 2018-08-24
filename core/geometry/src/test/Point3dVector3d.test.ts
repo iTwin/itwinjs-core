@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform, Range3d, RotMatrix, Angle, AxisOrder, Point3d, Vector3d } from "../geometry-core";
+import { Transform, Range3d, Matrix3d, Angle, AxisOrder, Point3d, Vector3d } from "../geometry-core";
 import * as bsiChecker from "./Checker";
 import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
@@ -9,7 +9,7 @@ import { expect } from "chai";
 export class MatrixTests {
 
   public static TestCreateProperties(ck: bsiChecker.Checker) {
-    const matrix = RotMatrix.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(45.0));
+    const matrix = Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(45.0));
     if (matrix) {
       const vectorA = Vector3d.create(10, 1, 1);
       const vectorB = Vector3d.create(2, 5, 4);
@@ -27,18 +27,18 @@ export class MatrixTests {
           matrix.columnZ(), vectorA.z).plusScaled(matrix.columnX(), vectorA.x),
         "matrix * vector versus");
 
-      const frame = RotMatrix.createRigidFromColumns(vectorA, vectorB, AxisOrder.XYZ);
+      const frame = Matrix3d.createRigidFromColumns(vectorA, vectorB, AxisOrder.XYZ);
 
       if (ck.testPointer(frame, "createPerpendicularColumns") && frame
-        && ck.testBoolean(true, frame.hasPerpendicularUnitRowsAndColumns(), "UnitPerpendicularColumns")) {
+        && ck.testBoolean(true, frame.testPerpendicularUnitRowsAndColumns(), "UnitPerpendicularColumns")) {
 
         const matrixT = matrix.transpose();
         const frameT = frame.transpose();
         for (let i = 0; i < 6; i++)
           ck.testVector3d(matrix.getRow(i), matrixT.getColumn(i), "row, column match in matrix, transpose");
 
-        ck.testRotMatrix(matrixT.multiplyMatrixMatrix(frame), matrix.multiplyMatrixTransposeMatrix(frame), "multiplyMatrixTransposeMatrix");
-        ck.testRotMatrix(matrix.multiplyMatrixMatrix(frameT), matrix.multiplyMatrixMatrixTranspose(frame), "multiplyMatrixMatrixTranspose");
+        ck.testMatrix3d(matrixT.multiplyMatrixMatrix(frame), matrix.multiplyMatrixTransposeMatrix(frame), "multiplyMatrixTransposeMatrix");
+        ck.testMatrix3d(matrix.multiplyMatrixMatrix(frameT), matrix.multiplyMatrixMatrixTranspose(frame), "multiplyMatrixMatrixTranspose");
 
         ck.testPerpendicular(vectorA, frame.columnZ(), "input X perp frame.Z");
         ck.testPerpendicular(vectorB, frame.columnZ(), "input Y perp frame.Z");
@@ -46,10 +46,10 @@ export class MatrixTests {
         ck.testCoordinateOrder(0, vectorB.dotProduct(frame.columnY()), "vectorB in positive XY half plane");
         MatrixTests.CheckProperties(ck, frame, false, true, true, true, undefined);
 
-        const frame1 = frame.multiplyMatrixMatrix(RotMatrix.createScale(1, 1, 2));
+        const frame1 = frame.multiplyMatrixMatrix(Matrix3d.createScale(1, 1, 2));
         MatrixTests.CheckProperties(ck, frame1, false, false, false, true, false);
 
-        const frame2 = frame.multiplyMatrixMatrix(RotMatrix.createScale(1, 1, -1));
+        const frame2 = frame.multiplyMatrixMatrix(Matrix3d.createScale(1, 1, -1));
         MatrixTests.CheckProperties(ck, frame2, false, true, false, true, false);
         let vector;
         const e = 1.0 / 64.0;
@@ -62,7 +62,7 @@ export class MatrixTests {
           Vector3d.create(e, e, 3.0), // triggers near-z logic !!!
           Vector3d.create(e, e, 3.0),
         ]) {
-          const triad = RotMatrix.createRigidHeadsUp(vector);
+          const triad = Matrix3d.createRigidHeadsUp(vector);
           if (ck.testPointer(triad) && triad) {
             MatrixTests.CheckProperties(ck, triad, undefined, true, true, true,
               vector.isAlmostEqual(Vector3d.unitZ()));
@@ -72,34 +72,34 @@ export class MatrixTests {
       }
     }
   }
-  public static CheckInverse(ck: bsiChecker.Checker, matrixA: RotMatrix) {
+  public static CheckInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
     const matrixB = matrixA.inverse();
     ck.testPointer(matrixB, "inverse");
     // console.log("matrixA", matrixA);
     // console.log("inverse", matrixB);
     if (matrixB) {
       const AB = matrixA.multiplyMatrixMatrix(matrixB);
-      ck.testBoolean(true, AB.isIdentity(), "A * Ainverse = I");
+      ck.testBoolean(true, AB.isIdentity, "A * Ainverse = I");
     }
   }
   public static CheckProperties(
     ck: bsiChecker.Checker,
-    matrix: RotMatrix,
+    matrix: Matrix3d,
     isIdentity: boolean | undefined,
     isUnitPerpendicular: boolean,
     isRigid: boolean,
     isInvertible: boolean,
     isDiagonal: boolean | undefined) {
     if (isIdentity !== undefined)
-      ck.testBoolean(isIdentity, matrix.isIdentity(), "isIdentity");
+      ck.testBoolean(isIdentity, matrix.isIdentity, "isIdentity");
     ck.testBoolean(isRigid, matrix.isRigid(), "isRigid");
-    ck.testBoolean(isUnitPerpendicular, matrix.hasPerpendicularUnitRowsAndColumns(), "unitPerpendicularMatrix");
+    ck.testBoolean(isUnitPerpendicular, matrix.testPerpendicularUnitRowsAndColumns(), "unitPerpendicularMatrix");
     const inverse = matrix.inverse();
     if (isInvertible) {
       if (ck.testPointer(inverse, "inverse () completed as expected")
         && inverse !== undefined) {
         const product = matrix.multiplyMatrixMatrix(inverse);
-        const a = product.maxDiff(RotMatrix.createIdentity());
+        const a = product.maxDiff(Matrix3d.createIdentity());
         ck.testSmallRelative(a, "inverse*matrix == identity");
       }
     } else {
@@ -107,7 +107,7 @@ export class MatrixTests {
     }
 
     if (isDiagonal !== undefined)
-      ck.testBoolean(isDiagonal, matrix.isDiagonal(), "isDiagonal");
+      ck.testBoolean(isDiagonal, matrix.isDiagonal, "isDiagonal");
   }
   public static CheckPointArrays(
     ck: bsiChecker.Checker, pointA: Point3d[]) {
@@ -133,23 +133,23 @@ export class MatrixTests {
 
 }
 
-describe("RotMatrix.Construction", () => {
-  it("Verify properties of RotMatrix.create", () => {
+describe("Matrix3d.Construction", () => {
+  it("Verify properties of Matrix3d.create", () => {
     const ck = new bsiChecker.Checker();
     MatrixTests.TestCreateProperties(ck);
-    ck.checkpoint("End RotMatrix.Construction");
+    ck.checkpoint("End Matrix3d.Construction");
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
-describe("RotMatrix.Inverse", () => {
-  it("RotMatrix.Inverse", () => {
+describe("Matrix3d.Inverse", () => {
+  it("Matrix3d.Inverse", () => {
     const ck = new bsiChecker.Checker();
-    const matrixA = RotMatrix.createRowValues(4, 2, 1,
+    const matrixA = Matrix3d.createRowValues(4, 2, 1,
       -1, 5, 3,
       0.5, 0.75, 9);
     MatrixTests.CheckInverse(ck, matrixA);
-    ck.checkpoint("End RotMatrix.Inverse");
+    ck.checkpoint("End Matrix3d.Inverse");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -164,8 +164,8 @@ describe("Point3dArray.HelloWorld", () => {
   });
 });
 
-describe("RotMatrix.factorPerpendicularColumns", () => {
-  it("RotMatrix.factorPerpendicularColumns", () => {
+describe("Matrix3d.factorPerpendicularColumns", () => {
+  it("Matrix3d.factorPerpendicularColumns", () => {
     const ck = new bsiChecker.Checker();
     for (const scale of [1, 10, 1000, 68234]) {
       for (const ef of [[0, 0, 0],
@@ -177,13 +177,13 @@ describe("RotMatrix.factorPerpendicularColumns", () => {
         const e = ef[0];
         const f = ef[1];
         const g = ef[2];
-        const matrixA = RotMatrix.createRowValues(
+        const matrixA = Matrix3d.createRowValues(
           2, 0, 2,
           e, f, -e,
           g, 1, 0);
         matrixA.scaleColumns(scale, scale, scale);
-        const matrixB = RotMatrix.createZero();
-        const matrixU = RotMatrix.createZero();
+        const matrixB = Matrix3d.createZero();
+        const matrixU = Matrix3d.createZero();
         matrixA.factorPerpendicularColumns(matrixB, matrixU);
         const matrixBU = matrixB.multiplyMatrixMatrix(matrixU);
         const matrixBTB = matrixB.multiplyMatrixTransposeMatrix(matrixB);
@@ -195,23 +195,23 @@ describe("RotMatrix.factorPerpendicularColumns", () => {
           console.log("U", matrixU);
           console.log("BTB", matrixBTB);
         }
-        ck.testBoolean(true, matrixBTB.isDiagonal(), "BTB diagonal");
+        ck.testBoolean(true, matrixBTB.isDiagonal, "BTB diagonal");
         ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "factorPerpendicularColumns");
         ck.testBoolean(true, matrixU.isRigid());
       }
     }
-    ck.checkpoint("RotMatrix.Columns");
+    ck.checkpoint("Matrix3d.Columns");
     expect(ck.getNumErrors()).equals(0);
   });
 });
-describe("RotMatrix.symmetricEigenvalues", () => {
-  it("RotMatrix.symmetricEigenvalues", () => {
+describe("Matrix3d.symmetricEigenvalues", () => {
+  it("Matrix3d.symmetricEigenvalues", () => {
     const ck = new bsiChecker.Checker();
     let caseCounter = 0;
     for (const lambda0 of [
       Vector3d.create(2, 1, 4),
       Vector3d.create(3, 2, -1)]) {
-      for (const eigen0 of Sample.createRotMatrixArray()) {
+      for (const eigen0 of Sample.createMatrix3dArray()) {
         if (eigen0.isRigid()) {
           const matrixA = eigen0.scaleColumns(lambda0.x, lambda0.y, lambda0.z);
           const matrixB = matrixA.multiplyMatrixMatrixTranspose(eigen0);
@@ -222,23 +222,23 @@ describe("RotMatrix.symmetricEigenvalues", () => {
             console.log("EXPECTED Eigenvalues", lambda0);
           }
 
-          const eigen1 = RotMatrix.createIdentity();
+          const eigen1 = Matrix3d.createIdentity();
           const lambda1 = Vector3d.create();
           matrixB.symmetricEigenvalues(eigen1, lambda1);
 
-          const eigenF = RotMatrix.createIdentity();
+          const eigenF = Matrix3d.createIdentity();
           const lambdaF = Vector3d.create();
           matrixB.fastSymmetricEigenvalues(eigenF, lambdaF);
           const matrixAF = eigenF.scaleColumns(lambdaF.x, lambdaF.y, lambdaF.z);
           const matrixBF = matrixAF.multiplyMatrixMatrixTranspose(eigenF);
           ck.testBoolean(true, eigenF.isRigid(), "Eigenvector matrix is rigid");
-          ck.testRotMatrix(matrixB, matrixBF, "Symmetric Eigenvalue reconstruction");
+          ck.testMatrix3d(matrixB, matrixBF, "Symmetric Eigenvalue reconstruction");
 
           // um .. order can change. Only the reconstruction has to match ..
           const matrixA1 = eigen1.scaleColumns(lambda1.x, lambda1.y, lambda1.z);
           const matrixB1 = matrixA1.multiplyMatrixMatrixTranspose(eigen1);
           ck.testBoolean(true, eigen1.isRigid(), "Eigenvector matrix is rigid");
-          ck.testRotMatrix(matrixB, matrixB1, "Symmetric Eigenvalue reconstruction");
+          ck.testMatrix3d(matrixB, matrixB1, "Symmetric Eigenvalue reconstruction");
           if (bsiChecker.Checker.noisy.symmetricEigenvalues) {
             console.log(" FAST Eigenvalues ", lambdaF);
             console.log(" FAST product", matrixBF);
@@ -249,15 +249,15 @@ describe("RotMatrix.symmetricEigenvalues", () => {
         }
       }
     }
-    ck.checkpoint("RotMatrix.symmetricEigenvalues");
+    ck.checkpoint("Matrix3d.symmetricEigenvalues");
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
-describe("RotMatrix.directDots", () => {
-  it("RotMatrix.RotMatrix.directDots", () => {
+describe("Matrix3d.directDots", () => {
+  it("Matrix3d.Matrix3d.directDots", () => {
     const ck = new bsiChecker.Checker();
-    const matrix = RotMatrix.createRowValues(
+    const matrix = Matrix3d.createRowValues(
       1, 2, 3,
       0.3, 0.77, 4.2,
       -0.02, 5, 9);
@@ -271,44 +271,44 @@ describe("RotMatrix.directDots", () => {
     ck.testExactNumber(matrix.columnXMagnitudeSquared(), product.at(0, 0));
     ck.testExactNumber(matrix.columnYMagnitudeSquared(), product.at(1, 1));
     ck.testExactNumber(matrix.columnZMagnitudeSquared(), product.at(2, 2));
-    ck.checkpoint("RotMatrix.directDots");
+    ck.checkpoint("Matrix3d.directDots");
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
-describe("RotMatrix.cachedInverse", () => {
+describe("Matrix3d.cachedInverse", () => {
   it("cachedInverse", () => {
     const ck = new bsiChecker.Checker();
-    const matrixA = RotMatrix.createRowValues(
+    const matrixA = Matrix3d.createRowValues(
       1, 2, 3,
       0.3, 0.77, 4.2,
       -0.02, 5, 9);
-    RotMatrix.numUseCache = 0;
-    RotMatrix.numComputeCache = 0;
-    RotMatrix.useCachedInverse = true;
+    Matrix3d.numUseCache = 0;
+    Matrix3d.numComputeCache = 0;
+    Matrix3d.useCachedInverse = true;
     // first inverssion should do the calculation
-    const inverseA1 = matrixA.inverse() as RotMatrix;
-    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity(), "first inverse");
+    const inverseA1 = matrixA.inverse() as Matrix3d;
+    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity, "first inverse");
     // second inversion should reuse.
-    const inverseA2 = matrixA.inverse() as RotMatrix;
-    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA2).isIdentity(), "first inverse");
+    const inverseA2 = matrixA.inverse() as Matrix3d;
+    ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA2).isIdentity, "first inverse");
 
-    ck.testExactNumber(1, RotMatrix.numUseCache);
-    ck.testExactNumber(1, RotMatrix.numComputeCache);
+    ck.testExactNumber(1, Matrix3d.numUseCache);
+    ck.testExactNumber(1, Matrix3d.numComputeCache);
     const matrixB = matrixA.clone();
-    const inverseB = RotMatrix.createIdentity();
-    RotMatrix.numUseCache = 0;
-    RotMatrix.numComputeCache = 0;
+    const inverseB = Matrix3d.createIdentity();
+    Matrix3d.numUseCache = 0;
+    Matrix3d.numComputeCache = 0;
     const numInvert = 10;
     for (let i = 0; i < numInvert; i++) {
       matrixB.inverse(inverseB);
       const product = matrixB.multiplyMatrixMatrix(inverseB);
-      ck.testTrue(product.isIdentity());
+      ck.testTrue(product.isIdentity);
     }
 
-    ck.testExactNumber(1, RotMatrix.numComputeCache);
-    ck.testExactNumber(numInvert - 1, RotMatrix.numUseCache);
-    ck.checkpoint("RotMatrix.cachedInverse");
+    ck.testExactNumber(1, Matrix3d.numComputeCache);
+    ck.testExactNumber(numInvert - 1, Matrix3d.numUseCache);
+    ck.checkpoint("Matrix3d.cachedInverse");
     expect(ck.getNumErrors()).equals(0);
   });
 });

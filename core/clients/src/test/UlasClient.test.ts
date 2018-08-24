@@ -11,7 +11,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
 
 export class UlasClientUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
@@ -19,11 +19,11 @@ export class UlasClientUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(UlasClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(UlasClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

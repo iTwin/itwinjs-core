@@ -52,8 +52,8 @@ export default class ExpandableItem extends React.Component<ExpandableItemProps>
     const historyPortal = ReactDOM.createPortal(this.props.history, this._history);
     return (
       <div
-        onMouseEnter={this.handleOnMouseEnter}
-        onMouseLeave={this.handleOnMouseLeave}
+        onMouseEnter={this._handleOnMouseEnter}
+        onMouseLeave={this._handleOnMouseLeave}
         className={className}
         style={this.props.style}
       >
@@ -65,11 +65,11 @@ export default class ExpandableItem extends React.Component<ExpandableItemProps>
     );
   }
 
-  private handleOnMouseEnter = () => {
+  private _handleOnMouseEnter = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
   }
 
-  private handleOnMouseLeave = () => {
+  private _handleOnMouseLeave = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
   }
 }

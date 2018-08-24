@@ -12,7 +12,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 chai.should();
 
 export class ConnectUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-wsg20-eus.cloudapp.net",
     QA: "https://qa-connect-wsg20.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
@@ -20,11 +20,11 @@ export class ConnectUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(ConnectClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(ConnectClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 
@@ -122,7 +122,7 @@ describe("ConnectClient", () => {
 });
 
 export class RbacUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-rbac-eus.cloudapp.net",
     QA: "https://qa-connect-rbac.bentley.com",
     PROD: "https://connect-rbac.bentley.com",
@@ -130,11 +130,11 @@ export class RbacUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(RbacClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(RbacClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 

@@ -36,10 +36,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public setIsShared(b: boolean) { this._isShared = b; }
 
   /** @hidden - used by statement cache */
-  public isShared(): boolean { return this._isShared; }
+  public get isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
-  public isPrepared(): boolean { return !!this._stmt; }
+  public get isPrepared(): boolean { return !!this._stmt; }
 
   /** @hidden used internally only
    * Prepare this statement prior to first use.
@@ -49,7 +49,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * The error.message property will provide details.
    */
   public prepare(db: NativeDgnDb | NativeECDb, sql: string): void {
-    if (this.isPrepared())
+    if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._stmt = new (NativePlatformRegistry.getNativePlatform()).NativeSqliteStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, sql);
@@ -62,8 +62,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    * @return Returns True, if the statement is readonly. False otherwise.
    */
-  public isReadonly(): boolean {
-    if (!this.isPrepared())
+  public get isReadonly(): boolean {
+    if (!this.isPrepared)
       throw new Error("SqliteStatement is not prepared.");
 
     return this._stmt!.isReadonly();
@@ -83,9 +83,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
   public dispose(): void {
-    if (this.isShared())
+    if (this.isShared)
       throw new Error("you can't dispose an SqliteStatement that is shared with others (e.g., in a cache)");
-    if (!this.isPrepared())
+    if (!this.isPrepared)
       return;
     this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
     this._stmt = undefined; // discard the peer JS object as garbage
@@ -207,7 +207,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
       const sqliteValue: SqliteValue = this.getValue(i);
-      if (!sqliteValue.isNull()) {
+      if (!sqliteValue.isNull) {
         const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
         let val: any;
         switch (sqliteValue.type) {
@@ -305,7 +305,7 @@ export class SqliteValue {
   }
 
   /** Indicates whether the value is NULL or not. */
-  public isNull(): boolean { return this._stmt.isValueNull(this._colIndex); }
+  public get isNull(): boolean { return this._stmt.isValueNull(this._colIndex); }
 
   /** Gets the data type of the value. */
   public get type(): SqliteValueType { return this._stmt.getColumnType(this._colIndex); }
@@ -370,29 +370,29 @@ export class CachedSqliteStatement {
  * save previously prepared SqliteStatements for reuse.
  */
 export class SqliteStatementCache {
-  private readonly statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();
+  private readonly _statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();
   public readonly maxCount: number;
 
   public constructor(maxCount = 20) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: SqliteStatement): void {
-    const existing = this.statements.get(str);
+    const existing = this._statements.get(str);
     if (existing !== undefined) {
       throw new Error("you should only add a statement if all existing copies of it are in use.");
     }
     const cs = new CachedSqliteStatement(stmt);
     cs.statement.setIsShared(true);
-    this.statements.set(str, cs);
+    this._statements.set(str, cs);
   }
 
-  public getCount(): number { return this.statements.size; }
+  public getCount(): number { return this._statements.size; }
 
   public find(str: string): CachedSqliteStatement | undefined {
-    return this.statements.get(str);
+    return this._statements.get(str);
   }
 
   public release(stmt: SqliteStatement): void {
-    for (const cs of this.statements) {
+    for (const cs of this._statements) {
       const css = cs[1];
       if (css.statement === stmt) {
         if (css.useCount > 0) {
@@ -417,7 +417,7 @@ export class SqliteStatementCache {
       return;
 
     const keysToRemove = [];
-    for (const cs of this.statements) {
+    for (const cs of this._statements) {
       const css = cs[1];
       if (css.useCount === 0) {
         css.statement.setIsShared(false);
@@ -428,18 +428,18 @@ export class SqliteStatementCache {
       }
     }
     for (const k of keysToRemove) {
-      this.statements.delete(k);
+      this._statements.delete(k);
     }
   }
 
   public clear() {
-    for (const cs of this.statements) {
+    for (const cs of this._statements) {
       const stmt = cs[1].statement;
       if (stmt !== undefined) {
         stmt.setIsShared(false);
         stmt.dispose();
       }
     }
-    this.statements.clear();
+    this._statements.clear();
   }
 }

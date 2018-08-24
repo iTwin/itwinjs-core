@@ -11,7 +11,7 @@ import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Point2d, Point3d, Vector2d, Vector3d } from "../PointVector";
 import { Point3dArrayCarrier, Point3dArray } from "../PointHelpers";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Sample } from "../serialization/GeometrySamples";
 import { Angle } from "../Geometry";
 
@@ -298,12 +298,12 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(point.isAlmostEqual(vector));
     ck.testPoint3d(point, Point3d.create(4, 5, 6));
 
-    const transform = Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), RotMatrix.createRowValues(
+    const transform = Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRowValues(
       2, 1, 0,
       2, 0, 0,
       2, 0, 1,
     ));
-    const noInverseTransform = Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), RotMatrix.createRowValues(
+    const noInverseTransform = Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRowValues(
       1, 6, 4,
       2, 4, -1,
       -1, 2, 5,
@@ -327,7 +327,7 @@ describe("GrowablePoint3dArray", () => {
     const ck = new Checker();
     const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      RotMatrix.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(points);
 
     const gPoints = new GrowableXYZArray();

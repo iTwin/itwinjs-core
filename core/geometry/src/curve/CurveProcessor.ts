@@ -60,13 +60,13 @@ export abstract class RecursiveCurveProcessor {
  */
 export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurveProcessor {
   // NOTE: parameter names begin with underbar to suppress "unused var" errors
-  protected stack: CurveCollection[];
+  protected _stack: CurveCollection[];
   protected constructor() {
     super();
-    this.stack = [];
+    this._stack = [];
   }
-  public enter(data: CurveCollection) { this.stack.push(data); }
-  public leave(): CurveCollection | undefined { return this.stack.pop(); }
+  public enter(data: CurveCollection) { this._stack.push(data); }
+  public leave(): CurveCollection | undefined { return this._stack.pop(); }
 
   /** process error content */
   public announceUnexpected(_data: AnyCurve, _indexInParent: number) { }

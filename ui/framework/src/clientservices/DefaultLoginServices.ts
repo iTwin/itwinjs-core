@@ -15,13 +15,13 @@ import { LoginServices } from "./LoginServices";
  */
 export class DefaultLoginServices implements LoginServices {
   /** The current open IModelConnection. Will be `undefined` until [[openIModel]] is called. */
-  private readonly authClient = new ImsActiveSecureTokenClient("QA");
-  private readonly accessClient = new ImsDelegationSecureTokenClient("QA");
+  private readonly _authClient = new ImsActiveSecureTokenClient("QA");
+  private readonly _accessClient = new ImsDelegationSecureTokenClient("QA");
 
   /** Logs in to IMS and returns an AccessToken. Called from the Login page */
   public async imsLogin(userName: string, password: string): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await this.authClient.getToken(userName, password);
-    const accessToken: AccessToken = await this.accessClient.getToken(authToken);
+    const authToken: AuthorizationToken = await this._authClient.getToken(userName, password);
+    const accessToken: AccessToken = await this._accessClient.getToken(authToken);
     return accessToken;
   }
 

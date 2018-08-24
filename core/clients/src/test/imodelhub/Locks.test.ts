@@ -37,7 +37,7 @@ describe("iModelHubClient LockHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     accessToken = await utils.login();
-    // Doesn't create an imodel right now, but should in the future
+    // Does not create an imodel right now, but should in the future
     await utils.createIModel(accessToken, imodelName, undefined, true);
     iModelId = await utils.getIModelId(accessToken, imodelName);
     briefcases = (await utils.getBriefcases(accessToken, iModelId, 2));

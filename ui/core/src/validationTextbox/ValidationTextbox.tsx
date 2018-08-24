@@ -54,11 +54,11 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
         <input
           className={this._isValid ? validClassNames : invalidClassNames}
           ref={(el) => { this._inputElement = el; }}
-          onChange={this.validateText}
-          onKeyUp={this.validateText}
-          onPaste={this.validateText}
-          onCut={this.validateText}
-          onClick={this.validateText}
+          onChange={this._validateText}
+          onKeyUp={this._validateText}
+          onPaste={this._validateText}
+          onCut={this._validateText}
+          onClick={this._validateText}
           placeholder={this.props.placeholder ? this.props.placeholder : ""}
           style={sizeStyle}
         />
@@ -66,7 +66,7 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
     );
   }
 
-  private validateText = (event?: any): void => {
+  private _validateText = (event?: any): void => {
     this._isValid = false;
     let value = "";
 

@@ -21,6 +21,7 @@
 ### ($components)
 
 - [Breadcrumb]($components:Breadcrumb)
+- [DragDrop]($components:DragDrop)
 - [Common]($components:Common)
 - [Properties]($components:Properties)
 - [PropertyGrid]($components:PropertyGrid)

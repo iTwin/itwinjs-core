@@ -16,67 +16,85 @@ import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-export const enum ContainsSchemaChanges {
-  No = 0,
-  Yes = 1,
+/** Specifies types of changes in a [[ChangeSet]]. */
+export const enum ChangesType {
+  /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
+  Regular,
+  /** [[ChangeSet]] only contains schema changes. */
+  Schema,
 }
 
-/** ChangeSet */
+/**
+ * ChangeSet represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
+  /** Id of this ChangeSet. It has to be set during the push. It's a hash value based on the contents of ChangeSet file and its parentId. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public id?: string;
 
+  /** Filename of the ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
   public fileName?: string;
 
+  /** Description of this ChangeSet. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
+  /** Size of this ChangeSet file. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileSize")
   public fileSize?: string;
 
+  /** Index of this ChangeSet (increasing, but not necessarily sequential). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Index")
   public index?: string;
 
+  /** Id of this ChangeSet's parent ChangeSet. It has to be set during the push. See [BriefcaseEntry.reversedChangeSetId]($backend). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ParentId")
   public parentId?: string;
 
+  /** Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
   public seedFileId?: string;
 
+  /** Id of the [[Briefcase]] that pushed this ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
   public briefcaseId?: number;
 
+  /** Id of the user that pushed this ChangeSet. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UserCreated")
   public userCreated?: string;
 
+  /** Date when this ChangeSet was pushed to iModelHub. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.PushDate")
   public pushDate?: string;
 
+  /** Shows what kind of changes are contained in this ChangeSet. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContainingChanges")
-  public containsSchemaChanges?: ContainsSchemaChanges;
+  public changesType?: ChangesType;
 
+  /** Flag that needs to be marked true, when confirming successful ChangeSet upload. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsUploaded")
   public isUploaded?: boolean;
 
+  /** URL from where the ChangeSet file can be downloaded. See [[ChangeSetQuery.selectDownloadUrl]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
+  /** URL where the ChangeSet file has to be uploaded. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.UploadUrl")
   public uploadUrl?: string;
 
-  /** Pathname of the download change set on disk */
+  /** Path to the download ChangeSet file on disk. */
   public pathname?: string;
 }
 
 /**
- * Query object for getting ChangeSets You can use this to modify the query.
- * @see ChangeSetHandler.get()
+ * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
  */
 export class ChangeSetQuery extends InstanceIdQuery {
   /**
-   * Query will additionally select Briefcase file download URL.
+   * Query will additionally select [[ChangeSet]] file download URL. This is needed to use the ChangeSet object with [[ChangeSetHandler.download]].
    * @returns This query.
    */
   public selectDownloadUrl() {
@@ -85,7 +103,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query ChangeSet by its id.
+   * Query [[ChangeSet]] by its id.
    * @param id Id of a ChangeSet.
    * @returns This query.
    */
@@ -96,7 +114,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query all ChangeSets that are after given ChangeSet id (does not include the specified change set)
+   * Query [[ChangeSet]]s that are after the specified ChangeSet. This overrides any previously applied ChangeSetQuery filters. Query will return all of the ChangeSets that are newer than the one specified by id. ChangeSet specified by the id will not be included in the results. Returned ChangeSets will be in an ascending order.
    * @param id Id of a ChangeSet.
    * @returns This query.
    */
@@ -107,7 +125,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
-   * Change the order to latest changesets first in the query.
+   * Change the order of results to be from newest [[ChangeSet]]s to the oldest ones.
    * @returns This query.
    */
   public latest() {
@@ -116,7 +134,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query ChangeSets between changeSets.
+   * Query [[ChangeSet]]s between two specified ChangeSets. This overrides any previously applied ChangeSetQuery filters. This query will work when either of the ChangeSet ids points to an earlier ChangeSet. Latest ChangeSet specified by this range will be included in the results, but the earliest will be excluded. If the second ChangeSet id is not specified, it's assumed that it's the same as an empty id, and query will return all ChangeSets from the start up to the ChangeSet with the first id. Returned ChangeSets will be in an ascending order.
    * @param firstChangeSetId Id of the first changeSet.
    * @param secondChangeSetId Id of the second changeSet.
    * @returns This query.
@@ -135,34 +153,34 @@ export class ChangeSetQuery extends InstanceIdQuery {
       query += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+'${firstChangeSetId}')`;
     }
 
-    this.addFilter(query);
+    this._query.$filter = query;
     return this;
   }
 
   /**
-   * Query version changeSets.
+   * Query [[ChangeSet]]s included in the specified [[Version]]. This overrides any previously applied ChangeSetQuery filters. Query will return all of the ChangeSets from the start up to the one specified by versionId. ChangeSet specified by versionId will be included in the results. Returned ChangeSets will be in an ascending order.
    * @param versionId Id of the version.
    * @returns This query.
    */
   public getVersionChangeSets(versionId: string) {
     ArgumentCheck.validGuid("versionId", versionId);
-    this.addFilter(`CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`);
+    this._query.$filter = `CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
   }
 
   /**
-   * Query changeSets after version.
+   * Query [[ChangeSet]]s after the specified [[Version]]. This overrides any previously applied ChangeSetQuery filters. Query will return all of the ChangeSets that are newer than the one specified by versionId. ChangeSet specified by versionId will not be included in the results. Returned ChangeSets will be in an ascending order.
    * @param versionId Id of the version.
    * @returns This query.
    */
   public afterVersion(versionId: string) {
     ArgumentCheck.validGuid("versionId", versionId);
-    this.addFilter(`FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`);
+    this._query.$filter = `FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
   }
 
   /**
-   * Query changeSets between two versions.
+   * Query [[ChangeSet]]s between two specified [[Version]]s. This overrides any previously applied ChangeSetQuery filters. This query will work when either of the Version ids points to an earlier ChangeSet. Latest ChangeSet specified by this range will be included in the results, but the earliest will be excluded. Returned ChangeSets will be in an ascending order.
    * @param sourceVersionId Id of the source version.
    * @param destinationVersionId Id of the destination version.
    * @returns This query.
@@ -176,12 +194,12 @@ export class ChangeSetQuery extends InstanceIdQuery {
     query += `+or+(FollowingChangeSet-backward-Version.Id+eq+'${destinationVersionId}'`;
     query += `+and+CumulativeChangeSet-backward-Version.Id+eq+'${sourceVersionId}')`;
 
-    this.addFilter(query);
+    this._query.$filter = query;
     return this;
   }
 
   /**
-   * Query changeSets between version and changeSet.
+   * Query [[ChangeSet]]s between the specified [[Version]] and another [[ChangeSet]]. This overrides any previously applied ChangeSetQuery filters. This query will work when either versionId or changeSetId points to an earlier ChangeSet. Latest ChangeSet specified by this range will be included in the results, but the earliest will be excluded. Returned ChangeSets will be in an ascending order.
    * @param versionId Id of the version.
    * @param changeSetId Id of the changeSet.
    * @returns This query.
@@ -194,12 +212,13 @@ export class ChangeSetQuery extends InstanceIdQuery {
     query += `+or+`;
     query += `(FollowingChangeSet-backward-Version.Id+eq+'${versionId}'+and+CumulativeChangeSet-backward-ChangeSet.Id+eq+'${changeSetId}')`;
 
-    this.addFilter(query);
+    this._query.$filter = query;
     return this;
   }
 
   /**
-   * Query changeSets by seed file id.
+   * Query changeSets by the seed file id. Should be obsolete, because seed file replacement is deprecated.
+   * @hidden
    * @param seedFileId Id of the seed file.
    * @returns This query.
    */
@@ -211,14 +230,15 @@ export class ChangeSetQuery extends InstanceIdQuery {
 }
 
 /**
- * Handler for all methods related to ChangeSets.
+ * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
 
   /**
-   * Constructor for ChangeSetHandler. Should use @see IModelClient instead of directly constructing this.
+   * Constructor for ChangeSetHandler. Should use [[IModelClient]] instead of directly constructing this.
+   * @hidden
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
@@ -228,8 +248,9 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Gets relative url for ChangeSet requests.
-   * @param imodelId Id of the iModel.
+   * Get relative url for ChangeSet requests.
+   * @hidden
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param changeSetId Id of the ChangeSet.
    */
   private getRelativeUrl(imodelId: string, changeSetId?: string) {
@@ -237,13 +258,13 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Gets ChangeSets.
+   * Get the [[ChangeSet]]s for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param query Object to modify this methods results.
-   * @returns Resolves to an array of change sets.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param query Optional query object to filter the queried ChangeSets or select different data from them.
+   * @returns ChangeSets that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
@@ -259,12 +280,12 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Downloads the specified ChangeSets.
-   * Creates the directory containing the ChangeSets if necessary.
-   * If there is an error in downloading some ChangeSet, throws an error and any incomplete ChangeSet is deleted from disk.
-   * @param changeSets Change sets to download. These need to include a download link. @see ChangeSetQuery.selectDownloadUrl().
+   * Download the specified [[ChangeSet]]s. If you want to pull and merge ChangeSets from iModelHub to your [[Briefcase]], you should use [IModelDb.pullAndMergeChanges]($backend) instead.
+   *
+   * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
+   * @param changeSets ChangeSets to download. These need to include a download link. See [[ChangeSetQuery.selectDownloadUrl]].
    * @param downloadToPath Directory where the ChangeSets should be downloaded.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the required arguments is undefined or empty.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley), if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the download fails.
    */
@@ -273,7 +294,7 @@ export class ChangeSetHandler {
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("downloadToPath", downloadToPath);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
@@ -307,18 +328,20 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Uploads a ChangeSet
+   * Upload a [[ChangeSet]] file. If you want to push your changes to iModelHub, use [IModelDb.pushChanges]($backend) instead. This method is only a part of that workflow.
+   *
+   * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
    * @param changeSet Information of the ChangeSet to be uploaded.
-   * @param changeSetPathname Pathname of the ChangeSet to be uploaded.
-   * @param progressCallback Callback for tracking progress.
-   * @throws [IModelHubStatus.BriefcaseDoesNotBelongToUser]($bentley) if [[Briefcase]] specified by changeSet.briefcaseId belongs to another user.
-   * @throws [IModelHubStatus.AnotherUserPushing]($bentley) if another user is currently uploading a [[ChangeSet]].
-   * @throws [IModelHubStatus.PullIsRequired]($bentley) if there are newer [[ChangeSet]]s on iModel Hub, that need to be downloaded and merged, before upload is possible.
-   * @throws [IModelHubStatus.ChangeSetAlreadyExists]($bentley) if a [[ChangeSet]] with this id already exists. This usually happens if previous upload attempt has succeeded.
-   * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId isn't set to the correct file id. That file id should match to the value written to the [[Briefcase]] file.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param changeSetPathname Pathname of the ChangeSet file to be uploaded.
+   * @param progressCallback Callback for tracking upload progress.
+   * @throws [IModelHubStatus.BriefcaseDoesNotBelongToUser]($bentley) if Briefcase specified by changeSet.briefcaseId belongs to another user.
+   * @throws [IModelHubStatus.AnotherUserPushing]($bentley) if another user is currently uploading a ChangeSet.
+   * @throws [IModelHubStatus.PullIsRequired]($bentley) if there are newer ChangeSets on iModelHub, that need to be downloaded and merged, before upload is possible.
+   * @throws [IModelHubStatus.ChangeSetAlreadyExists]($bentley) if a ChangeSet with this id already exists. This usually happens if previous upload attempt has succeeded.
+   * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(token: AccessToken, imodelId: string, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
@@ -327,7 +350,7 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("changeSetPathname", changeSetPathname);
 
-    if (Config.isBrowser())
+    if (Config.isBrowser)
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

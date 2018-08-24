@@ -33,7 +33,7 @@ class QuadId {
   public level: number;
   public column: number;
   public row: number;
-  public isValid() { return this.level >= 0; }
+  public get isValid() { return this.level >= 0; }
 
   public constructor(stringId: string) {
     const idParts = stringId.split("_");
@@ -111,15 +111,15 @@ class WebMercatorTileProps implements TileProps {
   }
 }
 class WebMercatorTileLoader extends TileLoader {
-  private providerInitializing?: Promise<void>;
-  private providerInitialized: boolean = false;
+  private _providerInitializing?: Promise<void>;
+  private _providerInitialized: boolean = false;
   public mercatorToDb: Transform;
-  constructor(private imageryProvider: ImageryProvider, private iModel: IModelConnection, groundBias: number) {
+  constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number) {
     super();
-    const ecefLocation = iModel.ecefLocation as EcefLocation;
-    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+    const ecefLocation: EcefLocati9on = _iModel.ecefLocation;
+    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
-    const projectExtents = iModel.projectExtents;
+    const projectExtents = _iModel.projectExtents;
     const projectCenter = projectExtents.getCenter();
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
@@ -157,11 +157,11 @@ class WebMercatorTileLoader extends TileLoader {
 
         const quadId = new QuadId(missingTile.id);
         const corners = quadId.getCorners(this.mercatorToDb);
-        const imageSource = await this.imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+        const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
         if (undefined === imageSource) {
           missingTile.setNotFound();
         } else {
-          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this.iModel, IModelApp.renderSystem);
+          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
           textureLoad.catch((_err) => missingTile.setNotFound());
           textureLoad.then((result) => {
             missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
@@ -183,7 +183,7 @@ class WebMercatorTileLoader extends TileLoader {
     }
   }
 
-  public get maxDepth(): number { return this.providerInitialized ? this.imageryProvider.maximumZoomLevel : 32; }
+  public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
 }
 
 // The type of background map
@@ -427,7 +427,7 @@ class MapBoxProvider extends ImageryProvider {
 
   constructor(mapType: MapType) {
     super(mapType);
-    this._zoomMin = this._zoomMax = 0;
+    this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
       case MapType.Street:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets/";
@@ -474,44 +474,44 @@ class MapBoxProvider extends ImageryProvider {
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  private provider?: ImageryProvider;
-  private providerName: string;
+  private _provider?: ImageryProvider;
+  private _providerName: string;
   /// private providerData: string;
-  private groundBias: number;
-  private mapType: MapType;
-  private logoImageAddedToDOM: boolean = false;
+  private _groundBias: number;
+  private _mapType: MapType;
+  private _logoImageAddedToDOM: boolean = false;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this.iModel, true, loader));
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
   public getPlane(): Plane3dByOriginAndUnitNormal {
-    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this.groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
+    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this._groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
   }
-  public constructor(json: any, private iModel: IModelConnection) {
-    this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
+  public constructor(json: any, private _iModel: IModelConnection) {
+    this._providerName = JsonUtils.asString(json.providerName, "BingProvider");
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
-    this.groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
-    this.mapType = JsonUtils.asInt(json.mapType, MapType.Hybrid);
+    this._groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
+    this._mapType = JsonUtils.asInt(json.mapType, MapType.Hybrid);
   }
 
   private loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;
 
-    if (this.iModel.ecefLocation === undefined) {
+    if (this._iModel.ecefLocation === undefined) {
       return this._loadStatus;
     }
 
-    if ("BingProvider" === this.providerName) {
-      this.provider = new BingMapProvider(this.mapType);
-    } else if ("MapBoxProvider" === this.providerName) {
-      this.provider = new MapBoxProvider(this.mapType);
+    if ("BingProvider" === this._providerName) {
+      provider = new BingMapProvider(this.mapType);
+    } else if ("MapBoxProvider" === this._providerName) {
+      provider = new MapBoxProvider(this.mapType);
     }
     if (this.provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(this.provider, this.iModel, JsonUtils.asDouble(this.groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this.provider, this._iModel, JsonUtils.asDouble(this.groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;

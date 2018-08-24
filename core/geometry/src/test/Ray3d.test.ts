@@ -4,7 +4,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Ray3d } from "../AnalyticGeometry";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -23,7 +23,7 @@ function createRays(ck: Checker, target?: Ray3d) {
   ck.testPoint3d(pointA, ray1.origin);
   ck.testVector3d(directionA, ray1.direction);
 
-  const transform = Transform.createOriginAndMatrix(Point3d.create(4, 2, -1), RotMatrix.createScale(-3, -2, 5));
+  const transform = Transform.createOriginAndMatrix(Point3d.create(4, 2, -1), Matrix3d.createScale(-3, -2, 5));
   const ray3 = ray.clone();
   const ray3A = ray.clone(Ray3d.createZero());
   const ray4 = ray.cloneTransformed(transform);

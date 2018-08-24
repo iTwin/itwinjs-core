@@ -83,7 +83,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     };
   }
 
-  private handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
+  private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
     this._frontstageDef = FrontstageManager.findFrontstageDef(args.frontstageId);
 
     this.setState((prevState, _props) => {
@@ -97,7 +97,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     });
   }
 
-  private handleModalFrontstageStackChangedEvent = (_args: ModalFrontstageStackChangedEventArgs) => {
+  private _handleModalFrontstageStackChangedEvent = (_args: ModalFrontstageStackChangedEventArgs) => {
     this.setState((_prevState) => {
       return {
         modalFronstageStackDepth: FrontstageManager.modalFrontstageStackDepth,
@@ -106,10 +106,10 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   }
 
-  private navigationBack = () => {
+  private _navigationBack = () => {
   }
 
-  private closeModal = () => {
+  private _closeModal = () => {
     FrontstageManager.closeModalFrontstage();
   }
 
@@ -124,8 +124,8 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
       <ModalFrontstage
         isOpen={true}
         title={title}
-        navigateBack={this.navigationBack}
-        closeModal={this.closeModal}
+        navigateBack={this._navigationBack}
+        closeModal={this._closeModal}
         appBarRight={appBarRight}
       >
         {content}
@@ -155,18 +155,18 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   public componentDidMount(): void {
     this.layout();
-    window.addEventListener("resize", this.handleWindowResize, true);
-    FrontstageManager.FrontstageActivatedEvent.addListener(this.handleFrontstageActivatedEvent);
-    FrontstageManager.ModalFrontstageStackChangedEvent.addListener(this.handleModalFrontstageStackChangedEvent);
+    window.addEventListener("resize", this._handleWindowResize, true);
+    FrontstageManager.FrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
+    FrontstageManager.ModalFrontstageStackChangedEvent.addListener(this._handleModalFrontstageStackChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    document.removeEventListener("resize", this.handleWindowResize, true);
-    FrontstageManager.FrontstageActivatedEvent.removeListener(this.handleFrontstageActivatedEvent);
-    FrontstageManager.ModalFrontstageStackChangedEvent.removeListener(this.handleModalFrontstageStackChangedEvent);
+    document.removeEventListener("resize", this._handleWindowResize, true);
+    FrontstageManager.FrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
+    FrontstageManager.ModalFrontstageStackChangedEvent.removeListener(this._handleModalFrontstageStackChangedEvent);
   }
 
-  private handleWindowResize = () => {
+  private _handleWindowResize = () => {
     this.layout();
   }
 

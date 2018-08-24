@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
-import * as THREE from "three";
-import { CubeNavigationAid } from "@src/index";
+import * as sinon from "sinon";
+import { Face } from "@bentley/ui-core";
+import { Point3d } from "@bentley/geometry-core";
+import { CubeNavigationAid, NavCubeFace, FaceCell, HitBoxX, HitBoxY, HitBoxZ, CubeHover } from "../../../src/index";
 import TestUtils from "../../TestUtils";
-import { YawPitchRollAngles } from "@bentley/geometry-core";
 
 describe("CubeNavigationAid", () => {
 
@@ -15,42 +16,81 @@ describe("CubeNavigationAid", () => {
   });
 
   describe("<CubeNavigationAid />", () => {
+    it("should render", () => {
+      mount(<CubeNavigationAid />);
+    });
     it("renders correctly", () => {
       shallow(<CubeNavigationAid />).should.matchSnapshot();
     });
   });
-  describe("CubeNavigationAid static functions", () => {
-    it("threeJSToIModelJS converts between coordinate systems correctly", () => {
-      const ypr = CubeNavigationAid.threeJSToIModelJS(new THREE.Euler(Math.PI / 4, Math.PI / 2, 0));
-      ypr.yaw.radians.should.equal(Math.PI / 2);
-      ypr.pitch.radians.should.equal(3 * Math.PI / 4);
-      ypr.roll.radians.should.equal(0);
+  describe("<NavCubeFace />", () => {
+    it("should render", () => {
+      mount(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => { }} onFaceCellHoverChange={() => { }} />);
     });
-    it("iModelJSToThreeJS converts between coordinate systems correctly", () => {
-      const euler = CubeNavigationAid.iModelJSToThreeJS(YawPitchRollAngles.createRadians(Math.PI / 2, Math.PI / 4 + Math.PI / 2, 0));
-      euler.x.should.equal(-5 * Math.PI / 4);
-      euler.y.should.equal(Math.PI / 2);
-      euler.z.should.equal(0);
+    const wrapper = shallow(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={() => { }} onFaceCellHoverChange={() => { }} />);
+    it("renders correctly", () => {
+      wrapper.should.matchSnapshot();
     });
-    it("Ease function calculates expected values", () => {
-      CubeNavigationAid.easeFn(0).should.equal(0);
-      CubeNavigationAid.easeFn(1).should.equal(1);
-      (Math.round(CubeNavigationAid.easeFn(.5) * 1e15) / 1e15).should.equal(.5);
-    });
-    it("normalizeAngle correctly wraps angles to (-pi, pi] interval.", () => {
-      CubeNavigationAid.normalizeAngle(Math.PI / 2).should.equal(Math.PI / 2);
-      CubeNavigationAid.normalizeAngle(5 * Math.PI / 2).should.equal(Math.PI / 2);
-      CubeNavigationAid.normalizeAngle(9 * Math.PI / 2).should.equal(Math.PI / 2);
+    describe("methods and callbacks", () => {
 
-      CubeNavigationAid.normalizeAngle(-Math.PI / 2).should.equal(-Math.PI / 2);
-      CubeNavigationAid.normalizeAngle(-5 * Math.PI / 2).should.equal(-Math.PI / 2);
-      CubeNavigationAid.normalizeAngle(-9 * Math.PI / 2).should.equal(-Math.PI / 2);
+      NavCubeFace.faceCellToPos = sinon.spy(NavCubeFace.faceCellToPos);
+
+      wrapper.update();
+      describe("faceCellToPos", () => {
+        it("should be called when component is rendered", () => {
+          NavCubeFace.faceCellToPos.should.have.been.calledWith(Face.Top, 0, 0);
+        });
+        it("should return correct Point3d", () => {
+          const pos = NavCubeFace.faceCellToPos(Face.Back, -1, 1);
+          pos.x.should.equal(HitBoxX.Right);
+          pos.y.should.equal(HitBoxY.Back);
+          pos.z.should.equal(HitBoxZ.Bottom);
+        });
+      });
     });
-    it("almostEqual returns true only for angular movements within 0.001 threshold", () => {
-      CubeNavigationAid.almostEqual(new THREE.Euler(0, 0, 0), new THREE.Euler(0, 0, 0.001)).should.equal(false);
-      CubeNavigationAid.almostEqual(new THREE.Euler(0, 0, 0), new THREE.Euler(0, 0, 0.000999)).should.equal(true);
-      CubeNavigationAid.almostEqual(new THREE.Euler(0, 0, 0), new THREE.Euler(0.001 / Math.SQRT2, 0.001 / Math.SQRT2, 0)).should.equal(false);
-      CubeNavigationAid.almostEqual(new THREE.Euler(0, 0, 0), new THREE.Euler(0.000999 / Math.SQRT2, 0.000999 / Math.SQRT2, 0)).should.equal(true);
+  });
+  describe("<FaceCell />", () => {
+    it("should render", () => {
+      mount(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} position={Point3d.create(1, 1, 1)} face={Face.None} />);
+    });
+    const cellClick = sinon.spy();
+    const cellHover = sinon.spy();
+    const pos = Point3d.create(1, 1, 1);
+    const wrapper = shallow(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} position={pos} face={Face.None} />);
+    it("should render correctly", () => {
+      wrapper.should.matchSnapshot();
+    });
+    describe("onFaceCellClick", () => {
+      it("should be called when cell is clicked", () => {
+        cellClick.should.not.have.been.calledOnce;
+        const div = wrapper.find(".face-cell").at(0);
+        const e1 = new MouseEvent("mousedown", { clientX: 300, clientY: 400 });
+        div.simulate("mousedown", e1);
+        const e2 = new MouseEvent("mouseup", { clientX: 300, clientY: 400 });
+        div.simulate("mouseup", e2);
+        cellClick.should.have.been.calledOnce;
+        cellClick.should.have.been.calledWithExactly(pos, Face.None);
+      });
+    });
+    describe("onFaceCellHoverChange", () => {
+      const div = wrapper.find(".face-cell").at(0);
+      const e = new MouseEvent("", { clientX: 300, clientY: 400 });
+      it("should be called when cell is hovered", () => {
+        div.simulate("mouseover", e);
+        cellHover.should.have.been.calledWithExactly(pos, CubeHover.Hover);
+      });
+      it("should be called when cell is unhovered", () => {
+        div.simulate("mouseout", e);
+        cellHover.should.have.been.calledWithExactly(pos, CubeHover.None);
+      });
+      it("should be called when cell is clicked", () => {
+        div.simulate("mousedown", e);
+        cellHover.should.have.been.calledWithExactly(pos, CubeHover.Active);
+      });
+      it("should be called when cell is unclicked", () => {
+        div.simulate("mouseup", e);
+        cellHover.should.have.been.calledWithExactly(pos, CubeHover.None);
+      });
     });
   });
 });

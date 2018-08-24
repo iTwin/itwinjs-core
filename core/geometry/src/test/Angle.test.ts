@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { YawPitchRollAngles, Geometry, Angle, AngleSweep, AxisOrder, Complex, Point3d, RotMatrix, Vector3d } from "../geometry-core";
+import { YawPitchRollAngles, Geometry, Angle, AngleSweep, AxisOrder, Complex, Point3d, Matrix3d, Vector3d } from "../geometry-core";
 import { Range1d } from "../Range";
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
@@ -73,7 +73,7 @@ class AngleTests {
     const sweep2 = AngleSweep.createStartEndDegrees(1000, -21312); // hopeful gibberish unequal to any supplied sweep.
     sweep2.setFrom(sweep);
     ck.testTrue(sweep.isAlmostEqualAllowPeriodShift(sweep2));
-    ck.testBoolean(sweep.isCCW(), !reverseSweep.isCCW(), "reversal flips ccw");
+    ck.testBoolean(sweep.isCCW, !reverseSweep.isCCW, "reversal flips ccw");
     ck.testTrue(sweep.isAlmostEqualAllowPeriodShift(sweep2));
     ck.testFalse(sweep.isAlmostEqualAllowPeriodShift(reverseSweep));
     const fractionPeriod = sweep.fractionPeriod();
@@ -112,9 +112,9 @@ describe("Angle.AlmostEqual", () => {
     const ck = new Checker();
     const source = new AngleTests(false);
     source.TestAlmostEqual(ck);
-    ck.testTrue(Angle.createDegrees(0).isExactZero());
-    ck.testTrue(Angle.createRadians(0).isExactZero());
-    ck.testFalse(Angle.createRadians(1.0e-20).isExactZero());
+    ck.testTrue(Angle.createDegrees(0).isExactZero);
+    ck.testTrue(Angle.createRadians(0).isExactZero);
+    ck.testFalse(Angle.createRadians(1.0e-20).isExactZero);
     ck.checkpoint("End Angle.AlmostEqual");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -136,7 +136,7 @@ describe("Angle.Adjust", () => {
       ck.testCoordinate(theta.cos(), Math.cos(radians));
       ck.testCoordinate(theta.sin(), Math.sin(radians));
       ck.testCoordinate(theta.tan(), Math.tan(radians));
-      ck.testFalse(theta.isFullCircle());
+      ck.testFalse(theta.isFullCircle);
     }
     ck.checkpoint("Angle.Trig");
     expect(ck.getNumErrors()).equals(0);
@@ -149,8 +149,8 @@ function testSweep(ck: Checker, sweep: AngleSweep,
   isCCW: boolean,
   isFullCircle: boolean,
   sweepDegrees: number | undefined) {
-  ck.testBoolean(sweep.isCCW(), isCCW, "sweep.isCCW");
-  ck.testBoolean(sweep.isFullCircle(), isFullCircle, "sweep.isFullCircle");
+  ck.testBoolean(sweep.isCCW, isCCW, "sweep.isCCW");
+  ck.testBoolean(sweep.isFullCircle, isFullCircle, "sweep.isFullCircle");
   if (sweepDegrees !== undefined)
     ck.testCoordinate(sweepDegrees, sweep.sweepDegrees, "sweep.sweepDegrees");
 }
@@ -277,10 +277,10 @@ describe("YawPitchRollAngles", () => {
   it("HellowWorld", () => {
     const ck = new Checker();
     const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);
-    const matrix0: RotMatrix = ypr0.toRotMatrix();
+    const matrix0: Matrix3d = ypr0.toMatrix3d();
     // console.log(ypr0);
     // console.log(matrix0);
-    const ypr1 = YawPitchRollAngles.createFromRotMatrix(matrix0);
+    const ypr1 = YawPitchRollAngles.createFromMatrix3d(matrix0);
     // console.log (ypr1);
     if (ypr1)
       expect(ypr0.maxDiffRadians(ypr1)).lessThan(Geometry.smallAngleRadians);
@@ -289,7 +289,7 @@ describe("YawPitchRollAngles", () => {
   });
 });
 
-function multiplyMatricesByAxisOrder(xMatrix: RotMatrix, yMatrix: RotMatrix, zMatrix: RotMatrix, axisOrder: AxisOrder): RotMatrix {
+function multiplyMatricesByAxisOrder(xMatrix: Matrix3d, yMatrix: Matrix3d, zMatrix: Matrix3d, axisOrder: AxisOrder): Matrix3d {
   switch (axisOrder) {
     case AxisOrder.XYZ: return xMatrix.multiplyMatrixMatrix(yMatrix.multiplyMatrixMatrix(zMatrix));
     case AxisOrder.XZY: return xMatrix.multiplyMatrixMatrix(zMatrix.multiplyMatrixMatrix(yMatrix));
@@ -300,23 +300,23 @@ function multiplyMatricesByAxisOrder(xMatrix: RotMatrix, yMatrix: RotMatrix, zMa
   }
 }
 
-function multipleDegreeRotationsByAxisOrder(xDegrees: number, yDegrees: number, zDegrees: number, axisOrder: AxisOrder): RotMatrix {
+function multipleDegreeRotationsByAxisOrder(xDegrees: number, yDegrees: number, zDegrees: number, axisOrder: AxisOrder): Matrix3d {
   return multiplyMatricesByAxisOrder(
-    RotMatrix.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(xDegrees))!,
-    RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(yDegrees))!,
-    RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(zDegrees))!,
+    Matrix3d.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(xDegrees))!,
+    Matrix3d.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(yDegrees))!,
+    Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(zDegrees))!,
     axisOrder);
 }
 
 /** This function only compares the angle values for rotations around x, y, and z. It does not care about order for going back to a matrix. */
 function testEqualOrderedRotationAngles(ck: Checker, a: OrderedRotationAngles, b: OrderedRotationAngles) {
-  const matrixA = a.toRotMatrix();
-  const matrixB = b.toRotMatrix();
-  if (!ck.testRotMatrix(matrixA, matrixB, "matrix images of OrderedRotationAngle pair")) {
+  const matrixA = a.toMatrix3d();
+  const matrixB = b.toMatrix3d();
+  if (!ck.testMatrix3d(matrixA, matrixB, "matrix images of OrderedRotationAngle pair")) {
     console.log("*********************");
     console.log("");
-    const a1 = OrderedRotationAngles.createFromRotMatrix(matrixA, a.order);
-    const b1 = OrderedRotationAngles.createFromRotMatrix(matrixB, b.order);
+    const a1 = OrderedRotationAngles.createFromMatrix3d(matrixA, a.order);
+    const b1 = OrderedRotationAngles.createFromMatrix3d(matrixB, b.order);
     console.log("A:", a, matrixA, a1);
     console.log("B:", b, matrixB, b1);
   }
@@ -337,9 +337,9 @@ function testMultiAngleEquivalence(ck: Checker, xDegrees: number, yDegrees: numb
     [AxisOrder.ZXY, AxisOrder.YXZ],
     [AxisOrder.ZYX, AxisOrder.XYZ]]) {
     const angles = OrderedRotationAngles.createDegrees(xDegrees, yDegrees, zDegrees, orderPair[0]);
-    const matrixA = angles.toRotMatrix();
+    const matrixA = angles.toMatrix3d();
     const matrixB = multipleDegreeRotationsByAxisOrder(-xDegrees, -yDegrees, -zDegrees, orderPair[1]);
-    ck.testRotMatrix(matrixA, matrixB, "Compound rotation pair with order and sign reversal");
+    ck.testMatrix3d(matrixA, matrixB, "Compound rotation pair with order and sign reversal");
 
   }
 }
@@ -410,8 +410,8 @@ describe("OrderedRotationAngles", () => {
             OrderedRotationAngles.createRadians(q2, r, q1, axisOrder),
             OrderedRotationAngles.createRadians(q2, q1, r, axisOrder),
           ]) {
-            const matrixA = anglesA.toRotMatrix();
-            const anglesB = OrderedRotationAngles.createFromRotMatrix(matrixA, axisOrder);
+            const matrixA = anglesA.toMatrix3d();
+            const anglesB = OrderedRotationAngles.createFromMatrix3d(matrixA, axisOrder);
             testEqualOrderedRotationAngles(ck, anglesA, anglesB);
             expect(ck.getNumErrors()).equals(0);
           }
@@ -421,38 +421,38 @@ describe("OrderedRotationAngles", () => {
     }
   });
 
-  it("OrderedRotationAngles.ToRotMatrix", () => {
+  it("OrderedRotationAngles.toMatrix3d", () => {
     const ck = new Checker();
     let x = 0, y = 0, z = 0;
 
     // No Rotation
     const angles = OrderedRotationAngles.createDegrees(x, y, z, AxisOrder.XYZ);
-    const matrix = angles.toRotMatrix();
-    ck.testTrue(matrix.isIdentity());
+    const matrix = angles.toMatrix3d();
+    ck.testTrue(matrix.isIdentity);
 
     // One Rotation (IN ROW ORDER, TRANSPOSE OF WHAT WE TYPICALLY REPRESENT)
     OrderedRotationAngles.createAngles(Angle.createDegrees(0), Angle.createDegrees(45), Angle.createDegrees(0), AxisOrder.YXZ, angles);
-    angles.toRotMatrix(matrix);
-    let expectedMatrix = RotMatrix.createRowValues(
+    angles.toMatrix3d(matrix);
+    let expectedMatrix = Matrix3d.createRowValues(
       angles.yAngle.cos(), 0, -angles.yAngle.sin(),
       0, 1, 0,
       angles.yAngle.sin(), 0, angles.yAngle.cos(),
     );
-    ck.testRotMatrix(matrix, expectedMatrix);
+    ck.testMatrix3d(matrix, expectedMatrix);
 
     // Three Rotations (EACH IN ROW ORDER, TRANSPOSE OF WHAT WE TYPICALLY REPRESENT)
     x = Math.PI / 2, y = 1.16937061629, z = 0.0349066;  // 45, 67.000001, and 2 degrees
-    const rX = RotMatrix.createRowValues(
+    const rX = Matrix3d.createRowValues(
       1, 0, 0,
       0, Math.cos(x), Math.sin(x),
       0, -Math.sin(x), Math.cos(x),
     );
-    const rY = RotMatrix.createRowValues(
+    const rY = Matrix3d.createRowValues(
       Math.cos(y), 0, -Math.sin(y),
       0, 1, 0,
       Math.sin(y), 0, Math.cos(y),
     );
-    const rZ = RotMatrix.createRowValues(
+    const rZ = Matrix3d.createRowValues(
       Math.cos(z), Math.sin(z), 0,
       -Math.sin(z), Math.cos(z), 0,
       0, 0, 1,
@@ -460,15 +460,15 @@ describe("OrderedRotationAngles", () => {
 
     // Rotation using XYZ ordering
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.XYZ, angles);
-    angles.toRotMatrix(matrix);
+    angles.toMatrix3d(matrix);
     expectedMatrix = rZ.multiplyMatrixMatrix(rY, expectedMatrix).multiplyMatrixMatrix(rX, expectedMatrix);
-    ck.testRotMatrix(matrix, expectedMatrix);
+    ck.testMatrix3d(matrix, expectedMatrix);
 
     // Rotation using reverse ZYX ordering
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.ZYX, angles);
-    angles.toRotMatrix(matrix);
+    angles.toMatrix3d(matrix);
     expectedMatrix = rX.multiplyMatrixMatrix(rY, expectedMatrix).multiplyMatrixMatrix(rZ, expectedMatrix);
-    ck.testRotMatrix(matrix, expectedMatrix);
+    ck.testMatrix3d(matrix, expectedMatrix);
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -483,31 +483,31 @@ describe("OrderedRotationAngles", () => {
     OrderedRotationAngles.treatVectorsAsColumns = true;
     for (const rollAngle of degreesChoices) {
       // this is ROLL
-      const matrixX = RotMatrix.createRotationAroundVector(unitX, rollAngle)!;
+      const matrixX = Matrix3d.createRotationAroundVector(unitX, rollAngle)!;
       for (const pitchAngle of degreesChoices) {
         // this is PITCH
-        const matrixY = RotMatrix.createRotationAroundVector(unitY, pitchAngle)!;
+        const matrixY = Matrix3d.createRotationAroundVector(unitY, pitchAngle)!;
         matrixY.transposeInPlace();   // PITCH IS NEGATIVE Y !!!!!
         for (const yawAngle of degreesChoices) {
           // this is YAW
-          const matrixZ = RotMatrix.createRotationAroundVector(unitZ, yawAngle)!;
+          const matrixZ = Matrix3d.createRotationAroundVector(unitZ, yawAngle)!;
           const matrixZYX = matrixZ.multiplyMatrixMatrix(matrixY.multiplyMatrixMatrix(matrixX));
           const ypr = YawPitchRollAngles.createRadians(yawAngle.radians, pitchAngle.radians, rollAngle.radians);
-          const yprMatrix = ypr.toRotMatrix();
+          const yprMatrix = ypr.toMatrix3d();
           if (!ck.testCoordinate(0, yprMatrix.maxDiff(matrixZYX))) {
             console.log(JSON.stringify(ypr.toJSON()) + " maxDiff ypr:(Z)(-Y)(X) " + "  ,  " + yprMatrix.maxDiff(matrixZYX));
             console.log("ypr matrix", yprMatrix);
             console.log("matrixZYX", matrixZYX);
           }
           const orderedAngles = OrderedRotationAngles.createDegrees(rollAngle.degrees, -pitchAngle.degrees, yawAngle.degrees, AxisOrder.XYZ);
-          const orderedMatrix = orderedAngles.toRotMatrix();
-//          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
-//          const orderedMatrixB = orderedAngles.toRotMatrix ();
-//         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
-          orderedMatrix.transposeInPlace ();
-          if (!ck.testRotMatrix(yprMatrix, orderedMatrix)) {
-            const orderedMatrix1 = orderedAngles.toRotMatrix();
-            ck.testRotMatrix(yprMatrix, orderedMatrix1);
+          const orderedMatrix = orderedAngles.toMatrix3d();
+          //          const orderedAnglesB = OrderedRotationAngles.createDegrees(-rollAngle.degrees, pitchAngle.degrees, -yawAngle.degrees, AxisOrder.ZYX);
+          //          const orderedMatrixB = orderedAngles.toMatrix3d ();
+          //         console.log ("B diff", orderedMatrixB.maxDiff (yprMatrix), orderedAnglesB);
+          orderedMatrix.transposeInPlace();
+          if (!ck.testMatrix3d(yprMatrix, orderedMatrix)) {
+            const orderedMatrix1 = orderedAngles.toMatrix3d();
+            ck.testMatrix3d(yprMatrix, orderedMatrix1);
 
           }
         }
@@ -515,35 +515,35 @@ describe("OrderedRotationAngles", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it("OrderedRotationAngles.FromRotMatrix", () => {
+  it("OrderedRotationAngles.fromMatrix3d", () => {
     const ck = new Checker();
     const /*x = .0192, y = .7564,*/ z = Math.PI / 2;
 
     // No Rotation
-    const matrix = RotMatrix.createIdentity();
-    const angles = OrderedRotationAngles.createFromRotMatrix(matrix, AxisOrder.YZX); // order doesn't matter
+    const matrix = Matrix3d.createIdentity();
+    const angles = OrderedRotationAngles.createFromMatrix3d(matrix, AxisOrder.YZX); // order doesn't matter
     const expectedAngles = OrderedRotationAngles.createRadians(0, 0, 0, AxisOrder.ZXY);
     testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     // One Rotation (IN ROW ORDER, TRANSPOSE OF WHAT WE TYPICALLY REPRESENT)
-    RotMatrix.createRowValues(
+    Matrix3d.createRowValues(
       Math.cos(z), Math.sin(z), 0,
       -Math.sin(z), Math.cos(z), 0,
       0, 0, 1, matrix,
     );
 
-    OrderedRotationAngles.createFromRotMatrix(matrix, AxisOrder.YXZ, angles);
+    OrderedRotationAngles.createFromMatrix3d(matrix, AxisOrder.YXZ, angles);
     OrderedRotationAngles.createRadians(0, 0, Math.PI / 2, AxisOrder.XYZ, expectedAngles);
     testEqualOrderedRotationAngles(ck, angles, expectedAngles);
-    OrderedRotationAngles.createFromRotMatrix(matrix, AxisOrder.ZXY, angles);  // order doesn't matter
+    OrderedRotationAngles.createFromMatrix3d(matrix, AxisOrder.ZXY, angles);  // order doesn't matter
     testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     // Three Rotations (EACH IN ROW ORDER, TRANSPOSE OF WHAT WE TYPICALLY REPRESENT)
     /*
-    const rX = RotMatrix.createRowValues(
+    const rX = Matrix3d.createRowValues(
 
     );
-    const rY = RotMatrix.createRowValues(
+    const rY = Matrix3d.createRowValues(
 
     );
     const rZ = matrix.clone();
@@ -721,7 +721,7 @@ describe("MiscAngles", () => {
     ck.testCoordinate(360, fullRadiansA.sweepDegrees);
     const sweepB = AngleSweep.create360();
     const sweepC = AngleSweep.createStartEndRadians(0, 1, sweepB);
-    ck.testFalse(sweepB.isFullCircle());
+    ck.testFalse(sweepB.isFullCircle);
     ck.testTrue(sweepC === sweepB);
 
     const sweepE = AngleSweep.createStartSweepDegrees(10, 23);
@@ -733,4 +733,41 @@ describe("MiscAngles", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("AngleSweep.fromJSON", () => {
+    const ck = new Checker();
+    const sweepA = AngleSweep.createStartEndDegrees(10, 50);
+    const sweepB = AngleSweep.fromJSON({ degrees: [sweepA.startDegrees, sweepA.endDegrees] });
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepB));
+    const sweepC = AngleSweep.fromJSON({ radians: [sweepA.startRadians, sweepA.endRadians] });
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepC));
+    const sweepD = AngleSweep.fromJSON(sweepB);
+    ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
+    const sweepZ = AngleSweep.fromJSON(undefined);
+    ck.testTrue(sweepZ.isFullCircle);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Angle.fromJSON", () => {
+    const ck = new Checker();
+    for (const degrees of [10, 0, 45, -20]) {
+      const angleA = Angle.createDegrees(degrees);
+      const angleB = Angle.fromJSON({ degrees: angleA.degrees });
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleB));
+      const angleC = Angle.fromJSON({ radians: angleA.radians });
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleC));
+      const angleD = Angle.fromJSON(angleB);
+      ck.testTrue(angleA.isAlmostEqualNoPeriodShift(angleD));
+      const angleZ = Angle.fromJSON(undefined);
+      ck.testCoordinate(angleZ.degrees, 0);
+
+      // obscure . . .
+      const angleRa = Angle.fromJSON({ _radians: angleA.radians });
+      const angleDe = Angle.fromJSON({ _degrees: angleA.degrees });
+      ck.testAngleNoShift(angleA, angleRa);
+      ck.testAngleNoShift(angleA, angleDe);
+    }
+    expect(ck.getNumErrors()).equals(0);
+});
+
 });

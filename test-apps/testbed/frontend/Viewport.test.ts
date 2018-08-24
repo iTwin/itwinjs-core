@@ -52,7 +52,7 @@ describe("Viewport", () => {
     const vp = new TestViewport(canvas!, vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
-    assert.isFalse(vp.isCameraOn(), "camera is off");
+    assert.isFalse(vp.isCameraOn, "camera is off");
 
     const saveView = vpView.clone<SpatialViewState>();
     assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
@@ -71,7 +71,7 @@ describe("Viewport", () => {
     // compareView(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
-    assert.isTrue(vp.isCameraOn(), "camera should be on");
+    assert.isTrue(vp.isCameraOn, "camera should be on");
     const frust2 = vp.getFrustum();
     assert.isFalse(frust2.isSame(frustSave), "turning camera on changes frustum");
     assert.isTrue(vp.isUndoPossible, "undo should now be possible");

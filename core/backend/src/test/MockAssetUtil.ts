@@ -5,7 +5,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, SeedFileInitState,
+  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, InitializationState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
   ConnectRequestQueryOptions,
@@ -67,15 +67,15 @@ export class TestIModelInfo {
 
 /** Provides utility functions for working with mock objects */
 export class MockAssetUtil {
-  private static projectMap = new Map<string, string>(); // <ProjectID, ProjectName>
-  private static iModelMap = new Map<string, string>(); // <IModelID, IModelName>
+  private static _projectMap = new Map<string, string>(); // <ProjectID, ProjectName>
+  private static _iModelMap = new Map<string, string>(); // <IModelID, IModelName>
 
-  private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
+  private static _versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
-    assert(testIModelInfos.length === this.iModelMap.size, "IModelInfo array has the wrong number of entries");
+    assert(testIModelInfos.length === this._iModelMap.size, "IModelInfo array has the wrong number of entries");
     for (const iModelInfo of testIModelInfos) {
-      assert(iModelInfo.name === this.iModelMap.get(iModelInfo.id), `Bad information for ${iModelInfo.name} iModel`);
+      assert(iModelInfo.name === this._iModelMap.get(iModelInfo.id), `Bad information for ${iModelInfo.name} iModel`);
     }
   }
 
@@ -95,7 +95,7 @@ export class MockAssetUtil {
         const buff = IModelJsFs.readFileSync(path.join(projectFolderPath, projectAsset));
         const jsonObj = JSON.parse(buff.toString())[0];
         const projectObj = getTypedInstance<Project>(Project, jsonObj);
-        this.projectMap.set(projectObj.wsgId.toString(), projectObj.name!);
+        this._projectMap.set(projectObj.wsgId.toString(), projectObj.name!);
       }
     }
 
@@ -112,7 +112,7 @@ export class MockAssetUtil {
           const jsonObj = JSON.parse(buff.toString())[0];
           const iModelObj = getTypedInstance<IModelRepository>(IModelRepository, jsonObj);
           iModelName = iModelAsset.substring(0, iModelAsset.indexOf("."));
-          this.iModelMap.set(iModelObj.wsgId.toString(), iModelName);
+          this._iModelMap.set(iModelObj.wsgId.toString(), iModelName);
         }
       }
     }
@@ -171,7 +171,7 @@ export class MockAssetUtil {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
     connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, query: ConnectRequestQueryOptions) => {
-        for (const project of this.projectMap) {
+        for (const project of this._projectMap) {
           if (query.$filter!.toLocaleLowerCase().includes(project[1].toLocaleLowerCase())) {
             const assetPath = path.join(assetDir, "Projects", `${project[1]}.json`);
             const buff = IModelJsFs.readFileSync(assetPath);
@@ -188,7 +188,7 @@ export class MockAssetUtil {
     const uploadSeedFileMock = TypeMoq.Mock.ofType(SeedFile);
     uploadSeedFileMock.object.downloadUrl = "www.bentley.com";
     uploadSeedFileMock.object.mergedChangeSetId = "";
-    uploadSeedFileMock.object.initializationState = SeedFileInitState.Successful;
+    uploadSeedFileMock.object.initializationState = InitializationState.Successful;
 
     const iModelHandlerMock = TypeMoq.Mock.ofType(IModelHandler);
     const briefcaseHandlerMock = TypeMoq.Mock.ofType(BriefcaseHandler);
@@ -207,7 +207,7 @@ export class MockAssetUtil {
       .returns((_tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
         _callback: ((progress: any) => void) | undefined, _timeOut: number) => {
         setTimeout(() => { }, 100);
-        for (const pair of this.iModelMap) {
+        for (const pair of this._iModelMap) {
           if (hubName === pair[1]) {
             const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
             const buff = IModelJsFs.readFileSync(sampleIModelPath);
@@ -226,12 +226,12 @@ export class MockAssetUtil {
       .returns((_tok: AccessToken, _projId: string, query: IModelQuery) => {
         let iModelPath: string = "";
         if (query.getId()) {
-          const testCaseName = this.iModelMap.get(query.getId()!);
+          const testCaseName = this._iModelMap.get(query.getId()!);
           if (testCaseName) {
             iModelPath = path.join(assetDir, testCaseName, `${testCaseName}.json`);
           }
         } else {
-          for (const pair of this.iModelMap) {
+          for (const pair of this._iModelMap) {
             if (query.getQueryOptions().$filter!.includes(pair[1])) {
               iModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
               break;
@@ -253,7 +253,7 @@ export class MockAssetUtil {
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, _projId: string, iModelId: string) => {
-        const testCaseName = this.iModelMap.get(iModelId);
+        const testCaseName = this._iModelMap.get(iModelId);
         if (testCaseName) {
           const iModelCacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId);
           if (IModelJsFs.existsSync(iModelCacheDir))
@@ -269,7 +269,7 @@ export class MockAssetUtil {
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string, seedPathname: string) => {
-        const iModelName = this.iModelMap.get(iModelId);
+        const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const testModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
           IModelJsFs.copySync(testModelPath, seedPathname);
@@ -287,7 +287,7 @@ export class MockAssetUtil {
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string) => {
-        const iModelName = this.iModelMap.get(iModelId);
+        const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
           const buff = IModelJsFs.readFileSync(sampleBriefcasePath);
@@ -300,7 +300,7 @@ export class MockAssetUtil {
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string) => {
-        const iModelName = this.iModelMap.get(iModelId);
+        const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
           const buff = IModelJsFs.readFileSync(sampleBriefcasePath);
@@ -317,7 +317,7 @@ export class MockAssetUtil {
       .returns((briefcase: Briefcase, outPath: string) => {
         const briefcaseName = briefcase.fileName!.slice(0, briefcase.fileName!.lastIndexOf(".bim"));
         let iModelName = "";
-        for (const pair of this.iModelMap) {
+        for (const pair of this._iModelMap) {
           if (briefcaseName === pair[1]) {
             iModelName = pair[1];
             break;
@@ -345,7 +345,7 @@ export class MockAssetUtil {
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, iModelId: string, query: ChangeSetQuery) => {
-        const iModelName = this.iModelMap.get(iModelId);
+        const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const csetPath = path.join(assetDir, iModelName, `${iModelName}ChangeSets.json`);
           const buff = IModelJsFs.readFileSync(csetPath);
@@ -397,9 +397,9 @@ export class MockAssetUtil {
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, iModelId: string, query: VersionQuery) => {
-        const iModelName = this.iModelMap.get(iModelId);
+        const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
-          for (const versionName of this.versionNames) {
+          for (const versionName of this._versionNames) {
             if (query.getQueryOptions().$filter!.includes(versionName)) {
               const versionPath = path.join(assetDir, iModelName, "versions", `${iModelName}${versionName}.json`);
               const buff = IModelJsFs.readFileSync(versionPath);

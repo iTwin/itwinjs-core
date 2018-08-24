@@ -1,0 +1,183 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+//$separator-background: #F0F0F0;
+$navbar-itemheight: 54px;
+$navbar-color: #677480;
+$navbar-bordercolor: #e7e9ec;
+$navbar-hovercolor: $bwc-blue;
+
+.open-navbar {
+  width: 72px;
+  border: 1px solid $navbar-bordercolor;
+  border-top: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -webkit-transition: width .5s ease;
+  -moz-transition: width .5s ease;
+  -o-transition: width .5s ease;
+  transition: width .5s ease;
+  z-index: 2;
+}
+
+.open-navbar .expander {
+  padding: 4px 0;
+  color: $navbar-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px $navbar-bordercolor solid;
+}
+
+.open-navbar .expander .icon {
+  font-size: 8px;
+  padding: 5px;
+}
+
+.open-navbar.pinned .expander .icon-chevron-right {
+  opacity: 0;
+}
+
+.open-navbar .expander .icon-pin,
+.open-navbar .expander .icon-chevron-left {
+  position: absolute;
+  right: 0;
+  margin-right: 5px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.open-navbar:hover .expander .icon-chevron-right {
+  opacity: 0;
+}
+
+.open-navbar:hover .expander .icon-pin {
+  opacity: 1;
+}
+
+.open-navbar.pinned .expander .icon-chevron-left {
+  opacity: 1;
+}
+
+.open-navbar.pinned .expander .icon-pin {
+  opacity: 0;
+}
+
+.open-navbar .expander:hover {
+  color: $navbar-hovercolor;
+}
+
+.open-navbar ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  color: $navbar-color;
+  overflow: hidden;
+  -webkit-transition: all 1s ease-in;
+  transition: all 1s ease-in;
+}
+
+.open-navbar ul li {
+  height: $navbar-itemheight;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  text-decoration: none;
+  user-select: none;
+  font-size: $bwc-font-size-leading;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -webkit-transition: all .3s ease;
+  -moz-transition: all .3s ease;
+  -o-transition: all .3s ease;
+  transition: all .3s ease;
+}
+
+.open-navbar ul li::before,
+.open-navbar ul li::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $navbar-bordercolor;
+  height: 1px;
+}
+
+.open-navbar ul li .icon {
+  font-size: 24px;
+}
+
+.open-navbar .expander span {
+  padding: 2px;
+}
+
+.open-navbar ul li .label {
+  padding-left: 16px;
+  padding-right: 24px;
+  opacity: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-transform: scale(0, 1);
+  -ms-transform: scale(0, 1);
+  transform: scale(0, 1);
+  transform-origin: left center;
+  -webkit-transition: all .25s ease;
+  -moz-transition: all .25s ease;
+  -o-transition: all .25s ease;
+  transition: all .25s ease;
+}
+
+.open-navbar:hover li .label,
+.open-navbar.pinned ul li .label {
+  opacity: 1;
+  -webkit-transform: scale(1,1);
+  -ms-transform: scale(1,1);
+  transform: scale(1,1);
+}
+
+.open-navbar ul li:hover {
+  color: $navbar-hovercolor;
+}
+
+.open-navbar ul li.active {
+  color: $navbar-hovercolor;
+  font-weight: 600;
+}
+
+.open-navbar-movebarindicator {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+  width: 3px;
+	background: $bwc-blue;
+	content: '';
+	-webkit-transition: -webkit-transform 0.3s;
+  transition: transform 0.3s;
+  //z-index: 2; //to travel on top of the borders
+}
+
+.open-navbar-barindicator {
+  display: none;
+  position: absolute;
+	top: 0;
+  left: 0;
+  bottom: 0;
+	height: 100%;
+  width: 3px;
+  background: $bwc-blue;
+	content: '';
+}
+
+.open-navbar .navnode.active .open-navbar-barindicator {
+  display: block;
+}

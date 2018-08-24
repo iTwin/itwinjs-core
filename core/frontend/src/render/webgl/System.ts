@@ -8,16 +8,16 @@ import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
-import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { GraphicsList, Branch, Batch } from "./Graphic";
+import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
-import { ViewRect } from "../../Viewport";
+import { ViewRect, Viewport } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
@@ -149,7 +149,7 @@ export class Capabilities {
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this.hasRequiredFeatures && this.hasRequiredTextureUnits;
+    return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
 
   public static create(gl: WebGLRenderingContext): Capabilities | undefined {
@@ -178,12 +178,12 @@ export class Capabilities {
   }
 
   /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
-  private get hasRequiredFeatures(): boolean {
+  private get _hasRequiredFeatures(): boolean {
     return this.supports32BitElementIndex;
   }
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
-  private get hasRequiredTextureUnits(): boolean {
+  private get _hasRequiredTextureUnits(): boolean {
     return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
   }
 }
@@ -196,8 +196,6 @@ export class IdMap implements IDisposable {
   public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Array of textures without key values (unnamed). */
-  public readonly keylessTextures: RenderTexture[] = [];
   /** Mapping of ClipVectors to corresponding clipping volumes. */
   public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
 
@@ -216,14 +214,11 @@ export class IdMap implements IDisposable {
       dispose(texture);
     for (const gradient of gradientArr)
       dispose(gradient);
-    for (const texture of this.keylessTextures)
-      dispose(texture);
     for (const clipVolume of clipVolumeArr)
       dispose(clipVolume);
     this.textures.clear();
     this.gradients.clear();
     this.clipVolumes.clear();
-    this.keylessTextures.length = 0;
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -236,8 +231,6 @@ export class IdMap implements IDisposable {
   public addTexture(texture: RenderTexture) {
     if (texture.key)
       this.textures.set(texture.key, texture);
-    else
-      this.keylessTextures.push(texture);
   }
 
   /** Add a texture to this IdMap using gradient symbology. */
@@ -403,7 +396,7 @@ export class System extends RenderSystem {
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
-  public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
   public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
     if (args.flags.isDisjoint)
       return PointStringPrimitive.create(args);
@@ -412,7 +405,7 @@ export class System extends RenderSystem {
   }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
-  public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsList(primitives); }
+  public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {

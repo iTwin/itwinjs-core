@@ -6,13 +6,13 @@
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
 import { Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../GrowableArray";
 
 export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation
-  private static returnGraph: HalfEdgeGraph;
+  private static _returnGraph: HalfEdgeGraph;
 
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them */
   private static flipTriangles(a: any, b: any, c: any, d: any, e: any, f: any) {
@@ -35,7 +35,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using an RotMatrix
+   *  *  If a flip would be possible, test the results of flipping using an Matrix3d
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static cleanupTriangulation(graph: HalfEdgeGraph) {
@@ -68,8 +68,8 @@ export class Triangulator {
       const alphaVector = Vector3d.createStartEnd(alphaPoint, preAlphaPoint);
       const betaVector = Vector3d.createStartEnd(alphaPoint, preBetaPoint);
 
-      // Use RotMatrix to determine if flip is necessary
-      const matrix = RotMatrix.createRowValues(
+      // Use Matrix3d to determine if flip is necessary
+      const matrix = Matrix3d.createRowValues(
         betaVector.x, betaVector.y, betaVector.x * betaVector.x + betaVector.y * betaVector.y,
         alphaVector.x, alphaVector.y, alphaVector.x * alphaVector.x + alphaVector.y * alphaVector.y,
         sharedVector.x, sharedVector.y, sharedVector.x * sharedVector.x + sharedVector.y * sharedVector.y,
@@ -102,7 +102,7 @@ export class Triangulator {
   public static triangulateStrokedLoops(strokedLoops: GrowableXYZArray[]): HalfEdgeGraph | undefined {
     if (strokedLoops.length < 1)
       return undefined;
-    Triangulator.returnGraph = new HalfEdgeGraph();
+    Triangulator._returnGraph = new HalfEdgeGraph();
     let maxArea = strokedLoops[0].areaXY();
     let largestLoopIndex = 0;
     for (let i = 0; i < strokedLoops.length; i++) {
@@ -117,7 +117,7 @@ export class Triangulator {
     const holeLoops = [];
     const startingNode = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[largestLoopIndex], true, true);
     if (!startingNode)
-      return Triangulator.returnGraph;
+      return Triangulator._returnGraph;
     for (let i = 0; i < strokedLoops.length; i++) {
       if (i !== largestLoopIndex) {
         const holeLoop = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[i], false, true);
@@ -136,7 +136,7 @@ export class Triangulator {
    * *  Optional holeIndices array specifies which indices of points array given are the starts of holes
    */
   public static earcutFromPoints(data: Point3d[], holeIndices?: number[]): HalfEdgeGraph {
-    Triangulator.returnGraph = new HalfEdgeGraph();
+    Triangulator._returnGraph = new HalfEdgeGraph();
     let outerLen = (holeIndices && holeIndices.length) ? holeIndices[0] : data.length;
 
     // Do not include points on end of array that match the starting point
@@ -149,7 +149,7 @@ export class Triangulator {
 
     let startingNode = Triangulator.createFaceLoop(data, 0, outerLen, true, true);
 
-    if (!startingNode) return Triangulator.returnGraph;
+    if (!startingNode) return Triangulator._returnGraph;
 
     let minX;
     let minY;
@@ -180,7 +180,7 @@ export class Triangulator {
     }
 
     Triangulator.earcutLinked(startingNode, minX, minY, size);
-    return Triangulator.returnGraph;
+    return Triangulator._returnGraph;
   }
 
   private static directcreateFaceLoopFromGrowableXYZ(graph: HalfEdgeGraph, data: GrowableXYZArray): HalfEdge | undefined {
@@ -230,7 +230,7 @@ export class Triangulator {
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    */
   private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
-    const graph = Triangulator.returnGraph;
+    const graph = Triangulator._returnGraph;
     const base = Triangulator.directCreateFaceLoopFromPointArraySubset(graph, data, start, end);
     return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }
@@ -239,7 +239,7 @@ export class Triangulator {
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    */
   public static createFaceLoopFromGrowableXYZArray(data: GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
-    const graph = Triangulator.returnGraph;
+    const graph = Triangulator._returnGraph;
     const base = Triangulator.directcreateFaceLoopFromGrowableXYZ(graph, data);
     return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }
@@ -276,7 +276,7 @@ export class Triangulator {
    * * Reassigns prevZ and nextZ pointers
    */
   private static join(ear: HalfEdge) {
-    const alpha = Triangulator.returnGraph.createEdgeXYZXYZ(
+    const alpha = Triangulator._returnGraph.createEdgeXYZXYZ(
       ear.facePredecessor.x, ear.facePredecessor.y, ear.facePredecessor.z, ear.facePredecessor.i,
       ear.faceSuccessor.x, ear.faceSuccessor.y, ear.faceSuccessor.z, ear.faceSuccessor.i);
     const beta = alpha.edgeMate;
@@ -754,7 +754,7 @@ export class Triangulator {
    * @returns Returns the (base of) the new half edge, at the "a" end.
    */
   private static splitPolygon(a: HalfEdge, b: HalfEdge): HalfEdge {
-    const a2 = Triangulator.returnGraph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
+    const a2 = Triangulator._returnGraph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
     const b2 = a2.faceSuccessor;
 
     HalfEdge.pinch(a, a2);

@@ -6,7 +6,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Geometry, Angle } from "../Geometry";
@@ -171,7 +171,7 @@ export class ClipPlane implements Clipper {
     let normal = (upVector.crossProduct(edgeVector)).normalize();
 
     if (normal) {
-      if (!tiltAngle.isAlmostZero()) {
+      if (!tiltAngle.isAlmostZero) {
         const tiltNormal = Vector3d.createRotateVectorAroundVector(normal, edgeVector, tiltAngle);
         if (tiltNormal) {
           normal = tiltNormal.clone();
@@ -247,9 +247,9 @@ export class ClipPlane implements Clipper {
     AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, undefined, undefined, intersectionRadians);
   }
 
-  private static sClipArcFractionArray = new GrowableFloat64Array();
+  private static _clipArcFractionArray = new GrowableFloat64Array();
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ClipPlane.sClipArcFractionArray;
+    const breaks = ClipPlane._clipArcFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
     arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);
@@ -275,7 +275,7 @@ export class ClipPlane implements Clipper {
   // Returns true if successful
   public transformInPlace(transform: Transform): boolean {
     const plane: Plane3dByOriginAndUnitNormal = this.getPlane3d();
-    const matrix: RotMatrix = transform.matrix;
+    const matrix: Matrix3d = transform.matrix;
     const newPoint = transform.multiplyPoint3d(plane.getOriginRef());
     // Normal transforms as the inverse transpose of the matrix part
     // BTW: If the matrix is orthogonal, this is a long way to multiply by the matrix part (mumble grumble)

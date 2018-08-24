@@ -40,22 +40,22 @@ class CubeExampleNavigationAid extends React.Component {
 
     return (
       <canvas className="unselectable" style={canvasStyle} ref={(element: any) => { this._htmlCanvas = element; }}
-        onMouseDown={this.onMouseDown}
+        onMouseDown={this._onMouseDown}
       >
       </canvas>
     );
   }
 
-  private onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
   }
 
   public componentDidMount() {
-    this.draw();
+    this._draw();
   }
 
   // Animation function
-  private draw = () => {
+  private _draw = () => {
     const canvas = this._htmlCanvas;
     const ctx = canvas.getContext("2d");
 

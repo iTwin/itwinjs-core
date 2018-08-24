@@ -56,14 +56,14 @@ export class ElementTooltip extends React.Component<{}, ElementTooltipState> {
   }
 
   public componentDidMount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.addListener(this.handleElementTooltipChangedEvent);
+    ElementTooltip.ElementTooltipChangedEvent.addListener(this._handleElementTooltipChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.removeListener(this.handleElementTooltipChangedEvent);
+    ElementTooltip.ElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
   }
 
-  private handleElementTooltipChangedEvent = (args: ElementTooltipState) => {
+  private _handleElementTooltipChangedEvent = (args: ElementTooltipState) => {
     this.setState(() => ({
       message: args.message,
       isTooltipVisible: args.isTooltipVisible,

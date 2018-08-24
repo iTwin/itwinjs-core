@@ -57,7 +57,7 @@ describe.skip("Clips", () => {
       const clipShapes: ClipShape[] = [];
       clipShapes[0] = s;
       const clipVector: ClipVector = ClipVector.createClipShapeClones(clipShapes);
-      assert.isTrue(clipVector.isValid(), "should be able to create valid clipVector");
+      assert.isTrue(clipVector.isValid, "should be able to create valid clipVector");
 
       const clips: Clips = new Clips();
       expect(clips.isValid).to.equal(false);
@@ -109,7 +109,7 @@ describe.skip("Clips", () => {
       // Use a new clip with a rotated transform.
       /*
       clips.clear();
-      const rotMat = RotMatrix.createRowValues(0.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+      const rotMat = Matrix3d.createRowValues(0.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0);
       transform = Transform.createOriginAndMatrix(Point3d.create(0.0, 0.0, 0.0), rotMat);
       clipVolume!.apply(clips, transform);
       clipVals = clips.clips;

@@ -125,5 +125,5 @@ export class CodeSpec {
     this.properties = properties;
   }
 
-  public isValid(): boolean { return this.id.isValid; }
+  public get isValid(): boolean { return this.id.isValid; }
 }

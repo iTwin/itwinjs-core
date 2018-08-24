@@ -21,7 +21,6 @@ import {
   MeshBuilder,
   Mesh,
   ToleranceRatio,
-  GraphicBuilderCreateParams,
   System,
   GraphicType,
   PrimitiveBuilder,
@@ -86,8 +85,7 @@ describe("Mesh Builder Tests", () => {
     }
 
     const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -131,7 +129,9 @@ describe("Mesh Builder Tests", () => {
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addStrokePointLists(strksPrims, false, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(strksPrims.length);
-    expect(mb.mesh.points.length).to.be.lessThan(strksPrims[0].points.length);
+    const lengthA = mb.mesh.points.length;
+    const lengthB = strksPrims[0].points.length;
+    expect(lengthA).to.be.lte(lengthB);
     expect(mb.mesh.points.length).to.be.greaterThan(0);
     // calls addPointString for each stroke points list in strokes
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });

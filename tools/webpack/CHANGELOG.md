@@ -1,6 +1,28 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Aug 2018 20:51:32 GMT and should not be manually modified.
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+*Version update only*
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- Fixed sourcemapping in test runs.
+- Fixed errors in tests when SCSS/CSS files are imported from packages in node_modules.
+- Stopped creating TypeScript declaration files in test, start, and build scripts.
+- Simplified coverage setup. Apps are no longer required to define an nyc config in their package.json.
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

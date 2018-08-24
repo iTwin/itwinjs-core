@@ -4,7 +4,6 @@
 @import "@bentley/bwc/lib/mixins";
 
 $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
-
 .breadcrumb {
   flex-shrink: 0;
   display: flex;
@@ -100,9 +99,8 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
         }
       }
 
-      > .breadcrumb-split-button {
+      .breadcrumb-split-button {
         padding: 0;
-        margin: 0;
         overflow: hidden;
 
         .split-button-arrow-icon {
@@ -111,8 +109,23 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
           transform: rotate(-90deg);
         }
 
+        .split-button-label {
+          min-width: $bwc-line-height;
+          text-align: center;
+        }
+
         &.expanded .split-button-arrow-icon {
           transform: rotate(0deg);
+        }
+      }
+
+      .breadcrumb-drop-target {
+        border-radius: $bwc-border-radius;
+        &.hover {
+          background-color: $bwc-blue-8;
+        }
+        &.dragging {
+          color: $bwc-gray;
         }
       }
 
@@ -120,6 +133,9 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
         @include bwc-text-block;
 
         margin: 0;
+        min-width: $bwc-line-height;
+        text-align: center;
+        border-radius: $bwc-border-radius;
         user-select: none;
         cursor: pointer;
 
@@ -133,37 +149,6 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
       font-weight: bold;
     }
   }
-
-  > .breadcrumb-details {
-    background-color: $bwc-white;
-    border: 1px solid $bwc-inputs-border-color;
-
-    > .breadcrumb-detail-row {
-      display: flex;
-      padding: $bwc-bordered-padding;
-      cursor: default;
-
-      &:hover {
-        background-color: $bwc-gray;
-      }
-
-      &:not(:last-child) {
-        border-bottom: 1px solid $bwc-inputs-border-color;
-      }
-
-      > .breadcrumb-detail-icon {
-        text-align: center;
-        line-height: $bwc-line-height;
-        height: $bwc-line-height;
-        width: $bwc-line-height;
-        font-size: $bwc-line-height;
-      }
-
-      > .breadcrumb-detail-content {
-        @include bwc-text(body);
-      }
-    }
-  }
 }
 
 .breadcrumb-details {
@@ -171,39 +156,9 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
     outline: 0;
   }
 
+  height: calc(100% - (#{2 * $bwc-inputs-margin + $bwc-inputs-height} ));
   overflow: auto;
   background-color: $bwc-white;
   border: 1px solid $bwc-inputs-border-color;
 
-  > .breadcrumb-detail-row {
-    display: flex;
-    user-select: none;
-    padding: $bwc-bordered-padding;
-    cursor: default;
-
-    &:hover {
-      background-color: $bwc-gray;
-    }
-
-    &.selected {
-      background-color: $bwc-blue;
-    }
-
-    &:not(:last-child) {
-      border-bottom: 1px solid $bwc-inputs-border-color;
-    }
-
-    > .breadcrumb-detail-icon {
-      text-align: center;
-      line-height: $bwc-line-height;
-      height: $bwc-line-height;
-      width: $bwc-line-height;
-      font-size: $bwc-line-height;
-      margin-right: $bwc-unbordered-padding;
-    }
-
-    > .breadcrumb-detail-content {
-      @include bwc-text(body);
-    }
-  }
 }

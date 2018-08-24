@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, Matrix3d, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -29,19 +29,18 @@ import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/T
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
 export class SheetBorder {
-  private rect: Point2d[];
-  private shadow: Point2d[];
-  private gradient: Gradient.Symb;
+  private _rect: Point2d[];
+  private _shadow: Point2d[];
+  private _gradient: Gradient.Symb;
 
   private constructor(rect: Point2d[], shadow: Point2d[], gradient: Gradient.Symb) {
-    this.rect = rect;
-    this.shadow = shadow;
-    this.gradient = gradient;
+    this._rect = rect;
+    this._shadow = shadow;
+    this._gradient = gradient;
   }
 
   /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
@@ -91,8 +90,8 @@ export class SheetBorder {
   }
 
   public getRange(): Range2d {
-    const range = Range2d.createArray(this.rect);
-    const shadowRange = Range2d.createArray(this.shadow);
+    const range = Range2d.createArray(this._rect);
+    const shadowRange = Range2d.createArray(this._shadow);
     range.extendRange(shadowRange);
     return range;
   }
@@ -104,13 +103,13 @@ export class SheetBorder {
 
     const params = new GraphicParams();
     params.setFillColor(fillColor);
-    params.gradient = this.gradient;
+    params.gradient = this._gradient;
 
     builder.activateGraphicParams(params);
-    builder.addShape2d(this.shadow, RenderTarget.frustumDepth2d);
+    builder.addShape2d(this._shadow, RenderTarget.frustumDepth2d);
 
     builder.setSymbology(lineColor, fillColor, 2);
-    builder.addLineString2d(this.rect, 0);
+    builder.addLineString2d(this._rect, 0);
   }
 }
 
@@ -165,7 +164,7 @@ export namespace Attachments {
       }
 
       this.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
-      this.renderFrame(new UpdatePlan());
+      this.renderFrame();
 
       this._texture = undefined;
       return this.readImage();
@@ -247,14 +246,14 @@ export namespace Attachments {
 
   class TileLoader3d extends AttachmentTileLoader {
     /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
-    private static DEBUG_NO_TEXTURES = false;
+    private static _DEBUG_NO_TEXTURES = false;
     // ----------------------------------------------------------------------------------
     private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
       noSolarLight: true,
-      noTexture: TileLoader3d.DEBUG_NO_TEXTURES,
+      noTexture: TileLoader3d._DEBUG_NO_TEXTURES,
     }));
 
     public get maxDepth() { return 32; }
@@ -294,7 +293,7 @@ export namespace Attachments {
   /** An extension of Tile specific to rendering 3d attachments. */
   export class Tile3d extends Tile {
     /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
-    private static DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
+    private static _DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
     // ------------------------------------------------------------------------------------------
     private _tilePolyfaces: IndexedPolyface[] = [];
 
@@ -350,11 +349,11 @@ export namespace Attachments {
     }
 
     /** Get the root tile tree cast to a Tree3d. */
-    private get rootAsTree3d(): Tree3d { return this.root as Tree3d; }
+    private get _rootAsTree3d(): Tree3d { return this.root as Tree3d; }
     /** Get the load state from the owner attachment's array at this tile's depth. */
-    private getState(): State { return this.rootAsTree3d.getState(this.depth - 1); }
-    /** Set the load state of the onwner attachment's array at this tile's depth. */
-    private setState(state: State) { this.rootAsTree3d.setState(this.depth - 1, state); }
+    private getState(): State { return this._rootAsTree3d.getState(this.depth - 1); }
+    /** Set the load state of the owner attachment's array at this tile's depth. */
+    private setState(state: State) { this._rootAsTree3d.setState(this.depth - 1, state); }
 
     // override
     public get hasGraphics(): boolean { return this.isReady; }
@@ -362,13 +361,11 @@ export namespace Attachments {
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
 
     // override
-    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
-      return this.select(selected, args);
-    }
+    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent { return this.select(selected, args); }
 
     private select(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
       if (this.depth === 1)
-        this.rootAsTree3d.viewport.rendering = false;
+        this._rootAsTree3d.viewport.rendering = false;
 
       if (this.isNotFound)
         return Tile.SelectParent.No;  // indicates no elements in this tile's range (or some unexpected error occurred during scene creation)
@@ -420,7 +417,7 @@ export namespace Attachments {
       }
 
       // Inform the sheet view state that it needs to recreate the scene next frame
-      this.rootAsTree3d.sheetView.markAttachment3dSceneIncomplete();
+      this._rootAsTree3d.sheetView.markAttachment3dSceneIncomplete();
 
       // Tell parent to render in this tile's place until it becomes ready to draw
       return Tile.SelectParent.Yes;
@@ -432,7 +429,7 @@ export namespace Attachments {
       // ### TODO: an optimization could be to make the texture non-square to save on space (make match cropped tile aspect ratio)
 
       // set up initial corner values (before cropping to clip)
-      const tree = this.rootAsTree3d;
+      const tree = this._rootAsTree3d;
 
       // Set up initial corner values (before cropping to clip). Range must already be set up (range = unclipped range)
       const east = this.range.low.x;
@@ -451,7 +448,7 @@ export namespace Attachments {
     }
 
     public createGraphics(context: SceneContext) {
-      const tree = this.rootAsTree3d;
+      const tree = this._rootAsTree3d;
       let currentState = this.getState();
 
       // "Ready" state is a valid situation. It means another tile created the scene for this level of detail. We will use that scene.
@@ -507,8 +504,8 @@ export namespace Attachments {
             if (viewport.texture === undefined) {
               this.setNotFound();
             } else {
-              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this.rootAsTree3d.tileColor));
-              this.setGraphic(system.createBatch(graphic, this.rootAsTree3d.featureTable, this.contentRange));
+              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this._rootAsTree3d.tileColor));
+              this.setGraphic(system.createBatch(graphic, this._rootAsTree3d.featureTable, this.contentRange));
             }
 
             // restore frustum
@@ -524,10 +521,10 @@ export namespace Attachments {
       if (this._children === undefined)
         this._children = [];
       if (this._children.length === 0) {
-        const childTileUL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperLeft);
-        const childTileUR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.UpperRight);
-        const childTileLL = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerLeft);
-        const childTileLR = Tile3d.create(this.rootAsTree3d, this, Tile3dPlacement.LowerRight);
+        const childTileUL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperLeft);
+        const childTileUR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperRight);
+        const childTileLL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerLeft);
+        const childTileLR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerRight);
         this._children.push(childTileUL);
         this._children.push(childTileUR);
         this._children.push(childTileLL);
@@ -538,7 +535,7 @@ export namespace Attachments {
 
     public drawGraphics(args: Tile.DrawArgs) {
       super.drawGraphics(args);
-      if (!Tile3d.DRAW_DEBUG_POLYFACE_GRAPHICS) {
+      if (!Tile3d._DRAW_DEBUG_POLYFACE_GRAPHICS) {
         return;
       }
 
@@ -550,7 +547,7 @@ export namespace Attachments {
       const fillColor = ColorDef.green.clone();
       fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
-      const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      const builder = args.context.createGraphicBuilder(GraphicType.Scene);
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
         const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
@@ -621,7 +618,7 @@ export namespace Attachments {
       const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
       worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
-      const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
+      const location = Transform.createOriginAndMatrix(worldToAttachment, Matrix3d.createIdentity());
       this.location.setFrom(location);
 
       const aspectRatioSkew = view.getAspectRatioSkew();
@@ -667,11 +664,8 @@ export namespace Attachments {
       if (loadStatus === TileTree.LoadStatus.Loaded) {
         attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
         return State.Ready;
-      } else if (loadStatus === TileTree.LoadStatus.Loading) {
-        return State.Loading;
-      } else {
-        return State.Empty;
       }
+      return loadStatus === TileTree.LoadStatus.Loading ? State.Loading : State.Empty;
     }
   }
 
@@ -705,7 +699,7 @@ export namespace Attachments {
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
     public readonly tileColor: ColorDef;
-    public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
+    public readonly biasDistance: number; // distance in z to position tile in parent viewport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
     public readonly sheetView: SheetViewState;
     public readonly attachment: Attachment3d;
@@ -736,7 +730,7 @@ export namespace Attachments {
       this.viewport.setRect(new ViewRect(0, 0, dim, dim));
       this.viewport.setupFromView();
 
-      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), RotMatrix.createScale(scale.x, scale.y, 1)));
+      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), Matrix3d.createScale(scale.x, scale.y, 1)));
       this.viewport.npcToWorldArray(frust.points);
       this.viewport.setupViewFromFrustum(frust);
 
@@ -898,7 +892,7 @@ export namespace Attachments {
 
     /** Returns a clone of the current clipping if it is defined and not null. Otherwise, attempt to create a new stored boundary clipping. */
     public getOrCreateClip(transform?: Transform): ClipVector {
-      if (!this.clip.isValid())
+      if (!this.clip.isValid)
         this.clip = this.createBoundaryClip();
 
       const clipReturn = this.clip.clone();
@@ -918,7 +912,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y + bbox.high.y),
         Point2d.create(origin.x, origin.y)];
 
-      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
+      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
       builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
@@ -943,23 +937,23 @@ export namespace Attachments {
 
   /** A 3d sheet view attachment. */
   export class Attachment3d extends Attachment {
-    private states: State[];  // per level of the tree
+    private _states: State[];  // per level of the tree
 
     public constructor(props: ViewAttachmentProps, view: ViewState3d) {
       super(props, view);
-      this.states = [];
+      this._states = [];
     }
 
     public get is2d(): boolean { return false; }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
-    public getState(depth: number): State { return depth < this.states.length ? this.states[depth] : State.NotLoaded; }
+    public getState(depth: number): State { return depth < this._states.length ? this._states[depth] : State.NotLoaded; }
 
     /** Sets the state of this attachment's tile tree at a given depth. */
     public setState(depth: number, state: State) {
-      while (this.states.length < depth + 1)
-        this.states.push(State.NotLoaded);  // Fill any gaps
-      this.states[depth] = state;
+      while (this._states.length < depth + 1)
+        this._states.push(State.NotLoaded);  // Fill any gaps
+      this._states[depth] = state;
     }
 
     public load(sheetView: SheetViewState, sceneContext: SceneContext): State {

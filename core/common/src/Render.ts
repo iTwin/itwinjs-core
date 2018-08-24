@@ -98,13 +98,13 @@ export class PolylineData {
     this.numIndices = numIndices;
     this.startDistance = startDistance;
   }
-  public isValid(): boolean { return 0 < this.numIndices; }
+  public get isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
   public init(polyline: MeshPolyline) {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
-    return this.isValid();
+    return this.isValid;
   }
 }
 
@@ -372,16 +372,16 @@ export class Camera implements CameraProps {
   public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
   public static validateLensAngle(val: Angle) { if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0); }
   public invalidateFocus() { this.focusDist = 0.0; }
-  public isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
+  public get isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
   public getFocusDistance() { return this.focusDist; }
   public setFocusDistance(dist: number) { this.focusDist = dist; }
-  public isLensValid() { return Camera.isValidLensAngle(this.lens); }
+  public get isLensValid() { return Camera.isValidLensAngle(this.lens); }
   public validateLens() { Camera.validateLensAngle(this.lens); }
   public getLensAngle() { return this.lens; }
   public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
   public getEyePoint() { return this.eye; }
   public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
-  public isValid() { return this.isLensValid() && this.isFocusValid(); }
+  public get isValid() { return this.isLensValid && this.isFocusValid; }
   public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
   public clone() { return new Camera(this); }
   public copyFrom(rhs: Camera) {
@@ -623,11 +623,11 @@ export namespace ViewFlag {
    * Overrides a subset of ViewFlags.
    */
   export class Overrides {
-    private present = 0;
-    private readonly values = new ViewFlags();
+    private _present = 0;
+    private readonly _values = new ViewFlags();
 
-    public setPresent(flag: PresenceFlag) { this.present |= (1 << flag); }
-    public isPresent(flag: PresenceFlag): boolean { return 0 !== (this.present & (1 << flag)); }
+    public setPresent(flag: PresenceFlag) { this._present |= (1 << flag); }
+    public isPresent(flag: PresenceFlag): boolean { return 0 !== (this._present & (1 << flag)); }
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
     constructor(flags?: ViewFlags) {
@@ -636,8 +636,8 @@ export namespace ViewFlag {
     }
 
     public overrideAll(flags?: ViewFlags) {
-      ViewFlags.createFrom(flags, this.values);
-      this.present = 0xffffffff;
+      ViewFlags.createFrom(flags, this._values);
+      this._present = 0xffffffff;
     }
 
     public clone(out?: Overrides) {
@@ -646,62 +646,62 @@ export namespace ViewFlag {
       return result;
     }
     public copyFrom(other: Overrides): void {
-      other.values.clone(this.values);
-      this.present = other.present;
+      other._values.clone(this._values);
+      this._present = other._present;
     }
 
-    public setShowDimensions(val: boolean) { this.values.dimensions = val; this.setPresent(PresenceFlag.kDimensions); }
-    public setShowPatterns(val: boolean) { this.values.patterns = val; this.setPresent(PresenceFlag.kPatterns); }
-    public setShowWeights(val: boolean) { this.values.weights = val; this.setPresent(PresenceFlag.kWeights); }
-    public setShowStyles(val: boolean) { this.values.styles = val; this.setPresent(PresenceFlag.kStyles); }
-    public setShowTransparency(val: boolean) { this.values.transparency = val; this.setPresent(PresenceFlag.kTransparency); }
-    public setShowFill(val: boolean) { this.values.fill = val; this.setPresent(PresenceFlag.kFill); }
-    public setShowTextures(val: boolean) { this.values.textures = val; this.setPresent(PresenceFlag.kTextures); }
-    public setShowMaterials(val: boolean) { this.values.materials = val; this.setPresent(PresenceFlag.kMaterials); }
-    public setShowSourceLights(val: boolean) { this.values.sourceLights = val; this.setPresent(PresenceFlag.kSourceLights); }
-    public setShowCameraLights(val: boolean) { this.values.cameraLights = val; this.setPresent(PresenceFlag.kCameraLights); }
-    public setShowSolarLight(val: boolean) { this.values.solarLight = val; this.setPresent(PresenceFlag.kSolarLight); }
-    public setShowVisibleEdges(val: boolean) { this.values.visibleEdges = val; this.setPresent(PresenceFlag.kVisibleEdges); }
-    public setShowHiddenEdges(val: boolean) { this.values.hiddenEdges = val; this.setPresent(PresenceFlag.kHiddenEdges); }
-    public setShowShadows(val: boolean) { this.values.shadows = val; this.setPresent(PresenceFlag.kShadows); }
-    public setShowClipVolume(val: boolean) { this.values.clipVolume = val; this.setPresent(PresenceFlag.kClipVolume); }
-    public setShowConstructions(val: boolean) { this.values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
-    public setMonochrome(val: boolean) { this.values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
-    public setIgnoreGeometryMap(val: boolean) { this.values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
-    public setShowBackgroundMap(val: boolean) { this.values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
-    public setUseHlineMaterialColors(val: boolean) { this.values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
-    public setEdgeMask(val: number) { this.values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
-    public setRenderMode(val: RenderMode) { this.values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
-    public anyOverridden() { return 0 !== this.present; }
-    public clear() { this.present = 0; }
+    public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(PresenceFlag.kDimensions); }
+    public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(PresenceFlag.kPatterns); }
+    public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(PresenceFlag.kWeights); }
+    public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(PresenceFlag.kStyles); }
+    public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(PresenceFlag.kTransparency); }
+    public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(PresenceFlag.kFill); }
+    public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(PresenceFlag.kTextures); }
+    public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(PresenceFlag.kMaterials); }
+    public setShowSourceLights(val: boolean) { this._values.sourceLights = val; this.setPresent(PresenceFlag.kSourceLights); }
+    public setShowCameraLights(val: boolean) { this._values.cameraLights = val; this.setPresent(PresenceFlag.kCameraLights); }
+    public setShowSolarLight(val: boolean) { this._values.solarLight = val; this.setPresent(PresenceFlag.kSolarLight); }
+    public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(PresenceFlag.kVisibleEdges); }
+    public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(PresenceFlag.kHiddenEdges); }
+    public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(PresenceFlag.kShadows); }
+    public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(PresenceFlag.kClipVolume); }
+    public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
+    public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
+    public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
+    public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
+    public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
+    public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
+    public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
+    public anyOverridden() { return 0 !== this._present; }
+    public clear() { this._present = 0; }
 
     /** Apply these overrides to the supplied ViewFlags */
     public apply(base: ViewFlags): ViewFlags {
       if (!this.anyOverridden())
         return base;
 
-      if (this.isPresent(PresenceFlag.kDimensions)) base.dimensions = this.values.dimensions;
-      if (this.isPresent(PresenceFlag.kPatterns)) base.patterns = this.values.patterns;
-      if (this.isPresent(PresenceFlag.kWeights)) base.weights = this.values.weights;
-      if (this.isPresent(PresenceFlag.kStyles)) base.styles = this.values.styles;
-      if (this.isPresent(PresenceFlag.kTransparency)) base.transparency = this.values.transparency;
-      if (this.isPresent(PresenceFlag.kFill)) base.fill = this.values.fill;
-      if (this.isPresent(PresenceFlag.kTextures)) base.textures = this.values.textures;
-      if (this.isPresent(PresenceFlag.kMaterials)) base.materials = this.values.materials;
-      if (this.isPresent(PresenceFlag.kSolarLight)) base.solarLight = this.values.solarLight;
-      if (this.isPresent(PresenceFlag.kCameraLights)) base.cameraLights = this.values.cameraLights;
-      if (this.isPresent(PresenceFlag.kSourceLights)) base.sourceLights = this.values.sourceLights;
-      if (this.isPresent(PresenceFlag.kVisibleEdges)) base.visibleEdges = this.values.visibleEdges;
-      if (this.isPresent(PresenceFlag.kHiddenEdges)) base.hiddenEdges = this.values.hiddenEdges;
-      if (this.isPresent(PresenceFlag.kShadows)) base.shadows = this.values.shadows;
-      if (this.isPresent(PresenceFlag.kClipVolume)) base.clipVolume = this.values.clipVolume;
-      if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this.values.constructions;
-      if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this.values.monochrome;
-      if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this.values.noGeometryMap;
-      if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this.values.backgroundMap;
-      if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this.values.hLineMaterialColors;
-      if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this.values.edgeMask;
-      if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this.values.renderMode;
+      if (this.isPresent(PresenceFlag.kDimensions)) base.dimensions = this._values.dimensions;
+      if (this.isPresent(PresenceFlag.kPatterns)) base.patterns = this._values.patterns;
+      if (this.isPresent(PresenceFlag.kWeights)) base.weights = this._values.weights;
+      if (this.isPresent(PresenceFlag.kStyles)) base.styles = this._values.styles;
+      if (this.isPresent(PresenceFlag.kTransparency)) base.transparency = this._values.transparency;
+      if (this.isPresent(PresenceFlag.kFill)) base.fill = this._values.fill;
+      if (this.isPresent(PresenceFlag.kTextures)) base.textures = this._values.textures;
+      if (this.isPresent(PresenceFlag.kMaterials)) base.materials = this._values.materials;
+      if (this.isPresent(PresenceFlag.kSolarLight)) base.solarLight = this._values.solarLight;
+      if (this.isPresent(PresenceFlag.kCameraLights)) base.cameraLights = this._values.cameraLights;
+      if (this.isPresent(PresenceFlag.kSourceLights)) base.sourceLights = this._values.sourceLights;
+      if (this.isPresent(PresenceFlag.kVisibleEdges)) base.visibleEdges = this._values.visibleEdges;
+      if (this.isPresent(PresenceFlag.kHiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
+      if (this.isPresent(PresenceFlag.kShadows)) base.shadows = this._values.shadows;
+      if (this.isPresent(PresenceFlag.kClipVolume)) base.clipVolume = this._values.clipVolume;
+      if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this._values.constructions;
+      if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this._values.monochrome;
+      if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
+      if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this._values.backgroundMap;
+      if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
+      if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this._values.edgeMask;
+      if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this._values.renderMode;
       return base;
     }
   }
@@ -1305,7 +1305,7 @@ export class SceneLights {
   constructor(public imageBased: { environmentalMap: RenderTexture, diffuseImage: RenderTexture, solar: ImageLight.Solar },
     public fstop: number = 0, // must be between -3 and +3
   ) { }
-  public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
+  public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
 /**
@@ -1444,7 +1444,7 @@ export class GeometryParams {
   }
 
   /**  Get whether this GeometryParams contains information that needs to be transformed (ex. to apply local to world). */
-  public isTransformable() { return this.pattern || this.styleInfo; }
+  public get isTransformable() { return this.pattern || this.styleInfo; }
 
   /**  Transform GeometryParams data like PatternParams and LineStyleInfo. */
   public applyTransform(transform: Transform) {
@@ -1501,7 +1501,7 @@ export namespace Hilite {
 /**
  * Describes a "feature" within a batched RenderGraphic. A batched RenderGraphic can
  * contain multiple features. Each feature is associated with a unique combination of
- * attributes (element ID, subcategory, geometry class). This allows geometry to be
+ * attributes (elementId, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *
@@ -1557,14 +1557,14 @@ export class FeatureTable extends IndexMap<Feature> {
     this.modelId = modelId;
   }
 
-  public get maxFeatures(): number { return this.maximumSize; }
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.array[0].value.isDefined); }
+  public get maxFeatures(): number { return this._maximumSize; }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
   public get isUniform(): boolean { return 1 === this.length; }
-  public get uniform(): Feature | undefined { return 1 === this.length ? this.array[0].value : undefined; }
+  public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
-    for (const entry of this.array)
+    for (const entry of this._array)
       if (entry.index === index)
         return entry.value;
 
@@ -1577,11 +1577,11 @@ export class FeatureTable extends IndexMap<Feature> {
     assert(!bound.equal);
     assert(!this.isFull);
     const entry = new IndexedValue<Feature>(feature, index);
-    this.array.splice(bound.index, 0, entry);
+    this._array.splice(bound.index, 0, entry);
   }
 
   /** @hidden */
-  public getArray(): Array<IndexedValue<Feature>> { return this.array; }
+  public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
 export class TextureMapping {

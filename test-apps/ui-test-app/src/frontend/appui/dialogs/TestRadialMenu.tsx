@@ -42,22 +42,22 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
         left={"50%"}
         top={"50%"}
         opened={this.state.opened}
-        onBlur={this.close}
-        onEsc={this.close}
+        onBlur={this._close}
+        onEsc={this._close}
         innerRadius={55} outerRadius={140}>
         {this.state.data.map((obj: any, index: any) => {
           return (
             <RadialButton
               key={index}
               icon={obj.icon}
-              onSelect={this.close}>{obj.label}</RadialButton>
+              onSelect={this._close}>{obj.label}</RadialButton>
           );
         })}
       </RadialMenu>
     );
   }
 
-  private close = () => {
+  private _close = () => {
     this.setState({ opened: false }, () => {
       ModalDialogManager.closeModalDialog();
     });

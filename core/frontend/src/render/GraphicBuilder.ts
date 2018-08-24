@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { IModelConnection } from "../IModelConnection";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
   Transform,
   Point3d,
@@ -52,89 +52,29 @@ export const enum GraphicType {
   ViewOverlay,
 }
 
-const identityTransform = Transform.createIdentity();
-Object.freeze(identityTransform);
-
-/** Parameters used to construct a GraphicBuilder. */
-export class GraphicBuilderCreateParams {
+/** Exposes methods for constructing a RenderGraphic from geometric primitives. */
+export abstract class GraphicBuilder {
   private readonly _placement: Transform;
   public readonly type: GraphicType;
-  public readonly pickableId?: Id64;
   public readonly viewport: Viewport;
+  public pickId?: string;
 
   public get placement(): Transform { return this._placement; }
   public set placement(tf: Transform) { this._placement.setFrom(tf); }
-
   public get isViewCoordinates(): boolean { return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay; }
   public get isWorldCoordinates(): boolean { return !this.isViewCoordinates; }
   public get isSceneGraphic(): boolean { return this.type === GraphicType.Scene; }
   public get isViewBackground(): boolean { return this.type === GraphicType.ViewBackground; }
   public get isOverlay(): boolean { return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay; }
-
   public get iModel(): IModelConnection { return this.viewport.iModel; }
 
-  constructor(placement: Transform = identityTransform, type: GraphicType, viewport: Viewport, pickableId?: Id64) {
+  constructor(placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
     this._placement = placement;
     this.type = type;
     this.viewport = viewport;
-    if (undefined !== pickableId && pickableId.isValid)
-      this.pickableId = pickableId;
+    if (undefined !== pickId)
+      this.pickId = pickId.toString();
   }
-
-  public static create(type: GraphicType, vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, type, vp);
-  }
-
-  /** Create params for a graphic in world coordinates to be displayed within the specified Viewport */
-  public static scene(vp: Viewport, placement?: Transform) {
-    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp);
-  }
-
-  /** Create params for a subgraphic */
-  public subGraphic(placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this.type, this.viewport);
-  }
-
-  /**
-   * Create params for a WorldDecoration-type RenderGraphic
-   * The faceting tolerance will be computed from the finished graphic's range and the viewport.
-   */
-  public static worldDecoration(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp);
-  }
-
-  /**
-   * Create params for a WorldOverlay-type RenderGraphic
-   * The faceting tolerance will be computed from the finished graphic's range and the viewport.
-   */
-  public static worldOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp);
-  }
-
-  /** Create params for a ViewOverlay-type RenderGraphic */
-  public static viewOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
-  }
-
-  /** Create params for a pickable decoration defined in world coordinates. */
-  public static pickableDecoration(vp: Viewport, id: Id64, isOverlay: boolean, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, isOverlay ? GraphicType.WorldOverlay : GraphicType.Scene, vp, id);
-  }
-}
-
-/** Exposes methods for constructing a RenderGraphic from geometric primitives. */
-export abstract class GraphicBuilder {
-  /**
-   * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
-   * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
-   */
-  public get iModel(): IModelConnection { return this.createParams.iModel; }
-  public get localToWorldTransform(): Transform { return this.createParams.placement; }
-  public get viewport(): Viewport { return this.createParams.viewport!; }
-  public get isWorldCoordinates(): boolean { return this.createParams.isWorldCoordinates; }
-  public get isViewCoordinates(): boolean { return this.createParams.isViewCoordinates; }
-
-  constructor(public readonly createParams: GraphicBuilderCreateParams) { }
 
   /** IFacetOptions => StrokeOptions */
   public wantStrokeLineStyle(_symb: LineStyle.Info, _facetOptions: StrokeOptions): boolean { return true; }
@@ -142,7 +82,7 @@ export abstract class GraphicBuilder {
   public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): RenderGraphic;
+  protected abstract _finish(): RenderGraphic;
   public finish(): RenderGraphic { return this._finish(); }
 
   /**
@@ -152,7 +92,7 @@ export abstract class GraphicBuilder {
   public abstract activateGraphicParams(graphicParams: GraphicParams): void;
 
   /**
-   * Draw a 3D line string.
+   * Draw a 3d line string.
    * @param points Array of vertices in the line string.
    */
   public abstract addLineString(points: Point3d[]): void;
@@ -164,40 +104,40 @@ export abstract class GraphicBuilder {
   public convertToLineStringParams(...lines: Array<[number, Point3d[]]>): Array<{ numPoints: number, points: Point3d[] }> { return lines.map((l) => ({ numPoints: l[0], points: l[1] })); }
 
   /**
-   * Draw a 2D line string.
+   * Draw a 2d line string.
    * @param points Array of vertices in the line string.
    * @param zDepth Z depth value in local coordinates.
    */
   public abstract addLineString2d(points: Point2d[], zDepth: number): void;
 
   /**
-   * Draw a 3D point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
+   * Draw a 3d point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
    * @param points Array of vertices in the point string.
    */
   public abstract addPointString(points: Point3d[]): void;
 
   /**
-   * Draw a 2D point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
+   * Draw a 2d point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
    * @param points Array of vertices in the point string.
    * @param zDepth Z depth value.
    */
   public abstract addPointString2d(points: Point2d[], zDepth: number): void;
 
   /**
-   *  Draw a closed 3D shape.
+   *  Draw a closed 3d shape.
    * @param points Array of vertices of the shape.
    */
   public abstract addShape(points: Point3d[]): void;
 
   /**
-   * Draw a 2D shape.
+   * Draw a 2d shape.
    * @param points Array of vertices of the shape.
    * @param zDepth Z depth value.
    */
   public abstract addShape2d(points: Point2d[], zDepth: number): void;
 
   /**
-   * Draw a 3D elliptical arc or ellipse.
+   * Draw a 3d elliptical arc or ellipse.
    * @param ellipse arc data.
    * @param isEllipse If true, and if full sweep, then draw as an ellipse instead of an arc.
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
@@ -205,7 +145,7 @@ export abstract class GraphicBuilder {
   public abstract addArc(ellipse: Arc3d, isEllipse: boolean, filled: boolean): void;
 
   /**
-   * Draw a 2D elliptical arc or ellipse.
+   * Draw a 2d elliptical arc or ellipse.
    * @param ellipse arc data.
    * @param isEllipse If true, and if full sweep, then draw as an ellipse instead of an arc.
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
@@ -213,16 +153,16 @@ export abstract class GraphicBuilder {
    */
   public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
 
-  /** Draw a 3D open path */
+  /** Draw a 3d open path */
   public abstract addPath(path: Path): void;
 
-  /** Draw a 3D planar region */
+  /** Draw a 3d planar region */
   public abstract addLoop(loop: Loop): void;
 
   /** @note Wireframe fill display supported for non-illuminated meshes. */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
-  /** Add DRange3d edges */
+  /** Add Range3d edges */
   public addRangeBox(range: Range3d) {
     const p: Point3d[] = [];
     for (let i = 0; i < 8; ++i) p[i] = new Point3d();
