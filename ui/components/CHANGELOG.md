@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 23 Aug 2018 20:51:32 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Aug 2018 12:49:09 GMT and should not be manually modified.
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+### Updates
+
+- Constructor for viewport now takes an HTML div as the argument, creates the canvas and adds it to the div.
 
 ## 0.120.0
 Thu, 23 Aug 2018 20:51:32 GMT
