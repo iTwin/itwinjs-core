@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Back /> renders correctly 1`] = `
+<Target
+  className="nz-zones-target-back"
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;

@@ -74,8 +74,8 @@ import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZ
 import NineZoneManager from "@src/zones/state/Manager";
 import Widget, { DropTarget } from "@src/zones/state/Widget";
 import TargetContainer from "@src/zones/target/Container";
-import Merge from "@src/zones/target/Merge";
-import Unmerge from "@src/zones/target/Unmerge";
+import MergeTarget from "@src/zones/target/Merge";
+import BackTarget from "@src/zones/target/Back";
 import Zone from "@src/zones/Zone";
 import Zones from "@src/zones/Zones";
 import ThemeContext from "@src/theme/Context";
@@ -1404,21 +1404,15 @@ export default class ZonesExample extends React.Component<{}, State> {
     switch (dropTarget) {
       case DropTarget.Merge:
         return (
-          <Merge
+          <MergeTarget
             key={widgetId}
-            rows={3}
-            columns={3}
-            cells={widget.getMergeTargetCells()}
             onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Merge, isTargeted)}
           />
         );
       case DropTarget.Unmerge:
         return (
-          <Unmerge
+          <BackTarget
             key={widgetId}
-            rows={3}
-            columns={3}
-            cells={widget.getUnmergeTargetCells()}
             onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Unmerge, isTargeted)}
           />
         );

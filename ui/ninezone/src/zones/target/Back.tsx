@@ -7,13 +7,13 @@ import * as classnames from "classnames";
 import * as React from "react";
 import Target, { TargetProps } from "./Target";
 import Arrow from "./Arrow";
-import "./Merge.scss";
+import "./Back.scss";
 
-/** Merge target. */
+/** Back home target. */
 // tslint:disable-next-line:variable-name
-export const Merge: React.StatelessComponent<TargetProps> = (props: TargetProps) => {
+export const Back: React.StatelessComponent<TargetProps> = (props: TargetProps) => {
   const mergeClassName = classnames(
-    "nz-zones-target-merge",
+    "nz-zones-target-back",
     props.className);
 
   return (
@@ -21,10 +21,9 @@ export const Merge: React.StatelessComponent<TargetProps> = (props: TargetProps)
       className={mergeClassName}
       {...props}
     >
-      <Arrow />
-      <Arrow className="nz-mirrored" />
+      <Arrow className="nz-arrow" />
     </Target>
   );
 };
 
-export default Merge;
+export default Back;

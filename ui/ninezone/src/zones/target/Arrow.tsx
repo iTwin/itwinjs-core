@@ -5,26 +5,25 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Target, { TargetProps } from "./Target";
-import Arrow from "./Arrow";
-import "./Merge.scss";
+import CommonProps from "../../utilities/Props";
+import "./Arrow.scss";
 
-/** Merge target. */
+/**
+ * Arrow icon.
+ * @note Used in [[Merge]], [[Back]] components.
+ */
 // tslint:disable-next-line:variable-name
-export const Merge: React.StatelessComponent<TargetProps> = (props: TargetProps) => {
-  const mergeClassName = classnames(
-    "nz-zones-target-merge",
+export const Arrow: React.StatelessComponent<CommonProps> = (props: CommonProps) => {
+  const className = classnames(
+    "nz-zones-target-arrow",
     props.className);
 
   return (
-    <Target
-      className={mergeClassName}
-      {...props}
-    >
-      <Arrow />
-      <Arrow className="nz-mirrored" />
-    </Target>
+    <div
+      className={className}
+      style={props.style}
+    />
   );
 };
 
-export default Merge;
+export default Arrow;

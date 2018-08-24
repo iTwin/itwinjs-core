@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/colors";
-@import "../../_geometry";
+@import "../../_prefix";
 
-.nz-zones-target-merge {
-  > .nz-mirrored {
-    transform: rotateZ(180deg);
+.nz-zones-target-back {
+  > .nz-arrow {
+    transform: rotateZ(45deg);
+    @include nz-backface-visibility(hidden);
   }
 }

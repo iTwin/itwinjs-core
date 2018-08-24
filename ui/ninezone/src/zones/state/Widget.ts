@@ -4,8 +4,7 @@
 /** @module Zone */
 
 import { WidgetZone } from "./Zone";
-import Cell, { CellProps } from "../../utilities/Cell";
-import { UnmergeCell, CellType } from "../target/Unmerge";
+import Cell from "../../utilities/Cell";
 import { WidgetZoneIndex } from "./NineZone";
 
 export enum DropTarget {
@@ -103,90 +102,5 @@ export class Widget {
           return DropTarget.Merge;
 
     return DropTarget.None;
-  }
-
-  public getMergeTargetCells(): CellProps[] {
-    const cells = new Array<CellProps>();
-
-    const draggingWidget = this.nineZone.draggingWidget;
-    if (!draggingWidget)
-      return cells;
-
-    const draggingZone = draggingWidget.zone;
-    const draggingCell = draggingZone.cell;
-    const targetZone = this.zone;
-    const targetCell = targetZone.cell;
-
-    if (draggingZone.isFirstWidget(this)) {
-      cells.push(draggingZone.cell);
-      for (const widget of draggingZone.getWidgets()) {
-        if (cells.length === draggingZone.props.widgets.length)
-          break;
-
-        const cell = widget.defaultZone.cell;
-        if (cell.equals(draggingZone.cell))
-          continue;
-        cells.push(cell);
-      }
-
-      const contentZone = this.nineZone.getContentZone();
-      if (Widget.isCellBetweenWidgets(contentZone.cell, draggingZone.getWidgets()))
-        cells.push(contentZone.cell);
-      const statusZone = this.nineZone.getStatusZone();
-      if (statusZone.props.isInFooterMode && Widget.isCellBetweenWidgets(statusZone.cell, draggingZone.getWidgets()))
-        cells.push(statusZone.cell);
-    } else
-      if (draggingCell.isRowAlignedWith(targetCell)) {
-        const min = Math.min(draggingCell.col, targetCell.col);
-        const max = Math.max(draggingCell.col, targetCell.col);
-        for (let i = min; i <= max; i++)
-          cells.push(new Cell(draggingCell.row, i));
-      } else if (draggingCell.isColumnAlignedWith(targetCell)) {
-        const min = Math.min(draggingCell.row, targetCell.row);
-        const max = Math.max(draggingCell.row, targetCell.row);
-        for (let i = min; i <= max; i++)
-          cells.push(new Cell(i, draggingCell.col));
-      }
-
-    return cells;
-  }
-
-  public getUnmergeTargetCells(): UnmergeCell[] {
-    const cells = new Array<UnmergeCell>();
-
-    const draggingWidget = this.nineZone.draggingWidget;
-    if (!draggingWidget)
-      return cells;
-
-    const draggingZone = draggingWidget.zone;
-
-    // Need to unmerge single widget and keep the other two merged.
-    if (draggingZone.props.widgets.length > 2 && draggingZone.isLastWidget(this)) {
-      const widgets = Widget.sort(draggingZone.getWidgets());
-      const lastWidget = widgets[widgets.length - 1];
-      for (const widget of widgets) {
-        let type = CellType.Merge;
-        if (widget.equals(lastWidget))
-          type = CellType.Unmerge;
-
-        const unmergeCell = {
-          row: widget.defaultZone.cell.row,
-          col: widget.defaultZone.cell.col,
-          type,
-        };
-        cells.push(unmergeCell);
-      }
-    } else
-      for (const widget of draggingZone.getWidgets()) {
-        const cell = widget.defaultZone.cell;
-        const unmergeCell = {
-          row: cell.row,
-          col: cell.col,
-          type: CellType.Unmerge,
-        };
-        cells.push(unmergeCell);
-      }
-
-    return cells;
   }
 }

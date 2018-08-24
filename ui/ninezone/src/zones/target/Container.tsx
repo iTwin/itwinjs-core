@@ -5,9 +5,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import Props from "../../utilities/Props";
-
 import "./Container.scss";
 
 export default class Container extends React.Component<Props> {

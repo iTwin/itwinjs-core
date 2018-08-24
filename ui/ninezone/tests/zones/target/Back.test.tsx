@@ -3,15 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import Back from "../../../src/zones/target/Back";
 
-import Unmerge from "../../../src/zones/target/Unmerge";
-
-describe("<Unmerge />", () => {
+describe("<Back />", () => {
   it("should render", () => {
-    mount(<Unmerge columns={1} rows={1} cells={[]} />);
+    mount(<Back />);
   });
 
   it("renders correctly", () => {
-    shallow(<Unmerge columns={1} rows={1} cells={[]} />).should.matchSnapshot();
+    shallow(<Back />).should.matchSnapshot();
   });
 });
