@@ -4,9 +4,14 @@
 @import "../_z-index";
 
 .nz-zones-ghostOutline {
-  background-color: rgba(#333333, 0.75);
+  $blur: 5px;
+  $width: 10px;
+  $color: rgb(140, 210, 255);
+
   width: 100%;
   height: 100%;
-  position: relative;
+  border-radius: 2px;
+  box-shadow: 0 0 $blur ($width / 2) $color, 0 0 $blur ($width / 2) $color inset;
+
   @include nz-z-index(zone-outline);
 }

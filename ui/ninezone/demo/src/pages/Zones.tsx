@@ -1804,10 +1804,10 @@ export default class ZonesExample extends React.Component<{}, State> {
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
-        <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
+        <Zone bounds={zone.props.floatingBounds || zone.props.bounds}>
           {this.getWidget(zoneId)}
         </Zone>
-        <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
+        <Zone bounds={zone.props.bounds}>
           {this.getTargets(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
@@ -2071,9 +2071,9 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     return (
       <>
-        <FooterZone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
+        <Zone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
           {this.getWidget(statusZone.id)}
-        </FooterZone>
+        </Zone>
         <Zone bounds={statusZone.props.bounds}>
           {this.getTargets(statusZone.id)}
         </Zone>
