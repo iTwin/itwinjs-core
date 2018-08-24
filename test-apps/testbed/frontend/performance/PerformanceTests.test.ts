@@ -12,11 +12,15 @@ import { ProjectApi } from "./ProjectApi";
 // import { CONSTANTS } from "../../common/Testbed";
 // import * as path from "path";
 import { StopWatch } from "@bentley/bentleyjs-core";
+import { addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
+
+const resultsLocation = "D:\\output\\performanceData\\";
+const resultsFileName = "performanceResults_new.csv";
 
 // const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 // const glContext: WebGLRenderingContext | null = null;
 
-const wantConsoleOutput: boolean = true;
+const wantConsoleOutput: boolean = false;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
     console.log(msg); // tslint:disable-line
@@ -87,9 +91,9 @@ class PerformanceEntryData {
 }
 
 class PerformanceEntry {
-  public imodelName = "unknown";
-  public viewName = "unknown";
-  public viewFlags = "unknown";
+  public imodelName = "none";
+  public viewName = "none";
+  public viewFlags = "none";
   public data = new PerformanceEntryData();
 
   public constructor(tileLoadingTime: number, frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
@@ -293,14 +297,15 @@ async function mainBody() {
   // await savePng();
   // debugPrint("1111111111111111111111 - after save png ");
 
-  theViewport!.sync.setRedrawPending();
-  theViewport!.renderFrame();
-  const target = (theViewport!.target as Target);
-  const frameTimes = target.frameTimings;
-  for (let i = 0; i < 11 && frameTimes.length; ++i)
-    debugPrint("frameTimes[" + i + "]: " + frameTimes[i]);
+  // Throw away the first n renderFrame times, until it's more consistent
+  for (let i = 0; i < 10; ++i) {
+    theViewport!.sync.setRedrawPending();
+    theViewport!.renderFrame();
+  }
 
   debugPrint("///////////////////////////////// start extra renderFrames");
+
+  // Add a pause so that user can start the GPU Performance Capture program
   // await resolveAfterXMilSeconds(7000);
 
   const finalFrameTimings: number[][] = [];
@@ -334,6 +339,7 @@ async function mainBody() {
     debugPrint(i + "  " + finalFrameTimings[nt - 1][i]);
   }
   await printResults(curTileLoadingTime, finalFrameTimings[nt - 1]);
+  addDataToCsvFile(resultsLocation + resultsFileName, new PerformanceEntry(curTileLoadingTime, finalFrameTimings[nt - 1], /([^\\]+)$/.exec(configuration.iModelName)![1], configuration.viewName));
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
@@ -344,6 +350,7 @@ async function mainBody() {
 
 describe("PerformanceTests - 1", () => {
   it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
+    createNewCsvFile(resultsLocation, resultsFileName);
     mainBody().then((_result) => {
       done();
     }).catch((error) => {
