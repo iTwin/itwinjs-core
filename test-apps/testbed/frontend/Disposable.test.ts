@@ -20,7 +20,7 @@ import { TestData } from "./TestData";
 /* tslint:disable:no-console */
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-let canvas: HTMLCanvasElement;
+let viewDiv: HTMLDivElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
@@ -116,10 +116,10 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("div") as HTMLDivElement;
+    assert(null !== viewDiv);
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -170,10 +170,10 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("viewDiv") as HTMLDivElement;
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    assert(null !== viewDiv);
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -244,7 +244,7 @@ describe("Disposal of WebGL Resources", () => {
     const viewState = await imodel1.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
 
-    const viewport = new Viewport(canvas, viewState);
+    const viewport = new Viewport(viewDiv, viewState);
     await viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
     viewport.renderFrame(new UpdatePlan()); // force a frame to be rendered

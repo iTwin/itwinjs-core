@@ -17,7 +17,7 @@
   cursor:pointer;
 }
 
-.imodelview {
+.imodel-viewport {
   position: relative;
   width: 98%;
   height: 90%;

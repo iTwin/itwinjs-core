@@ -13,8 +13,8 @@ import { MaybeRenderApp } from "./WebGLTestContext";
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  public constructor(canvas: HTMLCanvasElement, viewState: ViewState) {
-    super(canvas, viewState);
+  public constructor(viewDiv: HTMLDivElement, viewState: ViewState) {
+    super(viewDiv, viewState);
     this.setupFromView();
   }
 }
@@ -30,10 +30,10 @@ describe("Viewport", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MaybeRenderApp.startup();
@@ -49,7 +49,7 @@ describe("Viewport", () => {
 
   it("Viewport", async () => {
     const vpView = spatialView.clone<SpatialViewState>();
-    const vp = new TestViewport(canvas!, vpView);
+    const vp = new TestViewport(viewDiv!, vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn(), "camera is off");
@@ -91,7 +91,7 @@ describe("Viewport", () => {
 
   it("AccuDraw", () => {
     const vpView = spatialView.clone<SpatialViewState>();
-    const viewport = new TestViewport(canvas!, vpView);
+    const viewport = new TestViewport(viewDiv!, vpView);
     const accudraw = IModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
     const pt = new Point3d(1, 1, 1);
@@ -126,7 +126,7 @@ describe("Viewport", () => {
 
   it("creates a RenderPlan from a viewport", () => {
     const vpView = spatialView.clone<SpatialViewState>();
-    const vp = new TestViewport(canvas!, vpView);
+    const vp = new TestViewport(viewDiv!, vpView);
     let plan: RenderPlan | undefined;
     try {
       plan = RenderPlan.createFromViewport(vp);

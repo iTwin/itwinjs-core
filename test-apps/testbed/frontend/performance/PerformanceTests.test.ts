@@ -97,17 +97,17 @@ async function _changeView(view: ViewState) {
 }
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
-  // find the canvas.
-  const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement; // await document.createElement("htmlCanvas") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = htmlCanvas!.height = 400;
-  await document.body.appendChild(htmlCanvas!);
+  // find the view div element.
+  const htmlViewDiv: HTMLDivElement = document.getElementById("imodelview") as HTMLDivElement; // await document.createElement("htmlViewDiv") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
+  htmlViewDiv!.style.width = htmlViewDiv!.style.height = "400px";
+  await document.body.appendChild(htmlViewDiv!);
 
-  if (htmlCanvas) {
-    console.log("openView - htmlCanvas exists"); // tslint:disable-line
+  if (htmlViewDiv) {
+    console.log("openView - htmlViewDiv exists"); // tslint:disable-line
     console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("htmlCanvas: " + htmlCanvas); // tslint:disable-line
+    console.log("htmlViewDiv: " + htmlViewDiv); // tslint:disable-line
     // console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    theViewport = await new Viewport(htmlCanvas, state.viewState!);
+    theViewport = await new Viewport(htmlViewDiv, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);

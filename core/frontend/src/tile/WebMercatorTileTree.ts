@@ -528,7 +528,7 @@ export class BackgroundMapState {
     this.displayLogoImage(context);
   }
 
-  public displayLogoImage(context: SceneContext) {
+  private displayLogoImage(context: SceneContext) {
     const logoImage: HTMLImageElement | undefined = this.provider!.getCopyrightImage();
     if (!logoImage)
       return;
@@ -538,15 +538,15 @@ export class BackgroundMapState {
 
     const vp: Viewport = context.viewport;
     // const clientRect: ClientRect = vp.getClientRect();
-    const canvas: HTMLCanvasElement = vp.canvas;
-    const parent: HTMLElement | null = canvas.parentElement;
-    if (!parent)
-      return;
-
-    const logoDiv: HTMLDivElement = document.createElement("div");
-    parent.appendChild(logoDiv);
-    logoDiv.style.position = "absolute";
-    logoDiv.appendChild(logoImage);
+    const enclosingDiv: HTMLDivElement | undefined = vp.enclosingDiv;
+    if (enclosingDiv) {
+      logoImage.style.position = "absolute";
+      logoImage.style.left = "0px";
+      const positionString = `${(vp.canvas.clientHeight - logoImage.height).toString()}px`;
+      logoImage.style.top = positionString;
+      logoImage.style.pointerEvents = "none";
+      enclosingDiv.appendChild(logoImage);
+    }
 
     // insert the image into the scene inside a div
     this.logoImageAddedToDOM = true;

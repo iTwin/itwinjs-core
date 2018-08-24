@@ -43,23 +43,23 @@ export interface ViewportProps {
  */
 export class ViewportComponent extends React.Component<ViewportProps> {
 
-  private _canvas: React.RefObject<HTMLCanvasElement>;
+  private _viewportDiv: React.RefObject<HTMLDivElement>;
   private _vp?: Viewport;
 
   public constructor(props: ViewportProps, context?: any) {
     super(props, context);
-    this._canvas = React.createRef<HTMLCanvasElement>();
+    this._viewportDiv = React.createRef<HTMLDivElement>();
   }
 
   public async componentDidMount() {
-    if (!this._canvas.current)
+    if (!this._viewportDiv.current)
       throw new Error("Canvas failed to load");
 
     const viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
     if (!viewState)
       throw new Error("View state failed to load");
 
-    this._vp = new Viewport(this._canvas.current, viewState);
+    this._vp = new Viewport(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
     ViewportManager.CubeRotationChangeEvent.addListener(this.handleCubeRotationChangeEvent);
@@ -83,7 +83,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     ViewportManager.StandardRotationChangeEvent.removeListener(this.handleStandardRotationChangeEvent);
   }
 
-  private onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
 
     ViewportManager.setActiveViewport(this._vp);
@@ -181,7 +181,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
   public render() {
     return (
-      <canvas ref={this._canvas} style={{ height: "100%", width: "100%" }}
+      <div ref={this._viewportDiv} style={{ height: "100%", width: "100%" }}
         onMouseDown={this.onMouseDown}
         onContextMenu={(e) => { e.preventDefault(); return false; }}
       />

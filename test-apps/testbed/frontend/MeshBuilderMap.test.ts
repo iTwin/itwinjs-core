@@ -35,10 +35,10 @@ describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -70,7 +70,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = new Viewport(viewDiv, spatialView);
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
@@ -126,7 +126,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = new Viewport(viewDiv, spatialView);
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
@@ -185,7 +185,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = new Viewport(viewDiv, spatialView);
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
@@ -342,7 +342,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = new Viewport(viewDiv, spatialView);
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
@@ -389,7 +389,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = new Viewport(viewDiv, spatialView);
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
