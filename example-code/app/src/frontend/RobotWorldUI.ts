@@ -38,10 +38,10 @@ export class RobotWorldApp extends IModelApp {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ViewManager.addViewport
-  /** Open a Viewport on the supplied canvas. */
-  public static async openView(canvas: HTMLCanvasElement) {
+  /** Open a Viewport on the supplied div element. */
+  public static async openView(viewDiv: HTMLDivElement) {
     const viewState = await this.loadOneView();
-    const viewPort = new Viewport(canvas, viewState);
+    const viewPort = new Viewport(viewDiv, viewState);
     this.viewManager.addViewport(viewPort);
   }
   // __PUBLISH_EXTRACT_END__

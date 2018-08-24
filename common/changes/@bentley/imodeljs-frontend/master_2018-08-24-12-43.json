@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Constructor for Viewport now takes an HTML div as the argument, creates the canvas, and adds it to the div. Bing logo now drawn when Bing background maps are drawn.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}
