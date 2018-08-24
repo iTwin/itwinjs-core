@@ -10,10 +10,10 @@ import * as classnames from "classnames";
 import "./Breadcrumb.scss";
 import { SplitButton } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem } from "../tree";
-import { TableDataProvider, Table, RowItem, ColumnDescription } from "../table";
+import { TableDataProvider, Table, TableDropTargetProps, RowItem, ColumnDescription } from "../table";
 import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
 import { BreadcrumbTreeUtils, DataRowItem } from "./BreadcrumbTreeUtils";
-import { DropTargetArguments, DragSourceArguments } from "../dragdrop";
+import { DropTargetArguments, DragSourceArguments, DragSourceProps, DropTargetProps } from "../dragdrop";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { DragDropBreadcrumbButton } from "./DragDropBreadcrumbButton";
 
@@ -39,13 +39,8 @@ export interface BreadcrumbProps {
    */
   width?: number | string;
 
-  onDropTargetDrop?: (data: DropTargetArguments) => DropTargetArguments;
-  onDropTargetOver?: (data: DropTargetArguments) => void;
-  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
-  objectType?: string | ((data: any) => string);
-  objectTypes?: string[] | ((data: any) => string[]);
+  dragProps?: DragSourceProps;
+  dropProps?: DropTargetProps;
 }
 
 /** @hidden */
@@ -85,79 +80,56 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   public render(): React.ReactNode {
-    const {
-      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
-      onDragSourceBegin, onDragSourceEnd,
-    } = this.props;
-    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
-      onDragSourceBegin || onDragSourceEnd)
-      return (
-        <div
-          className={classnames("breadcrumb", { "breadcrumb-active": this.state.inputActive })}>
-          <div className={"breadcrumb-head"}>
-            <BreadcrumbDropdown
-              dataProvider={this.props.dataProvider}
-              path={this.props.path}
-              button={(el) => { this._buttonElement = el; }}
-              current={this.state.current}
-              onModeSwitch={this._handleModeSwitch}
-              delimiter={this.props.delimiter}
-              width={this.props.width!}
-              onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-                // boilerplate default
-                if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-                return args;
-              }}
-              onDropTargetOver={this.props.onDropTargetOver}
-              canDropTargetDrop={this.props.canDropTargetDrop}
-              onDragSourceBegin={(args: DragSourceArguments) => {
-                // boilerplate default
-                if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-                return args;
-              }}
-              onDragSourceEnd={this.props.onDragSourceEnd}
-              objectType={this.props.objectType}
-              objectTypes={this.props.objectTypes}
-            />
-            <BreadcrumbInput
-              dataProvider={this.props.dataProvider}
-              path={this.props.path}
-              input={(el) => { this._inputElement = el; }}
-              buttonElement={this._buttonElement}
-              current={this.state.current}
-              onModeSwitch={this._handleModeSwitch}
-              delimiter={this.props.delimiter}
-              width={this.props.width!} />
-          </div>
+    const dragProps: DragSourceProps = {};
+    if (this.props.dragProps) {
+      const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
+      dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
+        // boilerplate default
+        return onDragSourceBegin ? onDragSourceBegin(args) : args;
+      };
+      dragProps.onDragSourceEnd = onDragSourceEnd;
+      dragProps.objectType = objectType;
+    }
+    const dropProps: DropTargetProps = {};
+    if (this.props.dropProps) {
+      const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
+      dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
+        // boilerplate default
+        return onDropTargetDrop ? onDropTargetDrop(args) : args;
+      };
+      dropProps.onDropTargetOver = onDropTargetOver;
+      dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
+        return canDropTargetDrop ? canDropTargetDrop(args) : true;
+      };
+      dropProps.objectTypes = objectTypes;
+    }
+    return (
+      <div
+        className={classnames("breadcrumb", { "breadcrumb-active": this.state.inputActive })}>
+        <div className={"breadcrumb-head"}>
+          <BreadcrumbDropdown
+            dataProvider={this.props.dataProvider}
+            dragProps={dragProps}
+            dropProps={dropProps}
+            path={this.props.path}
+            button={(el) => { this._buttonElement = el; }}
+            current={this.state.current}
+            onModeSwitch={this._handleModeSwitch}
+            delimiter={this.props.delimiter}
+            width={this.props.width!}
+          />
+          <BreadcrumbInput
+            dataProvider={this.props.dataProvider}
+            path={this.props.path}
+            input={(el) => { this._inputElement = el; }}
+            buttonElement={this._buttonElement}
+            current={this.state.current}
+            onModeSwitch={this._handleModeSwitch}
+            delimiter={this.props.delimiter}
+            width={this.props.width!} />
         </div>
-      );
-    else
-      return (
-        <div
-          className={classnames("breadcrumb", { "breadcrumb-active": this.state.inputActive })}>
-          <div className={"breadcrumb-head"}>
-            <BreadcrumbDropdown
-              dataProvider={this.props.dataProvider}
-              path={this.props.path}
-              button={(el) => { this._buttonElement = el; }}
-              current={this.state.current}
-              onModeSwitch={this._handleModeSwitch}
-              delimiter={this.props.delimiter}
-              width={this.props.width!}
-            />
-            <BreadcrumbInput
-              dataProvider={this.props.dataProvider}
-              path={this.props.path}
-              input={(el) => { this._inputElement = el; }}
-              buttonElement={this._buttonElement}
-              current={this.state.current}
-              onModeSwitch={this._handleModeSwitch}
-              delimiter={this.props.delimiter}
-              width={this.props.width!} />
-          </div>
-        </div>
-      );
-
+      </div>
+    );
   }
 
   private _handleModeSwitch = (type: BreadcrumbMode) => {
@@ -383,13 +355,8 @@ interface BreadcrumbDropdownProps {
   delimiter?: string;
   width: number | string;
 
-  onDropTargetDrop?: (data: DropTargetArguments) => DragSourceArguments;
-  onDropTargetOver?: (data: DropTargetArguments) => void;
-  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
-  objectType?: string | ((data: any) => string);
-  objectTypes?: string[] | ((data: any) => string[]);
+  dragProps: DragSourceProps;
+  dropProps: DropTargetProps;
 }
 
 interface BreadcrumbDropdownState {
@@ -451,28 +418,14 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
         } onClick={this._handleUpClick} />
         {this.state.nodes.map((node, i) => {
           const label = node && "label" in node ? node.label : " ";
-          const {
-            onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
-            onDragSourceBegin, onDragSourceEnd,
-          } = this.props;
-          const button = onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
-            onDragSourceBegin || onDragSourceEnd ? (
-            <DragDropBreadcrumbButton
-              onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-                args.dropLocation = node || this.props.dataProvider;
-                if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-                return args;
-              }}
-              onDropTargetOver={(args: DropTargetArguments) => {
-                args.dropLocation = node || this.props.dataProvider;
-                if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
-              }}
-              canDropTargetDrop={(args: DropTargetArguments) => {
-                args.dropLocation = node || this.props.dataProvider;
-                if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-                return true;
-              }}
-              onDragSourceBegin={(args: DragSourceArguments) => {
+          let button = <div><span className={classnames("icon", (node && node.iconPath) || (!node && "icon-browse") || "")} /> {label}</div>;
+          const { dragProps: drag, dropProps: drop } = this.props;
+          if ((drag && (drag.onDragSourceBegin || drag.onDragSourceEnd)) ||
+            (drop && (drop.onDropTargetOver || drop.onDropTargetDrop))) {
+            const dragProps: DragSourceProps = {};
+            if (drag) {
+              const { onDragSourceBegin, onDragSourceEnd, objectType } = drag;
+              dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
                 if (node && node.extendedData) {
                   args.dataObject = node.extendedData;
                   if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
@@ -483,43 +436,54 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps, Breadc
                     args.parentObject = parent || this.props.dataProvider;
                   }
                 }
-                if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-                return args;
-              }}
-              onDragSourceEnd={(args: DragSourceArguments) => {
-                if (i > 0) {
-                  const parent = this.state.nodes[i - 1];
-                  args.parentObject = parent || this.props.dataProvider;
+                return onDragSourceBegin ? onDragSourceBegin(args) : args;
+              };
+              dragProps.onDragSourceEnd = (args: DragSourceArguments) => {
+                if (onDragSourceEnd) {
+                  if (i > 0) {
+                    const parent = this.state.nodes[i - 1];
+                    args.parentObject = parent || this.props.dataProvider;
+                  }
+                  onDragSourceEnd(args);
                 }
-                if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
-              }}
-              objectType={() => {
-                if (this.props.objectType) {
-                  if (typeof this.props.objectType === "function") {
+              };
+              dragProps.objectType = () => {
+                if (objectType) {
+                  if (typeof objectType === "function") {
                     if (node && node.extendedData) {
-                      return this.props.objectType(node.extendedData);
+                      return objectType(node.extendedData);
                     }
                   } else
-                    return this.props.objectType;
+                    return objectType;
                 }
                 return "";
-              }}
-              objectTypes={() => {
-                if (this.props.objectTypes) {
-                  if (typeof this.props.objectTypes === "function") {
-                    if (node && node.extendedData) {
-                      return this.props.objectTypes(node.extendedData);
-                    }
-                  } else
-                    return this.props.objectTypes;
+              };
+            }
+            const dropProps: DropTargetProps = {};
+            if (drop) {
+              const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes } = drop;
+              dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
+                args.dropLocation = node || this.props.dataProvider;
+                return onDropTargetDrop ? onDropTargetDrop(args) : args;
+              };
+              dropProps.onDropTargetOver = (args: DropTargetArguments) => {
+                if (onDropTargetOver) {
+                  args.dropLocation = node || this.props.dataProvider;
+                  onDropTargetOver(args);
                 }
-                return [];
-              }}
-            >
-              <span className={classnames("icon", (node && node.iconPath) || (!node && "icon-browse") || "")} /> {label}
-            </DragDropBreadcrumbButton>
-            ) : <div><span className={classnames("icon", (node && node.iconPath) || (!node && "icon-browse") || "")} /> {label}</div>;
-
+              };
+              dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
+                args.dropLocation = node || this.props.dataProvider;
+                return canDropTargetDrop ? canDropTargetDrop(args) : true;
+              };
+              dropProps.objectTypes = objectTypes;
+            }
+            button = (
+              <DragDropBreadcrumbButton dragProps={dragProps} dropProps={dropProps}>
+                <span className={classnames("icon", (node && node.iconPath) || (!node && "icon-browse") || "")} /> {label}
+              </DragDropBreadcrumbButton>
+            );
+          }
           if (this.state.nodeChildren[i].length > 0) {
             return (
               <SplitButton
@@ -601,13 +565,8 @@ export interface BreadcrumbDetailsProps {
   path: BreadcrumbPath;
   columns?: ColumnDescription[];
 
-  objectType?: string | ((data: any) => string);
-  objectTypes?: string[];
-  onDropTargetDrop?: (data: DropTargetArguments) => DragSourceArguments;
-  onDropTargetOver?: (data: DropTargetArguments) => void;
-  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  dragProps?: DragSourceProps;
+  dropProps?: DropTargetProps;
 }
 
 /** @hidden */
@@ -695,120 +654,98 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const dataProvider = this.props.path.getDataProvider();
     const node = this.props.path.getCurrentNode();
     const { childNodes } = this.state;
-    const {
-      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
-      onDragSourceBegin, onDragSourceEnd,
-    } = this.props;
-    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
-      onDragSourceBegin || onDragSourceEnd)
-      return (
-        <div className="breadcrumb-details">
-          {
-            this.state.table &&
-            <Table
-              dataProvider={this.state.table}
-              canDropOn={true}
-              onRowsSelected={(rows: RowItem[], replace: boolean) => {
-                if (rows.length > 0) {
-                  const row = rows[0] as DataRowItem;
-                  if ("_node" in row && row._node && row._node.hasChildren) {
-                    this.props.path.setCurrentNode(row._node);
-                    if (dataProvider)
-                      this._updateTree(dataProvider, row._node);
-                  }
-                }
-                return replace;
-              }}
-              onDropTargetOver={(args: DropTargetArguments) => {
-                if (this.props.onDropTargetOver) {
-                  args.dropLocation = node || dataProvider;
-                  if (childNodes && args.dropRect && args.row) {
-                    const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-                    if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
-                      const rowNum = args.row;
-                      args.row = undefined;
-                      args.dropLocation = childNodes[rowNum];
-                    }
-                  }
-                  this.props.onDropTargetOver(args);
-
-                } // else: must be tree object, leave it be.
-              }}
-              onDropTargetDrop={(args: DropTargetArguments) => {
-                args.dropLocation = node || dataProvider;
-                if (childNodes && args.dropRect && args.row) {
-                  const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-                  if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
-                    const rowNum = args.row;
-                    args.row = undefined;
-                    args.dropLocation = childNodes[rowNum];
-                  }
-                }
-                if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
-                  args.dataObject.parentId = dataProvider;
-                }
-                if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-                return args;
-              }}
-              canDropTargetDrop={(args: DropTargetArguments) => {
-                args.dropLocation = node || dataProvider;
-                if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
-                  args.dataObject.parentId = this.props.path.getDataProvider();
-                }
-                if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-                return true;
-              }}
-              onDragSourceBegin={(args: DragSourceArguments) => {
-                if (args.dataObject) {
-                  args.dataObject.parentId = node ? node.id : dataProvider;
-                }
-                args.parentObject = node || dataProvider;
-                if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-                return args;
-              }}
-              onDragSourceEnd={(args: DragSourceArguments) => {
-                args.parentObject = node || dataProvider;
-                if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
-              }}
-              objectType={(data: any) => {
-                if (this.props.objectType) {
-                  if (typeof this.props.objectType === "function") {
-                    if (data && typeof data === "object") {
-                      data.parentId = node ? node.id : dataProvider;
-                    }
-                    return this.props.objectType(data);
-                  } else
-                    return this.props.objectType;
-                }
-                return "";
-              }}
-              objectTypes={this.props.objectTypes}
-            />
+    const dragProps: DragSourceProps = {};
+    if (this.props.dragProps) {
+      const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
+      dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
+        if (args.dataObject) {
+          args.dataObject.parentId = node ? node.id : dataProvider;
+        }
+        args.parentObject = node || dataProvider;
+        return onDragSourceBegin ? onDragSourceBegin(args) : args;
+      };
+      dragProps.onDragSourceEnd = (args: DragSourceArguments) => {
+        if (onDragSourceEnd) {
+          args.parentObject = node || dataProvider;
+          onDragSourceEnd(args);
+        }
+      };
+      dragProps.objectType = (data: any) => {
+        if (objectType) {
+          if (typeof objectType === "function") {
+            if (data && typeof data === "object") {
+              data.parentId = node ? node.id : dataProvider;
+            }
+            return objectType(data);
+          } else
+            return objectType;
+        }
+        return "";
+      };
+    }
+    const dropProps: TableDropTargetProps = { canDropOn: true };
+    if (this.props.dropProps) {
+      const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
+      dropProps.onDropTargetOver = (args: DropTargetArguments) => {
+        if (onDropTargetOver) {
+          args.dropLocation = node || dataProvider;
+          if (childNodes && args.dropRect && args.row) {
+            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+            if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
+              const rowNum = args.row;
+              args.row = undefined;
+              args.dropLocation = childNodes[rowNum];
+            }
           }
-        </div>
-      );
-    else
-      return (
-        <div className="breadcrumb-details">
-          {
-            this.state.table &&
-            <Table
-              dataProvider={this.state.table}
-              canDropOn={true}
-              onRowsSelected={(rows: RowItem[], replace: boolean) => {
-                if (rows.length > 0) {
-                  const row = rows[0] as DataRowItem;
-                  if ("_node" in row && row._node && row._node.hasChildren) {
-                    this.props.path.setCurrentNode(row._node);
-                    if (dataProvider)
-                      this._updateTree(dataProvider, row._node);
-                  }
-                }
-                return replace;
-              }}
-            />
+          onDropTargetOver(args);
+        }
+      };
+      dropProps.onDropTargetDrop = (args: DropTargetArguments) => {
+        args.dropLocation = node || dataProvider;
+        if (childNodes && args.dropRect && args.row) {
+          const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+          if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
+            const rowNum = args.row;
+            args.row = undefined;
+            args.dropLocation = childNodes[rowNum];
           }
-        </div>
-      );
+        }
+        if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+          args.dataObject.parentId = dataProvider;
+        }
+        return onDropTargetDrop ? onDropTargetDrop(args) : args;
+      };
+      dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
+        args.dropLocation = node || dataProvider;
+        if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
+          args.dataObject.parentId = this.props.path.getDataProvider();
+        }
+        return canDropTargetDrop ? canDropTargetDrop(args) : true;
+      };
+      dropProps.objectTypes = objectTypes;
+    }
+    return (
+      <div className="breadcrumb-details">
+        {
+          this.state.table &&
+          <Table
+            dataProvider={this.state.table}
+            dragProps={dragProps}
+            dropProps={dropProps}
+            onRowsSelected={(rows: RowItem[], replace: boolean) => {
+              if (rows.length > 0) {
+                const row = rows[0] as DataRowItem;
+                if ("_node" in row && row._node && row._node.hasChildren) {
+                  this.props.path.setCurrentNode(row._node);
+                  if (dataProvider)
+                    this._updateTree(dataProvider, row._node);
+                }
+              }
+              return replace;
+            }}
+          />
+        }
+      </div>
+    );
   }
 }

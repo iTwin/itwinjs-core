@@ -9,20 +9,16 @@ import { Row } from "react-data-grid";
 import {
   withDragSource, withDropTarget,
   DragSourceArguments, DropTargetArguments,
+  DragSourceProps,
 } from "../../dragdrop";
+import { TableDropTargetProps } from "./Table";
 
 import "./Table.scss";
 
 /** @hidden */
 export interface DragDropRowProps {
-  onDropTargetDrop?: (data: DropTargetArguments) => DragSourceArguments;
-  onDropTargetOver?: (data: DropTargetArguments) => void;
-  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
-  objectType?: string | ((data: any) => string);
-  objectTypes?: string[];
-  canDropOn?: boolean;
+  dragProps: DragSourceProps;
+  dropProps: TableDropTargetProps;
 }
 
 interface RowWrapperProps {
@@ -102,58 +98,61 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
   public render(): React.ReactElement<any> {
     // tslint:disable-next-line:variable-name
     const DDRow = withDragSource(withDropTarget(RowWrapper));
-    const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, onDragSourceBegin, onDragSourceEnd, objectType, objectTypes, ...props } = this.props as DragDropRowProps;
+    const { dragProps, dropProps, ...props } = this.props as DragDropRowProps;
+    const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn } = dropProps;
+    const dropTargetProps = {
+      onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => {
+        if ("idx" in this.props && this.props.idx !== undefined) {
+          args.row = this.props.idx;
+          if (args.dropRect) {
+            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+            if ((canDropOn && relativeY > 2 / 3) || (!canDropOn && relativeY > 1 / 2))
+                args.row = this.props.idx + 1;
+          }
+        }
+        return onDropTargetDrop ? onDropTargetDrop(args) : args; // Must return something for pass-through to OnDragSourceEnd.
+      }, onDropTargetOver: (args: DropTargetArguments) => {
+        if ("idx" in this.props && this.props.idx !== undefined && onDropTargetOver) {
+          args.row = this.props.idx;
+          if (args.dropRect) {
+            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+            if ((canDropOn && relativeY > 2 / 3) || (!canDropOn && relativeY > 1 / 2))
+                args.row = this.props.idx + 1;
+          }
+          onDropTargetOver(args);
+        }
+      }, canDropTargetDrop: (args: DropTargetArguments) => {
+        if ("idx" in this.props && this.props.idx !== undefined) {
+          args.row = this.props.idx;
+        }
+        return canDropTargetDrop ? canDropTargetDrop(args) : true; // Must return something determining if item can drop.
+      }, objectTypes,
+    };
+    const { onDragSourceBegin, onDragSourceEnd, objectType } = dragProps;
+    const dragSourceProps = {
+      onDragSourceBegin: (args: DragSourceArguments) => {
+        if ("idx" in this.props && this.props.idx !== undefined) {
+          args.row = this.props.idx;
+        }
+        return onDragSourceBegin ? onDragSourceBegin(args) : args; // Must return something for drag data.
+      },
+      onDragSourceEnd,
+      objectType: () => {
+        if (objectType) {
+          if (typeof objectType === "function")
+            return objectType({ row: this.props.idx });
+          else
+            return objectType;
+        }
+        return "";
+      },
+    };
     return (
       <DDRow
+        canDropOn={(this.props.dropProps && this.props.dropProps.canDropOn) || false}
         {...props}
-        onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-          if ("idx" in this.props && this.props.idx !== undefined) {
-            args.row = this.props.idx;
-            if (args.dropRect) {
-              const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-              if ((this.props.canDropOn && relativeY > 2 / 3) || (!this.props.canDropOn && relativeY > 1 / 2))
-                  args.row = this.props.idx + 1;
-            }
-          }
-          if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-          return args;
-        }}
-        onDropTargetOver={(args: DropTargetArguments) => {
-          if ("idx" in this.props && this.props.idx !== undefined) {
-            args.row = this.props.idx;
-            if (args.dropRect) {
-              const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-              if ((this.props.canDropOn && relativeY > 2 / 3) || (!this.props.canDropOn && relativeY > 1 / 2))
-                  args.row = this.props.idx + 1;
-            }
-          }
-          if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
-        }}
-        canDropTargetDrop={(args: DropTargetArguments) => {
-          if ("idx" in this.props && this.props.idx !== undefined) {
-            args.row = this.props.idx;
-          }
-          if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-          return true;
-        }}
-        onDragSourceBegin={(args: DragSourceArguments) => {
-          if ("idx" in this.props && this.props.idx !== undefined) {
-            args.row = this.props.idx;
-          }
-          if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-          return args;
-        }}
-        onDragSourceEnd={this.props.onDragSourceEnd}
-        objectType={() => {
-          if (this.props.objectType) {
-            if (typeof this.props.objectType === "function")
-              return this.props.objectType({ row: this.props.idx });
-            else
-              return this.props.objectType;
-          }
-          return "";
-        }}
-        objectTypes={this.props.objectTypes}
+        dropProps={dropTargetProps}
+        dragProps={dragSourceProps}
         shallow={false}
       />
     );

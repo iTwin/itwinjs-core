@@ -12,6 +12,7 @@ import { DragSourceArguments } from "@bentley/ui-components";
 /** Drag/Drop Layer Changed Event Args class.
  */
 export interface DragDropLayerChangedEventArgs {
+  /** The new drag type. */
   type: string | undefined;
 }
 
@@ -28,20 +29,31 @@ export class DragDropLayerManager {
 
   public static get DragDropLayerChangedEvent(): DragDropLayerChangedEvent { return this._dragDropLayerChangedEvent; }
 
+  /**
+   * Gets the currently active drag type.
+   */
   public static getType(): string | undefined {
     return this._currentType;
   }
 
+  /**
+   * Gets the DragLayer component of the currently active type.
+   */
   public static getActiveLayer() {
     if (this._currentType)
       return this._layers[this._currentType];
     return undefined;
   }
 
+  /**
+   * Sets the current type.
+   * @note The current drag type is set automatically when a drag starts. Manually setting type before a drag will be overridden by DragDropManager.
+   */
   public static setType(type: string | undefined) {
     this._currentType = type;
     this._dragDropLayerChangedEvent.emit({ type });
   }
+  /** Registers a new DragLayer for the given type. */
   public static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>) {
     this._layers[type] = layer;
   }
@@ -93,7 +105,7 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
   }
 
   public render(): React.ReactNode {
-    if (this.props.itemType !== DragDropLayerManager.getType()) {
+    if (this.props.itemType !== DragDropLayerManager.getType()) { // A drag of a new type has been triggered.
       DragDropLayerManager.setType(this.props.itemType);
     }
     const { item,
@@ -120,8 +132,12 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
   }
 }
 
-// tslint:disable-next-line:variable-name
-export const DragDropLayerRenderer = DragLayer((monitor) => ({
+/**
+ * Contains the DragLayers to all DragSource types.
+ * New DragLayers are registered by type using [[DragDropLayerManager.registerTypeLayer]]
+ * This component must be placed on a root DOM node at the bottom to render DragLayers properly.
+ */
+export const DragDropLayerRenderer = DragLayer((monitor) => ({ // tslint:disable-line:variable-name
   item: monitor.getItem(),
   itemType: monitor.getItemType(),
   clientOffset: monitor.getClientOffset(),

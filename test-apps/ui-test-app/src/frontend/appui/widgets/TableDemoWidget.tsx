@@ -13,7 +13,7 @@ import {
 import { Table } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTableDataProvider, tableDropTargetDropCallback, tableDragSourceEndCallback, tableCanDropTargetDropCallback } from "./demoTableDataProvider";
-import {RowDropTarget} from "./RowDropTarget";
+import {RowDragLayer} from "./RowDragLayer";
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -43,7 +43,17 @@ class TableDemoWidget extends React.Component<Props, State> {
 
     const objectTypes = [...(this.state.checked ? ["root", "child"] : []), "row"];
 
-    DragDropLayerManager.registerTypeLayer("row", RowDropTarget);
+    DragDropLayerManager.registerTypeLayer("row", RowDragLayer);
+
+    const dragProps = {
+      onDragSourceEnd: tableDragSourceEndCallback,
+      objectType,
+    };
+    const dropProps = {
+      onDropTargetDrop: tableDropTargetDropCallback,
+      canDropTargetDrop: tableCanDropTargetDropCallback,
+      objectTypes,
+    };
 
     return (
       <div>
@@ -56,11 +66,8 @@ class TableDemoWidget extends React.Component<Props, State> {
           }}/>
         <Table
           dataProvider={demoMutableTableDataProvider}
-          onDropTargetDrop={tableDropTargetDropCallback}
-          onDragSourceEnd={tableDragSourceEndCallback}
-          canDropTargetDrop={tableCanDropTargetDropCallback}
-          objectType={objectType}
-          objectTypes={objectTypes}
+          dragProps={dragProps}
+          dropProps={dropProps}
         />
       </div>
     );

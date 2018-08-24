@@ -13,8 +13,8 @@ import {
 import { Tree } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import { ChildDropTarget } from "./ChildDropTarget";
-import { ParentDropTarget } from "./ParentDropTarget";
+import { ChildDragLayer } from "./ChildDragLayer";
+import { RootDragLayer } from "./ParentDragLayer";
 export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -43,8 +43,18 @@ class TreeDemoWidget extends React.Component<Props, State> {
     };
 
     const objectTypes = ["root", "child", ...(this.state.checked ? ["row"] : [])];
-    DragDropLayerManager.registerTypeLayer("root", ParentDropTarget);
-    DragDropLayerManager.registerTypeLayer("child", ChildDropTarget);
+    DragDropLayerManager.registerTypeLayer("root", RootDragLayer);
+    DragDropLayerManager.registerTypeLayer("child", ChildDragLayer);
+
+    const dragProps = {
+      onDragSourceEnd: treeDragSourceEndCallback,
+      objectType,
+    };
+    const dropProps = {
+      onDropTargetDrop: treeDropTargetDropCallback,
+      canDropTargetDrop: treeCanDropTargetDropCallback,
+      objectTypes,
+    };
 
     return (
       <div>
@@ -57,11 +67,8 @@ class TreeDemoWidget extends React.Component<Props, State> {
         }} />
         <Tree
           dataProvider={demoMutableTreeDataProvider}
-          onDropTargetDrop={treeDropTargetDropCallback}
-          onDragSourceEnd={treeDragSourceEndCallback}
-          canDropTargetDrop={treeCanDropTargetDropCallback}
-          objectType={objectType}
-          objectTypes={objectTypes}
+          dragProps={dragProps}
+          dropProps={dropProps}
         />
       </div>
     );

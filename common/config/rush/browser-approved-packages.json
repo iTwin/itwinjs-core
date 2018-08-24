@@ -266,6 +266,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },

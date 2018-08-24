@@ -4,4 +4,4 @@
 export * from "./TableDataProvider";
 export * from "./SimpleTableDataProvider";
 export { Grid, GridProps } from "./component/Grid";
-export { Table, TableProps } from "./component/Table";
+export { Table, TableProps, TableDropTargetProps } from "./component/Table";

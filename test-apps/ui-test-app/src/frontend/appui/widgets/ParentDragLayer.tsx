@@ -5,9 +5,9 @@
 import * as React from "react";
 import { DragLayerProps } from "@bentley/ui-framework";
 
-import "./DropTarget.scss";
+import "./DragLayer.scss";
 
-export class RowDropTarget extends React.Component<DragLayerProps> {
+export class RootDragLayer extends React.Component<DragLayerProps> {
   public render(): React.ReactNode {
     const args = this.props.args!;
     const pos = args.clientOffset;
@@ -27,7 +27,7 @@ export class RowDropTarget extends React.Component<DragLayerProps> {
     };
     return (
       <div className="drag-layer" style={dragLayerStyle}>
-        <div className="drag-layer-type tablerow">{data.type}</div>
+        <div className="drag-layer-type root">{data.type}</div>
         <div className="drag-layer-detail label">{data.label}</div>
         <div className="drag-layer-detail description">{data.description}</div>
       </div>
