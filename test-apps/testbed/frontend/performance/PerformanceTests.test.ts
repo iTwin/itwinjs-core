@@ -6,7 +6,7 @@ import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { Target, UpdatePlan, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi"; // @ts-ignore
 import { ProjectApi } from "./ProjectApi"; // @ts-ignore
 import { CONSTANTS } from "../../common/Testbed";
@@ -97,17 +97,17 @@ async function _changeView(view: ViewState) {
 }
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
-  // find the canvas.
-  const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement; // await document.createElement("htmlCanvas") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = htmlCanvas!.height = 400;
-  await document.body.appendChild(htmlCanvas!);
+  // find the view div element.
+  const htmlViewDiv: HTMLDivElement = document.getElementById("imodelview") as HTMLDivElement; // await document.createElement("htmlViewDiv") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
+  htmlViewDiv!.style.width = htmlViewDiv!.style.height = "400px";
+  await document.body.appendChild(htmlViewDiv!);
 
-  if (htmlCanvas) {
-    console.log("openView - htmlCanvas exists"); // tslint:disable-line
+  if (htmlViewDiv) {
+    console.log("openView - htmlViewDiv exists"); // tslint:disable-line
     console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("htmlCanvas: " + htmlCanvas); // tslint:disable-line
+    console.log("htmlViewDiv: " + htmlViewDiv); // tslint:disable-line
     // console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    theViewport = await new Viewport(htmlCanvas, state.viewState!);
+    theViewport = await new Viewport(htmlViewDiv, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
@@ -235,9 +235,8 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    const plan = new UpdatePlan();
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     const target = (theViewport!.target as Target);
     const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
@@ -245,36 +244,36 @@ describe("PerformanceTests - 1", () => {
 
     await printResults(frameTimes);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
     theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
 
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
@@ -337,35 +336,34 @@ describe("PerformanceTests - 1", () => {
     await openView(activeViewState);
     console.log("This is from frontend/main"); // tslint:disable-line
 
-    const plan = new UpdatePlan();
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     const target = (theViewport!.target as Target);
     const frameTimes = target.frameTimings;
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
 
     await printResults(frameTimes);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     for (let i = 0; i < 11 && frameTimes.length; ++i)
       console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame(plan);
+    await theViewport!.renderFrame();
     await printResults((theViewport!.target as Target).frameTimings);
 
     console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line

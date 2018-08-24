@@ -34,15 +34,16 @@
     font-size: 18px;
     color: $bwc-icons-light;
     cursor: pointer;
-    -webkit-transition: color .3s ease;
-    -moz-transition: color .3s ease;
-    -o-transition: color .3s ease;
-    transition: color .3s ease;
+    -webkit-transition: color background-color.2s ease;
+    -moz-transition: color background-color.2s ease;
+    -o-transition: color background-color.2s ease;
+    transition: color background-color .2s ease;
   }
 
   .viewtype:hover,
   .viewtype.active {
-    color: $bwc-icons-dark;
+    color: $bwc-white;
+    background: $bwc-blue;
   }
 
   .icon-app-launcher {
@@ -149,4 +150,9 @@
   }
 
   tr:hover {background-color: #f5f5f5}
+}
+
+.toggle-offline {
+  height: 22px;
+  width : 48px;
 }

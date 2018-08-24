@@ -6,7 +6,7 @@
 
 import { Geometry, Angle, BeJSONFunctions, AngleProps } from "./Geometry";
 import { Ray3d } from "./AnalyticGeometry";
-import { RotMatrix, Transform } from "./Transform";
+import { Matrix3d, Transform } from "./Transform";
 
 export interface IsNullCheck { isNull(): boolean; }
 export interface WritableXAndY { x: number; y: number; }
@@ -23,8 +23,8 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
 export type XYZProps = { x?: number; y?: number; z?: number } | number[];
 export type XYProps = { x?: number; y?: number; } | number[];
-export type RotMatrixProps = number[][] | RotMatrix | number[];
-export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: RotMatrixProps; };
+export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type TransformProps = number[][] | number[] | { origin: XYZProps; matrix: Matrix3dProps; };
 export type Range3dProps = { low: XYZProps; high: XYZProps; } | XYZProps[];
 export type Range2dProps = { low: XYProps; high: XYProps; } | XYProps[];
 export type Range1dProps = { low: number; high: number } | number[];
@@ -1064,7 +1064,7 @@ export class Vector3d extends XYZ {
       + this.y * (dw * y - pointA.y)
       + this.z * (dw * z - pointA.z);
   }
-
+  /** Return the dot product of the instance and vectorB, using only the x and y parts. */
   public dotProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.x + this.y * vectorB.y;
   }
@@ -1078,12 +1078,14 @@ export class Vector3d extends XYZ {
     return this.x * x + this.y * y + this.z * z;
   }
 
+  /** Return the triple product of the instance, vectorB, and vectorC  */
   public tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number {
     return Geometry.tripleProduct(this.x, this.y, this.z,
       vectorB.x, vectorB.y, vectorB.z,
       vectorC.x, vectorC.y, vectorC.z);
   }
 
+  /** Return the cross product of the instance and vectorB, using only the x and y parts. */
   public crossProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.y - this.y * vectorB.x;
   }
@@ -1285,22 +1287,22 @@ export class YawPitchRollAngles {
    *
    * * The returned matrix is "rigid" -- unit length rows and columns, and its transpose is its inverse.
    * * The "rigid" matrix is always a right handed coordinate system.
-   * @param result optional pre-allocated `RotMatrix`
+   * @param result optional pre-allocated `Matrix3d`
    */
-  public toRotMatrix(result?: RotMatrix) {
+  public toMatrix3d(result?: Matrix3d) {
     const c0 = Math.cos(this.yaw.radians);
     const s0 = Math.sin(this.yaw.radians);
     const c1 = Math.cos(this.pitch.radians);
     const s1 = Math.sin(this.pitch.radians);
     const c2 = Math.cos(this.roll.radians);
     const s2 = Math.sin(this.roll.radians);
-    return RotMatrix.createRowValues
+    return Matrix3d.createRowValues
       (
       c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2),
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
       s1, c1 * s2, c1 * c2,
       result,
-    );
+      );
   }
   /** @returns Return the largest angle in radians */
   public maxAbsRadians(): number {
@@ -1329,7 +1331,7 @@ export class YawPitchRollAngles {
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
       this.roll.radians - other.roll.radians,
-    );
+      );
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number { return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees); }
@@ -1339,17 +1341,17 @@ export class YawPitchRollAngles {
   public static tryFromTransform(transform: Transform): { origin: Point3d, angles: YawPitchRollAngles | undefined } {
     // bundle up the transform's origin with the angle data extracted from the transform
     return {
-      angles: YawPitchRollAngles.createFromRotMatrix(transform.matrix),
+      angles: YawPitchRollAngles.createFromMatrix3d(transform.matrix),
       origin: Point3d.createFrom(transform.origin),
     };
   }
 
-  /** Attempts to create a YawPitchRollAngles object from an RotMatrix
+  /** Attempts to create a YawPitchRollAngles object from an Matrix3d
    * * This conversion fails if the matrix is not rigid (unit rows and columns, transpose is inverse)
    * * In the failure case the method's return value is `undefined`.
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with a set of angles.
    */
-  public static createFromRotMatrix(matrix: RotMatrix, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
+  public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     const s1 = matrix.at(2, 0);
     const c1 = Math.sqrt(matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2));
 
@@ -1388,7 +1390,7 @@ export class YawPitchRollAngles {
         }
       }
     }
-    const matrix1 = angles.toRotMatrix();
+    const matrix1 = angles.toMatrix3d();
     return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
   }
 
@@ -1579,18 +1581,18 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return new Vector2d(point1.x - point0.x, point1.y - point0.y);
   }
-/**
- * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
- * @param unitPerpA unit perpendicular to incoming direction
- * @param unitPerpB  unit perpendicular to outgoing direction
- * @param offset offset distance
- */
+  /**
+   * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
+   * @param unitPerpA unit perpendicular to incoming direction
+   * @param unitPerpB  unit perpendicular to outgoing direction
+   * @param offset offset distance
+   */
   public static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined {
     let bisector: Vector2d | undefined = unitPerpA.plus(unitPerpB);
     bisector = bisector.normalize();
     if (bisector) {
       const c = offset * bisector.dotProduct(unitPerpA);
-      return bisector.safeDivideOrNull (c);
+      return bisector.safeDivideOrNull(c);
     }
     return undefined;
   }

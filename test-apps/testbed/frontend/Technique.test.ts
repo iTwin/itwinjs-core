@@ -12,6 +12,9 @@ import {
   Target,
   System,
   TechniqueId,
+  TechniqueFlags,
+  ClippingType,
+  FeatureMode,
   SingularTechnique,
   ViewportQuadGeometry,
   DrawParams,
@@ -74,5 +77,21 @@ describe("Technique tests", () => {
     if (WebGLTestContext.isInitialized) {
       expect(System.instance.techniques.compileShaders()).to.be.true;
     }
+  });
+
+  // Clipping planes add an extra varying vec4 which was causing surface shaders to exceed max varying vectors (capped at min guaranteed by spec, primarily because iOS).
+  // Verify this no longer occurs.
+  it.skip("should successfully compile surface shader with clipping planes", () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
+    const flags = new TechniqueFlags(true);
+    flags.clip.type = ClippingType.Planes;
+    flags.clip.numberOfPlanes = 6;
+    flags.featureMode = FeatureMode.Overrides;
+
+    const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
+    const prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
   });
 });

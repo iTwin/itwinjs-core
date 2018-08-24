@@ -6,7 +6,7 @@
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
-import { RotMatrix, Transform } from "../Transform";
+import { Matrix3d, Transform } from "../Transform";
 
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
@@ -107,6 +107,18 @@ export class Point4d implements BeJSONFunctions {
       other.xyzw[3] - this.xyzw[3]);
   }
 
+  /** Return the distance between the instance and other after normalizing by weights
+   */
+  public realDistanceXY(other: Point4d): number | undefined {
+    const wA = this.w;
+    const wB = other.w;
+    if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB))
+      return undefined;
+    return Geometry.hypotenuseXY(
+      other.xyzw[0] / wB - this.xyzw[0] / wA,
+      other.xyzw[1] / wB - this.xyzw[1] / wA);
+  }
+
   /** Return the largest absolute distance between corresponding components
    * * x,y,z,w all participate without normalization.
    */
@@ -186,6 +198,18 @@ export class Point4d implements BeJSONFunctions {
       this.xyzw[1] + vector.xyzw[1] * scaleFactor,
       this.xyzw[2] + vector.xyzw[2] * scaleFactor,
       this.xyzw[3] + vector.xyzw[3] * scaleFactor,
+      result);
+  }
+
+  /** Return interpolation between instance and pointB at fraction
+   */
+  public interpolate(fraction: number, pointB: Point4d, result?: Point4d): Point4d {
+    const v = 1.0 - fraction;
+    return Point4d.create(
+      this.xyzw[0] * v + pointB.xyzw[0] * fraction,
+      this.xyzw[1] * v + pointB.xyzw[1] * fraction,
+      this.xyzw[2] * v + pointB.xyzw[2] * fraction,
+      this.xyzw[3] * v + pointB.xyzw[3] * fraction,
       result);
   }
 
@@ -541,14 +565,27 @@ export class Matrix4d implements BeJSONFunctions {
   /** @returns Return row 3 as Point4d. */
   public rowW(): Point4d { return this.getSteppedPoint(12, 1); }
 
+  public get hasPerspective(): boolean {
+    return this._coffs[12] !== 0.0
+      || this._coffs[13] !== 0.0
+      || this._coffs[14] !== 0.0
+      || this._coffs[15] !== 1.0;
+  }
   public diagonal(): Point4d { return this.getSteppedPoint(0, 5); }
   public weight(): number { return this._coffs[15]; }
-  public matrixPart(): RotMatrix {
-    return RotMatrix.createRowValues(
+  public matrixPart(): Matrix3d {
+    return Matrix3d.createRowValues(
       this._coffs[0], this._coffs[1], this._coffs[2],
       this._coffs[4], this._coffs[5], this._coffs[6],
       this._coffs[8], this._coffs[9], this._coffs[10]);
-
+  }
+  public get asTransform(): Transform | undefined {
+    if (this.hasPerspective)
+      return undefined;
+    return Transform.createRowValues(
+      this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3],
+      this._coffs[4], this._coffs[5], this._coffs[6], this._coffs[7],
+      this._coffs[8], this._coffs[9], this._coffs[10], this._coffs[11]);
   }
   /** multiply this * other. */
   public multiplyMatrixMatrix(other: Matrix4d, result?: Matrix4d): Matrix4d {
@@ -910,7 +947,7 @@ export class Map4d implements BeJSONFunctions {
    */
   public static createVectorFrustum(origin: Point3d, uVector: Vector3d, vVector: Vector3d, wVector: Vector3d, fraction: number): Map4d | undefined {
     fraction = Math.max(fraction, 1.0e-8);
-    const slabToWorld = Transform.createOriginAndMatrix(origin, RotMatrix.createColumns(uVector, vVector, wVector));
+    const slabToWorld = Transform.createOriginAndMatrix(origin, Matrix3d.createColumns(uVector, vVector, wVector));
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab)
       return undefined;

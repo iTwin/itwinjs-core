@@ -21,6 +21,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
 import { IModelJson } from "../serialization/IModelJsonSchema";
+import { GeometryCoreTestIO } from "./IModelJson.test";
 
 /* tslint:disable:no-console */
 
@@ -431,11 +432,47 @@ function testCurveIntervalRole(
   ck.announceError("Expect CurveIntervalRole value", cld, values);
   return false;
 }
-describe("Linestring3d.appendPlaneIntersections", () => {
+describe("Linestring3dSpecials", () => {
+  it("frenetFrame", () => {
+    const ck = new Checker();
+    const a = 0.02;
+    const ax = 2 * a;
+    const ay = a;
+    const az = a;
+    const geometry = [];
+    for (const linestring of [
+      LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),  // pure X
+        Point3d.create(1, 1, 0),  // pure Y
+        Point3d.create(4, 2, 1),  // evertything tilts
+        Point3d.create(8, 1, 0)), // dive down
+      LineString3d.createRegularPolygonXY(Point3d.create(0, 10, 0), 7, 3.0, true)]) {
+      geometry.push(linestring);
+      const df = 0.125 / (linestring.numPoints() - 1);
+      for (let fraction = 0; fraction <= 1.0000001; fraction += df) {
+        const frame0 = linestring.fractionToFrenetFrame(fraction)!;
+        geometry.push(LineString3d.create(frame0.origin,
+          frame0.multiplyXYZ(ax, 0, 0),
+          frame0.multiplyXYZ(0, ay, 0),
+          frame0.multiplyXYZ(0, -ay, 0),
+          frame0.multiplyXYZ(ax, 0, 0),
+          frame0.multiplyXYZ(0, 0, az),
+          frame0.origin));
+        const tangent = linestring.fractionToPointAndUnitTangent(fraction);
+        ck.testPerpendicular(tangent.direction, frame0.matrix.columnZ());
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(geometry, undefined, "Linestring3d.fractionToFrenentFrame");
+    ck.checkpoint("Linestring3dSpecials.FrenetFrame");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("appendPlaneIntersections", () => {
     const ck = new Checker();
     const linestring = LineString3d.create();
     Sample.appendPhases(linestring, 3, Vector3d.create(2, 0, 0), Vector3d.create(3, 1, 0), Vector3d.create(2, 0.4, 0.1));
+
     // this linestring proceeds "forward" so that planes perpendicular to segment interior points will have only one intersection !!!
     const numSegment = linestring.numPoints() - 1;
     const segmentFraction = 0.25;

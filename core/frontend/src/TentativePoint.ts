@@ -11,7 +11,7 @@ import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, HitSource, HitDetai
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { IModelApp } from "./IModelApp";
 
 export class TentativePoint {
@@ -145,22 +145,22 @@ export class TentativePoint {
     const center = viewport.worldToView(this.point);
 
     // draw a "background shadow" line: wide, black, mostly transparent
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
     const color = ColorDef.from(0, 0, 0, 225);
-    graphic.setSymbology(color, color, 7);
-    this.drawTpCross(graphic, tpSize + 2, center.x + 1, center.y + 1);
+    builder.setSymbology(color, color, 7);
+    this.drawTpCross(builder, tpSize + 2, center.x + 1, center.y + 1);
 
     // draw a background line: narrow, black, slightly transparent (this is in case we're not snapped and showing a dotted line)
     ColorDef.from(0, 0, 0, 10, color);
-    graphic.setSymbology(color, color, 3);
-    this.drawTpCross(graphic, tpSize + 1, center.x, center.y);
+    builder.setSymbology(color, color, 3);
+    this.drawTpCross(builder, tpSize + 1, center.x, center.y);
 
     // off-white (don't want white/black reversal), slightly transparent
     ColorDef.from(0xfe, 0xff, 0xff, 10, color);
-    graphic.setSymbology(color, color, 1, this.isSnapped ? LinePixels.Solid : LinePixels.Code2);
+    builder.setSymbology(color, color, 1, this.isSnapped ? LinePixels.Solid : LinePixels.Code2);
 
-    this.drawTpCross(graphic, tpSize, center.x, center.y);
-    context.addViewOverlay(graphic.finish()!);
+    this.drawTpCross(builder, tpSize, center.x, center.y);
+    context.addDecorationFromBuilder(builder);
 
     // Draw snapped segment...
     if (this.currSnap)

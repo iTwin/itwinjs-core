@@ -4,7 +4,7 @@
 /** @module Views */
 import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
 import {
-  Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
+  Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d,
 } from "@bentley/geometry-core";
 import {
@@ -21,13 +21,13 @@ import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
-import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree } from "./tile/TileTree";
+import { GraphicType } from "./render/GraphicBuilder";
 
 export const enum GridOrientationType {
   View = 0,
@@ -53,17 +53,17 @@ export const enum StandardViewId {
 /** @hidden */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
-  Top: RotMatrix.identity,
-  Bottom: RotMatrix.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
-  Left: RotMatrix.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
-  Right: RotMatrix.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
-  Front: RotMatrix.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
-  Back: RotMatrix.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-  Iso: RotMatrix.createRowValues(
+  Top: Matrix3d.identity,
+  Bottom: Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
+  Left: Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
+  Right: Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
+  Front: Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
+  Back: Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
+  Iso: Matrix3d.createRowValues(
     0.707106781186548, -0.70710678118654757, 0.00000000000000000,
     0.408248290463863, 0.40824829046386302, 0.81649658092772603,
     -0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-  RightIso: RotMatrix.createRowValues(
+  RightIso: Matrix3d.createRowValues(
     0.707106781186548, 0.70710678118654757, 0.00000000000000000,
     -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
     0.577350269189626, -0.57735026918962573, 0.57735026918962573),
@@ -364,8 +364,6 @@ export abstract class ViewState extends ElementState {
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
-  public abstract decorate(context: DecorateContext): void;
-
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64String): boolean;
 
@@ -375,8 +373,8 @@ export abstract class ViewState extends ElementState {
   /** Get the extents of this view */
   public abstract getExtents(): Vector3d;
 
-  /** Get the 3x3 ortho-normal RotMatrix for this view. */
-  public abstract getRotation(): RotMatrix;
+  /** Get the 3x3 ortho-normal Matrix3d for this view. */
+  public abstract getRotation(): Matrix3d;
 
   /** Set the origin of this view */
   public abstract setOrigin(viewOrg: Point3d): void;
@@ -387,7 +385,7 @@ export abstract class ViewState extends ElementState {
   /** Change the rotation of the view.
    * @note viewRot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
-  public abstract setRotation(viewRot: RotMatrix): void;
+  public abstract setRotation(viewRot: Matrix3d): void;
 
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
@@ -401,7 +399,7 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
@@ -432,7 +430,7 @@ export abstract class ViewState extends ElementState {
     const gridsPerRef = this.getGridsPerRef();
     const spacing = Point2d.createFrom(this.getGridSpacing());
     const origin = Point3d.create();
-    const matrix = RotMatrix.createIdentity();
+    const matrix = Matrix3d.createIdentity();
     const fixedRepsAuto = Point2d.create();
 
     this.getGridSettings(vp, origin, matrix, orientation);
@@ -440,7 +438,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @hidden */
-  public computeWorldToNpc(viewRot?: RotMatrix, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
     if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
@@ -539,7 +537,7 @@ export abstract class ViewState extends ElementState {
     const frustumY = Vector3d.createFrom(frustPts[Npc.LeftTopRear].minus(viewOrg));
     const frustumZ = Vector3d.createFrom(frustPts[Npc.LeftBottomFront].minus(viewOrg));
 
-    const frustMatrix = RotMatrix.createRigidFromColumns(frustumX, frustumY, AxisOrder.XYZ);
+    const frustMatrix = Matrix3d.createRigidFromColumns(frustumX, frustumY, AxisOrder.XYZ);
     if (!frustMatrix)
       return ViewStatus.InvalidWindow;
 
@@ -763,7 +761,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Populate the given origin and rotation with information from the grid settings from the grid orientation. */
-  public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: RotMatrix, orientation: GridOrientationType) {
+  public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType) {
     // start with global origin (for spatial views) and identity matrix
     rMatrix.setIdentity();
     origin.setFrom(vp.view.isSpatialView() ? vp.view.iModel.globalOrigin : Point3d.create());
@@ -928,7 +926,7 @@ export abstract class ViewState extends ElementState {
    * @param rotation The new rotation matrix for this ViewState.
    * @param point The point to rotate about. If undefined, use the [[getTargetPoint]].
    */
-  public setRotationAboutPoint(rotation: RotMatrix, point?: Point3d): void {
+  public setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void {
     if (undefined === point)
       point = this.getTargetPoint();
 
@@ -957,7 +955,7 @@ export abstract class ViewState3d extends ViewState {
   /** The extent of the view frustum. */
   public readonly extents: Vector3d;
   /** Rotation of the view frustum. */
-  public readonly rotation: RotMatrix;
+  public readonly rotation: Matrix3d;
   /** The camera used for this view. */
   public readonly camera: Camera;
   /** Minimum distance for front plane */
@@ -971,7 +969,7 @@ export abstract class ViewState3d extends ViewState {
     this._cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
     this.extents = Vector3d.fromJSON(props.extents);
-    this.rotation = YawPitchRollAngles.fromJSON(props.angles).toRotMatrix();
+    this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
     assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
   }
@@ -981,7 +979,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this._cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromRotMatrix(this.rotation)!.toJSON();
+    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
@@ -1057,10 +1055,10 @@ export abstract class ViewState3d extends ViewState {
 
   public getOrigin(): Point3d { return this.origin; }
   public getExtents(): Vector3d { return this.extents; }
-  public getRotation(): RotMatrix { return this.rotation; }
+  public getRotation(): Matrix3d { return this.rotation; }
   public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
-  public setRotation(rot: RotMatrix) { this.rotation.setFrom(rot); }
+  public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
   /** @hidden */
   protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
   public supportsCamera(): boolean { return true; }
@@ -1128,7 +1126,7 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.InvalidUpVector;
 
     // we now have rows of the rotation matrix
-    const rotation = RotMatrix.createRows(xVec, yVec, zVec);
+    const rotation = Matrix3d.createRows(xVec, yVec, zVec);
 
     backDistance = backDistance ? backDistance : this.getBackDistance();
     frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
@@ -1249,7 +1247,7 @@ export abstract class ViewState3d extends ViewState {
    */
   public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     const about = aboutPt ? aboutPt : this.getEyePoint();
-    const rotation = RotMatrix.createRotationAroundVector(axis, angle);
+    const rotation = Matrix3d.createRotationAroundVector(axis, angle);
     if (!rotation)
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
@@ -1464,7 +1462,7 @@ export abstract class ViewState3d extends ViewState {
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
-    const builder = context.createWorldDecoration();
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     builder.activateGraphicParams(params);
 
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
@@ -1478,7 +1476,7 @@ export abstract class ViewState3d extends ViewState {
     const polyface = polyfaceBuilder.claimPolyface(false);
 
     builder.addPolyface(polyface, true);
-    context.addWorldDecoration(builder.finish());
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -1638,10 +1636,10 @@ export abstract class ViewState2d extends ViewState {
   public allow3dManipulations(): boolean { return false; }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
-  public getRotation() { return RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
-  public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
+  public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
   public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId.value);
@@ -1778,12 +1776,10 @@ export class SheetViewState extends ViewState2d {
         attachment.tree!.drawScene(context);
   }
 
-  private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations
-
   /** Create a sheet border decoration graphic. */
-  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, this._pickableBorder ? undefined : viewContext);
-    const builder: GraphicBuilder = this._pickableBorder ? viewContext.createPickableDecoration(new Id64("0xffffff0000000001")) : viewContext.createViewBackground();
+  private createBorder(width: number, height: number, context: DecorateContext): RenderGraphic {
+    const border = SheetBorder.create(width, height, context);
+    const builder = context.createGraphicBuilder(GraphicType.ViewBackground);
     border.addToBuilder(builder);
     return builder.finish();
   }
@@ -1791,10 +1787,7 @@ export class SheetViewState extends ViewState2d {
   public decorate(context: DecorateContext): void {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      if (this._pickableBorder)
-        context.addWorldDecoration(border);
-      else
-        context.setViewBackground(border);
+      context.setViewBackground(border);
     }
   }
 

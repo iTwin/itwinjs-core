@@ -21,7 +21,7 @@
  * * Fundamental cartesian geometry objects:
  * * * Point2d, Point3d -- points with x,y,z coordinates
  * * * Vector2d, Vector3d -- vectors with x,y,z coordinates
- * * * RotMatrix -- 3x3 matrix
+ * * * Matrix3d -- 3x3 matrix
  * * * * commonly used for pure rotations
  * * * * scale and skew entries are also allowed.
  * * * Transform -- an origin and axes.

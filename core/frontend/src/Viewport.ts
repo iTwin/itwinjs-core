@@ -5,11 +5,11 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  RotMatrix, Transform, Map4d, Point4d, Constant, XYAndZ,
+  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ,
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BentleyError, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -20,11 +20,24 @@ import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
-import { UpdatePlan } from "./render/UpdatePlan";
+import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
+import { GraphicType } from "./render/GraphicBuilder";
+
+/** Enumeration of Viewport status codes */
+export const enum ViewportStatus {
+  VIEWPORT_ERROR_BASE = 0x1A000,
+  /** The canvas must be a child of the div */
+  InvalidParent = VIEWPORT_ERROR_BASE + 1,
+}
+
+export class ViewportError extends BentleyError {
+  public constructor(errorNumber: ViewportStatus, message?: string) {
+    super(errorNumber, message);
+  }
+}
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -367,7 +380,7 @@ export class ViewFrustum {
   /** View delta (from ViewState, unexpanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new RotMatrix();
+  public readonly rotMatrix = new Matrix3d();
   /** @hidden */
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
@@ -431,7 +444,7 @@ export class ViewFrustum {
       return;
     const r = this.rotMatrix.transpose();
     r.setColumn(2, zUp);
-    RotMatrix.createRigidFromRotMatrix(r, AxisOrder.ZXY, r);
+    Matrix3d.createRigidFromMatrix3d(r, AxisOrder.ZXY, r);
     r.transpose(this.rotMatrix);
     this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
   }
@@ -843,7 +856,7 @@ export class Viewport {
 
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
-  public get rotMatrix(): RotMatrix { return this._viewFrustum.rotMatrix; }
+  public get rotMatrix(): Matrix3d { return this._viewFrustum.rotMatrix; }
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
@@ -862,6 +875,8 @@ export class Viewport {
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
+  /** The canvas created to hold the view contents. */
+  public readonly canvas: HTMLCanvasElement;
 
   /**
    * Determine whether the Grid display is currently enabled in this Viewport.
@@ -893,14 +908,52 @@ export class Viewport {
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Construct a new Viewport
-   * @param canvas The HTMLCanvasElement for the new Viewport
+   * @param enclosingDiv The HTMLDivElement that parents the canvas created for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
-    this.target = target ? target : IModelApp.renderSystem.createTarget(canvas);
+  constructor(public enclosingDiv: HTMLDivElement | undefined, viewState: ViewState, canvas?: HTMLCanvasElement, target?: RenderTarget) {
+    // Usually, we create the canvas. OffscreenViewport wants to create it, though.
+
+    // if both canvas and enclosingDiv are supplied, enclosingDiv must be the parent of the canvas.
+    if (canvas && enclosingDiv && !(enclosingDiv !== canvas.parentElement))
+      throw new ViewportError(ViewportStatus.InvalidParent, "The canvas must be a child of enclosingDiv");
+
+    // if no canvas supplied, create it and make it a child of the enclosingDiv.
+    if (canvas) {
+      this.canvas = canvas;
+    } else {
+      // if there's already a canvas, reuse it.
+      if (enclosingDiv)
+        canvas = Viewport.findiModelCanvas(enclosingDiv);
+
+      this.canvas = canvas ? canvas : document.createElement("canvas");
+      this.canvas.style.position = "relative";
+      this.canvas.style.top = "0%";
+      this.canvas.style.height = "100%";
+      this.canvas.style.left = "0%";
+      this.canvas.style.width = "100%";
+      this.canvas.className = "imodeljs-canvas";
+
+      if (enclosingDiv && !canvas)
+        enclosingDiv.appendChild(this.canvas);
+    }
+
+    this.target = target ? target : IModelApp.renderSystem.createTarget(this.canvas);
     this.changeView(viewState);
     this.setCursor();
     this.saveViewUndo();
+  }
+
+  /* finds the canvas child of a div that has the right class to be the view canvas. */
+  private static findiModelCanvas(enclosingDiv: HTMLDivElement): HTMLCanvasElement | undefined {
+    const childElements: HTMLCollection = enclosingDiv.children;
+    for (const child of childElements) {
+      for (const className of child.classList) {
+        if (className === "imodeljs-canvas")
+          return child as HTMLCanvasElement;
+      }
+    }
+    return undefined;
   }
 
   /** Determine whether continuous rendering is enabled. */
@@ -940,7 +993,7 @@ export class Viewport {
   /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
   /** @hidden */
-  public changeDynamics(dynamics: DecorationList | undefined): void {
+  public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
   }
@@ -968,7 +1021,7 @@ export class Viewport {
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
-  public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem.getRotation(result); }
+  public getAuxCoordRotation(result?: Matrix3d) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
   /** @hidden */
@@ -1289,7 +1342,7 @@ export class Viewport {
 
     if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
-      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, RotMatrix.createScale(factor, factor, 1.0));
+      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
       const offset = centerNpc.minus(NpcCenter); // offset by difference of old/new center
       offset.z = 0.0;     // z center stays the same.
@@ -1455,7 +1508,7 @@ export class Viewport {
     return units * sign * Math.floor(num);
   }
 
-  private getGridOrientation(origin: Point3d, rMatrix: RotMatrix) {
+  private getGridOrientation(origin: Point3d, rMatrix: Matrix3d) {
     if (this.view.isSpatialView())
       origin.setFrom(this.iModel!.globalOrigin);
 
@@ -1473,18 +1526,18 @@ export class Viewport {
         break;
 
       case GridOrientationType.WorldYZ: {
-        RotMatrix.createRows(rMatrix.getRow(1), rMatrix.getRow(2), rMatrix.getRow(0), rMatrix);
+        Matrix3d.createRows(rMatrix.getRow(1), rMatrix.getRow(2), rMatrix.getRow(0), rMatrix);
         break;
       }
 
       case GridOrientationType.WorldXZ: {
-        RotMatrix.createRows(rMatrix.getRow(0), rMatrix.getRow(2), rMatrix.getRow(1), rMatrix);
+        Matrix3d.createRows(rMatrix.getRow(0), rMatrix.getRow(2), rMatrix.getRow(1), rMatrix);
         break;
       }
     }
   }
 
-  private pointToStandardGrid(point: Point3d, rMatrix: RotMatrix, origin: Point3d): void {
+  private pointToStandardGrid(point: Point3d, rMatrix: Matrix3d, origin: Point3d): void {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
@@ -1528,7 +1581,7 @@ export class Viewport {
     }
 
     const origin = new Point3d();
-    const rMatrix = RotMatrix.createIdentity();
+    const rMatrix = Matrix3d.createIdentity();
     this.getGridOrientation(origin, rMatrix);
     this.pointToStandardGrid(point, rMatrix, origin);
   }
@@ -1564,20 +1617,20 @@ export class Viewport {
     if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
-    const graphic = context.createWorldOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
     const colorFill = color.clone();
 
     color.setTransparency(100);
     colorFill.setTransparency(200);
-    graphic.setSymbology(color, colorFill, 1);
+    builder.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
-    const rMatrix = RotMatrix.createRigidHeadsUp(hit.normal);
+    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
     const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
 
-    graphic.addArc(ellipse, true, true);
-    graphic.addArc(ellipse, false, false);
+    builder.addArc(ellipse, true, true);
+    builder.addArc(ellipse, false, false);
 
     const length = (0.6 * radius);
     const normal = Vector3d.create();
@@ -1585,19 +1638,19 @@ export class Viewport {
     ellipse.vector0.normalize(normal);
     const pt1 = hit.snapPoint.plusScaled(normal, length);
     const pt2 = hit.snapPoint.plusScaled(normal, -length);
-    graphic.addLineString([pt1, pt2]);
+    builder.addLineString([pt1, pt2]);
 
     ellipse.vector90.normalize(normal);
     const pt3 = hit.snapPoint.plusScaled(normal, length);
     const pt4 = hit.snapPoint.plusScaled(normal, -length);
-    graphic.addLineString([pt3, pt4]);
+    builder.addLineString([pt3, pt4]);
 
-    context.addWorldOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
   private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const graphic = context.createViewOverlay();
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
 
@@ -1607,18 +1660,18 @@ export class Viewport {
     const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
 
     white.setTransparency(165);
-    graphic.setSymbology(white, white, 1);
-    graphic.addArc2d(ellipse, true, true, 0.0);
+    builder.setSymbology(white, white, 1);
+    builder.addArc2d(ellipse, true, true, 0.0);
 
     black.setTransparency(100);
-    graphic.setSymbology(black, black, 1);
-    graphic.addArc2d(ellipse2, false, false, 0.0);
+    builder.setSymbology(black, black, 1);
+    builder.addArc2d(ellipse2, false, false, 0.0);
 
     white.setTransparency(20);
-    graphic.setSymbology(white, white, 1);
-    graphic.addArc2d(ellipse, false, false, 0.0);
+    builder.setSymbology(white, white, 1);
+    builder.addArc2d(ellipse, false, false, 0.0);
 
-    context.addViewOverlay(graphic.finish());
+    context.addDecorationFromBuilder(builder);
   }
 
   /** @hidden */
@@ -1658,7 +1711,7 @@ export class Viewport {
   }
 
   /** @hidden */
-  public renderFrame(plan: UpdatePlan): boolean {
+  public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1727,7 +1780,7 @@ export class Viewport {
 
     if (!sync.isValidDecorations) {
       const decorations = new Decorations();
-      this.prepareDecorations(plan, decorations);
+      this.prepareDecorations(decorations);
       target.changeDecorations(decorations);
       isRedrawNeeded = true;
     }
@@ -1745,24 +1798,21 @@ export class Viewport {
   }
 
   /** @hidden */
-  public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
+  public prepareDecorations(decorations: Decorations): void {
     this.sync.setValidDecorations();
-    if (plan.wantDecorators) {
-      const context = new DecorateContext(this, decorations);
-      IModelApp.viewManager.callDecorators(context);
-    }
+    const context = new DecorateContext(this, decorations);
+    IModelApp.viewManager.callDecorators(context);
   }
 
   /** @hidden */
   public decorate(context: DecorateContext): void {
-    this.view.decorate(context);
     this.view.drawGrid(context);
     if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
 
   /** @hidden */
-  public requestScene(_plan: UpdatePlan): void { }
+  public requestScene(): void { }
 
   /**
    * Read selected data about each pixel within a rectangular region of this Viewport.
@@ -1836,7 +1886,7 @@ export class Viewport {
 
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
-    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    super(undefined, viewState, IModelApp.renderSystem.canvas, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
     this.sync.setValidDecorations();  // decorations are not incorporated offscreen
   }
 
@@ -1848,7 +1898,7 @@ export class OffScreenViewport extends Viewport {
   }
 
   /** @hidden */
-  public prepareDecorations(_plan: UpdatePlan, _decorations: Decorations): void { }
+  public prepareDecorations(_decorations: Decorations): void { }
 
   /** @hidden */
   public decorate(_context: DecorateContext): void { }

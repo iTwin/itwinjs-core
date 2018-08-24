@@ -270,7 +270,7 @@ export class IModelHandler {
   public async get(token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
     Logger.logInfo(loggingCategory, `Querying iModels in project ${contextId}`);
     ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("projectId", contextId);
+    ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
     const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
 

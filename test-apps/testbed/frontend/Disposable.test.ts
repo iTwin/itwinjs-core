@@ -8,8 +8,8 @@ import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, 
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import {
-  MeshArgs, OnScreenTarget, GraphicBuilderCreateParams, GraphicType,
-  Target, Decorations, Batch, DecorationList, WorldDecorations, TextureHandle, UpdatePlan,
+  MeshArgs, OnScreenTarget, GraphicType,
+  Target, Decorations, Batch, WorldDecorations, TextureHandle, GraphicList,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -20,7 +20,7 @@ import { TestData } from "./TestData";
 /* tslint:disable:no-console */
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-let canvas: HTMLCanvasElement;
+let viewDiv: HTMLDivElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
@@ -37,7 +37,7 @@ class ExposedTarget {
   }
 
   public get decorations(): Decorations | undefined { return (this.target as any)._decorations; }
-  public get dynamics(): DecorationList | undefined { return (this.target as any)._dynamics; }
+  public get dynamics(): GraphicList | undefined { return (this.target as any)._dynamics; }
   public get worldDecorations(): WorldDecorations | undefined { return (this.target as any)._worldDecorations; }
   public get clipMask(): TextureHandle | undefined { return (this.target as any)._clipMask; }
   public get environmentMap(): TextureHandle | undefined { return (this.target as any)._environmentMap; }
@@ -116,10 +116,10 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("div") as HTMLDivElement;
+    assert(null !== viewDiv);
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -170,10 +170,10 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("viewDiv") as HTMLDivElement;
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    assert(null !== viewDiv);
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -244,10 +244,10 @@ describe("Disposal of WebGL Resources", () => {
     const viewState = await imodel1.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
 
-    const viewport = new Viewport(canvas, viewState);
+    const viewport = new Viewport(viewDiv, viewState);
     await viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
-    viewport.renderFrame(new UpdatePlan()); // force a frame to be rendered
+    viewport.renderFrame(); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;
     const exposedTarget = new ExposedTarget(target);
@@ -255,8 +255,7 @@ describe("Disposal of WebGL Resources", () => {
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const graphicBuilder = target.createGraphic(gfParams);
+    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
 

@@ -6,7 +6,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -64,7 +64,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
 
   public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
-    const localToWorld = Transform.createOriginAndMatrix(center, RotMatrix.createUniformScale(radius));
+    const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
     return new Sphere(localToWorld,
       latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude(), false);
   }
@@ -79,7 +79,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     capped: boolean): Sphere | undefined {
     const vectorY = vectorX.rotate90Around(vectorZ);
     if (vectorY) {
-      const matrix = RotMatrix.createColumns(vectorX, vectorY, vectorZ);
+      const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
       matrix.scaleColumns(radiusXY, radiusXY, radiusZ, matrix);
       const frame = Transform.createOriginAndMatrix(center, matrix);
       return new Sphere(frame, latitudeSweep.clone(), capped);
@@ -88,7 +88,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
 
   /** Create a sphere from the typical parameters of the Dgn file */
-  public static createFromAxesAndScales(center: Point3d, axes: undefined | RotMatrix, radiusX: number, radiusY: number, radiusZ: number,
+  public static createFromAxesAndScales(center: Point3d, axes: undefined | Matrix3d, radiusX: number, radiusY: number, radiusZ: number,
     latitudeSweep: AngleSweep | undefined,
     capped: boolean): Sphere | undefined {
     const localToWorld = Transform.createOriginAndMatrix(center, axes);

@@ -8,9 +8,9 @@ import { Geometry, Angle, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewInd
 import { Point4d } from "./numerics/Geometry4d";
 import { Range3d } from "./Range";
 import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
-import { XAndY, XYZ, RotMatrixProps, TransformProps } from "./PointVector";
+import { XAndY, XYZ, Matrix3dProps, TransformProps } from "./PointVector";
 /* tslint:disable:jsdoc-format*/
-/** A RotMatrix is tagged indicating one of the following states:
+/** A Matrix3d is tagged indicating one of the following states:
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored
  * * singular: the matrix is known to be singular.
@@ -109,7 +109,7 @@ function multiplyMatrixTransposeMatrix(a: Float64Array, b: Float64Array, result?
   return result;
 }
 
-/** A RotMatrix (short for RotationMatrix) is a 3x3 matrix.
+/** A Matrix3d (short for RotationMatrix) is a 3x3 matrix.
  * * The name from common use to hold a rigid body rotation,, but its 3x3 contents can
  * also hold scaling and skewing.
  * * The 9 entries are stored in row-major order in the coffs array.
@@ -124,26 +124,26 @@ function multiplyMatrixTransposeMatrix(a: Float64Array, b: Float64Array, result?
  * * Usage elsewhere in the library is typically "column" based.  For example, in a Transform
  *     that carries a coordinate frame the matrix columns are the unit vectors for the axes.
  */
-export class RotMatrix implements BeJSONFunctions {
+export class Matrix3d implements BeJSONFunctions {
   public static useCachedInverse = true;  // cached inverse can be suppressed for testing.
   public static numUseCache = 0;
   public static numComputeCache = 0;
   public coffs: Float64Array;
   public inverseCoffs: Float64Array | undefined;
   public inverseState: InverseMatrixState;
-  private static _identity: RotMatrix;
+  private static _identity: Matrix3d;
 
-  /** The identity RotMatrix. Value is frozen and cannot be modified. */
-  public static get identity(): RotMatrix {
+  /** The identity Matrix3d. Value is frozen and cannot be modified. */
+  public static get identity(): Matrix3d {
     if (undefined === this._identity) {
-      this._identity = RotMatrix.createIdentity();
+      this._identity = Matrix3d.createIdentity();
       this._identity.freeze();
     }
 
     return this._identity;
   }
 
-  /** Freeze this RotMatrix. */
+  /** Freeze this Matrix3d. */
   public freeze() { this.computeCachedInverse(true); Object.freeze(this); }
   /**
    *
@@ -157,20 +157,20 @@ export class RotMatrix implements BeJSONFunctions {
   /** Return a json object containing the 9 numeric entries as a single array in row major order,
    * `[ [1, 2, 3],[ 4, 5, 6], [7, 8, 9] ]`
    * */
-  public toJSON(): RotMatrixProps {
+  public toJSON(): Matrix3dProps {
     return [[this.coffs[0], this.coffs[1], this.coffs[2]],
     [this.coffs[3], this.coffs[4], this.coffs[5]],
     [this.coffs[6], this.coffs[7], this.coffs[8]]];
   }
 
-  public setFromJSON(json?: RotMatrixProps): void {
+  public setFromJSON(json?: Matrix3dProps): void {
     this.inverseCoffs = undefined;
     if (!json) {
       this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0);
       return;
     }
     if (!Array.isArray(json)) {
-      if (json instanceof RotMatrix)
+      if (json instanceof Matrix3d)
         this.setFrom(json);
       return;
     }
@@ -198,18 +198,18 @@ export class RotMatrix implements BeJSONFunctions {
         0, 0, 1);
     }
   }
-  /** @returns Return a new RotMatrix constructed from contents of the json value. */
-  public static fromJSON(json?: RotMatrixProps): RotMatrix { const result = RotMatrix.createIdentity(); result.setFromJSON(json); return result; }
-  /** Test if this RotMatrix and other are within tolerance in all numeric entries.
+  /** @returns Return a new Matrix3d constructed from contents of the json value. */
+  public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
+  /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */
-  public isAlmostEqual(other: RotMatrix, tol?: number): boolean {
+  public isAlmostEqual(other: Matrix3d, tol?: number): boolean {
     if (tol)
       return Geometry.isDistanceWithinTol(this.maxDiff(other), tol);
     return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }
   /** Test for exact (bitwise) equality with other. */
-  public isExactEqual(other: RotMatrix): boolean { return this.maxDiff(other) === 0.0; }
+  public isExactEqual(other: Matrix3d): boolean { return this.maxDiff(other) === 0.0; }
   /** test if all entries in the z row and column are exact 001, i.e. the matrix only acts in 2d */
   public get isXY(): boolean {
     return this.coffs[2] === 0.0
@@ -219,9 +219,9 @@ export class RotMatrix implements BeJSONFunctions {
       && this.coffs[8] === 1.0;
   }
   // !! does not clear supplied result !!
-  private static _create(result?: RotMatrix): RotMatrix { return result ? result : new RotMatrix(); }
+  private static _create(result?: Matrix3d): Matrix3d { return result ? result : new Matrix3d(); }
 
-  /** @returns a RotMatrix populated by numeric values given in row-major order.
+  /** @returns a Matrix3d populated by numeric values given in row-major order.
   *  set all entries in the matrix from call parameters appearing in row - major order.
   * @param axx Row x, column x(0, 0) entry
   * @param axy Row x, column y(0, 1) entry
@@ -237,8 +237,8 @@ export class RotMatrix implements BeJSONFunctions {
     axx: number, axy: number, axz: number,
     ayx: number, ayy: number, ayz: number,
     azx: number, azy: number, azz: number,
-    result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+    result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     result.inverseState = InverseMatrixState.unknown;
     result.coffs[0] = axx; result.coffs[1] = axy; result.coffs[2] = axz;
     result.coffs[3] = ayx; result.coffs[4] = ayy; result.coffs[5] = ayz;
@@ -247,15 +247,15 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /**
-   * Create a RotMatrix with caller-supplied coefficients and optional inverse coefficients.
-   * * The inputs are captured into the new RotMatrix.
+   * Create a Matrix3d with caller-supplied coefficients and optional inverse coefficients.
+   * * The inputs are captured into the new Matrix3d.
    * * The caller is responsible for validity of the inverse coefficients.
    * @param coffs (required) array of 9 coefficients.
    * @param inverseCoffs (optional) array of 9 coefficients.
-   * @returns a RotMatrix populated by a coffs array.
+   * @returns a Matrix3d populated by a coffs array.
    */
-  public static createCapture(coffs: Float64Array, inverseCoffs?: Float64Array): RotMatrix {
-    const result = new RotMatrix(coffs);
+  public static createCapture(coffs: Float64Array, inverseCoffs?: Float64Array): Matrix3d {
+    const result = new Matrix3d(coffs);
     if (inverseCoffs) {
       result.inverseCoffs = inverseCoffs;
       result.inverseState = InverseMatrixState.inverseStored;
@@ -266,8 +266,8 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   // install all matrix entries.
-  public static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: RotMatrix) {
-    if (!result) result = new RotMatrix();
+  public static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d) {
+    if (!result) result = new Matrix3d();
     if (axisOrder === AxisOrder.XYZ) {
       result.setColumns(columnA, columnB, columnC);
     } else if (axisOrder === AxisOrder.YZX) {
@@ -310,46 +310,46 @@ export class RotMatrix implements BeJSONFunctions {
   public setIdentity() { this.setRowValues(1, 0, 0, 0, 1, 0, 0, 0, 1); this.setupInverseTranspose(); }
   public setZero() { this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0); this.inverseState = InverseMatrixState.singular; }
 
-  public setFrom(other: RotMatrix) {
+  public setFrom(other: Matrix3d) {
     for (let i = 0; i < 9; i++)
       this.coffs[i] = other.coffs[i];
     this.inverseState = InverseMatrixState.unknown; // we don't trust the other .. . .
   }
 
-  public clone(result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+  public clone(result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     result.setFrom(this);
     return result;
   }
 
-  public static createZero(): RotMatrix {
-    const retVal = new RotMatrix();
+  public static createZero(): Matrix3d {
+    const retVal = new Matrix3d();
     retVal.inverseState = InverseMatrixState.singular;
     return retVal;
   }
-  public static createIdentity(result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+  public static createIdentity(result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     result.setIdentity();
     return result;
   }
 
   /** Create a matrix with uniform scale factors */
-  public static createUniformScale(scaleFactor: number): RotMatrix {
-    return RotMatrix.createScale(scaleFactor, scaleFactor, scaleFactor);
+  public static createUniformScale(scaleFactor: number): Matrix3d {
+    return Matrix3d.createScale(scaleFactor, scaleFactor, scaleFactor);
   }
   /**
    *
    * *  use createHeadsUpPerpendicular to generate a vectorV perpendicular to vectorA
    * *  construct a frame using createRigidFromColumns (vectorA, vectorB, axisOrder)
    */
-  public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: RotMatrix): RotMatrix {
-    const vectorB = RotMatrix.createRigidHeadsUpFavorXYPlane(vectorA);
-    const matrix = RotMatrix.createRigidFromColumns(vectorA, vectorB, axisOrder, result);
+  public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Matrix3d): Matrix3d {
+    const vectorB = Matrix3d.createRigidHeadsUpFavorXYPlane(vectorA);
+    const matrix = Matrix3d.createRigidFromColumns(vectorA, vectorB, axisOrder, result);
     if (matrix) {
       matrix.setupInverseTranspose();
       return matrix;
     }
-    return RotMatrix.createIdentity(result);
+    return Matrix3d.createIdentity(result);
   }
   /**
    *
@@ -376,16 +376,16 @@ export class RotMatrix implements BeJSONFunctions {
  * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
  */
   public static createHeadsUpPerpendicularNearZ(vector: Vector3d, result?: Vector3d): Vector3d {
-    result = RotMatrix.createRigidHeadsUpFavorXYPlane(vector, result);
+    result = Matrix3d.createRigidHeadsUpFavorXYPlane(vector, result);
     return vector.crossProduct(result);
   }
 
   /** Create a matrix with distinct x,y,z diagonal (scale) entries */
-  public static createScale(scaleFactorX: number, scaleFactorY: number, scaleFactorZ: number, result?: RotMatrix): RotMatrix {
+  public static createScale(scaleFactorX: number, scaleFactorY: number, scaleFactorZ: number, result?: Matrix3d): Matrix3d {
     if (result)
       result.setZero();
     else
-      result = new RotMatrix();
+      result = new Matrix3d();
 
     result.coffs[0] = scaleFactorX;
     result.coffs[4] = scaleFactorY;
@@ -402,13 +402,13 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** @returns return a rotation of specified angle around an axis */
-  public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: RotMatrix): RotMatrix | undefined {
+  public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     const c = angle.cos();
     const s = angle.sin();
     const v = 1.0 - c;
     const unit = axis.normalize();
     if (unit) {
-      const retVal = RotMatrix.createRowValues(
+      const retVal = Matrix3d.createRowValues(
         unit.x * unit.x * v + c,
         unit.x * unit.y * v - s * unit.z,
         unit.x * unit.z * v + s * unit.y,
@@ -429,24 +429,24 @@ export class RotMatrix implements BeJSONFunctions {
    * @param angle angle of rotation
    * @param result optional result matrix.
   */
-  public static createRotationAroundAxisIndex(axisIndex: AxisIndex, angle: Angle, result?: RotMatrix): RotMatrix {
+  public static createRotationAroundAxisIndex(axisIndex: AxisIndex, angle: Angle, result?: Matrix3d): Matrix3d {
     const c = angle.cos();
     const s = angle.sin();
     let myResult;
     if (axisIndex === AxisIndex.X) {
-      myResult = RotMatrix.createRowValues(
+      myResult = Matrix3d.createRowValues(
         1, 0, 0,
         0, c, -s,
         0, s, c,
         result);
     } else if (axisIndex === AxisIndex.Y) {
-      myResult = RotMatrix.createRowValues(
+      myResult = Matrix3d.createRowValues(
         c, 0, s,
         0, 1, 0,
         -s, 0, c,
         result);
     } else {
-      myResult = RotMatrix.createRowValues(
+      myResult = Matrix3d.createRowValues(
         c, -s, 0,
         s, c, 0,
         0, 0, 1,
@@ -473,10 +473,10 @@ export class RotMatrix implements BeJSONFunctions {
    * @param leftNoneRight Normally one of {-1,0,1}, where (-1) indicates the left vertical is rotated to center and (1) for right.  Other numbers are used as multiplier for this 45 degree rotation
    * @returns undefined if columNX, columnY are coplanar.
   */
-  public static createViewedAxes(rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number = 0, topNoneBottom: number = 0): RotMatrix | undefined {
+  public static createViewedAxes(rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number = 0, topNoneBottom: number = 0): Matrix3d | undefined {
     const columnZ = rightVector.crossProduct(upVector);
     if (columnZ.normalizeInPlace()) {
-      const geometry = RotMatrix.createColumns(rightVector, upVector, columnZ);
+      const geometry = Matrix3d.createColumns(rightVector, upVector, columnZ);
       if (leftNoneRight !== 0.0) {
         let c = Math.sqrt(0.5);
         let s = leftNoneRight < 0.0 ? -c : c;
@@ -503,58 +503,58 @@ export class RotMatrix implements BeJSONFunctions {
    * * With invert === true the matrix is transposed so that `matrix.mutiply(viewVector` maps the "in view" vector to a world vector.
    *
    * @param index standard veiw index `StandardViewIndex.Top, Bottom, LEft, Right, Front, Back, Iso, LeftIso`
-   * @param invert if false (default), the returned RotMatrix "projects" world vectors into XY view vectors.  If true, it is inverted to map view vectors to world.
+   * @param invert if false (default), the returned Matrix3d "projects" world vectors into XY view vectors.  If true, it is inverted to map view vectors to world.
    * @param result optional result.
    */
-  public static createStandardWorldToView(index: StandardViewIndex, invert: boolean = false, result?: RotMatrix): RotMatrix {
+  public static createStandardWorldToView(index: StandardViewIndex, invert: boolean = false, result?: Matrix3d): Matrix3d {
     switch (index) {
       case StandardViewIndex.Top:
-        result = RotMatrix.createIdentity(result);
+        result = Matrix3d.createIdentity(result);
         break;
       case StandardViewIndex.Bottom:
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
           0, 0, -1);
         break;
       case StandardViewIndex.Left:
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
           -1, 0, 0);
         break;
       case StandardViewIndex.Right:
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
           1, 0, 0);
         break;
       case StandardViewIndex.Front: // 0-based 4
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
           0, -1, 0);
         break;
       case StandardViewIndex.Back: // 0-based 5
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
           0, 1, 0);
         break;
       case StandardViewIndex.Iso:
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
           -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
         break;
       case StandardViewIndex.RightIso:
-        result = RotMatrix.createRowValues(
+        result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
           0.577350269189626, -0.57735026918962573, 0.57735026918962573);
         break;
       default:
-        result = RotMatrix.createIdentity(result);
+        result = Matrix3d.createIdentity(result);
     }
     if (invert)
       result.transposeInPlace();
@@ -668,7 +668,7 @@ export class RotMatrix implements BeJSONFunctions {
       }
 
       // 180 degree flip around some other axis ...
-      const eigenvectors = RotMatrix.createIdentity();
+      const eigenvectors = Matrix3d.createIdentity();
       const eigenvalues = Vector3d.create(0, 0, 0);
       if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
         if (Geometry.isAlmostEqualNumber(1, eigenvalues.x))
@@ -689,7 +689,7 @@ export class RotMatrix implements BeJSONFunctions {
   /**
    * @returns return a matrix that rotates from vectorA to vectorB.
    */
-  public static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: RotMatrix): RotMatrix | undefined {
+  public static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
     return this.createPartialRotationVectorToVector(vectorA, 1.0, vectorB, result);
   }
   /**
@@ -699,11 +699,11 @@ export class RotMatrix implements BeJSONFunctions {
    * @param vectorB final vector position
    * @param result optional result matrix.
   */
-  public static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d, result?: RotMatrix): RotMatrix | undefined {
+  public static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
 
     let upVector = vectorA.unitCrossProduct(vectorB);
     if (upVector) {  // the usual case --
-      return RotMatrix.createRotationAroundVector(upVector,
+      return Matrix3d.createRotationAroundVector(upVector,
         Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians));
     }
     // fail if either vector is zero ...
@@ -712,31 +712,31 @@ export class RotMatrix implements BeJSONFunctions {
       return undefined;
     // nonzero but aligned vectors ...
     if (vectorA.dotProduct(vectorB) > 0.0)
-      return RotMatrix.createIdentity(result);
+      return Matrix3d.createIdentity(result);
     // nonzero opposing vectors ..
-    upVector = RotMatrix.createHeadsUpPerpendicularNearZ(vectorA, upVector);
-    return RotMatrix.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
+    upVector = Matrix3d.createHeadsUpPerpendicularNearZ(vectorA, upVector);
+    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
   }
 
   /** Create a 90 degree rotation around a principal axis */
-  public static create90DegreeRotationAroundAxis(axisIndex: number): RotMatrix {
+  public static create90DegreeRotationAroundAxis(axisIndex: number): Matrix3d {
     axisIndex = Geometry.cyclic3dAxis(axisIndex);
     if (axisIndex === 0) {
-      const retVal = RotMatrix.createRowValues(
+      const retVal = Matrix3d.createRowValues(
         1, 0, 0,
         0, 0, -1,
         0, 1, 0);
       retVal.setupInverseTranspose();
       return retVal;
     } else if (axisIndex === 1) {
-      const retVal = RotMatrix.createRowValues(
+      const retVal = Matrix3d.createRowValues(
         0, 0, 1,
         0, 1, 0,
         -1, 0, 0);
       retVal.setupInverseTranspose();
       return retVal;
     } else {
-      const retVal = RotMatrix.createRowValues(
+      const retVal = Matrix3d.createRowValues(
         0, -1, 0,
         1, 0, 0,
         0, 0, 1);
@@ -853,8 +853,8 @@ export class RotMatrix implements BeJSONFunctions {
    * @param z eye z coordinate
    * @param result
    */
-  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: RotMatrix): RotMatrix {
-    result = RotMatrix.createIdentity(result);
+  public static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d {
+    result = Matrix3d.createIdentity(result);
     const rxy = Geometry.hypotenuseXY(x, y);
     if (Geometry.isSmallMetricDistance(rxy)) {
       // special case for top or bottom view.
@@ -878,7 +878,7 @@ export class RotMatrix implements BeJSONFunctions {
     return result;
   }
   /** Rotate so columns i and j become perpendicular */
-  private applyJacobiColumnRotation(i: number, j: number, matrixU: RotMatrix): number {
+  private applyJacobiColumnRotation(i: number, j: number, matrixU: Matrix3d): number {
     const uDotU = this.coffs[i] * this.coffs[i] + this.coffs[i + 3] * this.coffs[i + 3] + this.coffs[i + 6] * this.coffs[i + 6];
     const vDotV = this.coffs[j] * this.coffs[j] + this.coffs[j + 3] * this.coffs[j + 3] + this.coffs[j + 6] * this.coffs[j + 6];
     const uDotV = this.coffs[i] * this.coffs[j] + this.coffs[i + 3] * this.coffs[j + 3] + this.coffs[i + 6] * this.coffs[j + 6];
@@ -903,7 +903,7 @@ export class RotMatrix implements BeJSONFunctions {
    * @param matrixC (allocate by caller, computed here)
    * @param factor  (allocate by caller, computed here)
    */
-  public factorPerpendicularColumns(matrixC: RotMatrix, matrixU: RotMatrix): boolean {
+  public factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean {
     matrixC.setFrom(this);
     matrixU.setIdentity();
     const ss = this.sumSquares();
@@ -921,7 +921,7 @@ export class RotMatrix implements BeJSONFunctions {
     return false;
   }
   /** Apply a jacobi step to lambda which evolves towards diagonal. */
-  private applySymmetricJacobi(i: number, j: number, lambda: RotMatrix): number {
+  private applySymmetricJacobi(i: number, j: number, lambda: Matrix3d): number {
     const uDotU = lambda.at(i, i);
     const vDotV = lambda.at(j, j);
     const uDotV = lambda.at(i, j);
@@ -953,7 +953,7 @@ export class RotMatrix implements BeJSONFunctions {
    * @param matrixC (allocate by caller, computed here)
    * @param factor  (allocate by caller, computed here)
    */
-  public symmetricEigenvalues(leftEigenvectors: RotMatrix, lambda: Vector3d): boolean {
+  public symmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
     const matrix = this.clone();
     leftEigenvectors.setIdentity();
     matrix.coffs[3] = matrix.coffs[1];
@@ -981,7 +981,7 @@ export class RotMatrix implements BeJSONFunctions {
     i: number,  // row index of zeroed member
     j: number,  // column index of zeroed member
     k: number,  // other row/column index (different from i and j)
-    leftEigenVectors: RotMatrix): number {
+    leftEigenVectors: Matrix3d): number {
     const indexII = 4 * i;
     const indexJJ = 4 * j;
     const indexIJ = 3 * i + j;
@@ -1018,7 +1018,7 @@ export class RotMatrix implements BeJSONFunctions {
  * @param matrixC (allocate by caller, computed here)
  * @param factor  (allocate by caller, computed here)
  */
-  public fastSymmetricEigenvalues(leftEigenvectors: RotMatrix, lambda: Vector3d): boolean {
+  public fastSymmetricEigenvalues(leftEigenvectors: Matrix3d, lambda: Vector3d): boolean {
     const matrix = this.clone();
     leftEigenvectors.setIdentity();
     const ss = this.sumSquares();
@@ -1038,8 +1038,8 @@ export class RotMatrix implements BeJSONFunctions {
     return false;
   }
   /** Create a matrix from column vectors. */
-  public static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues
+  public static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
       (
       vectorU.x, vectorV.x, vectorW.x,
       vectorU.y, vectorV.y, vectorW.y,
@@ -1106,8 +1106,8 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Create a matrix from column vectors, shuffled into place per AxisTriple */
-  public static createShuffledColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, axisOrder: AxisOrder, result?: RotMatrix): RotMatrix {
-    const target = RotMatrix._create(result);
+  public static createShuffledColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, axisOrder: AxisOrder, result?: Matrix3d): Matrix3d {
+    const target = Matrix3d._create(result);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 0), vectorU);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 1), vectorV);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 2), vectorW);
@@ -1115,8 +1115,8 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Create a matrix from row vectors. */
-  public static createRows(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues
+  public static createRows(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
       (
       vectorU.x, vectorU.y, vectorU.z,
       vectorV.x, vectorV.y, vectorV.z,
@@ -1124,20 +1124,20 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Create a matrix that scales along a specified direction. The scale factor can be negative. for instance scale of -1.0 (negative one) is a mirror. */
-  public static createDirectionalScale(direction: Vector3d, scale: number, result?: RotMatrix): RotMatrix {
+  public static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d {
     const unit = direction.normalize();
     if (unit) {
       const x = unit.x;
       const y = unit.y;
       const z = unit.z;
       const a = (scale - 1);
-      return RotMatrix.createRowValues
+      return Matrix3d.createRowValues
         (
         1 + a * x * x, a * x * y, a * x * z,
         a * y * x, 1 + a * y * y, a * y * z,
         a * z * x, a * z * y, 1 + a * z * z, result);
     }
-    return RotMatrix.createUniformScale(scale);
+    return Matrix3d.createUniformScale(scale);
   }
 
   /* Create a matrix with the indicated column in the (normalized) direction, and the other two columns perpendicular. All columns are normalized.
@@ -1145,8 +1145,8 @@ export class RotMatrix implements BeJSONFunctions {
    * * If the direction vector is not close to Z, the "next" column ((axisIndex + 1) mod 3) will be in the XY plane in the direction of (direction cross Z)
    * * If the direction vector is close to Z, the "next" column ((axisIndex + 1) mode 3) will be in the direction of (direction cross Y)
   */
-  // static create1Vector(direction: Vector3d, axisIndex: number): RotMatrix;
-  // static createFromXYVectors(vectorX: Vector3d, vectorY: Vector3d, axisIndex: number): RotMatrix;
+  // static create1Vector(direction: Vector3d, axisIndex: number): Matrix3d;
+  // static createFromXYVectors(vectorX: Vector3d, vectorY: Vector3d, axisIndex: number): Matrix3d;
 
   /** Multiply the matrix * vector, i.e. the vector is a column vector on the right.
       @return the vector result
@@ -1172,7 +1172,7 @@ export class RotMatrix implements BeJSONFunctions {
       (this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z));
   }
 
-  public static XYZMinusMatrixTimesXYZ(origin: XYZ, matrix: RotMatrix, vector: XYZ, result?: Point3d): Point3d {
+  public static XYZMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1183,7 +1183,7 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
 
-  public static XYPlusMatrixTimesXY(origin: XAndY, matrix: RotMatrix, vector: XAndY, result?: Point2d): Point2d {
+  public static XYPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
     const x = vector.x;
     const y = vector.y;
     return Point2d.create(
@@ -1192,7 +1192,7 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
 
-  public static XYZPlusMatrixTimesXYZ(origin: XYZ, matrix: RotMatrix, vector: XYAndZ, result?: Point3d): Point3d {
+  public static XYZPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1203,7 +1203,7 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
 
-  public static XYZPlusMatrixTimesCoordinates(origin: XYZ, matrix: RotMatrix, x: number, y: number, z: number, result?: Point3d): Point3d {
+  public static XYZPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
@@ -1221,7 +1221,7 @@ export class RotMatrix implements BeJSONFunctions {
    * @param w w part of multiplied point
    * @param result optional result.
    */
-  public static XYZPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: RotMatrix, x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
+  public static XYZPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     return Point4d.create(
       w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       w * origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
@@ -1388,8 +1388,8 @@ export class RotMatrix implements BeJSONFunctions {
   /** Multiply two matrices.
    *   @return the matrix result
    */
-  public multiplyMatrixMatrix(other: RotMatrix, result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+  public multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     multiplyMatrixMatrix(this.coffs, other.coffs, result.coffs);
     return result;
   }
@@ -1397,8 +1397,8 @@ export class RotMatrix implements BeJSONFunctions {
   /** Matrix multiplication `this * otherTranspose`
       @return the matrix result
   */
-  public multiplyMatrixMatrixTranspose(other: RotMatrix, result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+  public multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     multiplyMatrixMatrixTranspose(this.coffs, other.coffs, result.coffs);
     return result;
   }
@@ -1406,15 +1406,15 @@ export class RotMatrix implements BeJSONFunctions {
   /** Matrix multiplication `thisTranspose * other`
       @return the matrix result
   */
-  public multiplyMatrixTransposeMatrix(other: RotMatrix, result?: RotMatrix): RotMatrix {
-    result = result ? result : new RotMatrix();
+  public multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d {
+    result = result ? result : new Matrix3d();
     multiplyMatrixTransposeMatrix(this.coffs, other.coffs, result.coffs);
     return result;
   }
   //   [Q 0][R A] = [QR QA]
   //   [0 1][0 1]   [0  1]
-  /** multiply this RotMatrix (considered as a transform with 0 translation) times other Transform.
-   * @param other right hand RotMatrix for multiplication.
+  /** multiply this Matrix3d (considered as a transform with 0 translation) times other Transform.
+   * @param other right hand Matrix3d for multiplication.
    * @param result optional preallocated result to reuse.
   */
   public multiplyMatrixTransform(other: Transform, result?: Transform): Transform {
@@ -1429,8 +1429,8 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** return the transposed matrix */
-  public transpose(result?: RotMatrix): RotMatrix {
-    if (!result) result = new RotMatrix();
+  public transpose(result?: Matrix3d): Matrix3d {
+    if (!result) result = new Matrix3d();
     copy3x3Transposed(this.coffs, result.coffs);
     if (this.inverseCoffs !== undefined) {
       result.inverseState = InverseMatrixState.inverseStored;
@@ -1450,10 +1450,10 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** return the inverse matrix.  The return is  null if the matrix is singular (has columns that are coplanar or colinear) */
-  public inverse(result?: RotMatrix): RotMatrix | undefined {
+  public inverse(result?: Matrix3d): Matrix3d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseState === InverseMatrixState.inverseStored && this.inverseCoffs)
-      return RotMatrix.createRowValues(this.inverseCoffs[0], this.inverseCoffs[1], this.inverseCoffs[2],
+      return Matrix3d.createRowValues(this.inverseCoffs[0], this.inverseCoffs[1], this.inverseCoffs[2],
         this.inverseCoffs[3], this.inverseCoffs[4], this.inverseCoffs[5],
         this.inverseCoffs[6], this.inverseCoffs[7], this.inverseCoffs[8], result);
     return undefined;
@@ -1482,7 +1482,7 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   // take the cross product of two columns of source.
-  // store as third column in same RotMatrix.
+  // store as third column in same Matrix3d.
   // This is private because the columnStart values are unchecked raw indices into the coffs
   private indexedColumnCrossProductInPlace(colStart0: number, colStart1: number, colStart2: number) {
     const coffs = this.coffs;
@@ -1568,12 +1568,12 @@ export class RotMatrix implements BeJSONFunctions {
   private static rowColumnDot(coffA: Float64Array, rowStartA: number, coffB: Float64Array, columnStartB: number): number {
     return coffA[rowStartA] * coffB[columnStartB] + coffA[rowStartA + 1] * coffB[columnStartB + 3] + coffA[rowStartA + 2] * coffB[columnStartB + 6];
   }
-  /** compute the inverse of this RotMatrix. The inverse is stored for later use.
+  /** compute the inverse of this Matrix3d. The inverse is stored for later use.
    * @returns Return true if the inverse computed.  (False if the columns collapse to a point, line or plane.)
    */
   public computeCachedInverse(useCacheIfAvailable: boolean): boolean {
-    if (useCacheIfAvailable && RotMatrix.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
-      RotMatrix.numUseCache++;
+    if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
+      Matrix3d.numUseCache++;
       return this.inverseState === InverseMatrixState.inverseStored;
     }
     this.inverseState = InverseMatrixState.unknown;
@@ -1581,11 +1581,11 @@ export class RotMatrix implements BeJSONFunctions {
       this.inverseCoffs = new Float64Array(9);
     const coffs = this.coffs;
     const inverseCoffs = this.inverseCoffs;
-    RotMatrix.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0);
-    RotMatrix.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1);
-    RotMatrix.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2);
-    RotMatrix.numComputeCache++;
-    const d = RotMatrix.rowColumnDot(coffs, 0, inverseCoffs, 0);
+    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0);
+    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1);
+    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2);
+    Matrix3d.numComputeCache++;
+    const d = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0);
     if (d === 0.0) {     // better test?
       this.inverseState = InverseMatrixState.singular;
       this.inverseCoffs = undefined;
@@ -1598,7 +1598,7 @@ export class RotMatrix implements BeJSONFunctions {
     // const p = new Float64Array(9);
     // for (let i = 0; i < 9; i += 3)
     //   for (let j = 0; j < 3; j++)
-    //    p[i + j] = RotMatrix.rowColumnDot (coffs, i, inverseCoffs, j);
+    //    p[i + j] = Matrix3d.rowColumnDot (coffs, i, inverseCoffs, j);
     return true;
   }
 
@@ -1610,18 +1610,18 @@ export class RotMatrix implements BeJSONFunctions {
     private static crossZX: Vector3d = Vector3d.create();
     private static crossYZ: Vector3d = Vector3d.create();
   private computeCachedInverse(useCacheIfAvailable: boolean) {
-      if (useCacheIfAvailable && RotMatrix.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
-        RotMatrix.numUseCache++;
+      if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
+        Matrix3d.numUseCache++;
         return this.inverseState === InverseMatrixState.inverseStored;
       }
       this.inverseState = InverseMatrixState.unknown;
-      RotMatrix.numComputeCache++;
-      const rowX = this.rowX(RotMatrix.rowX);
-      const rowY = this.rowY(RotMatrix.rowY);
-      const rowZ = this.rowZ(RotMatrix.rowZ);
-      const crossXY = rowX.crossProduct(rowY, RotMatrix.crossXY);
-      const crossYZ = rowY.crossProduct(rowZ, RotMatrix.crossYZ);
-      const crossZX = rowZ.crossProduct(rowX, RotMatrix.crossZX);
+      Matrix3d.numComputeCache++;
+      const rowX = this.rowX(Matrix3d.rowX);
+      const rowY = this.rowY(Matrix3d.rowY);
+      const rowZ = this.rowZ(Matrix3d.rowZ);
+      const crossXY = rowX.crossProduct(rowY, Matrix3d.crossXY);
+      const crossYZ = rowY.crossProduct(rowZ, Matrix3d.crossYZ);
+      const crossZX = rowZ.crossProduct(rowX, Matrix3d.crossZX);
       const d = rowX.dotProduct(crossYZ);  // that's the determinant
       if (d === 0.0) {     // better test?
         this.inverseState = InverseMatrixState.singular;
@@ -1648,23 +1648,23 @@ export class RotMatrix implements BeJSONFunctions {
 
   /** return the entry at specific row and column */
   public at(row: number, column: number): number {
-    return this.coffs[RotMatrix.flatIndexOf(row, column)];
+    return this.coffs[Matrix3d.flatIndexOf(row, column)];
   }
 
   /** Set the entry at specific row and column */
   public setAt(row: number, column: number, value: number): void {
-    this.coffs[RotMatrix.flatIndexOf(row, column)] = value;
+    this.coffs[Matrix3d.flatIndexOf(row, column)] = value;
     this.inverseState = InverseMatrixState.unknown;
   }
 
-  /** create a RotMatrix whose columns are scaled copies of this RotMatrix.
+  /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
    * @param scaleX scale factor for columns x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
    * @param result optional result.
    * */
-  public scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues
+  public scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
       (
       this.coffs[0] * scaleX, this.coffs[1] * scaleY, this.coffs[2] * scaleZ,
       this.coffs[3] * scaleX, this.coffs[4] * scaleY, this.coffs[5] * scaleZ,
@@ -1672,7 +1672,7 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
 
-  /** create a RotMatrix whose columns are scaled copies of this RotMatrix.
+  /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
    * @param scaleX scale factor for columns x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
@@ -1697,14 +1697,14 @@ export class RotMatrix implements BeJSONFunctions {
     }
   }
 
-  /** create a RotMatrix whose rows are scaled copies of this RotMatrix.
+  /** create a Matrix3d whose rows are scaled copies of this Matrix3d.
    * @param scaleX scale factor for row x
    * @param scaleY scale factor for row y
    * @param scaleZ scale factor for row z
    * @param result optional result.
    * */
-  public scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues
+  public scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
       (
       this.coffs[0] * scaleX, this.coffs[1] * scaleX, this.coffs[2] * scaleX,
       this.coffs[3] * scaleY, this.coffs[4] * scaleY, this.coffs[5] * scaleY,
@@ -1712,22 +1712,22 @@ export class RotMatrix implements BeJSONFunctions {
       result);
   }
   /**
-   * add scaled values from other RotMatrix to this RotMatrix
-   * @param other RotMatrix with values to be added
+   * add scaled values from other Matrix3d to this Matrix3d
+   * @param other Matrix3d with values to be added
    * @param scale scale factor to apply to th eadded values.
    */
-  public addScaledInPlace(other: RotMatrix, scale: number): void {
+  public addScaledInPlace(other: Matrix3d, scale: number): void {
     for (let i = 0; i < 9; i++)
       this.coffs[i] += scale * other.coffs[i];
     this.inverseState = InverseMatrixState.unknown;
   }
-  /** create a RotMatrix whose values are uniformly scaled from this.
+  /** create a Matrix3d whose values are uniformly scaled from this.
    * @param scale scale factor to apply.
    * @param result optional result.
    * @returns Return the new or repopulated matrix
    */
-  public scale(scale: number, result?: RotMatrix): RotMatrix {
-    return RotMatrix.createRowValues
+  public scale(scale: number, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
       (
       this.coffs[0] * scale, this.coffs[1] * scale, this.coffs[2] * scale,
       this.coffs[3] * scale, this.coffs[4] * scale, this.coffs[5] * scale,
@@ -1781,7 +1781,7 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** Return the maximum absolute difference between corresponding entries */
-  public maxDiff(other: RotMatrix): number {
+  public maxDiff(other: Matrix3d): number {
     let i = 0;
     let a = 0;
     for (i = 0; i < 9; i++)
@@ -1791,7 +1791,7 @@ export class RotMatrix implements BeJSONFunctions {
 
   /** Test if the matrix is (very near to) an identity */
   public get isIdentity(): boolean {
-    return this.maxDiff(RotMatrix.identity) < Geometry.smallAngleRadians;
+    return this.maxDiff(Matrix3d.identity) < Geometry.smallAngleRadians;
 
   }
 
@@ -1839,7 +1839,7 @@ export class RotMatrix implements BeJSONFunctions {
    * * result.rigidAxes is the rigid axes (with the scale factor removed)
    * * result.scale is the scale factor
    */
-  public factorRigidWithSignedScale(): { rigidAxes: RotMatrix, scale: number } | undefined {
+  public factorRigidWithSignedScale(): { rigidAxes: Matrix3d, scale: number } | undefined {
     const product = this.multiplyMatrixMatrixTranspose(this);
     const ss = product.sameDiagonalScale();
     if (ss === undefined || ss <= 0.0) return undefined;
@@ -1888,14 +1888,14 @@ export class RotMatrix implements BeJSONFunctions {
     vectorA: Vector3d,
     vectorB: Vector3d,
     axisOrder: AxisOrder,
-    result?: RotMatrix): RotMatrix | undefined {
+    result?: Matrix3d): Matrix3d | undefined {
     const vectorA1 = vectorA.normalize();
     if (vectorA1) {
       const vectorC1 = vectorA1.unitCrossProduct(vectorB);
       if (vectorC1) {
         const vectorB1 = vectorC1.unitCrossProduct(vectorA);
         if (vectorB1) {
-          const retVal = RotMatrix.createShuffledColumns(vectorA1, vectorB1, vectorC1, axisOrder, result);
+          const retVal = Matrix3d.createShuffledColumns(vectorA1, vectorB1, vectorC1, axisOrder, result);
           retVal.setupInverseTranspose();
           return retVal;
         }
@@ -1905,12 +1905,12 @@ export class RotMatrix implements BeJSONFunctions {
   }
 
   /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse)
-   * columns are taken from the source RotMatrix in order indicated by the axis order.
+   * columns are taken from the source Matrix3d in order indicated by the axis order.
    */
-  public static createRigidFromRotMatrix(
-    source: RotMatrix,
+  public static createRigidFromMatrix3d(
+    source: Matrix3d,
     axisOrder: AxisOrder = AxisOrder.XYZ,
-    result?: RotMatrix): RotMatrix | undefined {
+    result?: Matrix3d): Matrix3d | undefined {
     result = source.clone(result);
     result.axisOrderCrossProductsInPlace(axisOrder);
     if (result.normalizeColumnsInPlace())
@@ -1919,10 +1919,10 @@ export class RotMatrix implements BeJSONFunctions {
   }
 }
 
-/** A transform is an origin and a RotMatrix.
+/** A transform is an origin and a Matrix3d.
  *
  * * This describes a coordinate frame with
- * this origin, with the columns of the RotMatrix being the
+ * this origin, with the columns of the Matrix3d being the
  * local x,y,z axis directions.
  * *  Beware that for common transformations (e.g. scale about point,
  * rotate around line, mirror across a plane) the "fixed point" that is used
@@ -1938,9 +1938,9 @@ export class Transform implements BeJSONFunctions {
   // But when split, there is a load order issue, so it has to be initialized at point-of-use
   private static _scratchPoint: Point3d;
   private _origin: XYZ;
-  private _matrix: RotMatrix;
+  private _matrix: Matrix3d;
   // Constructor accepts and uses POINTER to content .. no copy here.
-  private constructor(origin: XYZ, matrix: RotMatrix) { this._origin = origin; this._matrix = matrix; }
+  private constructor(origin: XYZ, matrix: Matrix3d) { this._origin = origin; this._matrix = matrix; }
 
   private static _identity?: Transform;
   /** The identity Transform. Value is frozen and cannot be modified. */
@@ -2011,19 +2011,32 @@ export class Transform implements BeJSONFunctions {
   /** @returns Return a copy of this Transform, modified so that its axes are rigid
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
-    const axes0 = RotMatrix.createRigidFromRotMatrix(this.matrix, axisOrder);
+    const axes0 = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);
     if (!axes0)
       return undefined;
     return new Transform(this.origin.cloneAsPoint3d(), axes0);
   }
-  /** Create a copy with the given origin and matrix captured as the Transform origin and RotMatrix. */
-  public static createRefs(origin: XYZ, matrix: RotMatrix, result?: Transform): Transform {
+  /** Create a copy with the given origin and matrix captured as the Transform origin and Matrix3d. */
+  public static createRefs(origin: XYZ, matrix: Matrix3d, result?: Transform): Transform {
     if (result) {
       result._origin = origin;
       result._matrix = matrix;
       return result;
     }
     return new Transform(origin, matrix);
+  }
+  /** Create a transform with complete contents given */
+  public static createRowValues(
+    qxx: number, qxy: number, qxz: number, ax: number,
+    qyx: number, qyy: number, qyz: number, ay: number,
+    qzx: number, qzy: number, qzz: number, az: number,
+    result?: Transform): Transform {
+    if (result) {
+      result._origin.set(ax, ay, az);
+      result._matrix.setRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz);
+      return result;
+    }
+    return new Transform(Point3d.create (ax, ay, az), Matrix3d.createRowValues (qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
   }
   /**
    * create a Transform with translation provided by x,y,z parts.
@@ -2034,18 +2047,18 @@ export class Transform implements BeJSONFunctions {
    * @returns new or updated transform.
    */
   public static createTranslationXYZ(x: number = 0, y: number = 0, z: number = 0, result?: Transform): Transform {
-    return Transform.createRefs(Vector3d.create(x, y, z), RotMatrix.createIdentity(), result);
+    return Transform.createRefs(Vector3d.create(x, y, z), Matrix3d.createIdentity(), result);
   }
   /** Create a matrix with specified translation part.
    * @param XYZ x,y,z parts of the translation.
    * @returns new or updated transform.
    */
   public static createTranslation(translation: XYZ, result?: Transform): Transform {
-    return Transform.createRefs(translation, RotMatrix.createIdentity(), result);
+    return Transform.createRefs(translation, Matrix3d.createIdentity(), result);
   }
 
   /** Return a reference to the matrix within the transform.  (NOT a copy) */
-  public get matrix(): RotMatrix { return this._matrix; }
+  public get matrix(): Matrix3d { return this._matrix; }
   /** Return a reference to the origin within the transform.  (NOT a copy) */
   public get origin(): XYZ { return this._origin; }
 
@@ -2055,7 +2068,7 @@ export class Transform implements BeJSONFunctions {
   /** return a (clone of) the origin part of the transform, as a Vector3d */
   public getTranslation(): Vector3d { return Vector3d.createFrom(this._origin); }
 
-  /** test if the transform has 000 origin and identity RotMatrix */
+  /** test if the transform has 000 origin and identity Matrix3d */
   public get isIdentity(): boolean {
     return this._matrix.isIdentity && this._origin.isAlmostZero;
   }
@@ -2066,16 +2079,16 @@ export class Transform implements BeJSONFunctions {
       result._matrix.setIdentity();
       return result;
     }
-    return Transform.createRefs(Point3d.createZero(), RotMatrix.createIdentity());
+    return Transform.createRefs(Point3d.createZero(), Matrix3d.createIdentity());
   }
   /** Create by directly installing origin and matrix
    * this is a the appropriate construction when the columns of the matrix are coordinate axes of a local-to-global mapping
    * Note there is a closely related createFixedPointAndMatrix whose point input is the fixed point of the global-to-global transformation.
    */
-  public static createOriginAndMatrix(origin: XYZ | undefined, matrix: RotMatrix | undefined, result?: Transform): Transform {
+  public static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform {
     return Transform.createRefs(
       origin ? origin.cloneAsPoint3d() : Point3d.createZero(),
-      matrix === undefined ? RotMatrix.createIdentity() : matrix.clone(), result);
+      matrix === undefined ? Matrix3d.createIdentity() : matrix.clone(), result);
   }
   /** Create by directly installing origin and columns of the matrix
   */
@@ -2083,7 +2096,7 @@ export class Transform implements BeJSONFunctions {
     if (result)
       result.setOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
     else
-      result = Transform.createRefs(Vector3d.createFrom(origin), RotMatrix.createColumns(vectorX, vectorY, vectorZ));
+      result = Transform.createRefs(Vector3d.createFrom(origin), Matrix3d.createColumns(vectorX, vectorY, vectorZ));
     return result;
   }
   /** Reinitialize by directly installing origin and columns of the matrix
@@ -2096,43 +2109,43 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: RotMatrix, result?: Transform): Transform {
-    const origin = RotMatrix.XYZMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
+  public static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: Matrix3d, result?: Transform): Transform {
+    const origin = Matrix3d.XYZMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix.clone(), result);
   }
   /** Create a Transform which leaves the fixedPoint unchanged and
    * scales everything else around it by a single scale factor.
    */
   public static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform {
-    const matrix = RotMatrix.createScale(scale, scale, scale);
-    const origin = RotMatrix.XYZMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
+    const matrix = Matrix3d.createScale(scale, scale, scale);
+    const origin = Matrix3d.XYZMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix, result);
   }
 
   /** Transform the input 2d point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyPoint2d(source: XAndY, result?: Point2d): Point2d {
-    return RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, source, result);
+    return Matrix3d.XYPlusMatrixTimesXY(this._origin, this._matrix, source, result);
   }
 
   /** Transform the input 3d point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d {
-    return RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
+    return Matrix3d.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
 
   /** Transform the input point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d {
-    return RotMatrix.XYZPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
+    return Matrix3d.XYZPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
 
   /** Transform the input homogeneous point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
-    return RotMatrix.XYZPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
+    return Matrix3d.XYZPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
   /** for each point:  replace point by Transform*point */
   public multiplyPoint3dArrayInPlace(points: Point3d[]) {
     let point;
     for (point of points)
-      RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, point);
+      Matrix3d.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, point);
   }
 
   /** @returns Return product of the transform's inverse times a point. */
@@ -2215,12 +2228,12 @@ export class Transform implements BeJSONFunctions {
     if (result) {
       const n = Transform.matchArrayLengths(source, result, Point2d.createZero);
       for (let i = 0; i < n; i++)
-        RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, source[i], result[i]);
+        Matrix3d.XYPlusMatrixTimesXY(this._origin, this._matrix, source[i], result[i]);
       return result;
     }
     result = [];
     for (const p of source)
-      result.push(RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, p));
+      result.push(Matrix3d.XYPlusMatrixTimesXY(this._origin, this._matrix, p));
 
     return result;
   }
@@ -2233,17 +2246,17 @@ export class Transform implements BeJSONFunctions {
     if (result) {
       const n = Transform.matchArrayLengths(source, result, Point3d.createZero);
       for (let i = 0; i < n; i++)
-        RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, source[i], result[i]);
+        Matrix3d.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, source[i], result[i]);
       return result;
     }
     result = [];
     for (const p of source)
-      result.push(RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, p));
+      result.push(Matrix3d.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, p));
 
     return result;
   }
 
-  /** Multiply the vector by the RotMatrix part of the transform.
+  /** Multiply the vector by the Matrix3d part of the transform.
    *
    * *  The transform's origin is not used.
    * *  Return as new or result by usual optional result convention
@@ -2251,7 +2264,7 @@ export class Transform implements BeJSONFunctions {
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
     return this._matrix.multiplyVector(vector, result);
   }
-  /** Multiply the vector (x,y,z) by the RotMatrix part of the transform.
+  /** Multiply the vector (x,y,z) by the Matrix3d part of the transform.
  *
  * *  The transform's origin is not used.
  * *  Return as new or result by usual optional result convention
@@ -2266,7 +2279,7 @@ export class Transform implements BeJSONFunctions {
   public multiplyTransformTransform(other: Transform, result?: Transform) {
     if (!result)
       return Transform.createRefs(
-        RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, other._origin),
+        Matrix3d.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, other._origin),
         this._matrix.multiplyMatrixMatrix(other._matrix));
     result.setMultiplyTransformTransform(this, other);
     return result;
@@ -2279,17 +2292,17 @@ export class Transform implements BeJSONFunctions {
   public setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void {
     if (Transform._scratchPoint === undefined)
       Transform._scratchPoint = Point3d.create();
-    RotMatrix.XYZPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform._scratchPoint);
+    Matrix3d.XYZPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform._scratchPoint);
     this._origin.setFrom(Transform._scratchPoint);
     transformA._matrix.multiplyMatrixMatrix(transformB._matrix, this._matrix);
   }
   //   [Q A][R 0] = [QR A]
   //   [0 1][0 1]   [0  1]
-  /** multiply this Transform times other RotMatrix, with other considered to be a Transform with 0 translation.
-   * @param other right hand RotMatrix for multiplication.
+  /** multiply this Transform times other Matrix3d, with other considered to be a Transform with 0 translation.
+   * @param other right hand Matrix3d for multiplication.
    * @param result optional preallocated result to reuse.
   */
-  public multiplyTransformRotMatrix(other: RotMatrix, result?: Transform): Transform {
+  public multiplyTransformMatrix3d(other: Matrix3d, result?: Transform): Transform {
     if (!result)
       return Transform.createRefs(
         this._origin.cloneAsPoint3d(),
@@ -2343,15 +2356,15 @@ export class Transform implements BeJSONFunctions {
     if (diag.y === 0.0) diag.y = 1.0;
     if (diag.z === 0.0) diag.z = 1.0;
 
-    const rMatrix = new RotMatrix();
+    const rMatrix = new Matrix3d();
     if (npcToGlobal) {
-      RotMatrix.createScale(diag.x, diag.y, diag.z, rMatrix);
+      Matrix3d.createScale(diag.x, diag.y, diag.z, rMatrix);
       Transform.createOriginAndMatrix(min, rMatrix, npcToGlobal);
     }
 
     if (globalToNpc) {
       const origin = new Point3d(- min.x / diag.x, - min.y / diag.y, - min.z / diag.z);
-      RotMatrix.createScale(1.0 / diag.x, 1.0 / diag.y, 1.0 / diag.z, rMatrix);
+      Matrix3d.createScale(1.0 / diag.x, 1.0 / diag.y, 1.0 / diag.z, rMatrix);
       Transform.createOriginAndMatrix(origin, rMatrix, globalToNpc);
     }
   }

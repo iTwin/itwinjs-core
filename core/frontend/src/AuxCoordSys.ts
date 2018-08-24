@@ -4,13 +4,13 @@
 /** @module Views */
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
-import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
+import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
 
 export const enum ACSType {
@@ -91,8 +91,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public abstract getOrigin(result?: Point3d): Point3d;
   public abstract setOrigin(val: XYAndZ | XAndY): void;
   /** get a *copy of* the rotation matrix for this ACS. */
-  public abstract getRotation(result?: RotMatrix): RotMatrix;
-  public abstract setRotation(val: RotMatrix): void;
+  public abstract getRotation(result?: Matrix3d): Matrix3d;
+  public abstract setRotation(val: Matrix3d): void;
   public get is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
 
   public drawGrid(context: DecorateContext): void {
@@ -214,13 +214,13 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
       const xVec = viewRMatrix.getRow(0);
       const yVec = viewRMatrix.getRow(1);
 
-      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(xVec);
-      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(yVec);
+      builder.placement.matrix.multiplyTransposeVectorInPlace(xVec);
+      builder.placement.matrix.multiplyTransposeVectorInPlace(yVec);
 
       xVec.normalize(xVec);
       yVec.normalize(yVec);
 
-      const ellipse = Arc3d.createScaledXYColumns(center, RotMatrix.createColumns(xVec, yVec, Vector3d.create()), scale, scale, AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2)));
+      const ellipse = Arc3d.createScaledXYColumns(center, Matrix3d.createColumns(xVec, yVec, Vector3d.create()), scale, scale, AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2)));
       builder.addArc(ellipse, false, false);
 
       builder.setBlankingFill(fillColor);
@@ -261,7 +261,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   private _pickableOverlay: boolean = false; // ###TODO Remove - testing only
 
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
-  private createGraphic(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
+  private createGraphicBuilder(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
     const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
     const drawOrigin = this.getOrigin();
 
@@ -282,20 +282,18 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
-    const graphic = this._pickableOverlay ? context.createPickableDecoration(new Id64("0xffffff0000000003"), transform) : context.createWorldOverlay(transform);
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._pickableOverlay ? "0xffffff0000000003" : undefined);
     const vp = context.viewport;
-    this.addAxis(graphic, 0, options, vp);
-    this.addAxis(graphic, 1, options, vp);
-    this.addAxis(graphic, 2, options, vp);
-
-    return graphic;
+    this.addAxis(builder, 0, options, vp);
+    this.addAxis(builder, 1, options, vp);
+    this.addAxis(builder, 2, options, vp);
+    return builder;
   }
 
   public display(context: DecorateContext, options: ACSDisplayOptions) {
-    const graphic = this.createGraphic(context, options);
-    if (!graphic)
-      return;
-    context.addWorldOverlay(graphic.finish());
+    const builder = this.createGraphicBuilder(context, options);
+    if (undefined !== builder)
+      context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -303,13 +301,13 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   public readonly origin: Point2d;
   public angle: number; // in degrees
-  private readonly _rMatrix: RotMatrix;
+  private readonly _rMatrix: Matrix3d;
 
   constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection) {
     super(props, iModel);
     this.origin = Point2d.fromJSON(props.origin);
     this.angle = JsonUtils.asDouble(props.angle);
-    this._rMatrix = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle))!;
+    this._rMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle))!;
   }
 
   public toJSON(): AuxCoordSystem2dProps {
@@ -321,10 +319,10 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 
   public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
   public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
-  public getRotation(result?: RotMatrix): RotMatrix { return this._rMatrix.clone(result); }
-  public setRotation(val: RotMatrix): void {
+  public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
+  public setRotation(val: Matrix3d): void {
     this._rMatrix.setFrom(val);
-    this.angle = YawPitchRollAngles.createFromRotMatrix(val)!.yaw.degrees;
+    this.angle = YawPitchRollAngles.createFromMatrix3d(val)!.yaw.degrees;
   }
 }
 
@@ -334,7 +332,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   public yaw: number;
   public pitch: number;
   public roll: number;
-  private readonly _rMatrix: RotMatrix;
+  private readonly _rMatrix: Matrix3d;
 
   constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -343,7 +341,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
     this.pitch = JsonUtils.asDouble(props.pitch);
     this.roll = JsonUtils.asDouble(props.roll);
     const angles = new YawPitchRollAngles(Angle.createRadians(this.yaw), Angle.createRadians(this.pitch), Angle.createRadians(this.roll));
-    this._rMatrix = angles.toRotMatrix();
+    this._rMatrix = angles.toMatrix3d();
   }
 
   public toJSON(): AuxCoordSystem3dProps {
@@ -357,10 +355,10 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
   public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
   public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
-  public getRotation(result?: RotMatrix): RotMatrix { return this._rMatrix.clone(result); }
-  public setRotation(rMatrix: RotMatrix): void {
+  public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
+  public setRotation(rMatrix: Matrix3d): void {
     this._rMatrix.setFrom(rMatrix);
-    const angles = YawPitchRollAngles.createFromRotMatrix(rMatrix)!;
+    const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix)!;
     this.yaw = angles.yaw.radians;
     this.pitch = angles.pitch.radians;
     this.roll = angles.roll.radians;

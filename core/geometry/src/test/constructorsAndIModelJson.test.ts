@@ -14,7 +14,7 @@ import { Loop, Path, ParityRegion } from "../curve/CurveChain";
 import { Sphere } from "../solid/Sphere";
 import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { TorusPipe } from "../solid/TorusPipe";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
@@ -121,7 +121,7 @@ describe("constructorsAndImodelJson", () => {
           cornerB, ax, ay, bx, by, true) as Box);
     }
     {
-      const frame = Transform.createOriginAndMatrix(Point3d.create(1, 1, 1), RotMatrix.createRigidViewAxesZTowardsEye(2, 0, 3));
+      const frame = Transform.createOriginAndMatrix(Point3d.create(1, 1, 1), Matrix3d.createRigidViewAxesZTowardsEye(2, 0, 3));
       const majorRadius = 3.0;
       const minorRadius = 1.0;
       const sweep = Angle.createDegrees(90);

@@ -6,7 +6,7 @@
 import * as React from "react";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { withDropTarget, DropTargetArguments, DragSourceArguments } from "../../dragdrop";
-import { Tree as TreeBase, TreeBranch } from "@bentley/ui-core";
+import { Tree as TreeBase, TreeBranch, TreeNode } from "@bentley/ui-core";
 import { DragDropTreeNode } from "./DragDropNodeWrapper";
 import { BeInspireTree, InspireTreeNode, InspireTreeDataProvider, NodePredicate } from "./BeInspireTree";
 
@@ -146,79 +146,101 @@ export default class Tree extends React.Component<Props, State> {
     const parent: InspireTreeNode = data.getParent();
     const toggleExpansion = () => data.toggleCollapse();
 
-    return (
-      <DragDropTreeNode
-        onDragSourceBegin={(args: DragSourceArguments) => {
-          args.dataObject = data;
-          args.parentObject = parent || this.props.dataProvider;
-          if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
-          return args;
-        }}
-        onDragSourceEnd={(args: DragSourceArguments) => {
-          args.parentObject = parent || this.props.dataProvider;
-          if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
-        }}
-        onDropTargetOver={(args: DropTargetArguments) => {
-          // populate tree information while it's accessable
-          args.dropLocation = data;
-          if (args.dropRect) {
-            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-            if (relativeY < 1 / 3 && relativeY > 2 / 3 && index !== undefined) {
-              args.dropLocation = parent || this.props.dataProvider;
-              args.row = index;
-              if (relativeY > 2 / 3) {
-                args.row = index + 1;
+    const {
+      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
+      onDragSourceBegin, onDragSourceEnd,
+    } = this.props;
+    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
+      onDragSourceBegin || onDragSourceEnd)
+      return (
+        <DragDropTreeNode
+          onDragSourceBegin={(args: DragSourceArguments) => {
+            args.dataObject = data;
+            args.parentObject = parent || this.props.dataProvider;
+            if (this.props.onDragSourceBegin) return this.props.onDragSourceBegin(args);
+            return args;
+          }}
+          onDragSourceEnd={(args: DragSourceArguments) => {
+            args.parentObject = parent || this.props.dataProvider;
+            if (this.props.onDragSourceEnd) this.props.onDragSourceEnd(args);
+          }}
+          onDropTargetOver={(args: DropTargetArguments) => {
+            // populate tree information while it's accessable
+            args.dropLocation = data;
+            if (args.dropRect) {
+              const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+              if (relativeY < 1 / 3 && relativeY > 2 / 3 && index !== undefined) {
+                args.dropLocation = parent || this.props.dataProvider;
+                args.row = index;
+                if (relativeY > 2 / 3) {
+                  args.row = index + 1;
+                }
               }
             }
-          }
-          if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
-        }}
-        onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-          // populate tree information while it's accessable
-          args.dropLocation = data;
-          if (args.dropRect) {
-            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-            if ((relativeY < 1 / 3 || relativeY > 2 / 3) && index !== undefined) {
-              args.dropLocation = parent || this.props.dataProvider;
-              args.row = index;
-              if (relativeY > 2 / 3) {
-                args.row = index + 1;
+            if (onDropTargetOver) onDropTargetOver(args);
+          }}
+          onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+            // populate tree information while it's accessable
+            args.dropLocation = data;
+            if (args.dropRect) {
+              const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
+              if ((relativeY < 1 / 3 || relativeY > 2 / 3) && index !== undefined) {
+                args.dropLocation = parent || this.props.dataProvider;
+                args.row = index;
+                if (relativeY > 2 / 3) {
+                  args.row = index + 1;
+                }
               }
             }
-          }
-          if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-          return args;
-        }}
-        canDropTargetDrop={(args: DropTargetArguments) => {
-          // populate tree information while it's accessable
-          args.dropLocation = data;
-          if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-          return true;
-        }}
-        objectType={() => {
-          if (this.props.objectType) {
-            if (typeof this.props.objectType === "function")
-              return this.props.objectType(data);
-            else
-              return this.props.objectType;
-          }
-          return "";
-        }}
-        objectTypes={this.props.objectTypes}
-        shallow={true}
-        key={data.id}
-        isExpanded={data.expanded()}
-        isSelected={data.selected()}
-        isLoading={data.loading()}
-        isLeaf={!data.hasOrWillHaveChildren()}
-        label={data.text}
-        icon={<span className={data.icon} />}
-        onClick={toggleSelection}
-        onClickExpansionToggle={toggleExpansion}
-      >
-        {children}
-      </DragDropTreeNode>
-    );
+            if (onDropTargetDrop) return onDropTargetDrop(args);
+            return args;
+          }}
+          canDropTargetDrop={(args: DropTargetArguments) => {
+            // populate tree information while it's accessable
+            args.dropLocation = data;
+            if (canDropTargetDrop) return canDropTargetDrop(args);
+            return true;
+          }}
+          objectType={() => {
+            if (this.props.objectType) {
+              if (typeof this.props.objectType === "function")
+                return this.props.objectType(data);
+              else
+                return this.props.objectType;
+            }
+            return "";
+          }}
+          objectTypes={this.props.objectTypes}
+          shallow={true}
+          key={data.id}
+          isExpanded={data.expanded()}
+          isSelected={data.selected()}
+          isLoading={data.loading()}
+          isLeaf={!data.hasOrWillHaveChildren()}
+          label={data.text}
+          icon={<span className={data.icon} />}
+          onClick={toggleSelection}
+          onClickExpansionToggle={toggleExpansion}
+        >
+          {children}
+        </DragDropTreeNode>
+      );
+    else
+      return (
+        <TreeNode
+          key={data.id}
+          isExpanded={data.expanded()}
+          isSelected={data.selected()}
+          isLoading={data.loading()}
+          isLeaf={!data.hasOrWillHaveChildren()}
+          label={data.text}
+          icon={<span className={data.icon} />}
+          onClick={toggleSelection}
+          onClickExpansionToggle={toggleExpansion}
+          >
+          {children}
+        </TreeNode>
+      );
   }
 
   private renderBranch(nodes: InspireTreeNode[] | undefined) {
@@ -245,31 +267,37 @@ export default class Tree extends React.Component<Props, State> {
 
   // Renders the wrapping div and root branch
   public render() {
-    return (
-      <DropTree
-        dropStyle={{
-          height: "100%",
-        }}
-        onDropTargetOver={(args: DropTargetArguments) => {
-          args.dropLocation = this.props.dataProvider;
-          if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
-        }}
-        onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-          args.dropLocation = this.props.dataProvider;
-          if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
-          return args;
-        }}
-        canDropTargetDrop={(args: DropTargetArguments) => {
-          args.dropLocation = this.props.dataProvider;
-          if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
-          return true;
-        }}
-        objectTypes={this.props.objectTypes}
-        shallow={true}
-      >
-        {this.renderBranch(this.state.rootNodes)}
-      </DropTree>
-    );
+    const {onDropTargetOver, onDropTargetDrop, canDropTargetDrop} = this.props;
+    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop)
+      return (
+        <DropTree
+          dropStyle={{
+            height: "100%",
+          }}
+          onDropTargetOver={(args: DropTargetArguments) => {
+            args.dropLocation = this.props.dataProvider;
+            if (this.props.onDropTargetOver) this.props.onDropTargetOver(args);
+          }}
+          onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
+            args.dropLocation = this.props.dataProvider;
+            if (this.props.onDropTargetDrop) return this.props.onDropTargetDrop(args);
+            return args;
+          }}
+          canDropTargetDrop={(args: DropTargetArguments) => {
+            args.dropLocation = this.props.dataProvider;
+            if (this.props.canDropTargetDrop) return this.props.canDropTargetDrop(args);
+            return true;
+          }}
+          objectTypes={this.props.objectTypes}
+          shallow={true}
+        >
+          {this.renderBranch(this.state.rootNodes)}
+        </DropTree>
+      );
+    else
+      return (
+        <TreeBase>{this.renderBranch(this.state.rootNodes)}</TreeBase>
+      );
   }
 }
 

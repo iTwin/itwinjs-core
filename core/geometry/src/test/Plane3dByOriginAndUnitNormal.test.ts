@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -27,7 +27,7 @@ function testParallelPair(ck: Checker,
   const planeB1FromJSON = Plane3dByOriginAndUnitNormal.fromJSON(jsonB1);
   ck.testTrue(planeB1.isAlmostEqual(planeB1FromJSON), " clone, json round trip");
 
-  const triad = RotMatrix.createRigidHeadsUp(plane0.getNormalRef())!;
+  const triad = Matrix3d.createRigidHeadsUp(plane0.getNormalRef())!;
   const pointC = plane0.getOriginRef().plus(triad.multiplyXYZ(2, 4.1, a));  // this should be on planeA but not at its origin.
   ck.testCoordinate(0, planeA.altitude(pointC));
   const pointC0 = plane0.projectPointToPlane(pointC);

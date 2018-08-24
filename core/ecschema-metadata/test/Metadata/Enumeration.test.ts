@@ -77,7 +77,7 @@ describe("Enumeration", () => {
         items: {
           testEnum: {
             schemaItemType: "Enumeration",
-            backingTypeName: "string",
+            type: "string",
             description: "Test description",
             label: "Test Enumeration",
             isStrict: true,
@@ -105,7 +105,7 @@ describe("Enumeration", () => {
         items: {
           testEnum: {
             schemaItemType: "Enumeration",
-            backingTypeName: "integer",
+            type: "integer",
             enumerators: [
               {
                 name: "ZeroValue",
@@ -163,10 +163,10 @@ describe("Enumeration", () => {
     }
 
     describe("should successfully deserialize valid JSON", () => {
-      it("with backingTypeName first specified in JSON", async () => {
+      it("with type first specified in JSON", async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "int",
+          type: "int",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -179,10 +179,10 @@ describe("Enumeration", () => {
         assertValidEnumeration(testEnumSansPrimType);
       });
 
-      it("with backingTypeName repeated in JSON", async () => {
+      it("with type repeated in JSON", async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "int",
+          type: "int",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -195,7 +195,7 @@ describe("Enumeration", () => {
         assertValidEnumeration(testEnum);
       });
 
-      it("with backingTypeName omitted in JSON", async () => {
+      it("with type omitted in JSON", async () => {
         const json = {
           ...baseJson,
           isStrict: false,
@@ -210,10 +210,10 @@ describe("Enumeration", () => {
         assertValidEnumeration(testEnum);
       });
 
-      it(`with backingTypeName="string"`, async () => {
+      it(`with type="string"`, async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "string",
+          type: "string",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -226,10 +226,10 @@ describe("Enumeration", () => {
         assertValidEnumeration(testEnumSansPrimType);
       });
 
-      it(`no name with backingTypeName="string"`, async () => {
+      it(`no name with type="string"`, async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "string",
+          type: "string",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -245,10 +245,10 @@ describe("Enumeration", () => {
         expect(testEnumSansPrimType.enumerators[1].name).eql("B");
       });
 
-      it(`no name with backingTypeName="int"`, async () => {
+      it(`no name with type="int"`, async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "int",
+          type: "int",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -265,21 +265,21 @@ describe("Enumeration", () => {
       });
     });
 
-    it("should throw for missing backingTypeName", async () => {
+    it("should throw for missing type", async () => {
       expect(testEnumSansPrimType).to.exist;
       const json: any = { ...baseJson };
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration is missing the required 'backingTypeName' attribute.`);
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration is missing the required 'type' attribute.`);
     });
 
-    it("should throw for invalid backingTypeName", async () => {
+    it("should throw for invalid type", async () => {
       expect(testEnum).to.exist;
       expect(testEnumSansPrimType).to.exist;
-      let json: any = { ...baseJson, backingTypeName: 0 };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be of type 'string'.`);
+      let json: any = { ...baseJson, type: 0 };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
 
-      json = { ...baseJson, backingTypeName: "ThisIsNotRight" };
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+      json = { ...baseJson, type: "ThisIsNotRight" };
+      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be either "int" or "string".`);
     });
 
     it("should throw for invalid isStrict", async () => {
@@ -288,14 +288,14 @@ describe("Enumeration", () => {
       await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
     });
 
-    it("should throw for mismatched backingTypeName", async () => {
+    it("should throw for mismatched type", async () => {
       expect(testEnum).to.exist;
-      let json: any = { ...baseJson, backingTypeName: "string" };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible backingTypeName. It must be "int", not "string".`);
+      let json: any = { ...baseJson, type: "string" };
+      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "int", not "string".`);
 
       expect(testStringEnum).to.exist;
-      json = { ...baseJson, backingTypeName: "int" };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible backingTypeName. It must be "string", not "int".`);
+      json = { ...baseJson, type: "int" };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "string", not "int".`);
     });
 
     it("should throw for enumerators not an array", async () => {
@@ -312,7 +312,7 @@ describe("Enumeration", () => {
     it("Duplicate name", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "int",
+        type: "int",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -326,7 +326,7 @@ describe("Enumeration", () => {
     it("Duplicate value", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "int",
+        type: "int",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -340,7 +340,7 @@ describe("Enumeration", () => {
     it("Basic test with number values", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "int",
+        type: "int",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -362,7 +362,7 @@ describe("Enumeration", () => {
     it("Basic test with string values", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -384,7 +384,7 @@ describe("Enumeration", () => {
     it("ECName comparison is case insensitive", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -398,7 +398,7 @@ describe("Enumeration", () => {
     it("Description is not a string", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -411,7 +411,7 @@ describe("Enumeration", () => {
     it("Get enumerator by name", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -431,7 +431,7 @@ describe("Enumeration", () => {
     it("Name is required", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -446,7 +446,7 @@ describe("Enumeration", () => {
     it("Value is required", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -459,7 +459,7 @@ describe("Enumeration", () => {
     it("Invalid ECName", async () => {
       const json = {
         ...baseJson,
-        backingTypeName: "string",
+        type: "string",
         isStrict: false,
         label: "SomeDisplayLabel",
         description: "A really long description...",
@@ -488,7 +488,7 @@ describe("Enumeration", () => {
       it("Simple int backingType test", async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "int",
+          type: "int",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -500,7 +500,7 @@ describe("Enumeration", () => {
         await testEnumSansPrimType.fromJson(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
-        expect(serialization.backingTypeName).eql("int");
+        expect(serialization.type).eql("int");
         expect(serialization.isStrict).to.equal(false);
         expect(serialization.label).eql("SomeDisplayLabel");
         expect(serialization.description).eql("A really long description...");
@@ -514,7 +514,7 @@ describe("Enumeration", () => {
       it("Simple string backingType test", async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "string",
+          type: "string",
           isStrict: true,
           enumerators: [
             { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description" },
@@ -524,7 +524,7 @@ describe("Enumeration", () => {
         await testEnumSansPrimType.fromJson(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
-        expect(serialization.backingTypeName).eql("string");
+        expect(serialization.type).eql("string");
         expect(serialization.isStrict).to.equal(true);
         expect(serialization.enumerators[0].name).eql("SixValue");
         expect(serialization.enumerators[0].value).eql("six");
@@ -536,10 +536,10 @@ describe("Enumeration", () => {
         expect(serialization.enumerators[1].label).eql("Eight label");
         expect(serialization.enumerators[1].description).eql("EightValue enumerator description");
       });
-      it(`No name with backingTypeName="string"`, async () => {
+      it(`No name with type="string"`, async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "string",
+          type: "string",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -556,10 +556,10 @@ describe("Enumeration", () => {
         expect(serialization.enumerators[1].name).eql("BValue");
         expect(serialization.enumerators[1].value).eql("B");
       });
-      it(`No name with backingTypeName="int"`, async () => {
+      it(`No name with type="int"`, async () => {
         const json = {
           ...baseJson,
-          backingTypeName: "int",
+          type: "int",
           isStrict: false,
           label: "SomeDisplayLabel",
           description: "A really long description...",

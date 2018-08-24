@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-tools",
-  "version": "0.118.0",
+  "version": "0.121.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {},
@@ -8,7 +8,8 @@
     "build": "tsc 1>&2",
     "clean": "",
     "docs": "",
-    "lint": ""
+    "lint": "",
+    "test": ""
   },
   "dependencies": {
     "cache-require-paths": "^0.3.0",
