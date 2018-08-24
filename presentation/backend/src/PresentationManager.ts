@@ -17,14 +17,30 @@ import { listReviver as nodePathElementReviver } from "@bentley/presentation-com
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
-import IBackendPresentationManager, { Props as IBackendPresentationManagerProps } from "./IBackendPresentationManager";
 
 /**
- * Properties that can be used to configure [[SingleClientPresentationManager]]
+ * Properties that can be used to configure [[PresentationManager]]
  *
  * @hidden
  */
-export interface Props extends IBackendPresentationManagerProps {
+export interface Props {
+  /**
+   * A list of directories containing presentation rulesets.
+   */
+  rulesetDirectories?: string[];
+
+  /**
+   * A list of directories containing locale-specific localized
+   * string files (in simplified i18next v3 format)
+   */
+  localeDirectories?: string[];
+
+  /**
+   * Sets the active locale to use when localizing presentation-related
+   * strings. It can later be changed through [[PresentationManager]].
+   */
+  activeLocale?: string;
+
   /** @hidden */
   addon?: NativePlatformDefinition;
 }
@@ -35,7 +51,7 @@ export interface Props extends IBackendPresentationManagerProps {
  *
  * @hidden
  */
-export default class SingleClientPresentationManager implements IBackendPresentationManager {
+export default class PresentationManager {
 
   private _props: Props;
   private _nativePlatform?: NativePlatformDefinition;
@@ -192,7 +208,7 @@ export default class SingleClientPresentationManager implements IBackendPresenta
   }
 
   private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
-    const { clientId, imodel, locale, ...genericOptionsStripped } = genericOptions;
+    const { imodel, locale, ...genericOptionsStripped } = genericOptions;
     const request = {
       requestId,
       params: {

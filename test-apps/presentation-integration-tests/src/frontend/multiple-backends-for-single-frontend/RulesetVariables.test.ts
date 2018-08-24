@@ -26,20 +26,28 @@ describe("Multiple backends for one frontend", async () => {
 
     after(async () => {
       await imodel.closeStandalone();
+      frontend.dispose();
       terminate();
     });
 
     it("Can use the same frontend-registered ruleset variables after backend is reset", async () => {
       const vars = frontend.vars("SimpleHierarchy");
-      const varId = faker.random.uuid();
-      const varValue = faker.random.words();
+      const var1: [string, string] = [faker.random.uuid(), faker.random.words()];
+      const var2: [string, number] = [faker.random.uuid(), faker.random.number()];
 
-      vars.setString(varId, varValue);
-      expect(await vars.getString(varId)).to.eq(varValue);
+      await vars.setString(var1[0], var1[1]);
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
 
       resetBackend();
 
-      expect(await vars.getString(varId)).to.eq(varValue);
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
+      await vars.setInt(var2[0], var2[1]);
+      expect(await vars.getInt(var2[0])).to.eq(var2[1]);
+
+      resetBackend();
+
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
+      expect(await vars.getInt(var2[0])).to.eq(var2[1]);
     });
 
   });

@@ -28,6 +28,7 @@ describe("Multiple backends for one frontend", async () => {
 
     after(async () => {
       await imodel.closeStandalone();
+      frontend.dispose();
       terminate();
     });
 

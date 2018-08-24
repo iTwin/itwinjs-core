@@ -4,7 +4,7 @@
 import Presentation from "@bentley/presentation-backend/lib/Presentation";
 
 export const resetBackend = () => {
-  const props = Presentation.manager.props;
+  const props = Presentation.initProps;
   Presentation.terminate();
   Presentation.initialize(props);
 };

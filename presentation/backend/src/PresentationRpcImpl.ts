@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
+import { Guid } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -17,11 +18,12 @@ import {
   ContentRpcRequestOptions,
   RulesetRpcRequestOptions,
   RulesetVariableRpcRequestOptions,
+  RpcRequestOptions,
 } from "@bentley/presentation-common/lib/PresentationRpcInterface";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import Presentation from "./Presentation";
 import RulesetVariablesManager from "./RulesetVariablesManager";
-import IBackendPresentationManager from "./IBackendPresentationManager";
+import PresentationManager from "./PresentationManager";
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -32,14 +34,23 @@ import IBackendPresentationManager from "./IBackendPresentationManager";
  * ``` ts
  * [[include:Backend.Initialization.RpcInterface]]
  * ```
+ *
+ * @hidden
  */
 export default class PresentationRpcImpl extends PresentationRpcInterface {
 
+  private _implId: string;
+
+  public constructor(id?: string) {
+    super();
+    this._implId = id || Guid.createValue();
+  }
+
   /**
-   * Get the [[IBackendPresentationManager]] used by this RPC impl.
+   * Get the [[PresentationManager]] used by this RPC impl.
    */
-  public getManager(): IBackendPresentationManager {
-    return Presentation.manager;
+  public getManager(clientId?: string): PresentationManager {
+    return Presentation.getManager(clientId);
   }
 
   private getIModel(token: IModelToken): IModelDb {
@@ -49,83 +60,116 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private toIModelDbOptions<TOptions extends RequestOptions<IModelToken>>(options: TOptions) {
-    return Object.assign({}, options, {
+  private toIModelDbOptions<TOptions extends (RpcRequestOptions & RequestOptions<IModelToken>)>(options: TOptions) {
+    const { clientId, knownBackendIds, ...requestOptions } = options as any;
+    return Object.assign({}, requestOptions, {
       imodel: this.getIModel(options.imodel),
     });
   }
 
-  public async getRootNodes(requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getRootNodes(this.toIModelDbOptions(requestOptions));
+  private verifyRequest(request: RpcRequestOptions) {
+    if (-1 === request.knownBackendIds.indexOf(this._implId))
+      throw new PresentationError(PresentationStatus.UnknownBackend, this._implId);
+  }
+
+  public async getRootNodes(requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> {
+    this.verifyRequest(requestOptions);
+    return [...await this.getManager(requestOptions.clientId).getRootNodes(this.toIModelDbOptions(requestOptions))];
   }
 
   public async getRootNodesCount(requestOptions: HierarchyRpcRequestOptions): Promise<number> {
-    return await this.getManager().getRootNodesCount(this.toIModelDbOptions(requestOptions));
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getRootNodesCount(this.toIModelDbOptions(requestOptions));
   }
 
-  public async getChildren(requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getChildren(this.toIModelDbOptions(requestOptions), parentKey);
+  public async getChildren(requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
+    this.verifyRequest(requestOptions);
+    return [...await this.getManager(requestOptions.clientId).getChildren(this.toIModelDbOptions(requestOptions), parentKey)];
   }
 
   public async getChildrenCount(requestOptions: HierarchyRpcRequestOptions, parentKey: Readonly<NodeKey>): Promise<number> {
-    return await this.getManager().getChildrenCount(this.toIModelDbOptions(requestOptions), parentKey);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getChildrenCount(this.toIModelDbOptions(requestOptions), parentKey);
   }
 
   public async getNodePaths(requestOptions: HierarchyRpcRequestOptions, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return await this.getManager().getNodePaths(this.toIModelDbOptions(requestOptions), paths, markedIndex);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getNodePaths(this.toIModelDbOptions(requestOptions), paths, markedIndex);
   }
 
   public async getFilteredNodePaths(requestOptions: HierarchyRpcRequestOptions, filterText: string): Promise<NodePathElement[]> {
-    return await this.getManager().getFilteredNodePaths(this.toIModelDbOptions(requestOptions), filterText);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getFilteredNodePaths(this.toIModelDbOptions(requestOptions), filterText);
   }
 
   public async getContentDescriptor(requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
-    const descriptor = await this.getManager().getContentDescriptor(this.toIModelDbOptions(requestOptions), displayType, keys, selection);
+    this.verifyRequest(requestOptions);
+    const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(this.toIModelDbOptions(requestOptions), displayType, keys, selection);
     if (descriptor)
       descriptor.resetParentship();
     return descriptor;
   }
 
   public async getContentSetSize(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return await this.getManager().getContentSetSize(this.toIModelDbOptions(requestOptions), descriptor, keys);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getContentSetSize(this.toIModelDbOptions(requestOptions), descriptor, keys);
   }
 
   public async getContent(requestOptions: Paged<ContentRpcRequestOptions>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const content: Content = await this.getManager().getContent(this.toIModelDbOptions(requestOptions), descriptor, keys);
+    this.verifyRequest(requestOptions);
+    const content: Content = await this.getManager(requestOptions.clientId).getContent(this.toIModelDbOptions(requestOptions), descriptor, keys);
     content.descriptor.resetParentship();
     return content;
   }
 
   public async getDistinctValues(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return await this.getManager().getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
   }
 
   public async getRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<[Ruleset, string] | undefined> {
-    const ruleset = await this.getManager().rulesets(requestOptions.clientId).get(rulesetId);
+    this.verifyRequest(requestOptions);
+    const ruleset = await this.getManager(requestOptions.clientId).rulesets().get(rulesetId);
     if (ruleset)
       return [ruleset.toJSON(), ruleset.hash];
     return undefined;
   }
 
   public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: Ruleset): Promise<string> {
-    return (await this.getManager().rulesets(requestOptions.clientId).add(ruleset)).hash;
+    this.verifyRequest(requestOptions);
+    return (await this.getManager(requestOptions.clientId).rulesets().add(ruleset)).hash;
+  }
+
+  public async addRulesets(requestOptions: RulesetRpcRequestOptions, rulesets: Ruleset[]): Promise<string[]> {
+    this.verifyRequest(requestOptions);
+    const rulesetsManager = this.getManager(requestOptions.clientId).rulesets();
+    const registeredRulesets = await Promise.all(rulesets.map((r) => rulesetsManager.add(r)));
+    return registeredRulesets.map((r) => r.hash);
   }
 
   public async removeRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string, hash: string): Promise<boolean> {
-    return await this.getManager().rulesets(requestOptions.clientId).remove([rulesetId, hash]);
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).rulesets().remove([rulesetId, hash]);
   }
 
   public async clearRulesets(requestOptions: RulesetRpcRequestOptions): Promise<void> {
-    return await this.getManager().rulesets(requestOptions.clientId).clear();
+    this.verifyRequest(requestOptions);
+    await this.getManager(requestOptions.clientId).rulesets().clear();
   }
 
-  public async setRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes, value: VariableValueJSON): Promise<void> {
-    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
-    return await vars.setValue(requestOptions.variableId, type, value);
+  public async getRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, id: string, type: VariableValueTypes): Promise<VariableValue> {
+    this.verifyRequest(requestOptions);
+    return await (this.getManager(requestOptions.clientId).vars(requestOptions.rulesetId) as RulesetVariablesManager).getValue(id, type);
   }
 
-  public async getRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes): Promise<VariableValueJSON> {
-    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
-    return await vars.getValue(requestOptions.variableId, type);
+  public async setRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
+    this.verifyRequest(requestOptions);
+    await (this.getManager(requestOptions.clientId).vars(requestOptions.rulesetId) as RulesetVariablesManager).setValue(id, type, value);
+  }
+
+  public async setRulesetVariableValues(requestOptions: RulesetVariableRpcRequestOptions, values: Array<[string, VariableValueTypes, VariableValue]>): Promise<void> {
+    this.verifyRequest(requestOptions);
+    const vars = this.getManager(requestOptions.clientId).vars(requestOptions.rulesetId) as RulesetVariablesManager;
+    await Promise.all(values.map((entry) => vars.setValue(entry[0], entry[1], entry[2])));
   }
 }

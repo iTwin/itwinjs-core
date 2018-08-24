@@ -9,7 +9,7 @@ const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import { using } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
-import PresentationManager from "@src/SingleClientPresentationManager";
+import PresentationManager from "@src/PresentationManager";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
 import RulesetManager from "@src/RulesetManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
@@ -31,9 +31,9 @@ import { KindOfQuantityInfo } from "@bentley/presentation-common";
 import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
 import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
 import "@helpers/Promises";
-import "./IModeHostSetup";
+import "./IModelHostSetup";
 
-describe("SingleClientPresentationManager", () => {
+describe("PresentationManager", () => {
 
   beforeEach(() => {
     IModelHost.shutdown();

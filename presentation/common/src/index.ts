@@ -11,6 +11,7 @@ export * from "./content";
 export * from "./hierarchy";
 export * from "./IPresentationManager";
 export { default as PresentationRpcInterface } from "./PresentationRpcInterface";
+export { default as RpcRequestsHandler } from "./RpcRequestsHandler";
 export * from "./rules";
 export { IRulesetVariablesManager } from "./IRulesetVariablesManager";
 export * from "./IRulesetManager";
