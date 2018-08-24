@@ -116,7 +116,7 @@ class WebMercatorTileLoader extends TileLoader {
   public mercatorToDb: Transform;
   constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number) {
     super();
-    const ecefLocation: EcefLocati9on = _iModel.ecefLocation;
+    const ecefLocation: EcefLocation = _iModel.ecefLocation!;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
     const projectExtents = _iModel.projectExtents;
@@ -142,12 +142,12 @@ class WebMercatorTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-    if (!this.providerInitialized) {
-      if (undefined === this.providerInitializing)
-        this.providerInitializing = this.imageryProvider.initialize();
-      await this.providerInitializing;
-      this.providerInitialized = true;
-      this.providerInitializing = undefined;
+    if (!this._providerInitialized) {
+      if (undefined === this._providerInitializing)
+        this._providerInitializing = this._imageryProvider.initialize();
+      await this._providerInitializing;
+      this._providerInitialized = true;
+      this._providerInitializing = undefined;
     }
 
     const missingArray = missingTiles.extractArray();
@@ -504,14 +504,14 @@ export class BackgroundMapState {
     }
 
     if ("BingProvider" === this._providerName) {
-      provider = new BingMapProvider(this.mapType);
+      this._provider = new BingMapProvider(this._mapType);
     } else if ("MapBoxProvider" === this._providerName) {
-      provider = new MapBoxProvider(this.mapType);
+      this._provider = new MapBoxProvider(this._mapType);
     }
-    if (this.provider === undefined)
+    if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(this.provider, this._iModel, JsonUtils.asDouble(this.groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this._provider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
@@ -529,11 +529,11 @@ export class BackgroundMapState {
   }
 
   public displayLogoImage(context: SceneContext) {
-    const logoImage: HTMLImageElement | undefined = this.provider!.getCopyrightImage();
+    const logoImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage();
     if (!logoImage)
       return;
 
-    if (this.logoImageAddedToDOM)
+    if (this._logoImageAddedToDOM)
       return;
 
     const vp: Viewport = context.viewport;
@@ -549,6 +549,6 @@ export class BackgroundMapState {
     logoDiv.appendChild(logoImage);
 
     // insert the image into the scene inside a div
-    this.logoImageAddedToDOM = true;
+    this._logoImageAddedToDOM = true;
   }
 }
