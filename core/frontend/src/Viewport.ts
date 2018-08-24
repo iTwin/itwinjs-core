@@ -932,7 +932,6 @@ export class Viewport {
       this.canvas.style.height = "100%";
       this.canvas.style.left = "0%";
       this.canvas.style.width = "100%";
-      this.canvas.style.z
       this.canvas.className = "imodeljs-canvas";
 
       if (enclosingDiv && !canvas)
