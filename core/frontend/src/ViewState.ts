@@ -21,13 +21,13 @@ import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
-import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree } from "./tile/TileTree";
+import { GraphicType } from "./render/GraphicBuilder";
 
 export const enum GridOrientationType {
   View = 0,
@@ -363,8 +363,6 @@ export abstract class ViewState extends ElementState {
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(_viewport: Viewport): void;
-
-  public abstract decorate(context: DecorateContext): void;
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64String): boolean;
@@ -1464,7 +1462,7 @@ export abstract class ViewState3d extends ViewState {
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
-    const builder = context.createWorldDecoration();
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     builder.activateGraphicParams(params);
 
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
@@ -1478,7 +1476,7 @@ export abstract class ViewState3d extends ViewState {
     const polyface = polyfaceBuilder.claimPolyface(false);
 
     builder.addPolyface(polyface, true);
-    context.addWorldDecoration(builder.finish());
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -1778,12 +1776,10 @@ export class SheetViewState extends ViewState2d {
         attachment.tree!.drawScene(context);
   }
 
-  private _pickableBorder = false; // ###TODO: Remove - testing pickable decorations
-
   /** Create a sheet border decoration graphic. */
-  private createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, this._pickableBorder ? undefined : viewContext);
-    const builder: GraphicBuilder = this._pickableBorder ? viewContext.createPickableDecoration(new Id64("0xffffff0000000001")) : viewContext.createViewBackground();
+  private createBorder(width: number, height: number, context: DecorateContext): RenderGraphic {
+    const border = SheetBorder.create(width, height, context);
+    const builder = context.createGraphicBuilder(GraphicType.ViewBackground);
     border.addToBuilder(builder);
     return builder.finish();
   }
@@ -1791,10 +1787,7 @@ export class SheetViewState extends ViewState2d {
   public decorate(context: DecorateContext): void {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      if (this._pickableBorder)
-        context.addWorldDecoration(border);
-      else
-        context.setViewBackground(border);
+      context.setViewBackground(border);
     }
   }
 

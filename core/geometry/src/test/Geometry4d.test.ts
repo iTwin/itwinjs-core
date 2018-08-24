@@ -15,6 +15,7 @@ import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { SmallSystem } from "../numerics/Polynomials";
 /* tslint:disable:no-console variable-name */
 
 /**
@@ -679,6 +680,27 @@ describe("Map4d", () => {
     pointB.w += 4;
     ck.testExactNumber(pointA.w + 4, pointB.w);
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ProjectiveLineIntersection", () => {
+    const ck = new bsiChecker.Checker();
+    const hA0 = Point4d.create(0, 0, 0, 1);
+    const hA1 = Point4d.create(3, 1, 0, 1);
+    const hB0 = Point4d.create(1, 0, 0, 1);
+    const hB1 = Point4d.create(1, 1, 0, 1);
+    for (const wA1 of [1, 1.1, 1.3]) {
+      for (const wB0 of [1, 0.4, 2]) {
+        hA1.w = wA1;
+        hB0.w = wB0;
+        const fractions = SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(hA0, hA1, hB0, hB1);
+        if (ck.testPointer(fractions, "expect solution of intersections") && fractions !== undefined) {
+          const hAX = hA0.interpolate(fractions.x, hA1);
+          const hBX = hB0.interpolate(fractions.y, hB1);
+          ck.testCoordinate(hAX.realDistanceXY(hBX)!, 0);
+        }
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 

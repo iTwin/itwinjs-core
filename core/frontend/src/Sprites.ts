@@ -38,8 +38,11 @@ export class Sprite implements IDisposable {
   /** The texture for this Sprite. If undefined, the Spite is not valid. */
   public texture?: RenderTexture;
 
-  /** Dispose of this Sprite. Disposes of texture, if present. */
-  public dispose() { this.texture = dispose(this.texture); }
+  /** Destroy of this Sprite. Disposes of texture, if present. */
+  public destroy() { this.texture = dispose(this.texture); }
+
+  /** @hidden NOTE: Sprites are shared, so they can't be disposed when they are used for decorations. They are freed by [[destroy]] */
+  public dispose() { }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
    * @param filePath The file path of the PNG file holding the sprite texture (relative to the assets directory.)
@@ -87,7 +90,7 @@ export class IconSprites {
     return sprite;
   }
   /** Empty the cache, disposing all existing Sprites. */
-  public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.dispose()); this._sprites.clear(); }
+  public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.destroy()); this._sprites.clear(); }
 }
 
 /**
@@ -104,7 +107,6 @@ export class SpriteLocation {
   public sprite?: Sprite;
   /** The location of the sprite, in *view* coordinates. */
   private readonly _viewLocation = new Point3d();
-  private _transparency = 0;
 
   public get isActive(): boolean { return this._viewport !== undefined; }
 
@@ -121,11 +123,10 @@ export class SpriteLocation {
    * @param location The position, in world coordinates
    * @param transparency The transparency to draw the Sprite (0=opaque, 255=invisible)
    */
-  public activate(sprite: Sprite, viewport: Viewport, location: XYAndZ, transparency: number): void {
+  public activate(sprite: Sprite, viewport: Viewport, location: XYAndZ, _transparency: number): void {
     viewport.invalidateDecorations();
     this._viewport = viewport;
     this.sprite = sprite;
-    this._transparency = transparency;
     this.setLocationWorld(location);
   }
 
@@ -142,6 +143,6 @@ export class SpriteLocation {
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
   public decorate(context: DecorateContext) {
     if (context.viewport === this._viewport && this.sprite)
-      context.addSprite(this.sprite, this._viewLocation, Vector3d.unitX(), this._transparency);
+      context.addSprite(this.sprite, this._viewLocation, Vector3d.unitX());
   }
 }

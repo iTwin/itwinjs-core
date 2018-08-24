@@ -1064,7 +1064,7 @@ export class Vector3d extends XYZ {
       + this.y * (dw * y - pointA.y)
       + this.z * (dw * z - pointA.z);
   }
-
+  /** Return the dot product of the instance and vectorB, using only the x and y parts. */
   public dotProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.x + this.y * vectorB.y;
   }
@@ -1078,12 +1078,14 @@ export class Vector3d extends XYZ {
     return this.x * x + this.y * y + this.z * z;
   }
 
+  /** Return the triple product of the instance, vectorB, and vectorC  */
   public tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number {
     return Geometry.tripleProduct(this.x, this.y, this.z,
       vectorB.x, vectorB.y, vectorB.z,
       vectorC.x, vectorC.y, vectorC.z);
   }
 
+  /** Return the cross product of the instance and vectorB, using only the x and y parts. */
   public crossProductXY(vectorB: Vector3d): number {
     return this.x * vectorB.y - this.y * vectorB.x;
   }
@@ -1300,7 +1302,7 @@ export class YawPitchRollAngles {
       s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
       s1, c1 * s2, c1 * c2,
       result,
-    );
+      );
   }
   /** @returns Return the largest angle in radians */
   public maxAbsRadians(): number {
@@ -1329,7 +1331,7 @@ export class YawPitchRollAngles {
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
       this.roll.radians - other.roll.radians,
-    );
+      );
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number { return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees); }
@@ -1579,18 +1581,18 @@ export class Vector2d extends XY implements BeJSONFunctions {
     }
     return new Vector2d(point1.x - point0.x, point1.y - point0.y);
   }
-/**
- * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
- * @param unitPerpA unit perpendicular to incoming direction
- * @param unitPerpB  unit perpendicular to outgoing direction
- * @param offset offset distance
- */
+  /**
+   * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
+   * @param unitPerpA unit perpendicular to incoming direction
+   * @param unitPerpB  unit perpendicular to outgoing direction
+   * @param offset offset distance
+   */
   public static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined {
     let bisector: Vector2d | undefined = unitPerpA.plus(unitPerpB);
     bisector = bisector.normalize();
     if (bisector) {
       const c = offset * bisector.dotProduct(unitPerpA);
-      return bisector.safeDivideOrNull (c);
+      return bisector.safeDivideOrNull(c);
     }
     return undefined;
   }

@@ -29,8 +29,8 @@ import {
   RenderMode,
   SilhouetteEdgeArgs,
   OctEncodedNormalPair,
+  EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData,
 } from "@bentley/imodeljs-common";
-import { EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";

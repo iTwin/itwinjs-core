@@ -5,12 +5,12 @@
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
-import { JsonUtils, Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
 
 export const enum ACSType {
@@ -214,8 +214,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
       const xVec = viewRMatrix.getRow(0);
       const yVec = viewRMatrix.getRow(1);
 
-      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(xVec);
-      builder.localToWorldTransform.matrix.multiplyTransposeVectorInPlace(yVec);
+      builder.placement.matrix.multiplyTransposeVectorInPlace(xVec);
+      builder.placement.matrix.multiplyTransposeVectorInPlace(yVec);
 
       xVec.normalize(xVec);
       yVec.normalize(yVec);
@@ -261,7 +261,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   private _pickableOverlay: boolean = false; // ###TODO Remove - testing only
 
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
-  private createGraphic(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
+  private createGraphicBuilder(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
     const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
     const drawOrigin = this.getOrigin();
 
@@ -282,20 +282,18 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
-    const graphic = this._pickableOverlay ? context.createPickableDecoration(new Id64("0xffffff0000000003"), transform) : context.createWorldOverlay(transform);
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._pickableOverlay ? "0xffffff0000000003" : undefined);
     const vp = context.viewport;
-    this.addAxis(graphic, 0, options, vp);
-    this.addAxis(graphic, 1, options, vp);
-    this.addAxis(graphic, 2, options, vp);
-
-    return graphic;
+    this.addAxis(builder, 0, options, vp);
+    this.addAxis(builder, 1, options, vp);
+    this.addAxis(builder, 2, options, vp);
+    return builder;
   }
 
   public display(context: DecorateContext, options: ACSDisplayOptions) {
-    const graphic = this.createGraphic(context, options);
-    if (!graphic)
-      return;
-    context.addWorldOverlay(graphic.finish());
+    const builder = this.createGraphicBuilder(context, options);
+    if (undefined !== builder)
+      context.addDecorationFromBuilder(builder);
   }
 }
 

@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 23 Aug 2018 15:25:49 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Aug 2018 12:49:09 GMT and should not be manually modified.
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+### Updates
+
+- Constructor for Viewport now takes an HTML div as the argument, creates the canvas, and adds it to the div. Bing logo now drawn when Bing background maps are drawn.
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+### Updates
+
+- rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager.
 
 ## 0.119.0
 Thu, 23 Aug 2018 15:25:49 GMT

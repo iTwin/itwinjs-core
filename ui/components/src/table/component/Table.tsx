@@ -10,7 +10,7 @@ import { DisposableList, Guid } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { TableDataProvider, ColumnDescription, RowItem } from "../TableDataProvider";
-import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments } from "../../dragdrop";
+import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
 import { DragDropRow } from "./DragDropRowRenderer";
 import "./Grid.scss";
 
@@ -28,14 +28,14 @@ export interface TableProps {
   /** Callback for when rows are deselected */
   onRowsDeselected?: (rows: RowItem[]) => boolean;
 
+  dragProps?: DragSourceProps;
+  dropProps?: TableDropTargetProps;
+}
+
+/** Properties for the Table's DropTarget. */
+export interface TableDropTargetProps extends DropTargetProps {
+  /** Used for table components that allow dropping inside. Ie. [[BreadcrumbDetails]]. */
   canDropOn?: boolean;
-  onDropTargetDrop?: (data: DropTargetArguments) => DropTargetArguments;
-  onDropTargetOver?: (data: DropTargetArguments) => void;
-  canDropTargetDrop?: (data: DropTargetArguments) => boolean;
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
-  objectType?: string | ((data: any) => string);
-  objectTypes?: string[];
 }
 
 interface TableState {
@@ -360,12 +360,9 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public render() {
-    const {
-      onDropTargetOver, onDropTargetDrop, canDropTargetDrop,
-      onDragSourceBegin, onDragSourceEnd,
-    } = this.props;
-    if (onDropTargetOver || onDropTargetDrop || canDropTargetDrop ||
-      onDragSourceBegin || onDragSourceEnd) {
+    const { dragProps: drag, dropProps: drop } = this.props;
+    if ((drag && (drag.onDragSourceBegin || drag.onDragSourceEnd)) ||
+      (drop && (drop.onDropTargetOver || drop.onDropTargetDrop))) {
       // tslint:disable-next-line:variable-name
       const DragDropWrapper =
         withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
@@ -374,26 +371,76 @@ export class Table extends React.Component<TableProps, TableState> {
             return (<div className="react-data-grid-wrapper" {...props} />);
           }
         });
+
+      const dropProps: TableDropTargetProps = {};
+      if (this.props.dropProps) {
+        const {onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn} = this.props.dropProps;
+        dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
+            args.dropLocation = this.props.dataProvider;
+            return onDropTargetDrop ? onDropTargetDrop(args) : args;
+        };
+        dropProps.onDropTargetOver = (args: DropTargetArguments) => {
+          args.dropLocation = this.props.dataProvider;
+          onDropTargetOver && onDropTargetOver(args);
+        };
+        dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
+          args.dropLocation = this.props.dataProvider;
+          return canDropTargetDrop ? canDropTargetDrop(args) : true;
+        };
+        dropProps.objectTypes = objectTypes;
+        dropProps.canDropOn = canDropOn;
+      }
+      const dragProps: DragSourceProps = {};
+      if (this.props.dragProps) {
+        const {onDragSourceBegin, onDragSourceEnd, objectType} = this.props.dragProps;
+        dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
+          args.parentObject = this.props.dataProvider;
+          if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
+            const { row } = args;
+            if (row < this.state.rowsCount && this.state.rows[row]) {
+              const rowItem = this.state.rows[row];
+              if (rowItem !== undefined && rowItem.item !== undefined) {
+                args.dataObject = rowItem.item.extendedData;
+                args.dataObject.id = rowItem.item.key;
+                args.dataObject.parentId = this.props.dataProvider;
+              }
+            }
+          }
+          if (onDragSourceBegin) return onDragSourceBegin(args);
+          return args;
+        };
+        dragProps.onDragSourceEnd = (args: DragSourceArguments) => {
+          args.parentObject = this.props.dataProvider;
+          if (onDragSourceEnd) onDragSourceEnd(args);
+        };
+        dragProps.objectType = (data?: any) => {
+          if (objectType) {
+            if (typeof objectType === "function") {
+              if (data) {
+                const { row } = data;
+                if (row >= 0 && row < this.state.rows.length) {
+                  const rowItem = this.state.rows[row];
+                  if (rowItem !== undefined && rowItem.item !== undefined) {
+                    const d = rowItem.item.extendedData || {};
+                    d.id = rowItem.item.key;
+                    d.parentId = this.props.dataProvider;
+                    return objectType(d);
+                  }
+                }
+              }
+            } else {
+              return objectType;
+            }
+          }
+          return "";
+        };
+      }
       return (
         <DragDropWrapper
           dropStyle={{
             height: "100%",
           }}
-          onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-            args.dropLocation = this.props.dataProvider;
-            if (onDropTargetDrop) return onDropTargetDrop(args);
-            return args;
-          }}
-          onDropTargetOver={(args: DropTargetArguments) => {
-            args.dropLocation = this.props.dataProvider;
-            if (onDropTargetOver) onDropTargetOver(args);
-          }}
-          canDropTargetDrop={(args: DropTargetArguments) => {
-            args.dropLocation = this.props.dataProvider;
-            if (canDropTargetDrop) return canDropTargetDrop(args);
-            return true;
-          }}
-          objectTypes={this.props.objectTypes}
+          dropProps={dropProps}
         >
           <ReactDataGrid
             columns={this.state.columns}
@@ -405,63 +452,8 @@ export class Table extends React.Component<TableProps, TableState> {
             rowHeight={25}
             rowRenderer={
               <DragDropRow
-                canDropOn={this.props.canDropOn}
-                onDropTargetDrop={(args: DropTargetArguments): DropTargetArguments => {
-                  args.dropLocation = this.props.dataProvider;
-                  if (onDropTargetDrop) return onDropTargetDrop(args);
-                  return args;
-                }}
-                onDropTargetOver={(args: DropTargetArguments) => {
-                  args.dropLocation = this.props.dataProvider;
-                  if (onDropTargetOver) onDropTargetOver(args);
-                }}
-                canDropTargetDrop={(args: DropTargetArguments) => {
-                  args.dropLocation = this.props.dataProvider;
-                  if (canDropTargetDrop) return canDropTargetDrop(args);
-                  return true;
-                }}
-                onDragSourceBegin={(args: DragSourceArguments) => {
-                  args.parentObject = this.props.dataProvider;
-                  if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
-                    const { row } = args;
-                    if (row < this.state.rowsCount && this.state.rows[row]) {
-                      const rowItem = this.state.rows[row];
-                      if (rowItem !== undefined && rowItem.item !== undefined) {
-                        args.dataObject = rowItem.item.extendedData;
-                        args.dataObject.id = rowItem.item.key;
-                        args.dataObject.parentId = this.props.dataProvider;
-                      }
-                    }
-                  }
-                  if (onDragSourceBegin) return onDragSourceBegin(args);
-                  return args;
-                }}
-                onDragSourceEnd={(args: DragSourceArguments) => {
-                  args.parentObject = this.props.dataProvider;
-                  if (onDragSourceEnd) onDragSourceEnd(args);
-                }}
-                objectType={(data: any) => {
-                  if (this.props.objectType) {
-                    if (typeof this.props.objectType === "function") {
-                      if (data) {
-                        const { row } = data;
-                        if (row >= 0 && row < this.state.rows.length) {
-                          const rowItem = this.state.rows[row];
-                          if (rowItem !== undefined && rowItem.item !== undefined) {
-                            const d = rowItem.item.extendedData || {};
-                            d.id = rowItem.item.key;
-                            d.parentId = this.props.dataProvider;
-                            return this.props.objectType(d);
-                          }
-                        }
-                      }
-                    } else {
-                      return this.props.objectType;
-                    }
-                  }
-                  return "";
-                }}
-                objectTypes={this.props.objectTypes}
+                dropProps={dropProps}
+                dragProps={dragProps}
               />
             }
             rowSelection={{

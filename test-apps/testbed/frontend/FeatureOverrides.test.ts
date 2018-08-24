@@ -14,8 +14,8 @@ import { WebGLTestContext } from "./WebGLTestContext";
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  public constructor(canvas: HTMLCanvasElement, viewState: ViewState) {
-    super(canvas, viewState);
+  public constructor(enclosingDiv: HTMLDivElement, viewState: ViewState) {
+    super(enclosingDiv, viewState);
     this.setupFromView();
   }
 }
@@ -33,10 +33,10 @@ describe("FeatureOverrides tests", () => {
   let spatialView: SpatialViewState;
   let vp: TestViewport;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     WebGLTestContext.startup();
@@ -56,7 +56,7 @@ describe("FeatureOverrides tests", () => {
     }
 
     const vpView = spatialView.clone<SpatialViewState>();
-    vp = new TestViewport(canvas!, vpView);
+    vp = new TestViewport(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
@@ -82,7 +82,7 @@ describe("FeatureOverrides tests", () => {
     }
 
     const vpView = spatialView.clone<SpatialViewState>();
-    vp = new TestViewport(canvas!, vpView);
+    vp = new TestViewport(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);

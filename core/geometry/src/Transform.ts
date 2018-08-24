@@ -2025,6 +2025,19 @@ export class Transform implements BeJSONFunctions {
     }
     return new Transform(origin, matrix);
   }
+  /** Create a transform with complete contents given */
+  public static createRowValues(
+    qxx: number, qxy: number, qxz: number, ax: number,
+    qyx: number, qyy: number, qyz: number, ay: number,
+    qzx: number, qzy: number, qzz: number, az: number,
+    result?: Transform): Transform {
+    if (result) {
+      result._origin.set(ax, ay, az);
+      result._matrix.setRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz);
+      return result;
+    }
+    return new Transform(Point3d.create (ax, ay, az), Matrix3d.createRowValues (qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
+  }
   /**
    * create a Transform with translation provided by x,y,z parts.
    * @param x x part of translation

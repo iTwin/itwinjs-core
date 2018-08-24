@@ -4,21 +4,12 @@
 /** @module DragDrop */
 import * as React from "react";
 import { DropTarget, DropTargetMonitor, ConnectDropTarget, DropTargetConnector } from "react-dnd";
-import { DropTargetArguments, DragSourceArguments } from "./DragDropDef";
+import { DropTargetArguments, DragSourceArguments, DropTargetProps } from "./DragDropDef";
 
 /** React properties for withDropTarget Higher-Order Component */
 export interface WithDropTargetProps {
-  /**
-   * Triggered when item is dropped on wrapped component.
-   * Return value is passed to the DragSource's onDragSourceEnd callback.
-   */
-  onDropTargetDrop?: (args: DropTargetArguments) => DragSourceArguments;
-  /** Triggered when item is dragged over wrapped component. */
-  onDropTargetOver?: (args: DropTargetArguments) => void;
-  /** Determines whether item may be dropped on DropTarget. */
-  canDropTargetDrop?: (args: DropTargetArguments) => boolean;
-  /** List of allowed object types */
-  objectTypes?: string[] | (() => string[]);
+  /** Properties and callbacks for DropTarget */
+  dropProps: DropTargetProps;
   /** Whether to propagate to parent DropTargets. */
   shallow?: boolean;
   /** Style properties for dropTarget wrapper element */
@@ -45,12 +36,12 @@ export const withDropTarget = <ComponentProps extends {}>(
 ) => {
   type Props = ComponentProps & WithDropTargetProps;
 
-  return DropTarget((props: Props): string[] => {
-    if (props.objectTypes) {
-      if (typeof props.objectTypes === "function")
-        return props.objectTypes();
+  return DropTarget((props: Props): Array<string | symbol> => {
+    if (props.dropProps.objectTypes) {
+      if (typeof props.dropProps.objectTypes === "function")
+        return props.dropProps.objectTypes();
       else
-        return props.objectTypes;
+        return props.dropProps.objectTypes;
     }
     return [];
     }, {
@@ -78,12 +69,13 @@ export const withDropTarget = <ComponentProps extends {}>(
           sourceClientOffset,
           initialSourceClientOffset,
         };
-        if (props.onDropTargetDrop) return props.onDropTargetDrop(dropTargetArgs);
+        if (props.dropProps.onDropTargetDrop)
+          return props.dropProps.onDropTargetDrop(dropTargetArgs);
       }
       return;
     },
     hover(props: Props, monitor: DropTargetMonitor, component: any) {
-      if (monitor.isOver({ shallow: props.shallow || false }) && props.onDropTargetOver) {
+      if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.onDropTargetOver) {
         const dragSourceArgs = monitor.getItem() as DragSourceArguments;
         let dropRect: ClientRect = {} as ClientRect;
         const componentElement = component.rootElement;
@@ -106,11 +98,11 @@ export const withDropTarget = <ComponentProps extends {}>(
           sourceClientOffset,
           initialSourceClientOffset,
         };
-        props.onDropTargetOver(dropTargetArgs);
+        props.dropProps.onDropTargetOver(dropTargetArgs);
       }
     },
     canDrop(props: Props, monitor: DropTargetMonitor) {
-      if (monitor.isOver({ shallow: props.shallow || false }) && props.canDropTargetDrop) {
+      if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.canDropTargetDrop) {
         const dragSourceArgs = monitor.getItem() as DragSourceArguments;
         const clientOffset = monitor.getClientOffset() || {x: 0, y: 0};
         const initialClientOffset = monitor.getInitialClientOffset() || {x: 0, y: 0};
@@ -126,7 +118,7 @@ export const withDropTarget = <ComponentProps extends {}>(
           sourceClientOffset,
           initialSourceClientOffset,
         };
-        return props.canDropTargetDrop(dropTargetArgs);
+        return props.dropProps.canDropTargetDrop(dropTargetArgs);
       }
       return true;
     },
@@ -142,7 +134,7 @@ export const withDropTarget = <ComponentProps extends {}>(
     public rootElement: HTMLDivElement | null = null;
     public render() {
       const {
-        onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, shallow,
+        dropProps, shallow,
         connectDropTarget,
         isOver, canDrop, item, type,
         dropStyle,

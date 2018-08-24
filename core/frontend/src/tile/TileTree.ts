@@ -169,7 +169,7 @@ export class Tile implements IDisposable {
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
-      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      const builder = context.createGraphicBuilder(GraphicType.Scene);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addRangeBox(this.contentRange);
       this._rangeGraphic = builder.finish();
