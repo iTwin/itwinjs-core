@@ -922,13 +922,20 @@ export class Viewport {
     if (canvas) {
       this.canvas = canvas;
     } else {
-      this.canvas = document.createElement("canvas");
+      // if there's already a canvas, reuse it.
+      if (enclosingDiv)
+        canvas = Viewport.findiModelCanvas(enclosingDiv);
+
+      this.canvas = canvas ? canvas : document.createElement("canvas");
       this.canvas.style.position = "relative";
       this.canvas.style.top = "0%";
       this.canvas.style.height = "100%";
       this.canvas.style.left = "0%";
       this.canvas.style.width = "100%";
-      if (enclosingDiv)
+      this.canvas.style.z
+      this.canvas.className = "imodeljs-canvas";
+
+      if (enclosingDiv && !canvas)
         enclosingDiv.appendChild(this.canvas);
     }
 
@@ -936,6 +943,18 @@ export class Viewport {
     this.changeView(viewState);
     this.setCursor();
     this.saveViewUndo();
+  }
+
+  /* finds the canvas child of a div that has the right class to be the view canvas. */
+  private static findiModelCanvas(enclosingDiv: HTMLDivElement): HTMLCanvasElement | undefined {
+    const childElements: HTMLCollection = enclosingDiv.children;
+    for (const child of childElements) {
+      for (const className of child.classList) {
+        if (className === "imodeljs-canvas")
+          return child as HTMLCanvasElement;
+      }
+    }
+    return undefined;
   }
 
   /** Determine whether continuous rendering is enabled. */
