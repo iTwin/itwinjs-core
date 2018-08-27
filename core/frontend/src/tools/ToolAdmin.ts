@@ -682,6 +682,7 @@ export class ToolAdmin {
 
     const context = new DynamicsContext(ev.viewport);
     this.activeTool.onDynamicFrame(ev, context);
+    context.changeDynamics();
   }
 
   /** This is invoked on a timer to update  input state and forward events to tools. */
