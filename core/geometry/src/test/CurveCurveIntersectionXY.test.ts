@@ -9,6 +9,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { Matrix4d, Map4d } from "../numerics/Geometry4d";
 import { Transform } from "../Transform";
+import { Arc3d } from "../curve/Arc3d";
 
 function createSamplePerspectiveMaps(): Map4d[] {
   const origin = Point3d.create(-20, -20, -10);
@@ -66,6 +67,31 @@ describe("CurveCurve", () => {
       const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
       const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, segment1, false);
       testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
+    }
+    ck.checkpoint("CurveCurve.LineLine");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("LineArcMapped", () => {
+    const ck = new Checker();
+    for (const map of createSamplePerspectiveMaps()) {
+      for (const dz of [0, 0.3]) {
+        const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
+        const arc1 = Arc3d.create(Point3d.create(3, 1, 1), Vector3d.create(5, 1, 1), Vector3d.create(-1, 7, 2));
+        const f0 = 0.0;
+        const f1 = 0.25;
+        const pointA = arc1.fractionToPoint(f0);
+        const pointB = arc1.fractionToPoint(f1);
+        pointA.z += dz;
+        pointB.z += 0.1 * dz;
+        const segment0 = LineSegment3d.create(pointA, pointB);
+        const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, true, arc1, true);
+        testIntersectionsXY(ck, worldToLocal, intersectionsAB, 2, 2);
+
+        const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, arc1, true, segment0, true);
+        testIntersectionsXY(ck, worldToLocal, intersectionsBA, 2, 2);
+
+      }
     }
     ck.checkpoint("CurveCurve.LineLine");
     expect(ck.getNumErrors()).equals(0);

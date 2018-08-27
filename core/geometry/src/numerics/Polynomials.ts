@@ -1247,6 +1247,48 @@ export class SmallSystem {
   }
 
   /**
+   * Return the line fraction at which the (homogeneous) line is closest to a space point as viewed in xy only.
+   * @param hA0 homogeneous start point of line a
+   * @param hA1 homogeneous end point of line a
+   * @param spacePoint homogeneous point in space
+   */
+  public static lineSegment3dHXYClosestPointUnbounded(hA0: Point4d, hA1: Point4d, spacePoint: Point4d): number | undefined {
+    // Considering only x,y,w parts....
+    // weighted difference of (A1 w0 - A0 w1) is (cartesian) tangent vector along the line as viewed.
+    // The perpendicular (pure vector) W = (-y,x) flip is the direction of projection
+    // Point Q along A is (in full homogeneous)  `(1-lambda) A0 + lambda 1 A1`
+    // PointQ is colinear with spacePoint and and W when the xyw homogeneous determinant | Q W spacePoint | is zero.
+    const tx = hA1.x * hA0.w - hA0.x * hA1.w;
+    const ty = hA1.y * hA0.w - hA0.y * hA1.w;
+    const det0 = Geometry.tripleProduct(
+      hA0.x, -ty, spacePoint.x,
+      hA0.y, tx, spacePoint.y,
+      hA0.w, 0, spacePoint.w);
+    const det1 = Geometry.tripleProduct(
+      hA1.x, -ty, spacePoint.x,
+      hA1.y, tx, spacePoint.y,
+      hA1.w, 0, spacePoint.w);
+    return Geometry.conditionalDivideFraction(-det0, det1 - det0);
+  }
+
+  /**
+   * Return the line fraction at which the line is closest to a space point as viewed in xy only.
+   * @param pointA0 start point
+   * @param pointA1 end point
+   * @param spacePoint homogeneous point in space
+   */
+  public static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
+    // Considering only x,y parts....
+    const ux = pointA1.x - pointA0.x;
+    const uy = pointA1.y - pointA0.y;
+    const uu = ux * ux + uy * uy;
+    const vx = spacePoint.x - pointA0.x;
+    const vy = spacePoint.y - pointA0.y;
+    const uv = ux * vx + uy * vy;
+    return Geometry.conditionalDivideFraction(uv, uu);
+  }
+
+  /**
    * Return true if lines (a0,a1) to (b0, b1) have closest approach (go by each other) in 3d
    * Return the fractional (not xy) coordinates in result.x, result.y
    * @param a0 start point of line a
