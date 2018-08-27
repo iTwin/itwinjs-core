@@ -7,8 +7,8 @@ import * as React from "react";
 import Tree from "./Tree";
 import { InspireTreeNode, InspireTreeNodeData } from "./BeInspireTree";
 import { TreeDataProvider, TreeNodeItem } from "../TreeDataProvider";
+import { SelectionMode } from "../../common/selection/SelectionModes";
 import { DropTargetArguments, DragSourceArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
-import * as _ from "lodash";
 
 /** Signature for the Selected Node predicate */
 export type SelectedNodePredicate = (node: TreeNodeItem) => boolean;
@@ -20,7 +20,9 @@ export interface DataTreeProps {
   dataProvider: TreeDataProvider;
 
   expandedNodes?: string[];
-
+  selectionMode?: SelectionMode;
+  objectType?: string | ((data: any) => string);
+  objectTypes?: string[];
   selectedNodes?: string[] | SelectedNodePredicate;
   onNodesSelected?: (nodes: TreeNodeItem[], replace: boolean) => void;
   onNodesDeselected?: (nodes: TreeNodeItem[]) => void;
@@ -32,7 +34,7 @@ interface InspireTreeNavNodeData extends InspireTreeNodeData {
   _treeNode: TreeNodeItem;
 }
 
-export interface InspireTreeNavNode extends InspireTreeNode {
+interface InspireTreeNavNode extends InspireTreeNode {
   _treeNode: TreeNodeItem;
 }
 
@@ -54,16 +56,6 @@ export default class DataTree extends React.Component<DataTreeProps> {
     };
   }
 
-  public shouldComponentUpdate(nextProps: DataTreeProps): boolean {
-    if (_.isEqual(this.props.expandedNodes, nextProps.expandedNodes)
-      && this.props.dataProvider === nextProps.dataProvider
-      && _.isEqual(this.props.selectedNodes, nextProps.selectedNodes)
-      && this.props.onNodesDeselected === nextProps.onNodesDeselected
-      && this.props.onNodesSelected === nextProps.onNodesSelected)
-      return false;
-    return true;
-  }
-
   public componentDidMount() {
     this.props.dataProvider.onTreeNodeChanged &&
       this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
@@ -75,6 +67,7 @@ export default class DataTree extends React.Component<DataTreeProps> {
   private _onTreeNodeChanged = () => {
     this.forceUpdate();
   }
+
   public render() {
     const getChildNodes = async (parent: InspireTreeNavNode) => {
       const treeNodes = await this.props.dataProvider.getChildNodes(parent._treeNode, { size: 9999, start: 0 });
@@ -201,6 +194,7 @@ export default class DataTree extends React.Component<DataTreeProps> {
         dragProps={dragProps}
         dropProps={dropProps}
         expandedNodes={this.props.expandedNodes}
+        selectionMode={this.props.selectionMode}
       />
     );
   }

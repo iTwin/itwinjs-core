@@ -2,6 +2,7 @@ div.react-data-grid-wrapper {
   /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
+  user-select: none;
 }
 
 .react-grid-Canvas {
@@ -46,12 +47,17 @@ div.react-data-grid-wrapper {
   width: fit-content;
 }
 
-.react-grid-Row:hover, .react-grid-Row:hover * {
+.is-hover-enabled .react-grid-Row:hover,.is-hover-enabled .react-grid-Row:hover * {
   background: #e4f5fd !important;
 }
 
 .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
   background: #a6d7f5 !important;
+}
+
+.react-grid-Cell {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 .react-grid-Cell--locked:last-of-type {
@@ -117,4 +123,40 @@ div.react-data-grid-wrapper {
 .angry-text{
   font-weight: 400;
   color: red;
+}
+
+.row, .row * {
+  width: 100%;
+  height: 100%;
+}
+
+.cell, .cell * {
+  padding-left: 8px;
+  padding-right: 8px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top:0px;
+  left:0px;
+  background-color: #F9F9F9;
+  user-select: none;
+}
+
+.cell.is-selected {
+  background-color: #a6d7f5;
+}
+
+.cell.is-hover-enabled:hover {
+  background: #e4f5fd !important;
+}
+
+.react-grid-Cell__value {
+  position: absolute;
+  width:100%;
+  height:100%;
+}
+
+.icon {
+  padding-left: 0px;
+  background: inherit;
 }

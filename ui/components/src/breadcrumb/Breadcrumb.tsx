@@ -732,9 +732,10 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
             dataProvider={this.state.table}
             dragProps={dragProps}
             dropProps={dropProps}
-            onRowsSelected={(rows: RowItem[], replace: boolean) => {
-              if (rows.length > 0) {
-                const row = rows[0] as DataRowItem;
+            onRowsSelected={async (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => {
+              const iteratorResult = await rowIterator.next();
+              if (!iteratorResult.done) {
+                const row = iteratorResult.value as DataRowItem;
                 if ("_node" in row && row._node && row._node.hasChildren) {
                   this.props.path.setCurrentNode(row._node);
                   if (dataProvider)

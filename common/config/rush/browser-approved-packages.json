@@ -206,6 +206,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "mocha-multi-reporters",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "mocha-tldr-reporter",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },

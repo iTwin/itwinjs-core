@@ -44,6 +44,7 @@ export class BeInspireTree {
       data: dataProvider,
       selection: {
         multiple: true,
+        autoDeselect: false,
         // wip: expose other properties through props
       },
     } as InspireTreeTypes.Config);
@@ -122,6 +123,53 @@ export class BeInspireTree {
 
   public get expandedNodeIds(): string[] {
     return this._tree.expanded().map((n: InspireTreeNode) => n.id!);
+  }
+
+  /**
+   * Deselects all loaded nodes.
+   */
+  public deselectAll(): void {
+    this._tree.mute(["node.selected", "node.deselected"]);
+    this._tree.deselectDeep();
+    this._tree.unmute(["node.selected", "node.deselected"]);
+  }
+
+  /**
+   * Selects all nodes between two nodes including the nodes passed as parameters.
+   * @return Selected nodes.
+   */
+  public selectBetween(node1: InspireTreeNode, node2: InspireTreeNode): InspireTreeNode[] {
+    this._tree.mute(["node.selected", "node.deselected"]);
+    const nodes = this._tree.visible();
+    let nodeFound = false;
+    let secondNode: InspireTreeNode | undefined;
+    const selectedNodes: InspireTreeNode[] = [];
+
+    for (const n of nodes) {
+      if (!nodeFound) {
+        if (n === node1) {
+          secondNode = node2;
+          nodeFound = true;
+        } else if (n === node2) {
+          secondNode = node1;
+          nodeFound = true;
+        }
+      }
+
+      if (nodeFound && !n.selected()) {
+        n.select();
+        selectedNodes.push(n);
+      }
+
+      if (n === secondNode)
+        break;
+    }
+    this._tree.unmute(["node.select", "node.deselect"]);
+    return selectedNodes;
+  }
+
+  public visibleNodes(): InspireTreeNode[] {
+    return this._tree.visible() as any;
   }
 
   public async updateExpansion(nodesToExpand: ReadonlyArray<string>, muteEvents = true): Promise<void> {

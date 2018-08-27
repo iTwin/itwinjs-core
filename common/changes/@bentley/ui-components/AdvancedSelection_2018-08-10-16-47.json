@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added advanced selection modes to tree and table.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "aidas.kilinskas@bentley.com"
+}

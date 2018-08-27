@@ -7,11 +7,6 @@ Array [
     "filterable": true,
     "key": "Implemented",
     "label": "Checking Account Kuwaiti Dinar Gibraltar Pound",
-    "propertyDescription": Object {
-      "displayLabel": "Checking Account Kuwaiti Dinar Gibraltar Pound",
-      "name": "Implemented",
-      "typename": "smallint",
-    },
     "sortable": true,
   },
   Object {
@@ -19,11 +14,6 @@ Array [
     "filterable": true,
     "key": "Reduced",
     "label": "Small Rubber Cheese",
-    "propertyDescription": Object {
-      "displayLabel": "Small Rubber Cheese",
-      "name": "Reduced",
-      "typename": "bigint",
-    },
     "sortable": true,
   },
   Object {
@@ -31,11 +21,6 @@ Array [
     "filterable": true,
     "key": "upward-trending",
     "label": "Cambridgeshire Rubber hack",
-    "propertyDescription": Object {
-      "displayLabel": "Cambridgeshire Rubber hack",
-      "name": "upward-trending",
-      "typename": "boolean",
-    },
     "sortable": true,
   },
 ]
@@ -103,9 +88,6 @@ Object {
       },
     },
   ],
-  "key": Object {
-    "className": "azure",
-    "id": "0x98cd000001245e",
-  },
+  "key": "{\\"className\\":\\"azure\\",\\"id\\":\\"0x98cd000001245e\\"}",
 }
 `;

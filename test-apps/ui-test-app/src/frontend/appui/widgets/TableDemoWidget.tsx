@@ -13,7 +13,7 @@ import {
 import { Table } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTableDataProvider, tableDropTargetDropCallback, tableDragSourceEndCallback, tableCanDropTargetDropCallback } from "./demoTableDataProvider";
-import {RowDragLayer} from "./RowDragLayer";
+import { RowDragLayer } from "./RowDragLayer";
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -59,11 +59,11 @@ class TableDemoWidget extends React.Component<Props, State> {
       <div>
         <label htmlFor="recieves_tree">Can accept tree nodes: </label>
         <input id="recieves_tree" type="checkbox" checked={this.state.checked} onClick={() => {
-            this.setState((prevState) => ({checked: !prevState.checked}), () => {
-              demoMutableTableDataProvider.onRowsChanged.raiseEvent();
+          this.setState((prevState) => ({ checked: !prevState.checked }), () => {
+            demoMutableTableDataProvider.onRowsChanged.raiseEvent();
 
-            });
-          }}/>
+          });
+        }} />
         <Table
           dataProvider={demoMutableTableDataProvider}
           dragProps={dragProps}

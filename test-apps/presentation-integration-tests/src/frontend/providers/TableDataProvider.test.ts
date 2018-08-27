@@ -6,7 +6,7 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
 import PresentationTableDataProvider from "@bentley/presentation-components/lib/table/DataProvider";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
 
@@ -125,7 +125,8 @@ describe("TableDataProvider", async () => {
       provider.filterExpression = `DisplayLabel = "Functional Model-0-H"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
-      expect(row!.key.id.value).to.eq(new Id64(instances.functionalModel.id).value);
+      const rowKey = instanceKeyFromJSON(JSON.parse(row!.key));
+      expect(rowKey.id.value).to.eq(new Id64(instances.functionalModel.id).value);
     });
 
   });

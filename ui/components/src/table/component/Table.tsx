@@ -6,13 +6,26 @@
 import * as _ from "lodash";
 import * as React from "react";
 import * as ReactDataGrid from "react-data-grid";
+import * as classnames from "classnames";
 import { DisposableList, Guid } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
-import { PropertyRecord } from "../../properties";
-import { TableDataProvider, ColumnDescription, RowItem } from "../TableDataProvider";
+import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
 import { DragDropRow } from "./DragDropRowRenderer";
+import { SelectionMode } from "../../common/selection/SelectionModes";
+import {
+  SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
+  OnItemsSelectedCallback, OnItemsDeselectedCallback,
+} from "../../common/selection/SelectionHandler";
 import "./Grid.scss";
+
+/**
+ * Specifies table selection target.
+ */
+export enum TableSelectionTarget {
+  Row,
+  Cell,
+}
 
 /** Props for the Table React component */
 export interface TableProps {
@@ -21,12 +34,27 @@ export interface TableProps {
   /** Amount of rows per page */
   pageAmount?: number;
 
-  /** Callback for determining if row selected */
+  /** Called when rows are loaded */
+  onRowsLoaded?: (firstRowIndex: number, lastRowIndex: number) => void;
+
+  /** Callback for determining if row is selected */
   isRowSelected?: (row: RowItem) => boolean;
   /** Callback for when rows are selected */
-  onRowsSelected?: (rows: RowItem[], replace: boolean) => boolean;
+  onRowsSelected?: (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>;
   /** Callback for when rows are deselected */
-  onRowsDeselected?: (rows: RowItem[]) => boolean;
+  onRowsDeselected?: (rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>;
+
+  /** Callback for determining if cell is selected */
+  isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
+  /** Callback for when cells are selected */
+  onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
+  /** Callback for when cells are deselected */
+  onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
+
+  /** Specifies the selection target. */
+  tableSelectionTarget?: TableSelectionTarget;
+  /** Specifies the selection mode. */
+  selectionMode?: SelectionMode;
 
   dragProps?: DragSourceProps;
   dropProps?: TableDropTargetProps;
@@ -38,42 +66,49 @@ export interface TableDropTargetProps extends DropTargetProps {
   canDropOn?: boolean;
 }
 
-interface TableState {
-  selectedRowKeys: string[];
+export interface CellProps {
+  item: CellItem;
+  render: () => React.ReactNode;
+}
+
+export interface RowProps {
+  index: number;
+  item: RowItem;
+  cells: { [key: string]: CellProps };
+  render?: () => React.ReactNode;
+}
+
+interface RowsLoadResult {
+  rows: RowProps[];
+  selectedRowIndices: number[];
+  selectedCellKeys: CellKey[];
+}
+
+export interface TableState {
   columns: ReactDataGridColumn[];
-  rows: TableRow[];
+  rows: RowProps[];
   rowsCount: number;
 }
 
-interface ReactDataGridColumn {
+export interface ReactDataGridColumn {
   key: string;
   name: string;
   formatter?: any;
   width?: number;
   resizable?: boolean;
   sortable?: boolean;
-}
-
-interface ReactDataGridRow {
-  __key: string;
-  [columnKey: string]: string | undefined;
-}
-
-interface TableRow {
-  row: ReactDataGridRow;
-  item: RowItem;
+  icon?: boolean;
 }
 
 const initialState: TableState = {
-  selectedRowKeys: [],
   columns: [],
   rows: [],
   rowsCount: 0,
 };
 
-interface RowsLoadResult {
-  rows: TableRow[];
-  selectedKeys: string[];
+interface CellKey {
+  rowIndex: number;
+  columnKey: string;
 }
 
 /**
@@ -85,6 +120,12 @@ export class Table extends React.Component<TableProps, TableState> {
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
   private _rowLoadGuid = new Guid(true);
+  private _rowSelectionHandler: SelectionHandler<number>;
+  private _cellSelectionHandler: SelectionHandler<CellKey>;
+  private _selectedRowIndices: Set<number> = new Set();
+  private _selectedCellKeys: Map<string, Set<number>> = new Map(); // column keys -> rowIndices
+  private _rowItemSelectionHandlers?: Array<SingleSelectionHandler<number>>;
+  private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
   public readonly state: Readonly<TableState> = initialState;
 
   constructor(props: TableProps, context?: any) {
@@ -95,10 +136,93 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._disposableListeners.add(props.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
     this._disposableListeners.add(props.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
+    this._rowSelectionHandler = new SelectionHandler(props.selectionMode ? props.selectionMode : SelectionMode.Single);
+    this._cellSelectionHandler = new SelectionHandler(props.selectionMode ? props.selectionMode : SelectionMode.Single);
+    this._rowSelectionHandler.onItemsSelectedCallback = this._onRowsSelected;
+    this._rowSelectionHandler.onItemsDeselectedCallback = this._onRowsDeselected;
+    this._cellSelectionHandler.onItemsSelectedCallback = this._onCellsSelected;
+    this._cellSelectionHandler.onItemsDeselectedCallback = this._onCellsDeselected;
   }
 
-  public componentWillReceiveProps(_newProps: TableProps) {
-    this.update();
+  // tslint:disable-next-line:naming-convention
+  private get rowItemSelectionHandlers(): Array<SingleSelectionHandler<number>> {
+    if (!this._rowItemSelectionHandlers) {
+      this._rowItemSelectionHandlers = [];
+      for (let i = 0; i < this.state.rowsCount; i++)
+        this._rowItemSelectionHandlers.push(this.createRowItemSelectionHandler(i));
+    }
+    return this._rowItemSelectionHandlers;
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private get cellItemSelectionHandlers(): Array<Array<SingleSelectionHandler<CellKey>>> {
+    if (!this._cellItemSelectionHandlers) {
+      this._cellItemSelectionHandlers = [];
+      for (let rowIndex = 0; rowIndex < this.state.rowsCount; rowIndex++) {
+        this._cellItemSelectionHandlers[rowIndex] = [];
+        for (const column of this.state.columns) {
+          this._cellItemSelectionHandlers[rowIndex].push(this.createCellItemSelectionHandler({ rowIndex, columnKey: column.key }));
+        }
+      }
+    }
+    return this._cellItemSelectionHandlers;
+  }
+
+  private async * createRowIterator(rowIndices: number[]): AsyncIterableIterator<RowItem> {
+    for (const index of rowIndices)
+      yield await this.props.dataProvider.getRow(index);
+  }
+
+  private async * createCellIterator(cellKeys: CellKey[]): AsyncIterableIterator<[RowItem, CellItem]> {
+    for (const key of cellKeys) {
+      const row = await this.props.dataProvider.getRow(key.rowIndex);
+      yield [row, this._getCellItem(row, key.columnKey)];
+    }
+  }
+
+  private _onRowsSelected: OnItemsSelectedCallback<number> = (rowIndices: number[], replace: boolean) => {
+    if (this.props.onRowsSelected)
+      this.props.onRowsSelected(this.createRowIterator(rowIndices), replace);
+  }
+
+  private _onRowsDeselected: OnItemsDeselectedCallback<number> = (rowIndices: number[]) => {
+    if (this.props.onRowsDeselected)
+      this.props.onRowsDeselected(this.createRowIterator(rowIndices));
+  }
+
+  private _onCellsSelected: OnItemsSelectedCallback<CellKey> = (cellKeys: CellKey[], replace: boolean) => {
+    if (this.props.onCellsSelected)
+      this.props.onCellsSelected(this.createCellIterator(cellKeys), replace);
+  }
+
+  private _onCellsDeselected: OnItemsDeselectedCallback<CellKey> = (cellKeys: CellKey[]) => {
+    if (this.props.onCellsDeselected)
+      this.props.onCellsDeselected(this.createCellIterator(cellKeys));
+  }
+
+  private get _tableSelectionTarget(): TableSelectionTarget {
+    return this.props.tableSelectionTarget ? this.props.tableSelectionTarget : TableSelectionTarget.Row;
+  }
+
+  public componentWillReceiveProps(newProps: TableProps) {
+    this._rowSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
+    this._cellSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
+
+    if (this.props.dataProvider !== newProps.dataProvider) {
+      this._disposableListeners.dispose();
+      this._disposableListeners.add(newProps.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
+      this._disposableListeners.add(newProps.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
+    }
+  }
+
+  public componentDidUpdate(previousProps: TableProps) {
+    if (this.props.dataProvider !== previousProps.dataProvider)
+      this.update();
+    else if (this.props.isCellSelected !== previousProps.isCellSelected
+      || this.props.isRowSelected !== previousProps.isRowSelected) {
+      this.updateSelectedRows();
+      this.updateSelectedCells();
+    }
   }
 
   public componentWillMount() {
@@ -126,6 +250,8 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _onColumnsChanged = async () => {
     await this.updateColumns();
+
+    this._cellItemSelectionHandlers = undefined;
   }
 
   private async updateRows() {
@@ -133,12 +259,17 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
+    if (rowsCount !== this.state.rowsCount) {
+      this._rowItemSelectionHandlers = undefined;
+      this._cellItemSelectionHandlers = undefined;
+    }
+
     this._rowGetterAsync.cache.clear();
     this.setState((prev: TableState) => ({
       ...prev,
       rowsCount,
     }));
-    await this._rowGetterAsync(0);
+    this._rowGetterAsync(0, true);
   }
 
   private _onRowsChanged = async () => {
@@ -152,74 +283,207 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public updateSelectedRows() {
-    const selectedRowKeys = new Array<string>();
+    const selectedRowIndices = new Set();
     if (this.props.isRowSelected) {
-      this.state.rows.forEach((row) => {
-        if (this.props.isRowSelected!(row.item))
-          selectedRowKeys.push(row.row.__key);
-      });
+      for (let rowIndex = 0; rowIndex < this.state.rows.length; rowIndex++) {
+        if (this.state.rows[rowIndex] && this.props.isRowSelected(this.state.rows[rowIndex].item))
+          selectedRowIndices.add(rowIndex);
+      }
     }
-    this.setState({ selectedRowKeys });
+    this._selectedRowIndices = selectedRowIndices;
+    this.forceUpdate();
+  }
+
+  public updateSelectedCells() {
+    const selectedCellKeys = new Map<string, Set<number>>();
+    if (this.props.isCellSelected) {
+      for (const column of this.state.columns) {
+        const set = new Set<number>();
+        for (let rowIndex = 0; rowIndex < this.state.rows.length; rowIndex++) {
+          if (!this.state.rows[rowIndex])
+            continue;
+          const cellItem = this._getCellItem(this.state.rows[rowIndex].item, column.key);
+          if (this.props.isCellSelected(rowIndex, cellItem))
+            set.add(rowIndex);
+        }
+        if (set.size !== 0)
+          selectedCellKeys.set(column.key, set);
+      }
+    }
+    this._selectedCellKeys = selectedCellKeys;
+    this.forceUpdate();
   }
 
   private columnDescriptionToReactDataGridColumn(columnDescription: ColumnDescription): ReactDataGridColumn {
-    let label: string;
-    if (columnDescription.propertyDescription !== undefined)
-      label = columnDescription.propertyDescription.displayLabel;
-    else if (columnDescription.label !== undefined)
-      label = columnDescription.label;
-    else
-      label = "";
-
     return {
       key: columnDescription.key,
-      name: label,
-      ...(columnDescription.icon ? {
-        width: 32,
-        formatter: IconCell,
-      } : {}),
+      name: columnDescription.label,
+      icon: columnDescription.icon,
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
     };
   }
 
-  private async cellRecordToString(record: PropertyRecord | string): Promise<string> {
-    return (typeof record === "string") ? record : await record.getDisplayValue();
+  private _getCellItem = (row: RowItem, columnKey: string): CellItem => {
+    return row.cells.find((cell: CellItem) => cell.key === columnKey) || { key: columnKey };
   }
 
-  private async rowItemToReactGridRow(rowData: RowItem): Promise<ReactDataGridRow> {
-    const gridRow: ReactDataGridRow = {
-      __key: JSON.stringify(rowData.key),
-    };
-    if (rowData) {
-      for (const cellItem of rowData.cells) {
-        const cellKey = cellItem.key;
-        const cellValue = cellItem.record ? await this.cellRecordToString(cellItem.record) : undefined;
-        gridRow[cellKey] = cellValue;
+  private isCellSelected(key: CellKey) {
+    const set = this._selectedCellKeys.get(key.columnKey);
+    if (set)
+      return set.has(key.rowIndex);
+    return false;
+  }
+
+  private selectCells(cellKeys: CellKey[]) {
+    for (const key of cellKeys) {
+      let set = this._selectedCellKeys.get(key.columnKey);
+      if (!set) {
+        set = new Set();
+        this._selectedCellKeys.set(key.columnKey, set);
       }
+      set.add(key.rowIndex);
     }
-    return gridRow;
   }
 
-  private getRowItem(rowIndex: number): RowItem | undefined {
-    const row = this.state.rows[rowIndex];
-    return row ? row.item : undefined;
+  private deselectCells(cellKeys: CellKey[]) {
+    for (const key of cellKeys) {
+      const set = this._selectedCellKeys.get(key.columnKey);
+      if (set)
+        set.delete(key.rowIndex);
+    }
   }
 
-  private _rowGetter = (i: number): ReactDataGridRow => {
+  private createRowItemSelectionHandler(rowIndex: number): SingleSelectionHandler<number> {
+    return {
+      select: () => {
+        if (!this._selectedRowIndices.has(rowIndex)) {
+          this._selectedRowIndices.add(rowIndex);
+          this.forceUpdate();
+        }
+      },
+      deselect: () => {
+        if (this._selectedRowIndices.has(rowIndex)) {
+          this._selectedRowIndices.delete(rowIndex);
+          this.forceUpdate();
+        }
+      },
+      isSelected: () => this._selectedRowIndices.has(rowIndex),
+      item: () => rowIndex,
+    };
+  }
+
+  private _rowComponentSelectionHandler: MultiSelectionHandler<number> = {
+    deselectAll: () => { this._selectedRowIndices = new Set(); this.forceUpdate(); },
+    selectBetween: (rowIndex1: number, rowIndex2: number) => {
+      const selections = [];
+      const lowerNumber = rowIndex1 < rowIndex2 ? rowIndex1 : rowIndex2;
+      const higherNumber = rowIndex1 > rowIndex2 ? rowIndex1 : rowIndex2;
+      for (let i = lowerNumber; i <= higherNumber; i++) {
+        if (!this._selectedRowIndices.has(i)) {
+          selections.push(i);
+          this._selectedRowIndices.add(i);
+        }
+      }
+
+      this.forceUpdate();
+      return selections;
+    },
+    updateSelection: (selections: number[], deselections: number[]): void => {
+      for (const rowIndex of selections) {
+        if (!this._selectedRowIndices.has(rowIndex))
+          this._selectedRowIndices.add(rowIndex);
+      }
+
+      for (const rowIndex of deselections) {
+        if (this._selectedRowIndices.has(rowIndex))
+          this._selectedRowIndices.delete(rowIndex);
+      }
+      this.forceUpdate();
+    },
+    areEqual: (item1: number, item2: number) => item1 === item2,
+  };
+
+  private createCellItemSelectionHandler(cellKey: CellKey): SingleSelectionHandler<CellKey> {
+    return {
+      select: () => {
+        this.selectCells([cellKey]);
+        this.forceUpdate();
+      },
+      deselect: () => {
+        this.deselectCells([cellKey]);
+        this.forceUpdate();
+      },
+      isSelected: () => this.isCellSelected(cellKey),
+      item: () => cellKey,
+    };
+  }
+
+  private _cellComponentSelectionHandler: MultiSelectionHandler<CellKey> = {
+    deselectAll: () => {
+      this._selectedCellKeys = new Map();
+      this.forceUpdate();
+    },
+    selectBetween: (item1: CellKey, item2: CellKey) => {
+      const selections: CellKey[] = [];
+      const lowerIndex = item1.rowIndex < item2.rowIndex ? item1.rowIndex : item2.rowIndex;
+      const higherIndex = item1.rowIndex > item2.rowIndex ? item1.rowIndex : item2.rowIndex;
+      let secondItem: CellKey;
+      let firstItemFound = false;
+      let secondItemFound = false;
+
+      for (let rowIndex = lowerIndex; rowIndex <= higherIndex; rowIndex++) {
+        for (const column of this.state.columns) {
+          if (!firstItemFound) {
+            if (rowIndex === item1.rowIndex && column.key === item1.columnKey) {
+              firstItemFound = true;
+              secondItem = item2;
+            } else if (rowIndex === item2.rowIndex && column.key === item2.columnKey) {
+              firstItemFound = true;
+              secondItem = item1;
+            } else
+              continue;
+          }
+
+          const cellKey = { rowIndex, columnKey: column.key };
+          if (!this.isCellSelected(cellKey))
+            selections.push(cellKey);
+
+          if (rowIndex === secondItem!.rowIndex && column.key === secondItem!.columnKey) {
+            secondItemFound = true;
+            break;
+          }
+        }
+        if (secondItemFound)
+          break;
+      }
+
+      this.selectCells(selections);
+      this.forceUpdate();
+      return selections;
+    },
+    updateSelection: (selections: CellKey[], deselections: CellKey[]): void => {
+      this.selectCells(selections);
+      this.deselectCells(deselections);
+      this.forceUpdate();
+    },
+    areEqual: (item1: CellKey, item2: CellKey) => item1.rowIndex === item2.rowIndex && item1.columnKey === item2.columnKey,
+  };
+
+  private _rowGetter = (i: number): RowProps => {
     if (this.state.rows[i])
-      return this.state.rows[i].row;
+      return this.state.rows[i];
 
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount));
+    this._rowGetterAsync(i - (i % this._pageAmount), false);
 
     // Return placeholder object
-    return { __key: "" };
+    return { item: { key: "", cells: [] }, index: i, cells: {} };
   }
 
-  private _rowGetterAsync = _.memoize(async (index: number): Promise<void> => {
+  private _rowGetterAsync = _.memoize(async (index: number, clearRows: boolean): Promise<void> => {
     if (index < 0)
       return;
 
@@ -229,43 +493,88 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
+    const selectedRowIndices = this._selectedRowIndices;
+    for (const rowIndex of loadResult.selectedRowIndices) {
+      if (!selectedRowIndices.has(rowIndex))
+        selectedRowIndices.add(rowIndex);
+    }
+    this._selectedRowIndices = selectedRowIndices;
+
+    this.selectCells(loadResult.selectedCellKeys);
     this.setState((prev) => {
-      const rows = [...prev.rows];
+      const rows = clearRows ? [] : [...prev.rows];
       loadResult.rows.forEach((r, i) => { rows[index + i] = r; });
-      const selectedRowKeys = [...prev.selectedRowKeys];
-      loadResult.selectedKeys.forEach((k) => selectedRowKeys.push(k));
-      return { rows, selectedRowKeys };
+      return { rows };
+    }, () => {
+      if (this.props.onRowsLoaded)
+        this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
     });
   });
 
+  private async createCellRenderer(cellItem: CellItem, column: ReactDataGridColumn): Promise<() => React.ReactNode> {
+    if (!cellItem.record)
+      return () => undefined;
+    const displayValue = await cellItem.record.getDisplayValue();
+    if (column.icon)
+      return () => <IconCell value={displayValue} />;
+    return () => displayValue;
+  }
+
+  private async createPropsForRowItem(item: RowItem, index: number): Promise<RowProps> {
+    const cellProps: { [key: string]: CellProps } = {};
+    for (const column of this.state.columns) {
+      const cellItem = this._getCellItem(item, column.key);
+      cellProps[column.key] = {
+        item: cellItem,
+        render: await this.createCellRenderer(cellItem, column),
+      };
+    }
+    return {
+      item,
+      index,
+      cells: cellProps,
+      render: undefined,
+    };
+  }
+
   private async loadRows(beginIndex: number, endIndex: number): Promise<RowsLoadResult> {
+    const result: RowsLoadResult = {
+      rows: [],
+      selectedRowIndices: [],
+      selectedCellKeys: [],
+    };
     this._rowLoadGuid = new Guid(true);
     const currentSelectedRowGuid = new Guid(this._rowLoadGuid);
 
-    const promises = new Array<Promise<TableRow>>();
+    const promises = new Array<Promise<RowProps>>();
     for (let i = beginIndex; i < endIndex; ++i) {
       promises.push(
         this.props.dataProvider.getRow(i).then((rowData) =>
-          this.rowItemToReactGridRow(rowData).then((row) => ({ item: rowData, row })),
+          this.createPropsForRowItem(rowData, i).then((rowProps) => (rowProps)),
         ));
     }
 
-    let rows: TableRow[] = [];
-    const selectedKeys: string[] = [];
-
     try {
-      rows = await Promise.all(promises);
+      result.rows = await Promise.all(promises);
     } catch { }
 
     // Check if another loadRows got called while this one was still going
     if (currentSelectedRowGuid.equals(this._rowLoadGuid)) {
-      rows.forEach((row) => {
-        if (this.props.isRowSelected && this.props.isRowSelected(row.item))
-          selectedKeys.push(row.row.__key);
-      });
+      for (const rowProps of result.rows) {
+        if (this.props.isRowSelected && this.props.isRowSelected(rowProps.item))
+          result.selectedRowIndices.push(rowProps.index);
+
+        if (this.props.isCellSelected) {
+          for (const column of this.state.columns) {
+            const cellItem = this._getCellItem(rowProps.item, column.key);
+            if (this.props.isCellSelected(rowProps.index, cellItem))
+              result.selectedCellKeys.push({ rowIndex: rowProps.index, columnKey: column.key });
+          }
+        }
+      }
     }
 
-    return { rows, selectedKeys };
+    return result;
   }
 
   private _handleGridSort = (columnKey: string, sortDirection: "ASC" | "DESC" | "NONE") => {
@@ -322,44 +631,88 @@ export class Table extends React.Component<TableProps, TableState> {
     this.updateRows();
   }
 
-  private _onRowClick = (rowIdx: number, row: ReactDataGridRow) => {
-    if (this._isRowSelected(row.__key))
-      this._onRowsDeselected([{ rowIdx, row }]);
+  private createRowCells(rowProps: RowProps): { [columnKey: string]: React.ReactNode } {
+    const cells: { [columnKey: string]: React.ReactNode } = {};
+    for (const column of this.state.columns) {
+      const cellProps = rowProps.cells[column.key];
+      if (!cellProps) {
+        continue;
+      }
+      const cell = cellProps.render();
+      if (this._tableSelectionTarget === TableSelectionTarget.Cell) {
+        const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
+        const selectionHandler = this.createCellItemSelectionHandler(cellKey);
+        const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
+        const onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
+        const onMouseMove = (e: React.MouseEvent) => { if (e.buttons === 1) this._cellSelectionHandler.updateDragAction(cellKey); };
+        const onMouseDown = () => {
+          this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
+        };
+        const className = classnames("cell", this.isCellSelected(cellKey) && "is-selected", "is-hover-enabled");
+        cells[column.key] = <div
+          className={className}
+          onClick={onClick}
+          onMouseMove={onMouseMove}
+          onMouseDown={onMouseDown}>
+          {cell}
+        </div>;
+      } else {
+        cells[column.key] = <div className={"cell"}>{cell}</div>;
+      }
+    }
+    return cells;
+  }
+
+  private _createRowRenderer = (dropProps?: TableDropTargetProps, dragProps?: DragSourceProps) => {
+    return (props: { row: RowProps }) => {
+      const { row: rowProps, ...reactDataGridRowProps } = props;
+      const cells = this.createRowCells(rowProps);
+      if (this._tableSelectionTarget === TableSelectionTarget.Row) {
+        const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(props.row.index));
+        const onClick = (e: React.MouseEvent) => {
+          selectionFunction(e.shiftKey, e.ctrlKey);
+        };
+        const onMouseDown = (_e: React.MouseEvent) => {
+          this._rowSelectionHandler.createDragAction(this._rowComponentSelectionHandler, [this.rowItemSelectionHandlers], props.row.index);
+        };
+        const onMouseMove = (e: React.MouseEvent) => {
+          if (e.buttons === 1)
+            this._rowSelectionHandler.updateDragAction(props.row.index);
+        };
+        const row = dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells, isSelected: this._selectedRowIndices.has(props.row.index) }) :
+          <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} isSelected={this._selectedRowIndices.has(props.row.index)} />;
+        return <div
+          className={classnames("row", "is-hover-enabled")}
+          onClickCapture={onClick}
+          onMouseMove={onMouseMove}
+          onMouseDown={onMouseDown}>
+          {row}
+        </div>;
+      }
+      return dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells }) :
+        <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} />;
+    };
+  }
+
+  private _createDragAndDropRow = (dropProps?: TableDropTargetProps, dragProps?: DragSourceProps, props?: any) => {
+    return <DragDropRow
+      dropProps={dropProps}
+      dragProps={dragProps}
+      {...props}
+    />;
+  }
+  private _onMouseUp = () => {
+    if (this._tableSelectionTarget === TableSelectionTarget.Row)
+      this._rowSelectionHandler.completeDragAction();
     else
-      this._onRowsSelected([{ rowIdx, row }]);
+      this._cellSelectionHandler.completeDragAction();
   }
-
-  private _isRowSelected = (key: string): boolean => {
-    return -1 !== this.state.selectedRowKeys.indexOf(key);
-  }
-
-  private _getRowItems = (rows: ReactDataGrid.SelectionParams[]): RowItem[] => {
-    return rows
-      .map((r) => this.getRowItem(r.rowIdx))
-      .filter((r) => (undefined !== r)) as RowItem[];
-  }
-
-  private _onRowsSelected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsSelected && !this.props.onRowsSelected(this._getRowItems(rows), true))
-      return;
-
-    // wip: add or replace? for now just replace...
-    // const selectedRowKeys = [...this.state.selectedRowKeys];
-    const selectedRowKeys = new Array<string>();
-    rows.forEach((r) => selectedRowKeys.push((r.row as ReactDataGridRow).__key));
-    this.setState({ selectedRowKeys });
-  }
-
-  private _onRowsDeselected = (rows: ReactDataGrid.SelectionParams[]): void => {
-    if (this.props.onRowsDeselected && !this.props.onRowsDeselected(this._getRowItems(rows)))
-      return;
-
-    const keepSelected = (key: string): boolean => !rows.some((r) => ((r.row as ReactDataGridRow).__key === key));
-    const selectedRowKeys = this.state.selectedRowKeys.filter((key) => keepSelected(key));
-    this.setState({ selectedRowKeys });
+  private _onMouseDown = () => {
+    document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
   }
 
   public render() {
+    const wrapperName = "react-data-grid-wrapper";
     const { dragProps: drag, dropProps: drop } = this.props;
     if ((drag && (drag.onDragSourceBegin || drag.onDragSourceEnd)) ||
       (drop && (drop.onDropTargetOver || drop.onDropTargetDrop))) {
@@ -368,16 +721,16 @@ export class Table extends React.Component<TableProps, TableState> {
         withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
           public render(): React.ReactNode {
             const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
-            return (<div className="react-data-grid-wrapper" {...props} />);
+            return (<div className={wrapperName} {...props} />);
           }
         });
 
       const dropProps: TableDropTargetProps = {};
       if (this.props.dropProps) {
-        const {onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn} = this.props.dropProps;
+        const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn } = this.props.dropProps;
         dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
-            args.dropLocation = this.props.dataProvider;
-            return onDropTargetDrop ? onDropTargetDrop(args) : args;
+          args.dropLocation = this.props.dataProvider;
+          return onDropTargetDrop ? onDropTargetDrop(args) : args;
         };
         dropProps.onDropTargetOver = (args: DropTargetArguments) => {
           args.dropLocation = this.props.dataProvider;
@@ -392,7 +745,7 @@ export class Table extends React.Component<TableProps, TableState> {
       }
       const dragProps: DragSourceProps = {};
       if (this.props.dragProps) {
-        const {onDragSourceBegin, onDragSourceEnd, objectType} = this.props.dragProps;
+        const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
         dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
           args.parentObject = this.props.dataProvider;
           if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
@@ -445,53 +798,31 @@ export class Table extends React.Component<TableProps, TableState> {
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
+            rowRenderer={this._createRowRenderer(dropProps, dragProps)}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
             headerRowHeight={25}
             rowHeight={25}
-            rowRenderer={
-              <DragDropRow
-                dropProps={dropProps}
-                dragProps={dragProps}
-              />
-            }
-            rowSelection={{
-              showCheckbox: false,
-              enableShiftSelect: true,
-              onRowsSelected: this._onRowsSelected,
-              onRowsDeselected: this._onRowsDeselected,
-              selectBy: {
-                keys: { rowKey: "__key", values: this.state.selectedRowKeys },
-              },
-            }}
-            onRowClick={(index, row) => this._onRowClick(index, row as ReactDataGridRow)}
             onGridSort={this._handleGridSort}
           />
         </DragDropWrapper>
       );
     } else
       return (
+        <div className={wrapperName} onMouseDown={this._onMouseDown}>
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
+            rowRenderer={this._createRowRenderer()}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
             headerRowHeight={25}
             rowHeight={25}
-            rowSelection={{
-              showCheckbox: false,
-              enableShiftSelect: true,
-              onRowsSelected: this._onRowsSelected,
-              onRowsDeselected: this._onRowsDeselected,
-              selectBy: {
-                keys: { rowKey: "__key", values: this.state.selectedRowKeys },
-              },
-            }}
-            onRowClick={(index, row) => this._onRowClick(index, row as ReactDataGridRow)}
             onGridSort={this._handleGridSort}
           />
+        </div>
       );
   }
 }
