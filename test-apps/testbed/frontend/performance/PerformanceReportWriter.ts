@@ -123,7 +123,7 @@ export class PerformanceReportWriter {
         const minTotal = Math.min(...PerformanceReportWriter.dataArray.map((row: number[]) => row[13]));
         let minRow = 0;
         for (let i = 0; i < PerformanceReportWriter.dataArray.length; i++) {
-          console.log(PerformanceReportWriter.dataArray[i]); // tslint:disable-line
+          // console.log(PerformanceReportWriter.dataArray[i]); // tslint:disable-line
 
           if (PerformanceReportWriter.dataArray[i][13] === minTotal) {
             minRow = i;
