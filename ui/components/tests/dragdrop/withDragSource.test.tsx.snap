@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`withDragSource Wrapped component renders wrapped component correctly 1`] = `
+<div
+  className="drag-source-wrapper"
+>
+  <TestComponent />
+</div>
+`;

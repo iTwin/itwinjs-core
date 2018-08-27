@@ -206,6 +206,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "mocha-multi-reporters",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "mocha-tldr-reporter",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
@@ -266,8 +270,16 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "react-highlight-words",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-redux",

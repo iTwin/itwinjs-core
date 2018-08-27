@@ -107,9 +107,9 @@ export class FrontstageDef {
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
 
-  private _activeToolItem: ToolItemDef | undefined;
-  public defaultLayout: ContentLayoutDef | undefined;
-  public contentGroup: ContentGroup | undefined;
+  private _activeToolItem?: ToolItemDef;
+  public defaultLayout?: ContentLayoutDef;
+  public contentGroup?: ContentGroup;
 
   constructor(frontstageProps: FrontstageProps) {
     if (frontstageProps) {

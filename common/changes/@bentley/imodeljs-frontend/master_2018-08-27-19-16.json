@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "AccuDraw compute intersection with nearest snap. AccuDraw smart rotation.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

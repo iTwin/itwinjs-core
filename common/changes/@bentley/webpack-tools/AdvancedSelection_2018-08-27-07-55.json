@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated Enzyme version.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "aidas.kilinskas@bentley.com"
+}

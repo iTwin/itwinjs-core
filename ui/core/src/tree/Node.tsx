@@ -19,8 +19,10 @@ export interface NodeProps {
   isFocused?: boolean;
   isSelected?: boolean;
   isHoverDisabled?: boolean;
-
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
+  onMouseMove?: (e: React.MouseEvent) => void;
+  onMouseDown?: (e: React.MouseEvent) => void;
+  onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
 
   children?: React.ReactNode;
@@ -50,13 +52,17 @@ export default class TreeNode extends React.Component<NodeProps> {
 
     return (
       <div
-        onClick={this._onClick}
         className={className}
         style={this.props.style}
       >
         {loader}
         {toggle}
-        <div className="contents">
+        <div
+          className="contents"
+          onClick={this._onClick}
+          onMouseDown={this._onMouseDown}
+          onMouseUp={this._onMouseUp}
+          onMouseMove={this._onMouseMove}>
           {icon}
           {this.props.label}
         </div>
@@ -75,8 +81,22 @@ export default class TreeNode extends React.Component<NodeProps> {
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-
     if (this.props.onClick)
-      this.props.onClick();
+      this.props.onClick(e);
+  }
+
+  private _onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (this.props.onMouseMove)
+      this.props.onMouseMove(e);
+  }
+
+  private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (this.props.onMouseDown)
+      this.props.onMouseDown(e);
+  }
+
+  private _onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (this.props.onMouseUp)
+      this.props.onMouseUp(e);
   }
 }

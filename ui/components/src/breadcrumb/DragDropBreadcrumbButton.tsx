@@ -4,7 +4,7 @@
 /** @module Breadcrumb */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { withDragSource, withDropTarget } from "../dragdrop";
 
 /** @hidden */
@@ -19,7 +19,7 @@ export interface DragDropBreadcrumbButtonProps extends React.AllHTMLAttributes<H
 /** @hidden */
 export class DragDropBreadcrumbButtonComponent extends React.Component<DragDropBreadcrumbButtonProps> {
   public render() {
-    const {isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbButtonProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbButtonProps;
     const classes = classnames(
       "breadcrumb-drop-target",
       {
@@ -28,7 +28,7 @@ export class DragDropBreadcrumbButtonComponent extends React.Component<DragDropB
       });
     return (
       <div className={classes} {...props}>
-        { this.props.children }
+        {this.props.children}
       </div>
     );
   }

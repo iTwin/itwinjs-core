@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { KeySet, InstanceKey, Subtract } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, Subtract, instanceKeyFromJSON } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
@@ -141,7 +141,14 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
     }
 
     private getRowKey(row: RowItem): InstanceKey {
-      return row.key as InstanceKey;
+      return instanceKeyFromJSON(JSON.parse(row.key));
+    }
+
+    private async getRowKeys(rows: AsyncIterableIterator<RowItem>): Promise<InstanceKey[]> {
+      const keys = new Array<InstanceKey>();
+      for await (const row of rows)
+        keys.push(this.getRowKey(row));
+      return keys;
     }
 
     // tslint:disable-next-line:naming-convention
@@ -158,32 +165,35 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
     }
 
     // tslint:disable-next-line:naming-convention
-    private onRowsSelected = (rows: RowItem[], replace: boolean): boolean => {
+    private onRowsSelected = async (rows: AsyncIterableIterator<RowItem>, replace: boolean): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
       // returning `false`)
-      if (this.baseProps.onRowsSelected && !this.baseProps.onRowsSelected(rows, replace))
+      if (this.baseProps.onRowsSelected && !(await this.baseProps.onRowsSelected(rows, replace)))
         return true;
 
       if (this._selectionHandler) {
+        const keys = await this.getRowKeys(rows);
         if (replace)
-          this._selectionHandler.replaceSelection(rows.map((row) => this.getRowKey(row)), this._boundarySelectionLevel);
+          this._selectionHandler.replaceSelection(keys, this._boundarySelectionLevel);
         else
-          this._selectionHandler.addToSelection(rows.map((row) => this.getRowKey(row)), this._boundarySelectionLevel);
+          this._selectionHandler.addToSelection(keys, this._boundarySelectionLevel);
       }
       return true;
     }
 
     // tslint:disable-next-line:naming-convention
-    private onRowsDeselected = (rows: RowItem[]): boolean => {
+    private onRowsDeselected = async (rows: AsyncIterableIterator<RowItem>): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
       // returning `false`)
-      if (this.baseProps.onRowsDeselected && !this.baseProps.onRowsDeselected(rows))
+      if (this.baseProps.onRowsDeselected && !(await this.baseProps.onRowsDeselected(rows)))
         return true;
 
-      if (this._selectionHandler)
-        this._selectionHandler.removeFromSelection(rows.map((row) => this.getRowKey(row)), this._boundarySelectionLevel);
+      if (this._selectionHandler) {
+        const keys = await this.getRowKeys(rows);
+        this._selectionHandler.removeFromSelection(keys, this._boundarySelectionLevel);
+      }
       return true;
     }
 

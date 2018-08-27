@@ -3,13 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ProgramBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { ProgramBuilder, FragmentShaderComponent } from "../ShaderBuilder";
 import { GLSLFragment, addRenderTargetIndex } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
-import { addFrustum } from "./Common";
+import { addFrustum, addEyeSpace } from "./Common";
 import { System } from "../System";
-
-const computeEyeSpaceZ = "v_eyeSpaceZ = (u_mv * rawPosition).z;";
 
 const computeAlphaWeight = `
 float computeAlphaWeight(float a, bool flatAlpha) {
@@ -19,7 +17,7 @@ float computeAlphaWeight(float a, bool flatAlpha) {
 
   // flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
   // computeLinearDepth() removes the perspective and puts z in linear [0..1]
-  float z = flatAlpha ? 1.0 : computeLinearDepth(v_eyeSpaceZ);
+  float z = flatAlpha ? 1.0 : computeLinearDepth(v_eyeSpace.z);
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
 }
 `;
@@ -49,8 +47,7 @@ const assignFragColor = computeOutputs + `
 export function addTranslucency(prog: ProgramBuilder): void {
   const frag = prog.frag;
 
-  // ###TODO: Surface shaders may already have a v_eyeSpace containing xyz - optimize to use that instead of recomputing for z only.
-  prog.addInlineComputedVarying("v_eyeSpaceZ", VariableType.Float, computeEyeSpaceZ);
+  addEyeSpace(prog);
   addFrustum(prog);
   addModelViewMatrix(prog.vert);
 

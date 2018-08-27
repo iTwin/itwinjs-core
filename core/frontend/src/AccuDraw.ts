@@ -1252,6 +1252,73 @@ export class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
+  public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
+    const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
+    const rotation = out ? out : new Matrix3d();
+    const viewZ = vp.rotMatrix.rowZ();
+    const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
+
+    if (undefined !== snapLoc) {
+      const frame = snap.primitive!.fractionToFrenetFrame(snapLoc.fraction);
+      const frameZ = (undefined !== frame ? frame.matrix.columnZ() : Vector3d.unitZ());
+      let xVec = (undefined !== frame ? frame.matrix.columnX() : Vector3d.unitX());
+      const zVec = (vp.view.allow3dManipulations() ? (undefined !== snap.normal ? snap.normal.clone() : frameZ.clone()) : Vector3d.unitZ());
+
+      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
+        zVec.setFrom(viewZ);
+
+      xVec.normalizeInPlace();
+      zVec.normalizeInPlace();
+
+      let yVec = xVec.unitCrossProduct(zVec);
+
+      if (undefined !== yVec) {
+        const viewX = vp.rotMatrix.rowX();
+        if (snap.primitive instanceof LineString3d) {
+          if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
+            const tVec = xVec;
+            xVec = yVec;
+            yVec = tVec;
+          }
+          if (xVec.dotProduct(viewX) < 0.0)
+            xVec.negate(xVec);
+        } else {
+          const ray = snap.primitive!.fractionToPointAndUnitTangent(0.0);
+          if (ray.direction.dotProduct(viewX) < 0.0 && ray.direction.dotProduct(xVec) > 0.0)
+            xVec.negate(xVec);
+        }
+
+        if (zVec.dotProduct(viewZ) < 0.0)
+          zVec.negate(zVec);
+
+        yVec = xVec.unitCrossProduct(zVec);
+
+        if (undefined !== yVec) {
+          rotation.setColumns(xVec, yVec, zVec);
+          Matrix3d.createRigidFromMatrix3d(rotation, AxisOrder.XZY, rotation);
+          rotation.transposeInPlace();
+
+          return rotation;
+        }
+      }
+    }
+
+    if (undefined !== snap.normal) {
+      const zVec = (vp.view.allow3dManipulations() ? snap.normal.clone() : Vector3d.unitZ());
+
+      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
+        zVec.setFrom(viewZ);
+
+      zVec.normalizeInPlace();
+      Matrix3d.createRigidHeadsUp(zVec, undefined, rotation);
+      rotation.transposeInPlace();
+
+      return rotation;
+    }
+
+    return undefined;
+  }
+
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d {
     const rMatrix = out ? out : new Matrix3d();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
@@ -2586,22 +2653,14 @@ export class AccuDraw {
     }
 
     if (this.published.flags & AccuDrawFlags.SmartRotation) {
-      // const hitDetail = TentativeOrAccuSnap.getCurrentSnap(false);
-      // NEEDS_WORK
-      //   if (!hitDetail)
-      //     hitDetail = ElementLocateManager:: GetManager().GetCurrHit();
-
-      //   if (hitDetail) {
-      //     DPoint3d                origin;
-      //     Matrix3d               rMatrix;
-      //     RotateToElemToolHelper  rotateHelper;
-
-      //     // NOTE: Surface normal stored in HitDetail is for hit point, not snap/adjusted point...get normal at correct location...
-      //     if (rotateHelper.GetOrientation(* hitDetail, origin, rMatrix)) {
-      //       this.setContextRotation(rMatrix);
-      //       this.changeBaseRotationMode(RotationMode.Context);
-      //     }
-      //   }
+      const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+      if (undefined !== snap) {
+        const rotation = AccuDraw.getSnapRotation(snap, vp);
+        if (undefined !== rotation) {
+          this.setContextRotation(rotation, true, false);
+          this.changeBaseRotationMode(RotationMode.Context);
+        }
+      }
     }
 
     this.checkRotation();
@@ -2707,8 +2766,32 @@ export class AccuDraw {
     return false;
   }
 
-  private intersectXYCurve(_snap: SnapDetail, _curve: CurvePrimitive) {
-    // NEEDSWORK...
+  private intersectXYCurve(snap: SnapDetail, curve: CurvePrimitive) {
+    if (undefined === this.currentView || undefined === snap.primitive)
+      return;
+
+    const worldToView = this.currentView.worldToViewMap.transform0;
+    const detail = CurveCurve.IntersectionProjectedXY(worldToView, snap.primitive, true, curve, true);
+    if (0 === detail.dataA.length)
+      return;
+
+    let closeIndex = 0;
+    if (detail.dataA.length > 1) {
+      const snapPt = worldToView.multiplyPoint3d(snap.getPoint(), 1);
+      let lastDist: number | undefined;
+
+      for (let i = 0; i < detail.dataA.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+        const testDist = snapPt.realDistanceXY(testPt);
+
+        if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
+          lastDist = testDist;
+          closeIndex = i;
+        }
+      }
+    }
+
+    snap.setSnapPoint(detail.dataA[closeIndex].point, SnapHeat.NotInRange);
   }
 
   private intersectLine(snap: SnapDetail, linePt: Point3d, unitVec: Vector3d) {

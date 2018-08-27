@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export { default as UiCore } from "./UiCore";
 export * from "./enums";
+export * from "./expandable";
 export * from "./base";
 export * from "./contextmenu";
 export * from "./cube";

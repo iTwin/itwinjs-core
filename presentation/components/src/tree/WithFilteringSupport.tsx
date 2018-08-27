@@ -132,6 +132,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
             expandedNodes={this.state.filteredDataProvider ? this.state.filteredDataProvider.getAllNodeIds() : []}
+            highlightString={filter}
             {...props}
           />
           {overlay}

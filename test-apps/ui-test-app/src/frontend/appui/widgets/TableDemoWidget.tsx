@@ -13,7 +13,7 @@ import {
 import { Table } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTableDataProvider, tableDropTargetDropCallback, tableDragSourceEndCallback, tableCanDropTargetDropCallback } from "./demoTableDataProvider";
-import {RowDropTarget} from "./RowDropTarget";
+import { RowDragLayer } from "./RowDragLayer";
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -43,24 +43,31 @@ class TableDemoWidget extends React.Component<Props, State> {
 
     const objectTypes = [...(this.state.checked ? ["root", "child"] : []), "row"];
 
-    DragDropLayerManager.registerTypeLayer("row", RowDropTarget);
+    DragDropLayerManager.registerTypeLayer("row", RowDragLayer);
+
+    const dragProps = {
+      onDragSourceEnd: tableDragSourceEndCallback,
+      objectType,
+    };
+    const dropProps = {
+      onDropTargetDrop: tableDropTargetDropCallback,
+      canDropTargetDrop: tableCanDropTargetDropCallback,
+      objectTypes,
+    };
 
     return (
       <div>
         <label htmlFor="recieves_tree">Can accept tree nodes: </label>
         <input id="recieves_tree" type="checkbox" checked={this.state.checked} onClick={() => {
-            this.setState((prevState) => ({checked: !prevState.checked}), () => {
-              demoMutableTableDataProvider.onRowsChanged.raiseEvent();
+          this.setState((prevState) => ({ checked: !prevState.checked }), () => {
+            demoMutableTableDataProvider.onRowsChanged.raiseEvent();
 
-            });
-          }}/>
+          });
+        }} />
         <Table
           dataProvider={demoMutableTableDataProvider}
-          onDropTargetDrop={tableDropTargetDropCallback}
-          onDragSourceEnd={tableDragSourceEndCallback}
-          canDropTargetDrop={tableCanDropTargetDropCallback}
-          objectType={objectType}
-          objectTypes={objectTypes}
+          dragProps={dragProps}
+          dropProps={dropProps}
         />
       </div>
     );

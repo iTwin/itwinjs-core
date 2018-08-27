@@ -500,10 +500,25 @@ export class MeasurePointsTool extends PrimitiveTool {
     hints.enableSmartRotation = true;
 
     if (this.points.length > 1 && !(this.points[this.points.length - 1].isAlmostEqual(this.points[this.points.length - 2])))
-      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 1], this.points[this.points.length - 2])); // Rotate AccuDraw to last segment...
+      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 2], this.points[this.points.length - 1])); // Rotate AccuDraw to last segment...
 
     hints.setOrigin(this.points[this.points.length - 1]);
     hints.sendHints();
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (this.points.length < 1)
+      return;
+
+    const tmpPoints = this.points.slice();
+    tmpPoints.push(ev.point.clone());
+
+    const builder = context.createGraphicBuilder(GraphicType.Scene);
+
+    builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+    builder.addLineString(tmpPoints);
+
+    context.addGraphic(builder.finish());
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -607,8 +622,8 @@ export class ProjectExtentsDecoration {
 
 // starts Measure between points tool
 function startMeasurePoints(_event: any) {
-  // IModelApp.tools.run("Measure.Points", theViewport!);
-  ProjectExtentsDecoration.toggle();
+  IModelApp.tools.run("Measure.Points", theViewport!);
+  // ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
