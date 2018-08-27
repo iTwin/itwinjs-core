@@ -28,6 +28,7 @@ export interface DataTreeProps {
   onNodesDeselected?: (nodes: TreeNodeItem[]) => void;
   dragProps?: DragSourceProps;
   dropProps?: DropTargetProps;
+  highlightString?: string;
 }
 
 interface InspireTreeNavNodeData extends InspireTreeNodeData {
@@ -194,6 +195,7 @@ export default class DataTree extends React.Component<DataTreeProps> {
         dragProps={dragProps}
         dropProps={dropProps}
         expandedNodes={this.props.expandedNodes}
+        highlightString={this.props.highlightString}
         selectionMode={this.props.selectionMode}
       />
     );

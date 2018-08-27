@@ -5,8 +5,8 @@
 
 import * as _ from "lodash";
 import * as React from "react";
-import * as ReactDataGrid from "react-data-grid";
-import * as classnames from "classnames";
+import ReactDataGrid from "react-data-grid";
+import classnames from "classnames";
 import { DisposableList, Guid } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";

@@ -278,6 +278,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "react-highlight-words",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
     },

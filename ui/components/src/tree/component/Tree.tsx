@@ -8,6 +8,7 @@ import { withDropTarget, DropTargetArguments, DragSourceArguments, DropTargetPro
 import { DragDropTreeNode } from "./DragDropNodeWrapper";
 import { Tree as TreeBase, TreeBranch, TreeNode } from "@bentley/ui-core";
 import { BeInspireTree, InspireTreeNode, InspireTreeDataProvider, NodePredicate } from "./BeInspireTree";
+import Highlighter from "react-highlight-words";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
@@ -45,6 +46,7 @@ export interface TreeProps {
   selectedNodes?: string[] | NodePredicate;
   selectionMode?: SelectionMode;
   expandedNodes?: ReadonlyArray<string>;
+  highlightString?: string;
   key?: any;
 }
 
@@ -161,6 +163,19 @@ export default class Tree extends React.Component<Props, TreeState> {
     this.setState({ rootNodes });
   }
 
+  private _getLabelComponent = (text: string) => {
+    if (this.props.highlightString) {
+      return (
+        <Highlighter
+          searchWords={[this.props.highlightString]}
+          autoEscape={true}
+          textToHighlight={text}
+        />
+      );
+    }
+    return text;
+  }
+
   private _defaultRenderNode = (data: InspireTreeNode, children?: React.ReactNode, index?: number): React.ReactNode => {
     const itemHandler = this.createItemSelectionHandler(data);
     const onSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, itemHandler);
@@ -247,7 +262,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           isSelected={data.selected()}
           isLoading={data.loading()}
           isLeaf={!data.hasOrWillHaveChildren()}
-          label={data.text}
+          label={this._getLabelComponent(data.text ? data.text : "")}
           icon={<span className={data.icon} />}
           onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
           onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}
@@ -265,7 +280,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           isSelected={data.selected()}
           isLoading={data.loading()}
           isLeaf={!data.hasOrWillHaveChildren()}
-          label={data.text}
+          label={this._getLabelComponent(data.text ? data.text : "")}
           icon={<span className={data.icon} />}
           onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
           onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}

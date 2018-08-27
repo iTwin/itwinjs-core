@@ -11,8 +11,19 @@ import { InspireTreeNode } from "../../../src/tree/component/BeInspireTree";
 import { SelectionMode } from "../../../src/common";
 import { ExpansionToggle } from "@bentley/ui-core/lib/tree";
 import { waitForSpy } from "../../test-helpers/Misc";
+import InspireTree from "inspire-tree";
 
 describe("Tree", () => {
+  it("Expect highlighted words to be wrapped in <mark> tag", () => {
+    const highlightedString = "test";
+
+    const treeComponent = enzyme.shallow(<Tree dataProvider={[]} highlightString={highlightedString} />);
+    // TreeComponent nodes are only set when an event fires, so we force the update by setting state manually
+    treeComponent.setState({ rootNodes: new InspireTree({ data: [{ text: "This is a test" }] as any }) });
+
+    expect(treeComponent.render().find("Mark").text()).to.be.equal(highlightedString);
+  });
+
   const onTreeReloaded = sinon.spy();
 
   const verifyNodes = (nodes: InspireTreeNode[], ids: string[]) => {

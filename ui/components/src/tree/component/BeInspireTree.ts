@@ -3,16 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import * as InspireTreeTypes from "inspire-tree";
-
-// note: a hack to get around invalid declarations file
-// tslint:disable-next-line:variable-name
-const InspireTree = InspireTreeTypes as any;
+import InspireTree, { TreeNode, TreeNodes, Config } from "inspire-tree";
 
 /** Interface for tree node data provided to the BeInspireTree */
 export interface InspireTreeNodeData {
   id?: string;
-  children?: InspireTreeTypes.TreeNodes | boolean;
+  children?: TreeNodes | boolean;
   text?: string;
   icon?: string;
 }
@@ -25,7 +21,7 @@ export type DataProviderPromise = Promise<DataProviderRaw>;
 export type DataProviderMethod = (node: InspireTreeNode) => DataProviderPromise;
 
 /** Type definition for all BeInspireTree nodes */
-export type InspireTreeNode = InspireTreeTypes.TreeNode & InspireTreeNodeData;
+export type InspireTreeNode = TreeNode & InspireTreeNodeData;
 /** Type definition for all BeInspireTree data providers */
 export type InspireTreeDataProvider = DataProviderRaw | DataProviderPromise | DataProviderMethod;
 /** Type definition for a BeInspireTree renderer */
@@ -36,7 +32,7 @@ export type NodePredicate = (id: InspireTreeNode) => boolean;
 
 /** Bentley wrapper for 'inspire-tree' */
 export class BeInspireTree {
-  private _tree: InspireTreeTypes.InspireTree;
+  private _tree: InspireTree;
   private _modelLoadedPromise: Promise<void>;
 
   constructor(dataProvider: InspireTreeDataProvider, renderer: InspireTreeRenderer) {
@@ -47,7 +43,7 @@ export class BeInspireTree {
         autoDeselect: false,
         // wip: expose other properties through props
       },
-    } as InspireTreeTypes.Config);
+    } as Config);
 
     this._modelLoadedPromise = new Promise((resolve) => {
       this._tree.on(["model.loaded"], (nodes: InspireTreeNode[]) => { resolve(); this.prepareRootNodes(nodes); });
@@ -102,7 +98,7 @@ export class BeInspireTree {
     this.unmute(eventsToMute);
   }
 
-  private async ensureChildrenLoaded(branch: InspireTreeTypes.InspireTree, nodesToExpand: string[]): Promise<void> {
+  private async ensureChildrenLoaded(branch: InspireTree, nodesToExpand: string[]): Promise<void> {
     const loadingPromises: Array<Promise<void>> = [];
 
     // We can't ensure that any children are loaded if the model isn't loaded yet...

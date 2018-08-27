@@ -4,7 +4,7 @@
 /** @module Table */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { Row } from "react-data-grid";
 import {
   withDragSource, withDropTarget,
@@ -107,7 +107,7 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
           if (args.dropRect) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
             if ((canDropOn && relativeY > 2 / 3) || (!canDropOn && relativeY > 1 / 2))
-                args.row = this.props.idx + 1;
+              args.row = this.props.idx + 1;
           }
         }
         return onDropTargetDrop ? onDropTargetDrop(args) : args; // Must return something for pass-through to OnDragSourceEnd.
@@ -117,7 +117,7 @@ export class DragDropRow extends React.Component<DragDropRowProps & any> {
           if (args.dropRect) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
             if ((canDropOn && relativeY > 2 / 3) || (!canDropOn && relativeY > 1 / 2))
-                args.row = this.props.idx + 1;
+              args.row = this.props.idx + 1;
           }
           onDropTargetOver(args);
         }

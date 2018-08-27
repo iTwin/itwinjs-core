@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import "./Breadcrumb.scss";
 import { SplitButton } from "@bentley/ui-core";
