@@ -12,6 +12,7 @@ exports[`Tree withFilteringSupport render passes expanded nodes 1`] = `
         "Focused",
       ]
     }
+    highlightString="filter"
   />
   <div
     className="filteredTreeOverlay"
@@ -26,6 +27,7 @@ exports[`Tree withFilteringSupport render renders with overlay if connection is 
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
+    highlightString="filter"
   />
   <div
     className="filteredTreeOverlay"
@@ -40,6 +42,7 @@ exports[`Tree withFilteringSupport render renders with overlay if filter is diff
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
+    highlightString="filter"
   />
   <div
     className="filteredTreeOverlay"
@@ -54,6 +57,7 @@ exports[`Tree withFilteringSupport render renders with overlay if rulesetId is d
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
+    highlightString="filter"
   />
   <div
     className="filteredTreeOverlay"
@@ -68,6 +72,7 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is e
   <DataTree
     dataProvider={null}
     expandedNodes={Array []}
+    highlightString=""
   />
 </div>
 `;
@@ -79,6 +84,7 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is u
   <DataTree
     dataProvider={null}
     expandedNodes={Array []}
+    highlightString={undefined}
   />
 </div>
 `;
@@ -90,6 +96,7 @@ exports[`Tree withFilteringSupport render renders without overlay if nothing is 
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
+    highlightString="filter"
   />
 </div>
 `;
