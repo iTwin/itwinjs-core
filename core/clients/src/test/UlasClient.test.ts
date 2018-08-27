@@ -109,7 +109,7 @@ describe("UlasClient", () => {
     chai.assert.isAtLeast(resp.time, 0);
   });
 
-  it.only("Post feature log without host hash", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log without host hash", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
