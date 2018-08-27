@@ -58,7 +58,7 @@ function testIntersectionsXY(
 
 describe("CurveCurve", () => {
 
-  it.only("LineLineMapped", () => {
+  it("LineLineMapped", () => {
     const ck = new Checker();
     for (const map of createSamplePerspectiveMaps()) {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
@@ -71,7 +71,7 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("LineLineString", () => {
+  it("LineLineString", () => {
     const ck = new Checker();
     for (const map of createSamplePerspectiveMaps()) {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
@@ -79,7 +79,7 @@ describe("CurveCurve", () => {
       const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
       const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
       const linestring1 = LineString3d.create(Point3d.create(2, 4, 2), Point3d.create(4, 1, 0), Point3d.create(2, 5, 0));
-      
+
       const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, linestring0, false);
       testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
       const intersections1 = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring0, false, segment0, false);

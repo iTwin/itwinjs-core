@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BentleyError, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -25,6 +25,19 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
+
+/** Enumeration of Viewport status codes */
+export const enum ViewportStatus {
+  VIEWPORT_ERROR_BASE = 0x1A000,
+  /** The canvas must be a child of the div */
+  InvalidParent = VIEWPORT_ERROR_BASE + 1,
+}
+
+export class ViewportError extends BentleyError {
+  public constructor(errorNumber: ViewportStatus, message?: string) {
+    super(errorNumber, message);
+  }
+}
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -862,6 +875,8 @@ export class Viewport {
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
+  /** The canvas created to hold the view contents. */
+  public readonly canvas: HTMLCanvasElement;
 
   /**
    * Determine whether the Grid display is currently enabled in this Viewport.
@@ -893,14 +908,54 @@ export class Viewport {
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Construct a new Viewport
-   * @param canvas The HTMLCanvasElement for the new Viewport
+   * @param enclosingDiv The HTMLDivElement that parents the canvas created for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
-    this.target = target ? target : IModelApp.renderSystem.createTarget(canvas);
+  constructor(public enclosingDiv: HTMLDivElement | undefined, viewState: ViewState, canvas?: HTMLCanvasElement, target?: RenderTarget) {
+    // Usually, we create the canvas. OffscreenViewport wants to create it, though.
+
+    // if both canvas and enclosingDiv are supplied, enclosingDiv must be the parent of the canvas.
+    if (canvas && enclosingDiv && !(enclosingDiv !== canvas.parentElement))
+      throw new ViewportError(ViewportStatus.InvalidParent, "The canvas must be a child of enclosingDiv");
+
+    // if no canvas supplied, create it and make it a child of the enclosingDiv.
+    if (canvas) {
+      this.canvas = canvas;
+    } else {
+      // if there's already a canvas, reuse it.
+      if (enclosingDiv)
+        canvas = Viewport.findiModelCanvas(enclosingDiv);
+
+      this.canvas = canvas ? canvas : document.createElement("canvas");
+      this.canvas.style.position = "relative";
+      this.canvas.style.top = "0%";
+      this.canvas.style.height = "100%";
+      this.canvas.style.left = "0%";
+      this.canvas.style.width = "100%";
+      this.canvas.className = "imodeljs-canvas";
+
+      if (enclosingDiv && !canvas)
+        enclosingDiv.appendChild(this.canvas);
+    }
+
+    this.target = target ? target : IModelApp.renderSystem.createTarget(this.canvas);
     this.changeView(viewState);
     this.setCursor();
     this.saveViewUndo();
+  }
+
+  /* finds the canvas child of a div that has the right class to be the view canvas. */
+  private static findiModelCanvas(enclosingDiv: HTMLDivElement): HTMLCanvasElement | undefined {
+    const childElements: HTMLCollection = enclosingDiv.children;
+    for (let i = 0; i < childElements.length; i++) {
+      const child = childElements.item(i);
+      for (let j = 0; j < child.classList.length; j++) {
+        const className = child.classList.item(j);
+        if (className === "imodeljs-canvas")
+          return child as HTMLCanvasElement;
+      }
+    }
+    return undefined;
   }
 
   /** Determine whether continuous rendering is enabled. */
@@ -1833,7 +1888,7 @@ export class Viewport {
 
 export class OffScreenViewport extends Viewport {
   public constructor(viewState: ViewState) {
-    super(IModelApp.renderSystem.canvas, viewState, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    super(undefined, viewState, IModelApp.renderSystem.canvas, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
     this.sync.setValidDecorations();  // decorations are not incorporated offscreen
   }
 

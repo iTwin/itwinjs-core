@@ -100,16 +100,6 @@ exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
 </div>
 `;
 
-exports[`CubeNavigationAid <FaceCell /> should render correctly 1`] = `
-<div
-  className="face-cell"
-  onMouseDown={[Function]}
-  onMouseOut={[Function]}
-  onMouseOver={[Function]}
-  onMouseUp={[Function]}
-/>
-`;
-
 exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
 <div
   className="nav-cube-face"
@@ -125,7 +115,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="-1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           -1,
           1,
@@ -140,7 +130,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="0"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           0,
           1,
@@ -155,7 +145,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           1,
           1,
@@ -175,7 +165,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="-1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           -1,
           0,
@@ -190,7 +180,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="0"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           0,
           0,
@@ -207,7 +197,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           1,
           0,
@@ -227,7 +217,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="-1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           -1,
           -1,
@@ -242,7 +232,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="0"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           0,
           -1,
@@ -257,7 +247,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
       key="1"
       onFaceCellClick={[Function]}
       onFaceCellHoverChange={[Function]}
-      position={
+      vector={
         Array [
           1,
           -1,

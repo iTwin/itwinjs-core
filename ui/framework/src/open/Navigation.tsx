@@ -135,16 +135,17 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
         index: i,
         selectedTabIndex: this.state.activeTab,
         highlightStyle: this.props.highlightStyle,
-        onClicked: this._handleClick.bind(this, i) });
+        onClicked: this._handleClick.bind(this, i)
       });
-    }
+    });
+  }
 
   public render() {
     const classNavbar = classnames("open-navbar", this.state.isPinned && "pinned");
     return (
       <div className={classNavbar}>
         <div className="expander">
-          <span className="icon icon-chevron-right" onClick={this._handleExpandClick}/>
+          <span className="icon icon-chevron-right" onClick={this._handleExpandClick} />
           <span className="icon icon-pin" title="Pin the navigation pane" onClick={this._handleExpandClick} />
           <span className="icon icon-chevron-left" onClick={this._handleExpandClick} />
         </div>

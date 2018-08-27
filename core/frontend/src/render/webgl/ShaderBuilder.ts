@@ -463,9 +463,6 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
-  // (Optional) Compute the clip distance to send to the fragment shader.
-  // void calcClipDist(vec4 rawPos)
-  CalcClipDist,
   // (Optional) Add the element id to the vertex shader.
   // void computeElementId()
   AddComputeElementId,
@@ -536,12 +533,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(GLSLVertex.discard);
-    }
-
-    const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
-    if (undefined !== calcClipDist) {
-      prelude.addFunction("void calcClipDist(vec4 rawPos)", calcClipDist);
-      main.addline("  calcClipDist(rawPosition);");
     }
 
     const compElemId = this.get(VertexShaderComponent.AddComputeElementId);

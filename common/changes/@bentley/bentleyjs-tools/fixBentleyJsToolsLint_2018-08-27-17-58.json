@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add tslint-consistent-codestyle as a bundled dependency",
+      "packageName": "@bentley/bentleyjs-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

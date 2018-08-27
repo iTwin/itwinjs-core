@@ -11,10 +11,6 @@
   user-select: none;
 }
 
-.Clickable {
-  pointer-events: auto;
-}
-
 // Workarounds for ui-ninezone Widget scrollbar issues
 .nz-content-area {
   overflow-x: hidden;
@@ -36,4 +32,13 @@
   top: 0;
   height: 100%;
   width: 100%;
+}
+
+.element-tooltip {
+  width: max-content;
+  font-size: $bwc-font-size;
+}
+
+.invisible {
+  opacity: 0%;
 }

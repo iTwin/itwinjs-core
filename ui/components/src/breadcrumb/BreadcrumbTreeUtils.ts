@@ -4,6 +4,7 @@
 /** @module Breadcrumb */
 import { TreeDataProvider, TreeNodeItem } from "../tree";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table";
+import { PropertyRecord, PropertyValueFormat } from "..";
 
 export class BreadcrumbTreeUtils {
   public static pathTo = async (dataProvider: TreeDataProvider, target?: TreeNodeItem): Promise<TreeNodeItem[]> => {
@@ -130,9 +131,48 @@ export class BreadcrumbTreeUtils {
           backColor: n.labelBackColor,
         };
         const cells: CellItem[] = [
-          { key: "icon", record: n.hasChildren ? "icon-folder" : n.iconPath },
-          { key: "label", record: n.label },
-          { key: "description", record: n.description },
+          {
+            key: "icon", record:
+              new PropertyRecord(
+                {
+                  value: n.hasChildren ? "icon-folder" : n.iconPath,
+                  valueFormat: PropertyValueFormat.Primitive,
+                  displayValue: n.hasChildren ? "icon-folder" : n.iconPath!,
+                },
+                {
+                  name: "icon",
+                  displayLabel: "icon",
+                  typename: "icon",
+                }),
+          },
+          {
+            key: "label",
+            record: new PropertyRecord(
+              {
+                value: n.label,
+                valueFormat: PropertyValueFormat.Primitive,
+                displayValue: n.label,
+              },
+              {
+                name: "label",
+                displayLabel: "label",
+                typename: "text",
+              }),
+          },
+          {
+            key: "description",
+            record: new PropertyRecord(
+              {
+                value: n.description,
+                valueFormat: PropertyValueFormat.Primitive,
+                displayValue: n.description,
+              },
+              {
+                name: "description",
+                displayLabel: "description",
+                typename: "text",
+              }),
+          },
         ];
         for (const k in n.extendedData) {
           // only add string values to table cell list

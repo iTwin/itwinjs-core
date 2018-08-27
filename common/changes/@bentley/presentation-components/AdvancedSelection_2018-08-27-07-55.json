@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Modified components to work with ui components changes.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "aidas.kilinskas@bentley.com"
+}
