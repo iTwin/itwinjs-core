@@ -13,9 +13,12 @@ import { ProjectApi } from "./ProjectApi";
 // import * as path from "path";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
+import * as fs from "fs";
+import * as path from "path";
 
 const resultsLocation = "D:\\output\\performanceData\\";
 const resultsFileName = "performanceResults_new.csv";
+const modelsLocation = "D:\\models\\TimingTests\\";
 
 // const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 // const glContext: WebGLRenderingContext | null = null;
@@ -34,6 +37,21 @@ function resolveAfterXMilSeconds(ms: number) { // must call await before this fu
   });
 }
 
+function removeFilesFromDir(startPath: string, filter: string) {
+  if (!fs.existsSync(startPath))
+    return;
+  const files = fs.readdirSync(startPath);
+  files.forEach((file) => {
+    const filename = path.join(startPath, file);
+    if (fs.lstatSync(filename).isDirectory()) {
+      removeFilesFromDir(filename, filter); // recurse
+    } else if (filename.indexOf(filter) >= 0) {
+      debugPrint("deleting file " + filename);
+      fs.unlinkSync(filename); // Delete file
+    }
+  });
+}
+
 function createWindow() {
   const canv = document.createElement("canvas");
   canv.id = "imodelview";
@@ -44,6 +62,9 @@ function createWindow() {
 }
 
 async function waitForTilesToLoad() {
+  removeFilesFromDir(modelsLocation, ".Tiles");
+  removeFilesFromDir(modelsLocation, ".TileCache");
+
   theViewport!.continuousRendering = false;
 
   // Start timer for tile loading time
@@ -130,14 +151,13 @@ async function printResults(tileLoadingTime: number, frameTimes: number[]) {
 }
 
 export function savePng() {
-  const fs = require("fs");
   let img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0"
     + "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO"
     + "3gAAAABJRU5ErkJggg==";
   img = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
   const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
   const buf = new Buffer(data, "base64");
-  fs.writeFile("image2.png", buf);
+  fs.writeFileSync("image2.png", buf);
 
   //   // write((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob().toString(), "demo.png", "image/png");
 
@@ -265,7 +285,7 @@ async function mainBody() {
   configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
-    iModelName: "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
+    iModelName: modelsLocation + "\\" + "Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
     viewName: "V0",
   } as SVTConfiguration;
 
@@ -323,6 +343,11 @@ async function mainBody() {
   debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
   for (const t of finalFrameTimings) {
     await printResults(curTileLoadingTime, t);
+    let timingsString = "[";
+    t.forEach((val) => {
+      timingsString += val + ", ";
+    });
+    debugPrint(timingsString + "]");
   }
 
   const nt = finalFrameTimings.length;
@@ -350,8 +375,12 @@ async function mainBody() {
 
 describe("PerformanceTests - 1", () => {
   it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
+    removeFilesFromDir(modelsLocation, ".Tiles");
+    removeFilesFromDir(modelsLocation, ".TileCache");
     createNewCsvFile(resultsLocation, resultsFileName);
     mainBody().then((_result) => {
+      removeFilesFromDir(modelsLocation, ".Tiles");
+      removeFilesFromDir(modelsLocation, ".TileCache");
       done();
     }).catch((error) => {
       debugPrint("Exception in mainBody: " + error.toString());

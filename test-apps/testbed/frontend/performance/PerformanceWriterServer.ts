@@ -15,7 +15,7 @@ export function run(): Express.Application {
 
   app.use(bodyParser.json());
 
-  const server = app.listen(3002, () => console.log("PerformanceWriterServer listening on port 3002!")); // tslint:disable-line
+  const server = app.listen(3002); // , () => console.log("PerformanceWriterServer listening on port 3002!")); // tslint:disable-line
 
   app.post("/", (_req: any, res: any) => {
     return res.status(200).send();
