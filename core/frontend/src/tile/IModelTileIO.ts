@@ -68,7 +68,7 @@ export namespace IModelTileIO {
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -79,7 +79,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled) : undefined;
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
@@ -116,8 +116,8 @@ export namespace IModelTileIO {
         return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, iModel, modelId, is3d, system, isCanceled);
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, iModel, modelId, is3d, system, asClassifier, isCanceled);
     }
 
     protected readFeatureTable(): FeatureTable | undefined {

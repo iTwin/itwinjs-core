@@ -40,15 +40,14 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const result: TileProps[] = [];
     const tileIdsByTreeId = new Map<string, string[]>();
     for (const tileId of ids) {
-      let tileIds = tileIdsByTreeId.get(tileId.treeId.value);
+      let tileIds = tileIdsByTreeId.get(tileId.treeId);
       if (undefined === tileIds) {
         tileIds = [];
-        tileIdsByTreeId.set(tileId.treeId.value, tileIds);
+        tileIdsByTreeId.set(tileId.treeId, tileIds);
       }
 
       tileIds.push(tileId.tileId);
     }
-
     tileIdsByTreeId.forEach((values: string[], key: string) => {
       try {
         const props = db.tiles.getTilesProps(key, values);
@@ -65,6 +64,6 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async getTileContent(iModelToken: IModelToken, id: TileId): Promise<string> {
     const db = IModelDb.find(iModelToken);
-    return db.tiles.getTileContent(id.treeId.value, id.tileId);
+    return db.tiles.getTileContent(id.treeId, id.tileId);
   }
 }

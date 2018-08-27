@@ -400,6 +400,7 @@ export abstract class ViewState extends ElementState {
       this.displayStyle.backgroundMap.addToScene(context);
     }
   }
+  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -920,6 +921,20 @@ export abstract class ViewState extends ElementState {
     model.loadTileTree();
     if (undefined !== model.tileTree) {
       model.tileTree.drawScene(context);
+    }
+  }
+  private addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
+    if (model.jsonProperties.classifiers === undefined)
+      return;
+    for (const classifier of model.jsonProperties.classifiers) {
+      if (classifier.isActive) {
+        const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
+        if (undefined !== classifierModel) {
+          classifierModel.loadTileTree(true);
+          if (undefined !== classifierModel.classifierTileTree)
+            classifierModel.classifierTileTree.drawScene(context);
+        }
+      }
     }
   }
 

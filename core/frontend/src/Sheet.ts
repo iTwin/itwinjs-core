@@ -575,7 +575,7 @@ export namespace Attachments {
     public constructor(loader: TileLoader, iModel: IModelConnection, modelId: Id64) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       super(new TileTree.Params(
-        modelId,
+        modelId.value,
         {
           id: { treeId: "", tileId: "" },
           range: {

@@ -92,7 +92,7 @@ export class MeshParams extends MeshInfo {
     // ###TODO: MeshArgs.normals should be undefined unless it is non-empty
     const isLit = undefined !== args.normals && 0 < args.normals.length;
     const isTextured = undefined !== args.texture;
-    const surfaceType = isTextured ? (isLit ? SurfaceType.TexturedLit : SurfaceType.Textured) : isLit ? SurfaceType.Lit : SurfaceType.Unlit;
+    const surfaceType = (true === args.asClassifier) ? SurfaceType.Classifier : (isTextured ? (isLit ? SurfaceType.TexturedLit : SurfaceType.Textured) : isLit ? SurfaceType.Lit : SurfaceType.Unlit);
 
     super(surfaceType, args.edges.width, LineCode.valueFromLinePixels(args.edges.linePixels), args.fillFlags, args.isPlanar, FeaturesInfo.create(args.features), args.texture, args.hasBakedLighting);
 
@@ -152,6 +152,9 @@ export class MeshGraphic extends Graphic {
     const surface = SurfacePrimitive.create(args, this);
     if (undefined !== surface)
       this._primitives.push(surface);
+
+    if (this.surfaceType === SurfaceType.Classifier)
+      return;   // Classifiers are surfaces only.... no edges.
 
     if (args.edges.silhouettes.isValid) {
       const silPrim = SilhouetteEdgePrimitive.create(args.edges.silhouettes, this);

@@ -5,7 +5,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
-import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Vector3d, Angle } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
@@ -70,7 +70,7 @@ class QuadId {
 }
 class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
-  public id: Id64Props = "";
+  public id: string = "";
   /** Metadata describing the tree's root Tile. */
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
@@ -94,7 +94,7 @@ class WebMercatorTileProps implements TileProps {
   public geometry?: any;
 
   constructor(thisId: string, mercatorToDb: Transform) {
-    this.id = new TileId(new Id64(), thisId);
+    this.id = new TileId("", thisId);
     const quadId = new QuadId(thisId);
     this.range = quadId.getRange(mercatorToDb);
     this.childIds = [];

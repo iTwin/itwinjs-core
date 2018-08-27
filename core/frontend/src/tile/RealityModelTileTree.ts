@@ -5,11 +5,10 @@
 
 import { IModelError, TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64, BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, RotMatrix } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
-import { SpatialModelState } from "../ModelState";
-import { TileTree, Tile, TileLoader, MissingNodes } from "./TileTree";
+import { TileTree, TileTreeState, Tile, TileLoader, MissingNodes } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
 class CesiumUtils {
@@ -39,14 +38,13 @@ class CesiumUtils {
 }
 
 class RealityModelTileTreeProps implements TileTreeProps {
-  public id: Id64Props = "";
+  public id: string = "";
   public rootTile: TileProps;
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
   constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform) {
     this.tilesetJson = json.root;
-    this.id = new Id64();
     this.rootTile = new RealityModelTileProps(json.root, "", this);
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
@@ -63,7 +61,7 @@ class RealityModelTileProps implements TileProps {
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
   constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
-    this.id = new TileId(new Id64(), thisId);
+    this.id = new TileId("", thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
     this.childIds = [];
@@ -140,12 +138,12 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @hidden */
 export class RealityModelTileTree {
-  public static loadRealityModelTileTree(url: string, modelState: SpatialModelState): void {
+  public static loadRealityModelTileTree(url: string, tileTreeState: TileTreeState): void {
 
-    this.getTileTreeProps(url, modelState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
-      modelState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
+    this.getTileTreeProps(url, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
+      tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
       IModelApp.viewManager.onNewTilesReady();
-    }).catch((_err) => modelState.loadStatus = TileTree.LoadStatus.NotFound);
+    }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }
 
   private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {

@@ -50,7 +50,7 @@ export namespace B3dmTileIO {
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isCanceled) : undefined;
     }
     private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, iModel, modelId, is3d, system, isCanceled);
+      super(props, iModel, modelId, is3d, system, false, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
       const isLeaf = true;    // TBD...

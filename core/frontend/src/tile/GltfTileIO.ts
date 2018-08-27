@@ -246,6 +246,7 @@ export namespace GltfTileIO {
     protected readonly _system: RenderSystem;
     protected readonly _returnToCenter: number[] | undefined;
     protected readonly _yAxisUp: boolean;
+    protected readonly _asClassifier: boolean;
     private readonly _canceled?: IsCanceled;
 
     public async abstract read(): Promise<ReaderResult>;
@@ -335,7 +336,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
@@ -355,6 +356,7 @@ export namespace GltfTileIO {
       this._modelId = modelId;
       this._is3d = is3d;
       this._system = system;
+      this._asClassifier = asClassifier;
       this._canceled = isCanceled;
     }
 
@@ -396,6 +398,7 @@ export namespace GltfTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const hasBakedLighting = this._hasBakedLighting;
+      const asClassifier = this._asClassifier;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -404,6 +407,7 @@ export namespace GltfTileIO {
         is2d: !this._is3d,
         isPlanar,
         hasBakedLighting,
+        asClassifier,
       });
 
       if (!this.readVertices(mesh.points, primitive))
@@ -718,7 +722,7 @@ export namespace GltfTileIO {
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
         return ImageUtil.extractImage(imageSource)
-          .then((image) => this._canceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
+          .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;

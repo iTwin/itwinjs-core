@@ -41,6 +41,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
+  public get isClassifier() { return SurfaceType.Classifier === this.surfaceType; }
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
@@ -80,6 +81,8 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public getRenderPass(target: Target): RenderPass {
+    if (this.isClassifier)
+      return RenderPass.StencilVolume;
     const mat = this.isLit ? this._mesh.material : undefined;
     const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;

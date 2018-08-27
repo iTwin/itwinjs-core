@@ -33,6 +33,7 @@ export const enum SurfaceType {
     Lit,
     Textured,
     TexturedLit,
+    Classifier,
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */

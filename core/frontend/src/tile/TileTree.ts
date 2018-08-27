@@ -17,6 +17,7 @@ import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
+import { SpatialModelState } from "../ModelState";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
@@ -484,7 +485,8 @@ export class TileTree implements IDisposable {
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
   public readonly location: Transform;
-  public readonly id: Id64;
+  public readonly id: string;
+  public readonly modelId: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;
@@ -497,6 +499,8 @@ export class TileTree implements IDisposable {
     this.iModel = props.iModel;
     this.is3d = props.is3d;
     this.id = props.id;
+    const prefixIndex = props.id.lastIndexOf("_");
+    this.modelId = Id64.fromJSON(props.id.slice(prefixIndex < 0 ? 0 : prefixIndex + 1));
     this.location = props.location;
     this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
@@ -514,8 +518,6 @@ export class TileTree implements IDisposable {
   }
 
   public get is2d(): boolean { return !this.is3d; }
-  public get modelId(): Id64 { return this.id; }
-
   public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
@@ -562,7 +564,7 @@ export abstract class TileLoader {
   public abstract async loadTileContents(missingtiles: MissingNodes): Promise<void>;
   public abstract get maxDepth(): number;
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
-  public loadGraphics(tile: Tile, geometry: any): void {
+  public loadGraphics(tile: Tile, geometry: any, asClassifier: boolean = false): void {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
       blob = base64StringToUint8Array(geometry as string);
@@ -586,7 +588,8 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, isCanceled);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
+        break;
         break;
 
       case TileIO.Format.Pnts:
@@ -616,7 +619,7 @@ export abstract class TileLoader {
 }
 
 export class IModelTileLoader extends TileLoader {
-  constructor(private _iModel: IModelConnection, private _rootId: Id64) { super(); }
+  constructor(private _iModel: IModelConnection, private _rootId: string, private _asClassifier: boolean) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return params.hasGeometry; }
@@ -634,7 +637,7 @@ export class IModelTileLoader extends TileLoader {
       tile.setIsQueued();
       this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: string) => {
         if (tile.isQueued)
-          this.loadGraphics(tile, content);
+          this.loadGraphics(tile, content, this._asClassifier);
       }).catch((_err: any) => {
         tile.setNotFound();
       });
@@ -646,7 +649,7 @@ export namespace TileTree {
   /** Parameters used to construct a TileTree */
   export class Params {
     public constructor(
-      public readonly id: Id64,
+      public readonly id: string,
       public readonly rootTile: TileProps,
       public readonly iModel: IModelConnection,
       public readonly is3d: boolean,
@@ -658,7 +661,7 @@ export namespace TileTree {
       public readonly clipVector?: ClipVector) { }
 
     public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader) {
-      return new Params(Id64.fromJSON(props.id), props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
+      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
     }
   }
 
@@ -667,5 +670,17 @@ export namespace TileTree {
     Loading,
     Loaded,
     NotFound,
+  }
+}
+
+export class TileTreeState {
+  public tileTree?: TileTree;
+  public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  public get iModel() { return this._modelState.iModel; }
+
+  constructor(private _modelState: SpatialModelState) { }
+  public setTileTree(props: TileTreeProps, loader: TileLoader) {
+    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._modelState.iModel, this._modelState.is3d, loader));
+    this.loadStatus = TileTree.LoadStatus.Loaded;
   }
 }
