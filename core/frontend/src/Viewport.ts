@@ -947,8 +947,10 @@ export class Viewport {
   /* finds the canvas child of a div that has the right class to be the view canvas. */
   private static findiModelCanvas(enclosingDiv: HTMLDivElement): HTMLCanvasElement | undefined {
     const childElements: HTMLCollection = enclosingDiv.children;
-    for (const child of childElements) {
-      for (const className of child.classList) {
+    for (let i = 0; i < childElements.length; i++) {
+      const child = childElements.item(i);
+      for (let j = 0; j < child.classList.length; j++) {
+        const className = child.classList.item(j);
         if (className === "imodeljs-canvas")
           return child as HTMLCanvasElement;
       }
