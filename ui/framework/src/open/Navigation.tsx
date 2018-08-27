@@ -135,7 +135,7 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
         index: i,
         selectedTabIndex: this.state.activeTab,
         highlightStyle: this.props.highlightStyle,
-        onClicked: this._handleClick.bind(this, i)
+        onClicked: this._handleClick.bind(this, i),
       });
     });
   }
