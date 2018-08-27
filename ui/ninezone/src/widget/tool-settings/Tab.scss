@@ -1,0 +1,41 @@
+@import "@bentley/ui-core/lib/colors";
+@import "_variables";
+
+.nz-widget-toolSettings-tab {
+  width: $nz-tab-width;
+  height: $nz-tab-height;
+  background-color: $background-3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  pointer-events: auto;
+  border: {
+    width: $nz-widget-border-width;
+    style: solid;
+    color: $nz-widget-border-color;
+    radius: $nz-widget-border-radius;
+  }
+
+  &.nz-is-active {
+    margin-top: -$nz-widget-border-width;
+    background-color: $nz-widget-background-color;
+    color: $primary-base;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    height: $nz-active-tab-height;
+
+    &:after {
+      content: '';
+      position: absolute;
+      background-color: $primary-base;
+      border-radius: 2px;
+      width: $nz-tab-width - $nz-tab-strip-margin * 2;
+      height: $nz-tab-strip-width;
+      left: $nz-tab-strip-margin;
+      bottom: $nz-tab-strip-margin;
+    }
+  }
+}

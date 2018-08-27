@@ -15,15 +15,19 @@
     background: $pressed-fill-color;
   }
 
-  &.nz-is-active::before {
-    content: '';
-    display: block;
-    position: absolute;
-    background-color: $active-icon-color;
-    left: 3px;
-    top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
-    border-radius: 2px;
-    width: $desktop-tool-stripe-width;
-    height: $desktop-tool-stripe-height;
+  &.nz-is-active {
+    &:not(:active) {
+      &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        background-color: $active-icon-color;
+        left: 3px;
+        top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
+        border-radius: 2px;
+        width: $desktop-tool-stripe-width;
+        height: $desktop-tool-stripe-height;
+      }
+    }
   }
 }

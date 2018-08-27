@@ -34,11 +34,13 @@ export namespace IModelTileIO {
     ContainsCurves = 1 << 0,
     Incomplete = 1 << 1,
     IsLeaf = 1 << 2,
+    HasSizeMultiplier = 1 << 3,
   }
 
   export class Header extends TileIO.Header {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
+    public readonly sizeMultiplier: number;
     public readonly length: number;
     public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
 
@@ -46,6 +48,7 @@ export namespace IModelTileIO {
       super(stream);
       this.flags = stream.nextUint32;
       this.contentRange = ElementAlignedBox3d.createFromPoints(stream.nextPoint3d64, stream.nextPoint3d64);
+      this.sizeMultiplier = stream.nextFloat64;
       this.length = stream.nextUint32;
 
       if (stream.isPastTheEnd)
@@ -101,9 +104,11 @@ export namespace IModelTileIO {
         return { readStatus: TileIO.ReadStatus.InvalidHeader, isLeaf };
 
       isLeaf = Flags.None !== (header.flags & Flags.IsLeaf);
+      const hasSizeMultiplier = Flags.None !== (header.flags & Flags.HasSizeMultiplier);
+      const sizeMultiplier = hasSizeMultiplier ? header.sizeMultiplier : undefined;
       const featureTable = this.readFeatureTable();
       if (undefined === featureTable)
-        return { readStatus: TileIO.ReadStatus.InvalidFeatureTable, isLeaf };
+        return { readStatus: TileIO.ReadStatus.InvalidFeatureTable, isLeaf, sizeMultiplier };
 
       const isComplete = Flags.None === (header.flags & Flags.Incomplete);
       const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
@@ -111,9 +116,9 @@ export namespace IModelTileIO {
       // Textures must be loaded asynchronously first...
       await this.loadNamedTextures();
       if (this._isCanceled)
-        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier });
       else
-        return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange));
+        return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange, sizeMultiplier));
     }
 
     private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled) {

@@ -20,7 +20,6 @@
   margin: 15px;
   transition: all 0.3s ease;
   position: relative;
-  cursor: pointer;
 }
 
 // entire content of the card
@@ -118,6 +117,7 @@
 .imodel-card:focus {
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
   -webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
 // hover over preview
@@ -191,11 +191,6 @@
   font-size: $bwc-font-size;
   list-style: none;
   background-color: $bwc-white;
-  border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 4px;
-  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-  box-shadow: 0px 6px 12px rgba (0,0,0,0.25);
-  background-clip: padding-box;
 }
 
 .imodel-card .options-dropdown li {
@@ -219,7 +214,7 @@
 .imodel-card .imodel-card-description {
   height: 48px;
   line-height: 16px;
-  color: $bwc-text-color;
+  color: $bwc-gray;
   display: block;
   padding: 0 14px;
   margin-bottom: .5em;
@@ -229,5 +224,4 @@
   box-sizing: border-box;
   font-size: $bwc-font-size-small;
   font-weight: $bwc-font-weight-light;
-  color: rgba(0, 0, 0, 0.75);
 }

@@ -33,6 +33,7 @@ export namespace GltfTileIO {
     contentRange?: ElementAlignedBox3d;
     geometry?: TileIO.GeometryCollection;
     renderGraphic?: RenderGraphic;
+    sizeMultiplier?: number;
   }
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
@@ -254,9 +255,9 @@ export namespace GltfTileIO {
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     protected get _hasBakedLighting(): boolean { return false; }
 
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       if (this._isCanceled)
-        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
+        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
@@ -289,6 +290,7 @@ export namespace GltfTileIO {
       return {
         readStatus,
         isLeaf,
+        sizeMultiplier,
         contentRange,
         geometry,
         renderGraphic,

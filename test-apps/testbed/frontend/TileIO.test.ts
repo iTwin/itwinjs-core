@@ -869,16 +869,11 @@ describe("TileIO", () => {
 
     const rootTile = tree.rootTile;
     expect(rootTile.id.treeId).to.equal(tree.id);
-    expect(rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(rootTile.id.tileId).to.equal("0/0/0/0:1");
 
-    if (undefined === rootTile.geometry || undefined === rootTile.contentRange)
-      return; // ###TODO: The add-on doesn't wait for tile geometry to be saved to the cache, so it may be undefined...
-
-    expect(rootTile.geometry).not.to.be.undefined;
     expect(rootTile.contentRange).not.to.be.undefined;
 
-    expect(rootTile.childIds).not.to.be.undefined;
-
-    expect(rootTile.childIds.length).to.equal(1); // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+    expect(rootTile.isLeaf).to.be.false;
+    expect(rootTile.sizeMultiplier).not.to.be.undefined; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
   });
 });

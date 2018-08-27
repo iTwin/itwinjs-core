@@ -1,1 +1,5 @@
-$widget-background-color: #ccc;
+@import "../variables";
+
+$nz-tab-width: 50px;
+$nz-tab-height: 25px;
+$nz-active-tab-height: $nz-tab-height + $nz-tab-strip-width + $nz-tab-strip-margin;

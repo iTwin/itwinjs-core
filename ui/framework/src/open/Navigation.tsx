@@ -72,7 +72,7 @@ export class NavigationItem extends React.Component<INavigationItemProps> {
     return (
       <li className={classes} onClick={this.onClick}>
         <span className={icon} />
-        {this.props.label}
+        <span className="label">{this.props.label}</span>
         <div className=".open-navbar-barindicator"></div>
       </li>
     );

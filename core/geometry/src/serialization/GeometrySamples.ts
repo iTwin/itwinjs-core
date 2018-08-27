@@ -460,18 +460,25 @@ export class Sample {
     }
     return result;
   }
-
   public static createSimplePaths(withGaps: boolean = false): Path[] {
     const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 1), [Point3d.create(0, 10, 0)]]];
+    const point0 = Point3d.create(0, 0, 0);
+    const point1 = Point3d.create(10, 0, 0);
+    const segment1 = LineSegment3d.create(point0, point1);
+    const vectorU = Vector3d.unitX(3);
+    const vectorV = Vector3d.unitY(3);
+    const arc2 = Arc3d.create(point1.minus(vectorU), vectorU, vectorV, AngleSweep.createStartEndDegrees(0, 90));
     const simplePaths = [
+      Path.create(segment1),
+      Path.create(segment1, arc2),
       Path.create(
-        LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0))),
-      Path.create(
-        LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0)),
+        LineSegment3d.create(point0, point1),
         LineString3d.create(
           Point3d.create(10, 0, 0),
           Point3d.create(10, 5, 0)),
-        LineString3d.create(p1))];
+        LineString3d.create(p1)),
+      Sample.createCappedArcPath(4, 0, 180),
+    ];
     if (withGaps)
       simplePaths.push(
         Path.create(
@@ -510,6 +517,8 @@ export class Sample {
         LineSegment3d.create(point2, point3),
         LineSegment3d.create(point3, point0),
       ),
+      // Semicircle
+      Sample.createCappedArcLoop(4, -90, 90),
     ];
     return result;
   }
@@ -799,7 +808,7 @@ export class Sample {
     result.push(LinearSweep.create(base, vectorZ, true) as LinearSweep);
     result.push(LinearSweep.create(base, vectorQ, false) as LinearSweep);
     result.push(LinearSweep.create(base, vectorQ, true) as LinearSweep);
-
+    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true) as LinearSweep);
     for (const curve of Sample.createSmoothCurvePrimitives()) {
       const path = Path.create(curve);
       result.push(LinearSweep.create(path, vectorZ, false)!);
@@ -824,6 +833,26 @@ export class Sample {
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, false)!);
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, true)!);
     return result;
+  }
+  /**
+   * Create an array of primitives with an arc centerd at origin and a line segment closing back to the arc start.
+   * This can be bundled into Path or Loop by caller.
+   */
+  public static createCappedArcPrimitives(radius: number, startDegrees: number, endDegrees: number): CurvePrimitive[] {
+    const arc = Arc3d.create(
+      Point3d.create(0, 0, 0),
+      Vector3d.unitX(radius),
+      Vector3d.unitY(radius),
+      AngleSweep.createStartEndDegrees(startDegrees, endDegrees));
+    return [arc, LineSegment3d.create(arc.fractionToPoint(0.0), arc.fractionToPoint(1.0))];
+  }
+  /** Return a Path structure for a segment of arc, with closure segment */
+  public static createCappedArcPath(radius: number, startDegrees: number, endDegrees: number): Path {
+    return Path.createArray(Sample.createCappedArcPrimitives(radius, startDegrees, endDegrees));
+  }
+  /** Return a Loop structure for a segment of arc, with closure segment */
+  public static createCappedArcLoop(radius: number, startDegrees: number, endDegrees: number): Loop {
+    return Loop.createArray(Sample.createCappedArcPrimitives(radius, startDegrees, endDegrees));
   }
 
   public static createSimpleRotationalSweeps(): RotationalSweep[] {

@@ -27,7 +27,7 @@
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "tslint -p ./src 1>&2",
-    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --timeout 60000 --file ./tests/index.test.ts tests/**/*.ts",
+    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
@@ -65,7 +65,7 @@
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
-    "typescript": "~2.9.1",
+    "typescript": "~3.0.0",
     "typescript-json-schema": "^0.28.0"
   },
   "nyc": {

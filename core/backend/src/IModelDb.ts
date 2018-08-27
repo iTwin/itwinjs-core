@@ -1321,13 +1321,13 @@ export namespace IModelDb {
     public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
 
     /** @hidden */
-    public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
+    public getChildrenProps(treeId: string, parentId: string): TileProps[] {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTiles(treeId, tileIds);
+      const { error, result } = this._iModel.nativeDb.getChildren(treeId, parentId);
       if (error)
-        throw new IModelError(error.status, "TreeId=" + treeId);
+        throw new IModelError(error.status, "TreeId=" + treeId + " ParentId=" + parentId);
 
       assert(Array.isArray(result));
       return result! as TileProps[];

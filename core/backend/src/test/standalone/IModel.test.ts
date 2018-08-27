@@ -310,15 +310,15 @@ describe("iModel", () => {
     expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
 
     expect(tree.rootTile.id.treeId).to.equal(tree.id);
-    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:1");
 
     const range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
 
-    expect(tree.rootTile.hasGeometry).to.be.false; // empty model => empty tile
+    expect(tree.rootTile.maximumSize).to.equal(0.0);
+    expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
-    expect(tree.rootTile.childIds.length).to.equal(0);
   });
 
   it("should produce an array of rows", () => {

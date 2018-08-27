@@ -142,18 +142,13 @@ describe("IModelConnection (#integration)", () => {
     expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
 
-    if (undefined === rootTile.geometry || undefined === rootTile.contentRange)
-      return; // ###TODO: The add-on doesn't wait for tile geometry to be saved to the cache, so it may be undefined...
-
-    expect(rootTile.geometry).not.to.be.undefined;
     expect(rootTile.contentRange).not.to.be.undefined;
 
     const contentRange = Range3d.fromJSON(rootTile.contentRange);
     expect(contentRange.low.isAlmostEqualXYZ(-30.14521, -30.332516, -10.001)).to.be.true;
     expect(contentRange.high.isAlmostEqualXYZ(40.414249, 39.89347, 10.310687)).to.be.true;
 
-    expect(rootTile.childIds).not.to.be.undefined;
-    expect(rootTile.childIds.length).to.equal(0); // this is a leaf tile.
+    expect(rootTile.isLeaf).to.be.true;
   });
 
   it("Load native assets", async () => {

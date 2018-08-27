@@ -171,9 +171,3 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
   }
 }
 
-/*
-<div className="selected-count">
-<span>Selected:</span>
-<div className="count">{this.state.selectedViews.length}</div>
-</div>
-*/

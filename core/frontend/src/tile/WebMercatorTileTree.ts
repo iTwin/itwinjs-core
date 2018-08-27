@@ -83,30 +83,18 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   }
 }
 class WebMercatorTileProps implements TileProps {
-  public id: TileId;
-  public parentId?: string;
-  public range: Range3dProps;
-  public contentRange?: Range3dProps;
-  public maximumSize: number;
-
-  public childIds: string[];
-  public hasContents: boolean = true;
-  public geometry?: any;
+  public readonly id: TileId;
+  public readonly range: Range3dProps;
+  public readonly contentRange?: Range3dProps;
+  public readonly maximumSize: number;
+  public readonly sizeMultiplier: number = 1.0;
+  public readonly isLeaf: boolean = false;
 
   constructor(thisId: string, mercatorToDb: Transform) {
     this.id = new TileId("", thisId);
     const quadId = new QuadId(thisId);
     this.range = quadId.getRange(mercatorToDb);
-    this.childIds = [];
-    const level = quadId.level + 1;
-    const column = quadId.column * 2;
-    const row = quadId.row * 2;
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
-    for (let i = 0; i < 2; ++i) {
-      for (let j = 0; j < 2; ++j) {
-        this.childIds.push(level + "_" + (column + i) + "_" + (row + j));
-      }
-    }
   }
 }
 class WebMercatorTileLoader extends TileLoader {
@@ -133,9 +121,19 @@ class WebMercatorTileLoader extends TileLoader {
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    const quadId = new QuadId(parent.id);
+    const level = quadId.level + 1;
+    const column = quadId.column * 2;
+    const row = quadId.row * 3;
+
     const props: WebMercatorTileProps[] = [];
-    for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        const childId = level + "_" + (column + i) + "_" + (row + j);
+        props.push(new WebMercatorTileProps(childId, this.mercatorToDb));
+      }
+    }
 
     return props;
   }
@@ -417,7 +415,7 @@ class MapBoxProvider extends ImageryProvider {
 
   constructor(mapType: MapType) {
     super(mapType);
-    this._zoomMin = this._zoomMax = 0;
+    this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
       case MapType.Street:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets/";

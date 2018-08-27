@@ -1,0 +1,23 @@
+@import "_variables";
+
+.nz-widget-toolSettings-settings {
+  $horizontal-padding: 5px;
+  $vertical-padding: $horizontal-padding;
+
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  position: relative;
+  background-color: $nz-widget-background-color;
+  color: $text-dark;
+  min-width: $nz-tab-width;
+  pointer-events: auto;
+
+  border: {
+    width: $nz-widget-border-width;
+    style: solid;
+    color: $nz-widget-border-color;
+    radius: 3px;
+  }
+}

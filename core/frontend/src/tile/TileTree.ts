@@ -64,27 +64,27 @@ export class Tile implements IDisposable {
   public readonly depth: number;
   public loadStatus: Tile.LoadStatus;
   public readonly id: string;
-  public readonly maximumSize: number;
   public readonly center: Point3d;
   public readonly radius: number;
-  public readonly zoomFactor?: number;
-  protected readonly _childIds: string[];
+  protected readonly _maximumSize: number;
+  protected _isLeaf: boolean;
   protected _childrenLastUsed: BeTimePoint;
   protected _childrenLoadStatus: TileTree.LoadStatus;
   protected _children?: Tile[];
   protected _contentRange?: ElementAlignedBox3d;
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
+  protected _sizeMultiplier?: number;
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
-    this.depth = 1 + (undefined !== this.parent ? this.parent.depth : 0);
+    this.depth = undefined !== this.parent ? this.parent.depth + 1 : 0;
     this.loadStatus = Tile.LoadStatus.NotLoaded;
     this.id = props.id;
-    this.maximumSize = props.maximumSize;
-    this._childIds = props.childIds;
+    this._maximumSize = props.maximumSize;
+    this._isLeaf = (true === props.isLeaf);
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
 
@@ -94,9 +94,6 @@ export class Tile implements IDisposable {
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
-
-    if (undefined === this.maximumSize)
-      this.maximumSize = this.hasGraphics ? 512 : 0;
 
     this._childrenLoadStatus = this.hasChildren && this.depth < this.root.loader.maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
@@ -130,7 +127,22 @@ export class Tile implements IDisposable {
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
-  public setGraphic(graphic: RenderGraphic | undefined): void { this._graphic = graphic; this.setIsReady(); }
+  public setGraphic(graphic: RenderGraphic | undefined, isLeaf?: boolean, contentRange?: ElementAlignedBox3d, sizeMultiplier?: number): void {
+    this._graphic = graphic;
+    if (undefined !== isLeaf) {
+      this._isLeaf = isLeaf;
+      this.unloadChildren(BeTimePoint.now());
+    }
+
+    if (undefined !== sizeMultiplier)
+      this._sizeMultiplier = sizeMultiplier;
+
+    if (undefined !== contentRange)
+      this._contentRange = contentRange;
+
+    this.setIsReady();
+  }
+
   public setIsReady(): void { this.loadStatus = Tile.LoadStatus.Ready; IModelApp.viewManager.onNewTilesReady(); }
   public setIsQueued(): void { this.loadStatus = Tile.LoadStatus.Queued; }
   public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
@@ -144,16 +156,18 @@ export class Tile implements IDisposable {
     this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
+  public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
-  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
+  public get hasChildren(): boolean { return !this.isLeaf; }
   public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
-  public get isLeaf(): boolean { return !this.hasChildren; }
+  public get isLeaf(): boolean { return this._isLeaf; }
   public get isDisplayable(): boolean { return this.maximumSize > 0; }
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
-  public get hasZoomFactor(): boolean { return undefined !== this.zoomFactor; }
+  public get sizeMultiplier(): number { return undefined !== this._sizeMultiplier ? this._sizeMultiplier : 1.0; }
+  public get hasSizeMultiplier(): boolean { return undefined !== this._sizeMultiplier; }
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
   public get yAxisUp(): boolean { return this.root.yAxisUp; }
@@ -259,7 +273,7 @@ export class Tile implements IDisposable {
     let canSkipThisTile = this.isReady || this.isParentDisplayable;
     if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
       // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
-      const isNotReady = !this.hasGraphics && !this.hasZoomFactor;
+      const isNotReady = !this.hasGraphics && !this.hasSizeMultiplier;
       if (isNotReady) {
         if (numSkipped >= this.root.maxTilesToSkip)
           canSkipThisTile = false;
@@ -345,7 +359,7 @@ export class Tile implements IDisposable {
   private loadChildren(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
       this._childrenLoadStatus = TileTree.LoadStatus.Loading;
-      this.root.loader.getTileProps(this._childIds).then((props: TileProps[]) => {
+      this.root.loader.getChildrenProps(this).then((props: TileProps[]) => {
         this._children = [];
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
@@ -363,10 +377,16 @@ export class Tile implements IDisposable {
             this._contentRange = parentRange;
         }
 
-        IModelApp.viewManager.onNewTilesReady();
+        if (0 === this._children.length) {
+          this._children = undefined;
+          this._isLeaf = true;
+        } else {
+          IModelApp.viewManager.onNewTilesReady();
+        }
       }).catch((_err) => {
         this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
         this._children = undefined;
+        this._isLeaf = true;
       });
     }
 
@@ -468,15 +488,14 @@ export namespace Tile {
       public readonly id: string,
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
-      public readonly childIds: string[],
+      public readonly isLeaf?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
-      public readonly zoomFactor?: number,
-      public readonly hasGeometry?: any) { }
+      public readonly sizeMultiplier?: number) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, props.hasGeometry);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, props.sizeMultiplier);
     }
   }
 }
@@ -560,7 +579,7 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
 }));
 
 export abstract class TileLoader {
-  public abstract async getTileProps(ids: string[]): Promise<TileProps[]>;
+  public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async loadTileContents(missingtiles: MissingNodes): Promise<void>;
   public abstract get maxDepth(): number;
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
@@ -609,7 +628,7 @@ export abstract class TileLoader {
     read.then((result) => {
       // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
       if (tile.isLoading) {
-        tile.setGraphic(result.renderGraphic);
+        tile.setGraphic(result.renderGraphic, result.isLeaf, result.contentRange, result.sizeMultiplier);
         IModelApp.viewManager.onNewTilesReady();
       }
     });
@@ -622,14 +641,13 @@ export class IModelTileLoader extends TileLoader {
   constructor(private _iModel: IModelConnection, private _rootId: string, private _asClassifier: boolean) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
-  public tileRequiresLoading(params: Tile.Params): boolean { return params.hasGeometry; }
+  public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
 
   protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
-  public async getTileProps(ids: string[]): Promise<TileProps[]> {
-    const tileIds: TileId[] = ids.map((id: string) => new TileId(this._rootId, id));
-    return this._iModel.tiles.getTileProps(tileIds);
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    return this._iModel.tiles.getChildrenProps(new TileId(this._rootId, parent.id));
   }
 
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {

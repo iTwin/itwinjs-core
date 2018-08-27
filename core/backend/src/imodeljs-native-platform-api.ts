@@ -265,7 +265,7 @@ export declare class NativeDgnDb {
    * @param tileIds The IDs of the tiles to retrieve
    * @returns In case of success, the result property will be a stringified JSON array of tile properties.
    */
-  public getTiles(treeId: string, tileIds: string[]): ErrorStatusOrResult<IModelStatus, any>;
+  public getChildren(treeId: string, parentId: string): ErrorStatusOrResult<IModelStatus, any>;
 
   /**
    * Get the content (geometry) of a tile as a base-64-encoded string

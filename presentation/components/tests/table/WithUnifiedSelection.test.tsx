@@ -341,7 +341,6 @@ describe("Table withUnifiedSelection", () => {
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
           selectionLevel={selectionLevel}
         />, { disableLifecycleMethods: true });
 
@@ -394,7 +393,6 @@ describe("Table withUnifiedSelection", () => {
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
 
         table.find(Table).prop("onRowsDeselected")!(rows);

@@ -53,28 +53,23 @@ class RealityModelTileTreeProps implements TileTreeProps {
 }
 
 class RealityModelTileProps implements TileProps {
-  public id: TileId;
-  public range: Range3dProps;
-  public contentRange?: Range3dProps;
-  public maximumSize: number;
-  public childIds: string[];
+  public readonly id: TileId;
+  public readonly range: Range3dProps;
+  public readonly contentRange?: Range3dProps;
+  public readonly maximumSize: number;
+  public readonly isLeaf: boolean;
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
   constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
     this.id = new TileId("", thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
-    this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
-    this.childIds = [];
-    const prefix = thisId.length ? thisId + "_" : "";
-    if (Array.isArray(json.children))
-      for (let i = 0; i < json.children.length; i++)
-        this.childIds.push(prefix + i);
-
+    this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.hasContents = undefined !== json.content && undefined !== json.content.url;
-
     if (this.hasContents) {
       this.contentRange = json.content.boundingVolume && CesiumUtils.rangeFromBoundingVolume(json.content.boundingVolume);
       this.maximumSize = CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
+    } else {
+      this.maximumSize = 0.0;
     }
   }
 }
@@ -85,14 +80,21 @@ class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
-    tileIds.map(async (tileId) => {
-      const foundChild = this.findTileInJson(this._tree.tilesetJson, tileId, "");
-      if (foundChild !== undefined)
-        props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree));
-    });
+    const thisId = parent.id;
+    const prefix = thisId.length ? thisId + "_" : "";
+    const json = this.findTileInJson(this._tree.tilesetJson, thisId, "");
+    if (undefined !== json && Array.isArray(json.json.children)) {
+      for (let i = 0; i < json.json.children.length; i++) {
+        const childId = prefix + i;
+        const foundChild = this.findTileInJson(this._tree.tilesetJson, childId, "");
+        if (undefined !== foundChild)
+          props.push(new RealityModelTileProps(foundChild.json, foundChild.id));
+      }
+    }
+
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {

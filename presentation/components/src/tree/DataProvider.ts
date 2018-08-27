@@ -96,6 +96,7 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
     return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
+
 class MemoizationHelpers {
   public static createKeyForPageOptions(pageOptions?: PageOptions) {
     if (!pageOptions)
