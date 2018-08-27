@@ -4,7 +4,7 @@
 /** @module AccuDraw */
 import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
-import { Viewport } from "./Viewport";
+import { Viewport, ScreenViewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
@@ -142,7 +142,7 @@ export class RoundOff {
 
 export class SavedState {
   public state = CurrentState.NotEnabled;
-  public view?: Viewport;
+  public view?: ScreenViewport;
   public mode = CompassMode.Polar;
   public rotationMode = RotationMode.View;
   public readonly axes = new ThreeAxes();
@@ -203,7 +203,7 @@ export class AccuDraw {
   public currentState = CurrentState.NotEnabled; // Compass state
   public compassMode = CompassMode.Rectangular; // Compass mode
   public rotationMode = RotationMode.View; // Compass rotation
-  public currentView?: Viewport; // will be nullptr if view not yet defined
+  public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   public readonly published = new AccudrawData(); // Staging area for hints
   public readonly origin = new Point3d(); // origin point...not on compass plane when z != 0.0
   public readonly axes = new ThreeAxes(); // X, Y and Z vectors (3d rotation matrix)
@@ -402,7 +402,7 @@ export class AccuDraw {
     return false;
   }
 
-  public adjustPoint(pointActive: Point3d, vp: Viewport, fromSnap: boolean): boolean {
+  public adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean {
     if (!this.isEnabled)
       return false;
 
@@ -766,7 +766,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
-  public sendDataPoint(pt: Point3d, vp: Viewport): void {
+  public sendDataPoint(pt: Point3d, vp: ScreenViewport): void {
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
 
@@ -2503,7 +2503,7 @@ export class AccuDraw {
     }
   }
 
-  private fixPoint(pointActive: Point3d, vp: Viewport): void {
+  private fixPoint(pointActive: Point3d, vp: ScreenViewport): void {
     if (this.isActive && ((vp !== this.currentView) || this.flags.rotationNeedsUpdate)) {
       this.currentView = vp;
 
@@ -2766,7 +2766,7 @@ export class AccuDraw {
     return false;
   }
 
-  public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
+  public onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     // In case previous is closing, always update AccuDraw to current view...
     if (undefined !== this.currentView && this.currentView === previous)
       this.currentView = current;

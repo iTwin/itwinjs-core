@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
-  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder, BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail,
+  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder, BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -59,7 +59,7 @@ const renderModeOptions: RenderModeOptions = {
 
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState | IModelConnection.ViewSpec>();
-let theViewport: Viewport | undefined;
+let theViewport: ScreenViewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
@@ -464,9 +464,9 @@ function updateRenderModeOptionsMap() {
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
-  const htmlDiv: HTMLDivElement = document.getElementById("imodel-viewport") as HTMLDivElement;
+  const htmlDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
   if (htmlDiv) {
-    theViewport = new Viewport(htmlDiv, state.viewState!);
+    theViewport = ScreenViewport.create(htmlDiv, state.viewState!);
     await _changeView(state.viewState!);
     theViewport.addFeatureOverrides = addFeatureOverrides;
     theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
@@ -476,7 +476,7 @@ async function openView(state: SimpleViewState) {
 }
 
 async function _changeView(view: ViewState) {
-  await theViewport!.changeView(view);
+  theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
   await buildCategoryMenu(activeViewState);
@@ -883,41 +883,48 @@ class SVTAccuSnap extends AccuSnap {
 
 class SVTNotifications extends NotificationManager {
   private _toolTip?: Tooltip;
+  private _el?: HTMLElement;
+  private _tooltipDiv?: HTMLDivElement;
 
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  protected toolTipIsOpen(): boolean { return !!this._toolTip && this._toolTip._isOpen; }
+  protected toolTipIsOpen(): boolean { return undefined !== this._toolTip; }
 
   public clearToolTip(): void {
-    if (this.isToolTipOpen)
-      this._toolTip!.hide();
+    if (!this.isToolTipOpen)
+      return;
+
+    this._toolTip!.dispose();
+    this._el!.removeChild(this._tooltipDiv!);
+    this._toolTip = undefined;
+    this._el = undefined;
+    this._tooltipDiv = undefined;
   }
+
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
 
-    const position = document.getElementById("tooltip-location");
-    if (!position)
-      return;
-
-    if (!this._toolTip)
-      this._toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
-
-    this._toolTip!.updateTitleContent(message);
-
     const rect = el.getBoundingClientRect();
-    if (undefined === pt) {
+    if (undefined === pt)
       pt = { x: rect.width / 2, y: rect.height / 2 };
-    }
-    const height = 20; // parseInt(position.style.height!, 10) / 2;
-    const width = 20; // parseInt(position.style.width!, 10) / 2;
-    position.style.top = (pt.y + rect.top - height / 2) + "px";
-    position.style.left = (pt.x + rect.left - width / 2) + "px";
-    position.style.width = width + "px";
-    position.style.height = height + "px";
 
+    const location = document.createElement("div");
+    const height = 20;
+    const width = 20;
+    location.style.position = "absolute";
+    location.style.top = (pt.y - height / 2) + "px";
+    location.style.left = (pt.x - width / 2) + "px";
+    location.style.width = width + "px";
+    location.style.height = height + "px";
+
+    el.appendChild(location);
+
+    this._el = el;
+    this._tooltipDiv = location;
+    this._toolTip = new ttjs.default(location, { trigger: "manual", html: true, placement: "auto", title: message });
     this._toolTip!.show();
   }
 }

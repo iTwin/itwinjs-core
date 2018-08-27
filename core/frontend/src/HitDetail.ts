@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
-import { Viewport } from "./Viewport";
+import { ScreenViewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -85,7 +85,7 @@ export class HitDetail {
    * @param distXY The xy distance to hit in view coordinates.
    * @param distFraction The near plane distance fraction to hit.
    */
-  public constructor(public readonly testPoint: Point3d, public readonly viewport: Viewport, public readonly hitSource: HitSource,
+  public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number) { }
 
   /** Get the type of HitDetail.

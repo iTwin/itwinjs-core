@@ -4,7 +4,7 @@
 
 import { expect, assert } from "chai";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/rendering";
-import { IModelApp, Viewport, ViewState, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
 import { FeatureTable, Feature } from "@bentley/imodeljs-common/lib/Render";
@@ -12,13 +12,6 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { WebGLTestContext } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-
-class TestViewport extends Viewport {
-  public constructor(enclosingDiv: HTMLDivElement, viewState: ViewState) {
-    super(enclosingDiv, viewState);
-    this.setupFromView();
-  }
-}
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -31,7 +24,7 @@ function waitUntilTimeHasPassed() {
 describe("FeatureOverrides tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
-  let vp: TestViewport;
+  let vp: ScreenViewport;
 
   const viewDiv = document.createElement("div") as HTMLDivElement;
   assert(null !== viewDiv);
@@ -56,7 +49,7 @@ describe("FeatureOverrides tests", () => {
     }
 
     const vpView = spatialView.clone<SpatialViewState>();
-    vp = new TestViewport(viewDiv!, vpView);
+    vp = ScreenViewport.create(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
@@ -82,7 +75,7 @@ describe("FeatureOverrides tests", () => {
     }
 
     const vpView = spatialView.clone<SpatialViewState>();
-    vp = new TestViewport(viewDiv!, vpView);
+    vp = ScreenViewport.create(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
