@@ -228,6 +228,26 @@ export class WidgetZone extends Zone {
     return false;
   }
 
+  public getUnmergeBounds(): Array<{ id: WidgetZoneIndex, bounds: RectangleProps }> {
+    const mergedZones = Widget.sort(this.getWidgets()).map((w) => w.defaultZone);
+    const zoneBounds = Rectangle.create(this.props.bounds);
+    if (this.isMergedHorizontally) {
+      return mergedZones.map((z, index) => ({
+        id: z.id,
+        bounds: zoneBounds.getHorizontalSegmentBounds(index, mergedZones.length),
+      }));
+    } else if (this.isMergedVertically) {
+      return mergedZones.map((z, index) => ({
+        id: z.id,
+        bounds: zoneBounds.getVerticalSegmentBounds(index, mergedZones.length),
+      }));
+    }
+    return [{
+      id: this.id,
+      bounds: this.props.bounds,
+    }];
+  }
+
   public getGhostOutlineBounds(): RectangleProps | undefined {
     const target = this.nineZone.target;
     if (!target)

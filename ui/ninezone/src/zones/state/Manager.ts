@@ -144,8 +144,7 @@ export class StateManager {
       return { ...model.props };
 
     const defaultZone = widget.defaultZone;
-    const mergedZones = Widget.sort(zone.getWidgets()).map((w) => w.defaultZone);
-    const zoneBounds = Rectangle.create(zone.props.bounds);
+    const unmergeBounds = zone.getUnmergeBounds();
     if (!widget.isInHomeZone) {
       const floatingBounds = Rectangle.create(widget.zone.props.bounds).offset(offset);
       return {
@@ -154,8 +153,7 @@ export class StateManager {
           ...model.props.zones,
           ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
             const id = Number(key) as WidgetZoneIndex;
-            const mergedZoneIndex = mergedZones.findIndex((mz) => mz.id === id);
-            const mergedZone = mergedZoneIndex > -1 ? mergedZones[mergedZoneIndex] : undefined;
+            const mergedZone = unmergeBounds.find((z) => z.id === id);
             if (id === zone.props.id && mergedZone) {
               acc[id] = {
                 ...model.props.zones[id],
@@ -167,12 +165,12 @@ export class StateManager {
                     };
                   return w;
                 }),
-                bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
+                bounds: mergedZone.bounds,
               };
             } else if (id === defaultZone.id && mergedZone) {
               acc[id] = {
                 ...model.props.zones[id],
-                bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
+                bounds: mergedZone.bounds,
                 floatingBounds,
                 widgets: [
                   ...model.props.zones[zone.props.id].widgets.filter((w) => w.id === widgetId).map((w) => {
@@ -188,7 +186,7 @@ export class StateManager {
             } else if (mergedZone) {
               acc[id] = {
                 ...model.props.zones[id],
-                bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
+                bounds: mergedZone.bounds,
               };
             }
 
@@ -211,13 +209,12 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const mergedZoneIndex = mergedZones.findIndex((mz) => mz.id === id);
-          const mergedZone = mergedZoneIndex > -1 ? mergedZones[mergedZoneIndex] : undefined;
+          const mergedZone = unmergeBounds.find((z) => z.id === id);
           if (id === zone.props.id && mergedZone) {
             acc[id] = {
               ...model.props.zones[id],
               floatingBounds: defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds,
-              bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
+              bounds: mergedZone.bounds,
               widgets: model.props.zones[id].widgets.filter((w) => w.id === widgetId).map((w) => {
                 if (w.id === id && w.tabIndex < 1)
                   return {
@@ -230,7 +227,7 @@ export class StateManager {
           } else if (mergedZone) {
             acc[id] = {
               ...model.props.zones[id],
-              bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
+              bounds: mergedZone.bounds,
               widgets: model.props.zones[zone.props.id].widgets.filter((w) => w.id === id).map((w) => {
                 if (w.id === id && w.tabIndex < 1)
                   return {

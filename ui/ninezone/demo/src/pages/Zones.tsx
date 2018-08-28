@@ -196,12 +196,13 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._dialogContainer = document.createElement("div");
 
+    const nineZone = NineZoneManager.handleChangeFooterMode(false, getDefaultNineZone());
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
       isTemporaryMessageVisible: false,
       isTooltipVisible: false,
-      nineZone: getDefaultNineZone(),
+      nineZone,
       activeTab: MessageCenterActiveTab.AllMessages,
       openWidget: FooterWidget.None,
       secondZoneContent: SecondZoneContent.None,

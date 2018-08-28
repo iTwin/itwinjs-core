@@ -1991,3 +1991,9 @@ exports[`<Zones /> renders correctly 171`] = `
   className="nz-zones-zones"
 />
 `;
+
+exports[`<Zones /> renders correctly 172`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;

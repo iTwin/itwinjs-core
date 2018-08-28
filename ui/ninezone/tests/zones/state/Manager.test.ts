@@ -2,12 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
-import { RectangleProps } from "@src/utilities/Rectangle";
 import DefaultStateManager, { StateManager } from "@src/zones/state/Manager";
-import TestProps from "./TestProps";
 import { TargetType } from "@src/zones/state/Target";
 import { NineZoneProps } from "@src/zones/state/NineZone";
+import TestProps from "./TestProps";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;
@@ -432,11 +430,11 @@ describe("StateManager", () => {
     it("should set floating bounds", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
 
-      expect(state.zones[6].floatingBounds);
-      const floatingBounds = state.zones[6].floatingBounds as RectangleProps;
-      floatingBounds.top.should.eq(20);
-      floatingBounds.right.should.eq(99);
-      floatingBounds.bottom.should.eq(54);
+      expect(state.zones[6].floatingBounds).to.exist;
+      state.zones[6].floatingBounds!.left.should.eq(10);
+      state.zones[6].floatingBounds!.top.should.eq(20);
+      state.zones[6].floatingBounds!.right.should.eq(99);
+      state.zones[6].floatingBounds!.bottom.should.eq(54);
     });
 
     it("should unmerge merged zone", () => {
@@ -490,6 +488,28 @@ describe("StateManager", () => {
       state.zones[6].floatingBounds!.left.should.eq(10, "floatingBounds6.left");
       state.zones[6].floatingBounds!.right.should.eq(99, "floatingBounds6.right");
       state.zones[6].floatingBounds!.bottom.should.eq(110, "floatingBounds6.bottom");
+    });
+
+    it("should set bounds when unmerging horizontally merged zones", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To8);
+
+      const bounds8 = state.zones[8].bounds;
+      bounds8.top.should.eq(20, "bounds8.top");
+      bounds8.left.should.eq(10, "bounds8.left");
+      bounds8.right.should.eq(54.5, "bounds8.right");
+      bounds8.bottom.should.eq(110, "bounds8.bottom");
+      expect(state.zones[8].floatingBounds, "floatingBounds8").undefined;
+
+      const bounds9 = state.zones[9].bounds;
+      bounds9.top.should.eq(20, "bounds9.top");
+      bounds9.left.should.eq(54.5, "bounds9.left");
+      bounds9.right.should.eq(99, "bounds9.right");
+      bounds9.bottom.should.eq(110, "bounds9.bottom");
+      expect(state.zones[9].floatingBounds, "floatingBounds9").to.exist;
+      state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
+      state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
+      state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
+      state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
     });
 
     it("should set dragging widget when unmerging", () => {

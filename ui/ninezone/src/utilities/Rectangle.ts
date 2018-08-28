@@ -232,10 +232,25 @@ export default class Rectangle implements RectangleProps {
     return new Rectangle(left, top, right, bottom);
   }
 
+  /**
+   * Vertically divides this rectangle into specified number of equal height segments.
+   * @returns Vertical rectangle segment.
+   */
   public getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle {
     const segmentHeight = this.getHeight() / numberOfSegments;
 
     const top = segmentId * segmentHeight;
     return this.inset(0, top, 0, 0).setHeight(segmentHeight);
+  }
+
+  /**
+   * Horizontally divides this rectangle into specified number of equal width segments.
+   * @returns Horizontal rectangle segment.
+   */
+  public getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle {
+    const segmentWidth = this.getWidth() / numberOfSegments;
+
+    const left = segmentId * segmentWidth;
+    return this.inset(left, 0, 0, 0).setWidth(segmentWidth);
   }
 }
