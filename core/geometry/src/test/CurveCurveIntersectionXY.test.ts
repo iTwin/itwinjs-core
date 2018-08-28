@@ -65,14 +65,18 @@ describe("CurveCurve", () => {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
       const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
       const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
-      const intersections = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, segment1, false);
-      testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
+      const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, false, segment1, false);
+      testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
+
+      const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, segment1, false, segment0, false);
+      testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
+
     }
     ck.checkpoint("CurveCurve.LineLine");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("LineArcMapped", () => {
+  it("LineArcMapped", () => {
     const ck = new Checker();
     for (const map of createSamplePerspectiveMaps()) {
       for (const dz of [0, 0.3]) {
@@ -114,9 +118,31 @@ describe("CurveCurve", () => {
       const intersections2 = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring0, false, linestring1, false);
       testIntersectionsXY(ck, worldToLocal, intersections2, 2, 2);
 
+      const intersections2r = CurveCurve.IntersectionProjectedXY(worldToLocal, linestring1, false, linestring0, false);
+      testIntersectionsXY(ck, worldToLocal, intersections2r, 2, 2);
+
       const intersectionsX = CurveCurve.IntersectionProjectedXY(worldToLocal, segment0, true, linestring0, true);
       testIntersectionsXY(ck, worldToLocal, intersectionsX, 2, 2);
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("ArcArc", () => {
+    const ck = new Checker();
+    for (const map of createSamplePerspectiveMaps()) {
+      const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
+      const arcA = Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 1, 0));
+      const arcB = Arc3d.create(Point3d.create(0, 1, 1), Vector3d.create(2, 0, 0), Vector3d.create(0, 4, 0));
+      const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, arcA, true, arcB, true);
+      testIntersectionsXY(ck, worldToLocal, intersectionsAB, 4, 4);
+
+      const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, arcB, true, arcA, true);
+      testIntersectionsXY(ck, worldToLocal, intersectionsBA, 4, 4);
+
+    }
+    ck.checkpoint("CurveCurve.LineLine");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+
 });

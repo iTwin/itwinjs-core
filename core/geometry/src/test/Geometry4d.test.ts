@@ -704,7 +704,7 @@ describe("Map4d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("ProjectiveLineClosestPointXY", () => {
+  it("ProjectiveLineClosestPointXY", () => {
     const ck = new bsiChecker.Checker();
     let badFraction: number | undefined;
     for (const wA0 of [1, 1.1, 1.3]) {

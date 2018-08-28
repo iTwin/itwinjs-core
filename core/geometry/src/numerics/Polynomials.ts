@@ -1140,7 +1140,45 @@ export class TrigPolynomial {
     }
     return boolstat;
   }
+
+  /// <summary> Compute intersections of unit circle x^2 + y 2 = w^2 with the ellipse
+  ///         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
+  /// Solutions are returned as angles in the ellipse space.
+  /// <param name="cx">center x</param>
+  /// <param name="cy">center y</param>
+  /// <param name="cw">center w</param>
+  /// <param name="ux">0 degree vector x</param>
+  /// <param name="uy">0 degree vector y</param>
+  /// <param name="uw">0 degree vector w</param>
+  /// <param name="vx">90 degree vector x</param>
+  /// <param name="vy">90 degree vector y</param>
+  /// <param name="vw">90 degree vector w</param>
+  /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
+  /// <param name="circleAngles">solution angles in circle parameter space</param>
+  /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
+  public static SolveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
+    ux: number, uy: number, uw: number,
+    vx: number, vy: number, vw: number,
+    ellipseRadians: number[], circleRadians: number[]): boolean {
+    circleRadians.length = 0;
+    const acc = ux * ux + uy * uy - uw * uw;
+    const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
+    const ass = vx * vx + vy * vy - vw * vw;
+    const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
+    const asi = 2.0 * (vx * cx + vy * cy - vw * cw);
+    const a = cx * cx + cy * cy - cw * cw;
+    const boolstat = this.SolveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    for (const radians of ellipseRadians) {
+      const cc = Math.cos(radians);
+      const ss = Math.sin(radians);
+      const x = cx + ux * cc + vx * ss;
+      const y = cy + uy * cc + vy * ss;
+      circleRadians.push(Math.atan2(y, x));
+    }
+    return boolstat;
+  }
 }
+
 export class SmallSystem {
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.

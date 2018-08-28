@@ -368,13 +368,13 @@ export class Matrix3d implements BeJSONFunctions {
     return Vector3d.createCrossProduct(0, 0, 1, vector.x, vector.y, vector.z, result);
   }
 
-/**
- *
- * * return a vector that is perpendicular to the input direction.
- * * Among the infinite number of perpendiculars possible, this method
- * favors having one near the Z.
- * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
- */
+  /**
+   *
+   * * return a vector that is perpendicular to the input direction.
+   * * Among the infinite number of perpendiculars possible, this method
+   * favors having one near the Z.
+   * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
+   */
   public static createPerpendicularVectorFavorPlaneContainingZ(vector: Vector3d, result?: Vector3d): Vector3d {
     result = Matrix3d.createPerpendicularVectorFavorXYPlane(vector, result);
     return vector.crossProduct(result, result);
@@ -1044,6 +1044,17 @@ export class Matrix3d implements BeJSONFunctions {
       vectorU.x, vectorV.x, vectorW.x,
       vectorU.y, vectorV.y, vectorW.y,
       vectorU.z, vectorV.z, vectorW.z, result);
+  }
+
+  /** Create a matrix from column vectors.
+   * Each column gets x and y from given XAndY, and z from w.
+   */
+  public static createColumnsXYW(vectorU: XAndY, uz: number, vectorV: XAndY, vz: number, vectorW: XAndY, wz: number, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
+      (
+      vectorU.x, vectorV.x, vectorW.x,
+      vectorU.y, vectorV.y, vectorW.y,
+      uz, vz, wz, result);
   }
 
   /** Install data from xyz parts of Point4d  (w part of Point4d ignored) */
@@ -1746,8 +1757,15 @@ export class Matrix3d implements BeJSONFunctions {
       - this.coffs[6] * this.coffs[4] * this.coffs[2];
   }
 
-  /** Return an estimate of how independent the columns are.  Near zero is bad. */
-  // ConditionNumber(): number;
+  /** Return an estimate of how independent the columns are.  Near zero is bad. Near 1 is good.*/
+  public conditionNumber(): number {
+    const determinant = this.determinant();
+    const columnMagnitudeProduct =
+      Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6])
+      + Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7])
+      + Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]);
+    return Geometry.safeDivideFraction(determinant, columnMagnitudeProduct, 0.0);
+  }
   /** Return the sum of squares of all entries */
   public sumSquares(): number {
     let i = 0;
