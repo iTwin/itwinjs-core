@@ -37,7 +37,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async getChildrenProps(iModelToken: IModelToken, parentId: TileId): Promise<TileProps[]> {
     const db = IModelDb.find(iModelToken);
-    return db.tiles.getChildrenProps(parentId.treeId.value, parentId.tileId);
+    return db.tiles.getChildrenProps(parentId.treeId, parentId.tileId);
   }
 
   public async getTileContent(iModelToken: IModelToken, id: TileId): Promise<string> {

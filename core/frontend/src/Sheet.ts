@@ -307,7 +307,7 @@ export namespace Attachments {
         "",
         tileRange,
         .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
-        false,
+        true,
         parent,
       ));
     }

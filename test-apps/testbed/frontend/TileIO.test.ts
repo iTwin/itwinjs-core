@@ -78,7 +78,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
-      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance, (_) => true);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, System.instance, false, (_) => true);
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
