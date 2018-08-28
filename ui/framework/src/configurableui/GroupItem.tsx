@@ -118,7 +118,7 @@ interface HistoryItem {
 interface ToolGroupItem {
   iconInfo: IconInfo;
   label: string;
-  trayId: string | undefined;
+  trayId?: string;
 }
 
 interface ToolGroupColumn {

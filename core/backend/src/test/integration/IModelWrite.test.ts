@@ -1,9 +1,9 @@
 import { expect, assert } from "chai";
 import { Id64, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
-import { Code, IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
+import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
 import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
@@ -188,7 +188,7 @@ describe("IModelWriteTest", () => {
 
   });
 
-  it.skip("should build concurrency control request", async () => {
+  it("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
 
     const el: Element = iModel.elements.getRootSubject();
@@ -422,38 +422,6 @@ describe("IModelWriteTest", () => {
 
     await rwIModel.close(adminAccessToken, KeepBriefcase.No);
     await roIModel.close(adminAccessToken);
-  });
-
-  /* This is skipped because iModel.concurrencyControl.request is not yet implemented for locks */
-  it.skip("should make change sets (#integration)", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush());
-    assert.exists(iModel);
-
-    const dictionary: DictionaryModel = iModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-
-    let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
-
-    const spatialCategoryId: Id64 = iModel.elements.insertElement(SpatialCategory.create(dictionary, "Cat1"));
-
-    // Insert a few elements
-    const elements: Element[] = [
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-    ];
-
-    for (const el of elements) {
-      el.buildConcurrencyControlRequest(DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
-    }
-
-    await iModel.concurrencyControl.request(accessToken); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
-
-    for (const el of elements)
-      iModel.elements.insertElement(el);
-
-    iModel.saveChanges("inserted generic objects");
-
-    await iModel.close(accessToken);
   });
 
   it("Run plain SQL against pull-only connection", async () => {

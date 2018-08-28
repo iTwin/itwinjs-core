@@ -5,13 +5,8 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
-    "propertyDescription": Object {
-      "displayLabel": "£ábêl",
-      "name": "DisplayLabel",
-      "typename": "string",
-    },
     "sortable": true,
   },
   Object {
@@ -19,11 +14,6 @@ Array [
     "filterable": true,
     "key": "FunctionalModel_ModeledElement",
     "label": "Modeled Element",
-    "propertyDescription": Object {
-      "displayLabel": "Modeled Element",
-      "name": "FunctionalModel_ModeledElement",
-      "typename": "navigation",
-    },
     "sortable": true,
   },
 ]
@@ -34,13 +24,8 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
-    "propertyDescription": Object {
-      "displayLabel": "£ábêl",
-      "name": "DisplayLabel",
-      "typename": "string",
-    },
     "sortable": true,
   },
   Object {
@@ -48,11 +33,6 @@ Array [
     "filterable": true,
     "key": "PhysicalModel_FunctionalModel_ModeledElement",
     "label": "Modeled Element",
-    "propertyDescription": Object {
-      "displayLabel": "Modeled Element",
-      "name": "PhysicalModel_FunctionalModel_ModeledElement",
-      "typename": "navigation",
-    },
     "sortable": true,
   },
 ]
@@ -62,14 +42,14 @@ exports[`TableDataProvider getRow returns first row 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "DisplayLabel",
+      "key": "/DisplayLabel/",
       "record": PropertyRecord {
         "description": "Functional Model-0-H",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "£ábêl",
-          "name": "DisplayLabel",
+          "name": "/DisplayLabel/",
           "typename": "string",
         },
         "value": Object {
@@ -98,10 +78,7 @@ Object {
       },
     },
   ],
-  "key": Object {
-    "className": "Functional:FunctionalModel",
-    "id": "0x11",
-  },
+  "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
 }
 `;
 
@@ -110,14 +87,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Functional Model-0-H",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -146,22 +123,19 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "Functional:FunctionalModel",
-      "id": "0x11",
-    },
+    "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Physical Model-0-I",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -190,22 +164,19 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:PhysicalModel",
-      "id": "0x12",
-    },
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -234,10 +205,7 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:RepositoryModel",
-      "id": "0x1",
-    },
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
 ]
 `;
@@ -247,14 +215,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -283,22 +251,19 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:RepositoryModel",
-      "id": "0x1",
-    },
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Physical Model-0-I",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -327,22 +292,19 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:PhysicalModel",
-      "id": "0x12",
-    },
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Functional Model-0-H",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -371,10 +333,7 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "Functional:FunctionalModel",
-      "id": "0x11",
-    },
+    "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
   },
 ]
 `;

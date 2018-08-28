@@ -7,26 +7,22 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import PresentationTreeDataProvider from "@bentley/presentation-components/lib/tree/DataProvider";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("TreeDataProvider", async () => {
 
   let imodel: IModelConnection;
   let provider: PresentationTreeDataProvider;
+
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     provider = new PresentationTreeDataProvider(imodel, "SimpleHierarchy");
   });
+
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("returns root nodes count", async () => {

@@ -15,6 +15,7 @@ import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumbe
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";
+import { Matrix4d, Point4d } from "../numerics/Geometry4d";
 
 /* tslint:disable:variable-name no-empty*/
 /**
@@ -39,11 +40,22 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private _center: Point3d;
   private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
   private _sweep: AngleSweep; // sweep limits.
-
-  public get center(): Point3d { return this._center; }
+  /**
+   * read property for (clone of) center
+   */
+  public get center(): Point3d { return this._center.clone(); }
+  /**
+   * read property for (clone of) vector0
+   */
   public get vector0(): Vector3d { return this._matrix.columnX(); }
+  /**
+   * read property for (clone of) vector90
+   */
   public get vector90(): Vector3d { return this._matrix.columnY(); }
-  public get matrix(): Matrix3d { return this._matrix; }
+  /**
+   * read property for (clone of) matrix of vector0, vector90, unit normal
+   */
+  public get matrix(): Matrix3d { return this._matrix.clone(); }
   public get sweep(): AngleSweep { return this._sweep; }
 
   // constructor copies the pointers !!!
@@ -340,13 +352,40 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     };
   }
   /** Return the arc definition with center, two vectors, and angle sweep;
-   * The center and AngleSweep are references to inside the Arc3d.
    */
   public toVectors(): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
     return {
       center: this.center,
       vector0: this.matrix.columnX(),
       vector90: this.matrix.columnY(),
+      sweep: this.sweep,
+    };
+  }
+
+  /** Return the arc definition with center, two vectors, and angle sweep, optionally transformed.
+   */
+  public toTransformedVectors(transform?: Transform): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
+    return transform ? {
+      center: transform.multiplyPoint3d(this._center),
+      vector0: transform.multiplyVector(this._matrix.columnX()),
+      vector90: transform.multiplyVector(this._matrix.columnY()),
+      sweep: this.sweep,
+    }
+      : {
+        center: this._center.clone(),
+        vector0: this._matrix.columnX(),
+        vector90: this._matrix.columnY(),
+        sweep: this.sweep,
+      };
+  }
+
+  /** Return the arc definition with center, two vectors, and angle sweep, transformed to 4d points.
+   */
+  public toTransformedPoint4d(matrix: Matrix4d): { center: Point4d, vector0: Point4d, vector90: Point4d, sweep: AngleSweep } {
+    return {
+      center: matrix.multiplyPoint3d(this._center, 1.0),
+      vector0: matrix.multiplyPoint3d(this._matrix.columnX(), 0.0),
+      vector90: matrix.multiplyPoint3d(this._matrix.columnY(), 0.0),
       sweep: this.sweep,
     };
   }

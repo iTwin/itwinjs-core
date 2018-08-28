@@ -15,6 +15,7 @@
     "*.scss",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/test-helpers/*.ts",
     "**/*.d.ts",
     "**/*.d.tsx",
     "demo/**/*",

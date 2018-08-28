@@ -22,6 +22,7 @@ import { StandardViewId } from "@bentley/imodeljs-frontend";
 import "./contentviews/IModelViewport";   // TODO - move to ui-framework
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
+import "./contentviews/TreeExampleContent";
 import "./widgets/BreadcrumbDemoWidget";
 import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
@@ -37,6 +38,7 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import { Frontstage5 } from "./frontstages/Frontstage5";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -64,6 +66,7 @@ export class AppUi {
     ConfigurableUiManager.loadFrontstage(new Frontstage2().defineProps());
     ConfigurableUiManager.loadFrontstage(new Frontstage3().defineProps());
     ConfigurableUiManager.loadFrontstage(new Frontstage4().defineProps());
+    ConfigurableUiManager.loadFrontstage(new Frontstage5().defineProps());
   }
 
   /** Define Common Items used in different Frontstages.
@@ -293,8 +296,30 @@ export class AppUi {
       ],
     };
 
+    const testContentGroup4: ContentGroupProps = {
+      id: "TestContentGroup4",
+      contents: [
+        {
+          classId: "IModelViewport",
+          applicationData: { label: "Content 1a", bgColor: "black" },
+        },
+        {
+          classId: "IModelViewport",
+          applicationData: { label: "Content 2a", bgColor: "black" },
+        },
+        {
+          classId: "TableExampleContent",
+          applicationData: { label: "Content 3a", bgColor: "black" },
+        },
+        {
+          classId: "TreeExampleContent",
+          applicationData: { label: "Content 4a", bgColor: "black" },
+        },
+      ],
+    };
+
     const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(one2dIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3);
+    contentGroups.push(one2dIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
     ConfigurableUiManager.loadContentGroups(contentGroups);
   }
 

@@ -4,15 +4,14 @@
 /** @module Viewport */
 
 import * as React from "react";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
 import {
   IModelApp,
   IModelConnection,
-  Viewport,
   ViewState,
+  ScreenViewport,
+  Viewport,
 } from "@bentley/imodeljs-frontend";
-
-import { BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   ViewportManager,
@@ -43,7 +42,7 @@ export interface ViewportProps {
 export class ViewportComponent extends React.Component<ViewportProps> {
 
   private _viewportDiv: React.RefObject<HTMLDivElement>;
-  private _vp?: Viewport;
+  private _vp?: ScreenViewport;
 
   public constructor(props: ViewportProps, context?: any) {
     super(props, context);
@@ -58,7 +57,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     if (!viewState)
       throw new Error("View state failed to load");
 
-    this._vp = new Viewport(this._viewportDiv.current, viewState);
+    this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
     ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);

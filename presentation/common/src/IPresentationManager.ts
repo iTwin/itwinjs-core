@@ -21,12 +21,6 @@ export interface RequestOptions<TIModel> {
 
   /** Optional locale to use when formatting / localizing data */
   locale?: string;
-
-  /**
-   * Optional client ID used to identify who requests data
-   * @hidden
-   */
-  clientId?: string;
 }
 /** Request type for hierarchy requests */
 export interface HierarchyRequestOptions<TIModel> extends RequestOptions<TIModel> { }

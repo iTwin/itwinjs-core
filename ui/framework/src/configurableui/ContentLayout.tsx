@@ -223,8 +223,8 @@ export interface LayoutSplit {
 class HorizontalSplit implements LayoutSplit {
   private _topIndex: number = -1;
   private _bottomIndex: number = -1;
-  private _topSplit: LayoutSplit | undefined = undefined;
-  private _bottomSplit: LayoutSplit | undefined = undefined;
+  private _topSplit?: LayoutSplit;
+  private _bottomSplit?: LayoutSplit;
   private _defaultPercentage: number;
   private _stateId: string = "";
   private _isLocked: boolean = false;
@@ -311,8 +311,8 @@ class HorizontalSplit implements LayoutSplit {
 class VerticalSplit implements LayoutSplit {
   private _leftIndex: number = -1;
   private _rightIndex: number = -1;
-  private _leftSplit: LayoutSplit | undefined = undefined;
-  private _rightSplit: LayoutSplit | undefined = undefined;
+  private _leftSplit?: LayoutSplit;
+  private _rightSplit?: LayoutSplit;
   private _defaultPercentage: number;
   private _stateId: string = "";
   private _isLocked: boolean = false;
@@ -403,7 +403,7 @@ export class ContentLayoutDef {
   public featureId: string = "";
   private _layoutDef: ContentLayoutProps;
 
-  private _rootSplit: LayoutSplit | undefined;
+  private _rootSplit?: LayoutSplit;
 
   constructor(layoutDef: ContentLayoutProps) {
     this._layoutDef = layoutDef;
@@ -450,7 +450,7 @@ export interface ContentLayoutReactProps {
 /** ContentLayout React component.
  */
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
-  private _contentContainer: React.ReactNode | undefined;
+  private _contentContainer?: React.ReactNode;
 
   /** hidden */
   public readonly state: Readonly<ContentLayoutState>;
@@ -535,7 +535,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
  */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
-  private static _activeLayout: ContentLayoutDef | undefined;
+  private static _activeLayout?: ContentLayoutDef;
 
   public static loadContentLayouts(layoutPropsList: ContentLayoutProps[]) {
     layoutPropsList.map((layoutProps, _index) => {

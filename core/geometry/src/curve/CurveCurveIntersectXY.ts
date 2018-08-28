@@ -13,9 +13,11 @@ import { LineString3d } from "./LineString3d";
 // import { Arc3d } from "./Arc3d";
 import { Point3d, Vector2d } from "../PointVector";
 // import { LineString3d } from "./LineString3d";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem, AnalyticRoots, TrigPolynomial } from "../numerics/Polynomials";
 import { Matrix4d, Point4d } from "../numerics/Geometry4d";
-import { Transform } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
+import { Arc3d } from "./Arc3d";
+import { GrowableFloat64Array } from "../GrowableArray";
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -86,7 +88,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
    * filter by extension rules.
    * record with fraction mapping.
    */
-  private acceptLineSegmentPoint(
+  private acceptPointWithLocalFractions(
     localFractionA: number,
     cpA: CurvePrimitive,
     fractionA0: number,
@@ -142,7 +144,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       && this.acceptFraction(extendA0, uv.x, extendA1)
       && this.acceptFraction(extendB0, uv.y, extendB1)
     ) {
-      this.acceptLineSegmentPoint(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
+      this.acceptPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
     }
   }
   private static _workPointA0H = Point4d.create();
@@ -181,7 +183,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const fractionB = fractionAB.y;
       if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
         // final fraction acceptance uses original world points, with perspective-aware fractions
-        this.acceptLineSegmentPoint(fractionA, cpA, fractionA0, fractionA1,
+        this.acceptPointWithLocalFractions(fractionA, cpA, fractionA0, fractionA1,
           fractionB, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -227,6 +229,150 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     }
   }
 
+  // Caller accesses data from a linestring or segment and passes it here.
+  // (The linesegment in question might be (a) a full linesegment or (b) a fragment within a linestring.  The fraction and extend parameters
+  // allow all combinations to be passed in)
+  private dispatchSegmentArc(
+    cpA: CurvePrimitive,
+    extendA0: boolean,
+    pointA0: Point3d,
+    fractionA0: number,
+    pointA1: Point3d,
+    fractionA1: number,
+    extendA1: boolean,
+    arc: Arc3d,
+    extendB0: boolean,
+    extendB1: boolean,
+    reversed: boolean,
+  ) {
+    // Arc: X = C + cU + sV
+    // Line:  contains points A0,A1
+    // Arc point colinear with line if det (A0, A1, X) = 0
+    // with homogeneous xyw points and vectors.
+    // With equational X:   det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
+    // solve for theta.
+    // evaluate points.
+    // project back to line.
+    if (this._worldToLocalPerspective) {
+      const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
+      const pointA0H = this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1);
+      const pointA1H = this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1);
+      const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
+      const beta = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector0);
+      const gamma = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector90);
+      const cosines = new GrowableFloat64Array(2);
+      const sines = new GrowableFloat64Array(2);
+      const radians = new GrowableFloat64Array(2);
+      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      for (let i = 0; i < numRoots; i++) {
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.at(i), data.vector90, sines.at(i));
+        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
+        const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
+        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
+          this.acceptPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
+            arcFraction, arc, 0, 1, reversed);
+        }
+      }
+    } else {
+      const data = arc.toTransformedVectors(this._worldToLocalAffine);
+      let pointA0Local = pointA0;
+      let pointA1Local = pointA1;
+      if (this._worldToLocalAffine) {
+        pointA0Local = this._worldToLocalAffine.multiplyPoint3d(pointA0);
+        pointA1Local = this._worldToLocalAffine.multiplyPoint3d(pointA1);
+      }
+      const alpha = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.center, 1);
+      const beta = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector0, 0);
+      const gamma = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector90, 0);
+      const cosines = new GrowableFloat64Array(2);
+      const sines = new GrowableFloat64Array(2);
+      const radians = new GrowableFloat64Array(2);
+      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      for (let i = 0; i < numRoots; i++) {
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.at(i), data.vector90, sines.at(i));
+        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
+        const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
+        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
+          this.acceptPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
+            arcFraction, arc, 0, 1, reversed);
+        }
+      }
+    }
+  }
+
+  // Caller accesses data from two arcs.
+  // each matrix has [U V C] in (x,y,w) form from projection.
+  // invert the projection matrix matrixA.
+  // apply the inverse to matrixB. Then arcb is an ellipse in the circular space of A
+
+  private dispatchArcArc_thisOrder(
+    cpA: Arc3d,
+    matrixA: Matrix3d,  // homogeneous xyw projection !!!
+    extendA: boolean,
+    cpB: Arc3d,
+    matrixB: Matrix3d,  // homogeneous xyw projection !!!
+    extendB: boolean,
+    reversed: boolean,
+  ) {
+    const inverseA = matrixA.inverse();
+    if (inverseA) {
+      const localB = inverseA.multiplyMatrixMatrix(matrixB);
+      const ellipseRadians: number[] = [];
+      const circleRadians: number[] = [];
+      TrigPolynomial.SolveUnitCircleHomogeneousEllipseIntersection(
+        localB.coffs[2], localB.coffs[5], localB.coffs[8],  // center xyw
+        localB.coffs[0], localB.coffs[3], localB.coffs[6],  // center xyw
+        localB.coffs[1], localB.coffs[4], localB.coffs[7],  // center xyw
+        ellipseRadians, circleRadians);
+      for (let i = 0; i < ellipseRadians.length; i++) {
+        const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
+        const fractionB = cpA.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
+        if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
+          this.acceptPointWithLocalFractions(fractionA, cpA, 0, 1,
+            fractionB, cpB, 0, 1, reversed);
+        }
+      }
+    }
+  }
+  // Caller accesses data from two arcs.
+  // Selects the best conditioned arc (in xy parts) as "circle after inversion"
+  // Solves the arc-arc equations
+  private dispatchArcArc(
+    cpA: Arc3d,
+    extendA: boolean,
+    cpB: Arc3d,
+    extendB: boolean,
+    reversed: boolean,
+  ) {
+    // Arc: X = C + cU + sV
+    // Line:  contains points A0,A1
+    // Arc point colinear with line if det (A0, A1, X) = 0
+    // with homogeneous xyw points and vectors.
+    // With equational X:   det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
+    // solve for theta.
+    // evaluate points.
+    // project back to line.
+    let matrixA: Matrix3d;
+    let matrixB: Matrix3d;
+    if (this._worldToLocalPerspective) {
+      const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
+      const dataB = cpB.toTransformedPoint4d(this._worldToLocalPerspective);
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w);
+      matrixB = Matrix3d.createColumnsXYW(dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w);
+    } else {
+      const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
+      const dataB = cpB.toTransformedVectors(this._worldToLocalAffine);
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, 0, dataA.vector90, 0, dataA.center, 1);
+      matrixB = Matrix3d.createColumnsXYW(dataB.vector0, 0, dataB.vector90, 0, dataB.center, 1);
+    }
+    const conditionA = matrixA.conditionNumber();
+    const conditionB = matrixB.conditionNumber();
+    if (conditionA > conditionB)
+      this.dispatchArcArc_thisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
+    else
+      this.dispatchArcArc_thisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
+  }
+
   private static _workPointAA0 = Point3d.create();
   private static _workPointAA1 = Point3d.create();
   private static _workPointBB0 = Point3d.create();
@@ -256,6 +402,28 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     return undefined;
   }
 
+  public computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
+    const pointB0 = CurveCurveIntersectXY._workPointBB0;
+    const pointB1 = CurveCurveIntersectXY._workPointBB1;
+    const numB = lsB.numPoints();
+    if (numB > 1) {
+      const dfB = 1.0 / (numB - 1);
+      let fB0;
+      let fB1;
+      fB0 = 0.0;
+      lsB.pointAt(0, pointB0);
+      for (let ib = 1; ib < numB; ib++ , pointB0.setFrom(pointB1), fB0 = fB1) {
+        lsB.pointAt(ib, pointB1);
+        fB1 = ib * dfB;
+        this.dispatchSegmentArc(
+          lsB, ib === 1 && extendB, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB,
+          arcA, extendA, extendA,
+          !reversed);
+      }
+    }
+    return undefined;
+  }
+
   private static _workPointA0 = Point3d.create();
   private static _workPointA1 = Point3d.create();
   private static _workPointB0 = Point3d.create();
@@ -276,6 +444,10 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         false);
     } else if (this._geometryB instanceof LineString3d) {
       this.computeSegmentLineString(segmentA, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchSegmentArc(
+        segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
+        this._geometryB, this._extendB, this._extendB, false);
     }
   }
 
@@ -316,23 +488,48 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       }
     } else if (this._geometryB instanceof LineSegment3d) {
       this.computeSegmentLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.computeArcLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     }
     return undefined;
-    /*  public handleArc3d(arc0: Arc3d): any {
-        if (this.geometryB instanceof Arc3d) {
-        }
-        return undefined;
-      }
-      */
   }
+
+  public handleArc3d(arc0: Arc3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.dispatchSegmentArc(
+        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
+        arc0, this._extendA, this._extendA, true);
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
+      // NEEDS WORK -- arc+arc intersection with all transformations
+    }
+    return undefined;
+  }
+
 }
 export class CurveCurve {
+  /**
+   * Return xy intersections of 2 curves.
+   * @param geometryA second geometry
+   * @param extendA true to allow geometryA to extend
+   * @param geometryB second geometry
+   * @param extendB true to allow geometryB to extend
+   */
   public static IntersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
   }
 
+  /**
+   * Return xy intersections of 2 projected curves
+   * @param geometryA second geometry
+   * @param extendA true to allow geometryA to extend
+   * @param geometryB second geometry
+   * @param extendB true to allow geometryB to extend
+   */
   public static IntersectionProjectedXY(worldToLocal: Matrix4d,
     geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB);

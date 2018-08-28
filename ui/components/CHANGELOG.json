@@ -2,6 +2,27 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.122.0",
+      "tag": "@bentley/ui-components_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added advanced selection modes to tree and table."
+          },
+          {
+            "comment": "Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed."
+          },
+          {
+            "comment": "added ScreenViewport.create"
+          },
+          {
+            "comment": "Tree and DataTree has a new parameter \"highlightString\". When set, it higlights a part of TreeNode label"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.121.0",
       "tag": "@bentley/ui-components_v0.121.0",
       "date": "Fri, 24 Aug 2018 12:49:09 GMT",
