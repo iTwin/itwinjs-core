@@ -33,6 +33,9 @@
     "all": "All",
     "problems": "Problems"
   },
+  "activityCenter": {
+    "percentComplete": "% complete"
+  },
   "snapModeField": {
     "snapMode": "Snap Mode",
     "keypoint": "Keypoint",
