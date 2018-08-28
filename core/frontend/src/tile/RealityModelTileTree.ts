@@ -45,7 +45,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public yAxisUp: boolean = false;
   constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform) {
     this.tilesetJson = json.root;
-    this.rootTile = new RealityModelTileProps(json.root, "", this);
+    this.rootTile = new RealityModelTileProps(json.root, "");
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
@@ -60,7 +60,7 @@ class RealityModelTileProps implements TileProps {
   public readonly isLeaf: boolean;
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
-  constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
+  constructor(json: any, thisId: string) {
     this.id = new TileId("", thisId);
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
