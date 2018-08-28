@@ -144,5 +144,4 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-
 });
