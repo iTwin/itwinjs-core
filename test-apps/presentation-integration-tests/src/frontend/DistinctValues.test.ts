@@ -8,18 +8,11 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("DistinctValues", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
@@ -27,6 +20,7 @@ describe("DistinctValues", async () => {
 
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("gets distinct content values", async () => {

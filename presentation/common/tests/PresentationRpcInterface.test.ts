@@ -4,35 +4,16 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
+import { IModelToken } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
-  HierarchyRequestOptions, ContentRequestOptions,
 } from "@src/index";
 import { VariableValueTypes } from "@src/IRulesetVariablesManager";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
+import { RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions, RulesetRpcRequestOptions, RulesetVariableRpcRequestOptions } from "@src/PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
-
-  describe("getClient", () => {
-
-    beforeEach(() => {
-      RpcManager.terminateInterface(PresentationRpcInterface);
-    });
-
-    it("throws when not registered", () => {
-      expect(() => PresentationRpcInterface.getClient()).to.throw();
-    });
-
-    it("returns interface when registered", () => {
-      initializeRpcInterface(PresentationRpcInterface);
-      const proxy = PresentationRpcInterface.getClient();
-      expect(proxy).is.instanceof(PresentationRpcInterface);
-    });
-
-  });
 
   describe("calls forwarding", () => {
 
@@ -41,6 +22,7 @@ describe("PresentationRpcInterface", () => {
     const testData = {
       imodelToken: new IModelToken(),
     };
+    const defaultRpcOptions: RpcRequestOptions = { knownBackendIds: [] };
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
@@ -49,7 +31,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getRootNodes call", async () => {
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRpcRequestOptions> = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -58,7 +41,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getRootNodesCount call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -67,7 +51,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getChildren call", async () => {
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRpcRequestOptions> = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -77,7 +62,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getChildrenCount call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -87,7 +73,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -96,7 +83,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -106,7 +94,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getContentDescriptor call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -115,7 +104,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getContentSetSize call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -125,7 +115,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getContent call", async () => {
-      const options: Paged<ContentRequestOptions<IModelToken>> = {
+      const options: Paged<ContentRpcRequestOptions> = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -135,7 +126,8 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getDistinctValues call", async () => {
-      const options: ContentRequestOptions<IModelToken> = {
+      const options: ContentRpcRequestOptions = {
+        ...defaultRpcOptions,
         imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
@@ -147,7 +139,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getRuleset call", async () => {
-      const options = { clientId: faker.random.uuid() };
+      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
       const ruleset = { id: "", rules: [] };
       const hash = faker.random.uuid();
       mock.setup((x) => x(options as any, ruleset.id)).returns(async () => [ruleset, hash]).verifiable(moq.Times.once());
@@ -158,7 +150,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards addRuleset call", async () => {
-      const options = { clientId: faker.random.uuid() };
+      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
       const ruleset = { id: "", rules: [] };
       const hash = faker.random.uuid();
       mock.setup((x) => x(options as any, ruleset)).returns(async () => hash).verifiable(moq.Times.once());
@@ -167,8 +159,18 @@ describe("PresentationRpcInterface", () => {
       expect(resultHash).to.eq(hash);
     });
 
+    it("forwards addRulesets call", async () => {
+      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
+      const ruleset = { id: "", rules: [] };
+      const hash = faker.random.uuid();
+      mock.setup((x) => x(options as any, [ruleset])).returns(async () => [hash]).verifiable(moq.Times.once());
+      const resultHashes = await rpcInterface.addRulesets(options, [ruleset]);
+      mock.verifyAll();
+      expect(resultHashes).to.deep.eq([hash]);
+    });
+
     it("forwards removeRuleset call", async () => {
-      const options = { clientId: faker.random.uuid() };
+      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
       mock.setup((x) => x(options as any, "test id", "hash")).returns(async () => true).verifiable(moq.Times.once());
       const result = await rpcInterface.removeRuleset(options, "test id", "hash");
       mock.verifyAll();
@@ -176,29 +178,38 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards clearRulesets call", async () => {
-      const options = { clientId: faker.random.uuid() };
+      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
       await rpcInterface.clearRulesets(options);
       mock.verify((x) => x(options as any), moq.Times.once());
-    });
-
-    it("forwards setRulesetVariableValue call", async () => {
-      const rulesetId = faker.random.uuid();
-      const variableId = faker.random.uuid();
-      const params = { clientId: "client id", rulesetId, variableId };
-      const value = faker.random.words();
-      await rpcInterface.setRulesetVariableValue(params, VariableValueTypes.String, value);
-      mock.verify((x) => x(params as any, VariableValueTypes.String, value), moq.Times.once());
     });
 
     it("forwards getRulesetVariableValue call", async () => {
       const rulesetId = faker.random.uuid();
       const variableId = faker.random.uuid();
-      const params = { clientId: "client id", rulesetId, variableId };
+      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
       const value = faker.random.words();
-      mock.setup((x) => x(params as any, VariableValueTypes.String)).returns(async () => value).verifiable(moq.Times.once());
-      const actualValue = await rpcInterface.getRulesetVariableValue(params, VariableValueTypes.String);
+      mock.setup((x) => x(params as any, variableId, VariableValueTypes.String)).returns(async () => value).verifiable(moq.Times.once());
+      const actualValue = await rpcInterface.getRulesetVariableValue(params, variableId, VariableValueTypes.String);
       mock.verifyAll();
       expect(actualValue).to.eq(value);
+    });
+
+    it("forwards setRulesetVariableValue call", async () => {
+      const rulesetId = faker.random.uuid();
+      const variableId = faker.random.uuid();
+      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
+      const value = faker.random.words();
+      await rpcInterface.setRulesetVariableValue(params, variableId, VariableValueTypes.String, value);
+      mock.verify((x) => x(params as any, variableId, VariableValueTypes.String, value), moq.Times.once());
+    });
+
+    it("forwards setRulesetVariableValues call", async () => {
+      const rulesetId = faker.random.uuid();
+      const variableId = faker.random.uuid();
+      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
+      const value = faker.random.words();
+      await rpcInterface.setRulesetVariableValues(params, [[variableId, VariableValueTypes.String, value]]);
+      mock.verify((x) => x(params as any, [[variableId, VariableValueTypes.String, value]]), moq.Times.once());
     });
 
   });
