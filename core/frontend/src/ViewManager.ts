@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Viewport } from "./Viewport";
+import { ScreenViewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -25,7 +25,7 @@ export interface Decorator {
    */
   testDecorationHit?(id: string): boolean;
 
-  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator.
+  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator. Optional.
    * @param hit The HitDetail about the decoration that was picked.
    * @returns A promise with the string with the tooltip message. May contain HTML.
    */
@@ -41,12 +41,13 @@ export interface Decorator {
 export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
-  private readonly _viewports: Viewport[] = [];
-  private _selectedView?: Viewport;
+  private readonly _viewports: ScreenViewport[] = [];
+  private readonly _decorators: Decorator[] = [];
+  private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
-  private readonly _decorators: Decorator[] = [];
 
+  /** @hidden */
   public onInitialized() {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
@@ -65,6 +66,7 @@ export class ViewManager {
     this.addDecorator(IModelApp.toolAdmin);
   }
 
+  /** @hidden */
   public onShutDown() {
     this._viewports.length = 0;
     this._decorators.length = 0;
@@ -76,22 +78,22 @@ export class ViewManager {
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new BeEvent<(previous: Viewport | undefined, current: Viewport | undefined) => void>();
+  public readonly onSelectedViewportChanged = new BeEvent<(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) => void>();
 
   /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
-  public readonly onViewOpen = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewOpen = new BeEvent<(vp: ScreenViewport) => void>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
-  public readonly onViewClose = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewClose = new BeEvent<(vp: ScreenViewport) => void>();
 
   /** Called after a view is suspended. This can happen when the application is minimized. */
-  public readonly onViewSuspend = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewSuspend = new BeEvent<(vp: ScreenViewport) => void>();
 
   /**
    * Called after a suspended view is resumed. This can happen when a minimized application is restored
    * or, on a tablet, when the application is moved to the foreground.
    */
-  public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewResume = new BeEvent<(vp: ScreenViewport) => void>();
 
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
@@ -117,7 +119,7 @@ export class ViewManager {
     this.notifySelectedViewportChanged(previousVp, undefined);
   }
 
-  public setSelectedView(vp: Viewport | undefined): BentleyStatus {
+  public setSelectedView(vp: ScreenViewport | undefined): BentleyStatus {
     if (undefined === vp)
       vp = this.getFirstOpenView();
 
@@ -139,16 +141,16 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  public notifySelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
+  public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
     this.onSelectedViewportChanged.raiseEvent(previous, current);
   }
 
   /** The "selected view" is the default for certain operations.  */
-  public get selectedView(): Viewport | undefined { return this._selectedView; }
+  public get selectedView(): ScreenViewport | undefined { return this._selectedView; }
 
   /** Get the first opened view. */
-  public getFirstOpenView(): Viewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
+  public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
@@ -156,12 +158,12 @@ export class ViewManager {
    * @note raises onViewOpen event with newVp.
    * @note Does nothing if newVp is already present in the list.
    */
-  public addViewport(newVp: Viewport): void {
-    for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
+  public addViewport(newVp: ScreenViewport): void {
+    if (this._viewports.includes(newVp)) // make sure its not already added
+      return;
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
-    // See DgnClientFxViewport::Initialize()
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
@@ -177,23 +179,16 @@ export class ViewManager {
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
    * @note raises onViewClose event with vp.
    */
-  public dropViewport(vp: Viewport): BentleyStatus {
+  public dropViewport(vp: ScreenViewport): BentleyStatus {
+    const index = this._viewports.indexOf(vp);
+    if (index === -1)
+      return BentleyStatus.ERROR;
+
     this.onViewClose.raiseEvent(vp);
     IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
-    let didDrop = false;
-    const vpList = this._viewports;
-    for (let i = 0; i < vpList.length; ++i) {
-      if (vpList[i] === vp) {
-        vp.setEventController(undefined);
-        vpList.splice(i, 1);
-        didDrop = true;
-        break;
-      }
-    }
-
-    if (!didDrop)
-      return BentleyStatus.ERROR;
+    vp.setEventController(undefined);
+    this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
@@ -201,19 +196,12 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  public forEachViewport(func: (vp: Viewport) => void) { this._viewports.forEach((vp) => func(vp)); }
+  public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
-  public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
-  public onSelectionSetChanged(_iModel: IModelConnection) {
-    this._viewports.forEach((vp) => vp.view.setSelectionSetDirty());
-    // for (auto & vp : m_viewports)
-    // if (& vp -> GetViewController().GetDgnDb() == & db)
-    //   vp -> GetViewControllerR().SetSelectionSetDirty();
-  }
-
-  public invalidateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
-
-  public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
+  public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
   public onNewTilesReady(): void { this.invalidateScenes(); }

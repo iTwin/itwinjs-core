@@ -1,0 +1,5 @@
+@import "@bentley/bwc/lib/mixins";
+
+.BwcExpandableBlocksList {
+  @include bwc-expandable-blocks-list;
+}

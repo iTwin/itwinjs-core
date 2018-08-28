@@ -8,19 +8,12 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("NodesPaths", () => {
 
   let imodel: IModelConnection;
 
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
@@ -28,6 +21,7 @@ describe("NodesPaths", () => {
 
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("gets filtered node paths", async () => {
@@ -45,7 +39,7 @@ describe("NodesPaths", () => {
     */
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetId: ruleset.id }, "filter");
-      expect(result).to.matchSnapshot(true);
+      expect(result).to.matchSnapshot();
     });
   });
 

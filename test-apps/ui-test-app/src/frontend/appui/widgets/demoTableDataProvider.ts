@@ -5,7 +5,7 @@ import { SortDirection } from "@bentley/ui-core";
 import {
   TableDataProvider, MutableTableDataProvider,
   RowItem, TableDataChangeEvent, ColumnDescription,
-  DropTargetArguments, DragSourceArguments, DropStatus, DropEffects,
+  DropTargetArguments, DragSourceArguments, DropStatus, DropEffects, PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat,
 } from "@bentley/ui-components";
 
 const data: DemoMutableRow[] = [
@@ -41,6 +41,20 @@ const columns: ColumnDescription[] = [
 const tableColumnDataChange = new TableDataChangeEvent();
 const tableRowDataChange = new TableDataChangeEvent();
 
+const createPropertyRecord = (value: string, column: ColumnDescription) => {
+  const v: PropertyValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+    value,
+    displayValue: value,
+  };
+  const pd: PropertyDescription = {
+    typename: column.icon ? "icon" : "text",
+    name: column.key,
+    displayLabel: column.label,
+  };
+  return new PropertyRecord(v, pd);
+};
+
 interface DemoMutableRow {
   id: string;
   label: string;
@@ -56,10 +70,10 @@ function mutableRowToRowItem(row: DemoMutableRow): RowItem {
       label, type, description, iconPath,
     },
     cells: [
-      { key: "icon", record: iconPath },
-      { key: "label", record: label },
-      { key: "type", record: type },
-      { key: "description", record: description },
+      { key: "icon", record: createPropertyRecord(iconPath ? iconPath : "", columns[0]) },
+      { key: "label", record: createPropertyRecord(label, columns[1]) },
+      { key: "type", record: createPropertyRecord(type, columns[2]) },
+      { key: "description", record: createPropertyRecord(description, columns[3]) },
     ],
   };
 }
@@ -150,7 +164,7 @@ export const demoMutableTableDataProvider: TableDataProvider & MutableTableDataP
 };
 export const tableDropTargetDropCallback = (args: DropTargetArguments) => {
   if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
-    const {type, label, description, parentId, children, iconPath, ...rest} = args.dataObject;
+    const { type, label, description, parentId, children, iconPath, ...rest } = args.dataObject;
     let id = "";
     if (args.dropEffect === DropEffects.Copy) {
       id = Math.round(Math.random() * 1e14) + "";
@@ -165,9 +179,9 @@ export const tableDropTargetDropCallback = (args: DropTargetArguments) => {
         label, type, description, iconPath, ...rest,
       },
       cells: [
-        {key: "label", record: label},
-        {key: "type", record: type},
-        {key: "description", record: description},
+        { key: "label", record: label },
+        { key: "type", record: type },
+        { key: "description", record: description },
       ],
     };
     // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
@@ -194,7 +208,7 @@ export const tableDropTargetDropCallback = (args: DropTargetArguments) => {
 };
 export const tableDragSourceEndCallback = (args: DragSourceArguments) => {
   if (args.dataObject && "id" in args.dataObject && args.dataObject.id && args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) {
-    demoMutableTableDataProvider.deleteRow({key: args.dataObject.id, cells: []});
+    demoMutableTableDataProvider.deleteRow({ key: args.dataObject.id, cells: [] });
   }
 };
 export const tableCanDropTargetDropCallback = (args: DropTargetArguments) => {

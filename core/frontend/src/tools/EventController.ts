@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Viewport } from "../Viewport";
+import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 
 // tslint:disable:no-console
@@ -16,7 +16,7 @@ import { IModelApp } from "../IModelApp";
 export class EventController {
   private readonly _removals: VoidFunction[] = [];
 
-  constructor(public vp: Viewport) {
+  constructor(public vp: ScreenViewport) {
     const element = vp.canvas;
     if (element === undefined)
       return;

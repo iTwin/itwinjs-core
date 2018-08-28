@@ -9,7 +9,11 @@ exports[`<Expandable /> renders correctly 1`] = `
   <div
     className="nz-triangle"
   />
-  <Portal />
-  <Portal />
+  <Portal
+    containerInfo={<div />}
+  />
+  <Portal
+    containerInfo={<div />}
+  />
 </div>
 `;

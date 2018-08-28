@@ -5,9 +5,9 @@
 import * as React from "react";
 import { DragLayerProps } from "@bentley/ui-framework";
 
-import "./DropTarget.scss";
+import "./DragLayer.scss";
 
-export class ChildDropTarget extends React.Component<DragLayerProps> {
+export class ChildDragLayer extends React.Component<DragLayerProps> {
   public render(): React.ReactNode {
     const args = this.props.args!;
     const pos = args.clientOffset;

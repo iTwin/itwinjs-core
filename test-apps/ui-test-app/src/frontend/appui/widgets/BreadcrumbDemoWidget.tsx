@@ -15,8 +15,8 @@ import {
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import {ChildDropTarget} from "./ChildDropTarget";
-import {ParentDropTarget} from "./ParentDropTarget";
+import {ChildDragLayer} from "./ChildDragLayer";
+import {RootDragLayer} from "./ParentDragLayer";
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -48,8 +48,18 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
 
     const objectTypes = ["root", "child", ...(this.state.checked ? ["row"] : [])];
 
-    DragDropLayerManager.registerTypeLayer("root", ParentDropTarget);
-    DragDropLayerManager.registerTypeLayer("child", ChildDropTarget);
+    DragDropLayerManager.registerTypeLayer("root", RootDragLayer);
+    DragDropLayerManager.registerTypeLayer("child", ChildDragLayer);
+
+    const dragProps = {
+      onDragSourceEnd: treeDragSourceEndCallback,
+      objectType,
+    };
+    const dropProps = {
+      onDropTargetDrop: treeDropTargetDropCallback,
+      canDropTargetDrop: treeCanDropTargetDropCallback,
+      objectTypes,
+    };
 
     return (
       <div>
@@ -59,18 +69,12 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
             });
           }}/>
         <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}
-          onDropTargetDrop={treeDropTargetDropCallback}
-          onDragSourceEnd={treeDragSourceEndCallback}
-          canDropTargetDrop={treeCanDropTargetDropCallback}
-          objectType={objectType}
-          objectTypes={objectTypes}
+          dragProps={dragProps}
+          dropProps={dropProps}
         />
         <BreadcrumbDetails path={path}
-          onDropTargetDrop={treeDropTargetDropCallback}
-          onDragSourceEnd={treeDragSourceEndCallback}
-          canDropTargetDrop={treeCanDropTargetDropCallback}
-          objectType={objectType}
-          objectTypes={objectTypes}
+          dragProps={dragProps}
+          dropProps={dropProps}
         />
       </div>
     );

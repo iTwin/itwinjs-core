@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState } from "@bentley/imodeljs-frontend"; // @ts-ignore
+import { ViewState, ScreenViewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
 import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common"; // tslint:disable-line
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
@@ -25,7 +25,7 @@ class PerformanceEntryData {
   public scene = 999999;
   public garbageExecute = 999999; // This is mostly the begin paint now.
   public initCommands = 999999;
-  public backgroundDraw = 999999; // This is from the begining of the draw command until after renderBackground has completed
+  public backgroundDraw = 999999; // This is from the beginning of the draw command until after renderBackground has completed
   public setClips = 999999;
   public opaqueDraw = 999999;
   public translucentDraw = 999999;
@@ -85,7 +85,7 @@ class SimpleViewState {
 }
 
 let configuration: SVTConfiguration;
-let theViewport: Viewport | undefined;
+let theViewport: ScreenViewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
 
 async function _changeView(view: ViewState) {
@@ -107,7 +107,7 @@ async function openView(state: SimpleViewState) {
     console.log("theViewport: " + theViewport); // tslint:disable-line
     console.log("htmlViewDiv: " + htmlViewDiv); // tslint:disable-line
     // console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    theViewport = await new Viewport(htmlViewDiv, state.viewState!);
+    theViewport = ScreenViewport.create(htmlViewDiv, state.viewState!);
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
@@ -121,7 +121,6 @@ async function openView(state: SimpleViewState) {
     console.log("viewManager: " + IModelApp.viewManager); // tslint:disable-line
     console.log("iModel: " + theViewport.iModel); // tslint:disable-line
     IModelApp.viewManager.addViewport(theViewport);
-    console.log("Finished IModelApp.viewManager.addViewport"); // tslint:disable-line
   }
 }
 // selects the configured view.

@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  IPresentationManager, PresentationRpcInterface,
+  IPresentationManager, RpcRequestsHandler,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
   IRulesetVariablesManager, IRulesetManager,
@@ -26,22 +26,31 @@ export interface Props {
   activeLocale?: string;
 
   /** @hidden */
-  clientId?: string;
+  rpcRequestsHandler?: RpcRequestsHandler;
 }
 
 /**
  * Frontend Presentation manager which basically just forwards all calls to
  * the backend implementation.
  */
-export default class PresentationManager implements IPresentationManager<IModelConnection> {
+export default class PresentationManager implements IPresentationManager<IModelConnection>, IDisposable {
 
-  private _clientId: string;
+  private _requestsHandler: RpcRequestsHandler;
+  private _rulesets: RulesetManager;
+  private _rulesetVars: Map<string, RulesetVariablesManager>;
   public activeLocale: string | undefined;
 
   private constructor(props?: Props) {
     if (props)
       this.activeLocale = props.activeLocale;
-    this._clientId = (props && props.clientId) ? props.clientId : Guid.createValue();
+    this._requestsHandler = (props && props.rpcRequestsHandler) ? props.rpcRequestsHandler : new RpcRequestsHandler();
+    this._rulesets = new RulesetManager(this._requestsHandler);
+    this._rulesetVars = new Map<string, RulesetVariablesManager>();
+  }
+
+  public dispose() {
+    this._rulesets.dispose();
+    this._rulesetVars.forEach((v) => v.dispose());
   }
 
   /**
@@ -53,14 +62,14 @@ export default class PresentationManager implements IPresentationManager<IModelC
   }
 
   /** @hidden */
-  public get clientId() { return this._clientId; }
+  public get rpcRequestsHandler() { return this._requestsHandler; }
 
-  public rulesets(): IRulesetManager {
-      return new RulesetManager(this._clientId);
-  }
+  public rulesets(): IRulesetManager { return this._rulesets; }
 
   public vars(rulesetId: string): IRulesetVariablesManager {
-    return new RulesetVariablesManager(this._clientId, rulesetId);
+    if (!this._rulesetVars.has(rulesetId))
+      this._rulesetVars.set(rulesetId, new RulesetVariablesManager(this._requestsHandler, rulesetId));
+    return this._rulesetVars.get(rulesetId)!;
   }
 
   private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {
@@ -70,53 +79,52 @@ export default class PresentationManager implements IPresentationManager<IModelC
     // 4. put `clientId`
     return Object.assign({}, { locale: this.activeLocale }, options, {
       imodel: options.imodel.iModelToken,
-      clientId: this._clientId,
     });
   }
 
   public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await PresentationRpcInterface.getClient().getRootNodes(this.toIModelTokenOptions(requestOptions));
+    return await this._requestsHandler.getRootNodes(this.toIModelTokenOptions(requestOptions));
   }
 
   public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<number> {
-    return await PresentationRpcInterface.getClient().getRootNodesCount(this.toIModelTokenOptions(requestOptions));
+    return await this._requestsHandler.getRootNodesCount(this.toIModelTokenOptions(requestOptions));
   }
 
   public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await PresentationRpcInterface.getClient().getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
+    return await this._requestsHandler.getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: Readonly<NodeKey>): Promise<number> {
-    return await PresentationRpcInterface.getClient().getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
+    return await this._requestsHandler.getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return await PresentationRpcInterface.getClient().getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
+    return await this._requestsHandler.getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
   }
 
   public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]> {
-    return await PresentationRpcInterface.getClient().getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
+    return await this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
   }
 
   public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
-    const descriptor = await PresentationRpcInterface.getClient().getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys, selection);
+    const descriptor = await this._requestsHandler.getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys, selection);
     if (descriptor)
       descriptor.rebuildParentship();
     return descriptor;
   }
 
   public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return await PresentationRpcInterface.getClient().getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
+    return await this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
   }
 
   public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const content = await PresentationRpcInterface.getClient().getContent(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
+    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
     content.descriptor.rebuildParentship();
     return content;
   }
 
   public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    return await PresentationRpcInterface.getClient().getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
+    return await this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
   }
 
 }

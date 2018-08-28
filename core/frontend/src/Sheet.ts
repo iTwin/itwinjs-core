@@ -123,10 +123,6 @@ export namespace Attachments {
     private _sceneDepth: number = 0xffffffff;
     private _scene?: GraphicList;
 
-    public constructor(view: ViewState) {
-      super(view);
-    }
-
     public get texture(): RenderTexture | undefined { return this._texture; }
 
     public createScene(currentState: State): State {
@@ -769,7 +765,7 @@ export namespace Attachments {
 
     public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
       const view = attachment.view as ViewState3d;
-      const viewport = new AttachmentViewport(view);
+      const viewport = AttachmentViewport.create(view) as AttachmentViewport;
       return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
     }
 

@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BentleyError, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -25,19 +25,6 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
-
-/** Enumeration of Viewport status codes */
-export const enum ViewportStatus {
-  VIEWPORT_ERROR_BASE = 0x1A000,
-  /** The canvas must be a child of the div */
-  InvalidParent = VIEWPORT_ERROR_BASE + 1,
-}
-
-export class ViewportError extends BentleyError {
-  public constructor(errorNumber: ViewportStatus, message?: string) {
-    super(errorNumber, message);
-  }
-}
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -519,6 +506,7 @@ export class ViewFrustum {
     if (delta.z > eyeOrg.z)
       delta.z = eyeOrg.z;
   }
+
   private extendRangeForDisplayedPlane(extents: Range3d) {
     const view = this.view;
     if (!view.is3d()) // only necessary for 3d views
@@ -827,7 +815,10 @@ export class ViewFrustum {
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
  */
-export class Viewport {
+export abstract class Viewport {
+  /** Event called whenever this viewport is synchronized with its ViewState. */
+  public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+
   private _doContinuousRendering = false;
   private _animator?: Animator;
   /** Time the current flash started */
@@ -839,21 +830,13 @@ export class Viewport {
   private _flashedElem?: string;         // id of currently flashed element
   /** Id of last flashed element */
   public lastFlashedElem?: string;
-  private _viewCmdTargetCenter?: Point3d;
-  /** The number of entries in the view undo/redo buffer. */
-  public maxUndoSteps = 20;
-  private readonly _forwardStack: ViewState[] = [];
-  private readonly _backStack: ViewState[] = [];
-  private _currentBaseline?: ViewState;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
-  private _evController?: EventController;
   private _addFeatureOverrides?: AddFeatureOverrides;
   private _wantTileBoundingBoxes: boolean = false;
   private _viewFrustum!: ViewFrustum;
-
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
   public get rotMatrix(): Matrix3d { return this._viewFrustum.rotMatrix; }
@@ -861,22 +844,18 @@ export class Viewport {
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
 
-  private readonly _viewRange: ViewRect = new ViewRect();
+  protected readonly _viewRange: ViewRect = new ViewRect();
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+  public abstract get viewRect(): ViewRect;
   public get isAspectRatioLocked(): boolean { return false; }
 
   /** @hidden */
   public readonly target: RenderTarget;
   /** @hidden */
   public readonly sync = new SyncFlags();
-  /** Event called whenever this viewport is synchronized with its ViewState. */
-  public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** The settings that control how elements are hilited in this Viewport. */
   public readonly hilite = new Hilite.Settings();
-  /** The canvas created to hold the view contents. */
-  public readonly canvas: HTMLCanvasElement;
 
   /**
    * Determine whether the Grid display is currently enabled in this Viewport.
@@ -908,34 +887,11 @@ export class Viewport {
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Construct a new Viewport
-   * @param enclosingDiv The HTMLDivElement that parents the canvas created for the new Viewport
+   * @param htmlElement The HTMLDivElement for the Viewport. This constructor will create a canvas to draw the graphics.
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public enclosingDiv: HTMLDivElement | undefined, viewState: ViewState, canvas?: HTMLCanvasElement, target?: RenderTarget) {
-    // Usually, we create the canvas. OffscreenViewport wants to create it, though.
-
-    // if both canvas and enclosingDiv are supplied, enclosingDiv must be the parent of the canvas.
-    if (canvas && enclosingDiv && !(enclosingDiv !== canvas.parentElement))
-      throw new ViewportError(ViewportStatus.InvalidParent, "The canvas must be a child of enclosingDiv");
-
-    // if no canvas supplied, create it and make it a child of the enclosingDiv.
-    if (canvas) {
-      this.canvas = canvas;
-    } else {
-      this.canvas = document.createElement("canvas");
-      this.canvas.style.position = "relative";
-      this.canvas.style.top = "0%";
-      this.canvas.style.height = "100%";
-      this.canvas.style.left = "0%";
-      this.canvas.style.width = "100%";
-      if (enclosingDiv)
-        enclosingDiv.appendChild(this.canvas);
-    }
-
-    this.target = target ? target : IModelApp.renderSystem.createTarget(this.canvas);
-    this.changeView(viewState);
-    this.setCursor();
-    this.saveViewUndo();
+  protected constructor(target: RenderTarget) {
+    this.target = target;
   }
 
   /** Determine whether continuous rendering is enabled. */
@@ -944,18 +900,10 @@ export class Viewport {
   /** Set whether or not continuous rendering is enabled. */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
 
-  /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
-
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
-  public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
-
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }
   /** @hidden */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
-  public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
-  public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
 
   /**
@@ -978,16 +926,6 @@ export class Viewport {
   public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
-  }
-
-  /** Change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default): void {
-    if (cursor === BeCursor.OpenHand)
-      this.canvas.style.cursor = "-webkit-grab";
-    else if (cursor === BeCursor.ClosedHand)
-      this.canvas.style.cursor = "-webkit-grabbing";
-    else
-      this.canvas.style.cursor = cursor;
   }
 
   /** Set or clear the currently *flashed* element.
@@ -1016,10 +954,7 @@ export class Viewport {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
-    this.clearUndo();
     this.doSetupFromView(view);
-    this.saveViewUndo();
-
     this.invalidateScene();
     this.sync.invalidateController();
     this.target.queueReset();
@@ -1116,19 +1051,6 @@ export class Viewport {
     return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
   }
 
-  /** True if an undoable viewing operation exists on the stack */
-  public get isUndoPossible(): boolean { return 0 < this._backStack.length; }
-
-  /** True if an redoable viewing operation exists on the stack */
-  public get isRedoPossible(): boolean { return 0 < this._forwardStack.length; }
-
-  /** Clear the view undo buffers of this Viewport. */
-  public clearUndo(): void {
-    this._currentBaseline = undefined;
-    this._forwardStack.length = 0;
-    this._backStack.length = 0;
-  }
-
   public setStandardRotation(id: StandardViewId): void {
     this.view.setStandardRotation(id);
     this.setupFromView();
@@ -1157,41 +1079,8 @@ export class Viewport {
    * Check whether the ViewState of this Viewport has changed since the last call to this function.
    * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
    */
-  public saveViewUndo(): void {
-    if (!this.view)
-      return;
-
-    // the first time we're called we need to establish the baseline
-    if (!this._currentBaseline)
-      this._currentBaseline = this.view.clone<ViewState>();
-
-    if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
-      return; // nothing changed, we're done
-
-    const backStack = this._backStack;
-    if (backStack.length >= this.maxUndoSteps) // don't save more than max
-      backStack.shift(); // remove the oldest entry
-
-    /** Sometimes we get requests to save undo entries from rapid viewing operations (e.g. mouse wheel rolls). To avoid lots of
-     * little useless intermediate view undo steps that mean nothing, if we get a call to this within a minimum time (1/2 second by default)
-     * we don't add a new entry to the view undo buffer.
-     */
-    const now = BeTimePoint.now();
-    if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
-      this._currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
-      this._backStack.push(this._currentBaseline); // save previous state
-      this._forwardStack.length = 0; // not possible to do redo after this
-    }
-
-    this._currentBaseline = this.view.clone<ViewState>();
-  }
-
   /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
-  public synchWithView(saveInUndo: boolean): void {
-    this.setupFromView();
-    if (saveInUndo)
-      this.saveViewUndo();
-  }
+  public synchWithView(_saveInUndo: boolean): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void { this._viewFrustum.viewToNpcArray(pts); }
@@ -1417,40 +1306,10 @@ export class Viewport {
     return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
-  /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
-  public resetUndo() {
-    this.clearUndo();
-    this.saveViewUndo();  // Set up new baseline state
-  }
-
   /** @hidden */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     return this.view.computeFitRange();
-  }
-
-  /**
-   * Reverses the most recent change to the Viewport from the undo stack.
-   */
-  public doUndo(animationTime?: BeDuration) {
-    if (0 === this._backStack.length)
-      return;
-
-    this._forwardStack.push(this._currentBaseline!);
-    this._currentBaseline = this._backStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
-  }
-
-  /**
-   * Re-applies the most recently un-done change to the Viewport from the redo stack.
-   */
-  public doRedo(animationTime?: BeDuration) {
-    if (0 === this._forwardStack.length)
-      return;
-
-    this._backStack.push(this._currentBaseline!);
-    this._currentBaseline = this._forwardStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
   }
 
   /** @hidden */
@@ -1730,11 +1589,11 @@ export class Viewport {
     }
 
     if (view.areFeatureOverridesDirty) {
-      const ovrs = new FeatureSymbology.Overrides(view);
+      const ovr = new FeatureSymbology.Overrides(view);
       if (undefined !== this._addFeatureOverrides)
-        this._addFeatureOverrides(ovrs, this);
+        this._addFeatureOverrides(ovr, this);
 
-      target.overrideFeatureSymbology(ovrs);
+      target.overrideFeatureSymbology(ovr);
       view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }
@@ -1780,21 +1639,9 @@ export class Viewport {
   }
 
   /** @hidden */
-  public prepareDecorations(decorations: Decorations): void {
-    this.sync.setValidDecorations();
-    const context = new DecorateContext(this, decorations);
-    IModelApp.viewManager.callDecorators(context);
-  }
-
+  public abstract prepareDecorations(decorations: Decorations): void;
   /** @hidden */
-  public decorate(context: DecorateContext): void {
-    this.view.drawGrid(context);
-    if (context.viewFlags.acsTriad)
-      this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
-  }
-
-  /** @hidden */
-  public requestScene(): void { }
+  public abstract decorate(context: DecorateContext): void;
 
   /**
    * Read selected data about each pixel within a rectangular region of this Viewport.
@@ -1847,6 +1694,75 @@ export class Viewport {
 
     return npc;
   }
+}
+
+/** An interactive viewport that exists within an HTMLDom. ScreenViewports can receive HTML events. */
+export class ScreenViewport extends Viewport {
+  private _evController?: EventController;
+  private _viewCmdTargetCenter?: Point3d;
+  /** The number of entries in the view undo/redo buffer. */
+  public maxUndoSteps = 20;
+  private readonly _forwardStack: ViewState[] = [];
+  private readonly _backStack: ViewState[] = [];
+  private _currentBaseline?: ViewState;
+
+  /** The canvas created to hold the view contents. */
+  public readonly canvas: HTMLCanvasElement;
+
+  /** The parent HTMLDivElement of the canvas. */
+  public readonly parentDiv: HTMLDivElement;
+  public readonly decorationDiv: HTMLDivElement;
+  public readonly toolTipDiv: HTMLDivElement;
+
+  public static create(parentDiv: HTMLDivElement, view: ViewState) {
+    const canvas = document.createElement("canvas");
+    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
+    vp.changeView(view);
+    return vp;
+  }
+
+  constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
+    super(target);
+    this.canvas = canvas;
+    this.parentDiv = parentDiv;
+
+    // function to add a child element to this.parentDiv and set its size and position the same as the parent.
+    const addChild = (element: HTMLElement, zIndex: number) => {
+      const style = element.style;
+      style.position = "absolute";
+      style.top = "0";
+      style.left = "0";
+      style.height = "100%";
+      style.width = "100%";
+      style.zIndex = zIndex.toString();
+      this.parentDiv.appendChild(element);
+    };
+
+    // first remove all children of supplied element.
+    while (parentDiv.lastChild)
+      parentDiv.removeChild(parentDiv.lastChild);
+
+    const parentZ = parseInt(parentDiv.style.zIndex || "0", 10);
+
+    addChild(canvas, parentZ + 1);
+
+    this.decorationDiv = document.createElement("div");
+    this.decorationDiv.className = "overlay-decorators";
+    this.decorationDiv.style.pointerEvents = "none";
+    this.decorationDiv.style.overflow = "hidden";
+    addChild(this.decorationDiv, parentZ + 2);
+
+    this.toolTipDiv = document.createElement("div");
+    this.toolTipDiv.className = "overlay-tooltip";
+    this.toolTipDiv.style.pointerEvents = "none";
+    this.decorationDiv.style.overflow = "visible";
+    addChild(this.toolTipDiv, parentZ + 3);
+
+    this.setCursor();
+  }
+
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
   /**
    * Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
@@ -1864,12 +1780,126 @@ export class Viewport {
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
   }
+
+  /** Get the ClientRect of the canvas for this Viewport. */
+  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
+
+  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+
+  public prepareDecorations(decorations: Decorations): void {
+    this.sync.setValidDecorations();
+    const context = new DecorateContext(this, decorations);
+    IModelApp.viewManager.callDecorators(context);
+  }
+  public decorate(context: DecorateContext): void {
+    this.view.drawGrid(context);
+    if (context.viewFlags.acsTriad)
+      this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
+  }
+
+  /** Change the cursor for this Viewport */
+  public setCursor(cursor: BeCursor = BeCursor.Default): void {
+    if (cursor === BeCursor.OpenHand)
+      this.canvas.style.cursor = "-webkit-grab";
+    else if (cursor === BeCursor.ClosedHand)
+      this.canvas.style.cursor = "-webkit-grabbing";
+    else
+      this.canvas.style.cursor = cursor;
+  }
+
+  public synchWithView(saveInUndo: boolean): void {
+    super.setupFromView();
+    if (saveInUndo)
+      this.saveViewUndo();
+  }
+
+  public changeView(view: ViewState) {
+    this.clearViewUndo();
+    super.changeView(view);
+    this.saveViewUndo();
+  }
+
+  public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
+  public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
+  /** True if an undoable viewing operation exists on the stack */
+  public get isUndoPossible(): boolean { return 0 < this._backStack.length; }
+
+  /** True if an redoable viewing operation exists on the stack */
+  public get isRedoPossible(): boolean { return 0 < this._forwardStack.length; }
+
+  /** Clear the view undo buffers of this Viewport. */
+  public clearViewUndo(): void {
+    this._currentBaseline = undefined;
+    this._forwardStack.length = 0;
+    this._backStack.length = 0;
+  }
+
+  public saveViewUndo(): void {
+    if (!this.view)
+      return;
+
+    // the first time we're called we need to establish the baseline
+    if (!this._currentBaseline)
+      this._currentBaseline = this.view.clone<ViewState>();
+
+    if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+      return; // nothing changed, we're done
+
+    const backStack = this._backStack;
+    if (backStack.length >= this.maxUndoSteps) // don't save more than max
+      backStack.shift(); // remove the oldest entry
+
+    /** Sometimes we get requests to save undo entries from rapid viewing operations (e.g. mouse wheel rolls). To avoid lots of
+     * little useless intermediate view undo steps that mean nothing, if we get a call to this within a minimum time (1/2 second by default)
+     * we don't add a new entry to the view undo buffer.
+     */
+    const now = BeTimePoint.now();
+    if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+      this._currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
+      this._backStack.push(this._currentBaseline); // save previous state
+      this._forwardStack.length = 0; // not possible to do redo after this
+    }
+
+    this._currentBaseline = this.view.clone<ViewState>();
+  }
+  /**
+   * Reverses the most recent change to the Viewport from the undo stack.
+   */
+  public doUndo(animationTime?: BeDuration) {
+    if (0 === this._backStack.length)
+      return;
+
+    this._forwardStack.push(this._currentBaseline!);
+    this._currentBaseline = this._backStack.pop()!;
+    this.applyViewState(this._currentBaseline, animationTime);
+  }
+
+  /**
+   * Re-applies the most recently un-done change to the Viewport from the redo stack.
+   */
+  public doRedo(animationTime?: BeDuration) {
+    if (0 === this._forwardStack.length)
+      return;
+
+    this._backStack.push(this._currentBaseline!);
+    this._currentBaseline = this._forwardStack.pop()!;
+    this.applyViewState(this._currentBaseline, animationTime);
+  }
+
+  /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
+  public resetUndo() {
+    this.clearViewUndo();
+    this.saveViewUndo();  // Set up new baseline state
+  }
 }
 
+/** @hidden */
 export class OffScreenViewport extends Viewport {
-  public constructor(viewState: ViewState) {
-    super(undefined, viewState, IModelApp.renderSystem.canvas, IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
-    this.sync.setValidDecorations();  // decorations are not incorporated offscreen
+  public static create(view: ViewState) {
+    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+    vp.changeView(view);
+    vp.sync.setValidDecorations();  // decorations are not used offscreen
+    return vp;
   }
 
   public get viewRect(): ViewRect { return this.target.viewRect; }

@@ -67,17 +67,19 @@
 
 .toggle-checkmark {
   position: absolute;
-  left: -30px;
+  left: 0px;
   top: 50%;
+  opacity: 0;
   transform: translateY(-50%);
-  -webkit-transition: left 0.2s ease-out;
-  -moz-transition: left 0.2s ease-out;
-  -o-transition: left 0.2s ease-out;
-  transition: left 0.2s ease-out;
+  -webkit-transition: left .2s ease-out;
+  -moz-transition: left .2s ease-out;
+  -o-transition: left .2s ease-out;
+  transition: left .2s ease-out;
 }
 
 .toggle-input:checked ~ .toggle-checkmark.visible {
-  left: 10px;
+  opacity: 1;
   color: $bwc-white;
   font-size: inherit;
+  left: 15%;
 }

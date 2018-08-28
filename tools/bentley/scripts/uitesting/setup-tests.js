@@ -22,10 +22,6 @@ chai.should();
 const sinonChai = utils.cwdRequire("sinon-chai");
 chai.use(sinonChai);
 
-// Use dirty-chai (to avoid using side-effect getters)
-const dirtyChai = utils.cwdRequire("dirty-chai");
-chai.use(dirtyChai);
-
 // Configure snapshot testing
 const { mapSourcePosition } = require("source-map-support");
 const chaiJestSnapshot = utils.cwdRequire("chai-jest-snapshot");

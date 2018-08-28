@@ -15,7 +15,6 @@ import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
@@ -270,7 +269,7 @@ class BingMapProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  public _logoImage?: HTMLImageElement;
+  private _logoImage?: HTMLImageElement;
 
   constructor(mapType: MapType) {
     super(mapType);
@@ -479,7 +478,7 @@ export class BackgroundMapState {
   /// private providerData: string;
   private _groundBias: number;
   private _mapType: MapType;
-  private _logoImageAddedToDOM: boolean = false;
+  // private _logoImageAddedToDOM: boolean = false;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
@@ -525,30 +524,27 @@ export class BackgroundMapState {
     if (undefined !== this._tileTree)
       this._tileTree.drawScene(context);
 
-    this.displayLogoImage(context);
+    // this.displayLogoImage(context);
   }
 
-  private displayLogoImage(context: SceneContext) {
-    const logoImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage();
-    if (!logoImage)
-      return;
+  // private displayLogoImage(context: SceneContext) {
+  //   const logoImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage();
+  //   if (!logoImage)
+  //     return;
 
-    if (this._logoImageAddedToDOM)
-      return;
+  //   if (this._logoImageAddedToDOM)
+  //     return;
 
-    const vp: Viewport = context.viewport;
-    // const clientRect: ClientRect = vp.getClientRect();
-    const enclosingDiv: HTMLDivElement | undefined = vp.enclosingDiv;
-    if (enclosingDiv) {
-      logoImage.style.position = "absolute";
-      logoImage.style.left = "0px";
-      const positionString = `${(vp.canvas.clientHeight - logoImage.height).toString()}px`;
-      logoImage.style.top = positionString;
-      logoImage.style.pointerEvents = "none";
-      enclosingDiv.appendChild(logoImage);
-    }
+  // const vp: Viewport = context.viewport;
+  // const enclosingDiv = vp.parentDiv;
+  // logoImage.style.position = "absolute";
+  // logoImage.style.left = "0px";
+  // const positionString = `${(vp.canvas.clientHeight - logoImage.height).toString()}px`;
+  // logoImage.style.top = positionString;
+  // logoImage.style.pointerEvents = "none";
+  // enclosingDiv.appendChild(logoImage);
 
-    // insert the image into the scene inside a div
-    this._logoImageAddedToDOM = true;
-  }
+  // // insert the image into the scene inside a div
+  // this._logoImageAddedToDOM = true;
+  // }
 }

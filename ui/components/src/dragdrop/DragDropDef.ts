@@ -19,6 +19,37 @@ export enum DropStatus {
   Cancel,
 }
 
+/** Properties and callbacks for the withDragSource Higher-Order Component. */
+export interface DropTargetProps {
+  /**
+   * Triggered when item is dropped on wrapped component.
+   * Return value is passed to the DragSource's onDragSourceEnd callback.
+   */
+  onDropTargetDrop?: (args: DropTargetArguments) => DragSourceArguments;
+  /** Triggered when item is dragged over wrapped component. */
+  onDropTargetOver?: (args: DropTargetArguments) => void;
+  /** Determines whether item may be dropped on DropTarget. */
+  canDropTargetDrop?: (args: DropTargetArguments) => boolean;
+  /** List of allowed object types */
+  objectTypes?: Array<string | symbol> | (() => Array<string | symbol>);
+}
+
+/** Properties and callbacks for the withDragSource Higher-Order Component. */
+export interface DragSourceProps {
+  /** Triggered when DragSource has begun a drag. */
+  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
+  /**
+   * Triggered when a DragSource drag has ended.
+   * Callback is always called after an onDragSourceBegin callback, regardless of whether the drag was successful.
+   */
+  onDragSourceEnd?: (data: DragSourceArguments) => void;
+  /**
+   * Specifies the DragSource type.
+   * data parameter is non-null when data is trickled down from dragged component.
+   */
+  objectType?: ((data?: any) => string | symbol) | string | symbol;
+}
+
 /** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments. */
 export interface DragDropArguments {
   /** Arbitrary data being transferred. Actual data structure determined by the return value of the onDragSourceBegin callback. */

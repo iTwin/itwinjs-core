@@ -10,7 +10,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList } from "./render/System";
 import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -37,9 +37,6 @@ export class ViewContext {
 export class NullContext extends ViewContext {
 }
 
-export class DynamicsContext extends ViewContext {
-}
-
 export class RenderContext extends ViewContext {
   constructor(vp: Viewport) { super(vp); }
 
@@ -47,6 +44,21 @@ export class RenderContext extends ViewContext {
 
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
+}
+
+export class DynamicsContext extends RenderContext {
+  private _dynamics?: GraphicList;
+
+  public addGraphic(graphic: RenderGraphic) {
+    if (undefined === this._dynamics)
+      this._dynamics = [];
+    this._dynamics.push(graphic);
+  }
+
+  /** @hidden */
+  public changeDynamics(): void {
+    this.viewport!.changeDynamics(this._dynamics);
+  }
 }
 
 export class DecorateContext extends RenderContext {

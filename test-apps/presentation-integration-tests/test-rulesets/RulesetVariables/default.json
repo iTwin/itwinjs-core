@@ -1,14 +1,18 @@
 {
-  "$schema": "../../../common/Ruleset.schema.json",
+  "$schema": "../../../../presentation/common/Ruleset.schema.json",
   "id": "default",
   "rules": [],
-  "vars": [{
-    "label": "categoryLabel",
-    "vars": [{
-      "id": "JsonRuleSetSetting",
-      "label": "some setting label",
-      "type": "StringValue",
-      "defaultValue": "test value"
-    }]
-  }]
+  "vars": [
+    {
+      "label": "categoryLabel",
+      "vars": [
+        {
+          "id": "JsonRuleSetSetting",
+          "label": "some setting label",
+          "type": "StringValue",
+          "defaultValue": "test value"
+        }
+      ]
+    }
+  ]
 }

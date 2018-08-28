@@ -35,7 +35,7 @@ export enum BackstageItemSize {
   Large,
 }
 
-/** Base properties for a Backstage item.
+/** Base properties for a [[Backstage]] item.
  */
 export interface BackstageItemProps extends ItemProps {
   size?: BackstageItemSize;     // Default - BackstageItemSize.Small
@@ -68,7 +68,7 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
 // BackstageItem and subclasses
 // -----------------------------------------------------------------------------
 
-/** Base class for a Backstage item definition.
+/** Base class for a [[Backstage]] item definition.
  */
 export abstract class BackstageItemDef extends ItemDefBase {
   public size: BackstageItemSize = BackstageItemSize.Small;
@@ -274,7 +274,7 @@ export class SeparatorBackstageItem extends React.Component<BackstageItemProps> 
   }
 }
 
-/** Backstage Close Event Args.
+/** [[BackstageCloseEventEvent]] arguments.
  */
 export interface BackstageCloseEventArgs {
   isVisible: boolean;
@@ -290,7 +290,7 @@ function closeBackStage() {
   Backstage.BackstageCloseEventEvent.emit({ isVisible: false });
 }
 
-/** Props for the Backstage React component.
+/** Props for the [[Backstage]] React component.
  */
 export interface BackstageProps {
   isVisible: boolean;

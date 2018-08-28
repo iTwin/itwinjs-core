@@ -85,6 +85,12 @@ export function addFrustum(builder: ProgramBuilder) {
   builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
 }
 
+const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition);";
+
+export function addEyeSpace(builder: ProgramBuilder) {
+  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);
+}
+
 export namespace GLSLCommon {
   // Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.
   // Returns 1.0 if the nth bit is set, 0.0 otherwise.
