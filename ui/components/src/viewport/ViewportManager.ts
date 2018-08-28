@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Viewport */
 
-import { Viewport } from "@bentley/imodeljs-frontend";
+import { Viewport, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { ViewportComponent } from "./ViewportComponent";
@@ -76,7 +76,7 @@ export class ViewportManager {
         return viewport === ViewportManager._activeViewport;
     }
 
-    public static setActiveViewport(activeViewport?: Viewport): void {
+    public static setActiveViewport(activeViewport?: ScreenViewport): void {
         if (ViewportManager._activeViewport !== activeViewport) {
             ViewportManager._activeViewport = activeViewport;
             ViewportManager.ActiveViewportChangedEvent.emit({ activeViewport });

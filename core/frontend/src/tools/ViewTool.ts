@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
-import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
+import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
@@ -199,7 +199,7 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport. */
 export abstract class ViewManip extends ViewTool {
-  public viewport?: Viewport = undefined;
+  public viewport?: ScreenViewport = undefined;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public readonly targetCenterWorld = new Point3d();
@@ -212,7 +212,7 @@ export abstract class ViewManip extends ViewTool {
   protected _forcedHandle = ViewHandleType.None;
   public readonly lastFrustum = new Frustum();
 
-  constructor(viewport: Viewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
+  constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
     this.changeViewport(viewport);
@@ -523,7 +523,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected static _useViewAlignedVolume: boolean = false;
-  public static fitView(viewport: Viewport, doAnimate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum();
@@ -585,7 +585,7 @@ export abstract class ViewManip extends ViewTool {
     return true;
   }
 
-  public changeViewport(vp: Viewport | undefined): void {
+  public changeViewport(vp: ScreenViewport | undefined): void {
     // If viewport isn't really changing do nothing...
     if (vp === this.viewport)
       return;
@@ -1006,12 +1006,12 @@ class ViewScroll extends ViewingToolHandle {
     builder.setSymbology(black, black, 1);
     builder.addArc(ellipse, false, false);
 
-    const dvec = Vector2d.createStartEnd(points[0], points[1]);
-    if (dvec.magnitude() > 0.1) {
+    const vec = Vector2d.createStartEnd(points[0], points[1]);
+    if (vec.magnitude() > 0.1) {
       const slashPts = [new Point2d(), new Point2d()];
-      dvec.normalize(dvec);
-      points[0].plusScaled(dvec, radius, slashPts[0]);
-      points[0].plusScaled(dvec, -radius, slashPts[1]);
+      vec.normalize(vec);
+      points[0].plusScaled(vec, radius, slashPts[0]);
+      points[0].plusScaled(vec, -radius, slashPts[1]);
       builder.setSymbology(black, black, 2);
       builder.addLineString2d(slashPts, 0.0);
     }
@@ -1431,10 +1431,9 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
   }
 
-  private static _scratchForward = new Vector3d();
   public doNavigate(ev: BeButtonEvent): boolean {
     const currentTime = Date.now();
-    const forward = ViewNavigate._scratchForward;
+    const forward = new Vector3d();
     const orientationEvent = this.tryOrientationEvent(forward, ev);
     const orientationResult = orientationEvent.result;
     const elapsedTime = this.getElapsedTime(currentTime);
@@ -1628,7 +1627,7 @@ class ViewFly extends ViewNavigate {
 /** The tool that performs a Pan view operation */
 export class PanViewTool extends ViewManip {
   public static toolId = "View.Pan";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
 }
@@ -1636,7 +1635,7 @@ export class PanViewTool extends ViewManip {
 /** tool that performs a Rotate view operation */
 export class RotateViewTool extends ViewManip {
   public static toolId = "View.Rotate";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
 }
@@ -1644,7 +1643,7 @@ export class RotateViewTool extends ViewManip {
 /** tool that performs the look operation */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
 }
@@ -1652,7 +1651,7 @@ export class LookViewTool extends ViewManip {
 /** tool that performs the scroll operation */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
 }
@@ -1660,7 +1659,7 @@ export class ScrollViewTool extends ViewManip {
 /** tool that performs the zoom operation */
 export class ZoomViewTool extends ViewManip {
   public static toolId = "View.Zoom";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
 }
@@ -1668,7 +1667,7 @@ export class ZoomViewTool extends ViewManip {
 /** tool that performs the walk operation */
 export class WalkViewTool extends ViewManip {
   public static toolId = "View.Walk";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
 }
@@ -1676,7 +1675,7 @@ export class WalkViewTool extends ViewManip {
 /** tool that performs the fly operation */
 export class FlyViewTool extends ViewManip {
   public static toolId = "View.Fly";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
 }
@@ -1684,10 +1683,10 @@ export class FlyViewTool extends ViewManip {
 /** The tool that performs a fit view */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
-  public viewport: Viewport;
+  public viewport: ScreenViewport;
   public oneShot: boolean;
   public doAnimate: boolean;
-  constructor(viewport: Viewport, oneShot: boolean, doAnimate = true) {
+  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate = true) {
     super();
     this.viewport = viewport;
     this.oneShot = oneShot;
@@ -1707,7 +1706,7 @@ export class FitViewTool extends ViewTool {
       this.doFit(this.viewport, this.oneShot, this.doAnimate);
   }
 
-  public doFit(viewport: Viewport, oneShot: boolean, doAnimate = true): boolean {
+  public doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
     ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
@@ -2131,9 +2130,9 @@ export class DefaultViewTouchTool extends ViewManip {
 /** tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required. */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
-  private _viewport: Viewport;
+  private _viewport: ScreenViewport;
 
-  constructor(vp: Viewport) { super(); this._viewport = vp; }
+  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
     this._viewport.doUndo(ToolSettings.animationTime);
@@ -2144,9 +2143,9 @@ export class ViewUndoTool extends ViewTool {
 /** tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required. */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
-  private _viewport: Viewport;
+  private _viewport: ScreenViewport;
 
-  constructor(vp: Viewport) { super(); this._viewport = vp; }
+  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
     this._viewport.doRedo(ToolSettings.animationTime);
