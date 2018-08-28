@@ -65,7 +65,7 @@ export class Sprite implements IDisposable {
       this.size.x = image.naturalWidth;
       this.size.y = image.naturalHeight;
       if (IModelApp.hasRenderSystem)
-        this.texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
+        this.texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true));
     });
   }
 }

@@ -1808,7 +1808,7 @@ export class Viewport {
 
   /** @hidden */
   public decorate(context: DecorateContext): void {
-    this.view.drawGrid(context);
+    this.view.decorate(context);
     if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
