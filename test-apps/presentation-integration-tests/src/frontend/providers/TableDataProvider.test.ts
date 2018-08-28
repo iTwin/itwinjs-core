@@ -118,7 +118,8 @@ describe("TableDataProvider", async () => {
 
     it("filters instances", async () => {
       provider.keys = new KeySet([instances.physicalModel, instances.functionalModel, instances.repositoryModel]);
-      provider.filterExpression = `DisplayLabel = "Functional Model-0-H"`;
+      const columns = await provider.getColumns();
+      provider.filterExpression = `${columns[0].key} = "Functional Model-0-H"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
       const rowKey = instanceKeyFromJSON(JSON.parse(row!.key));
