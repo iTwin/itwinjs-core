@@ -143,6 +143,7 @@ export class StateManager {
     if (!zone.isWidgetOpen)
       return { ...model.props };
 
+    const defaultZone = widget.defaultZone;
     if (!widget.isInHomeZone) {
       const mergedZones = zone.getWidgets().map((w) => w.defaultZone);
       const zoneBounds = Rectangle.create(zone.props.bounds);
@@ -158,10 +159,17 @@ export class StateManager {
             if (id === zone.props.id && mergedZone) {
               acc[id] = {
                 ...model.props.zones[id],
-                widgets: model.props.zones[zone.props.id].widgets.filter((w) => w.id !== widgetId),
+                widgets: model.props.zones[zone.props.id].widgets.filter((w) => w.id !== widgetId).map((w) => {
+                  if (w.id === id)
+                    return {
+                      ...w,
+                      tabIndex: 1,
+                    };
+                  return w;
+                }),
                 bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
               };
-            } else if (id === widget.defaultZone.id && mergedZone) {
+            } else if (id === defaultZone.id && mergedZone) {
               acc[id] = {
                 ...model.props.zones[id],
                 bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
@@ -196,7 +204,7 @@ export class StateManager {
         ...model.props.zones,
         [zone.props.id]: {
           ...model.props.zones[zone.props.id],
-          floatingBounds: widget.defaultZone.props.floatingBounds ? widget.defaultZone.props.floatingBounds : widget.defaultZone.props.bounds,
+          floatingBounds: defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds,
         },
       },
       draggingWidget: {

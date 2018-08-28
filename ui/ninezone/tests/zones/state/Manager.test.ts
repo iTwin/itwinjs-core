@@ -478,6 +478,13 @@ describe("StateManager", () => {
       state.draggingWidget!.lastPosition.x.should.eq(10);
       state.draggingWidget!.lastPosition.y.should.eq(20);
     });
+
+    it("should open home widget when unmerging", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+
+      state.zones[6].widgets[0].tabIndex.should.eq(1, "z6");
+      state.zones[9].widgets[0].tabIndex.should.eq(1, "z9");
+    });
   });
 
   describe("handleTargetChanged", () => {
