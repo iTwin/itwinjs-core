@@ -1,3 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Modal /> renders correctly 1`] = `<Portal />`;
+exports[`<Modal /> renders correctly 1`] = `
+<Portal
+  containerInfo={
+    <body>
+      <div
+        class="nz-footer-message-modal"
+      >
+        <div
+          class="nz-dialog"
+        />
+      </div>
+    </body>
+  }
+>
+  <div
+    className="nz-footer-message-modal"
+  >
+    <div
+      className="nz-dialog"
+    />
+  </div>
+</Portal>
+`;
