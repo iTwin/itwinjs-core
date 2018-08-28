@@ -10,6 +10,7 @@ import PointerCaptor from "../../../base/PointerCaptor";
 import Point, { PointProps } from "../../../utilities/Point";
 import Tab, { TabProps } from "./Tab";
 import "./Draggable.scss";
+import Rectangle from "../../../utilities/Rectangle";
 
 /** Properties of [[Draggable]] component. */
 export interface DraggableProps extends TabProps {
@@ -56,13 +57,18 @@ export default class Draggable extends React.Component<DraggableProps> {
     this._initial = new Point(e.clientX, e.clientY);
   }
 
-  private _handleMouseUp = () => {
+  private _handleMouseUp = (e: MouseEvent) => {
     this._initial = undefined;
     if (this.props.lastPosition) {
       this.props.onDragFinish && this.props.onDragFinish();
       return;
     }
 
+    const tab = this._getTabElement();
+    const tabBounds = Rectangle.create(tab.getBoundingClientRect());
+    const point = new Point(e.clientX, e.clientY);
+    if (!tabBounds.containsPoint(point))
+      return;
     this.props.onClick && this.props.onClick();
   }
 
@@ -80,6 +86,14 @@ export default class Draggable extends React.Component<DraggableProps> {
       firstTab = firstTab.previousSibling;
     }
     return firstTab;
+  }
+
+  private _getTabElement(): HTMLElement {
+    const tab = ReactDOM.findDOMNode(this);
+    if (!tab || !(tab instanceof HTMLElement))
+      throw new TypeError();
+
+    return tab;
   }
 
   private _handleMouseMove = (e: MouseEvent) => {
