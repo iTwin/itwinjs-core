@@ -10,7 +10,7 @@ import "./PointerCaptor.scss";
 
 /** Properties of [[PointerCaptor]] component. */
 export interface PointerCaptorProps extends CommonProps {
-  initialIsMouseDown?: boolean;
+  isMouseDown?: boolean;
   onMouseDown?: (e: MouseEvent) => void;
   onMouseMove?: (e: MouseEvent) => void;
   onMouseUp?: (e: MouseEvent) => void;
@@ -29,14 +29,6 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
     isMouseDown: false,
   };
 
-  public constructor(props: PointerCaptorProps) {
-    super(props);
-
-    this.state = {
-      isMouseDown: props.initialIsMouseDown ? true : false,
-    };
-  }
-
   public componentDidMount() {
     document.addEventListener("mouseup", this._handleDocumentMouseUp);
     document.addEventListener("mousemove", this._handleDocumentMouseMove);
@@ -47,10 +39,16 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
     document.removeEventListener("mousemove", this._handleDocumentMouseMove);
   }
 
+  public get isMouseDown() {
+    if (this.props.isMouseDown === undefined)
+      return this.state.isMouseDown;
+    return this.props.isMouseDown;
+  }
+
   public render() {
     const className = classnames(
       "nz-base-pointerCaptor",
-      this.state.isMouseDown && "nz-captured",
+      this.isMouseDown && "nz-captured",
       this.props.className);
 
     return (
@@ -78,7 +76,7 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
   }
 
   private _handleDocumentMouseUp = (e: MouseEvent) => {
-    if (!this.state.isMouseDown)
+    if (!this.isMouseDown)
       return;
 
     this.setIsMouseDown(false);
@@ -86,7 +84,7 @@ export default class PointerCaptor extends React.Component<PointerCaptorProps, P
   }
 
   private _handleDocumentMouseMove = (e: MouseEvent) => {
-    if (!this.state.isMouseDown)
+    if (!this.isMouseDown)
       return;
 
     this.props.onMouseMove && this.props.onMouseMove(e);

@@ -463,11 +463,20 @@ describe("StateManager", () => {
       bounds9.left.should.eq(10, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").not.undefined;
+      expect(state.zones[9].floatingBounds, "floatingBounds9").to.exist;
       state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
       state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
       state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
       state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
+    });
+
+    it("should set dragging widget when unmerging", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 10, y: 20 }, { x: 0, y: 0 }, TestProps.merged9To6);
+
+      expect(state.draggingWidget).to.exist;
+      state.draggingWidget!.id.should.eq(9);
+      state.draggingWidget!.lastPosition.x.should.eq(10);
+      state.draggingWidget!.lastPosition.y.should.eq(20);
     });
   });
 

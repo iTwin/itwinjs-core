@@ -840,6 +840,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
+      console.log("_handleWidgetTabClick", nineZone, tabIndex);
       return {
         nineZone,
       };

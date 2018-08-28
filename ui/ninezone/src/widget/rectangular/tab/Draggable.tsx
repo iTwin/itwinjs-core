@@ -41,7 +41,7 @@ export default class Draggable extends React.Component<DraggableProps> {
         {children}
         <PointerCaptor
           className="nz-draggable"
-          initialIsMouseDown={this.props.lastPosition ? true : false}
+          isMouseDown={this.props.lastPosition ? true : undefined}
           onMouseDown={this._handleMouseDown}
           onMouseUp={this._handleMouseUp}
           onMouseMove={this._handleMouseMove}

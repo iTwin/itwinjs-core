@@ -6,7 +6,6 @@ exports[`<Draggable /> renders correctly 1`] = `
 >
   <PointerCaptor
     className="nz-draggable"
-    initialIsMouseDown={false}
     onMouseDown={[Function]}
     onMouseMove={[Function]}
     onMouseUp={[Function]}
