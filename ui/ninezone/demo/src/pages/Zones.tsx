@@ -856,9 +856,9 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, initialPosition: PointProps, offset: PointProps) => {
+  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleWidgetTabDragStart(widgetId, initialPosition, offset, prevState.nineZone);
+      const nineZone = NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone);
       console.log("_handleWidgetTabDragStart", nineZone, initialPosition, offset);
       return {
         nineZone,
@@ -1461,7 +1461,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1477,7 +1477,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1489,7 +1489,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 2}
             onClick={() => this._handleWidgetTabClick(widget.id, 2)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1505,7 +1505,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1521,7 +1521,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1537,7 +1537,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1553,7 +1553,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1565,7 +1565,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 2}
             onClick={() => this._handleWidgetTabClick(widget.id, 2)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}

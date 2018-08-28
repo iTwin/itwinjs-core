@@ -430,7 +430,7 @@ describe("StateManager", () => {
 
   describe("handleWidgetTabDragStart", () => {
     it("should set floating bounds", () => {
-      const state = DefaultStateManager.handleWidgetTabDragStart(6, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
+      const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
 
       expect(state.zones[6].floatingBounds);
       const floatingBounds = state.zones[6].floatingBounds as RectangleProps;
@@ -440,7 +440,7 @@ describe("StateManager", () => {
     });
 
     it("should unmerge merged zone", () => {
-      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
       state.zones[6].widgets.length.should.eq(1, "z6");
       state.zones[6].widgets[0].id.should.eq(6, "z6");
@@ -449,7 +449,7 @@ describe("StateManager", () => {
     });
 
     it("should set bounds when unmerging", () => {
-      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
       const bounds6 = state.zones[6].bounds;
       bounds6.top.should.eq(20, "bounds6.top");
@@ -471,7 +471,7 @@ describe("StateManager", () => {
     });
 
     it("should set dragging widget when unmerging", () => {
-      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 10, y: 20 }, { x: 0, y: 0 }, TestProps.merged9To6);
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 10, y: 20 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
       expect(state.draggingWidget).to.exist;
       state.draggingWidget!.id.should.eq(9);
@@ -479,11 +479,37 @@ describe("StateManager", () => {
       state.draggingWidget!.lastPosition.y.should.eq(20);
     });
 
-    it("should open home widget when unmerging", () => {
-      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+    it("should open 1st tab of home widget when unmerging active widget", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 3, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
       state.zones[6].widgets[0].tabIndex.should.eq(1, "z6");
       state.zones[9].widgets[0].tabIndex.should.eq(1, "z9");
+    });
+
+    it("should open dragged tab when unmerging inactive widget", () => {
+      const props: NineZoneProps = {
+        ...TestProps.merged9To6,
+        zones: {
+          ...TestProps.merged9To6.zones,
+          6: {
+            ...TestProps.merged9To6.zones[6],
+            widgets: [
+              {
+                id: 6,
+                tabIndex: 2,
+              },
+              {
+                id: 9,
+                tabIndex: -1,
+              },
+            ],
+          }
+        }
+      }
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 5, { x: 0, y: 0 }, { x: 0, y: 0 }, props);
+
+      state.zones[6].widgets[0].tabIndex.should.eq(2, "z6");
+      state.zones[9].widgets[0].tabIndex.should.eq(5, "z9");
     });
   });
 

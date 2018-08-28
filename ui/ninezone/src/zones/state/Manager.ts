@@ -8,7 +8,7 @@ import Rectangle from "../../utilities/Rectangle";
 import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
-import Widget, { WidgetProps } from "./Widget";
+import Widget from "./Widget";
 import { ZoneIdToWidget, WidgetZone, StatusZone, StatusZoneProps } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
@@ -135,7 +135,7 @@ export class StateManager {
     return newState;
   }
 
-  public handleWidgetTabDragStart(widgetId: WidgetZoneIndex, initialPosition: PointProps, offset: PointProps, state: NineZoneProps): NineZoneProps {
+  public handleWidgetTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
 
     const widget = model.getWidget(widgetId);
@@ -160,7 +160,7 @@ export class StateManager {
               acc[id] = {
                 ...model.props.zones[id],
                 widgets: model.props.zones[zone.props.id].widgets.filter((w) => w.id !== widgetId).map((w) => {
-                  if (w.id === id)
+                  if (w.id === id && w.tabIndex < 1)
                     return {
                       ...w,
                       tabIndex: 1,
@@ -174,9 +174,16 @@ export class StateManager {
                 ...model.props.zones[id],
                 bounds: zoneBounds.getVerticalSegmentBounds(mergedZoneIndex, mergedZones.length),
                 floatingBounds,
-                widgets: [{
-                  ...model.props.zones[zone.props.id].widgets.find((w) => w.id === widgetId),
-                }] as WidgetProps[],
+                widgets: [
+                  ...model.props.zones[zone.props.id].widgets.filter((w) => w.id === widgetId).map((w) => {
+                    if (w.id === id && w.tabIndex < 1)
+                      return {
+                        ...w,
+                        tabIndex: tabId,
+                      };
+                    return w;
+                  }),
+                ],
               };
             } else if (mergedZone) {
               acc[id] = {
