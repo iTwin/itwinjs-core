@@ -14,7 +14,6 @@ Array [
     "filterable": true,
     "key": "PhysicalModel_ModeledElement",
     "label": "Modeled Element",
-      "name": "FunctionalModel_ModeledElement",
     "sortable": true,
   },
 ]
@@ -34,7 +33,6 @@ Array [
     "filterable": true,
     "key": "PhysicalModel_RepositoryModel_ModeledElement",
     "label": "Modeled Element",
-      "name": "PhysicalModel_FunctionalModel_ModeledElement",
     "sortable": true,
   },
 ]
@@ -80,8 +78,7 @@ Object {
       },
     },
   ],
-    "className": "Functional:FunctionalModel",
-    "id": "0x11",
+  "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
 }
 `;
 
