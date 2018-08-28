@@ -208,6 +208,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
+  public decorate(context: DecorateContext): void { this.drawGrid(context); }
+
   /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
@@ -1359,6 +1362,7 @@ export abstract class ViewState3d extends ViewState {
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
+    super.decorate(context);
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
   }
@@ -1659,7 +1663,6 @@ export class DrawingViewState extends ViewState2d {
 
   public static get className() { return "DrawingViewDefinition"; }
   public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
-  public decorate(_context: DecorateContext): void { }
 }
 
 /** A view of a SheetModel */
@@ -1785,6 +1788,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   public decorate(context: DecorateContext): void {
+    super.decorate(context);
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       context.setViewBackground(border);
