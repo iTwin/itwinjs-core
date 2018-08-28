@@ -1,46 +1,47 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
-import { IModelToken } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Content, Descriptor, PresentationRpcInterface, HierarchyRequestOptions, Paged, ContentRequestOptions, RequestOptions } from "@common/index";
-import PresentationManager from "@src/PresentationManager";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import RulesetManager from "@srcRulesetManager";
 import {
   createRandomDescriptor,
   createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
   createRandomECInstanceKey,
 } from "@helpers/random";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {
+  KeySet, Content, Descriptor, HierarchyRequestOptions,
+  Paged, ContentRequestOptions, RequestOptions, RpcRequestsHandler,
+} from "@common/index";
+import PresentationManager from "@src/PresentationManager";
+import RulesetVariablesManager from "@src/RulesetVariablesManager";
+import RulesetManager from "@src/RulesetManager";
 
 describe("PresentationManager", () => {
 
-  let interfaceMock: moq.IMock<PresentationRpcInterface>;
+  let rpcRequestsHandlerMock: moq.IMock<RpcRequestsHandler>;
   let manager: PresentationManager;
   const testData = {
     imodelToken: new IModelToken(),
     imodelMock: moq.Mock.ofType<IModelConnection>(),
     pageOptions: { start: 0, size: 0 },
     rulesetId: "",
-    clientId: "",
   };
 
   beforeEach(() => {
-    initializeRpcInterface(PresentationRpcInterface);
-
-    interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-    PresentationRpcInterface.getClient = () => interfaceMock.object;
     testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
-    testData.clientId = faker.random.uuid();
+    rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
+    rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
+    manager = PresentationManager.create({ rpcRequestsHandler: rpcRequestsHandlerMock.object });
+  });
 
-    manager = PresentationManager.create({ clientId: testData.clientId });
+  afterEach(() => {
+    manager.dispose();
   });
 
   const toIModelTokenOptions = <TOptions extends RequestOptions<IModelConnection>>(options: TOptions) => {
@@ -49,7 +50,6 @@ describe("PresentationManager", () => {
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
     return Object.assign({}, { locale: undefined }, options, {
       imodel: testData.imodelToken,
-      clientId: testData.clientId,
     });
   };
 
@@ -61,10 +61,30 @@ describe("PresentationManager", () => {
       expect(mgr.activeLocale).to.eq(props.activeLocale);
     });
 
-    it("sets custom clientId if supplied with props", async () => {
-      const props = { clientId: faker.random.word() };
+    it("sets custom RpcRequestsHandler if supplied with props", async () => {
+      const handler = moq.Mock.ofType<RpcRequestsHandler>();
+      handler.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
+      const props = { rpcRequestsHandler: handler.object };
       const mgr = PresentationManager.create(props);
-      expect(mgr.clientId).to.eq(props.clientId);
+      expect(mgr.rpcRequestsHandler).to.eq(handler.object);
+    });
+
+  });
+
+  describe("dispose", () => {
+
+    it("disposes rulesets manager", () => {
+      const rulesetsManager = manager.rulesets();
+      const disposeSpy = spy.on(rulesetsManager, RulesetManager.prototype.dispose.name);
+      manager.dispose();
+      expect(disposeSpy).to.be.called();
+    });
+
+    it("disposes rulesets manager", () => {
+      const varManagers = ["a", "b"].map((id) => manager.vars(id));
+      const disposeSpies = varManagers.map((m) => spy.on(m, RulesetVariablesManager.prototype.dispose.name));
+      manager.dispose();
+      disposeSpies.forEach((disposeSpy) => expect(disposeSpy).to.be.called());
     });
 
   });
@@ -78,10 +98,9 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       });
-      interfaceMock.verify((x) => x.getRootNodesCount({
+      rpcRequestsHandlerMock.verify((x) => x.getRootNodesCount({
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
-        clientId: testData.clientId,
         locale,
       }), moq.Times.once());
     });
@@ -93,10 +112,9 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         locale,
       });
-      interfaceMock.verify((x) => x.getRootNodesCount({
+      rpcRequestsHandlerMock.verify((x) => x.getRootNodesCount({
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
-        clientId: testData.clientId,
         locale,
       }), moq.Times.once());
     });
@@ -117,6 +135,9 @@ describe("PresentationManager", () => {
     it("returns ruleset variables manager", () => {
       const vars = manager.vars(testData.rulesetId);
       expect(vars).to.be.instanceOf(RulesetVariablesManager);
+
+      const vars2 = manager.vars(testData.rulesetId);
+      expect(vars2).to.equal(vars);
     });
 
   });
@@ -130,13 +151,13 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getRootNodes(toIModelTokenOptions(options)))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getRootNodes(options);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -149,13 +170,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getRootNodesCount(toIModelTokenOptions(options)))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getRootNodesCount(options);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -170,13 +191,13 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getChildren(toIModelTokenOptions(options), parentNodeKey))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getChildren(options, parentNodeKey);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -190,13 +211,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getChildrenCount(toIModelTokenOptions(options), parentNodeKey))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getChildrenCount(options, parentNodeKey);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -209,12 +230,12 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock.setup((x) => x.getFilteredNodePaths(toIModelTokenOptions(options), "filter"))
+      rpcRequestsHandlerMock.setup((x) => x.getFilteredNodePaths(toIModelTokenOptions(options), "filter"))
         .returns(async () => value)
         .verifiable();
       const result = await manager.getFilteredNodePaths(options, "filter");
       expect(value).to.be.deep.equal(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -228,12 +249,12 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock.setup((x) => x.getNodePaths(toIModelTokenOptions(options), keyArray, 1))
+      rpcRequestsHandlerMock.setup((x) => x.getNodePaths(toIModelTokenOptions(options), keyArray, 1))
         .returns(async () => value)
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
       expect(value).to.be.deep.equal(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -249,13 +270,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getContentDescriptor(toIModelTokenOptions(options), "test", keyset, undefined))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship, moq.Times.once());
     });
 
@@ -265,13 +286,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getContentDescriptor(toIModelTokenOptions(options), "test", keyset, undefined))
         .returns(async () => undefined)
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined);
       expect(actualResult).to.be.undefined;
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -286,13 +307,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getContentSetSize(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options, descriptor, keyset);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -312,13 +333,13 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getContent(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContent(options, descriptorMock.object, keyset);
       expect(actualResult).to.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());
     });
 
@@ -337,13 +358,13 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset, fieldName, maximumValueCount))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getDistinctValues(options, descriptorMock.object, keyset, fieldName, maximumValueCount);
       expect(actualResult).to.deep.eq(result);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
     it("passes 0 for maximumValueCount by default", async () => {
@@ -351,11 +372,11 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      interfaceMock
+      rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), 0))
         .verifiable();
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
   });
 

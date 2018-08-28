@@ -5,50 +5,98 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { createRandomId } from "@helpers/random";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { RpcRequestsHandler } from "@bentley/presentation-common";
+import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
+import { using } from "@bentley/bentleyjs-core";
 
 describe("RulesetVariablesManager", () => {
 
-  let interfaceMock: moq.IMock<PresentationRpcInterface>;
+  let rpcRequestsHandlerMock: moq.IMock<RpcRequestsHandler>;
   let vars: RulesetVariablesManager;
   const testData = {
     rulesetId: "",
     variableId: "",
-    clientId: "",
   };
 
   beforeEach(() => {
-    initializeRpcInterface(PresentationRpcInterface);
-
-    interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-    PresentationRpcInterface.getClient = () => interfaceMock.object;
-
-    testData.clientId = faker.random.uuid();
     testData.rulesetId = faker.random.uuid();
     testData.variableId = faker.random.word();
-
-    vars = new RulesetVariablesManager(testData.clientId, testData.rulesetId);
+    rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
+    rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
+    vars = new RulesetVariablesManager(rpcRequestsHandlerMock.object, testData.rulesetId);
   });
 
-  const requestOptions = () => ({
-    rulesetId: testData.rulesetId,
-    clientId: testData.clientId,
-    variableId: testData.variableId,
+  describe("constructor", () => {
+
+    it("registers a sync handler", () => {
+      const syncHandlers = new Array<() => Promise<void>>();
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      using(new RulesetVariablesManager(rpcRequestsHandlerMock.object, testData.rulesetId), () => {
+        expect(syncHandlers.length).to.eq(1);
+      });
+    });
+
+  });
+
+  describe("dispose", () => {
+
+    it("unregisters its sync handler", () => {
+      const syncHandlers = new Array<() => Promise<void>>();
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      const m = new RulesetVariablesManager(rpcRequestsHandlerMock.object, testData.rulesetId);
+      expect(syncHandlers.length).to.eq(1);
+      m.dispose();
+      expect(syncHandlers.length).to.eq(0);
+    });
+
+  });
+
+  describe("syncWithBackend", () => {
+
+    const syncHandlers = new Array<() => Promise<void>>();
+
+    beforeEach(() => {
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      vars.dispose();
+      vars = new RulesetVariablesManager(rpcRequestsHandlerMock.object, testData.rulesetId);
+    });
+
+    afterEach(() => {
+      vars.dispose();
+    });
+
+    it("does nothing if there're no client rulesets", async () => {
+      await Promise.all(syncHandlers.map((sh) => sh()));
+      rpcRequestsHandlerMock.verify((x) => x.addRulesets(moq.It.isAny()), moq.Times.never());
+    });
+
+    it("adds all client rulesets using rpc requests handler", async () => {
+      const values: Array<[string, VariableValueTypes, VariableValue]> = [
+        [faker.random.word(), VariableValueTypes.Int, faker.random.number()],
+        [faker.random.word(), VariableValueTypes.String, faker.random.words()],
+      ];
+      await vars.setInt(values[0][0], values[0][2] as number);
+      await vars.setString(values[1][0], values[1][2] as string);
+      await Promise.all(syncHandlers.map((sh) => sh()));
+      rpcRequestsHandlerMock.verify((x) => x.setRulesetVariableValues(testData.rulesetId, values), moq.Times.once());
+    });
+
   });
 
   describe("getString", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const value = faker.random.word();
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.String))
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.String))
         .returns(async () => value)
         .verifiable();
       const result = await vars.getString(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.equal(value);
     });
 
@@ -58,11 +106,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const value = faker.random.word();
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.String, value))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.String, value))
         .verifiable();
       await vars.setString(testData.variableId, value);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -71,12 +119,12 @@ describe("RulesetVariablesManager", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const value = faker.random.boolean();
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.Bool))
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Bool))
         .returns(async () => value)
         .verifiable();
       const result = await vars.getBool(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.equal(value);
     });
 
@@ -86,11 +134,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const value = faker.random.boolean();
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.Bool, value))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Bool, value))
         .verifiable();
       await vars.setBool(testData.variableId, value);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -99,12 +147,12 @@ describe("RulesetVariablesManager", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const value = faker.random.number();
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.Int))
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Int))
         .returns(async () => value)
         .verifiable();
       const result = await vars.getInt(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.equal(value);
     });
 
@@ -114,11 +162,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const value = faker.random.number();
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.Int, value))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Int, value))
         .verifiable();
       await vars.setInt(testData.variableId, value);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -127,12 +175,12 @@ describe("RulesetVariablesManager", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const valuesArray = [faker.random.number(), faker.random.number(), faker.random.number()];
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.IntArray))
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.IntArray))
         .returns(async () => valuesArray)
         .verifiable();
       const result = await vars.getInts(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.deep.equal(valuesArray);
     });
 
@@ -142,11 +190,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const valuesArray = [faker.random.number(), faker.random.number(), faker.random.number()];
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.IntArray, valuesArray))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.IntArray, valuesArray))
         .verifiable();
       await vars.setInts(testData.variableId, valuesArray);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -155,12 +203,12 @@ describe("RulesetVariablesManager", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const value = createRandomId();
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.Id64))
-        .returns(async () => value.value)
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Id64))
+        .returns(async () => value)
         .verifiable();
       const result = await vars.getId64(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.deep.equal(value);
     });
 
@@ -170,11 +218,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const value = createRandomId();
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.Id64, value.value))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Id64, value))
         .verifiable();
       await vars.setId64(testData.variableId, value);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -183,12 +231,12 @@ describe("RulesetVariablesManager", () => {
 
     it("calls getRulesetVariableValue through proxy", async () => {
       const valueArray = [createRandomId(), createRandomId(), createRandomId()];
-      interfaceMock
-        .setup((x) => x.getRulesetVariableValue(requestOptions(), VariableValueTypes.Id64Array))
-        .returns(async () => valueArray.map((v) => v.value))
+      rpcRequestsHandlerMock
+        .setup((x) => x.getRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Id64Array))
+        .returns(async () => valueArray)
         .verifiable();
       const result = await vars.getId64s(testData.variableId);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.deep.equal(valueArray);
     });
 
@@ -198,11 +246,11 @@ describe("RulesetVariablesManager", () => {
 
     it("calls setRulesetVariableValue through proxy", async () => {
       const valueArray = [createRandomId(), createRandomId(), createRandomId()];
-      interfaceMock
-        .setup((x) => x.setRulesetVariableValue(requestOptions(), VariableValueTypes.Id64Array, valueArray.map((v) => v.value)))
+      rpcRequestsHandlerMock
+        .setup((x) => x.setRulesetVariableValue(testData.rulesetId, testData.variableId, VariableValueTypes.Id64Array, valueArray))
         .verifiable();
       await vars.setId64s(testData.variableId, valueArray);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });

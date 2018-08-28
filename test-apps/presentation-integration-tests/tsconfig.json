@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "paths": {
       "@common/*": [
-        "@bentley/presentation-common/lib/*"
+        "@bentley/presentation-common/lib/*",
+        "@bentley/presentation-common/*"
       ],
       "@helpers/*": [
         "../../../presentation/common/tests/_helpers/*",

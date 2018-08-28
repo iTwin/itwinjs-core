@@ -9,14 +9,6 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import PresentationPropertyDataProvider from "@bentley/presentation-components/lib/propertygrid/DataProvider";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 interface MeaningfulInstances {
   repositoryModel: ModelProps;
   functionalModel: ModelProps;
@@ -35,15 +27,19 @@ describe("PropertyDataProvider", async () => {
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
   let provider: PresentationPropertyDataProvider;
+
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
     provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
   });
+
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("creates property data", async () => {
