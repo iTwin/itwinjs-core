@@ -2358,7 +2358,7 @@ export class AccuDraw {
       }
 
       if (angleChanged) {
-        delta.addScaledInPlace(this.axes.x, rotVec.x);
+        this.axes.x.scale(rotVec.x, delta);
         delta.addScaledInPlace(this.axes.y, rotVec.y);
         mag = delta.magnitude();
         if (mag < minPolarMag) {
@@ -2766,12 +2766,16 @@ export class AccuDraw {
     return false;
   }
 
-  private intersectXYCurve(snap: SnapDetail, curve: CurvePrimitive) {
-    if (undefined === this.currentView || undefined === snap.primitive)
+  private intersectXYCurve(snap: SnapDetail, curve: CurvePrimitive, usePointOnSnap: boolean) {
+    if (undefined === this.currentView)
+      return;
+
+    const curveSegment = snap.getCurvePrimitive(); // Get single segment of linestring/shape...
+    if (undefined === curveSegment)
       return;
 
     const worldToView = this.currentView.worldToViewMap.transform0;
-    const detail = CurveCurve.IntersectionProjectedXY(worldToView, snap.primitive, true, curve, true);
+    const detail = CurveCurve.IntersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
     if (0 === detail.dataA.length)
       return;
 
@@ -2798,17 +2802,17 @@ export class AccuDraw {
     const vec = Vector3d.createStartEnd(linePt, snap.getPoint());
     const endPt = linePt.plusScaled(unitVec, vec.dotProduct(unitVec));
     const cpLine = LineSegment3d.create(linePt, endPt);
-    this.intersectXYCurve(snap, cpLine);
+    this.intersectXYCurve(snap, cpLine, true); // Get point on snapped curve, not AccuDraw axis. Snap point isn't required to be in AccuDraw plane when Z isn't locked.
   }
 
   private intersectCircle(snap: SnapDetail, center: Point3d, normal: Vector3d, radius: number) {
     const matrix = Matrix3d.createRigidHeadsUp(normal);
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
-    vector0.scaleToLength(radius);
-    vector90.scaleToLength(radius);
+    vector0.scaleToLength(radius, vector0);
+    vector90.scaleToLength(radius, vector90);
     const cpArc = Arc3d.create(center, vector0, vector90);
-    this.intersectXYCurve(snap, cpArc);
+    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance contraint with apparent intersection in XY.
   }
 
   public onSnap(snap: SnapDetail): boolean {
