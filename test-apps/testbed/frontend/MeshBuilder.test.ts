@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { GraphicParams } from "@bentley/imodeljs-common";
+import { IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GraphicParams, ColorDef } from "@bentley/imodeljs-common";
 import {
   Range3d,
   Point3d,
@@ -31,7 +31,6 @@ import {
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { ColorDef } from "@bentley/imodeljs-common/lib/common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -84,7 +83,7 @@ describe("Mesh Builder Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);

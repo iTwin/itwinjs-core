@@ -303,20 +303,37 @@ it("StandardViewsByXYZ", () => {
 describe("RaggedMatrix", () => {
   it("FromCSS", () => {
     const ck = new Checker();
+    // a supposedly rigid matrix received in .css . . .   but plainly it only has 6 digits.
     const raggedMatrix = Matrix3d.createRowValues(
       0.707421, -0.415747, -0.571585,
       0, 0.808703, -0.588217,
       0.706792, 0.416117, 0.572094);
-    console.log(" ragged matrix ", raggedMatrix.toJSON());
-    console.log("   determinant", raggedMatrix.determinant());
-    console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
-    console.log("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
+    if (Checker.noisy.RaggedViewMatrix) {
+      console.log(" ragged matrix ", raggedMatrix.toJSON());
+      console.log("   determinant", raggedMatrix.determinant());
+      console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
+      console.log("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
+    }
+    const yprA = YawPitchRollAngles.createDegrees(0, 0, 0);
+    const yprB = YawPitchRollAngles.createFromMatrix3d(raggedMatrix, yprA);
+    // we expect this has failed (returned undefined) but nonetheless placed some angles in yprA . .
+    ck.testUndefined(yprB, " expect no ypr from ragged matrix");
     const cleanMatrix = Matrix3d.createRigidFromMatrix3d(raggedMatrix)!;
-    const ypr = YawPitchRollAngles.createFromMatrix3d(cleanMatrix);
+    const yprC = YawPitchRollAngles.createFromMatrix3d(cleanMatrix);
+    ck.testPointer(yprC, "Expect ypr from corrected matrix");
     const maxDiff = cleanMatrix.maxDiff(raggedMatrix);
-    console.log(" clean matrix ", cleanMatrix.toJSON());
-    console.log(" maxDiff " + maxDiff);
-    console.log("Clean ypr", ypr);
+    const matrixB = yprA.toMatrix3d();
+    const matrixC = yprC!.toMatrix3d();
+    const diffBC = matrixB.maxDiff(matrixC);
+    const diffAB = matrixB.maxDiff (raggedMatrix);
+    ck.testLT (diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
+    ck.testLT (diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
+    if (Checker.noisy.RaggedViewMatrix) {
+      console.log(" clean matrix ", cleanMatrix.toJSON());
+      console.log(" maxDiff " + maxDiff);
+      console.log("Clean ypr", yprC);
+      console.log("maxDiff between ypr round trips", diffBC);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

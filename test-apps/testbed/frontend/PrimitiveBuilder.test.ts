@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
   Geometry,
@@ -50,7 +50,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -110,7 +110,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     // const pointA = new Point3d(-100, 0, 0);
@@ -146,7 +146,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -172,7 +172,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
@@ -198,7 +198,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -257,7 +257,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -316,7 +316,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
@@ -375,7 +375,7 @@ describe("PrimitiveBuilder tests", () => {
       return;
     }
 
-    const viewport = new Viewport(viewDiv, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
     const accum = new GeometryAccumulator(imodel, System.instance);
 

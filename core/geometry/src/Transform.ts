@@ -343,7 +343,7 @@ export class Matrix3d implements BeJSONFunctions {
    * *  construct a frame using createRigidFromColumns (vectorA, vectorB, axisOrder)
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Matrix3d): Matrix3d {
-    const vectorB = Matrix3d.createRigidHeadsUpFavorXYPlane(vectorA);
+    const vectorB = Matrix3d.createPerpendicularVectorFavorXYPlane(vectorA);
     const matrix = Matrix3d.createRigidFromColumns(vectorA, vectorB, axisOrder, result);
     if (matrix) {
       matrix.setupInverseTranspose();
@@ -359,7 +359,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * Hence, when vectorA is NOT close to the Z axis, the returned vector is Z cross vectorA.
    * * But vectorA is close to the Z axis, the returned vector is unitY cross vectorA.
    */
-  public static createRigidHeadsUpFavorXYPlane(vector: Vector3d, result?: Vector3d): Vector3d {
+  public static createPerpendicularVectorFavorXYPlane(vector: Vector3d, result?: Vector3d): Vector3d {
     const a = vector.magnitude();
     const b = a / 64.0;   // A constant from the dawn of time in the CAD industry.
     if (Math.abs(vector.x) < b && Math.abs(vector.y) < b) {
@@ -369,15 +369,15 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
- *
- * * return a vector that is perpendicular to the input direction.
- * * Among the infinite number of perpendiculars possible, this method
- * favors having one near the Z.
- * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
- */
-  public static createHeadsUpPerpendicularNearZ(vector: Vector3d, result?: Vector3d): Vector3d {
-    result = Matrix3d.createRigidHeadsUpFavorXYPlane(vector, result);
-    return vector.crossProduct(result);
+   *
+   * * return a vector that is perpendicular to the input direction.
+   * * Among the infinite number of perpendiculars possible, this method
+   * favors having one near the Z.
+   * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
+   */
+  public static createPerpendicularVectorFavorPlaneContainingZ(vector: Vector3d, result?: Vector3d): Vector3d {
+    result = Matrix3d.createPerpendicularVectorFavorXYPlane(vector, result);
+    return vector.crossProduct(result, result);
   }
 
   /** Create a matrix with distinct x,y,z diagonal (scale) entries */
@@ -714,7 +714,7 @@ export class Matrix3d implements BeJSONFunctions {
     if (vectorA.dotProduct(vectorB) > 0.0)
       return Matrix3d.createIdentity(result);
     // nonzero opposing vectors ..
-    upVector = Matrix3d.createHeadsUpPerpendicularNearZ(vectorA, upVector);
+    upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
     return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
   }
 
@@ -765,14 +765,14 @@ export class Matrix3d implements BeJSONFunctions {
   public columnYMagnitude(): number { return Math.hypot(this.coffs[1], this.coffs[4], this.coffs[7]); }
   /** @returns Return the Z column magnitude */
   public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
-  /** @returns the dot product of column X with column Y */
 
-  /** @returns Return the X row magnitude squared */
+  /** @returns Return the X row magnitude d */
   public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
-  /** @returns Return the Y row magnitude squared */
+  /** @returns Return the Y row magnitude  */
   public rowYMagnitude(): number { return Math.hypot(this.coffs[3], this.coffs[4], this.coffs[5]); }
-  /** @returns Return the Z row magnitude squared */
+  /** @returns Return the Z row magnitude  */
   public rowZMagnitude(): number { return Math.hypot(this.coffs[6], this.coffs[7], this.coffs[8]); }
+  /** @returns the dot product of column X with column Y */
   /** @returns the dot product of column X with column Y */
   public columnXDotColumnY(): number {
     return this.coffs[0] * this.coffs[1]
@@ -1044,6 +1044,17 @@ export class Matrix3d implements BeJSONFunctions {
       vectorU.x, vectorV.x, vectorW.x,
       vectorU.y, vectorV.y, vectorW.y,
       vectorU.z, vectorV.z, vectorW.z, result);
+  }
+
+  /** Create a matrix from column vectors.
+   * Each column gets x and y from given XAndY, and z from w.
+   */
+  public static createColumnsXYW(vectorU: XAndY, uz: number, vectorV: XAndY, vz: number, vectorW: XAndY, wz: number, result?: Matrix3d): Matrix3d {
+    return Matrix3d.createRowValues
+      (
+      vectorU.x, vectorV.x, vectorW.x,
+      vectorU.y, vectorV.y, vectorW.y,
+      uz, vz, wz, result);
   }
 
   /** Install data from xyz parts of Point4d  (w part of Point4d ignored) */
@@ -1746,8 +1757,15 @@ export class Matrix3d implements BeJSONFunctions {
       - this.coffs[6] * this.coffs[4] * this.coffs[2];
   }
 
-  /** Return an estimate of how independent the columns are.  Near zero is bad. */
-  // ConditionNumber(): number;
+  /** Return an estimate of how independent the columns are.  Near zero is bad. Near 1 is good.*/
+  public conditionNumber(): number {
+    const determinant = this.determinant();
+    const columnMagnitudeProduct =
+      Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6])
+      + Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7])
+      + Geometry.hypotenuseXYZ(this.coffs[2], this.coffs[5], this.coffs[8]);
+    return Geometry.safeDivideFraction(determinant, columnMagnitudeProduct, 0.0);
+  }
   /** Return the sum of squares of all entries */
   public sumSquares(): number {
     let i = 0;
@@ -2036,7 +2054,7 @@ export class Transform implements BeJSONFunctions {
       result._matrix.setRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz);
       return result;
     }
-    return new Transform(Point3d.create (ax, ay, az), Matrix3d.createRowValues (qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
+    return new Transform(Point3d.create(ax, ay, az), Matrix3d.createRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
   }
   /**
    * create a Transform with translation provided by x,y,z parts.

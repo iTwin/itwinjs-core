@@ -5,7 +5,7 @@
 
 import { Point3d, Point2d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Viewport } from "./Viewport";
+import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
 import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
@@ -181,19 +181,19 @@ export class AccuSnap {
     this.clearSprites(); // remove all sprites from the screen
   }
 
-  public async showElemInfo(viewPt: XAndY, vp: Viewport, hit: HitDetail): Promise<void> {
+  public async showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): Promise<void> {
     if (IModelApp.viewManager.doesHostHaveFocus()) {
       const msg = await IModelApp.toolAdmin.getToolTip(hit);
       this.showLocateMessage(viewPt, vp, msg);
     }
   }
 
-  private showLocateMessage(viewPt: XAndY, vp: Viewport, msg: string) {
+  private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: string) {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.notifications.showToolTip(vp.canvas, msg, viewPt);
+      IModelApp.notifications.showToolTip(vp.toolTipDiv, msg, viewPt);
   }
 
-  public async displayToolTip(viewPt: XAndY, vp: Viewport, uorPt?: Point3d) {
+  public async displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
     if (IModelApp.notifications.isToolTipOpen || !this._settings.toolTip)
       return;
@@ -835,7 +835,7 @@ export class TentativeOrAccuSnap {
     return IModelApp.tentativePoint.getPoint();
   }
 
-  public static getCurrentView(): Viewport | undefined {
+  public static getCurrentView(): ScreenViewport | undefined {
     const snap = IModelApp.accuSnap.getCurrSnapDetail();
     return snap ? snap.viewport : IModelApp.tentativePoint.viewport;
   }
