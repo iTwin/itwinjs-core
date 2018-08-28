@@ -34,7 +34,7 @@ export class ContentViewManager {
   private static _activeContent?: React.ReactNode;
   private static _activeContentChangedEvent: ActiveContentChangedEvent = new ActiveContentChangedEvent();
 
-  public static get MouseDownChangedEvent(): MouseDownChangedEvent { return this._mouseDownChangedEvent; }
+  public static get onMouseDownChangedEvent(): MouseDownChangedEvent { return this._mouseDownChangedEvent; }
 
   public static get isMouseDown(): boolean {
     return this._mouseDown;
@@ -42,10 +42,10 @@ export class ContentViewManager {
 
   public static setMouseDown(mouseDown: boolean): void {
     this._mouseDown = mouseDown;
-    this.MouseDownChangedEvent.emit({ mouseDown });
+    this.onMouseDownChangedEvent.emit({ mouseDown });
   }
 
-  public static get ActiveContentChangedEvent(): ActiveContentChangedEvent { return this._activeContentChangedEvent; }
+  public static get onActiveContentChangedEvent(): ActiveContentChangedEvent { return this._activeContentChangedEvent; }
 
   public static getActiveContent(): React.ReactNode | undefined {
     return this._activeContent;
@@ -55,7 +55,7 @@ export class ContentViewManager {
     if (this._activeContent !== activeContent) {
       const oldContent = activeContent;
       this._activeContent = activeContent;
-      this.ActiveContentChangedEvent.emit({ oldContent, activeContent });
+      this.onActiveContentChangedEvent.emit({ oldContent, activeContent });
     }
   }
 

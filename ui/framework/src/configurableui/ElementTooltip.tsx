@@ -52,17 +52,17 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
 
-  public static get ElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
+  public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
   public static showTooltip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip._isTooltipVisible = true;
-    ElementTooltip.ElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
+    ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
 
   public static hideTooltip(): void {
     ElementTooltip._isTooltipVisible = false;
-    ElementTooltip.ElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
+    ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
   }
 
   /** hidden */
@@ -80,44 +80,50 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       this.state.isTestingSize && "invisible",
       this.props.className);
 
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-      >
-        {this.state.message &&
-          <div dangerouslySetInnerHTML={{ __html: this.state.message }} />
-        }
-      </div>
-    );
+    if (this.state.isTooltipVisible) {
+      return (
+        <div
+          className={className}
+          style={this.props.style}
+        >
+          {this.state.message &&
+            <div dangerouslySetInnerHTML={{ __html: this.state.message }} />
+          }
+        </div>
+      );
+    }
+
+    return null;
   }
 
   public componentDidMount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.addListener(this._handleElementTooltipChangedEvent);
+    ElementTooltip.onElementTooltipChangedEvent.addListener(this._handleElementTooltipChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
+    ElementTooltip.onElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
   }
 
-  private _handleElementTooltipChangedEvent = (args: ElementTooltipState) => {
+  private _handleElementTooltipChangedEvent = (args: ElementTooltipChangedEventArgs) => {
     // Render it first as invisible (opacity: 0%) so we can get the size, then align it and re-render it with full opacity
     this.setState(
       () => ({
-        isTooltipVisible: true,
-        isTestingSize: true,
+        isTooltipVisible: args.isTooltipVisible,
+        isTestingSize: args.isTooltipVisible,
         message: args.message,
         el: args.el,
         pt: args.pt,
       }),
       () => {
-        this.alignTooltip(this.state.el, this.state.pt);
+        if (args.isTooltipVisible) {
+          this.alignTooltip(this.state.el, this.state.pt);
 
-        this.setState(() => ({
-          isTooltipVisible: true,
-          isTestingSize: false,
-          message: this.state.message,
-        }));
+          this.setState(() => ({
+            isTooltipVisible: args.isTooltipVisible,
+            isTestingSize: false,
+            message: this.state.message,
+          }));
+        }
       },
     );
   }

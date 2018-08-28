@@ -52,11 +52,11 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   };
 
   public componentDidMount(): void {
-    FrontstageManager.WidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    FrontstageManager.WidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {

@@ -187,6 +187,6 @@ export class WidgetDef {
     this.isDefaultOpen = (state === WidgetState.Open);
     this.defaultOpenUsed = false;
 
-    FrontstageManager.WidgetStateChangedEvent.emit({ widgetDef: this, widgetState: state });
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: state });
   }
 }

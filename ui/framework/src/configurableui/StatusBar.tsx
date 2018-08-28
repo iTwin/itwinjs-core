@@ -96,11 +96,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   public componentDidMount() {
-    MessageManager.MessageAddedEvent.addListener(this._handleMessageAddedEvent);
+    MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
   }
 
   public componentWillUnmount() {
-    MessageManager.MessageAddedEvent.removeListener(this._handleMessageAddedEvent);
+    MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
   }
 
   private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {

@@ -175,7 +175,7 @@ export class FrontstageDef {
   public setActiveToolItem(toolItem: ToolItemDef): void {
     this._activeToolItem = toolItem;
     toolItem.onActivated();
-    FrontstageManager.ToolActivatedEvent.emit({ toolId: toolItem.id, toolItem });
+    FrontstageManager.onToolActivatedEvent.emit({ toolId: toolItem.id, toolItem });
   }
 
   public onActivated(): void {
@@ -186,7 +186,7 @@ export class FrontstageDef {
       this.contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
     }
 
-    FrontstageManager.ContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
+    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
 
     this.zoneDefs.map((zoneDef: ZoneDef) => {
       zoneDef.clearDefaultOpenUsed();
@@ -194,7 +194,7 @@ export class FrontstageDef {
   }
 
   public setActiveView(newContent: ContentControl): void {
-    FrontstageManager.ContentControlActivatedEvent.emit({ contentControl: newContent });
+    FrontstageManager.onContentControlActivatedEvent.emit({ contentControl: newContent });
   }
 
   public getZoneDef(zoneId: number): ZoneDef | undefined {

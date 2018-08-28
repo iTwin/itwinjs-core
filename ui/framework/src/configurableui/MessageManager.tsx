@@ -48,10 +48,10 @@ export class MessageManager {
   private static _MessageAddedEvent: MessageAddedEvent = new MessageAddedEvent();
 
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.ouptputMessage(). */
-  public static get MessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
+  public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
 
   /** List of messages as [[NotifyMessageDetails]]. */
-  public static get Messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
+  public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
 
   /** Output a message and/or alert to the user. */
   public static addMessage(message: NotifyMessageDetails): void {
@@ -62,7 +62,7 @@ export class MessageManager {
       this._messages.splice(0, numToErase);
     }
 
-    this.MessageAddedEvent.emit({ message });
+    this.onMessageAddedEvent.emit({ message });
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */

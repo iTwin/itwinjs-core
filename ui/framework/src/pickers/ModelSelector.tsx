@@ -17,6 +17,8 @@ export class ModelSelectorDemoWidget extends WidgetControl {
 }
 
 export default class ModelSelectorWidget extends React.Component<any, any> {
+  private _removeSelectedViewportChanged?: () => void;
+
   constructor(props: any) {
     super(props);
 
@@ -26,14 +28,22 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
       initialized: false,
     };
 
-    // Update viewed models on selected viewport changed
-    const viewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
-      if (_current)
-        this.updateStateWithViewport(_current);
-    };
-    IModelApp.viewManager.onSelectedViewportChanged.addListener(viewportChanged);
-
     this.updateState();
+  }
+
+  public componentDidMount() {
+    this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+  }
+
+  public componentWillUnmount() {
+    if (this._removeSelectedViewportChanged)
+      this._removeSelectedViewportChanged();
+  }
+
+  // Update viewed models on selected viewport changed
+  private _handleSelectedViewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
+    if (_current)
+      this.updateStateWithViewport(_current);
   }
 
   public async updateStateWithViewport(vp: Viewport) {

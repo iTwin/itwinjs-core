@@ -156,14 +156,14 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   public componentDidMount(): void {
     this.layout();
     window.addEventListener("resize", this._handleWindowResize, true);
-    FrontstageManager.FrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
-    FrontstageManager.ModalFrontstageStackChangedEvent.addListener(this._handleModalFrontstageStackChangedEvent);
+    FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
+    FrontstageManager.onModalFrontstageStackChangedEvent.addListener(this._handleModalFrontstageStackChangedEvent);
   }
 
   public componentWillUnmount(): void {
     document.removeEventListener("resize", this._handleWindowResize, true);
-    FrontstageManager.FrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
-    FrontstageManager.ModalFrontstageStackChangedEvent.removeListener(this._handleModalFrontstageStackChangedEvent);
+    FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
+    FrontstageManager.onModalFrontstageStackChangedEvent.removeListener(this._handleModalFrontstageStackChangedEvent);
   }
 
   private _handleWindowResize = () => {

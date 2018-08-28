@@ -132,11 +132,11 @@ class ToolWidgetWithDef extends React.Component<Props> {
   }
 
   public componentDidMount() {
-    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public render(): React.ReactNode {
