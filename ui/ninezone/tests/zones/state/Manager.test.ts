@@ -470,6 +470,28 @@ describe("StateManager", () => {
       state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
     });
 
+    it("should set bounds when unmerging switched widgets", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged6To9);
+
+      const bounds9 = state.zones[9].bounds;
+      bounds9.top.should.eq(82, "bounds9.top");
+      bounds9.left.should.eq(10, "bounds9.left");
+      bounds9.right.should.eq(99, "bounds9.right");
+      bounds9.bottom.should.eq(110, "bounds9.bottom");
+      expect(state.zones[9].floatingBounds, "floatingBounds9").undefined;
+
+      const bounds6 = state.zones[6].bounds;
+      bounds6.top.should.eq(54, "bounds6.top");
+      bounds6.left.should.eq(10, "bounds6.left");
+      bounds6.right.should.eq(99, "bounds6.right");
+      bounds6.bottom.should.eq(82, "bounds6.bottom");
+      expect(state.zones[6].floatingBounds, "floatingBounds6").to.exist;
+      state.zones[6].floatingBounds!.top.should.eq(54, "floatingBounds6.top");
+      state.zones[6].floatingBounds!.left.should.eq(10, "floatingBounds6.left");
+      state.zones[6].floatingBounds!.right.should.eq(99, "floatingBounds6.right");
+      state.zones[6].floatingBounds!.bottom.should.eq(110, "floatingBounds6.bottom");
+    });
+
     it("should set dragging widget when unmerging", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 10, y: 20 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
@@ -505,11 +527,20 @@ describe("StateManager", () => {
             ],
           }
         }
-      }
+      };
       const state = DefaultStateManager.handleWidgetTabDragStart(9, 5, { x: 0, y: 0 }, { x: 0, y: 0 }, props);
 
       state.zones[6].widgets[0].tabIndex.should.eq(2, "z6");
       state.zones[9].widgets[0].tabIndex.should.eq(5, "z9");
+    });
+
+    it("return merged widget to default zone when dragging widget in default zone", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(6, 5, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+
+      state.zones[6].widgets.length.should.eq(1, "z6");
+      state.zones[6].widgets[0].id.should.eq(6, "z6");
+      state.zones[9].widgets.length.should.eq(1, "z9");
+      state.zones[9].widgets[0].id.should.eq(9, "z9");
     });
   });
 
