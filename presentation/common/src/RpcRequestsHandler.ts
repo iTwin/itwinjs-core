@@ -84,10 +84,14 @@ export default class RpcRequestsHandler {
   /** Get the frontend client of this interface */
   private getClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
-  private createRequestOptions<T>(options: T): RpcRequestOptions & T {
+  /** WIP */
+  private getIModelToken(): IModelToken { return new IModelToken(); }
+
+  private createRequestOptions<T>(options: T & { imodel?: IModelToken }): RpcRequestOptions & T {
     return Object.assign({}, options, {
       clientId: this.clientId,
       knownBackendIds: [...this.knownBackendIds],
+      imodel: options.imodel || this.getIModelToken(),
     });
   }
 

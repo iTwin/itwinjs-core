@@ -4,7 +4,10 @@
 /** @module RPC */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import {
+  RpcInterface, IModelToken,
+  RpcOperation, RpcRequest,
+} from "@bentley/imodeljs-common";
 import { Ruleset } from "./rules";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
@@ -16,6 +19,7 @@ import { InstanceKey } from "./EC";
 export interface RpcRequestOptions {
   knownBackendIds: string[];
   clientId?: string;
+  imodel: IModelToken;
 }
 export type HierarchyRpcRequestOptions = RpcRequestOptions & HierarchyRequestOptions<IModelToken>;
 export type ContentRpcRequestOptions = RpcRequestOptions & ContentRequestOptions<IModelToken>;
@@ -41,6 +45,17 @@ export default class PresentationRpcInterface extends RpcInterface {
     Item,
     Id64,
   ]
+
+  public constructor() {
+    super();
+    RpcOperation.forEach(PresentationRpcInterface, (op) => {
+      // note: imodel tokens are nested inside the first parameter of each operation
+      op.policy.token = (request: RpcRequest) => {
+        const requestOptions: RpcRequestOptions = request.parameters[0];
+        return requestOptions.imodel;
+      };
+    });
+  }
 
   /** See [[PresentationManager.getRootNodes]] */
   public getRootNodes(_options: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> { return this.forward.apply(this, arguments); }
