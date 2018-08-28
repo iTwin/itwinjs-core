@@ -210,11 +210,32 @@ export class SnapDetail extends HitDetail {
     return val;
   }
 
+  public getCurvePrimitive(singleSegment: boolean = true): CurvePrimitive | undefined {
+    if (!singleSegment || undefined === this.primitive)
+      return this.primitive;
+
+    if (this.primitive instanceof LineString3d) {
+      const ls = this.primitive as LineString3d;
+      if (ls.points.length > 2) {
+        const loc = ls.closestPoint(this.snapPoint, false);
+        const nSegments = ls.points.length - 1;
+        const uSegRange = (1.0 / nSegments);
+        let segmentNo = Math.floor(loc.fraction / uSegRange);
+        if (segmentNo >= nSegments)
+          segmentNo = nSegments - 1;
+        return LineSegment3d.create(ls.points[segmentNo], ls.points[segmentNo + 1]);
+      }
+    }
+
+    return this.primitive;
+  }
+
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
 
+      let singleSegment = false;
       switch (this.snapMode) {
         case SnapMode.Center:
         case SnapMode.Origin:
@@ -222,26 +243,12 @@ export class SnapDetail extends HitDetail {
           break; // Snap point for these is computed using entire linestring, not just the hit segment...
 
         default: {
-          if (this.primitive instanceof LineString3d) {
-            const ls = this.primitive as LineString3d;
-            if (ls.points.length > 2) {
-              const loc = ls.closestPoint(this.snapPoint, false);
-              const nSegments = ls.points.length - 1;
-              const uSegRange = (1.0 / nSegments);
-              let segmentNo = Math.floor(loc.fraction / uSegRange);
-              if (segmentNo >= nSegments)
-                segmentNo = nSegments - 1;
-              const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
-              builder.addLineString(points);
-              context.addDecorationFromBuilder(builder);
-              return;
-            }
-          }
+          singleSegment = true;
           break;
         }
       }
 
-      builder.addPath(Path.create(this.primitive));
+      builder.addPath(Path.create(this.getCurvePrimitive(singleSegment)!));
       context.addDecorationFromBuilder(builder);
       return;
     }
