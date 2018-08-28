@@ -14,6 +14,16 @@ const plugins = require("../scripts/utils/webpackPlugins");
 // It requires a trailing slash, or the file assets will get an incorrect path.
 const publicPath = paths.servedPath;
 
+// We'll exclude web backend source in an electron build and electron backend source in a web build
+let excludedDirs = [];
+if (process.env.ELECTRON_ENV === "production")
+  excludedDirs.push(paths.appSrcBackendWeb)
+else
+  excludedDirs.push(paths.appSrcBackendElectron)
+
+// If these paths don't end in "/" (or "\"), they'll also exclude files beginning with "web" or "electron"
+excludedDirs = excludedDirs.map((p) => path.normalize(p + path.sep));
+
 const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 
 //======================================================================================================================================
@@ -33,7 +43,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       {
         test: /\.(t|j)sx?$/,
         loader: require.resolve("null-loader"),
-        include: (process.env.ELECTRON_ENV === "production") ? paths.appSrcBackendWeb : paths.appSrcBackendElectron,
+        include: excludedDirs,
       },
     ],
   },
