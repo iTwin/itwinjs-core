@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
-import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
-import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
+import { IModelApp } from "./IModelApp";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
@@ -11,7 +11,7 @@ import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
-import { SnapMode, SnapDetail } from "./HitDetail";
+import { SnapMode, SnapDetail, SnapHeat } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";

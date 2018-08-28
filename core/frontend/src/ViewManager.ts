@@ -159,11 +159,11 @@ export class ViewManager {
    * @note Does nothing if newVp is already present in the list.
    */
   public addViewport(newVp: ScreenViewport): void {
-    for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
+    if (this._viewports.includes(newVp)) // make sure its not already added
+      return;
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
-    // See DgnClientFxViewport::Initialize()
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
@@ -180,22 +180,15 @@ export class ViewManager {
    * @note raises onViewClose event with vp.
    */
   public dropViewport(vp: ScreenViewport): BentleyStatus {
+    const index = this._viewports.indexOf(vp);
+    if (index === -1)
+      return BentleyStatus.ERROR;
+
     this.onViewClose.raiseEvent(vp);
     IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
-    let didDrop = false;
-    const vpList = this._viewports;
-    for (let i = 0; i < vpList.length; ++i) {
-      if (vpList[i] === vp) {
-        vp.setEventController(undefined);
-        vpList.splice(i, 1);
-        didDrop = true;
-        break;
-      }
-    }
-
-    if (!didDrop)
-      return BentleyStatus.ERROR;
+    vp.setEventController(undefined);
+    this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
@@ -205,17 +198,10 @@ export class ViewManager {
 
   public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
-  public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
-  public onSelectionSetChanged(_iModel: IModelConnection) {
-    this._viewports.forEach((vp) => vp.view.setSelectionSetDirty());
-    // for (auto & vp : m_viewports)
-    // if (& vp -> GetViewController().GetDgnDb() == & db)
-    //   vp -> GetViewControllerR().SetSelectionSetDirty();
-  }
-
-  public invalidateViewportScenes(): void { this._viewports.forEach((vp: ScreenViewport) => vp.sync.invalidateScene()); }
-
-  public validateViewportScenes(): void { this._viewports.forEach((vp: ScreenViewport) => vp.sync.setValidScene()); }
+  public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
   public onNewTilesReady(): void { this.invalidateScenes(); }

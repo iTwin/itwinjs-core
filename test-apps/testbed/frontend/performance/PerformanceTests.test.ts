@@ -121,7 +121,6 @@ async function openView(state: SimpleViewState) {
     console.log("viewManager: " + IModelApp.viewManager); // tslint:disable-line
     console.log("iModel: " + theViewport.iModel); // tslint:disable-line
     IModelApp.viewManager.addViewport(theViewport);
-    console.log("Finished IModelApp.viewManager.addViewport"); // tslint:disable-line
   }
 }
 // selects the configured view.

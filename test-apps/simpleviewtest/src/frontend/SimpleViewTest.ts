@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -465,15 +465,13 @@ function updateRenderModeOptionsMap() {
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
-  const htmlDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
-  if (htmlDiv) {
-    theViewport = ScreenViewport.create(htmlDiv, state.viewState!);
-    await _changeView(state.viewState!);
-    theViewport.addFeatureOverrides = addFeatureOverrides;
-    theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-    theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
-    IModelApp.viewManager.addViewport(theViewport);
-  }
+  const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
+  theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+  await _changeView(state.viewState!);
+  theViewport.addFeatureOverrides = addFeatureOverrides;
+  theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
+  theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
+  IModelApp.viewManager.addViewport(theViewport);
 }
 
 async function _changeView(view: ViewState) {

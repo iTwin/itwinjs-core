@@ -70,9 +70,8 @@ describe("FeatureOverrides tests", () => {
   });
 
   it("should create a non-uniform feature overrides object", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!IModelApp.hasRenderSystem)
       return;
-    }
 
     const vpView = spatialView.clone<SpatialViewState>();
     vp = ScreenViewport.create(viewDiv!, vpView);
