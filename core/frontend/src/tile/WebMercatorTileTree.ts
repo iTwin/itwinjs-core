@@ -125,7 +125,7 @@ class WebMercatorTileLoader extends TileLoader {
     const quadId = new QuadId(parent.id);
     const level = quadId.level + 1;
     const column = quadId.column * 2;
-    const row = quadId.row * 3;
+    const row = quadId.row * 2;
 
     const props: WebMercatorTileProps[] = [];
     for (let i = 0; i < 2; i++) {
