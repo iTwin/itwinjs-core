@@ -20,7 +20,7 @@ describe("DistinctValues", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const testIModelName: string = "assets/datasets/1K.bim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
   });
@@ -39,7 +39,7 @@ describe("DistinctValues", async () => {
       expect(descriptor).to.not.be.undefined;
       const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.id }, descriptor!, keys,
         "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model");
-      expect(distinctValues).to.be.deep.equal(["Dictionary Model-0-G", "Repository Model-0-1"]);
+      expect(distinctValues).to.be.deep.equal(["Definition Model-0-M", "Repository Model-0-1"]);
     });
   });
 

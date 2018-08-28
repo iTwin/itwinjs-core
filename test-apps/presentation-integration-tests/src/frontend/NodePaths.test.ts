@@ -21,7 +21,7 @@ describe("NodesPaths", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const testIModelName: string = "assets/datasets/1K.bim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
   });
@@ -51,10 +51,18 @@ describe("NodesPaths", () => {
 
   it("gets node paths", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/NodePaths/getNodePaths");
+    /*
+    [BisCore:RepositoryModel] 0x1
+      [BisCore:Subject] 0x1
+        [BisCore:DefinitionPartition] ECClassGroupingNode
+          [BisCore:DefinitionPartition] 0x10
+        [BisCore:LinkPartition] ECClassGroupingNode
+          [BisCore:LinkPartition] 0xe
+    */
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:RepositoryModel" };
       const key2: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
-      const key3: InstanceKey = { id: new Id64("0x12"), className: "BisCore:PhysicalPartition" };
+      const key3: InstanceKey = { id: new Id64("0x10"), className: "BisCore:DefinitionPartition" };
       const key4: InstanceKey = { id: new Id64("0xe"), className: "BisCore:LinkPartition" };
       const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
 
