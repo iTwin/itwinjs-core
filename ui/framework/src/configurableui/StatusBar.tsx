@@ -307,13 +307,14 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               (messageDetails && messageDetails.supportsCancellation) ?
                 <>
                   <Hyperlink text="Cancel"
-                    onClick={this.cancelActivityMessage}
+                    onClick={this._cancelActivityMessage}
                   />
-                  <MessageButton onClick={this.dismissActivityMessage}>
+                  <MessageButton onClick={this._dismissActivityMessage}>
                     <i className="icon icon-close" />
                   </MessageButton>
                 </> :
-                <MessageButton onClick={this.dismissActivityMessage}>
+                <MessageButton onClick={this._dismissActivityMessage}>
+
                   <i className="icon icon-close" />
                 </MessageButton>
             }
@@ -333,15 +334,15 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   /**
    * Ends canceled process and dismisses ActivityMessage
    */
-  private cancelActivityMessage = () => {
+  private _cancelActivityMessage = () => {
     MessageManager.endActivityMessage(false);
-    this.dismissActivityMessage();
+    this._dismissActivityMessage();
   }
 
   /**
    * Dismisses ActivityMessage
    */
-  private dismissActivityMessage = () => {
+  private _dismissActivityMessage = () => {
     this.setState((_prevState) => ({
       isActivityMessageVisible: false,
     }));

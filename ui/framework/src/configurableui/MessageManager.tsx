@@ -82,7 +82,6 @@ class OngoingActivityMessage {
   public set IsRestored(_restored: boolean) { this._restored = _restored; }
 }
 
-
 /** The MessageManager class manages messages and prompts. It is used by the [[AppNotificationManager]] class.
  */
 export class MessageManager {
