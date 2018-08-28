@@ -335,14 +335,14 @@ export abstract class Target extends RenderTarget {
         this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
         this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
         this.performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this.performanceMetrics.curFrameTimeIndex < 12)
+      } else if (this.performanceMetrics.curFrameTimeIndex < 14)
         this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
     }
   }
   public get frameTimings(): number[] {
     if (this.performanceMetrics === undefined) return [];
     const timings: number[] = [];
-    for (let i = 0; i < 11; ++i)
+    for (let i = 0; i < 13; ++i)
       timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
     return timings;
   }
@@ -692,21 +692,26 @@ export abstract class Target extends RenderTarget {
         perfMet.spfSum += fpsTimerElapsed;
         perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-        const renderTimeElapsed = (perfMet.frameTimes[10].milliseconds - perfMet.frameTimes[1].milliseconds);
+        const renderTimeElapsed = (perfMet.frameTimes[11].milliseconds - perfMet.frameTimes[0].milliseconds);
         if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
         perfMet.renderSpfSum += renderTimeElapsed;
-        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex++] = renderTimeElapsed;
+        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex] = renderTimeElapsed;
 
         if (sceneMilSecElapsed !== undefined) {
           if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
           perfMet.loadTileSum += sceneMilSecElapsed;
-          perfMet.loadTileTimes[perfMet.curSpfTimeIndex++] = sceneMilSecElapsed;
-          if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
+          perfMet.loadTileTimes[perfMet.curSpfTimeIndex] = sceneMilSecElapsed;
         }
+        perfMet.curSpfTimeIndex++;
+        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
         perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
       }
       if (this.performanceMetrics.gatherGlFinish) {
-        gl.finish();
+        // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
+        const bytes = new Uint8Array(4);
+        System.instance.frameBufferStack.execute(this._fbo!, true, () => {
+          gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+        });
         this.setFrameTime();
       }
     }

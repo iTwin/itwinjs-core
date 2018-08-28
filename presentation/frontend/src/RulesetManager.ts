@@ -3,29 +3,41 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import { IDisposable } from "@bentley/bentleyjs-core";
 import {
-  PresentationRpcInterface,
+  RpcRequestsHandler,
   IRulesetManager, RegisteredRuleset, Ruleset,
 } from "@bentley/presentation-common";
-import { RulesetRpcRequestOptions } from "@bentley/presentation-common/lib/PresentationRpcInterface";
 
 /** @hidden */
-export default class RulesetManager implements IRulesetManager {
+export default class RulesetManager implements IRulesetManager, IDisposable {
 
-  private _clientId: string;
+  private _requestsHandler: RpcRequestsHandler;
+  private _clientRulesets = new Map<string, Ruleset>();
 
-  public constructor(clientId: string) {
-    this._clientId = clientId;
+  public constructor(requestsHandler: RpcRequestsHandler) {
+    this._requestsHandler = requestsHandler;
+    this._requestsHandler.syncHandlers.push(this.syncWithBackend);
   }
 
-  private createRequestOptions(): RulesetRpcRequestOptions {
-    return {
-      clientId: this._clientId,
-    };
+  public dispose() {
+    const index = this._requestsHandler.syncHandlers.indexOf(this.syncWithBackend);
+    if (-1 !== index)
+      this._requestsHandler.syncHandlers.splice(index, 1);
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private syncWithBackend = async (): Promise<void> => {
+    if (0 === this._clientRulesets.size)
+      return;
+
+    const rulesets: Ruleset[] = [];
+    this._clientRulesets.forEach((r) => rulesets.push(r));
+    await this._requestsHandler.addRulesets(rulesets);
   }
 
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
-    const tuple = await PresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
+    const tuple = await this._requestsHandler.getRuleset(id);
     if (tuple) {
       const [ruleset, hash] = tuple;
       return new RegisteredRuleset(this, ruleset, hash);
@@ -34,18 +46,27 @@ export default class RulesetManager implements IRulesetManager {
   }
 
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    const hash = await PresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
+    this._clientRulesets.set(ruleset.id, ruleset);
+    const hash = await this._requestsHandler.addRuleset(ruleset);
     return new RegisteredRuleset(this, ruleset, hash);
   }
 
   public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
-    if (Array.isArray(ruleset))
-      return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset[0], ruleset[1]);
-    return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset.id, ruleset.hash);
+    let id = "", hash = "";
+    if (Array.isArray(ruleset)) {
+      id = ruleset[0];
+      hash = ruleset[1];
+    } else {
+      id = ruleset.id;
+      hash = ruleset.hash;
+    }
+    this._clientRulesets.delete(id);
+    return await this._requestsHandler.removeRuleset(id, hash);
   }
 
   public async clear(): Promise<void> {
-    return await PresentationRpcInterface.getClient().clearRulesets(this.createRequestOptions());
+    this._clientRulesets.clear();
+    await this._requestsHandler.clearRulesets();
   }
 
 }

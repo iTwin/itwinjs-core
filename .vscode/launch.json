@@ -255,8 +255,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -274,8 +272,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -293,8 +289,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -316,8 +310,6 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.{ts,tsx}"
       ]
     },

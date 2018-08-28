@@ -9,18 +9,18 @@ import { Id64, using } from "@bentley/bentleyjs-core";
 import { Ruleset, IRulesetVariablesManager } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("Ruleset Variables", async () => {
 
   let variables: IRulesetVariablesManager;
   const ruleset: Ruleset = require("../../test-rulesets/RulesetVariables/default");
+
+  before(() => {
+    initialize();
+  });
+
+  after(() => {
+    terminate();
+  });
 
   beforeEach(() => {
     variables = Presentation.presentation.vars(ruleset.id);

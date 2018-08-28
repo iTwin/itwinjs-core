@@ -10,14 +10,6 @@ import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
 import PresentationTableDataProvider from "@bentley/presentation-components/lib/table/DataProvider";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 interface MeaningfulInstances {
   repositoryModel: ModelProps;
   functionalModel: ModelProps;
@@ -36,15 +28,19 @@ describe("TableDataProvider", async () => {
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
   let provider: PresentationTableDataProvider;
+
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
     provider = new PresentationTableDataProvider(imodel, "SimpleContent", 10);
   });
+
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   describe("getColumns", () => {

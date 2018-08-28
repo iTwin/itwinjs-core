@@ -39,7 +39,7 @@ export const createRandomEditorDescription = (): c.EditorDescription => {
   } as c.EditorDescription;
 };
 
-const createRandomPrimitiveFieldJson = () => {
+const createRandomPrimitiveFieldJSON = () => {
   return {
     category: createRandomCategory(),
     name: faker.random.word(),
@@ -52,12 +52,12 @@ const createRandomPrimitiveFieldJson = () => {
 };
 
 export const createRandomPrimitiveField = (): c.Field => {
-  return c.Field.fromJSON(createRandomPrimitiveFieldJson())!;
+  return c.Field.fromJSON(createRandomPrimitiveFieldJSON())!;
 };
 
-export const createRandomDescriptorJson = (displayType?: string) => {
+export const createRandomDescriptorJSON = (displayType?: string) => {
   const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
-  const fields = [createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson()];
+  const fields = [createRandomPrimitiveFieldJSON(), createRandomPrimitiveFieldJSON(), createRandomPrimitiveFieldJSON()];
   return {
     connectionId: faker.random.uuid(),
     inputKeysHash: faker.random.uuid(),
@@ -70,5 +70,16 @@ export const createRandomDescriptorJson = (displayType?: string) => {
 };
 
 export const createRandomDescriptor = (displayType?: string): c.Descriptor => {
-  return c.Descriptor.fromJSON(createRandomDescriptorJson(displayType))!;
+  return c.Descriptor.fromJSON(createRandomDescriptorJSON(displayType))!;
+};
+
+export const createRandomContentJSON = () => {
+  return {
+    descriptor: createRandomDescriptorJSON(),
+    contentSet: [],
+  };
+};
+
+export const createRandomContent = (): c.Content => {
+  return c.Content.fromJSON(createRandomContentJSON())!;
 };

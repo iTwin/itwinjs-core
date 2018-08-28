@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added ScreenViewport. You must now call ScreenViewport.create to create viewports",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

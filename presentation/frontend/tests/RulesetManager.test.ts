@@ -4,32 +4,81 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { RegisteredRuleset } from "@bentley/presentation-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { RpcRequestsHandler } from "@bentley/presentation-common";
 import RulesetManager from "@src/RulesetManager";
+import { using } from "@bentley/bentleyjs-core";
+import { createRandomRuleset } from "@helpersrandom";
 
 describe("RulesetManager", () => {
 
-  let interfaceMock: moq.IMock<PresentationRpcInterface>;
+  let rpcRequestsHandlerMock: moq.IMock<RpcRequestsHandler>;
   let manager: RulesetManager;
-  const testData = {
-    clientId: "",
-  };
 
   beforeEach(() => {
-    initializeRpcInterface(PresentationRpcInterface);
-
-    interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-    PresentationRpcInterface.getClient = () => interfaceMock.object;
-
-    testData.clientId = faker.random.uuid();
-
-    manager = new RulesetManager(testData.clientId);
+    rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
+    rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
+    manager = new RulesetManager(rpcRequestsHandlerMock.object);
   });
 
-  const requestOptions = () => ({
-    clientId: testData.clientId,
+  afterEach(() => {
+    manager.dispose();
+  });
+
+  describe("constructor", () => {
+
+    it("registers a sync handler", () => {
+      const syncHandlers = new Array<() => Promise<void>>();
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      using(new RulesetManager(rpcRequestsHandlerMock.object), () => {
+        expect(syncHandlers.length).to.eq(1);
+      });
+    });
+
+  });
+
+  describe("dispose", () => {
+
+    it("unregisters its sync handler", () => {
+      const syncHandlers = new Array<() => Promise<void>>();
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      const m = new RulesetManager(rpcRequestsHandlerMock.object);
+      expect(syncHandlers.length).to.eq(1);
+      m.dispose();
+      expect(syncHandlers.length).to.eq(0);
+    });
+
+  });
+
+  describe("syncWithBackend", () => {
+
+    const syncHandlers = new Array<() => Promise<void>>();
+
+    beforeEach(() => {
+      rpcRequestsHandlerMock.reset();
+      rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => syncHandlers);
+      manager.dispose();
+      manager = new RulesetManager(rpcRequestsHandlerMock.object);
+    });
+
+    afterEach(() => {
+      manager.dispose();
+    });
+
+    it("does nothing if there're no client rulesets", async () => {
+      await Promise.all(syncHandlers.map((sh) => sh()));
+      rpcRequestsHandlerMock.verify((x) => x.addRulesets(moq.It.isAny()), moq.Times.never());
+    });
+
+    it("adds all client rulesets using rpc requests handler", async () => {
+      const rulesets = await Promise.all([createRandomRuleset(), createRandomRuleset()]);
+      await Promise.all(rulesets.map((r) => manager.add(r)));
+      await Promise.all(syncHandlers.map((sh) => sh()));
+      rpcRequestsHandlerMock.verify((x) => x.addRulesets(rulesets), moq.Times.once());
+    });
+
   });
 
   describe("get", () => {
@@ -37,20 +86,20 @@ describe("RulesetManager", () => {
     it("calls getRuleset through proxy", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      interfaceMock.setup((x) => x.getRuleset(requestOptions(), ruleset.id)).returns(async () => [ruleset, hash]).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.getRuleset(ruleset.id)).returns(async () => [ruleset, hash]).verifiable();
       const result = await manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
       expect(result!.toJSON()).to.deep.eq(ruleset);
       expect(result!.hash).to.eq(hash);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
     it("handles undefined response", async () => {
       const rulesetId = faker.random.uuid();
-      interfaceMock.setup((x) => x.getRuleset(requestOptions(), rulesetId)).returns(async () => undefined).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.getRuleset(rulesetId)).returns(async () => undefined).verifiable();
       const result = await manager.get(rulesetId);
       expect(result).to.be.undefined;
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
@@ -61,9 +110,9 @@ describe("RulesetManager", () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
       const registeredRuleset = new RegisteredRuleset(manager, ruleset, hash);
-      interfaceMock.setup((x) => x.addRuleset(requestOptions(), ruleset)).returns(async () => hash).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.addRuleset(ruleset)).returns(async () => hash).verifiable();
       const result = await manager.add(ruleset);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.deep.equal(registeredRuleset);
     });
 
@@ -74,18 +123,18 @@ describe("RulesetManager", () => {
     it("calls removeRuleset through proxy with [rulesetId, hash] argument", async () => {
       const rulesetId = faker.random.uuid();
       const hash = faker.random.uuid();
-      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), rulesetId, hash)).returns(async () => true).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.removeRuleset(rulesetId, hash)).returns(async () => true).verifiable();
       const result = await manager.remove([rulesetId, hash]);
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.be.true;
     });
 
     it("calls removeRuleset through proxy with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      interfaceMock.setup((x) => x.removeRuleset(requestOptions(), ruleset.id, hash)).returns(async () => true).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.removeRuleset(ruleset.id, hash)).returns(async () => true).verifiable();
       const result = await manager.remove(new RegisteredRuleset(manager, ruleset, hash));
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
       expect(result).to.be.true;
     });
 
@@ -94,9 +143,9 @@ describe("RulesetManager", () => {
   describe("clear", () => {
 
     it("calls clearRulesets through proxy", async () => {
-      interfaceMock.setup((x) => x.clearRulesets(requestOptions())).verifiable();
+      rpcRequestsHandlerMock.setup((x) => x.clearRulesets()).verifiable();
       await manager.clear();
-      interfaceMock.verifyAll();
+      rpcRequestsHandlerMock.verifyAll();
     });
 
   });
