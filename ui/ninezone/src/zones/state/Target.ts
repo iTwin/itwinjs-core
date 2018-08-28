@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import NineZone from "./NineZone";
+import NineZone, { WidgetZoneIndex } from "./NineZone";
 
 export enum TargetType {
   Merge,
@@ -11,7 +11,7 @@ export enum TargetType {
 }
 
 export interface TargetProps {
-  readonly widgetId: number;
+  readonly widgetId: WidgetZoneIndex;
   readonly type: TargetType;
 }
 

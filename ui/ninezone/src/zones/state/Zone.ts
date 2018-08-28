@@ -8,7 +8,7 @@ import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 import Layout from "./layout/Layout";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
-import WidgetProps, { Widget, getDefaultProps as getDefaultWidgetProps } from "./Widget";
+import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import Cell from "../../utilities/Cell";
 import { Anchor } from "../../widget/Stacked";
 import { TargetType } from "./Target";

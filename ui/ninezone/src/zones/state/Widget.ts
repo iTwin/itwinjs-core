@@ -5,7 +5,8 @@
 
 import { WidgetZone } from "./Zone";
 import Cell from "../../utilities/Cell";
-import { WidgetZoneIndex } from "./NineZone";
+import NineZone, { WidgetZoneIndex } from "./NineZone";
+import { PointProps } from "../../utilities/Point";
 
 export enum DropTarget {
   None,
@@ -13,10 +14,15 @@ export enum DropTarget {
   Back,
 }
 
-export default interface WidgetProps {
+export interface WidgetProps {
   readonly id: WidgetZoneIndex;
   readonly defaultZoneId?: WidgetZoneIndex;
   readonly tabIndex: number;
+}
+
+export interface DraggingWidgetProps {
+  readonly id: WidgetZoneIndex;
+  readonly lastPosition: PointProps;
 }
 
 export const getDefaultProps = (id: WidgetZoneIndex): WidgetProps => {
@@ -26,7 +32,7 @@ export const getDefaultProps = (id: WidgetZoneIndex): WidgetProps => {
   };
 };
 
-export class Widget {
+export default class Widget {
   public static sort(widgets: ReadonlyArray<Widget>) {
     return widgets.slice().sort((a, b) => a.defaultZone.props.id - b.defaultZone.props.id);
   }
@@ -48,6 +54,10 @@ export class Widget {
   public constructor(public readonly zone: WidgetZone, public readonly props: WidgetProps) {
   }
 
+  public equals(other: Widget) {
+    return this.props.id === other.props.id;
+  }
+
   public get nineZone() {
     return this.zone.nineZone;
   }
@@ -58,8 +68,10 @@ export class Widget {
     return this._defaultZone;
   }
 
-  public equals(other: Widget) {
-    return this.props.id === other.props.id;
+  public get isInHomeZone() {
+    if (this.zone.equals(this.defaultZone))
+      return true;
+    return false;
   }
 
   public getDropTarget(): DropTarget {
@@ -98,5 +110,25 @@ export class Widget {
           return DropTarget.Merge;
 
     return DropTarget.None;
+  }
+}
+
+export class DraggingWidget {
+  private _widget: Widget;
+
+  public constructor(public readonly nineZone: NineZone, public readonly props: DraggingWidgetProps) {
+    this._widget = this.nineZone.getWidget(this.props.id);
+  }
+
+  public get widget() {
+    return this._widget;
+  }
+
+  public get zone() {
+    return this.widget.zone;
+  }
+
+  public get defaultZone(): WidgetZone {
+    return this.widget.defaultZone;
   }
 }

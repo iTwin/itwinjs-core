@@ -8,10 +8,10 @@ import Draggable from "../../../../src/widget/rectangular/tab/Draggable";
 
 describe("<Draggable />", () => {
   it("should render", () => {
-    mount(<Draggable />);
+    mount(<Draggable lastPosition={undefined} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Draggable />).should.matchSnapshot();
+    shallow(<Draggable lastPosition={undefined} />).should.matchSnapshot();
   });
 });

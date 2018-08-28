@@ -10,6 +10,7 @@ import "./PointerCaptor.scss";
 
 /** Properties of [[PointerCaptor]] component. */
 export interface PointerCaptorProps extends CommonProps {
+  initialIsMouseDown?: boolean;
   onMouseDown?: (e: MouseEvent) => void;
   onMouseMove?: (e: MouseEvent) => void;
   onMouseUp?: (e: MouseEvent) => void;
@@ -24,10 +25,17 @@ export interface PointerCaptorState {
  * While captured will overlay the screen to capture iframe events too.
  */
 export default class PointerCaptor extends React.Component<PointerCaptorProps, PointerCaptorState> {
-
   public readonly state: Readonly<PointerCaptorState> = {
     isMouseDown: false,
   };
+
+  public constructor(props: PointerCaptorProps) {
+    super(props);
+
+    this.state = {
+      isMouseDown: props.initialIsMouseDown ? true : false,
+    };
+  }
 
   public componentDidMount() {
     document.addEventListener("mouseup", this._handleDocumentMouseUp);

@@ -44,7 +44,13 @@ describe("StateManager", () => {
     it("should merge zones", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: {
+          id: 9,
+          lastPosition: {
+            x: 0,
+            y: 0,
+          },
+        },
       };
       const state = DefaultStateManager.mergeDrop(6, props);
 
@@ -59,7 +65,13 @@ describe("StateManager", () => {
     it("should merge swapped zones", () => {
       const props: NineZoneProps = {
         ...TestProps.swapped6and9,
-        draggingWidgetId: 6,
+        draggingWidget: {
+          id: 6,
+          lastPosition: {
+            x: 0,
+            y: 0,
+          },
+        },
       };
       const state = DefaultStateManager.mergeDrop(9, props);
 
@@ -74,7 +86,13 @@ describe("StateManager", () => {
     it("should merge bounds", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: {
+          id: 9,
+          lastPosition: {
+            x: 0,
+            y: 0,
+          },
+        },
       };
       const state = DefaultStateManager.mergeDrop(6, props);
 
@@ -88,7 +106,7 @@ describe("StateManager", () => {
     it("should unset floating bounds of target zone", () => {
       const props: NineZoneProps = {
         ...TestProps.floatingOpenedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.mergeDrop(6, props);
 
@@ -98,7 +116,7 @@ describe("StateManager", () => {
     it("should merge all vertical zones between dragging zone and target zone", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidgetId: 1,
+        draggingWidget: { id: 1, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.mergeDrop(7, props);
 
@@ -115,7 +133,7 @@ describe("StateManager", () => {
     it("should merge widget 6 to zone 4", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.mergeDrop(4, props);
 
@@ -130,7 +148,7 @@ describe("StateManager", () => {
     it("should merge widget 9 to zone 7 when nine zone is in footer mode", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.mergeDrop(7, props);
 
@@ -147,7 +165,13 @@ describe("StateManager", () => {
     it("should unmerge vertically merged zones", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To6,
-        draggingWidgetId: 9,
+        draggingWidget: {
+          id: 9,
+          lastPosition: {
+            x: 0,
+            y: 0,
+          },
+        },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -163,7 +187,7 @@ describe("StateManager", () => {
     it("should unmerge horizontally merged zones", () => {
       const props: NineZoneProps = {
         ...TestProps.merged3To2,
-        draggingWidgetId: 3,
+        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(3, props);
 
@@ -179,7 +203,7 @@ describe("StateManager", () => {
     it("should unmerge bounds of vertically merged zones", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -199,7 +223,7 @@ describe("StateManager", () => {
     it("should unmerge bounds of horizontally merged zones", () => {
       const props: NineZoneProps = {
         ...TestProps.merged3To2,
-        draggingWidgetId: 3,
+        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(3, props);
 
@@ -219,7 +243,7 @@ describe("StateManager", () => {
     it("should swap zones", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -235,7 +259,7 @@ describe("StateManager", () => {
     it("should unmerge to lower zone", () => {
       const props: NineZoneProps = {
         ...TestProps.merged6To9,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(6, props);
 
@@ -251,7 +275,7 @@ describe("StateManager", () => {
     it("should unmerge widget 6 from zone 4 (and leave zone 5 empty)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged6To4,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(6, props);
 
@@ -280,7 +304,7 @@ describe("StateManager", () => {
     it("should unmerge widget 6 to zone 9 (widgets 9 and 6 in zone 6)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And6To6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(6, props);
 
@@ -296,7 +320,7 @@ describe("StateManager", () => {
     it("widgets 6, 9 and 3 in zone 6 should unmerge: (widgets 3, 6 to zone 3), (widget 9 to zone 9)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(3, props);
 
@@ -315,7 +339,7 @@ describe("StateManager", () => {
     it("widgets 6, 9 and 3 in zone 6 should unmerge: (w6 to z3), (w9 to z6), (w3 to z9)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -335,7 +359,7 @@ describe("StateManager", () => {
     it("should unmerge widget 9 from zone 7 (and leave zone 8 empty if is in footer state)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To7,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -364,7 +388,7 @@ describe("StateManager", () => {
     it("should set defaultZoneId when swapping zones vertically", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(9, props);
 
@@ -375,7 +399,7 @@ describe("StateManager", () => {
     it("should set defaultZoneId when swapping zones horizontally", () => {
       const props: NineZoneProps = {
         ...TestProps.merged6To4,
-        draggingWidgetId: 4,
+        draggingWidget: { id: 4, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(6, props);
 
@@ -386,7 +410,7 @@ describe("StateManager", () => {
     it("widgets 3, 6 and 4 in zone 3 should unmerge: (w3 to z3), (w4 to z6), (w6 to z9)", () => {
       const props: NineZoneProps = {
         ...TestProps.merged6And4To3,
-        draggingWidgetId: 4,
+        draggingWidget: { id: 4, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.unmergeDrop(6, props);
 
@@ -404,52 +428,9 @@ describe("StateManager", () => {
     });
   });
 
-  describe("handleWidgetTabDrag", () => {
-    it("should move zone to which the widget is merged", () => {
-      const props: NineZoneProps = {
-        ...TestProps.defaultProps,
-        zones: {
-          ...TestProps.defaultProps.zones,
-          [6]: {
-            ...TestProps.defaultProps.zones[6],
-            floatingBounds: {
-              left: 1,
-              top: 2,
-              right: 10,
-              bottom: 20,
-            },
-            widgets: [
-              {
-                id: 6,
-                tabIndex: 1,
-              },
-              {
-                id: 9,
-                tabIndex: -1,
-              },
-            ],
-          },
-          [9]: {
-            ...TestProps.defaultProps.zones[9],
-            widgets: [],
-          },
-        },
-        draggingWidgetId: 9,
-      };
-      const state = DefaultStateManager.handleWidgetTabDrag({ x: 5, y: -9 }, props);
-
-      expect(state.zones[6].floatingBounds);
-      const bounds = state.zones[6].floatingBounds as RectangleProps;
-      bounds.left.should.eq(6);
-      bounds.top.should.eq(-7);
-      bounds.right.should.eq(15);
-      bounds.bottom.should.eq(11);
-    });
-  });
-
-  describe("onChangeDragBehavior", () => {
+  describe("handleWidgetTabDragStart", () => {
     it("should set floating bounds", () => {
-      const state = DefaultStateManager.setDraggingWidget(6, true, TestProps.openedZone6);
+      const state = DefaultStateManager.handleWidgetTabDragStart(6, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
 
       expect(state.zones[6].floatingBounds);
       const floatingBounds = state.zones[6].floatingBounds as RectangleProps;
@@ -457,13 +438,44 @@ describe("StateManager", () => {
       floatingBounds.right.should.eq(99);
       floatingBounds.bottom.should.eq(54);
     });
+
+    it("should unmerge merged zone", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+
+      state.zones[6].widgets.length.should.eq(1, "z6");
+      state.zones[6].widgets[0].id.should.eq(6, "z6");
+      state.zones[9].widgets.length.should.eq(1, "z9");
+      state.zones[9].widgets[0].id.should.eq(9, "z9");
+    });
+
+    it("should set bounds when unmerging", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9To6);
+
+      const bounds6 = state.zones[6].bounds;
+      bounds6.top.should.eq(20, "bounds6.top");
+      bounds6.left.should.eq(10, "bounds6.left");
+      bounds6.right.should.eq(99, "bounds6.right");
+      bounds6.bottom.should.eq(65, "bounds6.bottom");
+      expect(state.zones[6].floatingBounds, "floatingBounds6").undefined;
+
+      const bounds9 = state.zones[9].bounds;
+      bounds9.top.should.eq(65, "bounds9.top");
+      bounds9.left.should.eq(10, "bounds9.left");
+      bounds9.right.should.eq(99, "bounds9.right");
+      bounds9.bottom.should.eq(110, "bounds9.bottom");
+      expect(state.zones[9].floatingBounds, "floatingBounds9").not.undefined;
+      state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
+      state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
+      state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
+      state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
+    });
   });
 
   describe("handleTargetChanged", () => {
     it("should change the target", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
       };
       const state = DefaultStateManager.handleTargetChanged({ widgetId: 9, type: TargetType.Merge }, props);
 

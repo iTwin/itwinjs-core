@@ -231,4 +231,11 @@ export default class Rectangle implements RectangleProps {
       bottom = other.bottom;
     return new Rectangle(left, top, right, bottom);
   }
+
+  public getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle {
+    const segmentHeight = this.getHeight() / numberOfSegments;
+
+    const top = segmentId * segmentHeight;
+    return this.inset(0, top, 0, 0).setHeight(segmentHeight);
+  }
 }

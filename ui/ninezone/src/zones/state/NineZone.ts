@@ -7,7 +7,7 @@ import { CellProps } from "../../utilities/Cell";
 import { SizeProps } from "../../utilities/Size";
 import Root from "./layout/Root";
 import Target, { TargetProps } from "./Target";
-import { Widget } from "./Widget";
+import Widget, { DraggingWidgetProps, DraggingWidget } from "./Widget";
 import Zone, { getDefaultProps as getDefaultZoneProps, ZoneProps, ContentZone, WidgetZone, StatusZone, StatusZoneProps, getDefaultStatusZoneProps } from "./Zone";
 
 export type ContentZoneIndex = 5;
@@ -22,7 +22,7 @@ export type ZonesType =
 export interface NineZoneProps {
   readonly zones: Readonly<ZonesType>;
   readonly size: SizeProps;
-  readonly draggingWidgetId?: WidgetZoneIndex;
+  readonly draggingWidget?: DraggingWidgetProps;
   readonly target?: TargetProps;
 }
 
@@ -53,6 +53,7 @@ export default class NineZone implements Iterable<Zone> {
   private _zones: { [id: number]: Zone } = {};
   private _root: Root | undefined;
   private _target?: Target;
+  private _draggingWidget?: DraggingWidget;
 
   public constructor(public readonly props: NineZoneProps) {
   }
@@ -129,10 +130,10 @@ export default class NineZone implements Iterable<Zone> {
     throw new RangeError();
   }
 
-  public get draggingWidget(): Widget | undefined {
-    if (this.props.draggingWidgetId)
-      return this.getWidget(this.props.draggingWidgetId);
-    return undefined;
+  public get draggingWidget(): DraggingWidget | undefined {
+    if (!this._draggingWidget && this.props.draggingWidget)
+      this._draggingWidget = new DraggingWidget(this, this.props.draggingWidget);
+    return this._draggingWidget;
   }
 
   public get target(): Target | undefined {

@@ -50,7 +50,7 @@ describe("Zone", () => {
     it("should get merge dragging zone bounds (vertical)", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 9,
           type: TargetType.Merge,
@@ -68,7 +68,7 @@ describe("Zone", () => {
     it("should set dragging zone bounds (horizontal)", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 4,
           type: TargetType.Merge,
@@ -86,7 +86,7 @@ describe("Zone", () => {
     it("should merge dragging zone bounds to target", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
           type: TargetType.Merge,
@@ -104,7 +104,7 @@ describe("Zone", () => {
     it("should set dragging zone bounds for swapped widgets", () => {
       const props: NineZoneProps = {
         ...TestProps.swapped6and9,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
           type: TargetType.Merge,
@@ -122,7 +122,7 @@ describe("Zone", () => {
     it("should set unmerge dragging zone bounds for 2 vertically merged widgets", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And6To6,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
           type: TargetType.Unmerge,
@@ -148,7 +148,7 @@ describe("Zone", () => {
     it("should set dragging zone bounds for zones 3, 6 and 9", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
-        draggingWidgetId: 3,
+        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 9,
           type: TargetType.Unmerge,
@@ -181,7 +181,7 @@ describe("Zone", () => {
     it("should set dragging zone bounds for: merged 3, 6 and unmerged 9", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9And3To6,
-        draggingWidgetId: 3,
+        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 3,
           type: TargetType.Unmerge,
@@ -207,7 +207,7 @@ describe("Zone", () => {
     it("should set unmerge dragging zone bounds for 2 horizontally merged widgets", () => {
       const props: NineZoneProps = {
         ...TestProps.merged3To2,
-        draggingWidgetId: 3,
+        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 3,
           type: TargetType.Unmerge,
@@ -233,7 +233,7 @@ describe("Zone", () => {
     it("should set unmerge dragging zone bounds for zone 4 and 6", () => {
       const props: NineZoneProps = {
         ...TestProps.merged6To4,
-        draggingWidgetId: 6,
+        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
           type: TargetType.Unmerge,
@@ -259,7 +259,7 @@ describe("Zone", () => {
     it("should set unmerge dragging zone bounds for zone 7 and 9 in footer mode", () => {
       const props: NineZoneProps = {
         ...TestProps.merged9To7,
-        draggingWidgetId: 9,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 9,
           type: TargetType.Unmerge,
