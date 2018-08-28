@@ -6,8 +6,9 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
-import { Point3d, Vector3d, Point2d, Vector2d, XY, XYZ } from "./PointVector";
+import { Point3d, Vector3d, Point2d, Vector2d, XAndY, XY, XYZ } from "./PointVector";
 import { GrowableFloat64Array } from "./GrowableArray";
+import { Point4d } from "./numerics/Geometry4d";
 
 /** Enumeration of the 6 possible orderings of XYZ axis order */
 export const enum AxisOrder {
@@ -176,7 +177,7 @@ export class Geometry {
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isAlmostEqualNumber(a: number, b: number) {
-    const sumAbs = Math.abs (a) + Math.abs (b);
+    const sumAbs = Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) < Geometry.smallAngleRadians * sumAbs;
   }
   public static isDistanceWithinTol(distance: number, tol: number) {
@@ -284,6 +285,31 @@ export class Geometry {
     return ux * (vy * wz - vz * wy)
       + uy * (vz * wx - vx * wz)
       + uz * (vx * wy - vy * wx);
+  }
+  /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
+   *
+   */
+  public static tripleProductXYW(
+    columnA: XAndY, weightA: number,
+    columnB: XAndY, weightB: number,
+    columnC: XAndY, weightC: number) {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      weightA, weightB, weightC);
+  }
+
+  /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
+   *
+   */
+  public static tripleProductPoint4dXYW(
+    columnA: Point4d,
+    columnB: Point4d,
+    columnC: Point4d) {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      columnA.w, columnB.w, columnC.w);
   }
   /**  2D cross product of vectors layed out as scalars. */
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
