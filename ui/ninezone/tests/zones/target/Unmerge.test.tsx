@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Unmerge from "@src/zones/target/Unmerge";
+import Unmerge from "../../../src/zones/target/Unmerge";
 
 describe("<Unmerge />", () => {
   it("should render", () => {

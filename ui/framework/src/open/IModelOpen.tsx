@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { connect } from "react-redux";
@@ -109,13 +112,11 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     }
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onNavigationChanged = (expanded: boolean) => {
+  private _onNavigationChanged = (expanded: boolean) => {
     this.setState(Object.assign({}, this.state, { isNavigationExpanded: expanded }));
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onIModelSelected = (iModelInfo: IModelInfo) => {
+  private _onIModelSelected = (iModelInfo: IModelInfo) => {
     this.props.setCurrentIModel(iModelInfo);
   }
 
@@ -131,7 +132,7 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
     } else {
       return (
         <IModelList iModels={this.state.iModels}
-          onIModelSelected={this.onIModelSelected}
+          onIModelSelected={this._onIModelSelected}
           accessToken={this.props.accessToken}
           setSelectedViews={this.props.setSelectedViews}
           onIModelViewsSelected={this.props.onIModelViewsSelected} />
@@ -155,7 +156,7 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
           </div>
           <div className="user-profile"><UserProfileButton accessToken={this.props.accessToken} /></div>
         </div>
-        <NavigationList defaultTab={0} onExpandChanged={this.onNavigationChanged}>
+        <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
           <NavigationItem label="Recent" icon="icon-history" />
           <NavigationItem label="Offline" icon="icon-network" />
           <NavigationItem label="Browse History" icon="icon-folder" />

@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Cube <Cube /> renders correctly 1`] = `
+<div
+  className="cube-css3d"
+>
+  <CubeFace
+    face={4}
+    key="4"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+  <CubeFace
+    face={3}
+    key="3"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+  <CubeFace
+    face={2}
+    key="2"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+  <CubeFace
+    face={1}
+    key="1"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+  <CubeFace
+    face={6}
+    key="6"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+  <CubeFace
+    face={5}
+    key="5"
+    rotMatrix={
+      Array [
+        Array [
+          1,
+          0,
+          0,
+        ],
+        Array [
+          0,
+          1,
+          0,
+        ],
+        Array [
+          0,
+          0,
+          1,
+        ],
+      ]
+    }
+  />
+</div>
+`;

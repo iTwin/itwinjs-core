@@ -8,7 +8,7 @@ import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Point3d, Vector3d, YawPitchRollAngles } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 // import { Range3d } from "../Range";
 // import { SolidPrimitive } from "../solid/SolidPrimitive";
@@ -79,10 +79,10 @@ function MakeViewableGeometry(): GeometryQuery[] {
 //
 function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
   const geometry0 = MakeViewableGeometry();
-  const axes0 = RotMatrix.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
+  const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
   if (expectedIndex !== 0) {
-    const standardAxes = RotMatrix.createStandardWorldToView(expectedIndex, true);
-    ck.testRotMatrix(axes0, standardAxes, "standard view axis check");
+    const standardAxes = Matrix3d.createStandardWorldToView(expectedIndex, true);
+    ck.testMatrix3d(axes0, standardAxes, "standard view axis check");
   }
   const axes1 = axes0.transpose();
   /*
@@ -104,7 +104,7 @@ function CollectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVe
 //
 function CollectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: number, z: number) {
   const geometry0 = MakeViewableGeometry();
-  const axes0 = RotMatrix.createRigidViewAxesZTowardsEye(x, y, z)!;
+  const axes0 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z)!;
   /*
   const frame0 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift - 4, 0), axes0);
 
@@ -288,9 +288,9 @@ it("StandardViewsByXYZ", () => {
       for (const z of [-1, 0, 1]) {
         CollectViewableGeometryByXYZ(geometry, a * x, a * y, a * z);
         if (x !== 0.0 || y !== 0.0) {
-          const axis0 = RotMatrix.createRigidHeadsUp(Vector3d.create(x, y, z));
-          const axis1 = RotMatrix.createRigidViewAxesZTowardsEye(x, y, z);
-          ck.testRotMatrix(axis0, axis1, "Alternate construction of eye frame");
+          const axis0 = Matrix3d.createRigidHeadsUp(Vector3d.create(x, y, z));
+          const axis1 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z);
+          ck.testMatrix3d(axis0, axis1, "Alternate construction of eye frame");
         }
       }
     }
@@ -303,20 +303,37 @@ it("StandardViewsByXYZ", () => {
 describe("RaggedMatrix", () => {
   it("FromCSS", () => {
     const ck = new Checker();
-    const raggedMatrix = RotMatrix.createRowValues(
+    // a supposedly rigid matrix received in .css . . .   but plainly it only has 6 digits.
+    const raggedMatrix = Matrix3d.createRowValues(
       0.707421, -0.415747, -0.571585,
       0, 0.808703, -0.588217,
       0.706792, 0.416117, 0.572094);
-    console.log(" ragged matrix ", raggedMatrix.toJSON());
-    console.log("   determinant", raggedMatrix.determinant());
-    console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
-    console.log("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
-    const cleanMatrix = RotMatrix.createRigidFromRotMatrix(raggedMatrix)!;
-    const ypr = YawPitchRollAngles.createFromRotMatrix(cleanMatrix);
+    if (Checker.noisy.RaggedViewMatrix) {
+      console.log(" ragged matrix ", raggedMatrix.toJSON());
+      console.log("   determinant", raggedMatrix.determinant());
+      console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
+      console.log("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
+    }
+    const yprA = YawPitchRollAngles.createDegrees(0, 0, 0);
+    const yprB = YawPitchRollAngles.createFromMatrix3d(raggedMatrix, yprA);
+    // we expect this has failed (returned undefined) but nonetheless placed some angles in yprA . .
+    ck.testUndefined(yprB, " expect no ypr from ragged matrix");
+    const cleanMatrix = Matrix3d.createRigidFromMatrix3d(raggedMatrix)!;
+    const yprC = YawPitchRollAngles.createFromMatrix3d(cleanMatrix);
+    ck.testPointer(yprC, "Expect ypr from corrected matrix");
     const maxDiff = cleanMatrix.maxDiff(raggedMatrix);
-    console.log(" clean matrix ", cleanMatrix.toJSON());
-    console.log(" maxDiff " + maxDiff);
-    console.log("Clean ypr", ypr);
+    const matrixB = yprA.toMatrix3d();
+    const matrixC = yprC!.toMatrix3d();
+    const diffBC = matrixB.maxDiff(matrixC);
+    const diffAB = matrixB.maxDiff (raggedMatrix);
+    ck.testLT (diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
+    ck.testLT (diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
+    if (Checker.noisy.RaggedViewMatrix) {
+      console.log(" clean matrix ", cleanMatrix.toJSON());
+      console.log(" maxDiff " + maxDiff);
+      console.log("Clean ypr", yprC);
+      console.log("maxDiff between ypr round trips", diffBC);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

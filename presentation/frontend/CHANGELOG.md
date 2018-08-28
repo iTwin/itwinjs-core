@@ -1,6 +1,28 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Tue, 21 Aug 2018 17:20:41 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+### Updates
+
+- Handle cases when frontend is connected to unknown backend by syncing client state with the new backend
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+*Version update only*
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+*Version update only*
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+*Version update only*
 
 ## 0.118.0
 Tue, 21 Aug 2018 17:20:41 GMT

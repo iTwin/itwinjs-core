@@ -169,7 +169,7 @@ export class Tile implements IDisposable {
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
-      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      const builder = context.createGraphicBuilder(GraphicType.Scene);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addRangeBox(this.contentRange);
       this._rangeGraphic = builder.finish();
@@ -507,7 +507,7 @@ export class TileTree implements IDisposable {
     this.is3d = props.is3d;
     this.id = props.id;
     this.location = props.location;
-    this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
+    this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.loader = props.loader;

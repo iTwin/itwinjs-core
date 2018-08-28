@@ -10,9 +10,8 @@ import { OpenIModel } from "../openimodel/OpenIModel";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 
+import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
-import HTML5Backend from "react-dnd-html5-backend";
-import { DragDropContext } from "react-dnd";
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -66,14 +65,14 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element =  React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }
     return (
-      <>
+      <BeDragDropContext>
         {element}
         <DragDropLayerRenderer />
-      </>
+      </BeDragDropContext>
     );
   }
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
-export const OverallContent = DragDropContext(HTML5Backend)(connect(mapStateToProps, mapDispatch)(OverallContentComponent));
+/** OverallContent React component that is Redux connected. */
+export const OverallContent = connect(mapStateToProps, mapDispatch)(OverallContentComponent); // tslint:disable-line:variable-name

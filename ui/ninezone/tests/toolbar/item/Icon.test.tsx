@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Icon from "@src/toolbar/item/Icon";
+import Icon from "../../../src/toolbar/item/Icon";
 
 describe("<Icon />", () => {
   it("should render", () => {

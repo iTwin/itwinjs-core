@@ -7,14 +7,6 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("Multiple frontends for one backend", async () => {
 
   describe("Localization", () => {
@@ -23,6 +15,8 @@ describe("Multiple frontends for one backend", async () => {
     let frontends: PresentationManager[];
 
     before(async () => {
+      initialize();
+
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
@@ -32,6 +26,8 @@ describe("Multiple frontends for one backend", async () => {
 
     after(async () => {
       await imodel.closeStandalone();
+      frontends.forEach((f) => f.dispose());
+      terminate();
     });
 
     it("Handles multiple simultaneous requests from different frontends with different locales", async () => {

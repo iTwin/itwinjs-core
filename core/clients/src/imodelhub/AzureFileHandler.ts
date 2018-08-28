@@ -66,9 +66,10 @@ class BufferedStream extends Writable {
 }
 
 /**
- * Provides methods to work with the file system and azure storage.
+ * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
  */
 export class AzureFileHandler implements FileHandler {
+  /** @hidden */
   public agent: https.Agent;
   private _bufferedDownload = false;
   private _highWaterMark: number;
@@ -76,14 +77,14 @@ export class AzureFileHandler implements FileHandler {
   /**
    * Constructor for AzureFileHandler.
    * @param bufferedDownload Set true, if writing to files should be buffered.
-   * @param highWaterMark Threshold in bytes to start writing to file.
+   * @param highWaterMark Minimum chunk size in bytes for a single file write.
    */
   constructor(bufferedDownload = true, highWaterMark = 1000000) {
     this._bufferedDownload = bufferedDownload;
     this._highWaterMark = highWaterMark;
   }
 
-  /** Create a directory, recursively setting up the path as necessary */
+  /** Create a directory, recursively setting up the path as necessary. */
   private static makeDirectoryRecursive(dirPath: string) {
     if (fs.existsSync(dirPath))
       return;
@@ -94,9 +95,7 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
-   * Downloads a file from AzureBlobStorage for the iModelHub
-   * Creates the directory containing the file if necessary.
-   * If there is a error in the operation any incomplete file is deleted from disk.
+   * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
@@ -159,7 +158,7 @@ export class AzureFileHandler implements FileHandler {
     Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
   }
 
-  /** Get encoded block id from its number */
+  /** Get encoded block id from its number. */
   private getBlockId(blockId: number) {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
@@ -187,8 +186,8 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
-   * Uploads a file to AzureBlobStorage for the iModelHub
-   * @param uploadUrl URL to upload the fille to.
+   * Upload a file to AzureBlobStorage for the iModelHub.
+   * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
@@ -230,7 +229,7 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
-   * Gets size of a file.
+   * Get size of a file.
    * @param filePath Path of the file.
    * @returns Size of the file.
    */
@@ -239,16 +238,16 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
-   * Gets size of a file.
+   * Check if path is a directory.
    * @param filePath Path of the file.
-   * @returns Size of the file.
+   * @returns True if path is directory.
    */
   public isDirectory(filePath: string): boolean {
     return fs.statSync(filePath).isDirectory();
   }
 
   /**
-   * Checks if path exists.
+   * Check if path exists.
    * @param filePath Path of the file.
    * @returns True if path exists.
    */
@@ -266,7 +265,7 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
-   * Joins multiple string into a single path.
+   * Join multiple strings into a single path.
    * @param paths Strings to join.
    * @returns Joined path.
    */

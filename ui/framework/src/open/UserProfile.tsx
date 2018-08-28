@@ -1,21 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { UserProfile } from "@bentley/imodeljs-clients";
 import { Popup } from "./Popup";
 import "./UserProfile.scss";
 
-export interface IUserProfileProps {
+export interface UserProfileProps {
   accessToken: AccessToken;
 }
 
-interface IUserProfileState {
+interface UserProfileState {
   isDropdownOpen: boolean;
   userProfile?: UserProfile;
 }
 
-export class UserProfileButton extends React.Component<IUserProfileProps, IUserProfileState> {
+export class UserProfileButton extends React.Component<UserProfileProps, UserProfileState> {
 
-  constructor(props: IUserProfileProps, context?: any) {
+  constructor(props: UserProfileProps, context?: any) {
     super(props, context);
 
     this.state = {
@@ -24,18 +27,18 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
   }
 
   // called when a state change occurs.
-  public async componentWillReceiveProps(newProps: IUserProfileProps) {
+  public async componentWillReceiveProps(newProps: UserProfileProps) {
     if (newProps.accessToken) {
       this.setState ({userProfile: newProps.accessToken.getUserProfile()});
     }
   }
 
-  private splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
+  private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     _event.preventDefault();
     this.setState((_prevState) => ({ isDropdownOpen: !this.state.isDropdownOpen }));
   }
 
-  private handleOnOutsideClick = () => {
+  private _handleOnOutsideClick = () => {
     this.setState((_prevState) => ({ isDropdownOpen: false }));
   }
 
@@ -73,7 +76,7 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
       organization = this.state.userProfile.organization;
     }
     return (
-      <Popup className="dropdown-menu fade-in-fast" showShadow={true} onClose={this.handleOnOutsideClick}>
+      <Popup className="dropdown-menu fade-in-fast" showShadow={true} onClose={this._handleOnOutsideClick}>
         <ul>
           <li>
             <div className="circle no-select" style={{ fontSize: "2em" }}>{this.getInitials()}</div>
@@ -84,7 +87,7 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
             </div>
           </li>
           <li className="divider" role="separator"></li>
-          <li className="profile-menuitem" onClick={this.splitterClicked.bind(this)}>Sign Out</li>
+          <li className="profile-menuitem" onClick={this._splitterClicked.bind(this)}>Sign Out</li>
         </ul>
       </Popup>
     );
@@ -105,7 +108,7 @@ export class UserProfileButton extends React.Component<IUserProfileProps, IUserP
   public render() {
     return (
       <div>
-        <div className="circle circle-button no-select" onClick={this.splitterClicked.bind(this)}>{this.renderContent()}</div>
+        <div className="circle circle-button no-select" onClick={this._splitterClicked.bind(this)}>{this.renderContent()}</div>
         {this.state.isDropdownOpen && this.renderDropdown()}
       </div>
     );

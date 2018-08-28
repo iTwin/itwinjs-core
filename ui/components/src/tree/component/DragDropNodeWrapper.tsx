@@ -4,7 +4,7 @@
 /** @module Tree */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { TreeNode, NodeProps } from "@bentley/ui-core";
 import { withDragSource, withDropTarget } from "../../dragdrop";
 

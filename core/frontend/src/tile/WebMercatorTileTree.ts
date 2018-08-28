@@ -110,12 +110,13 @@ class WebMercatorTileProps implements TileProps {
   }
 }
 class WebMercatorTileLoader extends TileLoader {
+  private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
   public mercatorToDb: Transform;
   constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number) {
     super();
-    const ecefLocation = _iModel.ecefLocation as EcefLocation;
-    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+    const ecefLocation: EcefLocation = _iModel.ecefLocation!;
+    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
     const projectExtents = _iModel.projectExtents;
     const projectCenter = projectExtents.getCenter();
@@ -140,14 +141,18 @@ class WebMercatorTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+    if (!this._providerInitialized) {
+      if (undefined === this._providerInitializing)
+        this._providerInitializing = this._imageryProvider.initialize();
+      await this._providerInitializing;
+      this._providerInitialized = true;
+      this._providerInitializing = undefined;
+    }
+
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
         missingTile.setIsQueued();
-        if (!this._providerInitialized) {
-          await this._imageryProvider.initialize();
-          this._providerInitialized = true;
-        }
 
         const quadId = new QuadId(missingTile.id);
         const corners = quadId.getCorners(this.mercatorToDb);
@@ -197,7 +202,7 @@ abstract class ImageryProvider {
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
   public abstract getCopyrightMessage(): string;
-  public abstract getCopyrightImage(): Uint8Array | undefined;
+  public abstract getCopyrightImage(): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -264,7 +269,7 @@ class BingMapProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  public logoByteArray?: Uint8Array;
+  private _logoImage?: HTMLImageElement;
 
   constructor(mapType: MapType) {
     super(mapType);
@@ -311,7 +316,7 @@ class BingMapProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return this.logoByteArray; }
+  public getCopyrightImage(): HTMLImageElement | undefined { return this._logoImage; }
   public getCopyrightMessage(): string { return ""; }    // NEEDSWORK
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
@@ -362,7 +367,11 @@ class BingMapProvider extends ImageryProvider {
       this.readAttributions(thisResourceProps.imageryProviders);
 
       // read the Bing logo data, used in getCopyrightImage
-      this.readLogo().then((logoByteArray) => { this.logoByteArray = logoByteArray; });
+      this.readLogo().then((logoByteArray) => {
+        this._logoImage = new Image();
+        const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
+        this._logoImage.src = "data:image/png;base64," + base64Data;
+      });
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
@@ -452,7 +461,7 @@ class MapBoxProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return undefined; }
+  public getCopyrightImage(): HTMLImageElement | undefined { return undefined; }
 
   public getCopyrightMessage(): string { return "(c) Mapbox, (c) OpenStreetMap contributors"; }
 
@@ -464,10 +473,12 @@ class MapBoxProvider extends ImageryProvider {
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  private _provider?: ImageryProvider;
   private _providerName: string;
   /// private providerData: string;
   private _groundBias: number;
   private _mapType: MapType;
+  // private _logoImageAddedToDOM: boolean = false;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
@@ -491,21 +502,20 @@ export class BackgroundMapState {
       return this._loadStatus;
     }
 
-    let provider: ImageryProvider | undefined;
-
     if ("BingProvider" === this._providerName) {
-      provider = new BingMapProvider(this._mapType);
+      this._provider = new BingMapProvider(this._mapType);
     } else if ("MapBoxProvider" === this._providerName) {
-      provider = new MapBoxProvider(this._mapType);
+      this._provider = new MapBoxProvider(this._mapType);
     }
-    if (provider === undefined)
+    if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this._provider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
+
   public addToScene(context: SceneContext) {
     if (!context.viewFlags.backgroundMap)
       return;
@@ -513,5 +523,28 @@ export class BackgroundMapState {
     this.loadTileTree();
     if (undefined !== this._tileTree)
       this._tileTree.drawScene(context);
+
+    // this.displayLogoImage(context);
   }
+
+  // private displayLogoImage(context: SceneContext) {
+  //   const logoImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage();
+  //   if (!logoImage)
+  //     return;
+
+  //   if (this._logoImageAddedToDOM)
+  //     return;
+
+  // const vp: Viewport = context.viewport;
+  // const enclosingDiv = vp.parentDiv;
+  // logoImage.style.position = "absolute";
+  // logoImage.style.left = "0px";
+  // const positionString = `${(vp.canvas.clientHeight - logoImage.height).toString()}px`;
+  // logoImage.style.top = positionString;
+  // logoImage.style.pointerEvents = "none";
+  // enclosingDiv.appendChild(logoImage);
+
+  // // insert the image into the scene inside a div
+  // this._logoImageAddedToDOM = true;
+  // }
 }

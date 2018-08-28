@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Point2d, Point3d, YawPitchRollAngles, RotMatrix, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
+import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
 import { ColorDef } from "../ColorDef";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 
@@ -196,11 +196,11 @@ export namespace AreaPattern {
       return true;
     }
 
-    public static transformPatternSpace(transform: Transform, oldSpace: number, patRot: RotMatrix, angle?: Angle): number {
-      let tmpRot: RotMatrix;
+    public static transformPatternSpace(transform: Transform, oldSpace: number, patRot: Matrix3d, angle?: Angle): number {
+      let tmpRot: Matrix3d;
       if (angle && !angle.isAlmostZero) {
         const yprTriple = new YawPitchRollAngles(angle);
-        const angRot = yprTriple.toRotMatrix();
+        const angRot = yprTriple.toMatrix3d();
         tmpRot = patRot.multiplyMatrixMatrix(angRot);
       } else {
         tmpRot = patRot;
@@ -221,7 +221,7 @@ export namespace AreaPattern {
       if (transform.isIdentity)
         return true;
       const origin = this.origin ? this.origin : Point3d.createZero();
-      const rMatrix = this.rotation ? this.rotation.toRotMatrix() : RotMatrix.createIdentity();
+      const rMatrix = this.rotation ? this.rotation.toMatrix3d() : Matrix3d.createIdentity();
       if (this.symbolId !== undefined) {
         this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
         this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
@@ -254,10 +254,10 @@ export namespace AreaPattern {
 
       transform.multiplyPoint3d(origin);
       rMatrix.multiplyMatrixMatrix(transform.matrix, rMatrix);
-      const normalized = RotMatrix.createRigidFromRotMatrix(rMatrix);
+      const normalized = Matrix3d.createRigidFromMatrix3d(rMatrix);
       if (!normalized)
         return false;
-      const newRotation = YawPitchRollAngles.createFromRotMatrix(normalized);
+      const newRotation = YawPitchRollAngles.createFromMatrix3d(normalized);
       if (undefined === newRotation)
         return false;
       this.origin = origin;

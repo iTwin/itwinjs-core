@@ -17,23 +17,37 @@ import { WsgRequestOptions } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** Lock Type enumeration */
+/** [[Lock]] type describes the kind of object that is locked. */
 export enum LockType {
+  /** Lock for the entire file. This is a global Lock that can only be taken with objectId 1. */
   Db,
+  /** Lock for a model. It should be acquired together with a [[LockLevel.Shared]] Db Lock. */
   Model,
+  /** Lock for a single element. It should be acquired together with a [[LockLevel.Shared]] Model Lock. */
   Element,
+  /** Lock used to change schemas. This is a global Lock that can only be taken with objectId 1. This lock cannot have [[LockLevel.Shared]]. */
   Schemas,
+  /** Lock used to change CodeSpecs. This is a global Lock that can only be taken with objectId 1. This lock cannot have [[LockLevel.Shared]]. */
+  CodeSpecs,
 }
 
-/** Lock Level enumeration */
+/** [[Lock]] level describes how restrictive the Lock is. */
 export enum LockLevel {
+  /** Lock is not owned. */
   None,
+  /**
+   * Lock can be owned by multiple [[Briefcase]]s. Shared Lock is usually acquired together with Locks for lower level objects that depend on this object.
+   */
   Shared,
+  /**
+   * Lock can only be owned by a single briefcase. Exclusive Lock is required to modify model or element when using pessimistic concurrency.
+   */
   Exclusive,
 }
 
 /**
  * Gets encoded instance id for a lock to be used in an URI.
+ * @hidden
  * @param lock Lock to get instance id for.
  * @returns Encoded lock instance id.
  */
@@ -45,26 +59,28 @@ function getLockInstanceId(lock: Lock): string | undefined {
 }
 
 /**
- * Object for specifying options when sending locks update requests.
+ * Object for specifying options when sending [[Lock]]s update requests. See [[LockHandler.update]].
  */
 export interface LockUpdateOptions {
-  /** Return locks that couldn't be acquired. */
+  /** Return [[Lock]]s that could not be acquired. Conflicting Locks will be set to [[ConflictingLocksError.conflictingLocks]]. If unlimitedReporting is enabled and locksPerRequest value is high, some conflicting Locks could be missed. */
   deniedLocks?: boolean;
-  /** Attempt to send all failed locks, ignoring iModel Hub limits. */
+  /** Attempt to get all failed [[Lock]]s, ignoring iModelHub limits. Server responses might fail when trying to return large number of conflicting Locks. */
   unlimitedReporting?: boolean;
-  /** Number of locks per single request. Multiple requests will be sent if there are more locks. */
+  /** Number of [[Lock]]s per single request. Multiple requests will be sent if there are more Locks. If an error happens on a subsequent request, previous successful updates will not be reverted. */
   locksPerRequest?: number;
-  /** If conflict happens, continue updating remaining locks instead of reverting everything. */
+  /** Don't fail request on a conflict. If conflict occurs, [[Lock]]s that didn't have conflicts will be updated and any remaining subsequent requests will still be sent. */
   continueOnConflict?: boolean;
 }
 
 /**
  * Provider for default LockUpdateOptions, used by LockHandler to set defaults.
+ * @hidden
  */
 export class DefaultLockUpdateOptionsProvider {
   protected _defaultOptions: LockUpdateOptions;
   /**
    * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
+   * @hidden
    */
   constructor() {
     this._defaultOptions = {
@@ -74,6 +90,7 @@ export class DefaultLockUpdateOptionsProvider {
 
   /**
    * Augments options with the provider's default values.
+   * @hidden
    * @note The options passed in override any defaults where necessary.
    * @param options Options that should be augmented.
    */
@@ -85,12 +102,16 @@ export class DefaultLockUpdateOptionsProvider {
   }
 }
 
-/** Error for conflicting locks */
+/**
+ * Error for conflicting [[Lock]]s. It contains an array of Locks that failed to acquire. This is returned when calling [[LockHandler.update]] with [[LockUpdateOptions.deniedLocks]] set to true.
+ */
 export class ConflictingLocksError extends IModelHubError {
+  /** Locks that couldn't be updated due to other users owning them. */
   public conflictingLocks?: Lock[];
 
   /**
    * Create ConflictingLocksError from IModelHubError instance.
+   * @hidden
    * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a lock conflict, otherwise newly created error instance.
    */
@@ -107,6 +128,7 @@ export class ConflictingLocksError extends IModelHubError {
 
   /**
    * Amends this error instance with conflicting locks from another IModelHubError.
+   * @hidden
    * @param error Error to get additional conflicting locks from.
    */
   public addLocks(error: IModelHubError) {
@@ -126,30 +148,41 @@ export class ConflictingLocksError extends IModelHubError {
   }
 }
 
-/** Base class for Lock and MultiLock */
+/**
+ * Base class for [[Lock]]s.
+ */
 export class LockBase extends WsgInstance {
+  /** Type of the Lock. It describes what kind of object is locked. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.LockType")
   public lockType?: LockType;
 
+  /** Level of the Lock. It describes how restrictive the Lock is. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.LockLevel")
   public lockLevel?: LockLevel;
 
+  /** Id of the [[Briefcase]] that owns the Lock. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
   public briefcaseId?: number;
 
+  /** Id of the file, that the Lock belongs to. See [[Briefcase.fileId]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
   public seedFileId?: string;
 
+  /** Id of the [[ChangeSet]] that the Lock was last used with. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReleasedWithChangeSet")
   public releasedWithChangeSet?: string;
 
+  /** Index of the [[ChangeSet]] that the Lock was last used with. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReleasedWithChangeSetIndex")
   public releasedWithChangeSetIndex?: string;
 }
 
-/** Lock */
+/**
+ * Lock instance. When using pessimistic concurrency, locks ensure that only a single user can modify an object at a time.
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Lock extends LockBase {
+  /** Id of the locked object. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId")
   public objectId?: string;
 }
@@ -157,6 +190,7 @@ export class Lock extends LockBase {
 /**
  * MultiLock
  * Data about locks grouped by BriefcaseId, LockLevel and LockType.
+ * @hidden
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiLock extends LockBase {
@@ -165,26 +199,24 @@ export class MultiLock extends LockBase {
 }
 
 /**
- * Query object for getting Locks. You can use this to modify the query.
- * @see LockHandler.get()
+ * Query object for getting [[Lock]]s. You can use this to modify the [[LockHandler.get]] results.
  */
 export class LockQuery extends Query {
   private _isMultiLockQuery = true;
 
   /**
    * Used by the hanlder to check whether locks in query can be grouped.
+   * @hidden
    */
   public get isMultiLockQuery() {
     return this._isMultiLockQuery;
   }
 
   /**
-   * Query Locks by Briefcase id.
+   * Query [[Lock]]s by [[Briefcase]] id.
    * @param briefcaseId Id of the Briefcase.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
-   * or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or it
-   * contains not valid [[Briefcase]] id value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or it contains an invalid [[Briefcase]] id value.
    */
   public byBriefcaseId(briefcaseId: number) {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
@@ -193,8 +225,8 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by LockType.
-   * @param lockType lockType.
+   * Query [[Lock]]s by [[LockType]].
+   * @param lockType Lock type to query.
    * @returns This query.
    */
   public byLockType(lockType: LockType) {
@@ -203,8 +235,8 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by LockLevel.
-   * @param lockLevel lockLevel.
+   * Query [[Lock]]s by [[LockLevel]].
+   * @param lockLevel Lock level to query.
    * @returns This query.
    */
   public byLockLevel(lockLevel: LockLevel) {
@@ -213,11 +245,10 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by ObjectId.
+   * Query [[Lock]]s by ObjectId.
    * @param objectId Id of the object.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
-   * if objectId is undefined.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if objectId is undefined.
    */
   public byObjectId(objectId: string) {
     ArgumentCheck.defined("objectId", objectId);
@@ -227,12 +258,10 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by ReleasedWithChangeSet.
-   * @param changesetId Id of the changeSet.
+   * Query [[Lock]]s by [[ChangeSet]] id that it was released with.
+   * @param changesetId Id of the ChangeSet.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
-   * or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or
-   * empty, or it contains not valid [[ChangeSet]] id value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or empty, or it contains an invalid [[ChangeSet]] id value.
    */
   public byReleasedWithChangeSet(changeSetId: string) {
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
@@ -241,7 +270,7 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by ReleasedWithChangeSetIndex.
+   * Query [[Lock]]s by [[ChangeSet]] index that it was released with.
    * @param changeSetIndex Index of the changeSet.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
@@ -254,12 +283,10 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query Locks by their instance ids.
+   * Query [[Lock]]s by their instance ids.
    * @param locks Locks to query. They must have their BriefcaseId, LockType and ObjectId set.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
-   * or [IModelHubStatus.InvalidArgumentError]($bentley) if locks array is undefined or
-   * empty, or it contains not valid [[Lock]] values.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if locks array is undefined or empty, or it contains invalid [[Lock]] values.
    */
   public byLocks(locks: Lock[]) {
     ArgumentCheck.nonEmptyArray("locks", locks);
@@ -283,8 +310,7 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Select only top entries from the query.
-   * This is applied after @see Query.skip parameter.
+   * Select only top entries from the query. This is applied after [[Query.skip]] parameter.
    * @param n Number of top entries to select.
    * @returns This query.
    */
@@ -294,11 +320,11 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Query unavailable Locks.
-   * @param briefcaseId Id of the briefcase.
-   * @param lastChangeSetIndex Index of the last changeSet.
+   * Query unavailable [[Lock]]s. It will include all Locks owned by other [[Briefcase]]s and locks that were released with a newer [[ChangeSet]].
+   * @param briefcaseId Id of the Briefcase.
+   * @param lastChangeSetIndex Index of the last ChangeSet that user has pulled.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the values is undefined or briefcaseId is not in valid [[Briefcase.id]] range.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the values is undefined or briefcaseId is not in a valid [[Briefcase]] id value.
    */
   public unavailableLocks(briefcaseId: number, lastChangeSetIndex: string) {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
@@ -311,31 +337,27 @@ export class LockQuery extends Query {
 }
 
 /**
- * Handler for all methods related to @see Lock instances.
+ * Handler for managing [[Lock]]s. Use [[IModelClient.Locks]] to get an instance of this class.
+ *
+ * In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
  */
 export class LockHandler {
   private _handler: IModelBaseHandler;
   private static _defaultUpdateOptionsProvider: DefaultLockUpdateOptionsProvider;
 
   /**
-   * Constructor for LockHandler. Should use @see IModelClient instead of directly constructing this.
-   * @param handler Handler for WSG requests.
+   * Constructor for LockHandler.
    * @hidden
+   * @param handler Handler for WSG requests.
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 
-  /**
-   * Gets relative url for Lock requests.
-   * @param imodelId Id of the iModel.
-   * @param lockId Id of the lock.
-   */
   private getRelativeUrl(imodelId: string, multilock = true, lockId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
   }
 
-  /** Convert Locks to MultiLocks. */
   private static convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
     const map = new Map<string, MultiLock>();
     for (const lock of locks) {
@@ -359,7 +381,6 @@ export class LockHandler {
     return Array.from(map.values());
   }
 
-  /** Convert MultiLocks to Locks. */
   private static convertMultiLocksToLocks(multiLocks: MultiLock[]): Lock[] {
     const result: Lock[] = [];
 
@@ -380,10 +401,10 @@ export class LockHandler {
   }
 
   /**
-   * Augments update options with defaults returned by the DefaultLockUpdateOptionsProvider.
-   * @note The options passed in by clients override any defaults where necessary.
+   * Augment update options with defaults returned by the DefaultLockUpdateOptionsProvider.
+   * The options passed in by clients override any defaults where necessary.
+   * @hidden
    * @param options Options the caller wants to eaugment with the defaults.
-   * @returns Promise resolves after the defaults are setup.
    */
   private async setupOptionDefaults(options: LockUpdateOptions): Promise<void> {
     if (!LockHandler._defaultUpdateOptionsProvider)
@@ -415,23 +436,21 @@ export class LockHandler {
     return LockHandler.convertMultiLocksToLocks(result);
   }
 
-  // iModelHubOperationFailedException duplicates
-  // InvalidBriefcaseException multiple briefcases
-
   /**
-   * Updates multiple locks.
+   * Update multiple [[Lock]]s. This call can simultaneously acquire new Locks and update states of already owned Locks. If large amount of Locks are updated, they are split across multiple requests. See [[LockUpdateOptions.locksPerRequest]]. Default is 2000 Locks per request.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set in the lock. Set queryOnly to true
-   * to just check if a lock is available.
-   * @param updateOptions Options for the update request.
-   * @returns The lock that was just obtained from the server.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set for every
+   * Lock instance. They must be consistent throughout all of the Locks.
+   * @param updateOptions Options for the update request. You can set this to change
+   * how conflicts are handled or to handle different amount of Locks per request.
+   * @returns Updated Lock values.
    * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/Locks/#handling-conflicts) section for more information.
    * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
    * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/Locks/#handling-conflicts) section for more information.
    * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including locks with different briefcaseId values in the request.
    * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical locks in the request.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
@@ -483,12 +502,12 @@ export class LockHandler {
   }
 
   /**
-   * Gets the locks that have been acquired for the iModel.
+   * Get the [[Lock]]s that have been issued for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param query Object used to modify results of this query.
-   * @returns Resolves to an array of locks.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param query Optional query object to filter the queried Locks or select different data from them.
+   * @returns Resolves to an array of Locks matching the query.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
@@ -518,16 +537,14 @@ export class LockHandler {
     return locks;
   }
 
-  // BriefcaseDoesNotExistException
-  // UserDoesNotHavePermissionException ManageResources
   /**
-   * Deletes all locks owned by the specified briefcase
+   * Delete all [[Lock]]s owned by the specified [[Briefcase]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel
-   * @param briefcaseId Id of the briefcacase
-   * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExistException]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a briefcase id yet, or briefcase with that id was already deleted.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermissionException]($bentley) if [[Briefcase]] belongs to another user and user sending the request doesn't have ManageResources permission.
-   * @throws [Common iModel Hub errors]($docs/learning/iModelHub/CommonErrors)
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param briefcaseId Id of the Briefcacase.
+   * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);

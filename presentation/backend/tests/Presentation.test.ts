@@ -2,14 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy } from "chai";
+import * as faker from "faker";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
 import Presentation from "@src/Presentation";
-import SingleClientPresentationManager from "@src/SingleClientPresentationManager";
-import MultiClientPresentationManager from "@src/MultiClientPresentationManager";
-import "./IModeHostSetup";
+import PresentationManager from "@src/PresentationManager";
+import "./IModelHostSetup";
+import TemporaryStorage from "@src/TemporaryStorage";
 
 describe("Presentation", () => {
 
@@ -32,9 +34,25 @@ describe("Presentation", () => {
     });
 
     it("creates a manager instance", () => {
-      expect(() => Presentation.manager).to.throw(PresentationError);
+      expect(() => Presentation.getManager()).to.throw(PresentationError);
       Presentation.initialize();
-      expect(Presentation.manager).to.be.instanceof(MultiClientPresentationManager);
+      expect(Presentation.getManager()).to.be.instanceof(PresentationManager);
+    });
+
+    describe("props handling", () => {
+
+      it("sets unused client lifetime provided through props", () => {
+        Presentation.initialize({ unusedClientLifetime: faker.random.number() });
+        const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
+        expect(storage.props.valueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
+      });
+
+      it("uses client manager factory provided through props", () => {
+        const managerMock = moq.Mock.ofType<PresentationManager>();
+        Presentation.initialize({ clientManagerFactory: () => managerMock.object });
+        expect(Presentation.getManager()).to.eq(managerMock.object);
+      });
+
     });
 
   });
@@ -43,24 +61,9 @@ describe("Presentation", () => {
 
     it("resets manager instance", () => {
       Presentation.initialize();
-      expect(Presentation.manager).to.be.not.null;
+      expect(Presentation.getManager()).to.be.not.null;
       Presentation.terminate();
-      expect(() => Presentation.manager).to.throw(PresentationError);
-    });
-
-  });
-
-  describe("setManager", () => {
-
-    it("disposes and overwrites manager instance", () => {
-      Presentation.initialize();
-      const otherManager = new SingleClientPresentationManager();
-      const disposeSpy = spy.on(Presentation.manager, SingleClientPresentationManager.prototype.dispose.name);
-      expect(Presentation.manager).to.be.not.null;
-      expect(Presentation.manager).to.not.eq(otherManager);
-      Presentation.setManager(otherManager);
-      expect(Presentation.manager).to.eq(otherManager);
-      expect(disposeSpy).to.be.called();
+      expect(() => Presentation.getManager()).to.throw(PresentationError);
     });
 
   });

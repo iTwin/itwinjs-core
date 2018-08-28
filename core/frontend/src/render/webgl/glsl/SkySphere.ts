@@ -121,7 +121,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
         const pseudoCameraHalfAngle = 22.5;
         const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
         const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
-        const worldEye = Point3d.add3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
+        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;
         scratch3Floats[2] = worldEye.z;

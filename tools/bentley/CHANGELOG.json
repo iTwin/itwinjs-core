@@ -2,6 +2,36 @@
   "name": "@bentley/bentleyjs-tools",
   "entries": [
     {
+      "version": "0.122.0",
+      "tag": "@bentley/bentleyjs-tools_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add tslint-consistent-codestyle as a bundled dependency"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.121.0",
+      "tag": "@bentley/bentleyjs-tools_v0.121.0",
+      "date": "Fri, 24 Aug 2018 12:49:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.120.0",
+      "tag": "@bentley/bentleyjs-tools_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.119.0",
+      "tag": "@bentley/bentleyjs-tools_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.118.0",
       "tag": "@bentley/bentleyjs-tools_v0.118.0",
       "date": "Tue, 21 Aug 2018 17:20:41 GMT",

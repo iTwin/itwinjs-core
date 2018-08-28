@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "@src/footer/tool-assistance/Item";
+import Item from "../../../src/footer/tool-assistance/Item";
 
 describe("<Item />", () => {
   it("should render", () => {

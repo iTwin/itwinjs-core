@@ -8,20 +8,13 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Ruleset, RootNodeRule, CustomNodeSpecification } from "@bentley/presentation-common";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("Rulesets", async () => {
 
   let imodel: IModelConnection;
   let ruleset: Ruleset;
 
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     ruleset = require("../../test-rulesets/Rulesets/default");
@@ -29,6 +22,7 @@ describe("Rulesets", async () => {
 
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("creates ruleset from json and gets root node using it", async () => {

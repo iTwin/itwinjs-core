@@ -4,8 +4,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Popover from "@src/popup/popover/Popover";
-import { Direction } from "@src/utilities/Direction";
+import Popover from "../../../src/popup/popover/Popover";
+import { Direction } from "../../../src/utilities/Direction";
 
 describe("<Popover />", () => {
   it("should render", () => {

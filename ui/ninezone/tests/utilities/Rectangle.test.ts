@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import Rectangle, { Corner, RectangleProps } from "@src/utilities/Rectangle";
+import Rectangle, { Corner, RectangleProps } from "../../src/utilities/Rectangle";
 
 describe("Rectangle", () => {
   it("unspecified bounds should be 0", () => {

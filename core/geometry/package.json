@@ -1,13 +1,13 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.118.0",
+  "version": "0.122.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.118.0",
+    "@bentley/bentleyjs-tools": "0.122.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",

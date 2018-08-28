@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.118.0",
+  "version": "0.122.0",
   "description": "iModelJs components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
@@ -10,9 +10,10 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json ../../generated-docs/common",
+    "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./common.ts --onlyJson %TYPEDOC_THEME%",
-    "lint": "tslint --project . 1>&2"
+    "lint": "tslint --project . 1>&2",
+    "test": ""
   },
   "repository": {},
   "keywords": [
@@ -33,19 +34,19 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.118.0",
-    "@bentley/geometry-core": "0.118.0",
-    "@bentley/imodeljs-clients": "0.118.0"
+    "@bentley/bentleyjs-core": "0.122.0",
+    "@bentley/geometry-core": "0.122.0",
+    "@bentley/imodeljs-clients": "0.122.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.118.0",
-    "@bentley/bentleyjs-tools": "0.118.0",
-    "@bentley/geometry-core": "0.118.0",
-    "@bentley/imodeljs-clients": "0.118.0",
+    "@bentley/bentleyjs-core": "0.122.0",
+    "@bentley/bentleyjs-tools": "0.122.0",
+    "@bentley/geometry-core": "0.122.0",
+    "@bentley/imodeljs-clients": "0.122.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",

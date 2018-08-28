@@ -875,10 +875,10 @@ export default class SchemaReadHelper {
 
     const propName = propertyJson.name;
 
-    if (undefined === propertyJson.propertyType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'propertyType' property.`);
-    if (typeof (propertyJson.propertyType) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'propertyType' property. It should be of type 'string'.`);
+    if (undefined === propertyJson.type)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'type' property.`);
+    if (typeof (propertyJson.type) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'type' property. It should be of type 'string'.`);
 
     const loadTypeName = async () => {
       if (undefined === propertyJson.typeName)
@@ -891,7 +891,7 @@ export default class SchemaReadHelper {
         await this.findSchemaItem(propertyJson.typeName);
     };
 
-    switch (propertyJson.propertyType) {
+    switch (propertyJson.type) {
       case "PrimitiveProperty":
         await loadTypeName();
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, propertyJson.typeName);
@@ -948,10 +948,10 @@ export default class SchemaReadHelper {
 
     const propName = propertyJson.name;
 
-    if (undefined === propertyJson.propertyType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'propertyType' property.`);
-    if (typeof (propertyJson.propertyType) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'propertyType' property. It should be of type 'string'.`);
+    if (undefined === propertyJson.type)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'type' property.`);
+    if (typeof (propertyJson.type) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'type' property. It should be of type 'string'.`);
 
     const loadTypeName = () => {
       if (undefined === propertyJson.typeName)
@@ -964,7 +964,7 @@ export default class SchemaReadHelper {
         this.findSchemaItemSync(propertyJson.typeName);
     };
 
-    switch (propertyJson.propertyType) {
+    switch (propertyJson.type) {
       case "PrimitiveProperty":
         loadTypeName();
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, propertyJson.typeName);

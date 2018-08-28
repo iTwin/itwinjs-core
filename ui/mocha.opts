@@ -1,8 +1,8 @@
+--require ../scripts/copy-test-setup.js
 --require ts-node/register
---require tsconfig-paths/register
 --require source-map-support/register
 --require jsdom-global/register
 --require ignore-styles
 --check-leaks
 --timeout 60000
---file ../scripts/setup-tests.js
+--file lib/setup-tests.js

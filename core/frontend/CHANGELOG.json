@@ -2,6 +2,63 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.122.0",
+      "tag": "@bentley/imodeljs-frontend_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix clipping shader compilation errors on iOS."
+          },
+          {
+            "comment": "AccuDraw compute intersection with nearest snap. AccuDraw smart rotation."
+          },
+          {
+            "comment": "Fix FPS and Render Time shown in the SimpleViewTest app."
+          },
+          {
+            "comment": "added ScreenViewport. You must now call ScreenViewport.create to create viewports"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.121.0",
+      "tag": "@bentley/imodeljs-frontend_v0.121.0",
+      "date": "Fri, 24 Aug 2018 12:49:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Constructor for Viewport now takes an HTML div as the argument, creates the canvas, and adds it to the div. Bing logo now drawn when Bing background maps are drawn."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.120.0",
+      "tag": "@bentley/imodeljs-frontend_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.119.0",
+      "tag": "@bentley/imodeljs-frontend_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw fixes"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.118.0",
       "tag": "@bentley/imodeljs-frontend_v0.118.0",
       "date": "Tue, 21 Aug 2018 17:20:41 GMT",

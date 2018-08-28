@@ -4,7 +4,7 @@
 /** @module Table */
 
 import * as React from "react";
-import * as ReactDataGrid from "react-data-grid";
+import ReactDataGrid from "react-data-grid";
 import "./Grid.scss";
 
 /** Props for the Grid React component */

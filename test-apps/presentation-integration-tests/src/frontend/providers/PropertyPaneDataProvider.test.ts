@@ -9,14 +9,6 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import PresentationPropertyDataProvider from "@bentley/presentation-components/lib/propertygrid/DataProvider";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("PropertyDataProvider", async () => {
 
   let imodel: IModelConnection;
@@ -24,13 +16,16 @@ describe("PropertyDataProvider", async () => {
   let physicalModelProps: ModelProps;
 
   before(async () => {
+    initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
   });
+
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("creates property data", async () => {

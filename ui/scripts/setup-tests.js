@@ -31,11 +31,6 @@ after(function () {
 beforeEach(function () {
   const currentTest = this.currentTest;
 
-  // we want snapshot tests to use the same random data between runs
-  let seed = 0;
-  for (let i = 0; i < currentTest.fullTitle().length; ++i)
-    seed += currentTest.fullTitle().charCodeAt(i);
-
   // set up snapshot name
   const testFilePath = currentTest.file;
   const sourceFilePath = sms.mapSourcePosition({
@@ -50,22 +45,3 @@ beforeEach(function () {
 beforeEach(() => {
   chai.spy.restore();
 });
-
-const shouldRecurseIntoDirectory = (directoryPath) => {
-  return fs.lstatSync(directoryPath).isDirectory()
-    && directoryPath !== "lib"
-    && directoryPath !== "node_modules";
-};
-const requireLibModules = (dir) => {
-  const files = fs.readdirSync(dir);
-  files.map((fileName) => path.join(dir, fileName)).filter(shouldRecurseIntoDirectory).forEach((filePath) => {
-    requireLibModules(filePath);
-  });
-  files.filter((fileName) => {
-    return [".ts", ".tsx"].some((ext) => fileName.endsWith(ext) && !fileName.endsWith(".test" + ext));
-  }).forEach((fileName) => {
-    const requirePath = path.resolve(dir, path.basename(fileName));
-    require(requirePath);
-  });
-};
-requireLibModules(path.resolve(process.cwd(), "src"));

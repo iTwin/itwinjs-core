@@ -8,6 +8,7 @@ import { Point2d, Vector2d, Point3d, Vector3d } from "../PointVector";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../GrowableArray";
+import { Point4d } from "./Geometry4d";
 // import { Arc3d } from "../curve/Arc3d";
 
 /* tslint:disable:variable-name*/
@@ -1139,7 +1140,45 @@ export class TrigPolynomial {
     }
     return boolstat;
   }
+
+  /// <summary> Compute intersections of unit circle x^2 + y 2 = w^2 with the ellipse
+  ///         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
+  /// Solutions are returned as angles in the ellipse space.
+  /// <param name="cx">center x</param>
+  /// <param name="cy">center y</param>
+  /// <param name="cw">center w</param>
+  /// <param name="ux">0 degree vector x</param>
+  /// <param name="uy">0 degree vector y</param>
+  /// <param name="uw">0 degree vector w</param>
+  /// <param name="vx">90 degree vector x</param>
+  /// <param name="vy">90 degree vector y</param>
+  /// <param name="vw">90 degree vector w</param>
+  /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
+  /// <param name="circleAngles">solution angles in circle parameter space</param>
+  /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
+  public static SolveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
+    ux: number, uy: number, uw: number,
+    vx: number, vy: number, vw: number,
+    ellipseRadians: number[], circleRadians: number[]): boolean {
+    circleRadians.length = 0;
+    const acc = ux * ux + uy * uy - uw * uw;
+    const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
+    const ass = vx * vx + vy * vy - vw * vw;
+    const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
+    const asi = 2.0 * (vx * cx + vy * cy - vw * cw);
+    const a = cx * cx + cy * cy - cw * cw;
+    const boolstat = this.SolveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    for (const radians of ellipseRadians) {
+      const cc = Math.cos(radians);
+      const ss = Math.sin(radians);
+      const x = cx + ux * cc + vx * ss;
+      const y = cy + uy * cc + vy * ss;
+      circleRadians.push(Math.atan2(y, x));
+    }
+    return boolstat;
+  }
 }
+
 export class SmallSystem {
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.
@@ -1205,6 +1244,86 @@ export class SmallSystem {
     }
     result.set(0, 0);
     return false;
+  }
+
+  /**
+   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts of WEIGHTED 4D Points
+   * Return the fractional (not xy) coordinates in result.x, result.y
+   * @param hA0 homogeneous start point of line a
+   * @param hA1 homogeneous end point of line a
+   * @param hB0 homogeneous start point of line b
+   * @param hB1 homogeneous end point of line b
+   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   */
+  public static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined {
+    // Considering only x,y,w parts....
+    // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
+    // PointQ is colinear with A0,A1 when the determinat det (A0,A1,Q) is zero.  (Each column takes xyw parts)
+    const alpha0 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB0.x,
+      hA0.y, hA1.y, hB0.y,
+      hA0.w, hA1.w, hB0.w);
+    const alpha1 = Geometry.tripleProduct(
+      hA0.x, hA1.x, hB1.x,
+      hA0.y, hA1.y, hB1.y,
+      hA0.w, hA1.w, hB1.w);
+    const fractionB = Geometry.conditionalDivideFraction(-alpha0, alpha1 - alpha0);
+    if (fractionB !== undefined) {
+      const beta0 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA0.x,
+        hB0.y, hB1.y, hA0.y,
+        hB0.w, hB1.w, hA0.w);
+      const beta1 = Geometry.tripleProduct(
+        hB0.x, hB1.x, hA1.x,
+        hB0.y, hB1.y, hA1.y,
+        hB0.w, hB1.w, hA1.w);
+      const fractionA = Geometry.conditionalDivideFraction(-beta0, beta1 - beta0);
+      if (fractionA !== undefined)
+        return Vector2d.create(fractionA, fractionB, result);
+    }
+    return undefined;
+  }
+
+  /**
+   * Return the line fraction at which the (homogeneous) line is closest to a space point as viewed in xy only.
+   * @param hA0 homogeneous start point of line a
+   * @param hA1 homogeneous end point of line a
+   * @param spacePoint homogeneous point in space
+   */
+  public static lineSegment3dHXYClosestPointUnbounded(hA0: Point4d, hA1: Point4d, spacePoint: Point4d): number | undefined {
+    // Considering only x,y,w parts....
+    // weighted difference of (A1 w0 - A0 w1) is (cartesian) tangent vector along the line as viewed.
+    // The perpendicular (pure vector) W = (-y,x) flip is the direction of projection
+    // Point Q along A is (in full homogeneous)  `(1-lambda) A0 + lambda 1 A1`
+    // PointQ is colinear with spacePoint and and W when the xyw homogeneous determinant | Q W spacePoint | is zero.
+    const tx = hA1.x * hA0.w - hA0.x * hA1.w;
+    const ty = hA1.y * hA0.w - hA0.y * hA1.w;
+    const det0 = Geometry.tripleProduct(
+      hA0.x, -ty, spacePoint.x,
+      hA0.y, tx, spacePoint.y,
+      hA0.w, 0, spacePoint.w);
+    const det1 = Geometry.tripleProduct(
+      hA1.x, -ty, spacePoint.x,
+      hA1.y, tx, spacePoint.y,
+      hA1.w, 0, spacePoint.w);
+    return Geometry.conditionalDivideFraction(-det0, det1 - det0);
+  }
+
+  /**
+   * Return the line fraction at which the line is closest to a space point as viewed in xy only.
+   * @param pointA0 start point
+   * @param pointA1 end point
+   * @param spacePoint homogeneous point in space
+   */
+  public static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
+    // Considering only x,y parts....
+    const ux = pointA1.x - pointA0.x;
+    const uy = pointA1.y - pointA0.y;
+    const uu = ux * ux + uy * uy;
+    const vx = spacePoint.x - pointA0.x;
+    const vy = spacePoint.y - pointA0.y;
+    const uv = ux * vx + uy * vy;
+    return Geometry.conditionalDivideFraction(uv, uu);
   }
 
   /**

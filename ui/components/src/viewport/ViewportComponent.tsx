@@ -4,15 +4,14 @@
 /** @module Viewport */
 
 import * as React from "react";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
 import {
   IModelApp,
   IModelConnection,
-  Viewport,
   ViewState,
+  ScreenViewport,
+  Viewport,
 } from "@bentley/imodeljs-frontend";
-
-import { BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   ViewportManager,
@@ -21,8 +20,7 @@ import {
 } from "./ViewportManager";
 
 import {
-  YawPitchRollAngles,
-  RotMatrix,
+  Matrix3d,
   Transform,
 } from "@bentley/geometry-core";
 
@@ -43,23 +41,23 @@ export interface ViewportProps {
  */
 export class ViewportComponent extends React.Component<ViewportProps> {
 
-  private _canvas: React.RefObject<HTMLCanvasElement>;
-  private _vp?: Viewport;
+  private _viewportDiv: React.RefObject<HTMLDivElement>;
+  private _vp?: ScreenViewport;
 
   public constructor(props: ViewportProps, context?: any) {
     super(props, context);
-    this._canvas = React.createRef<HTMLCanvasElement>();
+    this._viewportDiv = React.createRef<HTMLDivElement>();
   }
 
   public async componentDidMount() {
-    if (!this._canvas.current)
+    if (!this._viewportDiv.current)
       throw new Error("Canvas failed to load");
 
     const viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
     if (!viewState)
       throw new Error("View state failed to load");
 
-    this._vp = new Viewport(this._canvas.current, viewState);
+    this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
     ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
@@ -83,7 +81,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     ViewportManager.StandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
-  private _onMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  private _onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
 
     ViewportManager.setActiveViewport(this._vp);
@@ -94,7 +92,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       if (args.animationTime && args.animationTime < 0) {
         this._vp.synchWithView(true);
       }
-      const rotMatrix = this._rotationMatrixFromYawPitchRoll(args.rotation); // TODO - switch to internal function after custom rotation order is implemented
+      const rotMatrix = args.rotMatrix;
       if (this._vp.rotMatrix !== rotMatrix) {
         const center = this._vp.view.getTargetPoint(); // Don't try to locate geometry using depth buffer...
         const inverse = rotMatrix.clone().inverse(); // rotation is from current nav cube state...
@@ -123,65 +121,18 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   private _handleViewChanged = (vp: Viewport) => {
-    const yawPitchRoll = ViewportComponent.getViewportYawPitchRoll(vp);
-    if (yawPitchRoll && !yawPitchRoll.isAlmostEqual(ViewportManager.getViewRotation()))
-      ViewportManager.setViewRotation(vp, yawPitchRoll);
+    const rotMatrix = ViewportComponent.getViewportMatrix3d(vp);
+    if (rotMatrix)
+      ViewportManager.setViewMatrix3d(vp, rotMatrix);
   }
 
-  /** Pulled from three.js, "ZXY" intrinsic Tait-Bryan angles for right-handed coordinates (rotations reversed from left-handed)
-   */
-  private _rotationMatrixFromYawPitchRoll = (angle: YawPitchRollAngles) => {
-    const x = angle.pitch.radians, y = angle.roll.radians, z = angle.yaw.radians;
-    const cx = Math.cos(x), sx = Math.sin(x);
-    const cy = Math.cos(y), sy = Math.sin(y);
-    const cz = Math.cos(z), sz = Math.sin(z);
-
-    const rotX = RotMatrix.createRowValues(
-      1, 0, 0,
-      0, cx, sx,
-      0, -sx, cx,
-    );
-    const rotY = RotMatrix.createRowValues(
-      cy, 0, -sy,
-      0, 1, 0,
-      sy, 0, cy,
-    );
-    const rotZ = RotMatrix.createRowValues(
-      cz, sz, 0,
-      -sz, cz, 0,
-      0, 0, 1,
-    );
-    return rotX.multiplyMatrixMatrix(rotY).multiplyMatrixMatrix(rotZ);
-  }
-  private static _yawPitchRollFromRotationMatrix = (m: RotMatrix) => {
-    const clamp = (v: number, min: number, max: number) => {
-      return Math.max(min, Math.min(max, v));
-    };
-
-    // assumes m is a pure rotation matrix (i.e, unscaled)
-    const m11 = m.at(0, 0); // , m12 = m.at(1, 0), m13 = m.at(2, 0);
-    const m21 = m.at(0, 1), m22 = m.at(1, 1), m23 = m.at(2, 1);
-    const m31 = m.at(0, 2), m32 = m.at(1, 2), m33 = m.at(2, 2);
-    let x, y, z;
-    y = Math.asin(-clamp(m31, -1, 1));
-
-    if (Math.abs(m31) < 0.99999) {
-      x = Math.atan2(-m32, m33);
-      z = Math.atan2(-m21, m11);
-    } else {
-      x = Math.atan2(m23, m22);
-      z = 0;
-    }
-
-    return YawPitchRollAngles.createRadians(-z, x, y);
-  }
-  public static getViewportYawPitchRoll(vp: Viewport): YawPitchRollAngles | undefined {
-    return this._yawPitchRollFromRotationMatrix(vp.rotMatrix);
+  public static getViewportMatrix3d(vp: Viewport): Matrix3d | undefined {
+    return vp.rotMatrix;
   }
 
   public render() {
     return (
-      <canvas ref={this._canvas} style={{ height: "100%", width: "100%" }}
+      <div ref={this._viewportDiv} style={{ height: "100%", width: "100%" }}
         onMouseDown={this._onMouseDown}
         onContextMenu={(e) => { e.preventDefault(); return false; }}
       />

@@ -4,6 +4,8 @@
 @import "@bentley/bwc/lib/mixins";
 
 .table-drop-target {
+  border-top: solid transparent 1px;
+  border-bottom: solid transparent 1px;
   &.above {
     border-top: solid black 1px;
   }

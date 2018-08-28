@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Checker } from "./Checker";
 import { Geometry, Angle } from "../Geometry";
 import { Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
@@ -36,10 +36,10 @@ describe("ConvexClipPlaneSet", () => {
       Transform.createTranslationXYZ(10, 0, 0),
       Transform.createFixedPointAndMatrix(
         Point3d.create(ax, ay, 0),
-        RotMatrix.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!),
+        Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!),
       Transform.createFixedPointAndMatrix(
         Point3d.create(3, 2, 5),
-        RotMatrix.createRotationAroundVector(Vector3d.create(1, 2, 9), Angle.createDegrees(23))!)]) {
+        Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 9), Angle.createDegrees(23))!)]) {
 
       const segmentN = segmentM.cloneTransformed(transform);
       const boxD = boxA.clone();

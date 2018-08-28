@@ -4,12 +4,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
+import * as rimraf from "rimraf";
 import "@helpers/MockFrontendEnvironment";
 // common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { LoggingNamespaces } from "@bentley/presentation-common";
 import TestRpcManager from "@helpers/TestRpcManager";
 // backend includes
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
 import { Presentation as PresentationBackend, Presentation } from "@bentley/presentation-backend";
 // frontend includes
 import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
@@ -59,6 +62,14 @@ class IntegrationTestsApp extends NoRenderApp {
 export const initialize = () => {
   if (isInitialized)
     return;
+
+  // clean up temp directory to make sure we start from scratch
+  rimraf.sync(path.join(KnownLocations.tmpdir, "ecpresentation"));
+
+  // init logging (enable on demand while debugging)
+  Logger.initializeToConsole();
+  Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.None);
+  Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
 
   // init backend
   IModelHost.startup();

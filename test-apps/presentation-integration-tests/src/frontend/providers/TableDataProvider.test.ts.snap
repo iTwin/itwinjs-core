@@ -7,11 +7,6 @@ Array [
     "filterable": true,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
-    "propertyDescription": Object {
-      "displayLabel": "£ábêl",
-      "name": "/DisplayLabel/",
-      "typename": "string",
-    },
     "sortable": true,
   },
   Object {
@@ -19,11 +14,7 @@ Array [
     "filterable": true,
     "key": "PhysicalModel_ModeledElement",
     "label": "Modeled Element",
-    "propertyDescription": Object {
-      "displayLabel": "Modeled Element",
-      "name": "PhysicalModel_ModeledElement",
-      "typename": "navigation",
-    },
+      "name": "FunctionalModel_ModeledElement",
     "sortable": true,
   },
 ]
@@ -36,11 +27,6 @@ Array [
     "filterable": true,
     "key": "/DisplayLabel/",
     "label": "£ábêl",
-    "propertyDescription": Object {
-      "displayLabel": "£ábêl",
-      "name": "/DisplayLabel/",
-      "typename": "string",
-    },
     "sortable": true,
   },
   Object {
@@ -48,11 +34,7 @@ Array [
     "filterable": true,
     "key": "PhysicalModel_RepositoryModel_ModeledElement",
     "label": "Modeled Element",
-    "propertyDescription": Object {
-      "displayLabel": "Modeled Element",
-      "name": "PhysicalModel_RepositoryModel_ModeledElement",
-      "typename": "navigation",
-    },
+      "name": "PhysicalModel_FunctionalModel_ModeledElement",
     "sortable": true,
   },
 ]
@@ -98,10 +80,8 @@ Object {
       },
     },
   ],
-  "key": Object {
-    "className": "BisCore:PhysicalModel",
-    "id": "0x1c",
-  },
+    "className": "Functional:FunctionalModel",
+    "id": "0x11",
 }
 `;
 
@@ -146,10 +126,8 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:DictionaryModel",
-      "id": "0x10",
-    },
+      "className": "Functional:FunctionalModel",
+      "id": "0x11",
   },
   Object {
     "cells": Array [
@@ -190,10 +168,8 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:PhysicalModel",
-      "id": "0x1c",
-    },
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
+      "id": "0x12",
   },
   Object {
     "cells": Array [
@@ -234,10 +210,7 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:RepositoryModel",
-      "id": "0x1",
-    },
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
 ]
 `;
@@ -283,10 +256,7 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:RepositoryModel",
-      "id": "0x1",
-    },
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
   Object {
     "cells": Array [
@@ -327,10 +297,8 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:PhysicalModel",
-      "id": "0x1c",
-    },
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
+      "id": "0x12",
   },
   Object {
     "cells": Array [
@@ -371,10 +339,8 @@ Array [
         },
       },
     ],
-    "key": Object {
-      "className": "BisCore:DictionaryModel",
-      "id": "0x10",
-    },
+      "className": "Functional:FunctionalModel",
+      "id": "0x11",
   },
 ]
 `;

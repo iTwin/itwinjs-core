@@ -126,7 +126,7 @@ export class TriDiagonalSystem {
       const n = this._aDiag.length;
       const nm1 = n - 1;
       for (let i = 0; i < nm1; i++) {
-        Point3d.add2Scaled(pointX[i], this._aDiag[i], pointX[i + 1], this._aRight[i], pointB[i]);
+        Point3d.createAdd2Scaled(pointX[i], this._aDiag[i], pointX[i + 1], this._aRight[i], pointB[i]);
       }
       Point3d.createScale(pointX[nm1], this._aDiag[nm1], pointB[nm1]);
 
@@ -138,15 +138,15 @@ export class TriDiagonalSystem {
     } else {
       const n = this._aDiag.length;
       const nm1 = n - 1;
-      Point3d.add2Scaled(pointX[0], this._aDiag[0], pointX[1], this._aRight[0], pointB[0]);
+      Point3d.createAdd2Scaled(pointX[0], this._aDiag[0], pointX[1], this._aRight[0], pointB[0]);
       let i;
       for (i = 1; i < nm1; i++) {
-        Point3d.add3Scaled(
+        Point3d.createAdd3Scaled(
           pointX[i - 1], this._aLeft[i], pointX[i], this._aDiag[i],
           pointX[i + 1], this._aRight[i],
           pointB[i]);
       }
-      Point3d.add2Scaled(pointX[n - 2], this._aLeft[nm1], pointX[nm1], this._aDiag[nm1], pointB[nm1]);
+      Point3d.createAdd2Scaled(pointX[n - 2], this._aLeft[nm1], pointX[nm1], this._aDiag[nm1], pointB[nm1]);
       return true;
     }
   }

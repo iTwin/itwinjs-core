@@ -28,7 +28,7 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
  */
 export interface FrameworkZoneProps {
   zoneState: NZ_ZoneState;
-  targetedBounds: RectangleProps | undefined;
+  targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   targetProvider: ZoneTargetProvider;
@@ -36,7 +36,7 @@ export interface FrameworkZoneProps {
 }
 
 interface FrameworkZoneState {
-  updatedWidgetDef: WidgetDef | undefined;
+  updatedWidgetDef?: WidgetDef;
 }
 
 /** ConfigurableUI Zone React Component.
