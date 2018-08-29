@@ -66,7 +66,8 @@ describe("TableDataProvider", async () => {
       expect(count).to.eq(2);
     });
 
-    it("returns total number of instances when more than page size", async () => {
+    // WIP: requires a fix made in native platform v32.0.0
+    it.skip("returns total number of instances when more than page size", async () => {
       const keys = await imodel.elements.queryProps({ from: "bis.PhysicalElement", limit: 20 });
       provider.keys = new KeySet(keys);
       const count = await provider.getRowsCount();
@@ -91,8 +92,7 @@ describe("TableDataProvider", async () => {
 
   });
 
-  // WIP: sorting by display label doesn't work until `dev` is merged to `master`
-  describe.skip("sorting", () => {
+  describe("sorting", () => {
 
     it("sorts instances ascending", async () => {
       // provide keys so that instances by default aren't sorted in either way
@@ -112,8 +112,7 @@ describe("TableDataProvider", async () => {
 
   });
 
-  // WIP: filtering by display label doesn't work until `dev` is merged to `master`
-  describe.skip("filtering", () => {
+  describe("filtering", () => {
 
     it("filters instances", async () => {
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);

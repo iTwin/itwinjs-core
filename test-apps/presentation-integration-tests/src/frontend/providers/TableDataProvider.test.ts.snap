@@ -123,8 +123,7 @@ Array [
         },
       },
     ],
-      "className": "Functional:FunctionalModel",
-      "id": "0x11",
+    "key": "{\\"className\\":\\"BisCore:DictionaryModel\\",\\"id\\":\\"0x10\\"}",
   },
   Object {
     "cells": Array [
@@ -165,8 +164,7 @@ Array [
         },
       },
     ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
-      "id": "0x12",
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
   },
   Object {
     "cells": Array [
@@ -294,8 +292,7 @@ Array [
         },
       },
     ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
-      "id": "0x12",
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
   },
   Object {
     "cells": Array [
@@ -336,8 +333,7 @@ Array [
         },
       },
     ],
-      "className": "Functional:FunctionalModel",
-      "id": "0x11",
+    "key": "{\\"className\\":\\"BisCore:DictionaryModel\\",\\"id\\":\\"0x10\\"}",
   },
 ]
 `;
