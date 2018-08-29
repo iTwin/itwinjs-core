@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SheetNavigationAid } from "@src/index";
+import { SheetNavigationAid } from "../../../src/index";
 import TestUtils from "../../TestUtils";
 
 describe("SheetNavigationAid", () => {

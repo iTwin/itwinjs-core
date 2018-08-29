@@ -157,30 +157,30 @@ class BSpline1dNd {
 
 export class BSplineCurve3d extends CurvePrimitive {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3d; }
-  public tryTransformInPlace(transform: Transform): boolean { Point3dArray.multiplyInPlace(transform, this.bcurve.coffs); return true; }
-  private bcurve: BSpline1dNd;
+  public tryTransformInPlace(transform: Transform): boolean { Point3dArray.multiplyInPlace(transform, this._bcurve.coffs); return true; }
+  private _bcurve: BSpline1dNd;
 
-  public get degree(): number { return this.bcurve.degree; }
-  public get order(): number { return this.bcurve.order; }
-  public get numSpan(): number { return this.bcurve.numSpan; }
-  public get numPoles(): number { return this.bcurve.numPoles; }
-  public getPole(i: number, result?: Point3d): Point3d | undefined { return this.bcurve.getPoint3dPole(i, result); }
+  public get degree(): number { return this._bcurve.degree; }
+  public get order(): number { return this._bcurve.order; }
+  public get numSpan(): number { return this._bcurve.numSpan; }
+  public get numPoles(): number { return this._bcurve.numPoles; }
+  public getPole(i: number, result?: Point3d): Point3d | undefined { return this._bcurve.getPoint3dPole(i, result); }
   public spanFractionToKnot(span: number, localFraction: number): number {
-    return this.bcurve.spanFractionToKnot(span, localFraction);
+    return this._bcurve.spanFractionToKnot(span, localFraction);
   }
   private constructor(numPoles: number, order: number, knots: KnotVector) {
     super();
-    this.bcurve = BSpline1dNd.create(numPoles, 3, order, knots) as BSpline1dNd;
+    this._bcurve = BSpline1dNd.create(numPoles, 3, order, knots) as BSpline1dNd;
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z],[x,y,z],..]` */
-  public copyPoints(): any[] { return Point3dArray.unpackNumbersToNestedArrays(this.bcurve.coffs, 3); }
+  public copyPoints(): any[] { return Point3dArray.unpackNumbersToNestedArrays(this._bcurve.coffs, 3); }
   /** Return a simple array of the control points coordinates */
-  public copyPointsFloat64Array(): Float64Array { return this.bcurve.coffs.slice(); }
+  public copyPointsFloat64Array(): Float64Array { return this._bcurve.coffs.slice(); }
   /**
    * return a simple array form of the knots.  optionally replicate the first and last
    * in classic over-clamped manner
    */
-  public copyKnots(includeExtraEndKnot: boolean): number[] { return this.bcurve.knots.copyKnots(includeExtraEndKnot); }
+  public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /** Create a bspline with uniform knots. */
   public static createUniformKnots(poles: Point3d[], order: number): BSplineCurve3d | undefined {
@@ -190,7 +190,7 @@ export class BSplineCurve3d extends CurvePrimitive {
     const knots = KnotVector.createUniformClamped(poles.length, order - 1, 0.0, 1.0);
     const curve = new BSplineCurve3d(poles.length, order, knots);
     let i = 0;
-    for (const p of poles) { curve.bcurve.coffs[i++] = p.x; curve.bcurve.coffs[i++] = p.y; curve.bcurve.coffs[i++] = p.z; }
+    for (const p of poles) { curve._bcurve.coffs[i++] = p.x; curve._bcurve.coffs[i++] = p.y; curve._bcurve.coffs[i++] = p.z; }
     return curve;
   }
   /** Create a bspline with given knots.
@@ -216,17 +216,17 @@ export class BSplineCurve3d extends CurvePrimitive {
     const curve = new BSplineCurve3d(numPoles, order, knots);
     if (poleArray instanceof Float64Array) {
       let i = 0;
-      for (const coordinate of poleArray) { curve.bcurve.coffs[i++] = coordinate; }
+      for (const coordinate of poleArray) { curve._bcurve.coffs[i++] = coordinate; }
     } else {
       let i = 0;
-      for (const p of poleArray) { curve.bcurve.coffs[i++] = p.x; curve.bcurve.coffs[i++] = p.y; curve.bcurve.coffs[i++] = p.z; }
+      for (const p of poleArray) { curve._bcurve.coffs[i++] = p.x; curve._bcurve.coffs[i++] = p.y; curve._bcurve.coffs[i++] = p.z; }
     }
     return curve;
   }
   public clone(): BSplineCurve3d {
-    const knotVector1 = this.bcurve.knots.clone();
+    const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3d(this.numPoles, this.order, knotVector1);
-    curve1.bcurve.coffs = this.bcurve.coffs.slice();
+    curve1._bcurve.coffs = this._bcurve.coffs.slice();
     return curve1;
   }
   public cloneTransformed(transform: Transform): BSplineCurve3d {
@@ -236,49 +236,49 @@ export class BSplineCurve3d extends CurvePrimitive {
   }
   /** Evaluate at a position given by fractional position within a span. */
   public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
-    this.bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
-    return Point3d.createFrom(this.bcurve.poleBuffer);
+    this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
+    return Point3d.createFrom(this._bcurve.poleBuffer);
   }
   public evaluatePointAndTangentInSpan(spanIndex: number, spanFraction: number): Ray3d {
-    this.bcurve.evaluateBuffersInSpan1(spanIndex, spanFraction);
+    this._bcurve.evaluateBuffersInSpan1(spanIndex, spanFraction);
     return Ray3d.createCapture(
-      Point3d.createFrom(this.bcurve.poleBuffer),
-      Vector3d.createFrom(this.bcurve.poleBuffer1));
+      Point3d.createFrom(this._bcurve.poleBuffer),
+      Vector3d.createFrom(this._bcurve.poleBuffer1));
   }
 
   /** Evaluate at a positioni given by a knot value.  */
   public knotToPoint(u: number, result?: Point3d): Point3d {
-    this.bcurve.evaluateBuffersAtKnot(u);
-    return Point3d.createFrom(this.bcurve.poleBuffer, result);
+    this._bcurve.evaluateBuffersAtKnot(u);
+    return Point3d.createFrom(this._bcurve.poleBuffer, result);
   }
   /** Evaluate at a positioni given by a knot value.  */
   public knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d {
-    this.bcurve.evaluateBuffersAtKnot(u, 1);
+    this._bcurve.evaluateBuffersAtKnot(u, 1);
     if (!result) return Ray3d.createCapture(
-      Point3d.createFrom(this.bcurve.poleBuffer),
-      Vector3d.createFrom(this.bcurve.poleBuffer1));
-    result.origin.setFrom(this.bcurve.poleBuffer);
-    result.direction.setFrom(this.bcurve.poleBuffer1);
+      Point3d.createFrom(this._bcurve.poleBuffer),
+      Vector3d.createFrom(this._bcurve.poleBuffer1));
+    result.origin.setFrom(this._bcurve.poleBuffer);
+    result.direction.setFrom(this._bcurve.poleBuffer1);
     return result;
   }
 
   /** Evaluate at a position given by a knot value.  Return point with 2 derivatives. */
   public knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    this.bcurve.evaluateBuffersAtKnot(u, 2);
+    this._bcurve.evaluateBuffersAtKnot(u, 2);
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
-      this.bcurve.poleBuffer[0], this.bcurve.poleBuffer[1], this.bcurve.poleBuffer[2],
-      this.bcurve.poleBuffer1[0], this.bcurve.poleBuffer1[1], this.bcurve.poleBuffer1[2],
-      this.bcurve.poleBuffer2[0], this.bcurve.poleBuffer2[1], this.bcurve.poleBuffer2[2], result);
+      this._bcurve.poleBuffer[0], this._bcurve.poleBuffer[1], this._bcurve.poleBuffer[2],
+      this._bcurve.poleBuffer1[0], this._bcurve.poleBuffer1[1], this._bcurve.poleBuffer1[2],
+      this._bcurve.poleBuffer2[0], this._bcurve.poleBuffer2[1], this._bcurve.poleBuffer2[2], result);
   }
 
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
-    return this.knotToPoint(this.bcurve.knots.fractionToKnot(fraction), result);
+    return this.knotToPoint(this._bcurve.knots.fractionToKnot(fraction), result);
   }
 
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
-    const knot = this.bcurve.knots.fractionToKnot(fraction);
+    const knot = this._bcurve.knots.fractionToKnot(fraction);
     result = this.knotToPointAndDerivative(knot, result);
-    result.direction.scaleInPlace(this.bcurve.knots.knotLength01);
+    result.direction.scaleInPlace(this._bcurve.knots.knotLength01);
     return result;
   }
 
@@ -289,9 +289,9 @@ export class BSplineCurve3d extends CurvePrimitive {
    * If the arc is circular, the second derivative is directly towards the center
    */
   public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    const knot = this.bcurve.knots.fractionToKnot(fraction);
+    const knot = this._bcurve.knots.fractionToKnot(fraction);
     result = this.knotToPointAnd2Derivatives(knot, result);
-    const a = this.bcurve.knots.knotLength01;
+    const a = this._bcurve.knots.knotLength01;
     result.vectorU.scaleInPlace(a);
     result.vectorV.scaleInPlace(a * a);
     return result;
@@ -299,25 +299,25 @@ export class BSplineCurve3d extends CurvePrimitive {
 
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineCurve3d) {
-      return this.bcurve.knots.isAlmostEqual(other.bcurve.knots)
-        && Point3dArray.isAlmostEqual(this.bcurve.coffs, other.bcurve.coffs);
+      return this._bcurve.knots.isAlmostEqual(other._bcurve.knots)
+        && Point3dArray.isAlmostEqual(this._bcurve.coffs, other._bcurve.coffs);
     }
     return false;
   }
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    return Point3dArray.isCloseToPlane(this.bcurve.coffs, plane);
+    return Point3dArray.isCloseToPlane(this._bcurve.coffs, plane);
   }
   public startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
   public endPoint(): Point3d { return this.evaluatePointInSpan(this.numSpan - 1, 1.0); }
-  public reverseInPlace(): void { this.bcurve.reverseInPlace(); }
-  public quickLength(): number { return Point3dArray.sumLengths(this.bcurve.coffs); }
+  public reverseInPlace(): void { this._bcurve.reverseInPlace(); }
+  public quickLength(): number { return Point3dArray.sumLengths(this._bcurve.coffs); }
   public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
     const numSpan = this.numSpan;
     const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
       handler.announceIntervalForUniformStepStrokes(this, numPerSpan,
-        this.bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
-        this.bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
+        this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
+        this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
     }
   }
 
@@ -338,17 +338,17 @@ export class BSplineCurve3d extends CurvePrimitive {
    * (b) (degree-1) wrapped points,
    * (c) marked wrappable from construction time.
    */
-  public isClosable(): boolean {
-    if (!this.bcurve.knots.wrappable)
+  public get isClosable(): boolean {
+    if (!this._bcurve.knots.wrappable)
       return false;
     const degree = this.degree;
-    const leftKnotIndex = this.bcurve.knots.leftKnotIndex;
-    const rightKnotIndex = this.bcurve.knots.rightKnotIndex;
-    const period = this.bcurve.knots.rightKnot - this.bcurve.knots.leftKnot;
+    const leftKnotIndex = this._bcurve.knots.leftKnotIndex;
+    const rightKnotIndex = this._bcurve.knots.rightKnotIndex;
+    const period = this._bcurve.knots.rightKnot - this._bcurve.knots.leftKnot;
     const indexDelta = rightKnotIndex - leftKnotIndex;
     for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
       const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(this.bcurve.knots.knots[k0] + period, this.bcurve.knots.knots[k1]))
+      if (!Geometry.isSameCoordinate(this._bcurve.knots.knots[k0] + period, this._bcurve.knots.knots[k1]))
         return false;
     }
     const poleIndexDelta = this.numPoles - this.degree;
@@ -363,7 +363,7 @@ export class BSplineCurve3d extends CurvePrimitive {
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */
   public setWrappable(value: boolean) {
-    this.bcurve.knots.wrappable = value;
+    this._bcurve.knots.wrappable = value;
   }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
@@ -371,6 +371,6 @@ export class BSplineCurve3d extends CurvePrimitive {
   }
 
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    this.bcurve.extendRange(rangeToExtend, transform);
+    this._bcurve.extendRange(rangeToExtend, transform);
   }
 }

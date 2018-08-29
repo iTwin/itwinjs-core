@@ -10,6 +10,9 @@ import { OpenIModel } from "../openimodel/OpenIModel";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 
+import { BeDragDropContext } from "@bentley/ui-components";
+import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
+
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
   appHeaderIcon: React.ReactNode;
@@ -53,17 +56,23 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     const configurableUiContentProps = {
       appBackstage: this.props.appBackstage,
     };
+    let element: JSX.Element | undefined;
     if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
-      return <OpenIModel {...openIModelProps} />;
+      element = <OpenIModel {...openIModelProps} />;
     } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage) {
-      return <ConfigurableUIContent {...configurableUiContentProps} />;
+      element =  <ConfigurableUIContent {...configurableUiContentProps} />;
     } else if (React.Children.count(this.props.children) > this.props.currentPage) {
-      return React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
+      element =  React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }
-    return undefined;
+    return (
+      <BeDragDropContext>
+        {element}
+        <DragDropLayerRenderer />
+      </BeDragDropContext>
+    );
   }
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
-export const OverallContent = connect(mapStateToProps, mapDispatch)(OverallContentComponent);
+/** OverallContent React component that is Redux connected. */
+export const OverallContent = connect(mapStateToProps, mapDispatch)(OverallContentComponent); // tslint:disable-line:variable-name

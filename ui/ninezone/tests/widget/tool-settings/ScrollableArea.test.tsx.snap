@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ScrollableArea /> renders correctly 1`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;

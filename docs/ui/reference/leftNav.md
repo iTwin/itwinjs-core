@@ -22,6 +22,7 @@
 
 - [Breadcrumb]($components:Breadcrumb)
 - [Common]($components:Common)
+- [DragDrop]($components:DragDrop)
 - [Properties]($components:Properties)
 - [PropertyGrid]($components:PropertyGrid)
 - [Table]($components:Table)

@@ -7,8 +7,9 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { OpenIModelPage, OpenIModelActions } from "./state";
 import { ApplicationHeader, ApplicationHeaderProps } from "./ApplicationHeader";
-import { LoginPage } from "./Login";
-import { IModelPanel, IModelViewsSelectedFunc } from "./IModelPanel";
+import { IModelViewsSelectedFunc } from "./IModelPanel";
+import { IModelOpenPanel } from "../open/IModelOpen";
+import { SignInPage } from "../open/SignIn";
 
 /** Properties for the OpenIModel component */
 export interface OpenIModelProps {
@@ -55,13 +56,13 @@ class OpenIModelComponent extends React.Component<OpenIModelProps> {
       return (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <LoginPage />;
+          <SignInPage />;
         </React.Fragment>
       );
     } else
       return (
         <React.Fragment>
-          <IModelPanel {...iModelPanelProps} />
+          <IModelOpenPanel {...iModelPanelProps} />
         </React.Fragment>
       );
   }

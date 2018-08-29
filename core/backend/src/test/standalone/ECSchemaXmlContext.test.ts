@@ -8,7 +8,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ECSchemaXmlContext", () => {
 
-  it("should be able to convert schema XML to JSON", () => {
+  it.skip("should be able to convert schema XML to JSON", () => {
     const testSchemaXmlPath = path.join(KnownTestLocations.assetsDir, "TestSchema.ecschema.xml");
     const testSchemaJsonPath = path.join(KnownTestLocations.assetsDir, "TestSchema.ecschema.json");
     const expectedTestSchemaJson = require(testSchemaJsonPath);

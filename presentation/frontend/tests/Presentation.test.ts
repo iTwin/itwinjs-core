@@ -4,10 +4,10 @@
 import "@helpers/MockFrontendEnvironment";
 import { expect, spy } from "chai";
 import * as moq from "@helpers/Mocks";
-import { initializeRpcInterface } from "@helpers/RpcHelper";
+// import { initializeRpcInterface } from "@helpers/RpcHelper";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { PresentationRpcInterface, PresentationError } from "@common/index";
+import { /*PresentationRpcInterface,*/ PresentationError } from "@common/index";
 import { Presentation } from "@src/index";
 import { SelectionManager } from "@src/selection";
 import PresentationManager from "@src/PresentationManager";
@@ -22,9 +22,9 @@ describe("Presentation", () => {
   beforeEach(() => {
     shutdownIModelApp();
     NoRenderApp.startup();
-    initializeRpcInterface(PresentationRpcInterface);
-    const interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-    PresentationRpcInterface.getClient = () => interfaceMock.object;
+    // initializeRpcInterface(PresentationRpcInterface);
+    // const interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
+    // PresentationRpcInterface.getClient = () => interfaceMock.object;
     Presentation.terminate();
   });
 

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BooleanTypeConverter } from "@src/index";
+import { BooleanTypeConverter } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("BooleanTypeConverter", () => {

@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Group from "@src/toolbar/item/expandable/group/Group";
+import Group from "../../../../../src/toolbar/item/expandable/group/Group";
 
 describe("<Group />", () => {
   it("should render", () => {

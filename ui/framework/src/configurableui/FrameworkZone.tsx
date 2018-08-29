@@ -28,7 +28,7 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
  */
 export interface FrameworkZoneProps {
   zoneState: NZ_ZoneState;
-  targetedBounds: RectangleProps | undefined;
+  targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   targetProvider: ZoneTargetProvider;
@@ -36,7 +36,7 @@ export interface FrameworkZoneProps {
 }
 
 interface FrameworkZoneState {
-  updatedWidgetDef: WidgetDef | undefined;
+  updatedWidgetDef?: WidgetDef;
 }
 
 /** ConfigurableUI Zone React Component.
@@ -52,14 +52,14 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   };
 
   public componentDidMount(): void {
-    FrontstageManager.WidgetStateChangedEvent.addListener(this.handleWidgetStateChangedEvent);
+    FrontstageManager.WidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    FrontstageManager.WidgetStateChangedEvent.removeListener(this.handleWidgetStateChangedEvent);
+    FrontstageManager.WidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
-  private handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
+  private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
     if (this.containsWidgetDef(args.widgetDef)) {
       this.setState((_prevState, _props) => ({ updatedWidgetDef: args.widgetDef }));
     }
@@ -69,7 +69,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     return (
       <>
         <NZ_Zone bounds={this.props.zoneState.floatingBounds || this.props.zoneState.bounds}>
-          {this.getWidget()}
+          {this._getWidget()}
         </NZ_Zone>
         <NZ_Zone bounds={this.props.zoneState.bounds}>
           <ZoneTargets
@@ -98,7 +98,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     });
   }
 
-  private getWidget = () => {
+  private _getWidget = () => {
     if (this.props.zoneState.widgets.length === 1) {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
       if (!zoneDef)

@@ -13,7 +13,7 @@ import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI"
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { IModelError, BentleyStatus } from "../../IModelError";
 
-/** @hidden @internal */
+/** @hidden */
 export const WEB_RPC_CONSTANTS = {
   CONTENT: "Content-Type",
   TEXT: "text/plain",

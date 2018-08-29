@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import BackButton from "@src/toolbar/button/Back";
+import BackButton from "../../../src/toolbar/button/Back";
 
 describe("<BackButton />", () => {
   it("should render", () => {

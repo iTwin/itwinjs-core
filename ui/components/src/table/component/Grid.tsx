@@ -4,7 +4,7 @@
 /** @module Table */
 
 import * as React from "react";
-import * as ReactDataGrid from "react-data-grid";
+import ReactDataGrid from "react-data-grid";
 import "./Grid.scss";
 
 /** Props for the Grid React component */
@@ -13,22 +13,22 @@ export interface GridProps {
   rows: any[];
 }
 
-export interface GridState {
+interface State {
   selectedRow?: any;
 }
 
 /**
  * Grid React component
  */
-export class Grid extends React.Component<GridProps, GridState> {
+export class Grid extends React.Component<GridProps, State> {
 
-  public readonly state: Readonly<GridState> = {};
+  public readonly state: Readonly<State> = {};
 
   public rowGetter(i: number) {
     return this.props.rows[i];
   }
 
-  private onRowClick = (rowIdx: any, _row: any) => {
+  private _onRowClick = (rowIdx: any, _row: any) => {
     if (this.state.selectedRow === rowIdx)
       this.setState({ selectedRow: null });
     else
@@ -53,7 +53,7 @@ export class Grid extends React.Component<GridProps, GridState> {
               indexes: [this.state.selectedRow],
             },
           }}
-          onRowClick={this.onRowClick}
+          onRowClick={this._onRowClick}
         />
       </div>
     );

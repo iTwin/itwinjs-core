@@ -28,9 +28,16 @@ import MessageStatus from "@bentley/ui-ninezone/lib/footer/message/content/statu
 import { BlueButton as Button } from "@bentley/bwc/lib/buttons/BlueButton";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend/lib/frontend";
 
+import StatusMessage from "@bentley/ui-ninezone/lib/footer/message/content/status/Message";
+import Status from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
+import StatusLayout from "@bentley/ui-ninezone/lib/footer/message/content/status/Layout";
+import Label from "@bentley/ui-ninezone/lib/footer/message/content/Label";
+import Hyperlink from "@bentley/ui-ninezone/lib/footer/message/content/Hyperlink";
+import Progress from "@bentley/ui-ninezone/lib/footer/message/content/Progress";
+
 import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
 
-import { MessageManager, MessageAddedEventArgs } from "./MessageManager";
+import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 
 export enum StatusBarMessageType {
@@ -45,6 +52,8 @@ export interface StatusBarState {
   openWidget: StatusBarFieldId;
   visibleMessage: StatusBarMessageType;
   messageDetails: NotifyMessageDetails | undefined;
+  activityMessageInfo: ActivityMessageEventArgs | undefined;
+  isActivityMessageVisible: boolean;
   toastMessageStage: ToastMessageStage;
 }
 
@@ -73,6 +82,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     openWidget: null,
     visibleMessage: StatusBarMessageType.None,
     messageDetails: undefined,
+    activityMessageInfo: undefined,
+    isActivityMessageVisible: true,
     toastMessageStage: ToastMessageStage.Visible,
   };
 
@@ -96,14 +107,18 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   public componentDidMount() {
-    MessageManager.MessageAddedEvent.addListener(this.handleMessageAddedEvent);
+    MessageManager.MessageAddedEvent.addListener(this._handleMessageAddedEvent);
+    MessageManager.ActivityMessageAddedEvent.addListener(this._handleActivityMessageAddedEvent);
+    MessageManager.ActivityMessageCanceledEvent.addListener(this._handleActivityMessageCanceledEvent);
   }
 
   public componentWillUnmount() {
-    MessageManager.MessageAddedEvent.removeListener(this.handleMessageAddedEvent);
+    MessageManager.MessageAddedEvent.removeListener(this._handleMessageAddedEvent);
+    MessageManager.ActivityMessageAddedEvent.removeListener(this._handleActivityMessageAddedEvent);
+    MessageManager.ActivityMessageCanceledEvent.removeListener(this._handleActivityMessageCanceledEvent);
   }
 
-  private handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
+  private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
     let statusbarMessageType: StatusBarMessageType = StatusBarMessageType.None;
 
     switch (args.message.msgType) {
@@ -116,7 +131,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case OutputMessageType.Alert:
         statusbarMessageType = StatusBarMessageType.Modal;
         break;
-      // TODO - InputField and Pointer
+      // TODO - Pointer
     }
 
     this.setVisibleMessage(statusbarMessageType, args.message);
@@ -126,23 +141,38 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     }
   }
 
+  /**
+   * Sets state of the status bar to updated values reflecting activity progress.
+   * @param args  New values to set for ActivityMessage
+   */
+  private _handleActivityMessageAddedEvent = (args: ActivityMessageEventArgs) => {
+    const visibleMessage = StatusBarMessageType.Activity;
+    this.setState((_prevState) => ({
+      visibleMessage,
+      activityMessageInfo: args,
+      isActivityMessageVisible: args.restored ? true : this.state.isActivityMessageVisible,
+    }));
+  }
+
+  /**
+   * Hides ActivityMessage after cancelation
+   */
+  private _handleActivityMessageCanceledEvent = () => {
+    this.setState((_prevState) => ({
+      isActivityMessageVisible: false,
+    }));
+  }
+
   private getFooterMessage() {
+    if (this.state.activityMessageInfo && this.state.isActivityMessageVisible) {
+      return this.getActivityMessage();
+    }
+
     if (!this.state.messageDetails)
       return;
 
     const severity = MessageManager.getSeverity(this.state.messageDetails);
     switch (this.state.visibleMessage) {
-      case (StatusBarMessageType.Activity): {
-        return (
-          <ActivityMessage>
-            <i className="icon icon-activity" />
-            TODO - Activity Message
-            <Button onClick={this.hideMessages}>
-              Cancel
-            </Button>
-          </ActivityMessage>
-        );
-      }
       case (StatusBarMessageType.Modal): {
         return (
           <ModalMessage
@@ -151,7 +181,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 content={
                   <DialogButtonsContent
                     buttons={
-                      <Button onClick={this.hideMessages}>
+                      <Button onClick={this._hideMessages}>
                         {UiFramework.i18n.translate("UiCore:dialog.close")}
                       </Button>
                     }
@@ -159,11 +189,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                       <DialogScrollableContent
                         content={
                           <MessageContainer severity={severity} >
-                            {this.state.messageDetails.briefMessage}
+                            {this.state.messageDetails!.briefMessage}
                             {
-                              this.state.messageDetails.detailedMessage && (
+                              this.state.messageDetails!.detailedMessage && (
                                 <p>
-                                  {this.state.messageDetails.detailedMessage}
+                                  {this.state.messageDetails!.detailedMessage}
                                 </p>
                               )
                             }
@@ -183,7 +213,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
           <ToastMessage
             stage={this.state.toastMessageStage}
             animateOutTo={this._footerMessages}
-            onAnimatedOut={() => this.hideMessages()}
+            onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
             onStageChange={(stage: ToastMessageStage) => {
               this.setState((_prevState) => ({ toastMessageStage: stage }));
@@ -198,11 +228,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 <StatusMessageLayout
                   label={
                     <>
-                      <MessageLabel text={this.state.messageDetails.briefMessage} />
-                      {this.state.messageDetails.detailedMessage &&
+                      <MessageLabel text={this.state.messageDetails!.briefMessage} />
+                      {this.state.messageDetails!.detailedMessage &&
                         <>
                           <br />
-                          <MessageLabel text={this.state.messageDetails.detailedMessage} />
+                          <MessageLabel text={this.state.messageDetails!.detailedMessage} />
                         </>
                       }
                     </>
@@ -235,7 +265,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                   </>
                 }
                 buttons={
-                  <MessageButton onClick={this.hideMessages}>
+                  <MessageButton onClick={this._hideMessages}>
                     <i className="icon icon-close" />
                   </MessageButton>
                 }
@@ -249,6 +279,75 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     return undefined;
   }
 
+  /**
+   * Returns ActvityMessage to display with most recent values
+   * reflecting activity progress.
+   */
+  private getActivityMessage(): React.ReactNode {
+    const messageDetails = this.state.activityMessageInfo!.details;
+    const percentComplete = UiFramework.i18n.translate("UiFramework:activityCenter.percentComplete");
+    return (
+      <ActivityMessage>
+        <StatusMessage
+          status={Status.Information}
+          icon={
+            <i className="icon icon-info-hollow" />
+          }
+        >
+          <StatusLayout
+            label={
+              (messageDetails && messageDetails.showPercentInMessage) ?
+                <div>
+                  <Label text={this.state.activityMessageInfo!.title} />
+                  <h6 className="body-text-dark">{this.state.activityMessageInfo!.percentage + percentComplete}</h6>
+                </div> :
+                <Label text={this.state.activityMessageInfo!.title} />
+            }
+            buttons={
+              (messageDetails && messageDetails.supportsCancellation) ?
+                <>
+                  <Hyperlink text="Cancel"
+                    onClick={this._cancelActivityMessage}
+                  />
+                  <MessageButton onClick={this._dismissActivityMessage}>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                </> :
+                <MessageButton onClick={this._dismissActivityMessage}>
+
+                  <i className="icon icon-close" />
+                </MessageButton>
+            }
+            progress={
+              (!messageDetails || messageDetails.showProgressBar) &&
+              <Progress
+                status={Status.Information}
+                progress={this.state.activityMessageInfo!.percentage}
+              />
+            }
+          />
+        </StatusMessage>
+      </ActivityMessage>
+    );
+  }
+
+  /**
+   * Ends canceled process and dismisses ActivityMessage
+   */
+  private _cancelActivityMessage = () => {
+    MessageManager.endActivityMessage(false);
+    this._dismissActivityMessage();
+  }
+
+  /**
+   * Dismisses ActivityMessage
+   */
+  private _dismissActivityMessage = () => {
+    this.setState((_prevState) => ({
+      isActivityMessageVisible: false,
+    }));
+  }
+
   public setOpenWidget(openWidget: StatusBarFieldId) {
     this.setState((_prevState, _props) => {
       return {
@@ -257,7 +356,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     });
   }
 
-  private hideMessages = () => {
+  private _hideMessages = () => {
     this.setVisibleMessage(StatusBarMessageType.None);
   }
 

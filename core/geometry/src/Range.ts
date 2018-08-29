@@ -6,18 +6,18 @@
 
 import { Geometry, BeJSONFunctions } from "./Geometry";
 import { Point2d, Vector2d, Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix } from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 import { Range1dProps, Range2dProps, Range3dProps } from "./PointVector";
 import { LowAndHighXYZ, LowAndHighXY } from "./PointVector";
 import { XAndY, XYAndZ } from "./PointVector";
 import { GrowableXYZArray } from "./GrowableArray";
 
 export abstract class RangeBase {
-  protected static readonly EXTREME_POSITIVE: number = 1.0e200;
-  protected static readonly EXTREME_NEGATIVE: number = -1.0e200;
+  protected static readonly _EXTREME_POSITIVE: number = 1.0e200;
+  protected static readonly _EXTREME_NEGATIVE: number = -1.0e200;
   /** @return 0 if high<= low, otherwise `1/(high-low)` for use in fractionalizing */
   protected static npcScaleFactor(low: number, high: number): number { return (high <= low) ? 0.0 : 1.0 / (high - low); }
-  public static isExtremeValue(x: number): boolean { return Math.abs(x) >= RangeBase.EXTREME_POSITIVE; }
+  public static isExtremeValue(x: number): boolean { return Math.abs(x) >= RangeBase._EXTREME_POSITIVE; }
   public static isExtremePoint3d(xyz: Point3d) { return RangeBase.isExtremeValue(xyz.x) || RangeBase.isExtremeValue(xyz.y) || RangeBase.isExtremeValue(xyz.z); }
   public static isExtremePoint2d(xy: Point2d) { return RangeBase.isExtremeValue(xy.x) || RangeBase.isExtremeValue(xy.y); }
   /**
@@ -31,9 +31,9 @@ export abstract class RangeBase {
    */
   public static rangeToRangeAbsoluteDistance(lowA: number, highA: number, lowB: number, highB: number): number {
     if (highA < lowA)
-      return RangeBase.EXTREME_POSITIVE;
+      return RangeBase._EXTREME_POSITIVE;
     if (highB < lowB)
-      return RangeBase.EXTREME_POSITIVE;
+      return RangeBase._EXTREME_POSITIVE;
     if (highB < lowA)
       return lowA - highB;
     if (highB <= highA)
@@ -45,7 +45,7 @@ export abstract class RangeBase {
 
   public static coordinateToRangeAbsoluteDistance(x: number, low: number, high: number): number {
     if (high < low)
-      return RangeBase.EXTREME_POSITIVE;
+      return RangeBase._EXTREME_POSITIVE;
     if (x < low)
       return low - x;
     if (x > high)
@@ -77,12 +77,12 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public high: Point3d;
   /** Set this transform to values that indicate it has no contents. */
   public setNull() {
-    this.low.x = RangeBase.EXTREME_POSITIVE;
-    this.low.y = RangeBase.EXTREME_POSITIVE;
-    this.low.z = RangeBase.EXTREME_POSITIVE;
-    this.high.x = RangeBase.EXTREME_NEGATIVE;
-    this.high.y = RangeBase.EXTREME_NEGATIVE;
-    this.high.z = RangeBase.EXTREME_NEGATIVE;
+    this.low.x = RangeBase._EXTREME_POSITIVE;
+    this.low.y = RangeBase._EXTREME_POSITIVE;
+    this.low.z = RangeBase._EXTREME_POSITIVE;
+    this.high.x = RangeBase._EXTREME_NEGATIVE;
+    this.high.y = RangeBase._EXTREME_NEGATIVE;
+    this.high.z = RangeBase._EXTREME_NEGATIVE;
   }
 
   public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
@@ -106,8 +106,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public static fromArrayBuffer(buffer: ArrayBuffer) { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
-  public constructor(lowx: number = RangeBase.EXTREME_POSITIVE, lowy: number = RangeBase.EXTREME_POSITIVE, lowz: number = RangeBase.EXTREME_POSITIVE,
-    highx: number = RangeBase.EXTREME_NEGATIVE, highy: number = RangeBase.EXTREME_NEGATIVE, highz: number = RangeBase.EXTREME_NEGATIVE) {
+  public constructor(lowx: number = RangeBase._EXTREME_POSITIVE, lowy: number = RangeBase._EXTREME_POSITIVE, lowz: number = RangeBase._EXTREME_POSITIVE,
+    highx: number = RangeBase._EXTREME_NEGATIVE, highy: number = RangeBase._EXTREME_NEGATIVE, highz: number = RangeBase._EXTREME_NEGATIVE) {
     super();
     this.low = Point3d.create(lowx, lowy, lowz);
     this.high = Point3d.create(highx, highy, highz);
@@ -116,7 +116,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** @returns Returns true if this and other have equal low and high point x,y,z parts */
   public isAlmostEqual(other: Range3d): boolean {
     return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
-      || (this.isNull() && other.isNull());
+      || (this.isNull && other.isNull);
   }
   /** copy low and high values from other. */
   public setFrom(other: Range3d) { this.low.setFrom(other.low); this.high.setFrom(other.high); }
@@ -336,7 +336,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Test if the box has high<low for any of x,y,z, condition. Note that a range around a single point is NOT null. */
-  public isNull(): boolean {
+  public get isNull(): boolean {
     return this.high.x < this.low.x
       || this.high.y < this.low.y
       || this.high.z < this.low.z;
@@ -350,7 +350,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Test of the range contains a single point. */
-  public isSinglePoint(): boolean {
+  public get isSinglePoint(): boolean {
     return this.high.x === this.low.x
       && this.high.y === this.low.y
       && this.high.z === this.low.z;
@@ -382,7 +382,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * * Returns undefined if the range is null.
    */
   public localXYZToWorld(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d | undefined {
-    if (this.isNull()) return undefined;
+    if (this.isNull) return undefined;
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 
@@ -396,7 +396,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @return false if null range.
    */
   public localToWorldArrayInPlace(points: Point3d[]): boolean {
-    if (this.isNull()) return false;
+    if (this.isNull) return false;
     for (const p of points)
       this.low.interpolateXYZ(p.x, p.y, p.z, this.high, p);
     return false;
@@ -443,17 +443,17 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
   /** @returns Return the largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
-    if (this.isNull())
+    if (this.isNull)
       return 0.0;
     return Math.max(this.low.maxAbs(), this.high.maxAbs());
   }
 
   /** @returns true if the x direction size is nearly zero */
-  public isAlmostZeroX(): boolean { return Geometry.isSmallMetricDistance(this.xLength()); }
+  public get isAlmostZeroX(): boolean { return Geometry.isSmallMetricDistance(this.xLength()); }
   /** @returns true if the y direction size is nearly zero */
-  public isAlmostZeroY(): boolean { return Geometry.isSmallMetricDistance(this.yLength()); }
+  public get isAlmostZeroY(): boolean { return Geometry.isSmallMetricDistance(this.yLength()); }
   /** @returns true if the z direction size is nearly zero */
-  public isAlmostZeroZ(): boolean { return Geometry.isSmallMetricDistance(this.zLength()); }
+  public get isAlmostZeroZ(): boolean { return Geometry.isSmallMetricDistance(this.zLength()); }
 
   /** Test if a point given as x,y,z is within the range. */
   public containsXYZ(x: number, y: number, z: number): boolean {
@@ -498,14 +498,14 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Return 0 if the point is within the range, otherwise the distance to the closest face or corner */
   public distanceToPoint(point: XYAndZ): number {
-    if (this.isNull())
-      return RangeBase.EXTREME_POSITIVE;
+    if (this.isNull)
+      return RangeBase._EXTREME_POSITIVE;
     return Math.min(
       Geometry.hypotenuseXYZ(
         RangeBase.coordinateToRangeAbsoluteDistance(point.x, this.low.x, this.high.x),
         RangeBase.coordinateToRangeAbsoluteDistance(point.y, this.low.y, this.high.y),
         RangeBase.coordinateToRangeAbsoluteDistance(point.z, this.low.z, this.high.z)),
-      RangeBase.EXTREME_POSITIVE);
+      RangeBase._EXTREME_POSITIVE);
   }
 
   /** @returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
@@ -515,7 +515,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         RangeBase.rangeToRangeAbsoluteDistance(this.low.x, this.high.x, other.low.x, other.high.x),
         RangeBase.rangeToRangeAbsoluteDistance(this.low.y, this.high.y, other.low.y, other.high.y),
         RangeBase.rangeToRangeAbsoluteDistance(this.low.z, this.high.z, other.low.z, other.high.z)),
-      RangeBase.EXTREME_POSITIVE);
+      RangeBase._EXTREME_POSITIVE);
   }
 
   /** Expand this range by distances a (possibly signed) in all directions */
@@ -560,9 +560,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Return the union of ranges. */
   public union(other: Range3d, result?: Range3d): Range3d {
-    if (this.isNull())
+    if (this.isNull)
       return other.clone(result);
-    if (other.isNull())
+    if (other.isNull)
       return this.clone(result);
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range3d.createXYZXYZOrCorrectToNull
@@ -576,7 +576,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @param scaleFactor scale factor applied to low, high distance from center.
    */
   public scaleAboutCenterInPlace(scaleFactor: number) {
-    if (!this.isNull()) {
+    if (!this.isNull) {
       scaleFactor = Math.abs(scaleFactor);
       // do the scalar stuff to avoid making a temporary object ....
       const xMid = 0.5 * (this.low.x + this.high.x);
@@ -606,7 +606,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Create a local to world transform from this range. */
   public getLocalToWorldTransform(result?: Transform): Transform {
-    return Transform.createOriginAndMatrix(Point3d.create(this.low.x, this.low.y, this.low.z), RotMatrix.createRowValues(
+    return Transform.createOriginAndMatrix(Point3d.create(this.low.x, this.low.y, this.low.z), Matrix3d.createRowValues(
       this.high.x - this.low.x, 0, 0,
       0, this.high.y - this.low.y, 0,
       0, 0, this.high.z - this.low.z,
@@ -637,8 +637,8 @@ export class Range1d extends RangeBase {
   public high: number;
 
   public setNull() {
-    this.low = RangeBase.EXTREME_POSITIVE;
-    this.high = RangeBase.EXTREME_NEGATIVE;
+    this.low = RangeBase._EXTREME_POSITIVE;
+    this.high = RangeBase._EXTREME_NEGATIVE;
   }
   // internal use only -- directly set all coordinates, test only if directed.
   private setDirect(low: number, high: number, correctToNull: boolean) {
@@ -649,8 +649,8 @@ export class Range1d extends RangeBase {
   }
   // explicit ctor - no enforcement of value relationships
   private constructor(
-    low: number = RangeBase.EXTREME_POSITIVE,
-    high: number = RangeBase.EXTREME_NEGATIVE) {
+    low: number = RangeBase._EXTREME_POSITIVE,
+    high: number = RangeBase._EXTREME_NEGATIVE) {
     super();
     this.low = low; this.high = high; // duplicates set_direct, but compiler is not convinced they are set.
     this.set_direct(low, high);
@@ -658,7 +658,7 @@ export class Range1d extends RangeBase {
   /** @returns Returns true if this and other have equal low and high parts */
   public isAlmostEqual(other: Range1d): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
-      || (this.isNull() && other.isNull());
+      || (this.isNull && other.isNull);
   }
   /** copy contents from other Range1d. */
   public setFrom(other: Range1d) { this.low = other.low; this.high = other.high; }
@@ -693,7 +693,7 @@ export class Range1d extends RangeBase {
    *    [lowValue,highValue]
    * ```
    */
-  public toJSON(): Range1dProps { if (this.isNull()) return new Array<number>(); else return [this.low, this.high]; }
+  public toJSON(): Range1dProps { if (this.isNull) return new Array<number>(); else return [this.low, this.high]; }
 
   // internal use only -- directly set both lwo and high coordinates, without tests.
   private set_direct(low: number, high: number) {
@@ -785,12 +785,12 @@ export class Range1d extends RangeBase {
   }
 
   /** Test if the box has high<low Note that a range around a single point is NOT null. */
-  public isNull(): boolean {
+  public get isNull(): boolean {
     return this.high < this.low;
   }
 
   /** Test of the range contains a single point. */
-  public isSinglePoint(): boolean {
+  public get isSinglePoint(): boolean {
     return this.high === this.low;
   }
 
@@ -804,13 +804,13 @@ export class Range1d extends RangeBase {
 
   /** @returns Return the largest absolute value among the box limits. */
   public maxAbs(): number {
-    if (this.isNull())
+    if (this.isNull)
       return 0.0;
     return Math.max(Math.abs(this.low), Math.abs(this.high));
   }
 
   /** Test if the x direction size is nearly zero */
-  public isAlmostZeroLength(): boolean { return Geometry.isSmallMetricDistance(this.length()); }
+  public get isAlmostZeroLength(): boolean { return Geometry.isSmallMetricDistance(this.length()); }
 
   /** Test if a number is within the range. */
   public containsX(x: number): boolean {
@@ -836,8 +836,8 @@ export class Range1d extends RangeBase {
 
   /** Return 0 if the point is within the range, otherwise the (unsigned) distance to the closest face or corner */
   public distanceToX(x: number): number {
-    if (this.isNull())
-      return RangeBase.EXTREME_POSITIVE;
+    if (this.isNull)
+      return RangeBase._EXTREME_POSITIVE;
     return RangeBase.coordinateToRangeAbsoluteDistance(x, this.low, this.high);
   }
 
@@ -849,7 +849,7 @@ export class Range1d extends RangeBase {
 
   /** Expand this range to include a range. */
   public extendRange(other: Range1d): void {
-    if (!other.isNull()) {
+    if (!other.isNull) {
       this.extendX(other.low);
       this.extendX(other.high);
     }
@@ -883,7 +883,7 @@ export class Range1d extends RangeBase {
    * @param scaleFactor scale factor applied to low, high distance from center.
    */
   public scaleAboutCenterInPlace(scaleFactor: number) {
-    if (!this.isNull()) {
+    if (!this.isNull) {
       scaleFactor = Math.abs(scaleFactor);
       // do the scalar stuff to avoid making a temporary object ....
       const xMid = 0.5 * (this.low + this.high);
@@ -912,10 +912,10 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public high: Point2d;
 
   public setNull() {
-    this.low.x = RangeBase.EXTREME_POSITIVE;
-    this.low.y = RangeBase.EXTREME_POSITIVE;
-    this.high.x = RangeBase.EXTREME_NEGATIVE;
-    this.high.y = RangeBase.EXTREME_NEGATIVE;
+    this.low.x = RangeBase._EXTREME_POSITIVE;
+    this.low.y = RangeBase._EXTREME_POSITIVE;
+    this.high.x = RangeBase._EXTREME_NEGATIVE;
+    this.high.y = RangeBase._EXTREME_NEGATIVE;
   }
   public static toFloat64Array(val: LowAndHighXY): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.high.x, val.high.y); }
   public toFloat64Array(): Float64Array { return Range2d.toFloat64Array(this); }
@@ -937,14 +937,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public static fromArrayBuffer(buffer: ArrayBuffer) { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
-  public constructor(lowx = Range2d.EXTREME_POSITIVE, lowy = Range2d.EXTREME_POSITIVE, highx = Range2d.EXTREME_NEGATIVE, highy = Range2d.EXTREME_NEGATIVE) {
+  public constructor(lowx = Range2d._EXTREME_POSITIVE, lowy = Range2d._EXTREME_POSITIVE, highx = Range2d._EXTREME_NEGATIVE, highy = Range2d._EXTREME_NEGATIVE) {
     super();
     this.low = Point2d.create(lowx, lowy);
     this.high = Point2d.create(highx, highy);
   }
   public isAlmostEqual(other: Range2d): boolean {
     return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
-      || (this.isNull() && other.isNull());
+      || (this.isNull && other.isNull);
   }
 
   public setFrom(other: LowAndHighXY) {
@@ -975,7 +975,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
 
   public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
-  public toJSON(): Range2dProps { return this.isNull() ? [] : [this.low.toJSON(), this.high.toJSON()]; }
+  public toJSON(): Range2dProps { return this.isNull ? [] : [this.low.toJSON(), this.high.toJSON()]; }
 
   public static fromJSON(json?: Range2dProps): Range2d {
     const result = new Range2d();
@@ -1049,7 +1049,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
 
   /** Test if the box has high<low for any of x,y, condition. Note that a range around a single point is NOT null. */
-  public isNull(): boolean {
+  public get isNull(): boolean {
     return this.high.x < this.low.x
       || this.high.y < this.low.y;
   }
@@ -1061,7 +1061,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
 
   /** Test of the range contains a single point. */
-  public isSinglePoint(): boolean {
+  public get isSinglePoint(): boolean {
     return this.high.x === this.low.x
       && this.high.y === this.low.y;
   }
@@ -1084,15 +1084,15 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
   /** Largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
-    if (this.isNull())
+    if (this.isNull)
       return 0.0;
     return Math.max(this.low.maxAbs(), this.high.maxAbs());
   }
 
   /** Test if the x direction size is nearly zero */
-  public isAlmostZeroX(): boolean { return Geometry.isSmallMetricDistance(this.xLength()); }
+  public get isAlmostZeroX(): boolean { return Geometry.isSmallMetricDistance(this.xLength()); }
   /** Test if the y direction size is nearly zero */
-  public isAlmostZeroY(): boolean { return Geometry.isSmallMetricDistance(this.yLength()); }
+  public get isAlmostZeroY(): boolean { return Geometry.isSmallMetricDistance(this.yLength()); }
 
   /** Test if a point given as x,y is within the range. */
   public containsXY(x: number, y: number): boolean {
@@ -1123,13 +1123,13 @@ export class Range2d extends RangeBase implements LowAndHighXY {
 
   /** Return 0 if the point is within the range, otherwise the distance to the closest face or corner */
   public distanceToPoint(point: XAndY): number {
-    if (this.isNull())
-      return Range2d.EXTREME_POSITIVE;
+    if (this.isNull)
+      return Range2d._EXTREME_POSITIVE;
     return Math.min(
       Geometry.hypotenuseXY(
         RangeBase.coordinateToRangeAbsoluteDistance(point.x, this.low.x, this.high.x),
         RangeBase.coordinateToRangeAbsoluteDistance(point.y, this.low.y, this.high.y)),
-      Range2d.EXTREME_POSITIVE);
+      Range2d._EXTREME_POSITIVE);
   }
 
   /** Return 0 if the point is within the range, otherwise the distance to the closest face or corner */
@@ -1138,7 +1138,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       Geometry.hypotenuseXY(
         RangeBase.rangeToRangeAbsoluteDistance(this.low.x, this.high.x, other.low.x, other.high.x),
         RangeBase.rangeToRangeAbsoluteDistance(this.low.y, this.high.y, other.low.y, other.high.y)),
-      Range2d.EXTREME_POSITIVE);
+      Range2d._EXTREME_POSITIVE);
   }
 
   /** Expand this range by distances a (possibly signed) in all directions */
@@ -1176,7 +1176,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
 
   /** Return the union of ranges. */
   public union(other: LowAndHighXY, result?: Range2d): Range2d {
-    if (this.isNull())
+    if (this.isNull)
       return Range2d.createFrom(other, result);
     if (Range2d.isNull(other))
       return this.clone(result);
@@ -1193,7 +1193,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
    * @param scaleFactor scale factor applied to low, high distance from center.
    */
   public scaleAboutCenterInPlace(scaleFactor: number) {
-    if (!this.isNull()) {
+    if (!this.isNull) {
       scaleFactor = Math.abs(scaleFactor);
       // do the scalar stuff to avoid making a temporary object ....
       const xMid = 0.5 * (this.low.x + this.high.x);

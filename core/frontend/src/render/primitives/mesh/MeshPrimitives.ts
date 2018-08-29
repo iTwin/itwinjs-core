@@ -298,13 +298,11 @@ export namespace Mesh {
 
   export class Features {
     public readonly table: FeatureTable;
-    public _indices: number[] = [];
+    public indices: number[] = [];
     public uniform = 0;
     public initialized = false;
 
     public constructor(table: FeatureTable) { this.table = table; }
-
-    public get indices(): number[] { return this._indices; }
 
     public add(feat: Feature, numVerts: number): void {
       const index = this.table.insert(feat);
@@ -325,7 +323,7 @@ export namespace Mesh {
     }
 
     public setIndices(indices: number[]) {
-      this._indices.length = 0;
+      this.indices.length = 0;
       this.uniform = 0;
       this.initialized = 0 < indices.length;
 
@@ -333,7 +331,7 @@ export namespace Mesh {
       if (1 === indices.length)
         this.uniform = indices[0];
       else if (1 < indices.length)
-        this._indices = indices;
+        this.indices = indices;
     }
 
     public toFeatureIndex(index: FeatureIndex): void {
@@ -344,7 +342,7 @@ export namespace Mesh {
         index.featureID = this.uniform;
       } else {
         index.type = FeatureIndexType.NonUniform;
-        index.featureIDs = new Uint32Array(this._indices);
+        index.featureIDs = new Uint32Array(this.indices);
       }
     }
   }

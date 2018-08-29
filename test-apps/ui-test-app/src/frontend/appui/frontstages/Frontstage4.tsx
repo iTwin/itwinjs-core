@@ -13,6 +13,8 @@ import {
   MessageBoxValue,
 } from "@bentley/imodeljs-frontend";
 
+import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp } from "../..";
 import { MessageSeverity } from "@bentley/ui-core";
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
@@ -99,6 +101,18 @@ export class Frontstage4 {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
+          {
+            classId: "BreadcrumbDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
         ],
       },
       bottomCenter: {
@@ -132,6 +146,18 @@ export class Frontstage4 {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
+          {
+            classId: "TableDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
+          {
+            classId: "TreeDemoWidget",
+            defaultState: WidgetState.Open,
+            iconClass: "icon-placeholder",
+            labelKey: "SampleApp:Test.my-label",
+          },
         ],
       },
     };
@@ -139,7 +165,7 @@ export class Frontstage4 {
     return frontstageProps;
   }
 
-  private tool1 = () => {
+  private _tool1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -149,7 +175,7 @@ export class Frontstage4 {
     }
   }
 
-  private tool2 = () => {
+  private _tool2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -190,7 +216,24 @@ export class Frontstage4 {
       labelKey: "SampleApp:buttons.informationMessageBox",
       commandHandler: {
         messageId: "", parameters: null,
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoStr)),
+        execute: () => {
+          let displayString = "Current Snap Mode(s):";
+
+          if (SampleAppIModelApp.store.getState().frameworkState) {
+            const snapModes = SampleAppIModelApp.accuSnap.getActiveSnapModes();
+            for (const mode of snapModes) {
+              if (mode === SnapMode.Bisector) displayString += " Bisector";
+              if (mode === SnapMode.Center) displayString += " Center";
+              if (mode === SnapMode.Intersection) displayString += " Intersection";
+              if (mode === SnapMode.MidPoint) displayString += " MidPoint";
+              if (mode === SnapMode.Nearest) displayString += " Nearest";
+              if (mode === SnapMode.NearestKeypoint) displayString += " NearestKeypoint";
+              if (mode === SnapMode.Origin) displayString += " Origin";
+            }
+          }
+
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, displayString));
+        },
       },
     });
     const detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation."; // <br/>Hello <a href=\"http://www.google.com\">Google!</a>
@@ -218,8 +261,8 @@ export class Frontstage4 {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this.tool1} />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this.tool2} />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"

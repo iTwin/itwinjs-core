@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, Viewport, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 
 export class RobotWorldApp extends IModelApp {
 
@@ -38,10 +38,10 @@ export class RobotWorldApp extends IModelApp {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ViewManager.addViewport
-  /** Open a Viewport on the supplied canvas. */
-  public static async openView(canvas: HTMLCanvasElement) {
+  /** Open a Viewport on the supplied div element. */
+  public static async openView(viewDiv: HTMLDivElement) {
     const viewState = await this.loadOneView();
-    const viewPort = new Viewport(canvas, viewState);
+    const viewPort = ScreenViewport.create(viewDiv, viewState);
     this.viewManager.addViewport(viewPort);
   }
   // __PUBLISH_EXTRACT_END__

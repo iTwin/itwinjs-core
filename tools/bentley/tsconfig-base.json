@@ -25,6 +25,6 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "declarationMap": true,
-    "jsx": "React"
+    "jsx": "react"
   }
 }

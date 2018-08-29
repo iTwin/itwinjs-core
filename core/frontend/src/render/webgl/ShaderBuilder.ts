@@ -161,10 +161,10 @@ export class ShaderVariable {
  * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
  */
 export class ShaderVariables {
-  public readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
+  public readonly list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
-  public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
+  public find(name: string): ShaderVariable | undefined { return this.list.find((v: ShaderVariable) => v.name === name); }
 
   /** Add a new variable, if a variable with the same name does not already exist. */
   public addVariable(v: ShaderVariable): void {
@@ -173,7 +173,7 @@ export class ShaderVariables {
       assert(found.type === v.type);
       // assume same binding etc...
     } else {
-      this._list.push(v);
+      this.list.push(v);
     }
   }
 
@@ -200,7 +200,7 @@ export class ShaderVariables {
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";
-    for (const v of this._list) {
+    for (const v of this.list) {
       decls += v.buildDeclaration() + "\n";
     }
 
@@ -212,7 +212,7 @@ export class ShaderVariables {
    * to add the corresponding Uniform or Attribute object to the ShaderProgram.
    */
   public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
-    for (const v of this._list) {
+    for (const v of this.list) {
       // Some variables exist in both frag and vert shaders - only add them to the program once.
       if (v.hasBinding && (undefined === predefined || undefined === predefined.find(v.name))) {
         v.addBinding(prog);
@@ -220,7 +220,7 @@ export class ShaderVariables {
     }
   }
 
-  public get length(): number { return this._list.length; }
+  public get length(): number { return this.list.length; }
 
   // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
   public exceedsMaxVaryingVectors(): boolean {
@@ -231,8 +231,8 @@ export class ShaderVariables {
     //  vec2 (+ vec2)
     //  vec2 (+ float (+ float))
     //  float (+ float (+ float (+ float)))
-    const registers = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
-    for (const variable of this._list) {
+    const registers = [0, 0, 0, 0, 0, 0, 0, 0];
+    for (const variable of this.list) {
       if (VariableScope.Varying !== variable.scope)
         continue;
 
@@ -320,30 +320,30 @@ export class SourceBuilder {
  * plus a set of code snippets which can be concatenated together to form the shader source.
  */
 export class ShaderBuilder extends ShaderVariables {
-  public readonly _components = new Array<string | undefined>();
-  public readonly _functions: string[] = new Array<string>();
-  public readonly _extensions: string[] = new Array<string>();
+  public readonly components = new Array<string | undefined>();
+  public readonly functions: string[] = new Array<string>();
+  public readonly extensions: string[] = new Array<string>();
   public headerComment: string = "";
 
   protected constructor(maxComponents: number) {
     super(); // dumb but required. superclass has no explicit constructor.
-    this._components.length = maxComponents;
+    this.components.length = maxComponents;
   }
 
   protected addComponent(index: number, component: string): void {
-    assert(index < this._components.length);
+    assert(index < this.components.length);
 
     // assume if caller is replacing an existing component, they know what they're doing...
-    this._components[index] = component;
+    this.components[index] = component;
   }
   protected removeComponent(index: number) {
-    assert(index < this._components.length);
-    this._components[index] = undefined;
+    assert(index < this.components.length);
+    this.components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
-    assert(index < this._components.length);
-    return this._components[index];
+    assert(index < this.components.length);
+    return this.components[index];
   }
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
@@ -353,14 +353,14 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     if (undefined === this.findFunction(def)) {
-      this._functions.push(def);
+      this.functions.push(def);
     }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
-    const index = this._functions.indexOf(existing);
+    const index = this.functions.indexOf(existing);
     if (-1 !== index) {
-      this._functions[index] = replacement;
+      this.functions[index] = replacement;
     }
 
     assert(-1 !== index);
@@ -368,12 +368,12 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public findFunction(func: string): string | undefined {
-    return this._functions.find((f: string | undefined) => f === func);
+    return this.functions.find((f: string | undefined) => f === func);
   }
 
   public addExtension(extName: string): void {
-    if (-1 === this._extensions.indexOf(extName)) {
-      this._extensions.push(extName);
+    if (-1 === this.extensions.indexOf(extName)) {
+      this.extensions.push(extName);
     }
   }
 
@@ -396,7 +396,7 @@ export class ShaderBuilder extends ShaderVariables {
 
     // Extensions
     let needMultiDrawBuffers = false;
-    for (const ext of this._extensions) {
+    for (const ext of this.extensions) {
       if (ext === "GL_EXT_draw_buffers") {
         assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
@@ -438,10 +438,10 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     // Functions
-    for (const func of this._functions) {
+    for (const func of this.functions) {
       src.add(func);
     }
-    if (0 !== this._functions.length)
+    if (0 !== this.functions.length)
       src.newline();
 
     return src;
@@ -463,9 +463,6 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
-  // (Optional) Compute the clip distance to send to the fragment shader.
-  // void calcClipDist(vec4 rawPos)
-  CalcClipDist,
   // (Optional) Add the element id to the vertex shader.
   // void computeElementId()
   AddComputeElementId,
@@ -536,12 +533,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(GLSLVertex.discard);
-    }
-
-    const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
-    if (undefined !== calcClipDist) {
-      prelude.addFunction("void calcClipDist(vec4 rawPos)", calcClipDist);
-      main.addline("  calcClipDist(rawPosition);");
     }
 
     const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
@@ -874,26 +865,26 @@ export class ProgramBuilder {
       clone.vert.computedVarying[i] = this.vert.computedVarying[i];
     for (let i = 0; i < this.vert.initializers.length; i++)
       clone.vert.initializers[i] = this.vert.initializers[i];
-    for (let i = 0; i < this.vert._components.length; i++)
-      clone.vert._components[i] = this.vert._components[i];
-    for (let i = 0; i < this.vert._functions.length; i++)
-      clone.vert._functions[i] = this.vert._functions[i];
-    for (let i = 0; i < this.vert._extensions.length; i++)
-      clone.vert._extensions[i] = this.vert._extensions[i];
-    for (let i = 0; i < this.vert._list.length; i++)
-      clone.vert._list[i] = this.vert._list[i];
+    for (let i = 0; i < this.vert.components.length; i++)
+      clone.vert.components[i] = this.vert.components[i];
+    for (let i = 0; i < this.vert.functions.length; i++)
+      clone.vert.functions[i] = this.vert.functions[i];
+    for (let i = 0; i < this.vert.extensions.length; i++)
+      clone.vert.extensions[i] = this.vert.extensions[i];
+    for (let i = 0; i < this.vert.list.length; i++)
+      clone.vert.list[i] = this.vert.list[i];
 
     // Copy from fragment builder
     clone.frag.headerComment = this.frag.headerComment;
     clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
-    for (let i = 0; i < this.frag._components.length; i++)
-      clone.frag._components[i] = this.frag._components[i];
-    for (let i = 0; i < this.frag._functions.length; i++)
-      clone.frag._functions[i] = this.frag._functions[i];
-    for (let i = 0; i < this.frag._extensions.length; i++)
-      clone.frag._extensions[i] = this.frag._extensions[i];
-    for (let i = 0; i < this.frag._list.length; i++)
-      clone.frag._list[i] = this.frag._list[i];
+    for (let i = 0; i < this.frag.components.length; i++)
+      clone.frag.components[i] = this.frag.components[i];
+    for (let i = 0; i < this.frag.functions.length; i++)
+      clone.frag.functions[i] = this.frag.functions[i];
+    for (let i = 0; i < this.frag.extensions.length; i++)
+      clone.frag.extensions[i] = this.frag.extensions[i];
+    for (let i = 0; i < this.frag.list.length; i++)
+      clone.frag.list[i] = this.frag.list[i];
 
     return clone;
   }

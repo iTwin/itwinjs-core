@@ -9,7 +9,7 @@ import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { createRandomECInstanceKey } from "@helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Keys } from "@bentley/presentation-common";
+import { KeySet, Keys, InstanceKey } from "@bentley/presentation-common";
 import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
@@ -28,6 +28,11 @@ describe("Table withUnifiedSelection", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider);
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
+  before(() => {
+    // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
+    // tslint:disable-next-line:no-string-literal
+    if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
+  });
   beforeEach(() => {
     testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
@@ -58,18 +63,23 @@ describe("Table withUnifiedSelection", () => {
     providerMock.setup((x) => x.onRowsChanged).returns(() => new TableDataChangeEvent());
   };
 
-  const createRandomRowItem = (): RowItem => {
+  const createRandomRowItem = (): RowItem & { _key: InstanceKey } => {
+    const k = createRandomECInstanceKey();
     return {
-      key: createRandomECInstanceKey(),
+      _key: k,
+      key: JSON.stringify(k),
       cells: [{
         key: faker.random.word(),
-        record: faker.random.words(),
       }, {
         key: faker.random.word(),
-        record: faker.random.words(),
       }],
     };
   };
+
+  async function* createAsyncIterator<T>(list: T[]): AsyncIterableIterator<T> {
+    for (const e of list)
+      yield e;
+  }
 
   it("mounts", () => {
     mount(<PresentationTable
@@ -248,7 +258,7 @@ describe("Table withUnifiedSelection", () => {
       it("returns false when there's no selection handler", () => {
         const row = createRandomRowItem();
         const selectionLevel = faker.random.number();
-        selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet([row.key]));
+        selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet([row._key]));
 
         const component = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -266,7 +276,7 @@ describe("Table withUnifiedSelection", () => {
         const selectionLevel = faker.random.number();
         selectionHandlerMock.reset();
         selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
-        selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet([row.key]));
+        selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet([row._key]));
 
         const component = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -283,10 +293,11 @@ describe("Table withUnifiedSelection", () => {
 
     describe("selecting rows", () => {
 
-      it("calls props callback and aborts when it returns false", () => {
+      it("calls props callback and aborts when it returns false", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const callback = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
-        callback.setup((x) => x(rows, true)).returns(() => false).verifiable();
+        const rowsIter = createAsyncIterator(rows);
+        const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
+        callback.setup((x) => x(rowsIter, true)).returns(async () => false).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -294,17 +305,18 @@ describe("Table withUnifiedSelection", () => {
           onRowsSelected={callback.object}
         />);
 
-        table.find(Table).prop("onRowsSelected")!(rows, true);
+        await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
 
-      it("calls props callback and adds row keys to selection manager when callback returns true", () => {
+      it("calls props callback and adds row keys to selection manager when callback returns true", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const callback = moq.Mock.ofType<(nodes: RowItem[], replace: boolean) => boolean>();
-        callback.setup((x) => x(rows, false)).returns(() => true).verifiable();
+        const rowsIter = createAsyncIterator(rows);
+        const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
+        callback.setup((x) => x(rowsIter, false)).returns(async () => true).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -312,15 +324,16 @@ describe("Table withUnifiedSelection", () => {
           onRowsSelected={callback.object}
         />);
 
-        table.find(Table).prop("onRowsSelected")!(rows, false);
+        await table.find(Table).prop("onRowsSelected")!(rowsIter, false);
 
-        selectionHandlerMock.verify((x) => x.addToSelection(rows.map((r) => r.key), 1), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.addToSelection(rows.map((r) => r._key), 1), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
 
-      it("replaces keys in selection manager", () => {
+      it("replaces keys in selection manager", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
+        const rowsIter = createAsyncIterator(rows);
         const selectionLevel = faker.random.number();
 
         const table = shallow(<PresentationTable
@@ -329,36 +342,37 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />);
 
-        table.find(Table).prop("onRowsSelected")!(rows, true);
+        await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        selectionHandlerMock.verify((x) => x.replaceSelection(rows.map((r) => r.key), selectionLevel), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.replaceSelection(rows.map((r) => r._key), selectionLevel), moq.Times.once());
       });
 
-      it("does nothing if there's no selection handler", () => {
+      it("does nothing if there's no selection handler", async () => {
         const rows = [createRandomRowItem()];
+        const rowsIter = createAsyncIterator(rows);
         const selectionLevel = faker.random.number();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
           selectionLevel={selectionLevel}
         />, { disableLifecycleMethods: true });
 
-        table.find(Table).prop("onRowsSelected")!(rows, true);
+        await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        selectionHandlerMock.verify((x) => x.replaceSelection(rows.map((r) => r.key), selectionLevel), moq.Times.never());
+        selectionHandlerMock.verify((x) => x.replaceSelection(rows.map((r) => r._key), selectionLevel), moq.Times.never());
       });
 
     });
 
     describe("deselecting rows", () => {
 
-      it("calls props callback and removes row keys from selection manager when callback returns true", () => {
+      it("calls props callback and removes row keys from selection manager when callback returns true", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const callback = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
-        callback.setup((x) => x(rows)).returns(() => true).verifiable();
+        const rowsIter = createAsyncIterator(rows);
+        const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
+        callback.setup((x) => x(rowsIter)).returns(async () => true).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -366,16 +380,17 @@ describe("Table withUnifiedSelection", () => {
           onRowsDeselected={callback.object}
         />);
 
-        table.find(Table).prop("onRowsDeselected")!(rows);
+        await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
-        selectionHandlerMock.verify((x) => x.removeFromSelection(rows.map((r) => r.key), 1), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.removeFromSelection(rows.map((r) => r._key), 1), moq.Times.once());
         callback.verifyAll();
       });
 
-      it("calls props callback and aborts when it returns false", () => {
+      it("calls props callback and aborts when it returns false", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
-        const callback = moq.Mock.ofType<(nodes: RowItem[]) => boolean>();
-        callback.setup((x) => x(rows)).returns(() => false).verifiable();
+        const rowsIter = createAsyncIterator(rows);
+        const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
+        callback.setup((x) => x(rowsIter)).returns(async () => false).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -383,21 +398,21 @@ describe("Table withUnifiedSelection", () => {
           onRowsDeselected={callback.object}
         />);
 
-        table.find(Table).prop("onRowsDeselected")!(rows);
+        await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
 
-      it("does nothing when there's no selection handler", () => {
+      it("does nothing when there's no selection handler", async () => {
         const rows = [createRandomRowItem()];
+        const rowsIter = createAsyncIterator(rows);
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
         />, { disableLifecycleMethods: true });
 
-        table.find(Table).prop("onRowsDeselected")!(rows);
+        await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });

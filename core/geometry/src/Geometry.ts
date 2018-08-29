@@ -6,8 +6,9 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
-import { Point3d, Vector3d, Point2d, Vector2d, XY, XYZ } from "./PointVector";
+import { Point3d, Vector3d, Point2d, Vector2d, XAndY, XY, XYZ } from "./PointVector";
 import { GrowableFloat64Array } from "./GrowableArray";
+import { Point4d } from "./numerics/Geometry4d";
 
 /** Enumeration of the 6 possible orderings of XYZ axis order */
 export const enum AxisOrder {
@@ -31,7 +32,7 @@ export const enum AxisIndex {
   Z = 2,
 }
 
-/* Standard views.   Used in `RotMatrix.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+/* Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
 */
 export const enum StandardViewIndex {
   Top = 1,
@@ -176,7 +177,8 @@ export class Geometry {
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isAlmostEqualNumber(a: number, b: number) {
-    return Math.abs(a - b) < Geometry.smallAngleRadians * Math.max(a, b);
+    const sumAbs = Math.abs(a) + Math.abs(b);
+    return Math.abs(a - b) < Geometry.smallAngleRadians * sumAbs;
   }
   public static isDistanceWithinTol(distance: number, tol: number) {
     return Math.abs(distance) <= Math.abs(tol);
@@ -283,6 +285,31 @@ export class Geometry {
     return ux * (vy * wz - vz * wy)
       + uy * (vz * wx - vx * wz)
       + uz * (vx * wy - vy * wx);
+  }
+  /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
+   *
+   */
+  public static tripleProductXYW(
+    columnA: XAndY, weightA: number,
+    columnB: XAndY, weightB: number,
+    columnC: XAndY, weightC: number) {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      weightA, weightB, weightC);
+  }
+
+  /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
+   *
+   */
+  public static tripleProductPoint4dXYW(
+    columnA: Point4d,
+    columnB: Point4d,
+    columnC: Point4d) {
+    return Geometry.tripleProduct(
+      columnA.x, columnB.x, columnC.x,
+      columnA.y, columnB.y, columnC.y,
+      columnA.w, columnB.w, columnC.w);
   }
   /**  2D cross product of vectors layed out as scalars. */
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
@@ -583,7 +610,7 @@ export class Angle implements BeJSONFunctions {
   public tan(): number { return Math.tan(this._radians); }
 
   public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
 
   /** Adjust a radians value so it is positive in 0..360 */
   public static adjustDegrees0To360(degrees: number): number {
@@ -640,8 +667,8 @@ export class Angle implements BeJSONFunctions {
   }
 
   public static zero() { return new Angle(0); }
-  public isExactZero() { return this.radians === 0; }
-  public isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
+  public get isExactZero() { return this.radians === 0; }
+  public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
 
   /** Create an angle object with degrees adjusted into 0..360. */
   public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
@@ -727,6 +754,19 @@ export class Angle implements BeJSONFunctions {
       }
       return { c: cosA, s: sinA, radians: Math.atan2(sinA, cosA) };
     }
+  }
+  /** If value is close to -1, -0.5, 0, 0.5, 1, adjust it to the exact value. */
+  public static cleanupTrigValue(value: number, tolerance: number = 1.0e-15): number {
+    const absValue = Math.abs(value);
+    if (absValue <= tolerance)
+      return 0;
+    let a = Math.abs(absValue - 0.5);
+    if (a <= tolerance)
+      return value < 0.0 ? -0.5 : 0.5;
+    a = Math.abs(absValue - 1.0);
+    if (a <= tolerance)
+      return value < 0.0 ? -1.0 : 1.0;
+    return value;
   }
   /**
      * Return the half angle of angle between vectors U, V with given vector dots.
@@ -858,11 +898,11 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
   }
   /** Ask if the sweep is counterclockwise, i.e. positive sweep */
-  public isCCW(): boolean { return this._radians1 >= this._radians0; }
+  public get isCCW(): boolean { return this._radians1 >= this._radians0; }
   /** Ask if the sweep is a full circle. */
-  public isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
+  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this.sweepRadians); }
   /** Ask if the sweep is a full sweep from south pole to north pole. */
-  public isFullLatitudeSweep(): boolean {
+  public get isFullLatitudeSweep(): boolean {
     const a = Math.PI * 0.5;
     return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, -a)
       && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1, a);

@@ -4,7 +4,7 @@
 
 // import { Point3d, Vector3d } from "../PointVector";
 // import { Range1d } from "../Range";
-// import { RotMatrix, Transform } from "../Transform";
+// import { Matrix3d, Transform } from "../Transform";
 
 import { TransitionConditionalProperties } from "../curve/TransitionSpiral";
 import { Angle } from "../Geometry";

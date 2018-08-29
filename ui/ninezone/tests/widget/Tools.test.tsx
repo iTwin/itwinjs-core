@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tools from "@src/widget/Tools";
+import Tools from "../../src/widget/Tools";
 
 describe("<Tools />", () => {
   it("should render", () => {

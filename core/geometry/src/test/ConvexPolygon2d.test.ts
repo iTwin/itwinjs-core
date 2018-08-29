@@ -30,7 +30,7 @@ function checkHullRaysFromCentroid(hull: ConvexPolygon2d, ck: Checker) {
 
 // For each hullPoints[i], form chord to hullPoints[i+step].
 // Compute points fractionally on the chord.
-// Evaluate 
+// Evaluate
 function checkHullChords(hull: ConvexPolygon2d, step: number, ck: Checker) {
   const hullPoints = hull.points;
   const fractions: number[] = [-0.2, -0.01, 0.43, 0.96, 1.08];
@@ -97,7 +97,7 @@ describe("ConvexPolygon2d", () => {
       let pointA1: Point2d;
       let pointB1: Point2d;
       let range = hull.clipRay(rayAB);
-      ck.testFalse(range.isNull(), "Clip interior segment");
+      ck.testFalse(range.isNull, "Clip interior segment");
 
       pointA1 = rayAB.fractionToPoint(range.low);
       pointB1 = rayAB.fractionToPoint(range.high);
@@ -120,12 +120,12 @@ describe("ConvexPolygon2d", () => {
       const rayC0C1 = Ray2d.createOriginAndTarget(pointC0, pointC1);
       ck.testTrue(rayC0C1.normalizeDirectionInPlace());
       range = hull.clipRay(rayC0C1);
-      ck.testFalse(range.isNull(), "Clip exterior segment");
+      ck.testFalse(range.isNull, "Clip exterior segment");
 
       const rayC1M = Ray2d.createOriginAndTarget(pointC1, pointM);
       ck.testTrue(rayC1M.normalizeDirectionInPlace());
       range = hull.clipRay(rayC1M);
-      ck.testFalse(range.isNull(), "Clip mixed segment");
+      ck.testFalse(range.isNull, "Clip mixed segment");
       ck.testCoordinate(range.length(), pointA.distance(pointB), "Clipped segment length");
 
     }
@@ -139,7 +139,7 @@ describe("ConvexPolygon2d", () => {
       const ray = Ray2d.createOriginAndTarget(pointA1, pointB1);
 
       const range = hull.clipRay(ray);
-      ck.testTrue(range.isNull(), "Clip exterior segment");
+      ck.testTrue(range.isNull, "Clip exterior segment");
     }
 
     // Construct a grid of parallel segments ...
@@ -152,7 +152,7 @@ describe("ConvexPolygon2d", () => {
       const scanRay = scanBase.parallelRay(a);
       // a is strictly within -- expect an interior segment ..
       const range = hull.clipRay(scanRay);
-      ck.testFalse(range.isNull(), "Clip scan segment");
+      ck.testFalse(range.isNull, "Clip scan segment");
     }
 
     ck.checkpoint("ConvexHullQueries");

@@ -26,7 +26,7 @@ describe("Tools", () => {
     const ids = [new Id64("0x1"), new Id64("0x2"), new Id64("0x3"), new Id64("0x4")];
     const agenda = new ElementAgenda(imodel);
     assert.equal(agenda.iModel, imodel);
-    assert.equal(agenda.getCount(), 0);
+    assert.equal(agenda.count, 0);
     agenda.add(ids[0]);
     assert.equal(agenda.length, 1, "add with Id64");
     agenda.add([ids[0].value, ids[1].value]);
@@ -54,7 +54,7 @@ describe("Tools", () => {
     assert.equal(imodel.hilited.size, 3, "invert unhilites");
     assert.isTrue(agenda.find(ids[0]), "agenda find");
     agenda.clear();
-    assert.isTrue(agenda.isEmpty(), "clear works");
+    assert.isTrue(agenda.isEmpty, "clear works");
     assert.equal(imodel.hilited.size, 0, "clear unhilites");
   });
 
@@ -72,7 +72,7 @@ describe("Tools", () => {
     selSet.add(ids[0]);
     assert.equal(selSet.size, 1, "add with Id64");
     assert.isTrue(selSet.isSelected(ids[0]), "is selected");
-    assert.isTrue(selSet.isActive(), "is active");
+    assert.isTrue(selSet.isActive, "is active");
     assert.isFalse(selSet.isSelected(ids[1]), "not selected");
     assert.equal(numCalls, 1, "listener called");
     assert.equal(lastType, SelectEventType.Add, "add event type1");
@@ -103,7 +103,7 @@ describe("Tools", () => {
     selSet.emptyAll();
     assert.equal(numCalls, 7, "emptyAll");
     assert.equal(lastType, SelectEventType.Clear, "clear event type");
-    assert.isFalse(selSet.isActive(), "not active after emptyAll");
+    assert.isFalse(selSet.isActive, "not active after emptyAll");
     selSet.emptyAll();
     assert.equal(numCalls, 7, "already empty, should not invoke callback");
     removeMe(); // remove listener

@@ -11,7 +11,7 @@ import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
 
 export class UlasClientUrlMock {
-  private static readonly urlDescriptor: UrlDescriptor = {
+  private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
     PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
@@ -19,11 +19,11 @@ export class UlasClientUrlMock {
   };
 
   public static getUrl(env: DeploymentEnv): string {
-    return this.urlDescriptor[env];
+    return this._urlDescriptor[env];
   }
 
   public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(UlasClient.searchKey, env, this.urlDescriptor[env]);
+    UrlDiscoveryMock.mockGetUrl(UlasClient.searchKey, env, this._urlDescriptor[env]);
   }
 }
 
@@ -74,6 +74,24 @@ describe("UlasClient", () => {
     chai.assert.isAtLeast(resp.time, 0);
   });
 
+  it("Post usage log without host hash", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    const entry = new UsageLogEntry(43);
+    entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
+    // set host name and user name, but do not provide a hash
+    entry.hostName = "mymachine";
+    entry.hostUserName = "johnny";
+    entry.logPostingSource = LogPostingSource.RealTime;
+    entry.usageType = UsageType.Beta;
+    const resp: LogPostingResponse = await ulasClient.logUsage(accessToken, entry);
+    chai.assert(resp);
+    chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(resp.message, "Accepted");
+    chai.assert.isAtLeast(resp.time, 0);
+  });
+
   it("Post feature log", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
@@ -81,6 +99,26 @@ describe("UlasClient", () => {
     const myFeatureId = new Guid(true);
     const entry = new FeatureLogEntry(myFeatureId, 43);
     entry.productVersion = { major: 3, minor: 4, sub1: 99 };
+    entry.logPostingSource = LogPostingSource.RealTime;
+    entry.usageType = UsageType.Beta;
+    entry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "imodelsize", value: 596622 });
+    const resp: LogPostingResponse = await ulasClient.logFeature(accessToken, entry);
+    chai.assert(resp);
+    chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(resp.message, "Accepted");
+    chai.assert.isAtLeast(resp.time, 0);
+  });
+
+  it("Post feature log without host hash", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    const myFeatureId = new Guid(true);
+    const entry = new FeatureLogEntry(myFeatureId, 43);
+    entry.productVersion = { major: 3, minor: 4, sub1: 99 };
+    // set host name and user name, but do not provide a hash
+    entry.hostName = "mymachine";
+    entry.hostUserName = "johnny";
     entry.logPostingSource = LogPostingSource.RealTime;
     entry.usageType = UsageType.Beta;
     entry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "imodelsize", value: 596622 });

@@ -4,13 +4,13 @@
 /** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, VertexShaderComponent, FragmentShaderComponent } from "../ShaderBuilder";
+import { ProgramBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
-import { addViewMatrix } from "./Common";
+import { addViewMatrix, addEyeSpace } from "./Common";
 import { ClippingType } from "../../System";
 
 const getClipPlaneFloat = `
@@ -76,8 +76,6 @@ const calcClipPlaneDist = `
   }
 `;
 
-const calcClipCamPos = `v_clipCamPos = u_mv * rawPos;`;
-
 const applyClipPlanes = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
@@ -96,7 +94,7 @@ const applyClipPlanes = `
 
           clippedByCurrentPlaneSet = false;
           }
-      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_clipCamPos, plane, u_viewMatrix) < 0.0)
+      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane, u_viewMatrix) < 0.0)
           clippedByCurrentPlaneSet = true;
       }
 
@@ -126,7 +124,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   const frag = prog.frag;
   const vert = prog.vert;
 
-  prog.addVarying("v_clipCamPos", VariableType.Vec4);
+  addEyeSpace(prog);
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
       const numClips = params.target.hasClipVolume ? params.target.clips.count : 0;
@@ -136,7 +134,6 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   });
 
   addModelViewMatrix(vert);
-  vert.set(VertexShaderComponent.CalcClipDist, calcClipCamPos);
   addViewMatrix(frag);
 
   const useFloatIfAvailable = false; // ###TODO...

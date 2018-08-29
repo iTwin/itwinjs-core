@@ -3,6 +3,7 @@
 exports[`<Indicator /> renders correctly 1`] = `
 <div
   className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
 >
   <div
     className="nz-indicator"
@@ -12,7 +13,6 @@ exports[`<Indicator /> renders correctly 1`] = `
     />
     <div
       className="nz-icon"
-      onClick={[Function]}
     />
   </div>
   <div

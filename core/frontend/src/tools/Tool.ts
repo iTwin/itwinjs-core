@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
-import { Viewport } from "../Viewport";
+import { Viewport, ScreenViewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -83,7 +83,7 @@ export class BeButtonEvent {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
-  public viewport?: Viewport;
+  public viewport?: ScreenViewport;
   public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
   public keyModifiers = BeModifierKeys.None;
   public isDown = false;
@@ -101,7 +101,7 @@ export class BeButtonEvent {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
   public invalidate() { this.viewport = undefined; }
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: ScreenViewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
@@ -160,11 +160,11 @@ export class BeTouchEvent extends BeButtonEvent {
     result.setFrom(this);
     return result;
   }
-  public static getTouchPosition(touch: Touch, vp: Viewport): Point2d {
+  public static getTouchPosition(touch: Touch, vp: ScreenViewport): Point2d {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
   }
-  public static getTouchListCentroid(list: TouchList, vp: Viewport): Point2d | undefined {
+  public static getTouchListCentroid(list: TouchList, vp: ScreenViewport): Point2d | undefined {
     switch (list.length) {
       case 0: {
         return undefined;
@@ -227,10 +227,10 @@ export class Tool {
   private static _keyin?: string;
   private static _flyover?: string;
   private static _description?: string;
-  private static get localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
-  private static get keyinKey() { return this.localizeBase + ".keyin"; }
-  private static get flyoverKey() { return this.localizeBase + ".flyover"; }
-  private static get descriptionKey() { return this.localizeBase + ".description"; }
+  private static get _localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
+  private static get _keyinKey() { return this._localizeBase + ".keyin"; }
+  private static get _flyoverKey() { return this._localizeBase + ".flyover"; }
+  private static get _descriptionKey() { return this._localizeBase + ".description"; }
 
   /**
    * Register this Tool class with the ToolRegistry.
@@ -242,21 +242,21 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this.keyinKey)); }
+  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n.translate(this._keyinKey)); }
 
   /**
    * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the keyin property is returned.
    */
-  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this.flyoverKey, this.keyinKey])); }
+  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n.translate([this._flyoverKey, this._keyinKey])); }
 
   /**
    * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the flyover property is returned.
    */
-  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this.descriptionKey, this.flyoverKey, this.keyinKey])); }
+  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n.translate([this._descriptionKey, this._flyoverKey, this._keyinKey])); }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -444,7 +444,7 @@ export abstract class InteractiveTool extends Tool {
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
   /** Call to find out if dynamics are currently active. */
-  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
+  public get isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
 
   /** Call to initialize dynamics mode. While dynamics are active onDynamicFrame will be called. Dynamics are typically only used by a PrimitiveTool that creates or modifies geometric elements. */
   public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }

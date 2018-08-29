@@ -18,15 +18,15 @@ import * as path from "path";
 
 /** Class for simple test timing */
 export class Timer {
-  private label: string;
+  private _label: string;
   constructor(label: string) {
     // tslint:disable-next-line:no-console
-    console.time(this.label = "\t" + label);
+    console.time(this._label = "\t" + label);
   }
 
   public end() {
     // tslint:disable-next-line:no-console
-    console.timeEnd(this.label);
+    console.timeEnd(this._label);
   }
 }
 

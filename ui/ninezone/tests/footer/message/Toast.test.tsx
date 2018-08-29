@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Toast, { Stage } from "@src/footer/message/Toast";
+import Toast, { Stage } from "../../../src/footer/message/Toast";
 
 describe("<Toast />", () => {
   it("should render", () => {

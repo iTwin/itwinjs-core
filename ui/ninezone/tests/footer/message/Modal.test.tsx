@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Modal from "@src/footer/message/Modal";
+import Modal from "../../../src/footer/message/Modal";
 
 describe("<Modal />", () => {
   it("should render", () => {

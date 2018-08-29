@@ -33,6 +33,20 @@
     "all": "All",
     "problems": "Problems"
   },
+  "activityCenter": {
+    "percentComplete": "% complete"
+  },
+  "snapModeField": {
+    "snapMode": "Snap Mode",
+    "keypoint": "Keypoint",
+    "intersection": "Intersection",
+    "center": "Center",
+    "nearest": "Nearest",
+    "origin": "Origin",
+    "midpoint": "Midpoint",
+    "bisector": "Bisector",
+    "multi": "Multiple"
+  },
   "tests": {
     "singleContent": "Single Content",
     "label": "Test Label"

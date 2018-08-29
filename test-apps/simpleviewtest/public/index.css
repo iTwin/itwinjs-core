@@ -17,7 +17,7 @@
   cursor:pointer;
 }
 
-.imodelview {
+.imodel-viewport {
   position: relative;
   width: 98%;
   height: 90%;
@@ -27,12 +27,7 @@
   margin-left: 5px;
   margin-bottom: 5px;
   background-color: gray;
-}
-
-#tooltip-location {
-  position: absolute;
-  width: 20px;
-  height: 20px;
+  z-index: 10;
 }
 
 .topdiv {
@@ -259,7 +254,7 @@
   position:absolute;
   background-color: #f0f0f0;
   display:none;
-  width:200px;
+  width:256px;
   padding-left: 3px;
   padding-top: 3px;
   z-index: 999;
@@ -379,6 +374,39 @@
     margin-right: 0;
 }
 
+.notification-messagebox {
+  display: block;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  width: fit-content;
+  height: fit-content;
+  border-color: black;
+  border-style: solid;
+  border-width: 2px;
+  margin: auto;
+  background-color: lightgray;
+}
+
+.notification-messageboxtext {
+  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: left;
+  padding: 0.6em 0.5em;
+}
+
+.notification-messageboxbutton {
+  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 10px;
+  margin-left: 30px;
+  width: 100px;
+}
 
 #standardRotationMenu .simpleicon {
   float:left;

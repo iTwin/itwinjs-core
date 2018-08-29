@@ -1,0 +1,114 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+ @import "./Common";
+
+ $separator-background: #F0F0F0;
+
+ .user-profile {
+  outline: none;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: auto;
+  width: auto;
+}
+
+.user-profile .circle {
+  font-size: 1em;
+  width: 1.5em;
+  height: 1.5em;
+  padding: .5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  background-color: $bwc-dataviz-red;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  border: 1px solid rgba (0,0,0,0.1);
+  transition: .3s ease;
+}
+
+.user-profile .circle-button {
+  cursor: pointer;
+
+  &:hover {
+    //box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2), 0px 6px 20px 0px rgba(0,0,0,0.19);
+    box-shadow: 0px 8px 2px 0 rgba(0, 0, 0, 0.075);
+    background: lighten($bwc-dataviz-red,2.5);
+    transform: translateY(-2px);
+    transition: all 0.25s 0s ease-out;
+  }
+}
+
+.user-profile .dropdown-menu {
+  display: block;
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  z-index: 10;
+  float: left;
+  right: 0;
+  left: auto;
+  min-width: 160px;
+  padding: .5em 0;
+  font-size: $bwc-font-size;
+  background-color: $bwc-white;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li:first-child {
+    display: flex;
+    align-items: center;
+    padding: 1em 1.5em;
+  }
+
+  .profile-details {
+    margin-left: 1em;
+  }
+
+  .profile-name {
+    font-size: 120%;
+  }
+
+  .profile-email {
+    margin-top: .75em;
+    color: $bwc-gray;
+    font-size: 90%;
+  }
+
+  .profile-organization {
+    margin-top: .5em;
+    color: $bwc-gray;
+    font-size: 90%;
+  }
+
+  .profile-menuitem {
+    display: block;
+    padding: .5em 1.25em;
+    clear: both;
+    color: $bwc-text-color;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover{
+      background: #eee;
+    }
+  }
+
+  .divider {
+    height: 1px;
+    margin: .75em 0;
+    overflow: hidden;
+    background-color: $separator-background;
+  }
+}
+

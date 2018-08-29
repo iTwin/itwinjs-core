@@ -2,6 +2,81 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.122.0",
+      "tag": "@bentley/ui-components_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added advanced selection modes to tree and table."
+          },
+          {
+            "comment": "Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed."
+          },
+          {
+            "comment": "added ScreenViewport.create"
+          },
+          {
+            "comment": "Tree and DataTree has a new parameter \"highlightString\". When set, it higlights a part of TreeNode label"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.121.0",
+      "tag": "@bentley/ui-components_v0.121.0",
+      "date": "Fri, 24 Aug 2018 12:49:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Constructor for viewport now takes an HTML div as the argument, creates the canvas and adds it to the div."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.120.0",
+      "tag": "@bentley/ui-components_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.119.0",
+      "tag": "@bentley/ui-components_v0.119.0",
+      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed."
+          },
+          {
+            "comment": "Bugfix for: uncaught Promise rejection when spamming viewport selection"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.118.0",
+      "tag": "@bentley/ui-components_v0.118.0",
+      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added DragDrop API"
+          },
+          {
+            "comment": "Fix PropertyGrid not updating after data provider is changed"
+          },
+          {
+            "comment": "TSLint New Rule Enforcements"
+          },
+          {
+            "comment": "Updated to use TypeScript 3.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.117.0",
       "tag": "@bentley/ui-components_v0.117.0",
       "date": "Wed, 15 Aug 2018 17:08:54 GMT",

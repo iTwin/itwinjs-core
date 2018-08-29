@@ -88,7 +88,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 
     return (
       <div style={divStyle}
-        onMouseDown={this.handleMouseDown}
+        onMouseDown={this._handleMouseDown}
       >
         {this.state.content}
         <div className={overlayClassName} />
@@ -96,21 +96,21 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     );
   }
 
-  private handleMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _handleMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
     // event.preventDefault();
 
     ContentViewManager.setActiveContent(this.state.content);
   }
 
   public componentDidMount() {
-    ContentViewManager.ActiveContentChangedEvent.addListener(this.handleActiveContentChanged);
+    ContentViewManager.ActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
   }
 
   public componentWillUnmount() {
-    ContentViewManager.ActiveContentChangedEvent.removeListener(this.handleActiveContentChanged);
+    ContentViewManager.ActiveContentChangedEvent.removeListener(this._handleActiveContentChanged);
   }
 
-  private handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
+  private _handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
     const isActive = this.state.content === args.activeContent;
     if (this.state.isActive !== isActive) {
       this.setState((_prevState) => ({ isActive }));
@@ -157,7 +157,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
     }
   }
 
-  private onSplitterChange = (size: number): void => {
+  private _onSplitterChange = (size: number): void => {
     if (this._containerDiv && size > 0) {
       if (this.props.orientation === Orientation.Horizontal) {
         const width = this._containerDiv.getBoundingClientRect().width;
@@ -176,7 +176,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
     const defaultSize = (this._currentPercentage * 100).toString() + "%";
     return (
       <div ref={(e) => { this._containerDiv = e; }} >
-        <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this.onSplitterChange}>
+        <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange}>
           {this.props.contentA}
           {this.props.contentB}
         </SplitPane>
@@ -215,7 +215,7 @@ export interface LayoutSplit {
   getSize(): number;
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
   getMaxUsedIndex(currentMax: number): number;
-  isLocked(): boolean;
+  isLocked: boolean;
 }
 
 /** HorizontalSplit class.
@@ -223,8 +223,8 @@ export interface LayoutSplit {
 class HorizontalSplit implements LayoutSplit {
   private _topIndex: number = -1;
   private _bottomIndex: number = -1;
-  private _topSplit: LayoutSplit | undefined = undefined;
-  private _bottomSplit: LayoutSplit | undefined = undefined;
+  private _topSplit?: LayoutSplit;
+  private _bottomSplit?: LayoutSplit;
   private _defaultPercentage: number;
   private _stateId: string = "";
   private _isLocked: boolean = false;
@@ -251,7 +251,7 @@ class HorizontalSplit implements LayoutSplit {
     }
   }
 
-  public isLocked(): boolean {
+  public get isLocked(): boolean {
     return this._isLocked;
   }
 
@@ -288,7 +288,7 @@ class HorizontalSplit implements LayoutSplit {
   }
 
   public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {
-    if (this.isLocked())
+    if (this.isLocked)
       resizable = false;
 
     const topContent = (!this._topSplit) ? <ContentWrapper content={content[this._topIndex]} /> : this._topSplit.createContentContainer(content, resizable);
@@ -311,8 +311,8 @@ class HorizontalSplit implements LayoutSplit {
 class VerticalSplit implements LayoutSplit {
   private _leftIndex: number = -1;
   private _rightIndex: number = -1;
-  private _leftSplit: LayoutSplit | undefined = undefined;
-  private _rightSplit: LayoutSplit | undefined = undefined;
+  private _leftSplit?: LayoutSplit;
+  private _rightSplit?: LayoutSplit;
   private _defaultPercentage: number;
   private _stateId: string = "";
   private _isLocked: boolean = false;
@@ -339,7 +339,7 @@ class VerticalSplit implements LayoutSplit {
     }
   }
 
-  public isLocked(): boolean {
+  public get isLocked(): boolean {
     return this._isLocked;
   }
 
@@ -376,7 +376,7 @@ class VerticalSplit implements LayoutSplit {
   }
 
   public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {
-    if (this.isLocked())
+    if (this.isLocked)
       resizable = false;
 
     const leftContent = (!this._leftSplit) ? <ContentWrapper content={content[this._leftIndex]} /> : this._leftSplit.createContentContainer(content, resizable);
@@ -403,7 +403,7 @@ export class ContentLayoutDef {
   public featureId: string = "";
   private _layoutDef: ContentLayoutProps;
 
-  private _rootSplit: LayoutSplit | undefined;
+  private _rootSplit?: LayoutSplit;
 
   constructor(layoutDef: ContentLayoutProps) {
     this._layoutDef = layoutDef;
@@ -450,7 +450,7 @@ export interface ContentLayoutReactProps {
 /** ContentLayout React component.
  */
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
-  private _contentContainer: React.ReactNode | undefined;
+  private _contentContainer?: React.ReactNode;
 
   /** hidden */
   public readonly state: Readonly<ContentLayoutState>;
@@ -479,14 +479,14 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
   }
 
   public componentDidMount() {
-    FrontstageManager.ContentLayoutActivatedEvent.addListener(this.handleContentLayoutActivated);
+    FrontstageManager.ContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ContentLayoutActivatedEvent.removeListener(this.handleContentLayoutActivated);
+    FrontstageManager.ContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
   }
 
-  private handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
+  private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
     const contentGroup: ContentGroup = args.contentGroup;
     if (contentGroup) {
       const content: React.ReactNode[] = contentGroup.getContentSet();
@@ -511,8 +511,8 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
       // key={this.state.contentLayout}
       return (
         <div id="ContentLayoutDiv" className={className}
-          onMouseDown={this.onMouseDown}
-          onMouseUp={this.onMouseUp}
+          onMouseDown={this._onMouseDown}
+          onMouseUp={this._onMouseUp}
         >
           {this._contentContainer}
         </div>
@@ -522,11 +522,11 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
     return null;
   }
 
-  private onMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _onMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
     ContentViewManager.setMouseDown(true);
   }
 
-  private onMouseUp = (_event: React.MouseEvent<HTMLDivElement>) => {
+  private _onMouseUp = (_event: React.MouseEvent<HTMLDivElement>) => {
     ContentViewManager.setMouseDown(false);
   }
 }
@@ -535,7 +535,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
  */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
-  private static _activeLayout: ContentLayoutDef | undefined;
+  private static _activeLayout?: ContentLayoutDef;
 
   public static loadContentLayouts(layoutPropsList: ContentLayoutProps[]) {
     layoutPropsList.map((layoutProps, _index) => {

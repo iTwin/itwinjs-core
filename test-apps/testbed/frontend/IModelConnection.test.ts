@@ -43,7 +43,7 @@ describe("IModelConnection (#integration)", () => {
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
@@ -54,8 +54,8 @@ describe("IModelConnection (#integration)", () => {
     const modelProps = await iModel.models.getProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
     assert.equal(modelProps.length, 1);
-    assert.equal(modelProps[0].id, iModel.models.repositoryModelId.value);
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(modelProps[0].id)));
+    assert.equal(modelProps[0].id, iModel.models.repositoryModelId);
+    assert.equal(iModel.models.repositoryModelId, modelProps[0].id);
 
     const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
     assert.isAtLeast(rows.length, 1);
@@ -100,7 +100,7 @@ describe("IModelConnection (#integration)", () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
@@ -111,7 +111,7 @@ describe("IModelConnection (#integration)", () => {
     elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
@@ -131,7 +131,7 @@ describe("IModelConnection (#integration)", () => {
     expect(tree.rootTile).not.to.be.undefined;
 
     const tf = Transform.fromJSON(tree.location);
-    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.matrix.isIdentity).to.be.true;
     expect(tf.origin.isAlmostEqualXYZ(0.0025, 0.0025, 10.001)).to.be.true;
 
     const rootTile = tree.rootTile;

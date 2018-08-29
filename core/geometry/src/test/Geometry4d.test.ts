@@ -5,7 +5,7 @@ import { Point4d, Matrix4d, Map4d, Plane4dByOriginAndVectors } from "../numerics
 import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -15,6 +15,7 @@ import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { SmallSystem } from "../numerics/Polynomials";
 /* tslint:disable:no-console variable-name */
 
 /**
@@ -54,8 +55,8 @@ class Geometry4dTests {
     const sum3 = point0.plus3Scaled(point1, 3.3, point2, -0.3, point3, 1.2);
     const sum12 = point0.plus2Scaled(point1, 3.3, point2, -0.3).plusScaled(point3, 1.2);
     const result = sum3.minus(sum12);
-    ck.testBoolean(false, sum3.isAlmostZero(), "4d sums");
-    ck.testBoolean(true, result.isAlmostZero(), "4d sums");
+    ck.testBoolean(false, sum3.isAlmostZero, "4d sums");
+    ck.testBoolean(true, result.isAlmostZero, "4d sums");
   }
 
   public testNormalization(ck: bsiChecker.Checker) {
@@ -197,11 +198,11 @@ describe("Geometry4d.HelloWorld", () => {
     const pointC = Point4d.create(11, 7, -4, 9);
     const a = 3.1;
     const b = 2.9;
-    const pointAaBb = Point4d.add2Scaled(pointA, a, pointB, b);
-    const pointAaBbC0 = Point4d.add3Scaled(pointA, a, pointB, b, pointC, 0);
-    const pointC0ABb = Point4d.add3Scaled(pointC, 0, pointA, a, pointB, b);
-    ck.testPoint4d(pointAaBb, pointAaBbC0, "add2Scaled");
-    ck.testPoint4d(pointAaBb, pointC0ABb, "add2Scaled");
+    const pointAaBb = Point4d.createAdd2Scaled(pointA, a, pointB, b);
+    const pointAaBbC0 = Point4d.createAdd3Scaled(pointA, a, pointB, b, pointC, 0);
+    const pointC0ABb = Point4d.createAdd3Scaled(pointC, 0, pointA, a, pointB, b);
+    ck.testPoint4d(pointAaBb, pointAaBbC0, "createAdd2Scaled");
+    ck.testPoint4d(pointAaBb, pointC0ABb, "createAdd2Scaled");
     ck.checkpoint("Set");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -343,8 +344,8 @@ describe("Matrix4d", () => {
     for (let i = 0; i < point3dArray.length; i++) {
       const p = point3dArray[i];
       const pointQ =
-        Point4d.add2Scaled(CX, p.x, CY, p.y).plus(
-          Point4d.add2Scaled(CZ, p.z, CW, weight));
+        Point4d.createAdd2Scaled(CX, p.x, CY, p.y).plus(
+          Point4d.createAdd2Scaled(CZ, p.z, CW, weight));
       ck.testPoint4d(pointQ, point4dArray[i]);
     }
 
@@ -609,7 +610,7 @@ describe("Map4d", () => {
 
     const rotationTransform = Transform.createFixedPointAndMatrix(
       Point3d.create(4, 2, 8),
-      RotMatrix.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
     const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse()!)!;
     verifySandwich(ck, rotationMap, mapI);
     verifySandwich(ck, mapI, rotationMap);
@@ -679,6 +680,57 @@ describe("Map4d", () => {
     pointB.w += 4;
     ck.testExactNumber(pointA.w + 4, pointB.w);
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ProjectiveLineIntersection", () => {
+    const ck = new bsiChecker.Checker();
+    const hA0 = Point4d.create(0, 0, 0, 1);
+    const hA1 = Point4d.create(3, 1, 0, 1);
+    const hB0 = Point4d.create(1, 0, 0, 1);
+    const hB1 = Point4d.create(1, 1, 0, 1);
+    for (const wA1 of [1, 1.1, 1.3]) {
+      for (const wB0 of [1, 0.4, 2]) {
+        hA1.w = wA1;
+        hB0.w = wB0;
+        const fractions = SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(hA0, hA1, hB0, hB1);
+        if (ck.testPointer(fractions, "expect solution of intersections") && fractions !== undefined) {
+          const hAX = hA0.interpolate(fractions.x, hA1);
+          const hBX = hB0.interpolate(fractions.y, hB1);
+          ck.testCoordinate(hAX.realDistanceXY(hBX)!, 0);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ProjectiveLineClosestPointXY", () => {
+    const ck = new bsiChecker.Checker();
+    let badFraction: number | undefined;
+    for (const wA0 of [1, 1.1, 1.3]) {
+      for (const wA1 of [1, 0.4, 1.5]) {  // remark wA1=2 creates anomalies with spacepoint 2,4,2,anyW?
+        for (const wSpace of [1, 0.9]) {
+          const hA0 = Point4d.create(0, 0, 0, wA0);
+          const hA1 = Point4d.create(3, 1, 0, wA1);
+          const spacePoint = Point4d.create(2, 4, 2, wSpace);
+          const fraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
+          if (ck.testTrue(fraction !== undefined, "Expect real fraction from closet point step") && fraction !== undefined) {
+            const linePoint = hA0.interpolate(fraction, hA1);
+            const lineVector = hA1.crossWeightedMinus(hA0);
+            const spaceVector = linePoint.crossWeightedMinus(spacePoint);
+            ck.testPerpendicular(lineVector, spaceVector);
+          } else {
+            // recompute for debug ...
+            console.log ("Error case");
+            console.log ("A0", hA0);
+            console.log ("A1", hA1);
+            console.log ("spacePoint", spacePoint);
+            badFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
+          }
+        }
+      }
+    }
+    ck.testTrue(badFraction === undefined);
     expect(ck.getNumErrors()).equals(0);
   });
 

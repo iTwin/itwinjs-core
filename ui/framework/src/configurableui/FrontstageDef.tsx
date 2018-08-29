@@ -96,7 +96,7 @@ export class FrontstageDef {
   ];
   public applicationData?: any;
 
-  public _items: ItemMap = new ItemMap();
+  public items: ItemMap = new ItemMap();
 
   public topLeft?: ZoneDef;
   public topCenter?: ZoneDef;
@@ -107,9 +107,9 @@ export class FrontstageDef {
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
 
-  private _activeToolItem: ToolItemDef | undefined;
-  public defaultLayout: ContentLayoutDef | undefined;
-  public contentGroup: ContentGroup | undefined;
+  private _activeToolItem?: ToolItemDef;
+  public defaultLayout?: ContentLayoutDef;
+  public contentGroup?: ContentGroup;
 
   constructor(frontstageProps: FrontstageProps) {
     if (frontstageProps) {
@@ -146,7 +146,7 @@ export class FrontstageDef {
       if (frontstageProps.applicationData !== undefined)
         this.applicationData = frontstageProps.applicationData;
 
-      this._items.loadItems(frontstageProps);
+      this.items.loadItems(frontstageProps);
 
       this.topLeft = ZoneDefFactory.Create(frontstageProps.topLeft);
       this.topCenter = ZoneDefFactory.Create(frontstageProps.topCenter);
@@ -160,7 +160,7 @@ export class FrontstageDef {
   }
 
   public findItem(id: string): ItemDefBase | undefined {
-    return this._items.get(id);
+    return this.items.get(id);
   }
 
   public get activeToolId(): string {

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Geometry, Angle } from "../Geometry";
 import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../PointVector";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 
 import { GrowableFloat64Array } from "../GrowableArray";
 import { Range3d } from "../Range";
@@ -18,10 +18,10 @@ import { GeometryCoreTestIO } from "./IModelJson.test";
 /* tslint:disable:variable-name no-console*/
 
 export class Checker {
-  private savedErrors: number;
-  private savedOK: number;
-  private numErrors: number;
-  private numOK: number;
+  private _savedErrors: number;
+  private _savedOK: number;
+  private _numErrors: number;
+  private _numOK: number;
   public lastMessage: string = "";
   public static noisy = {
     bsiJSON: false,
@@ -56,10 +56,11 @@ export class Checker {
     newtonRtoRD: false,
     ACSArrows: false,
     OrderedRotationAngles: false,
+    RaggedViewMatrix: false,
   };
-  public constructor() { this.numErrors = 0; this.numOK = 0; this.savedErrors = 0; this.savedOK = 0; }
-  public getNumErrors(): number { return this.savedErrors + this.numErrors; }
-  public getNumOK(): number { return this.numOK + this.savedOK; }
+  public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
+  public getNumErrors(): number { return this._savedErrors + this._numErrors; }
+  public getNumOK(): number { return this._numOK + this._savedOK; }
 
   // ===================================================================================
   // Tests
@@ -67,21 +68,21 @@ export class Checker {
 
   public checkpoint(...params: any[]) {
     // this.show(params);
-    if (Checker.noisy.checkpoint || this.numErrors > 0)
-      console.log("               (ok ", this.numOK, ")  (errors ", this.numErrors, ")", params);
-    this.savedErrors += this.numErrors;
-    this.savedOK += this.numOK;
-    this.numErrors = 0;
-    this.numOK = 0;
+    if (Checker.noisy.checkpoint || this._numErrors > 0)
+      console.log("               (ok ", this._numOK, ")  (errors ", this._numErrors, ")", params);
+    this._savedErrors += this._numErrors;
+    this._savedOK += this._numOK;
+    this._numErrors = 0;
+    this._numOK = 0;
   }
   public announceError(...params: any[]): boolean {
-    this.numErrors++;
+    this._numErrors++;
     console.log("ERROR");
     this.show(params);
     return false;
   }
   public announceOK(): boolean {
-    this.numOK++;
+    this._numOK++;
     return true;
   }
   public testPoint3d(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
@@ -243,10 +244,10 @@ export class Checker {
     return this.announceError(" expect same Matrix4d", dataA, dataB, params);
   }
 
-  public testRotMatrix(dataA: RotMatrix, dataB: RotMatrix, ...params: any[]): boolean {
+  public testMatrix3d(dataA: Matrix3d, dataB: Matrix3d, ...params: any[]): boolean {
     if (dataA.maxDiff(dataB) < Geometry.smallMetricDistance)
       return this.announceOK();
-    return this.announceError("expect same RotMatrix", dataA, dataB, params);
+    return this.announceError("expect same Matrix3d", dataA, dataB, params);
   }
 
   public testTransform(dataA: Transform, dataB: Transform, ...params: any[]): boolean {
@@ -354,18 +355,18 @@ export class Checker {
   // Caching and Storage
   // ===================================================================================
 
-  private static cache: GeometryQuery[] = [];
-  private static transform: Transform = Transform.createIdentity();
+  private static _cache: GeometryQuery[] = [];
+  private static _transform: Transform = Transform.createIdentity();
 
-  public static setTransform(transform: Transform) { Checker.transform = transform; }
-  public static getTransform(): Transform { return Checker.transform; }
+  public static setTransform(transform: Transform) { Checker._transform = transform; }
+  public static getTransform(): Transform { return Checker._transform; }
 
   public static saveTransformed(g: GeometryQuery, maxCoordinate: number = 1.0e12) {
     const range = g.range();
 
-    if (!range.isNull() && range.maxAbs() <= maxCoordinate) {
-      Checker.cache.push(g.clone()!);
-      Checker.cache[Checker.cache.length - 1].tryTransformInPlace(Checker.transform);
+    if (!range.isNull && range.maxAbs() <= maxCoordinate) {
+      Checker._cache.push(g.clone()!);
+      Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }
 
@@ -391,7 +392,7 @@ export class Checker {
   }
 
   public static shift(dx: number, dy: number, dz: number = 0) {
-    Checker.transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker.transform);
+    Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
 
   // ===================================================================================
@@ -406,11 +407,11 @@ export class Checker {
   }
 
   public static clearGeometry(name: string, outDir: string) {
-    GeometryCoreTestIO.saveGeometry(Checker.cache, outDir, name);
+    GeometryCoreTestIO.saveGeometry(Checker._cache, outDir, name);
 
-    Checker.cache.length = 0;
+    Checker._cache.length = 0;
     // Checker.lowerRightBaseIndex = 0;  // First index of "lower right" range
-    Transform.createIdentity(Checker.transform);
+    Transform.createIdentity(Checker._transform);
   }
 }
 

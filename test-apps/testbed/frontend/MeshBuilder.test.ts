@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { GraphicParams } from "@bentley/imodeljs-common";
+import { IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GraphicParams, ColorDef } from "@bentley/imodeljs-common";
 import {
   Range3d,
   Point3d,
@@ -21,7 +21,6 @@ import {
   MeshBuilder,
   Mesh,
   ToleranceRatio,
-  GraphicBuilderCreateParams,
   System,
   GraphicType,
   PrimitiveBuilder,
@@ -32,7 +31,6 @@ import {
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { ColorDef } from "@bentley/imodeljs-common/lib/common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -44,10 +42,10 @@ describe("Mesh Builder Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -85,9 +83,8 @@ describe("Mesh Builder Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
+    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -131,7 +128,9 @@ describe("Mesh Builder Tests", () => {
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addStrokePointLists(strksPrims, false, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(strksPrims.length);
-    expect(mb.mesh.points.length).to.be.lessThan(strksPrims[0].points.length);
+    const lengthA = mb.mesh.points.length;
+    const lengthB = strksPrims[0].points.length;
+    expect(lengthA).to.be.lte(lengthB);
     expect(mb.mesh.points.length).to.be.greaterThan(0);
     // calls addPointString for each stroke points list in strokes
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });

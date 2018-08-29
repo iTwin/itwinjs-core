@@ -22,13 +22,13 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * * A sweep vector
  */
 export class LinearSweep extends SolidPrimitive {
-  private contour: SweepContour;
-  private direction: Vector3d;
+  private _contour: SweepContour;
+  private _direction: Vector3d;
 
   private constructor(contour: SweepContour, direction: Vector3d, capped: boolean) {
     super(capped);
-    this.contour = contour;
-    this.direction = direction;
+    this._contour = contour;
+    this._direction = direction;
   }
   public static create(contour: CurveCollection, direction: Vector3d, capped: boolean): LinearSweep | undefined {
     const sweepable = SweepContour.createForLinearSweep(contour, direction);
@@ -52,23 +52,23 @@ export class LinearSweep extends SolidPrimitive {
     if (capped) {
       const area = PolygonOps.areaXY(xyz.points);
       if (area * zSweep < 0.0)
-        xyz.points.reverse ();
+        xyz.points.reverse();
     }
     const contour: CurveCollection = capped ? Loop.create(xyz) : Path.create(xyz);
     return LinearSweep.create(contour, Vector3d.create(0, 0, zSweep), capped);
   }
 
-  public getCurvesRef(): CurveCollection { return this.contour.curves; }
-  public getSweepContourRef(): SweepContour { return this.contour; }
-  public cloneSweepVector(): Vector3d { return this.direction.clone(); }
+  public getCurvesRef(): CurveCollection { return this._contour.curves; }
+  public getSweepContourRef(): SweepContour { return this._contour; }
+  public cloneSweepVector(): Vector3d { return this._direction.clone(); }
 
   public isSameGeometryClass(other: any): boolean { return other instanceof LinearSweep; }
   public clone(): LinearSweep {
-    return new LinearSweep(this.contour.clone(), this.direction.clone(), this.capped);
+    return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    if (this.contour.tryTransformInPlace(transform)) {
-      transform.multiplyVector(this.direction, this.direction);
+    if (this._contour.tryTransformInPlace(transform)) {
+      transform.multiplyVector(this._direction, this._direction);
     }
     return false;
   }
@@ -79,7 +79,7 @@ export class LinearSweep extends SolidPrimitive {
    * * z direction perpenedicular
    */
   public getConstructiveFrame(): Transform | undefined {
-    return this.contour.localToWorld.cloneRigid();
+    return this._contour.localToWorld.cloneRigid();
   }
   public cloneTransformed(transform: Transform): LinearSweep {
     const result = this.clone();
@@ -88,8 +88,8 @@ export class LinearSweep extends SolidPrimitive {
   }
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof LinearSweep) {
-      return this.contour.isAlmostEqual(other.contour)
-        && this.direction.isAlmostEqual(other.direction)
+      return this._contour.isAlmostEqual(other._contour)
+        && this._direction.isAlmostEqual(other._direction)
         && this.capped === other.capped;
     }
     return false;
@@ -102,22 +102,22 @@ export class LinearSweep extends SolidPrimitive {
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
-    const section = this.contour.curves.clone();
+    const section = this._contour.curves.clone();
     if (section && vFraction !== 0.0)
-      section.tryTransformInPlace(Transform.createTranslation(this.direction.scale(vFraction)));
+      section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
     return section;
   }
 
   public extendRange(range: Range3d, transform?: Transform) {
-    const contourRange = this.contour.curves.range(transform);
+    const contourRange = this._contour.curves.range(transform);
     range.extendRange(contourRange);
     if (transform) {
-      const transformedDirection = transform.multiplyVector(this.direction);
+      const transformedDirection = transform.multiplyVector(this._direction);
       contourRange.low.addInPlace(transformedDirection);
       contourRange.high.addInPlace(transformedDirection);
     } else {
-      contourRange.low.addInPlace(this.direction);
-      contourRange.high.addInPlace(this.direction);
+      contourRange.low.addInPlace(this._direction);
+      contourRange.high.addInPlace(this._direction);
     }
     range.extendRange(contourRange);
   }

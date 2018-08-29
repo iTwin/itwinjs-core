@@ -48,7 +48,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
     return result;
   }
 
-  public isStringType(): boolean { return true; }
+  public get isStringType(): boolean { return true; }
 
   public startsWith(valueA: string, valueB: string, caseSensitive: boolean): boolean {
     if (!valueA || !valueB)

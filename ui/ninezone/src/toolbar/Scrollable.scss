@@ -1,4 +1,3 @@
-@import "./item/_variables";
 @import "_variables";
 
 @mixin scrollTransition {
@@ -9,8 +8,6 @@
 
 .nz-toolbar-scrollable {
   $desktop-space-between-toolbar-items: 1px;
-  $border-width: $items-border-width;
-  $size: $desktop-item-height + $border-width * 2;
 
   position: relative;
 
@@ -37,6 +34,10 @@
 
         > .nz-item {
           position: relative;
+
+          > div > * {
+            pointer-events: auto;
+          }
         }
       }
     }
@@ -51,7 +52,8 @@
       > .nz-viewport {
         > .nz-container {
           > .nz-item {
-            height: $desktop-item-height;
+            height: $nz-desktop-item-height;
+            margin-top: $nz-desktop-space-between-toolbar-items;
           }
         }
       }
@@ -67,7 +69,8 @@
           left: 1px;
 
           > .nz-item {
-            width: $desktop-item-width;
+            width: $nz-desktop-item-width;
+            margin-left: $nz-desktop-space-between-toolbar-items;
           }
         }
       }
@@ -85,26 +88,26 @@
   }
 
   &.nz-vertical {
-    width: $size;
+    width: $nz-desktop-item-height;
 
     &.nz-scroll-indicator-left-only {
       > .nz-items-viewport {
         > .nz-left {
-          height: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+          height: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
         }
       }
     }
 
     &.nz-scroll-indicator-right-only {
       > .nz-right {
-        height: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+        height: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
       }
     }
 
     > .nz-items-viewport {
       > .nz-left, > .nz-right {
         width: 100%;
-        height: $desktop-item-height;
+        height: $nz-desktop-item-height;
       }
 
       > .nz-left {
@@ -118,19 +121,19 @@
   }
 
   &.nz-horizontal {
-    height: $size;
+    height: $nz-desktop-item-height;
 
     &.nz-scroll-indicator-left-only {
       > .nz-items-viewport {
         > .nz-left {
-          width: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+          width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
         }
       }
     }
 
     &.nz-scroll-indicator-right-only {
       > .nz-right {
-        width: $desktop-item-width - $border-width - $desktop-space-between-toolbar-items;
+        width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
       }
     }
 
@@ -138,7 +141,7 @@
       > .nz-left, > .nz-right {
         top: 0;
         height: 100%;
-        width: $desktop-item-width;
+        width: $nz-desktop-item-width;
       }
 
       > .nz-left {

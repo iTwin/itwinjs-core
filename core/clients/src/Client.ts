@@ -24,12 +24,12 @@ export class UrlDescriptor {
 /** Provider for default RequestOptions, used by Client to set defaults.
  */
 export class DefaultRequestOptionsProvider {
-  protected defaultOptions: RequestOptions;
+  protected _defaultOptions: RequestOptions;
   /**
    * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
    */
   constructor() {
-    this.defaultOptions = {
+    this._defaultOptions = {
       method: "GET",
       headers: {
         "Mas-App-Guid": Config.host.guid,
@@ -46,7 +46,7 @@ export class DefaultRequestOptionsProvider {
    */
   public async assignOptions(options: RequestOptions): Promise<void> {
     const clonedOptions: RequestOptions = Object.assign({}, options);
-    deepAssign(options, this.defaultOptions);
+    deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();
   }
@@ -58,7 +58,7 @@ export class DefaultRequestOptionsProvider {
  */
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
-  protected url?: string;
+  protected _url?: string;
 
   /**
    * Creates an instance of Client.
@@ -101,8 +101,8 @@ export abstract class Client {
    * @returns URL for the service
    */
   public async getUrl(): Promise<string> {
-    if (this.url) {
-      return Promise.resolve(this.url);
+    if (this._url) {
+      return Promise.resolve(this._url);
     }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient("PROD");
@@ -111,8 +111,8 @@ export abstract class Client {
 
     return urlDiscoveryClient.discoverUrl(searchKey, this.deploymentEnv)
       .then((url: string): Promise<string> => {
-        this.url = url;
-        return Promise.resolve(this.url); // TODO: On the server this really needs a lifetime!!
+        this._url = url;
+        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       })
       .catch((error: string): Promise<string> => {
         console.log(`WARNING: Could not determine URL for ${searchKey} service. Error = ${error}`); // tslint:disable-line:no-console
@@ -145,14 +145,14 @@ export class AuthenticationError extends ResponseError {
  * (a.k.a. Buddi service)
  */
 export class UrlDiscoveryClient extends Client {
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-buddi-eus2.cloudapp.net/WebService",
     QA: "https://qa-buddi-eus2.cloudapp.net/WebService",
     PROD: "https://buddi.bentley.com/WebService",
     PERF: "https://qa-buddi-eus2.cloudapp.net/WebService",
   };
 
-  private static readonly regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
+  private static readonly _regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
 
   /**
    * Creates an instance of UrlDiscoveryClient.
@@ -175,7 +175,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return UrlDiscoveryClient.defaultUrlDescriptor[this.deploymentEnv];
+    return UrlDiscoveryClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
   /**
@@ -199,7 +199,7 @@ export class UrlDiscoveryClient extends Client {
       method: "GET",
       qs: {
         url: searchKey,
-        region: UrlDiscoveryClient.regionMap[searchDeploymentEnv],
+        region: UrlDiscoveryClient._regionMap[searchDeploymentEnv],
       },
     };
     await this.setupOptionDefaults(options);

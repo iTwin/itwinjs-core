@@ -11,7 +11,7 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelTileRpcInterface,
   ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 
@@ -58,6 +58,25 @@ export const SampleAppActions = {
   setIModelConnection: (iModelConnection: IModelConnection) => createAction("SampleApp:SETIMODELCONNECTION", { iModelConnection }),
 };
 
+class SampleAppAccuSnap extends AccuSnap {
+  public getActiveSnapModes(): SnapMode[] {
+    const snaps: SnapMode[] = [];
+    if (SampleAppIModelApp.store.getState().frameworkState) {
+      const snapMode = SampleAppIModelApp.store.getState().frameworkState!.configurableUIState.snapMode;
+      if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number) snaps.push(SnapMode.Bisector);
+      if ((snapMode & SnapMode.Center) === SnapMode.Center as number) snaps.push(SnapMode.Center);
+      if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number) snaps.push(SnapMode.Intersection);
+      if ((snapMode & SnapMode.MidPoint) === SnapMode.MidPoint as number) snaps.push(SnapMode.MidPoint);
+      if ((snapMode & SnapMode.Nearest) === SnapMode.Nearest as number) snaps.push(SnapMode.Nearest);
+      if ((snapMode & SnapMode.NearestKeypoint) === SnapMode.NearestKeypoint as number) snaps.push(SnapMode.NearestKeypoint);
+      if ((snapMode & SnapMode.Origin) === SnapMode.Origin as number) snaps.push(SnapMode.Origin);
+    } else {
+      snaps.push(SnapMode.NearestKeypoint);
+    }
+    return snaps;
+  }
+}
+
 export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
@@ -90,6 +109,7 @@ export class SampleAppIModelApp extends IModelApp {
 
   protected static onStartup() {
     IModelApp.notifications = new AppNotificationManager();
+    IModelApp.accuSnap = new SampleAppAccuSnap();
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.

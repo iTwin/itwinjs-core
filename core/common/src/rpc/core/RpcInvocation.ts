@@ -62,10 +62,10 @@ export class RpcInvocation {
 
   /**
    * The invocation for the current RPC operation.
-   * @note The return value of this function is only reliable in an RPC interface class member function where program control was received from the RpcInvocation constructor function.
+   * @note The return value of this function is only reliable in an RPC impl class member function where program control was received from the RpcInvocation constructor function.
    */
-  public static current(context: RpcInterface): RpcInvocation {
-    return (context as any)[CURRENT_INVOCATION];
+  public static current(rpcImpl: RpcInterface): RpcInvocation {
+    return (rpcImpl as any)[CURRENT_INVOCATION];
   }
 
   /** Constructs an invocation. */

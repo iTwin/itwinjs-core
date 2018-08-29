@@ -13,18 +13,20 @@ import {
 const loggingCategory = "imodeljs-clients.imodelhub";
 
 /**
- * Error returned from iModel Hub service.
+ * Error returned from iModelHub service.
  */
 export class IModelHubError extends WsgError {
-  // public id?: IModelHubStatus;
+  /** Extended data of the error. */
   public data: any;
   private static _idPrefix: string = "iModelHub.";
+
+  /** @hidden */
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
   }
 
   /**
-   * Gets IModelHubStatus from the string value returned by the service.
+   * Get IModelHubStatus from the string value returned by the service.
    * @param error Error id returned by the service.
    * @returns IModelHubStatus id
    */
@@ -35,7 +37,7 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Checks whether error could have extended data.
+   * Check whether error could have extended data.
    * @param id Id of the error.
    * @returns True if service can return extended data for this error id.
    */
@@ -56,14 +58,15 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Makes extended data available publically.
+   * Make extended data available publically.
    */
   private copyExtendedData(): void {
     this.data = this._data;
   }
 
   /**
-   * Creates IModelHubError from id.
+   * Create IModelHubError from id.
+   * @hidden
    * @param id Id of the error.
    * @param message Message for the error.
    * @returns Created error.
@@ -76,7 +79,8 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Attempts to parse IModelHubError from server response.
+   * Attempt to parse IModelHubError from server response.
+   * @hidden
    * @param response Response from the server.
    * @returns Parsed error.
    */
@@ -102,7 +106,8 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Decides whether request should be retried or not
+   * Decides whether request should be retried or not.
+   * @hidden
    * @param error Error returned by request
    * @param response Response returned by request
    */
@@ -133,7 +138,8 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Get log function
+   * Get log function.
+   * @hidden
    */
   public getLogLevel(): LogFunction {
     switch (this.errorNumber) {
@@ -149,7 +155,8 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Logs this error
+   * Logs this error.
+   * @hidden
    */
   public log(): void {
     (this.getLogLevel())(loggingCategory, this.logMessage(), this.getMetaData());
@@ -157,11 +164,12 @@ export class IModelHubError extends WsgError {
 }
 
 /**
- * Errors for incorrect iModel Hub requests.
+ * Errors for incorrect iModelHub requests.
  */
 export class IModelHubClientError extends IModelHubError {
   /**
    * Creates IModelHubClientError from id.
+   * @hidden
    * @param id Id of the error.
    * @param message Message for the error.
    * @returns Created error.
@@ -174,6 +182,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for undefined arguments being passed.
+   * @hidden
    * @param argumentName Undefined argument name
    * @returns Created error.
    */
@@ -183,6 +192,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for invalid arguments being passed.
+   * @hidden
    * @param argumentName Invalid argument name
    * @returns Created error.
    */
@@ -192,6 +202,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for arguments being passed that are missing download URL.
+   * @hidden
    * @param argumentName Argument name
    * @returns Created error.
    */
@@ -202,6 +213,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for incompatible operation being used in browser.
+   * @hidden
    * @returns Created error.
    */
   public static browser(): IModelHubClientError {
@@ -210,6 +222,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for incompatible operation being used in browser.
+   * @hidden
    * @returns Created error.
    */
   public static fileHandler(): IModelHubClientError {
@@ -218,6 +231,7 @@ export class IModelHubClientError extends IModelHubError {
 
   /**
    * Create error for a missing file.
+   * @hidden
    * @returns Created error.
    */
   public static fileNotFound(): IModelHubClientError {
@@ -287,7 +301,8 @@ export class ArgumentCheck {
   }
 }
 
-/** Class for aggregating multiple errors from multiple requests */
+/** Class for aggregating errors from multiple requests. Only thrown when more than 1 error has occured. */
 export class AggregateResponseError extends Error {
+  /** Errors that happened over multiple requests. */
   public errors: ResponseError[] = [];
 }

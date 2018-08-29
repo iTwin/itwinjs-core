@@ -16,6 +16,8 @@ export interface WebFontIconProps {
   className?: string;
   /** CSS style properties */
   style?: React.CSSProperties;
+  /** Click event handler */
+  onClick?: React.MouseEventHandler<HTMLSpanElement>;
 }
 
 /** WebFontIcon React component */

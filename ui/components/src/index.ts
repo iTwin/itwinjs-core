@@ -5,6 +5,7 @@ export { default as UiComponents } from "./UiComponents";
 export * from "./breadcrumb";
 export * from "./common";
 export * from "./converters";
+export * from "./dragdrop";
 export * from "./properties";
 export * from "./propertygrid";
 export * from "./table";
@@ -22,6 +23,10 @@ export * from "./viewport";
 /**
  * @docs-group-description Breadcrumb
  * Classes for working with a Breadcrumb.
+ */
+/**
+ * @docs-group-description DragDrop
+ * Classes and Higher Order Components for working with the DragDrop API.
  */
 /**
  * @docs-group-description Properties

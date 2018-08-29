@@ -4,7 +4,7 @@
 
 import { Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
-import { RotMatrix, Transform } from "../Transform";
+import { Matrix3d, Transform } from "../Transform";
 
 import { Arc3d } from "../curve/Arc3d";
 import { Angle, AngleSweep } from "../Geometry";
@@ -19,12 +19,12 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   arcC.setFrom(arcA);
   ck.testTrue(arcC.isAlmostEqual(arcA), "same after setFrom");    // but still not to confirm members where cloned.
   const transform = Transform.createOriginAndMatrix(Point3d.create(4, 23, 2),
-    RotMatrix.createRotationAroundVector(Vector3d.create(1, 2, 2), Angle.createDegrees(12))!);
+    Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 2), Angle.createDegrees(12))!);
   arcC.tryTransformInPlace(transform);
   ck.testFalse(arcC.isAlmostEqual(arcA), "confirm cloned arc does not share pointers.");
 
   const myPoint = Point3d.create(4, 2, 1);
-  const myMatrix = RotMatrix.createUniformScale(8.0);
+  const myMatrix = Matrix3d.createUniformScale(8.0);
   const mySweep = AngleSweep.createStartEndDegrees(9, 20);
   arcB.setRefs(myPoint, myMatrix, mySweep);
 
@@ -42,13 +42,13 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
   ck.testVector3d(vector90, vectorData.vector90);
   const a = 4.2;
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
-    RotMatrix.createScale(a, a, a));
+    Matrix3d.createScale(a, a, a));
   const arc1 = arc.cloneTransformed(scaleTransform) as Arc3d;
   ck.testFalse(arc.isAlmostEqual(arc1), "scale changes arc");
   ck.testPointer(arc1);
-  ck.testBoolean(arc1.isCircular(), arc.isCircular(), "scaled clone retains circular");
+  ck.testBoolean(arc1.isCircular, arc.isCircular, "scaled clone retains circular");
   ck.testBoolean(
-    arc.sweep.isFullCircle(),
+    arc.sweep.isFullCircle,
     arc.startPoint().isAlmostEqual(arc.endPoint()),
     "full circle start, end condition");
 
@@ -74,7 +74,7 @@ describe("Arc3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const arcA = Arc3d.createUnitCircle();
-    ck.testTrue(arcA.isCircular());
+    ck.testTrue(arcA.isCircular);
     exerciseArc3d(ck, arcA);
     exerciseArc3d(ck,
       Arc3d.create(

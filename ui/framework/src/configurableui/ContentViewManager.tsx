@@ -36,7 +36,7 @@ export class ContentViewManager {
 
   public static get MouseDownChangedEvent(): MouseDownChangedEvent { return this._mouseDownChangedEvent; }
 
-  public static isMouseDown(): boolean {
+  public static get isMouseDown(): boolean {
     return this._mouseDown;
   }
 

@@ -43,8 +43,15 @@ The rules are broken into the different parts of the Schema they are validated a
 - If any aspect (ECClass which derives from **ElementMultiAspect**) exists, there must be a relationship that derives from the **ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
 - If any aspect (ECClass which derives from **ElementUniqueAspect**) exists, there must be a relationship that derives from the **ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
 - Entity classes cannot implement both **bis:IParentElement** and **bis:ISubModeledElement**.
-- Entity classes cannot subclass **bis:PhysicalModel**.
-- Entity classes cannot subclass **bis:SpatialLocationModel**.
+- Entity classes cannot subclass the following classes:
+  - **bis:PhysicalModel**
+  - **bis:SpatialLocationModel**
+  - **bis:GroupInformationModel**
+  - **bis:InformationRecordModel**
+  - **bis:DefinitionModel**
+    - **bis:DictionaryModel** and **bis:RepositoryModel** are the only classes allowed to subclass **bis:DefinitionModel**
+  - **bis:DocumentListModel**
+  - **bis:LinkModel**
 - Property overrides cannot change the persistence unit.
 
 ### Relationship Classes

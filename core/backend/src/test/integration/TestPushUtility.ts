@@ -13,41 +13,41 @@ const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export class TestPushUtility {
   public iModelName?: string;
-  private iModelDb?: IModelDb;
-  private physicalModelId?: Id64;
-  private categoryId?: Id64;
-  private codeSpecId?: Id64;
+  private _iModelDb?: IModelDb;
+  private _physicalModelId?: Id64;
+  private _categoryId?: Id64;
+  private _codeSpecId?: Id64;
 
-  private accessToken?: AccessToken;
-  private projectId?: string;
-  private iModelId?: string;
+  private _accessToken?: AccessToken;
+  private _projectId?: string;
+  private _iModelId?: string;
 
-  private currentLevel: number = 0;
+  private _currentLevel: number = 0;
 
   /** Initializes the utility */
   public async initialize(projectName: string, iModelName: string, user: UserCredentials = TestUsers.superManager) {
-    this.accessToken = await HubUtility.login(user);
+    this._accessToken = await HubUtility.login(user);
     this.iModelName = iModelName;
-    this.projectId = await HubUtility.queryProjectIdByName(this.accessToken!, projectName);
+    this._projectId = await HubUtility.queryProjectIdByName(this._accessToken!, projectName);
   }
 
   /** Pushes a new Test IModel to the Hub */
   public async pushTestIModel(): Promise<string> {
     const pathname = this.createStandalone();
-    this.iModelId = await HubUtility.pushIModel(this.accessToken!, this.projectId!, pathname);
-    return this.iModelId;
+    this._iModelId = await HubUtility.pushIModel(this._accessToken!, this._projectId!, pathname);
+    return this._iModelId;
   }
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this.iModelDb = await IModelDb.open(this.accessToken!, this.projectId!, this.iModelId!, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb = await IModelDb.open(this._accessToken!, this._projectId!, this._iModelId!, OpenParams.pullAndPush(), IModelVersion.latest());
 
-    const lastLevel = this.currentLevel + count;
-    while (this.currentLevel < lastLevel) {
+    const lastLevel = this._currentLevel + count;
+    while (this._currentLevel < lastLevel) {
       this.createTestChangeSet();
       await this.pushTestChangeSet();
       await this.createNamedVersion();
-      this.currentLevel++;
+      this._currentLevel++;
       await pause(1000); // Pause between pushing change sets
     }
   }
@@ -57,35 +57,35 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this.iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64 = IModel.dictionaryId;
-    this.physicalModelId = IModelWriter.insertPhysicalModel(this.iModelDb, "TestModel");
-    this.codeSpecId = IModelWriter.insertCodeSpec(this.iModelDb, "TestCodeSpec", CodeScopeSpec.Type.Model);
-    this.categoryId = IModelWriter.insertSpatialCategory(this.iModelDb, definitionModelId, "TestCategory", new ColorDef("blanchedAlmond"));
+    this._physicalModelId = IModelWriter.insertPhysicalModel(this._iModelDb, "TestModel");
+    this._codeSpecId = IModelWriter.insertCodeSpec(this._iModelDb, "TestCodeSpec", CodeScopeSpec.Type.Model);
+    this._categoryId = IModelWriter.insertSpatialCategory(this._iModelDb, definitionModelId, "TestCategory", new ColorDef("blanchedAlmond"));
 
     // Insert a ViewDefinition for the PhysicalModel
-    const modelSelectorId: Id64 = IModelWriter.insertModelSelector(this.iModelDb, definitionModelId, [this.physicalModelId.toString()]);
-    const categorySelectorId: Id64 = IModelWriter.insertCategorySelector(this.iModelDb, definitionModelId, [this.categoryId.toString()]);
-    const displayStyleId: Id64 = IModelWriter.insertDisplayStyle3d(this.iModelDb, definitionModelId);
+    const modelSelectorId: Id64 = IModelWriter.insertModelSelector(this._iModelDb, definitionModelId, [this._physicalModelId.toString()]);
+    const categorySelectorId: Id64 = IModelWriter.insertCategorySelector(this._iModelDb, definitionModelId, [this._categoryId.toString()]);
+    const displayStyleId: Id64 = IModelWriter.insertDisplayStyle3d(this._iModelDb, definitionModelId);
     const physicalViewOrigin = new Point3d(0, 0, 0);
     const physicalViewExtents = new Point3d(50, 50, 50);
-    IModelWriter.insertOrthographicViewDefinition(this.iModelDb, definitionModelId, "Physical View", modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
+    IModelWriter.insertOrthographicViewDefinition(this._iModelDb, definitionModelId, "Physical View", modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
 
-    this.iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
+    this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
 
-    this.insertTestElement(this.currentLevel, 0);
-    this.insertTestElement(this.currentLevel, 1);
-    this.iModelDb.saveChanges("Setup new iModel");
-    this.currentLevel++;
+    this.insertTestElement(this._currentLevel, 0);
+    this.insertTestElement(this._currentLevel, 1);
+    this._iModelDb.saveChanges("Setup new iModel");
+    this._currentLevel++;
 
     return pathname;
   }
 
   private createCode(name: string): Code {
     return new Code({
-      spec: this.codeSpecId!,
-      scope: this.physicalModelId!.toString(),
+      spec: this._codeSpecId!,
+      scope: this._physicalModelId!.toString(),
       value: name,
     });
   }
@@ -93,35 +93,35 @@ export class TestPushUtility {
   private insertElement(name: string, userLabel: string, location: Point3d, size: Point3d = new Point3d(5, 5, 5)) {
     const testElementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
-      model: this.physicalModelId!,
-      category: this.categoryId!,
+      model: this._physicalModelId!,
+      category: this._categoryId!,
       code: this.createCode(name),
       placement: { origin: location, angles: new YawPitchRollAngles() },
       geom: IModelWriter.createBox(size),
       userLabel,
     };
-    const id = this.iModelDb!.elements.insertElement(testElementProps);
+    const id = this._iModelDb!.elements.insertElement(testElementProps);
     return id;
   }
 
   private updateElement(name: string, newUserLabel: string, newSize: Point3d = new Point3d(10, 10, 10)) {
     const code = this.createCode(name);
-    const element = this.iModelDb!.elements.getElement(code);
+    const element = this._iModelDb!.elements.getElement(code);
     if (!element)
       throw new Error(`Element with name ${name} not found`);
 
     element.userLabel = newUserLabel;
     element.geom = IModelWriter.createBox(newSize);
 
-    this.iModelDb!.elements.updateElement(element);
+    this._iModelDb!.elements.updateElement(element);
   }
 
   private deleteTestElement(name: string) {
     const code = this.createCode(name);
-    const id = this.iModelDb!.elements.queryElementIdByCode(code);
+    const id = this._iModelDb!.elements.queryElementIdByCode(code);
     if (!id)
       throw new Error(`Element with name ${name} not found`);
-    this.iModelDb!.elements.deleteElement(id);
+    this._iModelDb!.elements.deleteElement(id);
   }
 
   private static getElementLocation(level: number, block: number): Point3d {
@@ -161,13 +161,13 @@ export class TestPushUtility {
   }
 
   private createTestChangeSet() {
-    this.insertTestElement(this.currentLevel, 0);
-    this.insertTestElement(this.currentLevel, 1);
-    this.iModelDb!.saveChanges(`Inserted elements into level ${this.currentLevel}`);
-    this.updateTestElement(this.currentLevel - 1, 0);
-    this.iModelDb!.saveChanges(`Updated element in level ${this.currentLevel - 1}`);
-    this.deleteTestElements(this.currentLevel - 1, 1);
-    this.iModelDb!.saveChanges(`Deleted element in level ${this.currentLevel - 1}`);
+    this.insertTestElement(this._currentLevel, 0);
+    this.insertTestElement(this._currentLevel, 1);
+    this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
+    this.updateTestElement(this._currentLevel - 1, 0);
+    this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
+    this.deleteTestElements(this._currentLevel - 1, 1);
+    this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
   }
 
   private static getChangeSetDescription(level: number) {
@@ -175,13 +175,13 @@ export class TestPushUtility {
   }
 
   private async pushTestChangeSet() {
-    const description = TestPushUtility.getChangeSetDescription(this.currentLevel);
-    await this.iModelDb!.pushChanges(this.accessToken!, () => description);
+    const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
+    await this._iModelDb!.pushChanges(this._accessToken!, () => description);
   }
 
   private async createNamedVersion() {
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(this.accessToken!, this.iModelId!, BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(this.accessToken!, this.iModelId!, changeSetId, TestPushUtility.getVersionName(this.currentLevel));
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(this._accessToken!, this._iModelId!, BriefcaseManager.imodelClient);
+    await BriefcaseManager.imodelClient.Versions().create(this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
   }
 
 }

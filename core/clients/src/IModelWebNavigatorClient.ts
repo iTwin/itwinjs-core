@@ -11,7 +11,7 @@ import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 export class IModelWebNavigatorClient extends Client {
   public static readonly searchKey: string = "iModelWeb.Url";
 
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-connect-imodelweb.bentley.com",
     QA: "https://qa-connect-imodelweb.bentley.com",
     PROD: "https://connect-imodelweb.bentley.com",
@@ -39,7 +39,7 @@ export class IModelWebNavigatorClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelWebNavigatorClient.defaultUrlDescriptor[this.deploymentEnv];
+    return IModelWebNavigatorClient._defaultUrlDescriptor[this.deploymentEnv];
   }
 
 }

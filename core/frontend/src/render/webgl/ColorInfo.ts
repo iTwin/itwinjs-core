@@ -9,7 +9,7 @@ import { ColorIndex } from "@bentley/imodeljs-common";
 
 /* Describes a primitive's basic color properties */
 export class ColorInfo {
-  public readonly _uniform?: FloatPreMulRgba;
+  private readonly _uniform?: FloatPreMulRgba;
   public readonly hasTranslucency: boolean;
 
   public constructor(arg: FloatPreMulRgba | ColorIndex) {

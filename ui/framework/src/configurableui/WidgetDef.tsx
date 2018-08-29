@@ -90,7 +90,7 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
 /** A Widget Definition in the 9-Zone Layout system.
  */
 export class WidgetDef {
-  private static sId: number;
+  private static _sId: number;
 
   public id: string;
   public classId: string = "";
@@ -118,8 +118,8 @@ export class WidgetDef {
     if (widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
-      WidgetDef.sId++;
-      this.id = "Widget-" + WidgetDef.sId;
+      WidgetDef._sId++;
+      this.id = "Widget-" + WidgetDef._sId;
     }
 
     if (widgetProps.classId !== undefined)

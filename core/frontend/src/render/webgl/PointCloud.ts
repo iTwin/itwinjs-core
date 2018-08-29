@@ -29,20 +29,20 @@ export class PointCloudPrimitive extends Primitive {
   }
 }
 export class PointCloudGeometry extends CachedGeometry {
-  private vertices: QBufferHandle3d;
-  private vertexCount: number;
-  private colorHandle: BufferHandle | undefined = undefined;
+  private _vertices: QBufferHandle3d;
+  private _vertexCount: number;
+  private _colorHandle: BufferHandle | undefined = undefined;
   public features: FeaturesInfo | undefined;
 
-  public dispose() { dispose(this.vertices); }
+  public dispose() { dispose(this._vertices); }
 
   constructor(pointCloud: PointCloudArgs) {
     super();
-    this.vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
-    this.vertexCount = pointCloud.points.length / 3;
+    this._vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
+    this._vertexCount = pointCloud.points.length / 3;
     this.features = FeaturesInfo.create(pointCloud.features);
     if (undefined !== pointCloud.colors)
-      this.colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
+      this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }
@@ -50,15 +50,15 @@ export class PointCloudGeometry extends CachedGeometry {
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointCloud; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueGeneral; }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-  public get qOrigin(): Float32Array { return this.vertices.origin; }
-  public get qScale(): Float32Array { return this.vertices.scale; }
-  public get colors(): BufferHandle | undefined { return this.colorHandle; }
+  public get qOrigin(): Float32Array { return this._vertices.origin; }
+  public get qScale(): Float32Array { return this._vertices.scale; }
+  public get colors(): BufferHandle | undefined { return this._colorHandle; }
   public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
   public get hasBakedLighting() { return true; }
 
-  public bindVertexArray(attr: AttributeHandle): void { attr.enableArray(this.vertices, 3, GL.DataType.UnsignedShort, false, 0, 0); }
+  public bindVertexArray(attr: AttributeHandle): void { attr.enableArray(this._vertices, 3, GL.DataType.UnsignedShort, false, 0, 0); }
   public draw(): void {
     const gl = System.instance.context;
-    gl.drawArrays(GL.PrimitiveType.Points, 0, this.vertexCount);
+    gl.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
   }
 }

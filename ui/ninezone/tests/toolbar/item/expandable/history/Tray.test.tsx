@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tray, { DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
+import Tray, { DefaultHistoryManager } from "../../../../../src/toolbar/item/expandable/history/Tray";
 
 describe("<Tray />", () => {
   it("should render", () => {

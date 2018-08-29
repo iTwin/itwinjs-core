@@ -4,8 +4,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import ExpansionToggle from "@src/tree/ExpansionToggle";
-import Node from "@src/tree/Node";
+import ExpansionToggle from "../../src/tree/ExpansionToggle";
+import Node from "../../src/tree/Node";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -62,7 +62,9 @@ describe("<Node />", () => {
     const expander = wrapper.find(ExpansionToggle);
     expander.should.have.lengthOf(1);
 
-    wrapper.simulate("click", new MouseEvent("click"));
+    const content = wrapper.find("div.contents");
+    content.should.have.lengthOf(1);
+    content.simulate("click", new MouseEvent("click"));
     clickHandler.calledOnce.should.true;
     expandHandler.should.not.have.been.called;
 

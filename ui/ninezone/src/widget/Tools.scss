@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+ @import "../toolbar/button/_variables";
+
 .nz-widget-tools {
   display: grid;
   box-sizing: border-box;
@@ -11,8 +13,22 @@
   grid-template-rows: auto 1fr;
   grid-template-areas: "button htools" "vtools .";
 
-  &.nz-no-app-button {
-    grid-gap: 5px;
+  &.nz-reduced-gap {
+    grid-gap: 3px;
+
+    > .nz-app-button {
+      min-height: 0;
+      min-width: 0;
+    }
+  }
+
+  &.nz-no-gap {
+    grid-gap: 0;
+
+    > .nz-app-button {
+      min-height: 0;
+      min-width: 0;
+    }
   }
 
   &.nz-is-navigation {
@@ -28,6 +44,8 @@
 
   > .nz-app-button {
     grid-area: button;
+    min-height: $mls-button-height;
+    min-width: $mls-button-width;
   }
 
   > .nz-horizontal-toolbar {

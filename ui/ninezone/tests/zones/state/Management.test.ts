@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { RectangleProps } from "@src/utilities/Rectangle";
-import NineZone, { getDefaultProps } from "@src/zones/state/NineZone";
-import StateManagement, { DropTarget } from "@src/zones/state/Management";
-import { UnmergeCell, CellType } from "@src/zones/target/Unmerge";
+import { RectangleProps } from "../../../src/utilities/Rectangle";
+import NineZone, { getDefaultProps } from "../../../src/zones/state/NineZone";
+import StateManagement, { DropTarget } from "../../../src/zones/state/Management";
+import { UnmergeCell, CellType } from "../../../src/zones/target/Unmerge";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;

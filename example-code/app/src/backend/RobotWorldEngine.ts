@@ -39,8 +39,8 @@ export class RobotWorldEngine {
     const config = require(path.join(IModelHost.appAssetsDir!, "RobotWorldEngine.config.json"));
     EnvMacroSubst.replaceInProperties(config, true, defaultsCfg);
 
-    // Define the feature gates that were passed in the config parameters on IModelHost, using "robot" as the key.
-    IModelHost.features.setGate("robot", config.features);
+    // Define the feature gates that were passed in the config parameters on IModelHost, using "robot." as a prefix
+    config.features.forEach((gate: { name: string, val: any }) => IModelHost.features.setGate("robot." + gate.name, gate.val));
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -153,7 +153,7 @@ export class RobotWorldEngine {
 
   public static initialize() {
     const config = new IModelHostConfiguration();
-    if (Platform.isNodeJs())
+    if (Platform.isNodeJs)
       config.appAssetsDir = path.join(__dirname, "assets");
     else
       config.appAssetsDir = KnownLocations.packageAssetsDir;

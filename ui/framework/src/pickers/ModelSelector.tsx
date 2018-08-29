@@ -27,11 +27,10 @@ export default class ModelSelectorWidget extends React.Component<any, any> {
     };
 
     // Update viewed models on selected viewport changed
-    const viewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
-      if (_current)
-        this.updateStateWithViewport(_current);
-    };
-    IModelApp.viewManager.onSelectedViewportChanged.addListener(viewportChanged);
+    IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
+      if (args.current)
+        this.updateStateWithViewport(args.current);
+    });
 
     this.updateState();
   }

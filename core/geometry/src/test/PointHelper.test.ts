@@ -7,7 +7,7 @@ import { Matrix4d } from "../numerics/Geometry4d";
 import { Point2d, Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -25,7 +25,7 @@ describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HellowWorld", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
     for (const points of [
       [Point3d.create(0, 0, 0),
@@ -46,7 +46,7 @@ describe("FrameBuilder.HelloWorld", () => {
       const count0 = builder.announcePoint(point0);
       const count1 = builder.announcePoint(point0); // exercise the quick out.
       ck.testExactNumber(count0, count1, "repeat point ignored");
-      ck.testTrue(builder.hasOrigin(), "frameBuilder.hasOrigin with point");
+      ck.testTrue(builder.hasOrigin, "frameBuilder.hasOrigin with point");
       ck.testUndefined(builder.getValidatedFrame(), "no frame for minimal data");
       ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
 
@@ -63,7 +63,7 @@ describe("FrameBuilder.HelloWorld", () => {
         const inverse = rFrame.inverse();
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
           const product = rFrame.multiplyTransformTransform(inverse);
-          ck.testBoolean(true, product.isIdentity(), "correct inverse");
+          ck.testBoolean(true, product.isIdentity, "correct inverse");
           const q0 = inverse.multiplyPoint3d(point0);
           const q1 = inverse.multiplyPoint3d(point1);
           const q2 = inverse.multiplyPoint3d(point2);
@@ -84,7 +84,7 @@ describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HelloVectors", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin(), "frameBuilder.hasOrigin at start");
+    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
     builder.announcePoint(Point3d.create(0, 1, 1));
     ck.testExactNumber(0, builder.savedVectorCount());
     ck.testExactNumber(0, builder.savedVectorCount());
@@ -197,7 +197,7 @@ describe("MomentData.HelloWorld", () => {
 
     // Test undefined/empty returns
     const mData = MomentData.pointsToPrincipalAxes([]);
-    ck.testTrue(mData.origin.isAlmostZero());
+    ck.testTrue(mData.origin.isAlmostZero);
     const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0,
       1, 1, 1, 0,
       1, 1, 1, 0,
@@ -214,8 +214,8 @@ describe("MomentData.HelloWorld", () => {
     for (const radiusA of [1, 2, 3.5]) {
       for (const degreesY of [0, 10, 78]) {
         for (const degreesZ of [0, -5, 20]) {
-          const rotateZ = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degreesZ)) as RotMatrix;
-          const rotateY = RotMatrix.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(degreesY)) as RotMatrix;
+          const rotateZ = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degreesZ)) as Matrix3d;
+          const rotateY = Matrix3d.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(degreesY)) as Matrix3d;
           const axes0 = rotateY.multiplyMatrixMatrix(rotateZ);
 
           const arc = Arc3d.createXYEllipse(Point3d.create(0, 0), radiusA, radiusB);
@@ -323,7 +323,7 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      RotMatrix.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
 
     const map = FrameBuilder.createRightHandedLocalToWorld(pointsA);
@@ -366,7 +366,7 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      RotMatrix.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
     const weights = [];
     const amplitude = 0.25;

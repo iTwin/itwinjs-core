@@ -24,19 +24,19 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "StructClass",
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", type: "PrimitiveProperty", typeName: "string" }]
         },
         MiddleClass: {
           schemaItemType: "StructClass", baseClass: "TestSchema.RootClass",
-          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P2", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", type: "PrimitiveProperty", typeName: "string" }]
         },
         TestClass: {
           schemaItemType: "StructClass", baseClass: "TestSchema.MiddleClass",
-          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P4", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", type: "PrimitiveProperty", typeName: "string" }]
         },
       },
     };
@@ -74,19 +74,19 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "EntityClass",
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", type: "PrimitiveProperty", typeName: "string" }]
         },
         MiddleClass: {
           schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass",
-          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P2", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", type: "PrimitiveProperty", typeName: "string" }]
         },
         TestClass: {
           schemaItemType: "EntityClass", baseClass: "TestSchema.MiddleClass",
-          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P4", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P3", type: "PrimitiveProperty", typeName: "string" }]
         },
       },
     };
@@ -124,11 +124,11 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "EntityClass",
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }]
         },
         Mixin: {
           schemaItemType: "Mixin", appliesTo: "TestSchema.RootClass",
-          properties: [{ name: "P5", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P5", type: "PrimitiveProperty", typeName: "string" }]
         },
         TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass", mixins: ["TestSchema.Mixin"] },
       },
@@ -215,7 +215,7 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "StructClass",
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }]
         },
         TestClass: { schemaItemType: "StructClass", baseClass: "TestSchema.RootClass" },
       },
@@ -306,27 +306,27 @@ describe("Property Inheritance", () => {
       items: {
         A: {
           schemaItemType: "EntityClass",
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" },
-          { name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          { name: "P2", type: "PrimitiveProperty", typeName: "string" }]
         },
         B: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
         C: {
           schemaItemType: "Mixin", appliesTo: "TestSchema.A",
-          properties: [{ name: "P3", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P3", type: "PrimitiveProperty", typeName: "string" }]
         },
         D: {
           schemaItemType: "Mixin", appliesTo: "TestSchema.A",
-          properties: [{ name: "P4", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P4", type: "PrimitiveProperty", typeName: "string" }]
         },
         E: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
         F: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
         G: {
           schemaItemType: "EntityClass", baseClass: "TestSchema.A", mixins: ["TestSchema.B"],
-          properties: [{ name: "P1", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }]
         },
         H: {
           schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"],
-          properties: [{ name: "P2", propertyType: "PrimitiveProperty", typeName: "string" }]
+          properties: [{ name: "P2", type: "PrimitiveProperty", typeName: "string" }]
         },
       },
     };

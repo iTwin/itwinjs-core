@@ -1,9 +1,9 @@
 import { expect, assert } from "chai";
 import { Id64, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
-import { Code, IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
+import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
 import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
@@ -188,6 +188,7 @@ describe("IModelWriteTest", () => {
 
   });
 
+  // Does not work with mocks
   it.skip("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
 
@@ -338,7 +339,7 @@ describe("IModelWriteTest", () => {
     rootEl.userLabel = rootEl.userLabel + "changed";
     rwIModel.elements.updateElement(rootEl);
 
-    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
 
@@ -356,7 +357,7 @@ describe("IModelWriteTest", () => {
     timer = new Timer("query Codes I");
 
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
     assert.isTrue(await rwIModel.concurrencyControl.areAvailable(adminAccessToken));
 
     timer.end();
@@ -424,38 +425,6 @@ describe("IModelWriteTest", () => {
     await roIModel.close(adminAccessToken);
   });
 
-  /* This is skipped because iModel.concurrencyControl.request is not yet implemented for locks */
-  it.skip("should make change sets (#integration)", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush());
-    assert.exists(iModel);
-
-    const dictionary: DictionaryModel = iModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-
-    let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
-
-    const spatialCategoryId: Id64 = iModel.elements.insertElement(SpatialCategory.create(dictionary, "Cat1"));
-
-    // Insert a few elements
-    const elements: Element[] = [
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-    ];
-
-    for (const el of elements) {
-      el.buildConcurrencyControlRequest(DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
-    }
-
-    await iModel.concurrencyControl.request(accessToken); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
-
-    for (const el of elements)
-      iModel.elements.insertElement(el);
-
-    iModel.saveChanges("inserted generic objects");
-
-    await iModel.close(accessToken);
-  });
-
   it("Run plain SQL against pull-only connection", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly());
     try {
@@ -494,19 +463,19 @@ describe("IModelWriteTest", () => {
           const val0: SqliteValue = stmt.getValue(0);
           assert.equal(val0.columnName, "Id");
           assert.equal(val0.type, SqliteValueType.Integer);
-          assert.isFalse(val0.isNull());
+          assert.isFalse(val0.isNull);
           assert.equal(val0.getInteger(), i);
 
           const val1: SqliteValue = stmt.getValue(1);
           assert.equal(val1.columnName, "Name");
           assert.equal(val1.type, SqliteValueType.String);
-          assert.isFalse(val1.isNull());
+          assert.isFalse(val1.isNull);
           assert.equal(val1.getString(), `Dummy ${i}`);
 
           const val2: SqliteValue = stmt.getValue(2);
           assert.equal(val2.columnName, "Code");
           assert.equal(val2.type, SqliteValueType.Integer);
-          assert.isFalse(val2.isNull());
+          assert.isFalse(val2.isNull);
           assert.equal(val2.getInteger(), i * 100);
 
           const row: any = stmt.getRow();
@@ -539,13 +508,13 @@ describe("IModelWriteTest", () => {
         const nameVal: SqliteValue = stmt.getValue(0);
         assert.equal(nameVal.columnName, "Name");
         assert.equal(nameVal.type, SqliteValueType.String);
-        assert.isFalse(nameVal.isNull());
+        assert.isFalse(nameVal.isNull);
         const name: string = nameVal.getString();
 
         const versionVal: SqliteValue = stmt.getValue(1);
         assert.equal(versionVal.columnName, "StrData");
         assert.equal(versionVal.type, SqliteValueType.String);
-        assert.isFalse(versionVal.isNull());
+        assert.isFalse(versionVal.isNull);
         const profileVersion: any = JSON.parse(versionVal.getString());
 
         assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");

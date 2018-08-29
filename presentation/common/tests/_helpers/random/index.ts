@@ -4,5 +4,6 @@
 export * from "./Content";
 export * from "./EC";
 export * from "./Hierarchy";
+export * from "./Ruleset";
 export * from "./IModelJs";
 export * from "./Misc";

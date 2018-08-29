@@ -18,12 +18,37 @@ interface ToolbarItem {
   history: React.ReactNode;
 }
 
+/** Available alignment modes of [[Toolbar]] panels. */
+export enum ToolbarPanelAlignment {
+  Start,
+  End,
+}
+
+export class ToolbarPanelAlignmentHelpers {
+  /** Class name of [[ToolbarPanelAlignment.Start]] */
+  public static readonly START_CLASS_NAME = "nz-panel-alignment-start";
+  /** Class name of [[ToolbarPanelAlignment.End]] */
+  public static readonly END_CLASS_NAME = "nz-panel-alignment-end";
+
+  /** @returns Class name of specified [[ToolbarPanelAlignment]] */
+  public static getCssClassName(panelAlignment: ToolbarPanelAlignment): string {
+    switch (panelAlignment) {
+      case ToolbarPanelAlignment.Start:
+        return ToolbarPanelAlignmentHelpers.START_CLASS_NAME;
+      case ToolbarPanelAlignment.End:
+        return ToolbarPanelAlignmentHelpers.END_CLASS_NAME;
+    }
+  }
+}
+
 /** Properties of [[Toolbar]] component. */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
-  /** Describes to which direction the history/panel items are expanded. */
-  expandsTo: Direction;
+  /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
+  expandsTo?: Direction;
   /** Items of the toolbar. I.e. [[ExpandableItem]], [[Icon]], [[Item]], [[Overflow]] */
   items?: React.ReactNode;
+  /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
+  panelAlignment?: ToolbarPanelAlignment;
   /** Function called to render history items. */
   renderHistoryItems?: (historyItems: React.ReactNode) => React.ReactNode;
   /** Function called to render items. */
@@ -39,7 +64,8 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 export default class Toolbar extends React.Component<ToolbarProps> {
   /** @returns Toolbar direction based on [[ToolbarProps.expandsTo]] */
   public static getToolbarDirection(props: ToolbarProps): OrthogonalDirection {
-    const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(props.expandsTo);
+    const expandsTo = Toolbar.getExpandsTo(props);
+    const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(expandsTo);
     return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
   }
 
@@ -54,6 +80,14 @@ export default class Toolbar extends React.Component<ToolbarProps> {
     if (React.isValidElement<ExpandableItemProps>(item))
       return true;
     return false;
+  }
+
+  private static getExpandsTo(props: ToolbarProps) {
+    return props.expandsTo === undefined ? Direction.Bottom : props.expandsTo;
+  }
+
+  private static getPanelAlignment(props: ToolbarProps) {
+    return props.panelAlignment === undefined ? ToolbarPanelAlignment.Start : props.panelAlignment;
   }
 
   private getToolbarItems(): ToolbarItem[] {
@@ -111,10 +145,13 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
   public render() {
     const orthogonalDirection = Toolbar.getToolbarDirection(this.props);
+    const expandsTo = Toolbar.getExpandsTo(this.props);
+    const panelAlignment = Toolbar.getPanelAlignment(this.props);
     const className = classnames(
       "nz-toolbar-toolbar",
-      DirectionHelpers.getCssClassName(this.props.expandsTo),
+      DirectionHelpers.getCssClassName(expandsTo),
       OrthogonalDirectionHelpers.getCssClassName(orthogonalDirection),
+      ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
       this.props.className);
 
     const toolbarItems = this.getToolbarItems();

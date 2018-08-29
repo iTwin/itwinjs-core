@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tool from "@src/toolbar/item/expandable/group/tool/Tool";
+import Tool from "../../../../../../src/toolbar/item/expandable/group/tool/Tool";
 
 describe("<Tool />", () => {
   it("should render", () => {

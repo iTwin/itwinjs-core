@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+.table-drop-target {
+  border-top: solid transparent 1px;
+  border-bottom: solid transparent 1px;
+  &.above {
+    border-top: solid black 1px;
+  }
+  &.on {
+    .react-grid-Row * {
+      /* !important used because react-data-grid did. only way to override */
+      background-color: $bwc-blue-8 !important; 
+    }
+  }
+  &.below {
+    border-bottom: solid black 1px;
+  }
+  &.dragging {
+    .react-grid-Row * {
+      color: $bwc-gray;
+    }
+  }
+}

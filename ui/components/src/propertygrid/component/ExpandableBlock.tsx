@@ -4,7 +4,7 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import "./ExpandableBlock.scss";
 
 /** Props for the ExpandableBlock React component */

@@ -5,7 +5,7 @@
 
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY,
-  Range2d, Range3d, Angle, Transform, RotMatrix, Constant,
+  Range2d, Range3d, Angle, Transform, Matrix3d, Constant,
 } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 
@@ -68,9 +68,9 @@ export class ElementAlignedBox3d extends Range3d {
   public get width(): number { return this.xLength(); }
   public get depth(): number { return this.yLength(); }
   public get height(): number { return this.zLength(); }
-  public isValid(): boolean {
+  public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
+    return !this.isNull && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
 
   public static fromJSON(json?: any): ElementAlignedBox3d {
@@ -96,9 +96,9 @@ export class ElementAlignedBox2d extends Range2d {
       val.setFromJSON(json);
     return val;
   }
-  public isValid(): boolean {
+  public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
-    return !this.isNull() && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
+    return !this.isNull && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
   }
 }
 
@@ -108,7 +108,7 @@ export class ElementAlignedBox2d extends Range2d {
  */
 export class Placement3d implements Placement3dProps {
   public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.angles.toRotMatrix()); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.angles.toMatrix3d()); }
   public static fromJSON(json?: any): Placement3d {
     json = json ? json : {};
     return new Placement3d(Point3d.fromJSON(json.origin), YawPitchRollAngles.fromJSON(json.angles), ElementAlignedBox3d.fromJSON(json.bbox));
@@ -121,12 +121,12 @@ export class Placement3d implements Placement3dProps {
   }
 
   /** Determine whether this Placement3d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean { return this.bbox.isValid && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 
   public calculateRange(): AxisAlignedBox3d {
     const range = new AxisAlignedBox3d();
 
-    if (!this.isValid())
+    if (!this.isValid)
       return range;
 
     this.getTransform().multiplyRange(this.bbox, range);
@@ -140,14 +140,14 @@ export class Placement3d implements Placement3dProps {
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
 export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
+  public getTransform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
   public static fromJSON(json?: any): Placement2d {
     json = json ? json : {};
     return new Placement2d(Point2d.fromJSON(json.origin), Angle.fromJSON(json.angle), ElementAlignedBox2d.fromJSON(json.bbox));
   }
 
   /** Determine whether this Placement2d is valid. */
-  public isValid(): boolean { return this.bbox.isValid() && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean { return this.bbox.isValid && this.origin.maxAbs() < Constant.circumferenceOfEarth; }
 
   public setFrom(other: Placement2d) {
     this.origin.setFrom(other.origin);
@@ -158,7 +158,7 @@ export class Placement2d implements Placement2dProps {
   public calculateRange(): AxisAlignedBox3d {
     const range = new AxisAlignedBox3d();
 
-    if (!this.isValid())
+    if (!this.isValid)
       return range;
 
     this.getTransform().multiplyRange(Range3d.createRange2d(this.bbox, 0), range);

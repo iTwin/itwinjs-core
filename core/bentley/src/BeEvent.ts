@@ -124,6 +124,13 @@ export class BeEvent<T extends Listener> {
   public clear(): void { this._listeners.length = 0; }
 }
 
+/** Specialization of BeEvent for Ui events that take a single strongly typed argument. */
+export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
+
+  /** Raises event with single strongly typed argument. */
+  public emit(args: TEventArgs): void { this.raiseEvent(args); }
+}
+
 /**
  * A list of BeEvent objects, accessible by an event name.
  * This class may be used instead of explicitly declaring each BeEvent as a member of a containing class.

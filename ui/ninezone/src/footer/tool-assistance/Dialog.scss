@@ -1,13 +1,8 @@
-@import "../../_geometry";
+@import "@bentley/ui-core/lib/colors";
 @import "../_variables";
 
 .nz-footer-toolAssistance-dialog {
-  > .nz-content {
-    border-style: solid;
-    border-color: $dialog-border-color;
-    border-width: $dialog-border-width;
-    min-width: 200px;
-    min-height: 75px;
-    background-color: $dialog-bg-color;
-  }
+  min-width: $nz-footer-popover-min-width;
+  min-height: 75px;
+  color: $background-5;
 }

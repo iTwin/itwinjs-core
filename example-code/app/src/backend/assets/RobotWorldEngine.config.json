@@ -48,12 +48,14 @@
     "hostURL": "${ROBOT-WORLD-SEQ-URL}",
     "port": "${ROBOT-WORLD-SEQ-PORT}"
   },
-  "features": {
-    "imodel": {
-      "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}"
+  "features": [
+    {
+      "name": "imodel.readwrite",
+      "val": "${ROBOT-WORLD-FEATURE-READWRITE}"
     },
-    "experimental": {
-      "methods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+    {
+      "name": "experimental.methods",
+      "val": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
     }
-  }
+  ]
 }

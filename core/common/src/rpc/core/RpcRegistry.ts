@@ -13,28 +13,28 @@ import { RpcConfiguration } from "../../common";
 
 // tslint:disable:ban-types
 
-/** @hidden @internal */
+/** @hidden */
 export const REGISTRY = Symbol.for("@bentley/imodeljs-common/RpcRegistry");
 
-/** @hidden @internal */
+/** @hidden */
 export const OPERATION = Symbol.for("@bentley/imodeljs-common/RpcOperation");
 
-/** @hidden @internal */
+/** @hidden */
 export const POLICY = Symbol.for("@bentley/imodeljs-common/RpcOperationPolicy");
 
-/** @hidden @internal */
+/** @hidden */
 export const INSTANCE = Symbol.for("@bentley/imodeljs-common/RpcInterface/__instance__");
 
-/** @hidden @internal */
+/** @hidden */
 export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/__current__");
 
-/** @hidden @internal */
+/** @hidden */
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
 
-/** @hidden @internal */
+/** @hidden */
 export const builtins: string[] = [];
 
-/** @hidden @internal */
+/** @hidden */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
 

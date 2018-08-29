@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Viewport } from "../Viewport";
+import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 
 // tslint:disable:no-console
@@ -14,9 +14,9 @@ import { IModelApp } from "../IModelApp";
  * ViewManager.dropViewport.
  */
 export class EventController {
-  private readonly removals: VoidFunction[] = [];
+  private readonly _removals: VoidFunction[] = [];
 
-  constructor(public vp: Viewport) {
+  constructor(public vp: ScreenViewport) {
     const element = vp.canvas;
     if (element === undefined)
       return;
@@ -28,8 +28,8 @@ export class EventController {
   }
 
   public destroy() {
-    this.removals.forEach((remove) => remove());
-    this.removals.length = 0;
+    this._removals.forEach((remove) => remove());
+    this._removals.length = 0;
   }
 
   /**
@@ -44,7 +44,7 @@ export class EventController {
     const listener = (ev: Event) => { ev.preventDefault(); toolAdmin.addEvent(ev, vp); };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
-      this.removals.push(() => { element.removeEventListener(type, listener, false); });
+      this._removals.push(() => { element.removeEventListener(type, listener, false); });
     });
   }
 }

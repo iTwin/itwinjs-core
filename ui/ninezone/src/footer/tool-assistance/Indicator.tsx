@@ -41,7 +41,7 @@ export default class ToolAssistanceIndicator extends React.Component<ToolAssista
       >
         <div
           className="nz-indicator"
-          onClick={this.handleOnIndicatorClick}
+          onClick={this._handleOnIndicatorClick}
         >
           <div className="nz-icons">
             {this.props.icons}
@@ -54,7 +54,7 @@ export default class ToolAssistanceIndicator extends React.Component<ToolAssista
     );
   }
 
-  private handleOnIndicatorClick = () => {
+  private _handleOnIndicatorClick = () => {
     this.props.onClick && this.props.onClick();
   }
 }

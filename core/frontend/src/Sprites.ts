@@ -38,8 +38,11 @@ export class Sprite implements IDisposable {
   /** The texture for this Sprite. If undefined, the Spite is not valid. */
   public texture?: RenderTexture;
 
-  /** Dispose of this Sprite. Disposes of texture, if present. */
-  public dispose() { this.texture = dispose(this.texture); }
+  /** Destroy of this Sprite. Disposes of texture, if present. */
+  public destroy() { this.texture = dispose(this.texture); }
+
+  /** @hidden NOTE: Sprites are shared, so they can't be disposed when they are used for decorations. They are freed by [[destroy]] */
+  public dispose() { }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
    * @param filePath The file path of the PNG file holding the sprite texture (relative to the assets directory.)
@@ -62,7 +65,7 @@ export class Sprite implements IDisposable {
       this.size.x = image.naturalWidth;
       this.size.y = image.naturalHeight;
       if (IModelApp.hasRenderSystem)
-        this.texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection));
+        this.texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true));
     });
   }
 }
@@ -87,7 +90,7 @@ export class IconSprites {
     return sprite;
   }
   /** Empty the cache, disposing all existing Sprites. */
-  public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.dispose()); this._sprites.clear(); }
+  public static emptyAll() { this._sprites.forEach((sprite: Sprite) => sprite.destroy()); this._sprites.clear(); }
 }
 
 /**
@@ -99,17 +102,16 @@ export class IconSprites {
  * you can "see through" the Sprite.
  */
 export class SpriteLocation {
-  private viewport?: Viewport;
+  private _viewport?: Viewport;
   /** The Sprite shown by this SpriteLocation. */
   public sprite?: Sprite;
   /** The location of the sprite, in *view* coordinates. */
-  private readonly viewLocation = new Point3d();
-  private transparency = 0;
+  private readonly _viewLocation = new Point3d();
 
-  public get isActive(): boolean { return this.viewport !== undefined; }
+  public get isActive(): boolean { return this._viewport !== undefined; }
 
   /** Change the location of this SpriteLocation from a point in *world* coordinates. */
-  public setLocationWorld(location: XYAndZ) { this.viewport!.worldToView(location, this.viewLocation); }
+  public setLocationWorld(location: XYAndZ) { this._viewport!.worldToView(location, this._viewLocation); }
 
   /**
    * Activate this SpriteLocation to show a Sprite at a location in a Viewport.
@@ -121,11 +123,10 @@ export class SpriteLocation {
    * @param location The position, in world coordinates
    * @param transparency The transparency to draw the Sprite (0=opaque, 255=invisible)
    */
-  public activate(sprite: Sprite, viewport: Viewport, location: XYAndZ, transparency: number): void {
+  public activate(sprite: Sprite, viewport: Viewport, location: XYAndZ, _transparency: number): void {
     viewport.invalidateDecorations();
-    this.viewport = viewport;
+    this._viewport = viewport;
     this.sprite = sprite;
-    this.transparency = transparency;
     this.setLocationWorld(location);
   }
 
@@ -134,14 +135,14 @@ export class SpriteLocation {
     if (!this.isActive)
       return;
 
-    this.viewport!.invalidateDecorations();
-    this.viewport = undefined;
+    this._viewport!.invalidateDecorations();
+    this._viewport = undefined;
     this.sprite = undefined;
   }
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
   public decorate(context: DecorateContext) {
-    if (context.viewport === this.viewport && this.sprite)
-      context.addSprite(this.sprite, this.viewLocation, Vector3d.unitX(), this.transparency);
+    if (context.viewport === this._viewport && this.sprite)
+      context.addSprite(this.sprite, this._viewLocation, Vector3d.unitX());
   }
 }

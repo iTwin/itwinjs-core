@@ -5,7 +5,8 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
-import { PropertyDescription, PropertyRecord } from "../properties";
+import { PropertyRecord } from "../properties/Record";
+import { PropertyDescription } from "../properties/Description";
 
 /**
  * Column definition provided to Table.
@@ -13,7 +14,7 @@ import { PropertyDescription, PropertyRecord } from "../properties";
 export interface ColumnDescription {
   key: string;
 
-  label?: string;   // label needed if propertyDescription not specified
+  label: string;
   propertyDescription?: PropertyDescription;
 
   width?: number;
@@ -33,6 +34,7 @@ export interface ColumnDescription {
   filterCaseSensitive?: boolean;         /* Defaults to false */
   editorAlwaysOn?: boolean;              /* Defaults to false */
   pressSelectsRow?: boolean;             /* Defaults to true */
+  icon?: boolean;                        /* Defaults to false */
 }
 
 /**
@@ -40,8 +42,7 @@ export interface ColumnDescription {
  */
 export interface CellItem {
   key: string;
-
-  record?: PropertyRecord | string;
+  record?: PropertyRecord;
 
   isDisabled?: boolean;
   isBold?: boolean;
@@ -65,8 +66,13 @@ export interface ColorOverrides {
  * Row definition provided to Table.
  */
 export interface RowItem {
-  key: any;             // InstanceKey or string
+  /**
+   * **Must be unique.**
+   */
+  key: string;
   cells: CellItem[];
+
+  extendedData?: any;
 
   isDisabled?: boolean;
   colorOverrides?: ColorOverrides;

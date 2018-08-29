@@ -25,16 +25,16 @@ import { NumberArray } from "../PointHelpers";
 export class KnotVector {
   public knots: Float64Array;
   public degree: number;
-  private knot0: number;
-  private knot1: number;
-  private possibleWrap: boolean;
+  private _knot0: number;
+  private _knot1: number;
+  private _possibleWrap: boolean;
   public static readonly knotTolerance = 1.0e-9;
-  public get leftKnot() { return this.knot0; }
-  public get rightKnot() { return this.knot1; }
+  public get leftKnot() { return this._knot0; }
+  public get rightKnot() { return this._knot1; }
   public get leftKnotIndex() { return this.degree - 1; }
   public get rightKnotIndex() { return this.knots.length - this.degree; }
-  public get wrappable() { return this.possibleWrap; }
-  public set wrappable(value: boolean) { this.possibleWrap = value; }
+  public get wrappable() { return this._possibleWrap; }
+  public set wrappable(value: boolean) { this._possibleWrap = value; }
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }
   /**
    *
@@ -45,10 +45,10 @@ export class KnotVector {
    */
   private constructor(knots: number[] | Float64Array | number, degree: number) {
     this.degree = degree;
-    this.possibleWrap = false;
+    this._possibleWrap = false;
     // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
-    this.knot0 = 0.0;
-    this.knot1 = 1.0;
+    this._knot0 = 0.0;
+    this._knot1 = 1.0;
     // satisfy the initialize checker ..
     if (Array.isArray(knots)) {
       this.knots = new Float64Array(knots.length);
@@ -65,11 +65,11 @@ export class KnotVector {
   public clone(): KnotVector { return new KnotVector(this.knots, this.degree); }
   private setupFixedValues() {
     // These should be read-only . ..
-    this.knot0 = this.knots[this.degree - 1];
-    this.knot1 = this.knots[this.knots.length - this.degree];
+    this._knot0 = this.knots[this.degree - 1];
+    this._knot1 = this.knots[this.knots.length - this.degree];
   }
   /** @returns Return the total knot distance from beginning to end. */
-  public get knotLength01(): number { return this.knot1 - this.knot0; }
+  public get knotLength01(): number { return this._knot1 - this._knot0; }
 
   public isAlmostEqual(other: KnotVector): boolean {
     if (this.degree !== other.degree) return false;

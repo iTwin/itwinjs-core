@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import UiCore from "@src/UiCore";
+import UiCore from "../src/UiCore";
 
 export default class TestUtils {
   private static _i18n?: I18N;
