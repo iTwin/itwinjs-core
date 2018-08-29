@@ -1844,9 +1844,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           {this.getTargets(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
-          <Zone bounds={outlineBounds}>
-            <GhostOutline />
-          </Zone>
+          <GhostOutline bounds={outlineBounds} />
         }
       </>
     );
@@ -1932,9 +1930,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           {this.getTargets(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
-          <Zone bounds={outlineBounds}>
-            <GhostOutline />
-          </Zone>
+          <GhostOutline bounds={outlineBounds} />
         }
       </>
     );
@@ -2095,9 +2091,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             {this.getTargets(statusZone.id)}
           </Zone>
           {!outlineBounds ? undefined :
-            <Zone bounds={outlineBounds}>
-              <GhostOutline />
-            </Zone>
+            <GhostOutline bounds={outlineBounds} />
           }
         </>
       );
@@ -2111,9 +2105,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           {this.getTargets(statusZone.id)}
         </Zone>
         {!outlineBounds ? undefined :
-          <Zone bounds={outlineBounds}>
-            <GhostOutline />
-          </Zone>
+          <GhostOutline bounds={outlineBounds} />
         }
       </>
     );

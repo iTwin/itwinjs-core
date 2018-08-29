@@ -8,11 +8,20 @@
   $width: 10px;
   $color: rgb(140, 210, 255);
 
-  position: relative;
+  position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 2px;
-  box-shadow: 0 0 $blur ($width / 2) $color, 0 0 $blur ($width / 2) $color inset;
+  padding: $width / 2;
+  box-sizing: border-box;
 
   @include nz-z-index(zone-outline);
+
+  &:after {
+    content: "";
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 $blur ($width / 2) $color, 0 0 $blur ($width / 2) $color inset;
+    display: block;
+  }
 }
