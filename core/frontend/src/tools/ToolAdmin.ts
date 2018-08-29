@@ -325,6 +325,27 @@ export class ToolAdmin {
   private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
 
+  // Workaround for Edge Bug.
+  private static _keysCurrentlyDown = new Set<string>(); // The (small) set of keys that are currently pressed.
+
+  /** Handler for keyboard events. */
+  private static _keyEventHandler = (ev: KeyboardEvent) => {
+    if (ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+      return;
+
+    // Workaround for Edge Bug. Edge doesn't correctly set the "repeat" flag for keyboard events. We therefore have to implement it
+    // ourselves. Keep the test above since it will be faster for other browsers. We can delete this entire block of code when Edge works correctly.
+    if (ev.type === "keydown") {
+      if (ToolAdmin._keysCurrentlyDown.has(ev.code)) // if we've already received a keydown for this key, its a repeat. Skip it
+        return;
+      ToolAdmin._keysCurrentlyDown.add(ev.code);
+    } else {
+      ToolAdmin._keysCurrentlyDown.delete(ev.code);
+    }
+
+    IModelApp.toolAdmin.addEvent(ev);
+  }
+
   /** @hidden */
   public onInitialized() {
     if (typeof document === "undefined")
@@ -333,9 +354,13 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
 
     ["keydown", "keyup"].forEach((type) => {
-      document.addEventListener(type, ToolAdmin.keyEventHandler as EventListener, true);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin.keyEventHandler as EventListener, true); });
+      document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, true);
+      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, true); });
     });
+
+    // the list of currently down keys can get out of sync if a key goes down and then we lose focus. Clear the list every time we get focus.
+    window.onfocus = () => { ToolAdmin._keysCurrentlyDown.clear(); };
+    ToolAdmin._removals.push(() => { window.onfocus = null; });
   }
 
   /** @hidden */
@@ -366,12 +391,6 @@ export class ToolAdmin {
     last.ev = event.ev; // sequential moves are not important. Replace the previous one with this one.
     last.vp = event.vp;
     return true;
-  }
-
-  /** Handler for keyboard events. */
-  private static keyEventHandler(ev: KeyboardEvent) {
-    if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
-      IModelApp.toolAdmin.addEvent(ev);
   }
 
   /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
@@ -593,7 +612,6 @@ export class ToolAdmin {
       await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
     } catch (error) {
-      console.log("error in event processing ", error);
       throw error; // enable this in debug only.
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
@@ -957,6 +975,9 @@ export class ToolAdmin {
   public async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
     if (this.filterViewport(vp))
       return;
+
+    if (undefined === this._viewTool && button === BeButton.Data)
+      IModelApp.viewManager.setSelectedView(vp);
 
     vp.removeAnimator();
     const ev = new BeButtonEvent();
