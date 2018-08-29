@@ -1538,7 +1538,10 @@ export default class ZonesExample extends React.Component<{}, State> {
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={lastPosition}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragStart={(initialPosition, offset) => {
+              this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset);
+              this._handleWidgetTabDragFinish();
+            }}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
