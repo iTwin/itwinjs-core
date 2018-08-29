@@ -5,7 +5,14 @@ import * as React from "react";
 
 import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
 
-import { IModelConnection, IModelApp, ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
+import {
+  IModelConnection,
+  IModelApp,
+  ActivityMessageDetails,
+  ActivityMessageEndReason,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+} from "@bentley/imodeljs-frontend";
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
@@ -238,7 +245,7 @@ export class ViewsFrontstage {
     IModelApp.notifications.setupActivityMessage(details);
 
     while (!isCancelled && progress <= 100) {
-      IModelApp.notifications.outputActivityMessage("SampleMessage", progress);
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
       await BeDuration.wait(100);
       progress++;
     }
@@ -315,7 +322,7 @@ export class ViewsFrontstage {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
             <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
             <ViewListWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
           </>

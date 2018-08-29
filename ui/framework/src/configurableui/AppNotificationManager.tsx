@@ -60,8 +60,8 @@ export class AppNotificationManager extends NotificationManager {
    * @param details  The activity message details.
    * @return true if the message was displayed, false if an invalid priority is specified.
    */
-  public setupActivityMessage(_details: ActivityMessageDetails): boolean {
-    return MessageManager.setupActivityMessageDetails(_details);
+  public setupActivityMessage(details: ActivityMessageDetails): boolean {
+    return MessageManager.setupActivityMessageDetails(details);
   }
 
   /**
@@ -70,8 +70,8 @@ export class AppNotificationManager extends NotificationManager {
    * @param percentComplete  The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(_messageText: string, _percentComplete: number, _restore?: boolean): boolean {
-    return MessageManager.setupActivityMessageValues(_messageText, _percentComplete, _restore ? true : false);
+  public outputActivityMessage(messageText: string, percentComplete: number): boolean {
+    return MessageManager.setupActivityMessageValues(messageText, percentComplete);
   }
 
   /**
@@ -79,8 +79,8 @@ export class AppNotificationManager extends NotificationManager {
    * @param reason       Reason for the end of the Activity Message.
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
-  public endActivityMessage(_reason: ActivityMessageEndReason): boolean {
-    switch (_reason) {
+  public endActivityMessage(reason: ActivityMessageEndReason): boolean {
+    switch (reason) {
       case (ActivityMessageEndReason.Completed):
         return MessageManager.endActivityMessage(true);
       case (ActivityMessageEndReason.Cancelled):

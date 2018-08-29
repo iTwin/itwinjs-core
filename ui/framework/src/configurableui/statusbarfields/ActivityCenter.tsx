@@ -52,7 +52,7 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
 
   private _handleActivityMessageEvent = (args: ActivityMessageEventArgs) => {
     this.setState((_prevState) => ({
-      title: args.title,
+      title: args.message,
       percentage: args.percentage,
       isActivityMessageVisible: true,
     }));

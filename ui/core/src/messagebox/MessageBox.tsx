@@ -88,18 +88,18 @@ export interface MessageContainerProps {
 /** Message Container React component.
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
-  public static getIconClassName(severity: MessageSeverity) {
+  public static getIconClassName(severity: MessageSeverity, hollow?: boolean) {
     switch (severity) {
       case MessageSeverity.Information:
-        return "icon-info message-box-information";
+        return hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
       case MessageSeverity.Question:
-        return "icon-help message-box-question";
+        return hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
       case MessageSeverity.Warning:
-        return "icon-status-warning message-box-warning";
+        return hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
       case MessageSeverity.Error:
-        return "icon-status-error message-box-error";
+        return hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
       case MessageSeverity.Fatal:
-        return "icon-status-rejected message-box-fatal";
+        return hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
     }
     return "icon-info";
   }

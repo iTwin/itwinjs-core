@@ -222,7 +222,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               <StatusMessageContent
                 status={StatusBar.severityToStatus(severity)}
                 icon={
-                  <i className={`icon ${MessageContainer.getIconClassName(severity)}`} />
+                  <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
                 }
               >
                 <StatusMessageLayout
@@ -249,7 +249,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
             <StatusMessageContent
               status={StatusBar.severityToStatus(severity)}
               icon={
-                <i className={`icon ${MessageContainer.getIconClassName(severity)}`} />
+                <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
               }
             >
               <StatusMessageLayout
@@ -296,29 +296,29 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
         >
           <StatusLayout
             label={
-              (messageDetails && messageDetails.showPercentInMessage) ?
-                <div>
-                  <Label text={this.state.activityMessageInfo!.title} />
+              <div>
+                <Label text={this.state.activityMessageInfo!.message} />
+                {
+                  (messageDetails && messageDetails.showPercentInMessage) &&
                   <h6 className="body-text-dark">{this.state.activityMessageInfo!.percentage + percentComplete}</h6>
-                </div> :
-                <Label text={this.state.activityMessageInfo!.title} />
+                }
+              </div>
             }
             buttons={
-              (messageDetails && messageDetails.supportsCancellation) ?
-                <>
+              <>
+                {
+                  (messageDetails && messageDetails.supportsCancellation) &&
                   <Hyperlink text="Cancel"
                     onClick={this._cancelActivityMessage}
                   />
-                  <MessageButton onClick={this._dismissActivityMessage}>
-                    <i className="icon icon-close" />
-                  </MessageButton>
-                </> :
+                }
                 <MessageButton onClick={this._dismissActivityMessage}>
                   <i className="icon icon-close" />
                 </MessageButton>
+              </>
             }
             progress={
-              (!messageDetails || messageDetails.showProgressBar) &&
+              (messageDetails && messageDetails.showProgressBar) &&
               <Progress
                 status={Status.Information}
                 progress={this.state.activityMessageInfo!.percentage}
