@@ -1430,6 +1430,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           <BackTarget
             key={widgetId}
             onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Unmerge, isTargeted)}
+            zoneIndex={widgetId}
           />
         );
       case DropTarget.None:

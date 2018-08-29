@@ -39,7 +39,7 @@ export default class ZoneTargets extends React.Component<{}> {
         </div>
         <div style={col}>
           <Container style={container}>
-            <Back />
+            <Back zoneIndex={9} />
           </Container>
         </div>
       </div>
