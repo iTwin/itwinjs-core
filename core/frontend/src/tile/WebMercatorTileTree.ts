@@ -15,7 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import { ScreenViewport } from "../Viewport";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
@@ -399,7 +399,7 @@ class BingMapProvider extends ImageryProvider {
     IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information);
   }
 
-  public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return this.logoImage; }
+  public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return this._logoImage; }
 
   public getCopyrightMessage(bgMapState: BackgroundMapState): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
@@ -577,7 +577,7 @@ export class BackgroundMapState {
   private _mapType: MapType;
   private _copyrightImageAddedToDOM: boolean = false;
   private _copyrightMessageAddedToDOM: boolean = false;
-  private _viewport?: Viewport;  // this is stored in case we need it to get the display Tile list, which we need for some providers (Bing)
+  private _viewport?: ScreenViewport;  // this is stored in case we need it to get the display Tile list, which we need for some providers (Bing)
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
@@ -639,6 +639,9 @@ export class BackgroundMapState {
   }
 
   private displayCopyrightImage(context: SceneContext) {
+    if (!(context.viewport instanceof ScreenViewport))
+      return;
+
     const copyrightImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage(this);
     if (!copyrightImage)
       return;
@@ -646,18 +649,21 @@ export class BackgroundMapState {
     if (this._copyrightImageAddedToDOM)
       return;
 
-    const vp: Viewport = context.viewport;
-    if (vp.enclosingDiv) {
+    const vp: ScreenViewport = context.viewport as ScreenViewport;
+    if (vp.decorationDiv) {
       copyrightImage.style.position = "absolute";
       copyrightImage.style.left = "0px";
       const positionString = `${(vp.canvas.clientHeight - copyrightImage.height).toString()}px`;
       copyrightImage.style.top = positionString;
       copyrightImage.style.pointerEvents = "none";
-      vp.enclosingDiv.appendChild(copyrightImage);
+      vp.decorationDiv.appendChild(copyrightImage);
     }
+    this._copyrightImageAddedToDOM = true;
   }
 
   private displayCopyrightMessage(context: SceneContext) {
+    if (!(context.viewport instanceof ScreenViewport))
+      return;
     const copyrightMessage: HTMLElement | undefined = this._provider!.getCopyrightMessage(this);
     if (!copyrightMessage)
       return;
@@ -665,10 +671,10 @@ export class BackgroundMapState {
     if (this._copyrightMessageAddedToDOM)
       return;
 
-    this._viewport = context.viewport;
-    if (this._viewport.enclosingDiv) {
+    this._viewport = context.viewport as ScreenViewport;
+    if (this._viewport.decorationDiv) {
       // append it so it has a width and height, so we can position it.
-      this._viewport.enclosingDiv.appendChild(copyrightMessage);
+      this._viewport.decorationDiv.appendChild(copyrightMessage);
       copyrightMessage.style.display = "block";
       copyrightMessage.style.position = "absolute";
       const boundingRect: ClientRect = copyrightMessage.getBoundingClientRect();
