@@ -1,6 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import ListPickerWidget, { ListItem, ListItemType } from "./ListPickerWidget";
-import { IModelApp, Viewport, ViewState } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, Viewport, ViewState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -18,6 +21,8 @@ export class CategorySelectorDemoWidget extends WidgetControl {
 // Select categories in a viewport or all viewports of the current selected type (e.g. 3D/2D)
 // Pass 'allViewports' property to ripple category changes to all viewports
 export class CategorySelectorWidget extends React.Component<any, any> {
+  private _removeSelectedViewportChanged?: () => void;
+
   constructor(props: any) {
     super(props);
 
@@ -27,12 +32,21 @@ export class CategorySelectorWidget extends React.Component<any, any> {
       initialized: false,
     };
 
-    IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
-      if (args.current)
-        this.updateStateWithViewport(args.current);
-    });
-
     this.updateState();
+  }
+
+  public componentDidMount() {
+    this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+  }
+
+  public componentWillUnmount() {
+    if (this._removeSelectedViewportChanged)
+      this._removeSelectedViewportChanged();
+  }
+
+  private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
+    if (args.current)
+      this.updateStateWithViewport(args.current);
   }
 
   public async updateStateWithViewport(vp: Viewport) {

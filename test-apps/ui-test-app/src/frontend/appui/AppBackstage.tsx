@@ -69,11 +69,11 @@ class AppBackstage extends React.Component<AppBackstageProps> {
   }
 
   public componentDidMount() {
-    Backstage.BackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
+    Backstage.onBackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
   }
 
   public componentWillUnmount() {
-    Backstage.BackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
+    Backstage.onBackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
   }
 
   private _handleBackstageCloseEventEvent = (_args: BackstageCloseEventArgs) => {

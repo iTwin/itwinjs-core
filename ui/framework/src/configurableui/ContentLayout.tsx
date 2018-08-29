@@ -103,11 +103,11 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   }
 
   public componentDidMount() {
-    ContentViewManager.ActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
+    ContentViewManager.onActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
   }
 
   public componentWillUnmount() {
-    ContentViewManager.ActiveContentChangedEvent.removeListener(this._handleActiveContentChanged);
+    ContentViewManager.onActiveContentChangedEvent.removeListener(this._handleActiveContentChanged);
   }
 
   private _handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
@@ -479,11 +479,11 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
   }
 
   public componentDidMount() {
-    FrontstageManager.ContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
+    FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
+    FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {

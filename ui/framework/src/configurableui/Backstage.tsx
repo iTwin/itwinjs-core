@@ -287,7 +287,7 @@ export class BackstageCloseEventEvent extends UiEvent<BackstageCloseEventArgs> {
 function closeBackStage() {
   // new BackstageHide().run();  // BARRY_TODO
 
-  Backstage.BackstageCloseEventEvent.emit({ isVisible: false });
+  Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
 }
 
 /** Props for the [[Backstage]] React component.
@@ -302,7 +302,7 @@ export interface BackstageProps {
  */
 export class Backstage extends React.Component<BackstageProps> {
   private static _backstageCloseEventEvent: BackstageCloseEventEvent = new BackstageCloseEventEvent();
-  public static get BackstageCloseEventEvent(): BackstageCloseEventEvent { return Backstage._backstageCloseEventEvent; }
+  public static get onBackstageCloseEventEvent(): BackstageCloseEventEvent { return Backstage._backstageCloseEventEvent; }
 
   constructor(props?: any, context?: any) {
     super(props, context);

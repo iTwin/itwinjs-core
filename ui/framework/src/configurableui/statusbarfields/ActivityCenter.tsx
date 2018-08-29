@@ -41,18 +41,18 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
   }
 
   public componentDidMount() {
-    MessageManager.ActivityMessageAddedEvent.addListener(this._handleActivityMessageEvent);
-    MessageManager.ActivityMessageCanceledEvent.addListener(this._handleActivityMessageCanceledEvent);
+    MessageManager.onActivityMessageAddedEvent.addListener(this._handleActivityMessageEvent);
+    MessageManager.onActivityMessageCanceledEvent.addListener(this._handleActivityMessageCanceledEvent);
   }
 
   public componentWillUnmount() {
-    MessageManager.ActivityMessageAddedEvent.removeListener(this._handleActivityMessageEvent);
-    MessageManager.ActivityMessageCanceledEvent.removeListener(this._handleActivityMessageCanceledEvent);
+    MessageManager.onActivityMessageAddedEvent.removeListener(this._handleActivityMessageEvent);
+    MessageManager.onActivityMessageCanceledEvent.removeListener(this._handleActivityMessageCanceledEvent);
   }
 
   private _handleActivityMessageEvent = (args: ActivityMessageEventArgs) => {
     this.setState((_prevState) => ({
-      title: args.title,
+      title: args.message,
       percentage: args.percentage,
       isActivityMessageVisible: true,
     }));

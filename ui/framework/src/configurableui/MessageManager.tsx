@@ -39,7 +39,7 @@ export interface MessageAddedEventArgs {
 /** Activity Message Event Args class.
  */
 export interface ActivityMessageEventArgs {
-  title: string;
+  message: string;
   percentage: number;
   details?: ActivityMessageDetails;
   restored?: boolean;
@@ -64,13 +64,13 @@ export class ActivityMessageCanceledEvent extends UiEvent<{}> { }
  * Used to display tracked progress in ActivityMessage.
  */
 class OngoingActivityMessage {
-  private _title: string = "";
+  private _message: string = "";
   private _percentage: number = 0;
   private _details: ActivityMessageDetails = new ActivityMessageDetails(true, true, true);
   private _restored: boolean = false;
 
-  public get Title(): string { return this._title; }
-  public set Title(title: string) { this._title = title; }
+  public get Message(): string { return this._message; }
+  public set Message(title: string) { this._message = title; }
 
   public get Percentage(): number { return this._percentage; }
   public set Percentage(percentage: number) { this._percentage = percentage; }
@@ -94,12 +94,12 @@ export class MessageManager {
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
 
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.ouptputMessage(). */
-  public static get MessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
-  public static get ActivityMessageAddedEvent(): ActivityMessageAddedEvent { return this._ActivityMessageAddedEvent; }
-  public static get ActivityMessageCanceledEvent(): ActivityMessageCanceledEvent { return this._ActivityMessageCanceledEvent; }
+  public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
+  public static get onActivityMessageAddedEvent(): ActivityMessageAddedEvent { return this._ActivityMessageAddedEvent; }
+  public static get onActivityMessageCanceledEvent(): ActivityMessageCanceledEvent { return this._ActivityMessageCanceledEvent; }
 
   /** List of messages as [[NotifyMessageDetails]]. */
-  public static get Messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
+  public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
 
   /** Output a message and/or alert to the user. */
   public static addMessage(message: NotifyMessageDetails): void {
@@ -110,7 +110,7 @@ export class MessageManager {
       this._messages.splice(0, numToErase);
     }
 
-    this.MessageAddedEvent.emit({ message });
+    this.onMessageAddedEvent.emit({ message });
   }
 
   /**
@@ -119,37 +119,40 @@ export class MessageManager {
    * @param details    Details for setup of ActivityMessage
    * @returns true if details is valid and can be used to display ActivityMessage
    */
-  public static setupActivityMessageDetails(_details: ActivityMessageDetails): boolean {
-    if (!_details)
+  public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
+    if (!details)
       return false;
 
-    this._OngoingActivityMessage.Details = _details;
+    this._OngoingActivityMessage.Details = details;
+    this._OngoingActivityMessage.IsRestored = true;
     return true;
   }
 
   /**
    * Sets values on _OngoingActivityMessage to be referenced when displaying
    * an ActivityMessage.
-   * @param title       Title of the process that ActivityMessage is tracking
+   * @param message     Message of the process that ActivityMessage is tracking
    * @param percentage  Progress made by activity in percentage
-   * @param restore     True if original ActivityMessage has been closed and
+   * @param restored    True if original ActivityMessage has been closed and
    *                    is now being restored from the status bar.
    * @returns true if details is valid and can be used to display ActivityMessage
    */
-  public static setupActivityMessageValues(_title: string, _percentage: number, _restore: boolean): boolean {
-    if (!_title || !_percentage)
+  public static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean {
+    if (!message || !percentage)
       return false;
 
-    this._OngoingActivityMessage.Title = _title;
-    this._OngoingActivityMessage.Percentage = _percentage;
-    this._OngoingActivityMessage.IsRestored = _restore;
+    this._OngoingActivityMessage.Message = message;
+    this._OngoingActivityMessage.Percentage = percentage;
 
-    this.ActivityMessageAddedEvent.emit({
-      title: _title,
-      percentage: _percentage,
+    this.onActivityMessageAddedEvent.emit({
+      message,
+      percentage,
       details: this._OngoingActivityMessage.Details,
-      restored: _restore,
+      restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.IsRestored,
     });
+
+    this._OngoingActivityMessage.IsRestored = false;
+
     return true;
   }
 
@@ -160,7 +163,7 @@ export class MessageManager {
    */
   public static endActivityMessage(isCompleted: boolean): boolean {
     this.endActivityProcessing(isCompleted);
-    this.ActivityMessageCanceledEvent.emit({});
+    this.onActivityMessageCanceledEvent.emit({});
     return true;
   }
 
@@ -168,7 +171,7 @@ export class MessageManager {
    * Ends processing for activity according to message definition.
    * @param isCompleted   True if the activity was completed, false if it was canceled
    */
-  private static endActivityProcessing(isCompleted: boolean) {
+  private static endActivityProcessing(isCompleted: boolean): void {
     if (isCompleted)
       this._OngoingActivityMessage.Details.onActivityCompleted();
     else
