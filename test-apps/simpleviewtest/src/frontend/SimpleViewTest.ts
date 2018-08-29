@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import {
-  IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
+  IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
   BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode,
 } from "@bentley/imodeljs-frontend";
@@ -940,6 +940,40 @@ class SVTNotifications extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
+
+  public openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+    const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
+    if (!rootDiv)
+      return Promise.resolve(MessageBoxValue.Cancel);
+    // create a dialog element.
+    const dialog: HTMLDialogElement = document.createElement("dialog") as HTMLDialogElement;
+    dialog.className = "notification-messagebox";
+
+    // set up the message
+    const span: HTMLSpanElement = document.createElement("span");
+    span.innerHTML = _message;
+    span.className = "notification-messageboxtext";
+    dialog.appendChild(span);
+
+    // make the ok button.
+    const button: HTMLButtonElement = document.createElement("button");
+    button.className = "notification-messageboxbutton";
+    button.innerHTML = "Ok";
+    button.onclick = (event) => {
+      const okButton = event.target as HTMLButtonElement;
+      const msgDialog = okButton.parentElement as HTMLDialogElement;
+      const topDiv = msgDialog.parentElement as HTMLDivElement;
+      msgDialog.close();
+      topDiv.removeChild(dialog);
+    };
+    dialog.appendChild(button);
+
+    // add the dialog to the root div element and show it.
+    rootDiv.appendChild(dialog);
+    dialog.showModal();
+
+    return Promise.resolve(MessageBoxValue.Ok);
+  }
 
   protected toolTipIsOpen(): boolean { return undefined !== this._toolTip; }
 
