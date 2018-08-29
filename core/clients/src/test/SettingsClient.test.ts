@@ -60,13 +60,13 @@ describe("ConnectSettingsClient", () => {
     const appUserSetting = { appString: "appString", appNumber: "appNumber", appArray: [1, 2, 3, 4] };
 
     // start by deleting all of the user settings of the type/version we're going to create.
-    const deleteResult: SettingsResult = await settingsClient.deleteUserSetting("AppUser", 1, authToken, true);
+    const deleteResult: SettingsResult = await settingsClient.deleteUserSetting("TestSettings", "AppUser", authToken, true);
     chai.expect(SettingsStatus.Success === deleteResult.status);
 
-    const saveResult: SettingsResult = await settingsClient.saveUserSetting(appUserSetting, "AppUser", 1, authToken, true);
+    const saveResult: SettingsResult = await settingsClient.saveUserSetting(appUserSetting, "TestSettings", "AppUser", authToken, true);
     chai.expect(SettingsStatus.Success === saveResult.status);
 
-    const getResult: SettingsResult = await settingsClient.getUserSetting("AppUser", 1, authToken, true);
+    const getResult: SettingsResult = await settingsClient.getUserSetting("TestSettings", "AppUser", authToken, true);
     chai.expect(SettingsStatus.Success === getResult.status);
     chai.expect(getResult.setting);
     chai.expect(getResult.setting.appString).equals(appUserSetting.appString);

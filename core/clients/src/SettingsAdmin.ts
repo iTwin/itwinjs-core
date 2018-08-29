@@ -13,7 +13,8 @@ export const enum SettingsStatus {
   IModelInvalid = SETTINGS_ERROR_BASE + 4,
   SettingNotFound = SETTINGS_ERROR_BASE + 5,
   ServerError = SETTINGS_ERROR_BASE + 6,
-  UnknownError = SETTINGS_ERROR_BASE + 7,
+  SettingAlreadyExists = SETTINGS_ERROR_BASE + 7,
+  UnknownError = SETTINGS_ERROR_BASE + 8,
 }
 
 export class SettingsResult {
@@ -24,15 +25,15 @@ export class SettingsResult {
 /** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, IModel, and User */
 export interface SettingsAdmin {
 
-  saveUserSetting(settings: any, type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveUserSetting(settings: any, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  getUserSetting(type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getUserSetting(namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  deleteUserSetting(type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteUserSetting(namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  saveSetting(settings: any, type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveSetting(settings: any, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  getSetting(type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getSetting(namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  deleteSetting(type: string, version: number, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteSetting(namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
