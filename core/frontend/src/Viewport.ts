@@ -1742,7 +1742,8 @@ export class ScreenViewport extends Viewport {
     while (parentDiv.lastChild)
       parentDiv.removeChild(parentDiv.lastChild);
 
-    const parentZ = parseInt(parentDiv.style.zIndex || "0", 10);
+    // get the (computed) z-index value of the parent, as an integer.
+    const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
 
     addChild(canvas, parentZ + 1);
 
@@ -1909,9 +1910,6 @@ export class OffScreenViewport extends Viewport {
     this.changeView(this.view);
   }
 
-  /** @hidden */
   public prepareDecorations(_decorations: Decorations): void { }
-
-  /** @hidden */
   public decorate(_context: DecorateContext): void { }
 }
