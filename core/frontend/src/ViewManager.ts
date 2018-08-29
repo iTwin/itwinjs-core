@@ -47,7 +47,7 @@ export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
   private readonly _viewports: ScreenViewport[] = [];
-  private readonly _decorators: Decorator[] = [];
+  public readonly decorators: Decorator[] = [];
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
@@ -74,7 +74,7 @@ export class ViewManager {
   /** @hidden */
   public onShutDown() {
     this._viewports.length = 0;
-    this._decorators.length = 0;
+    this.decorators.length = 0;
     this._selectedView = undefined;
     this.cursor = undefined;
   }
@@ -244,10 +244,10 @@ export class ViewManager {
    * @see [[dropDecorator]]
    */
   public addDecorator(decorator: Decorator): () => void {
-    if (this._decorators.includes(decorator))
+    if (this.decorators.includes(decorator))
       throw new Error("decorator already registered");
 
-    this._decorators.push(decorator);
+    this.decorators.push(decorator);
     this.invalidateDecorationsAllViews();
     return () => { this.dropDecorator(decorator); };
   }
@@ -258,28 +258,27 @@ export class ViewManager {
    *
    */
   public dropDecorator(decorator: Decorator) {
-    const index = this._decorators.indexOf(decorator);
+    const index = this.decorators.indexOf(decorator);
     if (index >= 0)
-      this._decorators.splice(index, 1);
+      this.decorators.splice(index, 1);
     this.invalidateDecorationsAllViews();
   }
 
-  /** @hidden */
+  /** Get the tooltip for a pickable decoration.
+   *  @hidden
+   */
   public async getDecorationToolTip(hit: HitDetail): Promise<string> {
-    for (const decorator of this._decorators) {
+    for (const decorator of this.decorators) {
       if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
         return decorator.getDecorationToolTip(hit);
     }
-    return " ";
+    return "";
   }
 
-  /** @hidden */
-  public callDecorators(context: DecorateContext) {
-    context.viewport.decorate(context);
-    this._decorators.forEach((decorator) => decorator.decorate(context));
-  }
-
-  public setViewCursor(cursor: BeCursor | undefined): void {
+  /** Change the cursor shown in all Viewports.
+   * @param cursor The new cursor to display. If undefined, the default cursor is used.
+   */
+  public setViewCursor(cursor: BeCursor | undefined) {
     if (cursor === this.cursor)
       return;
 

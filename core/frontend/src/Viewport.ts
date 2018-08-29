@@ -1621,7 +1621,7 @@ export abstract class Viewport {
 
     if (!sync.isValidDecorations) {
       const decorations = new Decorations();
-      this.prepareDecorations(decorations);
+      this.addDecorations(decorations);
       target.changeDecorations(decorations);
       isRedrawNeeded = true;
     }
@@ -1639,10 +1639,7 @@ export abstract class Viewport {
   }
 
   /** @hidden */
-  public abstract prepareDecorations(decorations: Decorations): void;
-
-  /** @hidden */
-  public abstract decorate(context: DecorateContext): void;
+  public addDecorations(_decorations: Decorations): void { }
 
   /**
    * Read selected data about each pixel within a rectangular region of this Viewport.
@@ -1697,7 +1694,7 @@ export abstract class Viewport {
   }
 }
 
-/** An interactive viewport that exists within an HTMLDom. ScreenViewports can receive HTML events. */
+/** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events. */
 export class ScreenViewport extends Viewport {
   private _evController?: EventController;
   private _viewCmdTargetCenter?: Point3d;
@@ -1722,6 +1719,11 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  public static removeAllChildren(el: HTMLDivElement) {
+    while (el.lastChild)
+      el.removeChild(el.lastChild);
+  }
+
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
@@ -1739,9 +1741,8 @@ export class ScreenViewport extends Viewport {
       this.parentDiv.appendChild(element);
     };
 
-    // first remove all children of supplied element.
-    while (parentDiv.lastChild)
-      parentDiv.removeChild(parentDiv.lastChild);
+    // first remove all children of supplied element
+    ScreenViewport.removeAllChildren(parentDiv);
 
     // get the (computed) z-index value of the parent, as an integer.
     const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
@@ -1789,17 +1790,17 @@ export class ScreenViewport extends Viewport {
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @hidden */
-  public prepareDecorations(decorations: Decorations): void {
-    this.sync.setValidDecorations();
+  public addDecorations(decorations: Decorations): void {
+    ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
-    IModelApp.viewManager.callDecorators(context);
-  }
-
-  /** @hidden */
-  public decorate(context: DecorateContext): void {
     this.view.decorate(context);
-    if (context.viewFlags.acsTriad)
+    if (this.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
+
+    for (const decorator of IModelApp.viewManager.decorators)
+      decorator.decorate(context);
+
+    this.sync.setValidDecorations();
   }
 
   /** Change the cursor for this Viewport */
@@ -1913,7 +1914,4 @@ export class OffScreenViewport extends Viewport {
     this.target.setViewRect(rect, temporary);
     this.changeView(this.view);
   }
-
-  public prepareDecorations(_decorations: Decorations): void { }
-  public decorate(_context: DecorateContext): void { }
 }

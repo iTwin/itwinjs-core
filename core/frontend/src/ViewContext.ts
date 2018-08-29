@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Viewport } from "./Viewport";
-import { Sprite } from "./Sprites";
+import { Viewport, ScreenViewport } from "./Viewport";
 import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
@@ -62,7 +61,9 @@ export class DynamicsContext extends RenderContext {
 }
 
 export class DecorateContext extends RenderContext {
-  constructor(vp: Viewport, private readonly _decorations: Decorations) { super(vp); }
+  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) { super(vp); }
+
+  public get screenViewport() { return this.viewport as ScreenViewport; }
 
   /** @hidden  */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
@@ -171,28 +172,9 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /**
-   * Display a sprite as view overlay graphic.
-   * @param sprite The sprite to draw
-   * @param location The location of the sprite, in view coordinates
-   * @param xVec The orientation of the sprite, in view coordinates
-   */
-  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY) {
-    if (!sprite.texture)
-      return; // sprite not loaded
-
-    const xVector = new Vector3d(xVec.x, xVec.y, 0);
-    const yVector = xVector.rotate90CCWXY();
-    xVector.scaleToLength(sprite.size.x, xVector);
-    yVector.scaleToLength(sprite.size.y, yVector);
-
-    const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
-    const xCorn = org.plus(xVector);
-
-    this.addDecoration(GraphicType.ViewOverlay, this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!);
+  public addHTMLDecoration(decoration: HTMLElement) {
+    this.screenViewport.decorationDiv.appendChild(decoration);
   }
-
-  private _pickableGrid: boolean = false; // ###TODO: Remove - testing only...
 
   /** @private */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
@@ -256,17 +238,17 @@ export class DecorateContext extends RenderContext {
     // values are "per 1000 pixels"
     const minGridSeparationPixels = 1000 / maxGridPts,
       minRefSeparation = 1000 / maxGridRefs;
-    let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
+    let meterPerPixel = vp.getPixelSizeAtPoint(testPt);
 
-    if ((refSpacing.x / uorPerPixel) < minRefSeparation || (refSpacing.y / uorPerPixel) < minRefSeparation)
+    if ((refSpacing.x / meterPerPixel) < minRefSeparation || (refSpacing.y / meterPerPixel) < minRefSeparation)
       gridsPerRef = 0;
 
     // Avoid z fighting with coincident geometry
-    gridOrg.plusScaled(viewZ, uorPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
-    uorPerPixel *= refScale;
+    gridOrg.plusScaled(viewZ, meterPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
+    meterPerPixel *= refScale;
 
-    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
-    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickableGrid ? "0xffffff0000000002" : undefined);
+    const drawDots = ((refSpacing.x / meterPerPixel) > minGridSeparationPixels) && ((refSpacing.y / meterPerPixel) > minGridSeparationPixels);
+    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, undefined, undefined);
 
     DecorateContext.drawGrid(builder, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
     this.addDecorationFromBuilder(builder);

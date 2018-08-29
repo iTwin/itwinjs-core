@@ -284,7 +284,7 @@ export class AccuSnap {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport);
+    const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport.iModel);
 
     this.cross.activate(crossSprite, viewport, crossPt, 0);
 
@@ -305,11 +305,12 @@ export class AccuSnap {
     this.errorIcon.deactivate();
 
     const vp = ev.viewport!;
+    const iModel = vp.iModel;
     let errorSprite: Sprite | undefined;
     switch (status) {
       case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSprite("SnapAppFiltered", vp);
+        errorSprite = IconSprites.getSprite("SnapAppFiltered", iModel);
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -317,12 +318,12 @@ export class AccuSnap {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", vp);
+        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
         this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }

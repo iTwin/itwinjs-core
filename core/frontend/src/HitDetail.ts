@@ -152,7 +152,7 @@ export class SnapDetail extends HitDetail {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
-    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport);
+    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport.iModel);
   }
 
   /** Returns `HitDetailType.Snap` */
