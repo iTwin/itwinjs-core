@@ -1808,10 +1808,12 @@ export default class ZonesExample extends React.Component<{}, State> {
       return undefined;
 
     const isOpen = zone.props.widgets.some((w) => w.tabIndex !== -1);
+    const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
     return (
       <StackedWidget
         anchor={zone.anchor}
         content={this.getZoneContent(zoneId)}
+        isDragged={isDragged}
         isOpen={isOpen}
         onResize={(x, y, handle) => {
           this._handleOnWidgetResize(zoneId, x, y, handle);

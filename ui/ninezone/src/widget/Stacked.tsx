@@ -52,6 +52,8 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   anchor?: Anchor;
   /** Content of this widget. */
   content?: React.ReactNode;
+  /** Describes if the widget is being dragged. */
+  isDragged?: boolean;
   /** True if widget is open, false otherwise. */
   isOpen?: boolean;
   /** Function called when resize action is performed. */
@@ -70,6 +72,7 @@ export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedPr
     "nz-widget-stacked",
     AnchorHelpers.getCssClassName(props.anchor === undefined ? Anchor.Right : props.anchor),
     !props.isOpen && "nz-is-closed",
+    props.isDragged && "nz-is-dragged",
     props.className);
 
   return (

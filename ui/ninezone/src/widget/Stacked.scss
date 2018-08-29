@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
+@import "../_z-index";
 @import "_variables";
 
 .nz-widget-stacked {
@@ -12,6 +13,10 @@
   position: relative;
 
   $border-width: $nz-widget-border-width;
+
+  &.nz-is-dragged {
+    @include nz-z-index(dragged-widget);
+  }
 
   &.nz-left-anchor, &.nz-bottom-left-anchor {
     grid-auto-columns: 1fr auto;
