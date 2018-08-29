@@ -61,7 +61,7 @@ export class AppNotificationManager extends NotificationManager {
    * @return true if the message was displayed, false if an invalid priority is specified.
    */
   public setupActivityMessage(_details: ActivityMessageDetails): boolean {
-    return false;
+    return MessageManager.setupActivityMessageDetails(_details);
   }
 
   /**
@@ -70,8 +70,8 @@ export class AppNotificationManager extends NotificationManager {
    * @param percentComplete  The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(_messageText: string, _percentComplete: number): boolean {
-    return false;
+  public outputActivityMessage(_messageText: string, _percentComplete: number, _restore?: boolean): boolean {
+    return MessageManager.setupActivityMessageValues(_messageText, _percentComplete, _restore ? true : false);
   }
 
   /**
@@ -80,7 +80,12 @@ export class AppNotificationManager extends NotificationManager {
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
   public endActivityMessage(_reason: ActivityMessageEndReason): boolean {
-    return false;
+    switch (_reason) {
+      case (ActivityMessageEndReason.Completed):
+        return MessageManager.endActivityMessage(true);
+      case (ActivityMessageEndReason.Cancelled):
+        return MessageManager.endActivityMessage(false);
+    }
   }
 
   protected toolTipIsOpen(): boolean {
@@ -102,5 +107,4 @@ export class AppNotificationManager extends NotificationManager {
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip.showTooltip(el, message, pt, options);
   }
-
 }

@@ -22,7 +22,7 @@ describe("NativePlatform", () => {
   });
 
   beforeEach(() => {
-    const testIModelName: string = "assets/datasets/1K.bim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = IModelDb.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform(); // tslint:disable-line: variable-name naming-convention

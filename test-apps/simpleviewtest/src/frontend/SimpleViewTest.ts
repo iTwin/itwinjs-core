@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -555,6 +555,42 @@ export class MeasurePointsTool extends PrimitiveTool {
           break;
         case "Enter":
           AccuDrawShortcuts.lockSmart();
+          break;
+        case "x":
+        case "X":
+          AccuDrawShortcuts.lockX();
+          break;
+        case "y":
+        case "Y":
+          AccuDrawShortcuts.lockY();
+          break;
+        case "z":
+        case "Z":
+          AccuDrawShortcuts.lockZ();
+          break;
+        case "a":
+        case "A":
+          AccuDrawShortcuts.lockAngle();
+          break;
+        case "d":
+        case "D":
+          AccuDrawShortcuts.lockDistance();
+          break;
+        case "t":
+        case "T":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
+          break;
+        case "f":
+        case "F":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
+          break;
+        case "s":
+        case "S":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
+          break;
+        case "v":
+        case "V":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.View);
           break;
       }
     }

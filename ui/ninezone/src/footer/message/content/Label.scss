@@ -1,5 +1,7 @@
 @import "@bentley/ui-core/lib/colors";
 @import "../../../theme/_theme";
+@import "@bentley/bwc/lib/mixins";
+
 
 @include nz-style-component(nz-footer-message-content-label) {
   color: $text-dark;
@@ -13,4 +15,10 @@
 
 @include nz-light-component {
   color: #333333;
+}
+
+.body-text-dark {
+  @include bwc-text(body);
+  color: $text-dark;
+  margin: 0;
 }

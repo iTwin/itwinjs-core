@@ -1640,6 +1640,7 @@ export abstract class Viewport {
 
   /** @hidden */
   public abstract prepareDecorations(decorations: Decorations): void;
+
   /** @hidden */
   public abstract decorate(context: DecorateContext): void;
 
@@ -1787,13 +1788,16 @@ export class ScreenViewport extends Viewport {
 
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
+  /** @hidden */
   public prepareDecorations(decorations: Decorations): void {
     this.sync.setValidDecorations();
     const context = new DecorateContext(this, decorations);
     IModelApp.viewManager.callDecorators(context);
   }
+
+  /** @hidden */
   public decorate(context: DecorateContext): void {
-    this.view.drawGrid(context);
+    this.view.decorate(context);
     if (context.viewFlags.acsTriad)
       this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }

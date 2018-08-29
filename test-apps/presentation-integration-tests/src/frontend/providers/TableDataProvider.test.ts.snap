@@ -5,14 +5,14 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
     "filterable": true,
-    "key": "FunctionalModel_ModeledElement",
+    "key": "PhysicalModel_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
   },
@@ -24,14 +24,14 @@ Array [
   Object {
     "editable": false,
     "filterable": true,
-    "key": "DisplayLabel",
+    "key": "/DisplayLabel/",
     "label": "£ábêl",
     "sortable": true,
   },
   Object {
     "editable": false,
     "filterable": true,
-    "key": "PhysicalModel_FunctionalModel_ModeledElement",
+    "key": "PhysicalModel_RepositoryModel_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
   },
@@ -42,43 +42,43 @@ exports[`TableDataProvider getRow returns first row 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "DisplayLabel",
+      "key": "/DisplayLabel/",
       "record": PropertyRecord {
-        "description": "Functional Model-0-H",
+        "description": "Physical Model-0-S",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "£ábêl",
-          "name": "DisplayLabel",
+          "name": "/DisplayLabel/",
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Functional Model-0-H",
-          "value": "Functional Model-0-H",
+          "displayValue": "Physical Model-0-S",
+          "value": "Physical Model-0-S",
           "valueFormat": 0,
         },
       },
     },
     Object {
-      "key": "FunctionalModel_ModeledElement",
+      "key": "PhysicalModel_ModeledElement",
       "record": PropertyRecord {
-        "description": "Functional-Tag",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "FunctionalModel_ModeledElement",
+          "name": "PhysicalModel_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
-          "displayValue": "Functional-Tag",
-          "value": 17,
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
+  "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
 }
 `;
 
@@ -87,96 +87,96 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
-          "description": "Functional Model-0-H",
+          "description": "Dictionary Model-0-G",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
-            "displayValue": "Functional Model-0-H",
-            "value": "Functional Model-0-H",
+            "displayValue": "Dictionary Model-0-G",
+            "value": "Dictionary Model-0-G",
             "valueFormat": 0,
           },
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
-          "description": "Functional-Tag",
+          "description": "BisCore.DictionaryModel",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "Functional-Tag",
-            "value": 17,
+            "displayValue": "BisCore.DictionaryModel",
+            "value": 16,
             "valueFormat": 0,
           },
         },
       },
     ],
-    "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
+    "key": "{\\"className\\":\\"BisCore:DictionaryModel\\",\\"id\\":\\"0x10\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
-          "description": "Physical Model-0-I",
+          "description": "Physical Model-0-S",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
-            "displayValue": "Physical Model-0-I",
-            "value": "Physical Model-0-I",
+            "displayValue": "Physical Model-0-S",
+            "value": "Physical Model-0-S",
             "valueFormat": 0,
           },
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
-          "description": "Physical-Tag",
+          "description": "Properties_60InstancesWithUrl2",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "Physical-Tag",
-            "value": 18,
+            "displayValue": "Properties_60InstancesWithUrl2",
+            "value": 28,
             "valueFormat": 0,
           },
         },
       },
     ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -187,14 +187,14 @@ Array [
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -215,14 +215,14 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Repository Model-0-1",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
@@ -233,14 +233,14 @@ Array [
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
@@ -256,84 +256,84 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
-          "description": "Physical Model-0-I",
+          "description": "Physical Model-0-S",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
-            "displayValue": "Physical Model-0-I",
-            "value": "Physical Model-0-I",
+            "displayValue": "Physical Model-0-S",
+            "value": "Physical Model-0-S",
             "valueFormat": 0,
           },
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
-          "description": "Physical-Tag",
+          "description": "Properties_60InstancesWithUrl2",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "Physical-Tag",
-            "value": 18,
+            "displayValue": "Properties_60InstancesWithUrl2",
+            "value": 28,
             "valueFormat": 0,
           },
         },
       },
     ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x12\\"}",
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
   },
   Object {
     "cells": Array [
       Object {
-        "key": "DisplayLabel",
+        "key": "/DisplayLabel/",
         "record": PropertyRecord {
-          "description": "Functional Model-0-H",
+          "description": "Dictionary Model-0-G",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
-            "name": "DisplayLabel",
+            "name": "/DisplayLabel/",
             "typename": "string",
           },
           "value": Object {
-            "displayValue": "Functional Model-0-H",
-            "value": "Functional Model-0-H",
+            "displayValue": "Dictionary Model-0-G",
+            "value": "Dictionary Model-0-G",
             "valueFormat": 0,
           },
         },
       },
       Object {
-        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
-          "description": "Functional-Tag",
+          "description": "BisCore.DictionaryModel",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
-            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "name": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
             "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "Functional-Tag",
-            "value": 17,
+            "displayValue": "BisCore.DictionaryModel",
+            "value": 16,
             "valueFormat": 0,
           },
         },
       },
     ],
-    "key": "{\\"className\\":\\"Functional:FunctionalModel\\",\\"id\\":\\"0x11\\"}",
+    "key": "{\\"className\\":\\"BisCore:DictionaryModel\\",\\"id\\":\\"0x10\\"}",
   },
 ]
 `;

@@ -366,7 +366,8 @@ export class IdMap implements IDisposable {
     if (!textureHandle)
       return undefined;
 
-    const texture = new Texture(Texture.Params.defaults, textureHandle);
+    const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
+    const texture = new Texture(params, textureHandle);
     this.addGradient(grad, texture);
     return texture;
   }

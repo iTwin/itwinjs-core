@@ -9,21 +9,21 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "ee67a94585cfa7f72b31583c06fbef12",
-          "467292525bfba9a9c5f7a6deee88dacf",
+          "8e630efad717271b2c905be6a92ed0b5",
+          "7f7a67ec734418027c1aa259c1fe2adb",
         ],
         "type": "child",
       },
     },
     "hasChildren": false,
-    "id": "467292525bfba9a9c5f7a6deee88dacf/ee67a94585cfa7f72b31583c06fbef12",
+    "id": "7f7a67ec734418027c1aa259c1fe2adb/8e630efad717271b2c905be6a92ed0b5",
     "isCheckBoxEnabled": false,
     "label": "child label",
     "labelBackColor": undefined,
     "labelBold": false,
     "labelForeColor": undefined,
     "labelItalic": false,
-    "parentId": "ee67a94585cfa7f72b31583c06fbef12",
+    "parentId": "8e630efad717271b2c905be6a92ed0b5",
   },
 ]
 `;
@@ -37,13 +37,13 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "ee67a94585cfa7f72b31583c06fbef12",
+          "8e630efad717271b2c905be6a92ed0b5",
         ],
         "type": "root",
       },
     },
     "hasChildren": true,
-    "id": "ee67a94585cfa7f72b31583c06fbef12",
+    "id": "8e630efad717271b2c905be6a92ed0b5",
     "isCheckBoxEnabled": false,
     "label": "root label",
     "labelBackColor": 8388863,
