@@ -17,7 +17,7 @@ describe("Multiple frontends for one backend", async () => {
     before(async () => {
       initialize();
 
-      const testIModelName: string = "assets/datasets/1K.bim";
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
       imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
       expect(imodel).is.not.null;
 

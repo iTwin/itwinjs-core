@@ -9,31 +9,17 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import PresentationPropertyDataProvider from "@bentley/presentation-components/lib/propertygrid/DataProvider";
 
-interface MeaningfulInstances {
-  repositoryModel: ModelProps;
-  functionalModel: ModelProps;
-  physicalModel: ModelProps;
-}
-const createMeaningfulInstances = async (imodel: IModelConnection): Promise<MeaningfulInstances> => {
-  return {
-    repositoryModel: (await imodel.models.queryProps({ from: "bis.RepositoryModel" }))[0],
-    functionalModel: (await imodel.models.queryProps({ from: "func.FunctionalModel" }))[0],
-    physicalModel: (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0],
-  };
-};
-
 describe("PropertyDataProvider", async () => {
 
   let imodel: IModelConnection;
-  let instances: MeaningfulInstances;
   let provider: PresentationPropertyDataProvider;
+  let physicalModelProps: ModelProps;
 
   before(async () => {
     initialize();
-    const testIModelName: string = "assets/datasets/1K.bim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
-    expect(imodel).is.not.null;
-    instances = await createMeaningfulInstances(imodel);
+    physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
   });
 
@@ -43,14 +29,14 @@ describe("PropertyDataProvider", async () => {
   });
 
   it("creates property data", async () => {
-    provider.keys = new KeySet([instances.functionalModel]);
+    provider.keys = new KeySet([physicalModelProps]);
     const properties = await provider.getData();
     expect(properties).to.matchSnapshot();
   });
 
   it("favorites properties", async () => {
     (provider as any).isFieldFavorite = () => true;
-    provider.keys = new KeySet([instances.functionalModel]);
+    provider.keys = new KeySet([physicalModelProps]);
     const properties = await provider.getData();
     expect(properties).to.matchSnapshot();
   });
