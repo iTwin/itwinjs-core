@@ -423,36 +423,37 @@ abstract class Compositor extends SceneCompositor {
 
     // Render the background
     this.renderBackground(commands, needComposite);
-    this._target.setFrameTime();
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Background");
 
     // Render the sky box
     this.renderSkyBox(commands, needComposite);
-    this._target.setFrameTime();
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render SkyBox");
 
     // Render the terrain
     this.renderTerrain(commands, needComposite);
-    this._target.setFrameTime();
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Terrain");
 
     // Enable clipping
     this._target.pushActiveVolume();
-    this._target.setFrameTime();
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Enable Clipping");
 
     // Render opaque geometry
     this.renderOpaque(commands, needComposite, false);
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Opaque");
+
+    // Render stencil volumes
     this.renderStencilVolumes(commands, needComposite);
-    this._target.setFrameTime();
+    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Stencils");
 
     if (needComposite) {
       this._geom.composite!.update(flags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
-      this._target.setFrameTime();
+      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Translucent");
       this.renderHilite(commands);
-      this._target.setFrameTime();
+      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Hilite");
       this.composite();
-    } else {
-      this._target.setFrameTime();
-      this._target.setFrameTime();
+      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Composite");
     }
     this._target.popActiveVolume();
   }

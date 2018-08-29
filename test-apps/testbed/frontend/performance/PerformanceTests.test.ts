@@ -12,7 +12,7 @@ import { ProjectApi } from "./ProjectApi";
 // import { CONSTANTS } from "../../common/Testbed";
 // import * as path from "path";
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
+import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -56,9 +56,6 @@ function createWindow() {
   const canv = document.createElement("canvas");
   canv.id = "imodelview";
   document.body.appendChild(canv);
-  // debugPrint("canv.context: " + canv.getContext("webgl"));
-  // debugPrint("getelement.context: " + (document.getElementById("imodelview") as HTMLCanvasElement)!.getContext("webgl"));
-  // glContext = canv.getContext("webgl");
 }
 
 async function waitForTilesToLoad() {
@@ -82,7 +79,7 @@ async function waitForTilesToLoad() {
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
-    debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
+    // debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
     await resolveAfterXMilSeconds(100);
   }
@@ -92,62 +89,30 @@ async function waitForTilesToLoad() {
   curTileLoadingTime = timer.current.milliseconds;
 }
 
-class PerformanceEntryData {
-  public tileLoadingTime = 999999;
-  public scene = 999999;
-  public garbageExecute = 999999; // This is mostly the begin paint now.
-  public initCommands = 999999;
-  public backgroundDraw = 999999; // This is from the begining of the draw command until after renderBackground has completed
-  public skybox = 999999;
-  public terrain = 999999;
-  public setClips = 999999;
-  public opaqueDraw = 999999;
-  public translucentDraw = 999999;
-  public hiliteDraw = 999999;
-  public compositeDraw = 999999;
-  public overlayDraw = 999999; // The world and view overlay draw passes
-  public renderFrameTime = 999999;
-  public glFinish = 999999; // This includes end paint and glFinish
-  public totalTime = 999999;
-}
+function getRowData(finalFrameTimings: Array<Map<string, number>>): Map<string, number | string> {
+  const rowData = new Map<string, number | string>();
+  rowData.set("iModel", /([^\\]+)$/.exec(configuration.iModelName)![1]);
+  rowData.set("View", configuration.viewName ? configuration.viewName : "");
+  rowData.set("Tile Loading Time", curTileLoadingTime);
 
-class PerformanceEntry {
-  public imodelName = "none";
-  public viewName = "none";
-  public viewFlags = "none";
-  public data = new PerformanceEntryData();
-
-  public constructor(tileLoadingTime: number, frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
-    let sumOfTimes = 0;
-    for (let i = 0; i < 12; i++)
-      sumOfTimes += frameTimes[i];
-
-    const data = this.data;
-    data.tileLoadingTime = tileLoadingTime;
-    data.scene = frameTimes[0];
-    data.garbageExecute = frameTimes[1]; // This is mostly the begin paint now.
-    data.initCommands = frameTimes[2];
-    data.backgroundDraw = frameTimes[3]; // This is from the begining of the draw command until after renderBackground has completed
-    data.skybox = frameTimes[4];
-    data.terrain = frameTimes[5];
-    data.setClips = frameTimes[6];
-    data.opaqueDraw = frameTimes[7];
-    data.translucentDraw = frameTimes[8];
-    data.hiliteDraw = frameTimes[9];
-    data.compositeDraw = frameTimes[10];
-    data.overlayDraw = frameTimes[11]; // The world and view overlay draw passes and the end paint
-    data.renderFrameTime = sumOfTimes;
-    data.glFinish = frameTimes[12];
-    data.totalTime = sumOfTimes + frameTimes[12];
-
-    if (imodelName) this.imodelName = imodelName;
-    if (viewName) this.viewName = viewName;
-    if (viewFlags) this.viewFlags = viewFlags;
+  // Calculate average timings
+  for (const colName of finalFrameTimings[0].keys()) {
+    let sum = 0;
+    finalFrameTimings.forEach((timing) => {
+      const data = timing!.get(colName);
+      sum += data ? data : 0;
+    });
+    rowData.set(colName, sum / finalFrameTimings.length);
   }
+  return rowData;
 }
 
-async function printResults(tileLoadingTime: number, frameTimes: number[]) {
-  await PerformanceWriterClient.addEntry(new PerformanceEntry(tileLoadingTime, frameTimes, configuration.iModelName, configuration.viewName));
+function printResults(filePath: string, fileName: string, rowData: Map<string, number | string>) {
+  if (fs.existsSync(filePath + fileName))
+    addColumnsToCsvFile(filePath + fileName, rowData);
+  else
+    createNewCsvFile(filePath, fileName, rowData);
+  addDataToCsvFile(resultsLocation + resultsFileName, rowData);
 }
 
 export function savePng() {
@@ -328,21 +293,20 @@ async function mainBody() {
   // Add a pause so that user can start the GPU Performance Capture program
   // await resolveAfterXMilSeconds(7000);
 
-  const finalFrameTimings: number[][] = [];
+  const finalFrameTimings: Array<Map<string, number>> = [];
   const timer = new StopWatch(undefined, true);
   const numToRender = 50;
   for (let i = 0; i < numToRender; ++i) {
     // await savePng();
-    (theViewport!.target as Target).performanceMetrics!.frameTimes = [];
     theViewport!.sync.setRedrawPending();
     // debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame();
-    finalFrameTimings[i] = (theViewport!.target as Target).frameTimings; // .slice();
+    finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings; // .slice();
   }
   timer.stop();
   debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+  debugPrint("Tile Loading Time: " + curTileLoadingTime);
   for (const t of finalFrameTimings) {
-    await printResults(curTileLoadingTime, t);
     let timingsString = "[";
     t.forEach((val) => {
       timingsString += val + ", ";
@@ -350,34 +314,18 @@ async function mainBody() {
     debugPrint(timingsString + "]");
   }
 
-  const nt = finalFrameTimings.length;
-  let na = 1;
-  for (let i = nt - 2; i >= 0 && i >= nt - 50; --i) {
-    for (let j = 0; j < finalFrameTimings[i].length; ++j) {
-      finalFrameTimings[nt - 1][j] += finalFrameTimings[i][j];
-    }
-    na++;
-  }
-  debugPrint("Average of last " + na + "timings:");
-  for (let i = 0; i < finalFrameTimings[nt - 1].length; ++i) {
-    finalFrameTimings[nt - 1][i] /= na;
-    debugPrint(i + "  " + finalFrameTimings[nt - 1][i]);
-  }
-  await printResults(curTileLoadingTime, finalFrameTimings[nt - 1]);
-  addDataToCsvFile(resultsLocation + resultsFileName, new PerformanceEntry(curTileLoadingTime, finalFrameTimings[nt - 1], /([^\\]+)$/.exec(configuration.iModelName)![1], configuration.viewName));
+  printResults(resultsLocation, resultsFileName, getRowData(finalFrameTimings));
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
-  await PerformanceWriterClient.finishSeries();
 
-  debugPrint("//" + (theViewport!.target as Target).frameTimings);
+  debugPrint("//" + (theViewport!.target as Target).performanceMetrics!.frameTimings);
 }
 
-describe("PerformanceTests - 1", () => {
+describe("PerformanceTests - 1 (#WebGLPerformance)", () => {
   it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
     removeFilesFromDir(modelsLocation, ".Tiles");
     removeFilesFromDir(modelsLocation, ".TileCache");
-    createNewCsvFile(resultsLocation, resultsFileName);
     mainBody().then((_result) => {
       removeFilesFromDir(modelsLocation, ".Tiles");
       removeFilesFromDir(modelsLocation, ".TileCache");
