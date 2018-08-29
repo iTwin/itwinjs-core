@@ -5,36 +5,30 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Props from "../../utilities/Props";
+import CommonProps from "../../utilities/Props";
 import "./Container.scss";
 
-export default class Container extends React.Component<Props> {
-  public render() {
-    const childrenCount = React.Children.count(this.props.children);
-    const isSingleTarget = childrenCount === 1;
-
-    const className = classnames(
-      "nz-zones-target-container",
-      isSingleTarget && "nz-single-target",
-      this.props.className);
-
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-      >
-        {
-          isSingleTarget ?
-            this.props.children :
-            React.Children.map(this.props.children, (target) => {
-              return (
-                <div className="nz-target">
-                  {target}
-                </div>
-              );
-            })
-        }
-      </div>
-    );
-  }
+/** Properties of [[Container]] component. */
+export interface ContainerProps extends CommonProps {
+  /** Zone target. I.e. [[Back]], [[Merge]] */
+  children?: React.ReactNode;
 }
+
+/** Container for zone targets. */
+// tslint:disable-next-line:variable-name
+export const Container: React.StatelessComponent<ContainerProps> = (props: ContainerProps) => {
+  const className = classnames(
+    "nz-zones-target-container",
+    props.className);
+
+  return (
+    <div
+      className={className}
+      style={props.style}
+    >
+      {props.children}
+    </div>
+  );
+};
+
+export default Container;
