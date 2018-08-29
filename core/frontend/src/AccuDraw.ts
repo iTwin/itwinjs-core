@@ -2,16 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
-import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive } from "@bentley/geometry-core";
-import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
-import { Viewport } from "./Viewport";
+import { IModelApp } from "./IModelApp";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve } from "@bentley/geometry-core";
+import { Viewport, ScreenViewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
-import { SnapMode, SnapDetail } from "./HitDetail";
+import { SnapMode, SnapDetail, SnapHeat } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
@@ -142,7 +142,7 @@ export class RoundOff {
 
 export class SavedState {
   public state = CurrentState.NotEnabled;
-  public view?: Viewport;
+  public view?: ScreenViewport;
   public mode = CompassMode.Polar;
   public rotationMode = RotationMode.View;
   public readonly axes = new ThreeAxes();
@@ -203,7 +203,7 @@ export class AccuDraw {
   public currentState = CurrentState.NotEnabled; // Compass state
   public compassMode = CompassMode.Rectangular; // Compass mode
   public rotationMode = RotationMode.View; // Compass rotation
-  public currentView?: Viewport; // will be nullptr if view not yet defined
+  public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   public readonly published = new AccudrawData(); // Staging area for hints
   public readonly origin = new Point3d(); // origin point...not on compass plane when z != 0.0
   public readonly axes = new ThreeAxes(); // X, Y and Z vectors (3d rotation matrix)
@@ -402,7 +402,7 @@ export class AccuDraw {
     return false;
   }
 
-  public adjustPoint(pointActive: Point3d, vp: Viewport, fromSnap: boolean): boolean {
+  public adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean {
     if (!this.isEnabled)
       return false;
 
@@ -766,7 +766,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
-  public sendDataPoint(pt: Point3d, vp: Viewport): void {
+  public sendDataPoint(pt: Point3d, vp: ScreenViewport): void {
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
 
@@ -1250,6 +1250,73 @@ export class AccuDraw {
       this.setFieldLock(index, false);
 
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
+  }
+
+  public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
+    const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
+    const rotation = out ? out : new Matrix3d();
+    const viewZ = vp.rotMatrix.rowZ();
+    const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
+
+    if (undefined !== snapLoc) {
+      const frame = snap.primitive!.fractionToFrenetFrame(snapLoc.fraction);
+      const frameZ = (undefined !== frame ? frame.matrix.columnZ() : Vector3d.unitZ());
+      let xVec = (undefined !== frame ? frame.matrix.columnX() : Vector3d.unitX());
+      const zVec = (vp.view.allow3dManipulations() ? (undefined !== snap.normal ? snap.normal.clone() : frameZ.clone()) : Vector3d.unitZ());
+
+      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
+        zVec.setFrom(viewZ);
+
+      xVec.normalizeInPlace();
+      zVec.normalizeInPlace();
+
+      let yVec = xVec.unitCrossProduct(zVec);
+
+      if (undefined !== yVec) {
+        const viewX = vp.rotMatrix.rowX();
+        if (snap.primitive instanceof LineString3d) {
+          if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
+            const tVec = xVec;
+            xVec = yVec;
+            yVec = tVec;
+          }
+          if (xVec.dotProduct(viewX) < 0.0)
+            xVec.negate(xVec);
+        } else {
+          const ray = snap.primitive!.fractionToPointAndUnitTangent(0.0);
+          if (ray.direction.dotProduct(viewX) < 0.0 && ray.direction.dotProduct(xVec) > 0.0)
+            xVec.negate(xVec);
+        }
+
+        if (zVec.dotProduct(viewZ) < 0.0)
+          zVec.negate(zVec);
+
+        yVec = xVec.unitCrossProduct(zVec);
+
+        if (undefined !== yVec) {
+          rotation.setColumns(xVec, yVec, zVec);
+          Matrix3d.createRigidFromMatrix3d(rotation, AxisOrder.XZY, rotation);
+          rotation.transposeInPlace();
+
+          return rotation;
+        }
+      }
+    }
+
+    if (undefined !== snap.normal) {
+      const zVec = (vp.view.allow3dManipulations() ? snap.normal.clone() : Vector3d.unitZ());
+
+      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
+        zVec.setFrom(viewZ);
+
+      zVec.normalizeInPlace();
+      Matrix3d.createRigidHeadsUp(zVec, undefined, rotation);
+      rotation.transposeInPlace();
+
+      return rotation;
+    }
+
+    return undefined;
   }
 
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d {
@@ -2291,7 +2358,7 @@ export class AccuDraw {
       }
 
       if (angleChanged) {
-        delta.addScaledInPlace(this.axes.x, rotVec.x);
+        this.axes.x.scale(rotVec.x, delta);
         delta.addScaledInPlace(this.axes.y, rotVec.y);
         mag = delta.magnitude();
         if (mag < minPolarMag) {
@@ -2503,7 +2570,7 @@ export class AccuDraw {
     }
   }
 
-  private fixPoint(pointActive: Point3d, vp: Viewport): void {
+  private fixPoint(pointActive: Point3d, vp: ScreenViewport): void {
     if (this.isActive && ((vp !== this.currentView) || this.flags.rotationNeedsUpdate)) {
       this.currentView = vp;
 
@@ -2586,22 +2653,14 @@ export class AccuDraw {
     }
 
     if (this.published.flags & AccuDrawFlags.SmartRotation) {
-      // const hitDetail = TentativeOrAccuSnap.getCurrentSnap(false);
-      // NEEDS_WORK
-      //   if (!hitDetail)
-      //     hitDetail = ElementLocateManager:: GetManager().GetCurrHit();
-
-      //   if (hitDetail) {
-      //     DPoint3d                origin;
-      //     Matrix3d               rMatrix;
-      //     RotateToElemToolHelper  rotateHelper;
-
-      //     // NOTE: Surface normal stored in HitDetail is for hit point, not snap/adjusted point...get normal at correct location...
-      //     if (rotateHelper.GetOrientation(* hitDetail, origin, rMatrix)) {
-      //       this.setContextRotation(rMatrix);
-      //       this.changeBaseRotationMode(RotationMode.Context);
-      //     }
-      //   }
+      const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+      if (undefined !== snap) {
+        const rotation = AccuDraw.getSnapRotation(snap, vp);
+        if (undefined !== rotation) {
+          this.setContextRotation(rotation, true, false);
+          this.changeBaseRotationMode(RotationMode.Context);
+        }
+      }
     }
 
     this.checkRotation();
@@ -2707,25 +2766,53 @@ export class AccuDraw {
     return false;
   }
 
-  private intersectXYCurve(_snap: SnapDetail, _curve: CurvePrimitive) {
-    // NEEDSWORK...
+  private intersectXYCurve(snap: SnapDetail, curve: CurvePrimitive, usePointOnSnap: boolean) {
+    if (undefined === this.currentView)
+      return;
+
+    const curveSegment = snap.getCurvePrimitive(); // Get single segment of linestring/shape...
+    if (undefined === curveSegment)
+      return;
+
+    const worldToView = this.currentView.worldToViewMap.transform0;
+    const detail = CurveCurve.IntersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
+    if (0 === detail.dataA.length)
+      return;
+
+    let closeIndex = 0;
+    if (detail.dataA.length > 1) {
+      const snapPt = worldToView.multiplyPoint3d(snap.getPoint(), 1);
+      let lastDist: number | undefined;
+
+      for (let i = 0; i < detail.dataA.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+        const testDist = snapPt.realDistanceXY(testPt);
+
+        if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
+          lastDist = testDist;
+          closeIndex = i;
+        }
+      }
+    }
+
+    snap.setSnapPoint(detail.dataA[closeIndex].point, SnapHeat.NotInRange);
   }
 
   private intersectLine(snap: SnapDetail, linePt: Point3d, unitVec: Vector3d) {
     const vec = Vector3d.createStartEnd(linePt, snap.getPoint());
     const endPt = linePt.plusScaled(unitVec, vec.dotProduct(unitVec));
     const cpLine = LineSegment3d.create(linePt, endPt);
-    this.intersectXYCurve(snap, cpLine);
+    this.intersectXYCurve(snap, cpLine, true); // Get point on snapped curve, not AccuDraw axis. Snap point isn't required to be in AccuDraw plane when Z isn't locked.
   }
 
   private intersectCircle(snap: SnapDetail, center: Point3d, normal: Vector3d, radius: number) {
     const matrix = Matrix3d.createRigidHeadsUp(normal);
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
-    vector0.scaleToLength(radius);
-    vector90.scaleToLength(radius);
+    vector0.scaleToLength(radius, vector0);
+    vector90.scaleToLength(radius, vector90);
     const cpArc = Arc3d.create(center, vector0, vector90);
-    this.intersectXYCurve(snap, cpArc);
+    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance contraint with apparent intersection in XY.
   }
 
   public onSnap(snap: SnapDetail): boolean {
@@ -2766,7 +2853,7 @@ export class AccuDraw {
     return false;
   }
 
-  public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
+  public onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     // In case previous is closing, always update AccuDraw to current view...
     if (undefined !== this.currentView && this.currentView === previous)
       this.currentView = current;

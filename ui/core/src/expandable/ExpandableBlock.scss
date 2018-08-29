@@ -1,0 +1,21 @@
+@import "@bentley/bwc/lib/mixins";
+
+.BwcExpandableBlock {
+  @include bwc-expandable-blocks-block;
+}
+/*
+.BwcExpandableBlock .SmallerPadding {
+  padding: 4px;
+}
+
+.BwcExpandableBlock .header .SmallerIconContainer {
+  line-height: 23px;
+  width: 23px;
+  //font-size: inherit;
+}
+
+.BwcExpandableBlock .header .SmallerTitle {
+  font-size: 0.95em;
+  line-height: 23px;
+}
+*/

@@ -320,7 +320,7 @@ class BingMapProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  public logoImage?: HTMLImageElement;
+  private _logoImage?: HTMLImageElement;
 
   constructor(mapType: MapType) {
     super(mapType);
@@ -460,9 +460,9 @@ class BingMapProvider extends ImageryProvider {
 
       // read the Bing logo data, used in getCopyrightImage
       this.readLogo().then((logoByteArray) => {
-        this.logoImage = new Image();
+        this._logoImage = new Image();
         const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
-        this.logoImage.src = "data:image/png;base64," + base64Data;
+        this._logoImage.src = "data:image/png;base64," + base64Data;
       });
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask

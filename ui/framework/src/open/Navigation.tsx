@@ -113,9 +113,8 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
     this.state = { activeTab: this.props.defaultTab, isPinned: false };
   }
 
-  // toggle currently active tab
-  private _handleTabClick = (tabIndex: number) => {
-    this.setState({ activeTab: tabIndex });
+  private _handleClick = (tabIndex: number) => {
+    this.setState( { activeTab: tabIndex });
   }
 
   // toggle pinned state
@@ -136,7 +135,7 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
         index: i,
         selectedTabIndex: this.state.activeTab,
         highlightStyle: this.props.highlightStyle,
-        onClicked: this._handleTabClick.bind(this, i),
+        onClicked: this._handleClick.bind(this, i),
       });
     });
   }

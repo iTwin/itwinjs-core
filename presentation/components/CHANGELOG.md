@@ -1,6 +1,14 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 24 Aug 2018 12:49:09 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+### Updates
+
+- Modified components to work with ui components changes.
+- Added filter string to Tree props
 
 ## 0.121.0
 Fri, 24 Aug 2018 12:49:09 GMT

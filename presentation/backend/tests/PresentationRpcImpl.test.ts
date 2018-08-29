@@ -8,23 +8,24 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
   PageOptions, KeySet, PresentationError, InstanceKey,
-  Paged, HierarchyRequestOptions, ContentRequestOptions,
-  IRulesetManager, RegisteredRuleset,
+  Paged, IRulesetManager, RegisteredRuleset,
+  HierarchyRequestOptions, ContentRequestOptions,
 } from "@bentley/presentation-common";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { RpcRequestOptions, HierarchyRpcRequestOptions } from "@bentley/presentation-common/lib/PresentationRpcInterface";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
   createRandomDescriptor,
+  createRandomRuleset,
 } from "@helpers/random";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import IBackendPresentationManager from "@src/IBackendPresentationManager";
-import MultiClientPresentationManager from "@src/MultiClientPresentationManager";
+import PresentationManager from "@src/PresentationManager";
 import PresentationRpcImpl from "@src/PresentationRpcImpl";
 import Presentation from "@src/Presentation";
-import "./IModeHostSetup";
+import "./IModelHostSetup";
 
 describe("PresentationRpcImpl", () => {
 
@@ -35,14 +36,16 @@ describe("PresentationRpcImpl", () => {
   it("uses default PresentationManager implementation if not overridden", () => {
     Presentation.initialize();
     const impl = new PresentationRpcImpl();
-    expect(impl.getManager()).is.instanceof(MultiClientPresentationManager);
+    expect(impl.getManager()).is.instanceof(PresentationManager);
   });
 
   describe("calls forwarding", () => {
 
     let testData: any;
-    const impl = new PresentationRpcImpl();
-    const presentationManagerMock = moq.Mock.ofType<IBackendPresentationManager>();
+    let rpcImplId: string;
+    let defaultRpcParams: RpcRequestOptions;
+    let impl: PresentationRpcImpl;
+    const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     const rulesetsMock = moq.Mock.ofType<IRulesetManager>();
     const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
 
@@ -50,9 +53,13 @@ describe("PresentationRpcImpl", () => {
       rulesetsMock.reset();
       variablesMock.reset();
       presentationManagerMock.reset();
-      presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString(), moq.It.isAny())).returns(() => variablesMock.object);
-      presentationManagerMock.setup((x) => x.rulesets(moq.It.isAny())).returns(() => rulesetsMock.object);
-      Presentation.setManager(presentationManagerMock.object);
+      presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString())).returns(() => variablesMock.object);
+      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsMock.object);
+      Presentation.initialize({
+        clientManagerFactory: () => presentationManagerMock.object,
+      });
+      rpcImplId = faker.random.uuid();
+      defaultRpcParams = { knownBackendIds: [rpcImplId], clientId: faker.random.uuid() };
       testData = {
         imodelToken: new IModelToken(),
         imodelMock: moq.Mock.ofType<IModelDb>(),
@@ -63,11 +70,22 @@ describe("PresentationRpcImpl", () => {
       };
       testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
       IModelDb.find = () => testData.imodelMock.object;
+      impl = new PresentationRpcImpl(rpcImplId);
+    });
+
+    it("throws when request's knownBackendIds doesn't contain impl id", async () => {
+      const options: HierarchyRequestOptions<IModelToken> = {
+        imodel: testData.imodelToken,
+        rulesetId: testData.rulesetId,
+      };
+      const request = impl.getRootNodesCount({ knownBackendIds: [], ...options });
+      await expect(request).to.eventually.be.rejectedWith(PresentationError, rpcImplId);
     });
 
     it("throws when using invalid imodel token", async () => {
       IModelDb.find = () => undefined as any;
-      const options: Paged<HierarchyRequestOptions<IModelToken>> = {
+      const options: Paged<HierarchyRpcRequestOptions> = {
+        ...defaultRpcParams,
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
       };
@@ -85,9 +103,9 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup((x) => x.getRootNodes({ ...options, imodel: testData.imodelMock.object }))
-          .returns(() => Promise.resolve(result))
+          .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getRootNodes(options);
+        const actualResult = await impl.getRootNodes({ ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(result);
       });
@@ -105,7 +123,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getRootNodesCount({ ...options, imodel: testData.imodelMock.object }))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getRootNodesCount(options);
+        const actualResult = await impl.getRootNodesCount({ ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
         expect(actualResult).to.eq(result);
       });
@@ -125,7 +143,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getChildren({ ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getChildren(options, parentNodeKey);
+        const actualResult = await impl.getChildren({ ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(result);
       });
@@ -144,7 +162,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getChildrenCount({ ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getChildrenCount(options, parentNodeKey);
+        const actualResult = await impl.getChildrenCount({ ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.eq(result);
       });
@@ -162,7 +180,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getFilteredNodePaths({ ...options, imodel: testData.imodelMock.object }, "filter"))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getFilteredNodePaths(options, "filter");
+        const actualResult = await impl.getFilteredNodePaths({ ...defaultRpcParams, ...options }, "filter");
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.equal(result);
       });
@@ -181,7 +199,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getNodePaths({ ...options, imodel: testData.imodelMock.object }, keyArray, 1))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getNodePaths(options, keyArray, 1);
+        const actualResult = await impl.getNodePaths({ ...defaultRpcParams, ...options }, keyArray, 1);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.equal(result);
       });
@@ -205,8 +223,8 @@ describe("PresentationRpcImpl", () => {
           .returns(async () => result)
           .verifiable();
 
-        const actualResult = await impl.getContentDescriptor(options, testData.displayType,
-          testData.inputKeys, undefined);
+        const actualResult = await impl.getContentDescriptor({ ...defaultRpcParams, ...options },
+          testData.displayType, testData.inputKeys, undefined);
         presentationManagerMock.verifyAll();
         descriptorMock.verifyAll();
         expect(actualResult).to.eq(result);
@@ -220,8 +238,8 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getContentDescriptor({ ...options, imodel: testData.imodelMock.object }, testData.displayType, testData.inputKeys, undefined))
           .returns(async () => undefined)
           .verifiable();
-        const actualResult = await impl.getContentDescriptor(options, testData.displayType,
-          testData.inputKeys, undefined);
+        const actualResult = await impl.getContentDescriptor({ ...defaultRpcParams, ...options },
+          testData.displayType, testData.inputKeys, undefined);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.be.undefined;
       });
@@ -240,7 +258,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getContentSetSize({ ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getContentSetSize(options, descriptor, testData.inputKeys);
+        const actualResult = await impl.getContentSetSize({ ...defaultRpcParams, ...options }, descriptor, testData.inputKeys);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(result);
       });
@@ -267,7 +285,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getContent({ ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
           .returns(async () => contentMock.object)
           .verifiable();
-        const actualResult = await impl.getContent(options, descriptorMock.object, testData.inputKeys);
+        const actualResult = await impl.getContent({ ...defaultRpcParams, ...options }, descriptorMock.object, testData.inputKeys);
         presentationManagerMock.verifyAll();
         descriptorMock.verifyAll();
         expect(actualResult).to.eq(contentMock.object);
@@ -289,7 +307,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getDistinctValues({ ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys, fieldName, maximumValueCount))
           .returns(async () => distinctValues)
           .verifiable();
-        const actualResult = await impl.getDistinctValues(options, descriptor,
+        const actualResult = await impl.getDistinctValues({ ...defaultRpcParams, ...options }, descriptor,
           testData.inputKeys, fieldName, maximumValueCount);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(distinctValues);
@@ -300,21 +318,19 @@ describe("PresentationRpcImpl", () => {
     describe("getRuleset", () => {
 
       it("calls manager", async () => {
-        const requestOptions = { clientId: faker.random.uuid() };
         const rulesetDefinition = { id: "", rules: [] };
         const hash = faker.random.uuid();
         rulesetsMock.setup((x) => x.get(rulesetDefinition.id)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
-        const resultTuple = await impl.getRuleset(requestOptions, rulesetDefinition.id);
+        const resultTuple = await impl.getRuleset({ ...defaultRpcParams }, rulesetDefinition.id);
         presentationManagerMock.verifyAll();
         expect(resultTuple![0]).to.deep.eq(rulesetDefinition);
         expect(resultTuple![1]).to.eq(hash);
       });
 
       it("handles undefined response", async () => {
-        const requestOptions = { clientId: faker.random.uuid() };
         const rulesetId = faker.random.uuid();
         rulesetsMock.setup((x) => x.get(rulesetId)).returns(async () => undefined).verifiable();
-        const resultsTuple = await impl.getRuleset(requestOptions, rulesetId);
+        const resultsTuple = await impl.getRuleset({ ...defaultRpcParams }, rulesetId);
         presentationManagerMock.verifyAll();
         expect(resultsTuple).to.be.undefined;
       });
@@ -324,13 +340,29 @@ describe("PresentationRpcImpl", () => {
     describe("addRuleset", () => {
 
       it("calls manager", async () => {
-        const requestOptions = { clientId: faker.random.uuid() };
         const rulesetDefinition = { id: "", rules: [] };
         const hash = faker.random.uuid();
         rulesetsMock.setup((x) => x.add(rulesetDefinition)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
-        const resultHash = await impl.addRuleset(requestOptions, rulesetDefinition);
+        const resultHash = await impl.addRuleset({ ...defaultRpcParams }, rulesetDefinition);
         presentationManagerMock.verifyAll();
         expect(resultHash).to.eq(hash);
+      });
+
+    });
+
+    describe("addRulesets", () => {
+
+      it("calls manager", async () => {
+        const rulesets = await Promise.all([createRandomRuleset(), createRandomRuleset()]);
+        const hashes = [faker.random.uuid(), faker.random.uuid()];
+        rulesets.forEach((ruleset, index) => {
+          rulesetsMock.setup((x) => x.add(ruleset))
+            .returns(async () => new RegisteredRuleset(rulesetsMock.object, ruleset, hashes[index]))
+            .verifiable();
+        });
+        const resultHashes = await impl.addRulesets({ ...defaultRpcParams }, rulesets);
+        presentationManagerMock.verifyAll();
+        expect(resultHashes).to.deep.eq(hashes);
       });
 
     });
@@ -338,11 +370,10 @@ describe("PresentationRpcImpl", () => {
     describe("removeRuleset", () => {
 
       it("calls manager", async () => {
-        const requestOptions = { clientId: faker.random.uuid() };
         const rulesetId = faker.random.uuid();
         const hash = faker.random.uuid();
         rulesetsMock.setup((x) => x.remove([rulesetId, hash])).returns(async () => true).verifiable();
-        const result = await impl.removeRuleset(requestOptions, rulesetId, hash);
+        const result = await impl.removeRuleset({ ...defaultRpcParams }, rulesetId, hash);
         presentationManagerMock.verifyAll();
         expect(result).to.be.true;
       });
@@ -352,24 +383,9 @@ describe("PresentationRpcImpl", () => {
     describe("clearRulesets", () => {
 
       it("calls manager", async () => {
-        const requestOptions = { clientId: faker.random.uuid() };
         rulesetsMock.setup((x) => x.clear()).verifiable();
-        await impl.clearRulesets(requestOptions);
+        await impl.clearRulesets({ ...defaultRpcParams });
         presentationManagerMock.verifyAll();
-      });
-
-    });
-
-    describe("setRulesetVariableValue", () => {
-
-      it("calls variables manager", async () => {
-        const options = {
-          rulesetId: faker.random.word(),
-          variableId: faker.random.word(),
-        };
-        const value = faker.random.word();
-        await impl.setRulesetVariableValue(options, VariableValueTypes.String, value);
-        variablesMock.verify((x) => x.setValue(options.variableId, VariableValueTypes.String, value), moq.Times.once());
       });
 
     });
@@ -377,19 +393,43 @@ describe("PresentationRpcImpl", () => {
     describe("getRulesetVariableValue", () => {
 
       it("calls variables manager", async () => {
-        const options = {
-          rulesetId: faker.random.word(),
-          variableId: faker.random.word(),
-        };
+        const rulesetId = faker.random.word();
+        const varId = faker.random.word();
         const value = faker.random.word();
-
-        variablesMock.setup((x) => x.getValue(options.variableId, VariableValueTypes.String))
+        variablesMock.setup((x) => x.getValue(varId, VariableValueTypes.String))
           .returns(async () => value)
           .verifiable();
-
-        const result = await impl.getRulesetVariableValue(options, VariableValueTypes.String);
+        const result = await impl.getRulesetVariableValue({ ...defaultRpcParams, rulesetId }, varId, VariableValueTypes.String);
         variablesMock.verifyAll();
         expect(result).to.equal(value);
+      });
+
+    });
+
+    describe("setRulesetVariableValue", () => {
+
+      it("calls variables manager", async () => {
+        const rulesetId = faker.random.word();
+        const varId = faker.random.word();
+        const value = faker.random.word();
+        await impl.setRulesetVariableValue({ ...defaultRpcParams, rulesetId }, varId, VariableValueTypes.String, value);
+        variablesMock.verify((x) => x.setValue(varId, VariableValueTypes.String, value), moq.Times.once());
+      });
+
+    });
+
+    describe("setRulesetVariableValues", () => {
+
+      it("calls variables manager", async () => {
+        const rulesetId = faker.random.word();
+        const values: Array<[string, VariableValueTypes, VariableValue]> = [
+          [faker.random.word(), VariableValueTypes.String, faker.random.words()],
+          [faker.random.word(), VariableValueTypes.Int, faker.random.number()],
+        ];
+        variablesMock.setup((x) => x.setValue(values[0][0], values[0][1], values[0][2] as string)).returns(() => Promise.resolve()).verifiable();
+        variablesMock.setup((x) => x.setValue(values[1][0], values[1][1], values[1][2] as number)).returns(() => Promise.resolve()).verifiable();
+        await impl.setRulesetVariableValues({ ...defaultRpcParams, rulesetId }, values);
+        variablesMock.verifyAll();
       });
 
     });

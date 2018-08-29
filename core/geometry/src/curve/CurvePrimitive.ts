@@ -296,7 +296,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
     // 2nd derivative not distinct -- do arbitrary headsup ...
-    const perpVector = Matrix3d.createRigidHeadsUpFavorXYPlane(plane.vectorU, plane.vectorV);
+    const perpVector = Matrix3d.createPerpendicularVectorFavorXYPlane(plane.vectorU, plane.vectorV);
     axes = Matrix3d.createRigidFromColumns(plane.vectorU, perpVector, AxisOrder.XYZ);
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);

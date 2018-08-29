@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 import { Point3d, Vector3d, CurvePrimitive, XYZProps, Transform, Arc3d, LineSegment3d, LineString3d, Path } from "@bentley/geometry-core";
-import { Viewport } from "./Viewport";
+import { ScreenViewport } from "./Viewport";
 import { Sprite, IconSprites } from "./Sprites";
 import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -85,7 +85,7 @@ export class HitDetail {
    * @param distXY The xy distance to hit in view coordinates.
    * @param distFraction The near plane distance fraction to hit.
    */
-  public constructor(public readonly testPoint: Point3d, public readonly viewport: Viewport, public readonly hitSource: HitSource,
+  public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number) { }
 
   /** Get the type of HitDetail.
@@ -210,11 +210,32 @@ export class SnapDetail extends HitDetail {
     return val;
   }
 
+  public getCurvePrimitive(singleSegment: boolean = true): CurvePrimitive | undefined {
+    if (!singleSegment || undefined === this.primitive)
+      return this.primitive;
+
+    if (this.primitive instanceof LineString3d) {
+      const ls = this.primitive as LineString3d;
+      if (ls.points.length > 2) {
+        const loc = ls.closestPoint(this.snapPoint, false);
+        const nSegments = ls.points.length - 1;
+        const uSegRange = (1.0 / nSegments);
+        let segmentNo = Math.floor(loc.fraction / uSegRange);
+        if (segmentNo >= nSegments)
+          segmentNo = nSegments - 1;
+        return LineSegment3d.create(ls.points[segmentNo], ls.points[segmentNo + 1]);
+      }
+    }
+
+    return this.primitive;
+  }
+
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
 
+      let singleSegment = false;
       switch (this.snapMode) {
         case SnapMode.Center:
         case SnapMode.Origin:
@@ -222,26 +243,12 @@ export class SnapDetail extends HitDetail {
           break; // Snap point for these is computed using entire linestring, not just the hit segment...
 
         default: {
-          if (this.primitive instanceof LineString3d) {
-            const ls = this.primitive as LineString3d;
-            if (ls.points.length > 2) {
-              const loc = ls.closestPoint(this.snapPoint, false);
-              const nSegments = ls.points.length - 1;
-              const uSegRange = (1.0 / nSegments);
-              let segmentNo = Math.floor(loc.fraction / uSegRange);
-              if (segmentNo >= nSegments)
-                segmentNo = nSegments - 1;
-              const points: Point3d[] = [ls.points[segmentNo].clone(), ls.points[segmentNo + 1].clone()];
-              builder.addLineString(points);
-              context.addDecorationFromBuilder(builder);
-              return;
-            }
-          }
+          singleSegment = true;
           break;
         }
       }
 
-      builder.addPath(Path.create(this.primitive));
+      builder.addPath(Path.create(this.getCurvePrimitive(singleSegment)!));
       context.addDecorationFromBuilder(builder);
       return;
     }

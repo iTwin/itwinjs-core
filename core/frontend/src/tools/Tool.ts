@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
-import { Viewport } from "../Viewport";
+import { Viewport, ScreenViewport } from "../Viewport";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -83,7 +83,7 @@ export class BeButtonEvent {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
-  public viewport?: Viewport;
+  public viewport?: ScreenViewport;
   public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
   public keyModifiers = BeModifierKeys.None;
   public isDown = false;
@@ -101,7 +101,7 @@ export class BeButtonEvent {
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
   public invalidate() { this.viewport = undefined; }
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
+  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: ScreenViewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
     this.viewPoint = viewPt;
@@ -160,11 +160,11 @@ export class BeTouchEvent extends BeButtonEvent {
     result.setFrom(this);
     return result;
   }
-  public static getTouchPosition(touch: Touch, vp: Viewport): Point2d {
+  public static getTouchPosition(touch: Touch, vp: ScreenViewport): Point2d {
     const rect = vp.getClientRect();
     return Point2d.createFrom({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
   }
-  public static getTouchListCentroid(list: TouchList, vp: Viewport): Point2d | undefined {
+  public static getTouchListCentroid(list: TouchList, vp: ScreenViewport): Point2d | undefined {
     switch (list.length) {
       case 0: {
         return undefined;

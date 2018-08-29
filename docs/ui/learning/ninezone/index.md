@@ -4,4 +4,4 @@ The ui-ninezone package contains React components for application user interface
 
 Topics:
 
-* [Placeholder](./Placeholder.md)
+* [9-zone Design Principles](./Design.md)

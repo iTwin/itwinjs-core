@@ -5,7 +5,7 @@
 
 import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
 import { Point3d, Point2d } from "@bentley/geometry-core";
-import { Viewport, ViewRect } from "./Viewport";
+import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
@@ -135,7 +135,7 @@ export class ElementPicker {
   /** Generate a list of elements that are close to a given point.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -190,7 +190,7 @@ export class ElementPicker {
     return this.hitList!.length;
   }
 
-  public testHit(hit: HitDetail, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
+  public testHit(hit: HitDetail, vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
     if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return false;
 
@@ -259,7 +259,7 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
+  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
     if (!vp)
       return;
 
@@ -292,7 +292,7 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
+  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 

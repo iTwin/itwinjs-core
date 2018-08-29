@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ValidationTextbox } from "@bentley/ui-core/lib";
+import { ValidationTextbox } from "@bentley/ui-framework/lib/feedback/ValidationTextbox";
 import { WidgetControl } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 

@@ -27,12 +27,7 @@
   margin-left: 5px;
   margin-bottom: 5px;
   background-color: gray;
-}
-
-#tooltip-location {
-  position: absolute;
-  width: 20px;
-  height: 20px;
+  z-index: 10;
 }
 
 .topdiv {

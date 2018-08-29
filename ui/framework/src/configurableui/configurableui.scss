@@ -23,6 +23,12 @@
     }
   }
 }
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .dragdrop-layer {
   cursor: grabbing;
   position: fixed;

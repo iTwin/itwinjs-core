@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
 
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
@@ -22,7 +22,6 @@ import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 import { AppUi } from "../AppUi";
-import { ViewportManager } from "@bentley/ui-components";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
@@ -131,14 +130,13 @@ export class ViewsFrontstage {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "zone7Widget",
+            classId: "FeedbackWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
-            isFreeform: false,
           },
           {
-            classId: "FeedbackWidget",
+            classId: "ActivityWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -184,23 +182,23 @@ export class ViewsFrontstage {
   }
 
   private _fitToViewCommand = () => {
-    IModelApp.tools.run("View.Fit", ViewportManager.getActiveViewport(), true);
+    IModelApp.tools.run("View.Fit", IModelApp.viewManager.selectedView, true);
   }
 
   private _windowAreaCommand = () => {
-    IModelApp.tools.run("View.WindowArea", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.WindowArea", IModelApp.viewManager.selectedView);
   }
 
   private _toggleCameraCommand = () => {
-    IModelApp.tools.run("View.ToggleCamera", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.ToggleCamera", IModelApp.viewManager.selectedView);
   }
 
   private _walkCommand = () => {
-    IModelApp.tools.run("View.Walk", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.Walk", IModelApp.viewManager.selectedView);
   }
 
   private _rotateCommand = () => {
-    IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.Rotate", IModelApp.viewManager.selectedView);
   }
 
   private _tool1 = () => {
@@ -225,6 +223,28 @@ export class ViewsFrontstage {
           widgetControl.setWidgetState(WidgetState.Off);
       }
     }
+  }
+
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private _tool3 = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("SampleMessage", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
   }
 
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
@@ -259,6 +279,7 @@ export class ViewsFrontstage {
           <>
             <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
             <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
+            <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
@@ -297,8 +318,6 @@ export class ViewsFrontstage {
             <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
             <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
             <ViewListWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
-            {/* <ModelSelectorWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
-             <CategorySelectorWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} /> */}
           </>
         }
       />;

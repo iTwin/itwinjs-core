@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.122.0",
+      "tag": "@bentley/imodeljs-frontend_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix clipping shader compilation errors on iOS."
+          },
+          {
+            "comment": "AccuDraw compute intersection with nearest snap. AccuDraw smart rotation."
+          },
+          {
+            "comment": "Fix FPS and Render Time shown in the SimpleViewTest app."
+          },
+          {
+            "comment": "added ScreenViewport. You must now call ScreenViewport.create to create viewports"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.121.0",
       "tag": "@bentley/imodeljs-frontend_v0.121.0",
       "date": "Fri, 24 Aug 2018 12:49:09 GMT",

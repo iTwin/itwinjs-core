@@ -3,7 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
-  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder, BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail,
+  PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -59,7 +60,7 @@ const renderModeOptions: RenderModeOptions = {
 
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState | IModelConnection.ViewSpec>();
-let theViewport: Viewport | undefined;
+let theViewport: ScreenViewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
@@ -464,19 +465,17 @@ function updateRenderModeOptionsMap() {
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
-  const htmlDiv: HTMLDivElement = document.getElementById("imodel-viewport") as HTMLDivElement;
-  if (htmlDiv) {
-    theViewport = new Viewport(htmlDiv, state.viewState!);
-    await _changeView(state.viewState!);
-    theViewport.addFeatureOverrides = addFeatureOverrides;
-    theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-    theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
-    IModelApp.viewManager.addViewport(theViewport);
-  }
+  const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
+  theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+  await _changeView(state.viewState!);
+  theViewport.addFeatureOverrides = addFeatureOverrides;
+  theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
+  theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
+  IModelApp.viewManager.addViewport(theViewport);
 }
 
 async function _changeView(view: ViewState) {
-  await theViewport!.changeView(view);
+  theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
   await buildCategoryMenu(activeViewState);
@@ -500,10 +499,25 @@ export class MeasurePointsTool extends PrimitiveTool {
     hints.enableSmartRotation = true;
 
     if (this.points.length > 1 && !(this.points[this.points.length - 1].isAlmostEqual(this.points[this.points.length - 2])))
-      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 1], this.points[this.points.length - 2])); // Rotate AccuDraw to last segment...
+      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 2], this.points[this.points.length - 1])); // Rotate AccuDraw to last segment...
 
     hints.setOrigin(this.points[this.points.length - 1]);
     hints.sendHints();
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (this.points.length < 1)
+      return;
+
+    const tmpPoints = this.points.slice();
+    tmpPoints.push(ev.point.clone());
+
+    const builder = context.createGraphicBuilder(GraphicType.Scene);
+
+    builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+    builder.addLineString(tmpPoints);
+
+    context.addGraphic(builder.finish());
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -541,6 +555,42 @@ export class MeasurePointsTool extends PrimitiveTool {
           break;
         case "Enter":
           AccuDrawShortcuts.lockSmart();
+          break;
+        case "x":
+        case "X":
+          AccuDrawShortcuts.lockX();
+          break;
+        case "y":
+        case "Y":
+          AccuDrawShortcuts.lockY();
+          break;
+        case "z":
+        case "Z":
+          AccuDrawShortcuts.lockZ();
+          break;
+        case "a":
+        case "A":
+          AccuDrawShortcuts.lockAngle();
+          break;
+        case "d":
+        case "D":
+          AccuDrawShortcuts.lockDistance();
+          break;
+        case "t":
+        case "T":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
+          break;
+        case "f":
+        case "F":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
+          break;
+        case "s":
+        case "S":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
+          break;
+        case "v":
+        case "V":
+          AccuDrawShortcuts.setStandardRotation(RotationMode.View);
           break;
       }
     }
@@ -607,8 +657,8 @@ export class ProjectExtentsDecoration {
 
 // starts Measure between points tool
 function startMeasurePoints(_event: any) {
-  // IModelApp.tools.run("Measure.Points", theViewport!);
-  ProjectExtentsDecoration.toggle();
+  IModelApp.tools.run("Measure.Points", theViewport!);
+  // ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -883,6 +933,8 @@ class SVTAccuSnap extends AccuSnap {
 
 class SVTNotifications extends NotificationManager {
   private _toolTip?: Tooltip;
+  private _el?: HTMLElement;
+  private _tooltipDiv?: HTMLDivElement;
 
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
@@ -923,35 +975,40 @@ class SVTNotifications extends NotificationManager {
     return Promise.resolve(MessageBoxValue.Ok);
   }
 
-  protected toolTipIsOpen(): boolean { return !!this._toolTip && this._toolTip._isOpen; }
+  protected toolTipIsOpen(): boolean { return undefined !== this._toolTip; }
 
   public clearToolTip(): void {
-    if (this.isToolTipOpen)
-      this._toolTip!.hide();
+    if (!this.isToolTipOpen)
+      return;
+
+    this._toolTip!.dispose();
+    this._el!.removeChild(this._tooltipDiv!);
+    this._toolTip = undefined;
+    this._el = undefined;
+    this._tooltipDiv = undefined;
   }
+
   public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
     this.clearToolTip();
 
-    const position = document.getElementById("tooltip-location");
-    if (!position)
-      return;
-
-    if (!this._toolTip)
-      this._toolTip = new ttjs.default(position, { trigger: "manual", html: true, placement: "auto", offset: 10 });
-
-    this._toolTip!.updateTitleContent(message);
-
     const rect = el.getBoundingClientRect();
-    if (undefined === pt) {
+    if (undefined === pt)
       pt = { x: rect.width / 2, y: rect.height / 2 };
-    }
-    const height = 20; // parseInt(position.style.height!, 10) / 2;
-    const width = 20; // parseInt(position.style.width!, 10) / 2;
-    position.style.top = (pt.y + rect.top - height / 2) + "px";
-    position.style.left = (pt.x + rect.left - width / 2) + "px";
-    position.style.width = width + "px";
-    position.style.height = height + "px";
 
+    const location = document.createElement("div");
+    const height = 20;
+    const width = 20;
+    location.style.position = "absolute";
+    location.style.top = (pt.y - height / 2) + "px";
+    location.style.left = (pt.x - width / 2) + "px";
+    location.style.width = width + "px";
+    location.style.height = height + "px";
+
+    el.appendChild(location);
+
+    this._el = el;
+    this._tooltipDiv = location;
+    this._toolTip = new ttjs.default(location, { trigger: "manual", html: true, placement: "auto", title: message });
     this._toolTip!.show();
   }
 }
