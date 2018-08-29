@@ -94,24 +94,30 @@ export class IconSprites {
  */
 export class SpriteLocation {
   private _viewport?: ScreenViewport;
-  private _div = document.createElement("div");
+  private _div?: HTMLDivElement;
   private _sprite?: Sprite;
 
   public get isActive(): boolean { return this._viewport !== undefined; }
 
   private setSprite(sprite: Sprite) {
-    if (sprite.image) {
-      this._sprite = sprite;
+    if (!sprite.image)
+      return;
+    this._sprite = sprite;
+
+    if (!this._div)
+      this._div = document.createElement("div");
+    else
       ScreenViewport.removeAllChildren(this._div);
-      this._div.appendChild(sprite.image!);
-    }
+
+    this._div.appendChild(sprite.image!);
   }
+
   private setLocation(location: XAndY) {
     if (this._sprite) {
       const size = this._sprite.size;
-      this._div.style.position = "absolute";
-      this._div.style.left = (location.x - (size.x / 2)) + "px";
-      this._div.style.top = (location.y - (size.y / 2)) + "px";
+      this._div!.style.position = "absolute";
+      this._div!.style.left = (location.x - (size.x / 2)) + "px";
+      this._div!.style.top = (location.y - (size.y / 2)) + "px";
     }
   }
 
@@ -146,7 +152,7 @@ export class SpriteLocation {
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
   public decorate(context: DecorateContext) {
-    if (context.viewport === this._viewport)
+    if (context.viewport === this._viewport && this._div !== undefined)
       context.addHTMLDecoration(this._div);
   }
 }
