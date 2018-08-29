@@ -40,7 +40,7 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Deployment environment used by most tests */
-  public static readonly deploymentEnv: DeploymentEnv = "QA";
+  public static deploymentEnv: DeploymentEnv = "QA";
 
   /** Name of project used by most tests */
   public static readonly projectName: string = "NodeJsTestProject";

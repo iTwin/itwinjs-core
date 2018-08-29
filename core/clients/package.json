@@ -20,6 +20,7 @@
     "lint": "tslint --project . 1>&2",
     "test": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\"",
     "test:integration": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+    "test:settings": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --grep Setting",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},
