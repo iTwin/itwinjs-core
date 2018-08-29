@@ -201,6 +201,7 @@ export class ConcurrencyControl {
         lockType: LockType.Schemas,
         objectId: "0x1",
         briefcaseId: this._iModel.briefcase.briefcaseId,
+        seedFileId: this._iModel.briefcase.fileId,
         releasedWithChangeSet: this._iModel.briefcase.changeSetId,
       },
     ];
