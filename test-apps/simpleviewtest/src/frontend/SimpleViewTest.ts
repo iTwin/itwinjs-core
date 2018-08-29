@@ -961,10 +961,10 @@ class SVTNotifications extends NotificationManager {
     button.innerHTML = "Ok";
     button.onclick = (event) => {
       const okButton = event.target as HTMLButtonElement;
-      const dialog = okButton.parentElement as HTMLDialogElement;
-      const rootDiv = dialog.parentElement as HTMLDivElement;
-      dialog.close();
-      rootDiv.removeChild(dialog);
+      const msgDialog = okButton.parentElement as HTMLDialogElement;
+      const topDiv = msgDialog.parentElement as HTMLDivElement;
+      msgDialog.close();
+      topDiv.removeChild(dialog);
     };
     dialog.appendChild(button);
 

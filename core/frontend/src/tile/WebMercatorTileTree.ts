@@ -684,6 +684,7 @@ export class BackgroundMapState {
       copyrightMessage.style.top = topPositionString;
       copyrightMessage.style.color = "silver";
       copyrightMessage.style.backgroundColor = "transparent";
+      copyrightMessage.style.pointerEvents = "initial";
     }
     this._copyrightMessageAddedToDOM = true;
   }
