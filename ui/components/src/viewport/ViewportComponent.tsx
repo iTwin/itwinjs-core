@@ -14,30 +14,26 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 import {
-  ViewportManager,
+  ViewRotationCube,
   CubeRotationChangeEventArgs,
   StandardRotationChangeEventArgs,
-} from "./ViewportManager";
+} from "./ViewRotationCube";
 
-import {
-  Matrix3d,
-  Transform,
-} from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 
 /**
  * Props for [[Viewport]] control.
  */
-// tslint:disable-next-line:no-empty-interface
 export interface ViewportProps {
   /** IModel to display */
   imodel: IModelConnection;
 
-  /** ID of a default view definition to load as a starting point */
+  /** Id of a default view definition to load as a starting point */
   viewDefinitionId: Id64Props;
 }
 
 /**
- * A viewport component that displays imodel on a canvas.
+ * A viewport component that creates a ScreenViewport.
  */
 export class ViewportComponent extends React.Component<ViewportProps> {
 
@@ -60,35 +56,24 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
 
-    ViewportManager.CubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent);
-    if (this._vp) {
-      this._vp.onViewChanged.addListener(this._handleViewChanged);
-      ViewportManager.setActiveViewport(this._vp);
-    }
+    ViewRotationCube.initialize();
+    ViewRotationCube.cubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
+    ViewRotationCube.standardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
+    this._vp.onViewChanged.addListener(this._handleViewChanged, this);
   }
 
   public componentWillUnmount() {
     if (this._vp) {
-      if (this._vp === ViewportManager.getActiveViewport())
-        ViewportManager.setActiveViewport(undefined);
-
       IModelApp.viewManager.dropViewport(this._vp);
-      this._vp.onViewChanged.removeListener(this._handleViewChanged);
+      this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 
-    ViewportManager.CubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
-    ViewportManager.StandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
-  }
-
-  private _onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault();
-
-    ViewportManager.setActiveViewport(this._vp);
+    ViewRotationCube.cubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
+    ViewRotationCube.standardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
-    if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
+    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
       if (args.animationTime && args.animationTime < 0) {
         this._vp.synchWithView(true);
       }
@@ -113,7 +98,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
-    if (this._vp && ViewportManager.getActiveViewport() === this._vp) {
+    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
       this._vp.synchWithView(true);
@@ -121,19 +106,12 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   private _handleViewChanged = (vp: Viewport) => {
-    const rotMatrix = ViewportComponent.getViewportMatrix3d(vp);
-    if (rotMatrix)
-      ViewportManager.setViewMatrix3d(vp, rotMatrix);
-  }
-
-  public static getViewportMatrix3d(vp: Viewport): Matrix3d | undefined {
-    return vp.rotMatrix;
+    ViewRotationCube.setViewMatrix(vp);
   }
 
   public render() {
     return (
       <div ref={this._viewportDiv} style={{ height: "100%", width: "100%" }}
-        onMouseDown={this._onMouseDown}
         onContextMenu={(e) => { e.preventDefault(); return false; }}
       />
     );

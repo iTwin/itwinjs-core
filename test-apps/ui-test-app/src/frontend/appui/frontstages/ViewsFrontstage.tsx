@@ -22,7 +22,6 @@ import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 import { AppUi } from "../AppUi";
-import { ViewportManager } from "@bentley/ui-components";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
@@ -183,23 +182,23 @@ export class ViewsFrontstage {
   }
 
   private _fitToViewCommand = () => {
-    IModelApp.tools.run("View.Fit", ViewportManager.getActiveViewport(), true);
+    IModelApp.tools.run("View.Fit", IModelApp.viewManager.selectedView, true);
   }
 
   private _windowAreaCommand = () => {
-    IModelApp.tools.run("View.WindowArea", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.WindowArea", IModelApp.viewManager.selectedView);
   }
 
   private _toggleCameraCommand = () => {
-    IModelApp.tools.run("View.ToggleCamera", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.ToggleCamera", IModelApp.viewManager.selectedView);
   }
 
   private _walkCommand = () => {
-    IModelApp.tools.run("View.Walk", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.Walk", IModelApp.viewManager.selectedView);
   }
 
   private _rotateCommand = () => {
-    IModelApp.tools.run("View.Rotate", ViewportManager.getActiveViewport());
+    IModelApp.tools.run("View.Rotate", IModelApp.viewManager.selectedView);
   }
 
   private _tool1 = () => {

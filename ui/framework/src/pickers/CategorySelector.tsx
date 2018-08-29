@@ -1,6 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import ListPickerWidget, { ListItem, ListItemType } from "./ListPickerWidget";
-import { IModelApp, Viewport, ViewState } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, Viewport, ViewState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -41,9 +44,9 @@ export class CategorySelectorWidget extends React.Component<any, any> {
       this._removeSelectedViewportChanged();
   }
 
-  private _handleSelectedViewportChanged = (_previous: Viewport | undefined, _current: Viewport | undefined) => {
-    if (_current)
-      this.updateStateWithViewport(_current);
+  private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
+    if (args.current)
+      this.updateStateWithViewport(args.current);
   }
 
   public async updateStateWithViewport(vp: Viewport) {

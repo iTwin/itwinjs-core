@@ -14,9 +14,9 @@ import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, YawPitchRollAngles, Vect
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
-import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
+import { ViewRotationChangeEventArgs, ViewRotationCube } from "@bentley/ui-components";
 
-/** NavigationAid that displays an interactive rotation cube that synchonizes with the rotation of the iModel Viewport */
+/** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport */
 export class CubeNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -112,26 +112,22 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   };
 
   public componentDidMount() {
-    ViewportManager.ViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.viewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
   }
 
   public componentWillUnmount() {
-    ViewportManager.ViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.viewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
 
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const { animation, dragging, endRotMatrix } = this.state;
     const matrix = endRotMatrix;
-    const newMatrix = args.rotMatrix;
+    const newMatrix = args.viewport.rotMatrix;
 
-    if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging) {
-      this.setState({
-        startRotMatrix: matrix, endRotMatrix: newMatrix,
-        animation: 1,
-      });
-    }
+    if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging)
+      this.setState({ startRotMatrix: matrix, endRotMatrix: newMatrix, animation: 1 });
   }
 
   private _animate = (timestamp: number) => {
@@ -142,7 +138,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animation += delta / this.state.animationTime;
     if (animation > 1) {
       animation = 1;
-      ViewportManager.setCubeMatrix3d(this.state.endRotMatrix, -1);
+      ViewRotationCube.setCubeMatrix(this.state.endRotMatrix, -1);
     } else
       requestAnimationFrame(this._animate);
     this.setState({ animation });
@@ -156,7 +152,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     let sum = 0;
     for (const coff of matrix.coffs) {
       if (Geometry.isAlmostEqualNumber(Math.abs(coff), 1))
-        sum ++;
+        sum++;
     }
     // Assuming matrix is a proper rotation matrix:
     // if matrix viewing a face, there will be a total of 3 values either almost -1, or almost 1.
@@ -181,7 +177,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
                 const newMatrix = newDiff.multiplyMatrixMatrix(startRotMatrix);
                 if (newMatrix) {
                   rotMatrix = newMatrix;
-                  ViewportManager.setCubeMatrix3d(rotMatrix, 0);
+                  ViewRotationCube.setCubeMatrix(rotMatrix, 0);
                 }
               }
             }
@@ -190,7 +186,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       }
     }
 
-    const labels: {[key: number]: string} = {
+    const labels: { [key: number]: string } = {
       [Face.Right]: UiFramework.i18n.translate("UiFramework:cube.right"),
       [Face.Left]: UiFramework.i18n.translate("UiFramework:cube.left"),
       [Face.Back]: UiFramework.i18n.translate("UiFramework:cube.back"),
@@ -199,7 +195,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       [Face.Bottom]: UiFramework.i18n.translate("UiFramework:cube.bottom"),
     };
 
-    const faces: {[key: string]: React.ReactNode} = {};
+    const faces: { [key: string]: React.ReactNode } = {};
     for (const key in labels) {
       if (labels.hasOwnProperty(key)) {
         const f = parseInt(key, 10) as Face;
@@ -210,7 +206,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
             label={label}
             hoverMap={this.state.hoverMap}
             onFaceCellClick={this._handleFaceCellClick}
-            onFaceCellHoverChange={this._handleCellHoverChange}/>
+            onFaceCellHoverChange={this._handleCellHoverChange} />
         );
       }
     }
@@ -220,7 +216,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
         onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube
-            className={classnames("nav-cube", {dragging: this.state.dragging})}
+            className={classnames("nav-cube", { dragging: this.state.dragging })}
             rotMatrix={rotMatrix}
             faces={faces} />
         </div>
@@ -239,11 +235,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 
   private _onArrowClick = (arrow: Pointer) => {
-    const endRotMatrix = this.state.endRotMatrix;
-    const m = Matrix3d.createRigidFromMatrix3d(endRotMatrix)!;
-
     const localRotationAxis = Vector3d.create(0, 0, 0);
-    // map different directions to particular rotation orientations
     switch (arrow) {
       case Pointer.Up:
         localRotationAxis.x = -1.0;
@@ -254,24 +246,13 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       case Pointer.Left:
         localRotationAxis.y = -1.0;
         break;
-      case Pointer.Right:
+      default:
         localRotationAxis.y = 1.0;
         break;
     }
-    if (localRotationAxis.maxAbs() > 0) {
-      const incrementalAngle = Angle.createDegrees(-90);
-      const incrementalRotationMatrix = Matrix3d.createRotationAroundVector(localRotationAxis, incrementalAngle)!;
-      const directRotation = incrementalRotationMatrix.multiplyMatrixMatrix(m);
-      const targetZ = directRotation.rowZ ();
-
-      if (targetZ.isAlmostEqualXYZ(0, 0, 1) || targetZ.isAlmostEqualXYZ(0, 0, -1)) {
-        this._animateRotation(endRotMatrix, directRotation, 320);
-      } else {
-        const headsUpRotation = Matrix3d.createRigidViewAxesZTowardsEye (targetZ.x, targetZ.y, targetZ.z);
-        headsUpRotation.transposeInPlace ();
-        this._animateRotation(endRotMatrix, headsUpRotation, 320);
-      }
-    }
+    const localRotation = Matrix3d.createRotationAroundVector(localRotationAxis, Angle.createDegrees(-90))!;
+    const newRotation = localRotation.multiplyMatrixMatrix(this.state.endRotMatrix);
+    this._animateRotation(this.state.endRotMatrix, newRotation, this.state.animationTime);
   }
 
   private _handleBoxClick = (event: any) => {
@@ -318,7 +299,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     const { endRotMatrix } = this.state;
     let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
     if (rotMatrix) {
-      const currentZ = rotMatrix.rowZ ();
+      const currentZ = rotMatrix.rowZ();
 
       if (!CubeNavigationAid._isMatrixFace(endRotMatrix) && (currentZ.isAlmostEqualXYZ(0, 0, 1) || currentZ.isAlmostEqualXYZ(0, 0, -1))) {
         const m = Matrix3d.createRigidFromMatrix3d(this.state.endRotMatrix);
@@ -345,7 +326,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   private _animateRotation = (startRotMatrix: Matrix3d, endRotMatrix: Matrix3d, animationTime: number) => {
     // set animation variables, let css transitions animate it.
-    ViewportManager.setCubeMatrix3d(startRotMatrix, 0);
+    ViewRotationCube.setCubeMatrix(startRotMatrix, 0);
     this._then = Date.now();
     requestAnimationFrame(this._animate);
     this.setState({
@@ -354,7 +335,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     });
   }
   private _setRotation = (endRotMatrix: Matrix3d, startRotMatrix?: Matrix3d) => {
-    ViewportManager.setCubeMatrix3d(endRotMatrix, 0);
+    ViewRotationCube.setCubeMatrix(endRotMatrix, 0);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRotMatrix: startRotMatrix || endRotMatrix,

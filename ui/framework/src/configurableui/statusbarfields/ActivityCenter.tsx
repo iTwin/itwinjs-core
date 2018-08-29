@@ -72,21 +72,25 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
   }
 
   public render(): React.ReactNode {
-    const footerMessages = (
-      <div className="centered" onClick={this._openActivityMessage}>
-        <StatusLayout
-          progress={
-            <Progress
-              status={Status.Information}
-              progress={this.state.percentage}
-            />
-          }
-        />
-      </div>
-    );
-
+    let footerMessages: React.ReactNode;
+    const isPercentageValid = (this.state.percentage === 0 || this.state.percentage === 100) ? false : true;
+    if (this.state.isActivityMessageVisible && isPercentageValid) {
+      footerMessages = (
+        <div className="centered" onClick={this._openActivityMessage}>
+          <StatusLayout
+            progress={
+              <Progress
+                status={Status.Information}
+                progress={this.state.percentage}
+              />
+            }
+          />
+        </div>
+      );
+    } else {
+      footerMessages = (<div />);
+    }
     this.props.statusBar.setFooterMessages(this._element);
-
     return footerMessages;
   }
 }

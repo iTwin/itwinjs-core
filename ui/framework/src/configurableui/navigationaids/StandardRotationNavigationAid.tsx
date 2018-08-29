@@ -20,7 +20,7 @@ import { UiFramework } from "../../UiFramework";
 
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
-import { ViewportManager } from "@bentley/ui-components";
+import { ViewRotationCube } from "@bentley/ui-components";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 // tslint:disable-next-line:variable-name
@@ -162,7 +162,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
 
     this.setState(
       (_prevState, _props) => ({ isExpanded: false, selected }),
-      () => ViewportManager.setStandardRotation(selected),
+      () => ViewRotationCube.setStandardRotation(selected),
     );
   }
 

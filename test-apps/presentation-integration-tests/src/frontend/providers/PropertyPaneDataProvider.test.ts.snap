@@ -9,12 +9,12 @@ Object {
       "name": "Miscellaneous",
     },
   ],
-  "description": "Functional Model",
-  "label": "Functional Model-0-H",
+  "description": "Physical Model",
+  "label": "Physical Model-0-S",
   "records": Object {
     "Miscellaneous": Array [
       PropertyRecord {
-        "description": "Functional Model-0-H",
+        "description": "Physical Model-0-S",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -23,23 +23,23 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Functional Model-0-H",
-          "value": "Functional Model-0-H",
+          "displayValue": "Physical Model-0-S",
+          "value": "Physical Model-0-S",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "Functional-Tag",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "FunctionalModel_ModeledElement",
+          "name": "PhysicalModel_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
-          "displayValue": "Functional-Tag",
-          "value": 17,
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
           "valueFormat": 0,
         },
       },
@@ -62,12 +62,12 @@ Object {
       "name": "Miscellaneous",
     },
   ],
-  "description": "Functional Model",
-  "label": "Functional Model-0-H",
+  "description": "Physical Model",
+  "label": "Physical Model-0-S",
   "records": Object {
     "Favorite": Array [
       PropertyRecord {
-        "description": "Functional Model-0-H",
+        "description": "Physical Model-0-S",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -76,30 +76,30 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Functional Model-0-H",
-          "value": "Functional Model-0-H",
+          "displayValue": "Physical Model-0-S",
+          "value": "Physical Model-0-S",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "Functional-Tag",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "FunctionalModel_ModeledElement",
+          "name": "PhysicalModel_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
-          "displayValue": "Functional-Tag",
-          "value": 17,
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
           "valueFormat": 0,
         },
       },
     ],
     "Miscellaneous": Array [
       PropertyRecord {
-        "description": "Functional Model-0-H",
+        "description": "Physical Model-0-S",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -108,23 +108,23 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Functional Model-0-H",
-          "value": "Functional Model-0-H",
+          "displayValue": "Physical Model-0-S",
+          "value": "Physical Model-0-S",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "Functional-Tag",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "name": "FunctionalModel_ModeledElement",
+          "name": "PhysicalModel_ModeledElement",
           "typename": "navigation",
         },
         "value": Object {
-          "displayValue": "Functional-Tag",
-          "value": 17,
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
           "valueFormat": 0,
         },
       },

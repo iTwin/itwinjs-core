@@ -4,7 +4,7 @@
 /** @module Views */
 import { ScreenViewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { IModelApp } from "./IModelApp";
@@ -30,6 +30,11 @@ export interface Decorator {
    * @returns A promise with the string with the tooltip message. May contain HTML.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<string>;
+}
+
+export interface SelectedViewportChangedArgs {
+  current?: ScreenViewport;
+  previous?: ScreenViewport;
 }
 
 /**
@@ -78,22 +83,22 @@ export class ViewManager {
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new BeEvent<(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) => void>();
+  public readonly onSelectedViewportChanged = new BeUiEvent<SelectedViewportChangedArgs>();
 
   /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
-  public readonly onViewOpen = new BeEvent<(vp: ScreenViewport) => void>();
+  public readonly onViewOpen = new BeUiEvent<ScreenViewport>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
-  public readonly onViewClose = new BeEvent<(vp: ScreenViewport) => void>();
+  public readonly onViewClose = new BeUiEvent<ScreenViewport>();
 
   /** Called after a view is suspended. This can happen when the application is minimized. */
-  public readonly onViewSuspend = new BeEvent<(vp: ScreenViewport) => void>();
+  public readonly onViewSuspend = new BeUiEvent<ScreenViewport>();
 
   /**
    * Called after a suspended view is resumed. This can happen when a minimized application is restored
    * or, on a tablet, when the application is moved to the foreground.
    */
-  public readonly onViewResume = new BeEvent<(vp: ScreenViewport) => void>();
+  public readonly onViewResume = new BeUiEvent<ScreenViewport>();
 
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
@@ -143,7 +148,7 @@ export class ViewManager {
 
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
-    this.onSelectedViewportChanged.raiseEvent(previous, current);
+    this.onSelectedViewportChanged.emit({ previous, current });
   }
 
   /** The "selected view" is the default for certain operations.  */
@@ -170,7 +175,7 @@ export class ViewManager {
     if (1 === this._viewports.length)
       IModelApp.toolAdmin.startEventLoop();
 
-    this.onViewOpen.raiseEvent(newVp);
+    this.onViewOpen.emit(newVp);
   }
 
   /**
@@ -184,7 +189,7 @@ export class ViewManager {
     if (index === -1)
       return BentleyStatus.ERROR;
 
-    this.onViewClose.raiseEvent(vp);
+    this.onViewClose.emit(vp);
     IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
     vp.setEventController(undefined);
