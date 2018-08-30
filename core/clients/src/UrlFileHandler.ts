@@ -27,7 +27,7 @@ export class UrlFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  public async downloadFile(downloadUrl: string, downloadToPathname: string, _fileSize?: number, _progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 
@@ -44,6 +44,10 @@ export class UrlFileHandler implements FileHandler {
           });
 
           target.on("close", () => {
+            if (progressCallback) {
+              fileSize = fileSize || fs.statSync(downloadToPathname).size;
+              progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
+            }
             resolve();
           });
 
@@ -53,14 +57,17 @@ export class UrlFileHandler implements FileHandler {
     });
   }
 
-  public async uploadFile(uploadUrlString: string, uploadFromPathname: string, _progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async uploadFile(uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const uploadUrl = new URL(uploadUrlString);
       const request = https.request({ method: "POST", hostname: uploadUrl.hostname, port: uploadUrl.port, path: uploadUrl.pathname }, (response) => {
-        if (response.statusCode === 200)
+        if (response.statusCode === 200) {
+          if (progressCallback)
+            progressCallback({ percent: 100, total: 1, loaded: 1 });
           resolve();
-        else
+        } else {
           reject(new Error(response.statusCode!.toString()));
+        }
       });
 
       const source = fs.createReadStream(uploadFromPathname);

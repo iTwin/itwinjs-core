@@ -1,11 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv, IModelClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
 import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
+import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { TestConfig } from "../TestConfig";
+
+const defaultEnv: DeploymentEnv = "QA";
 
 /** Credentials for test users */
 export interface UserCredentials {
@@ -13,19 +19,24 @@ export interface UserCredentials {
   password: string;
 }
 
+async function doImsLogin(user: UserCredentials, imsDeploymentEnv: DeploymentEnv): Promise<AccessToken> {
+  const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(imsDeploymentEnv)).getToken(user.email, user.password);
+  assert(!!authToken);
+
+  const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient(imsDeploymentEnv)).getToken(authToken!);
+  assert(!!accessToken);
+
+  Logger.logTrace(HubUtility.logCategory, `Logged in test user ${user.email}`);
+  return accessToken;
+}
+
 /** Utility to work with the iModel Hub */
 export class HubUtility {
+
   public static logCategory = "HubUtility";
 
-  public static async login(user: UserCredentials, imsDeploymentEnv: DeploymentEnv = "QA"): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(imsDeploymentEnv)).getToken(user.email, user.password);
-    assert(!!authToken);
-
-    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient(imsDeploymentEnv)).getToken(authToken!);
-    assert(!!accessToken);
-
-    Logger.logTrace(HubUtility.logCategory, `Logged in test user ${user.email}`);
-    return accessToken;
+  public static async login(user: UserCredentials, imsDeploymentEnv: DeploymentEnv = defaultEnv): Promise<AccessToken> {
+    return getIModelProjectAbstraction().authorizeUser(undefined, user, imsDeploymentEnv);
   }
 
   private static makeDirectoryRecursive(dirPath: string) {
@@ -55,7 +66,7 @@ export class HubUtility {
   }
 
   private static async queryProjectByName(accessToken: AccessToken, projectName: string): Promise<Project | undefined> {
-    const project: Project = await BriefcaseManager.connectClient.getProject(accessToken, {
+    const project: Project = await getIModelProjectAbstraction().queryProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
@@ -63,7 +74,7 @@ export class HubUtility {
   }
 
   private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
-    const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await getIModelProjectAbstraction().queryIModels(accessToken, projectId, new IModelQuery().byName(iModelName));
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
@@ -72,7 +83,7 @@ export class HubUtility {
   }
 
   private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: string): Promise<IModelRepository | undefined> {
-    const iModels = await BriefcaseManager.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId));
+    const iModels = await getIModelProjectAbstraction().queryIModels(accessToken, projectId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
     return iModels[0];
@@ -106,9 +117,11 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, iModelId: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, projectId: string, iModelId: string): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
+
+    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, query);
     if (changeSets.length === 0)
@@ -123,6 +136,8 @@ export class HubUtility {
     if (IModelJsFs.existsSync(downloadDir))
       HubUtility.deleteDirectoryRecursive(downloadDir);
     HubUtility.makeDirectoryRecursive(downloadDir);
+
+    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const iModel: IModelRepository | undefined = await HubUtility.queryIModelById(accessToken, projectId, iModelId);
     if (!iModel)
@@ -139,7 +154,7 @@ export class HubUtility {
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets: ChangeSet[] = await HubUtility.downloadChangeSets(accessToken, changeSetDir, iModelId);
+    const changeSets: ChangeSet[] = await HubUtility.downloadChangeSets(accessToken, changeSetDir, projectId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
@@ -165,6 +180,8 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
+    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
+
     await BriefcaseManager.imodelClient.IModels().delete(accessToken, projectId, iModelId);
   }
 
@@ -185,6 +202,7 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
+      BriefcaseManager.setClientFromIModelTokenContext(projectId, iModel.wsgId);
       await BriefcaseManager.imodelClient.IModels().delete(accessToken, projectId, iModel.wsgId);
     }
 
@@ -200,6 +218,8 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
+
+    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(accessToken, iModelId);
     if (!briefcase) {
@@ -239,6 +259,8 @@ export class HubUtility {
   public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+
+    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
@@ -316,4 +338,62 @@ export class HubUtility {
     });
   }
 
+}
+
+/** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
+export class TestIModelHubProject extends IModelProjectAbstraction {
+  public get isIModelHub(): boolean { return true; }
+  public terminate(): void { }
+
+  public get iModelHubClient(): IModelHubClient {
+    return BriefcaseManager.imodelClient as IModelHubClient;
+  }
+
+  public async authorizeUser(_userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+    return await doImsLogin(userCredentials, env);
+  }
+  public async queryProject(accessToken: AccessToken, query: any | undefined): Promise<Project> {
+    const client = BriefcaseManager.connectClient;
+    return client.getProject(accessToken, query);
+  }
+  public async createIModel(accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+    const client = this.iModelHubClient;
+    return client.IModels().create(accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
+  }
+  public deleteIModel(accessToken: AccessToken, projectId: string, iModelId: string): Promise<void> {
+    const client = this.iModelHubClient;
+    return client.IModels().delete(accessToken, projectId, iModelId);
+  }
+  public async queryIModels(accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
+    const client = this.iModelHubClient;
+    return client.IModels().get(accessToken, projectId, query);
+  }
+  public getClientForIModel(_projectId: string, _imodelId: string): IModelClient {
+    return this.iModelHubClient;
+  }
+}
+
+let projectAbstraction: IModelProjectAbstraction;
+
+export function getIModelProjectAbstraction(): IModelProjectAbstraction {
+  if (projectAbstraction !== undefined)
+    return projectAbstraction;
+
+  if (process.env.IMODELJS_BACKEND_TEST_IMODEL_BANK === undefined)
+    return projectAbstraction = new TestIModelHubProject();
+
+  const options: IModelBankFileSystemProjectOptions = {
+    rootDir: path.join(KnownTestLocations.outputDir, "imodel-bank"),
+    name: TestConfig.projectName,
+    env: defaultEnv,
+    deleteIfExists: true,
+    createIfNotExist: true,
+  };
+  const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
+  const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
+  // tslint:disable-next-line:no-var-requires
+  const serverConfig: IModelBankServerConfig = require(serverConfigFile);
+  EnvMacroSubst.replaceInProperties(serverConfig, true);
+  projectAbstraction = new IModelBankFileSystemProject(options, serverConfig, loggingConfigFile);
+  return projectAbstraction;
 }

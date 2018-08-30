@@ -249,17 +249,17 @@ export class BriefcaseManager {
    * In the case of iModelHub, contextId will be a Connect project GUID. That means use _defaultHubClient.
    * In the case of iModelBank, contextId will be a JSON-encoded object that contains the iModelBankClient parameters that should be used.
    */
-  public static setClientFromIModelTokenContext(contextId: string | undefined) {
+  public static setClientFromIModelTokenContext(contextId: string | undefined, iModelId: string) {
     if (this._lastIModelClientContext === contextId)
       return;
     this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, new UrlFileHandler()) : undefined;
+    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, iModelId, new UrlFileHandler()) : undefined;
     this.setClientFromAccessContext(iModelBankAccessContext);
   }
 
   /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
   public static setClientForBriefcase(briefcase: BriefcaseEntry) {
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
+    this.setClientFromIModelTokenContext(briefcase.imodelClientContext, briefcase.iModelId);
   }
 
   private static _connectClient?: ConnectClient;
@@ -492,7 +492,7 @@ export class BriefcaseManager {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     await BriefcaseManager.memoizedInitCache(accessToken);
 
-    this.setClientFromIModelTokenContext(contextId);
+    this.setClientFromIModelTokenContext(contextId, iModelId);
 
     assert(!!BriefcaseManager.imodelClient);
 
@@ -702,7 +702,7 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
-    this.setClientFromIModelTokenContext(contextId);
+    this.setClientFromIModelTokenContext(contextId, iModelId);
 
     const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
