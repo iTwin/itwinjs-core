@@ -7,7 +7,7 @@ import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { Popup } from "./Popup";
+import { Popup, Position } from "./Popup";
 import "./ProjectDropdown.scss";
 
 export interface ProjectDropdownProps {
@@ -113,12 +113,14 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
       height: this._itemHeight + "em",
     };
     return (
-      <Popup className="pp-dropdown fade-in-fast" showShadow={true} onClose={this._handleOnOutsideClick}>
-        {this.renderProjects()}
-        <div className="pp-separator" />
-        <div className="pp-more" style={liStyle} onClick={this._onMoreClicked} >
-          <span className="pp-icon icon icon-search" />
-          More
+      <Popup isShown={this.state.isDropdownOpen} position={Position.Bottom} onClose={this._handleOnOutsideClick}>
+        <div className="pp-dropdown">
+          {this.renderProjects()}
+          <div className="pp-separator" />
+          <div className="pp-more" style={liStyle} onClick={this._onMoreClicked} >
+            <span className="pp-icon icon icon-search" />
+            More
+          </div>
         </div>
       </Popup>
     );
@@ -136,7 +138,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
           <span className={splitterClassName} />
         </div>
         <div className="pp-highlight" />
-        {this.state.isDropdownOpen && this.renderDropdown()}
+        {this.renderDropdown()}
         {this.state.showProjectsDialog &&
           <ProjectDialog accessToken={this.props.accessToken} onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
         }

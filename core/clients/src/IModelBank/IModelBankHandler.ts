@@ -8,7 +8,7 @@ import { DefaultWsgRequestOptionsProvider } from "../WsgClient";
 import * as https from "https";
 import { RequestOptions } from "../Request";
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelBankError } from "./Errors";
+import { IModelHubError } from "../imodelhub/Errors";
 import { FileHandler } from "..";
 
 /**
@@ -17,8 +17,8 @@ import { FileHandler } from "..";
 class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this._defaultOptions.errorCallback = IModelBankError.parse;
-    this._defaultOptions.retryCallback = IModelBankError.shouldRetry;
+    this._defaultOptions.errorCallback = IModelHubError.parse;
+    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
     this._defaultOptions.agent = agent;
   }
 }

@@ -1607,7 +1607,7 @@ export abstract class Viewport {
       view.createTerrain(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
-      target.changeTerrain(context.backgroundMap);
+      target.changeTerrain(context.backgroundGraphics);
 
       isRedrawNeeded = true;
       sync.setValidScene();
@@ -1747,19 +1747,19 @@ export class ScreenViewport extends Viewport {
     // get the (computed) z-index value of the parent, as an integer.
     const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
 
-    addChild(canvas, parentZ + 1);
+    addChild(canvas, parentZ + 10);
 
     this.decorationDiv = document.createElement("div");
     this.decorationDiv.className = "overlay-decorators";
     this.decorationDiv.style.pointerEvents = "none";
     this.decorationDiv.style.overflow = "hidden";
-    addChild(this.decorationDiv, parentZ + 2);
+    addChild(this.decorationDiv, parentZ + 20);
 
     this.toolTipDiv = document.createElement("div");
     this.toolTipDiv.className = "overlay-tooltip";
     this.toolTipDiv.style.pointerEvents = "none";
-    this.decorationDiv.style.overflow = "visible";
-    addChild(this.toolTipDiv, parentZ + 3);
+    this.toolTipDiv.style.overflow = "visible";
+    addChild(this.toolTipDiv, parentZ + 30);
 
     this.setCursor();
   }

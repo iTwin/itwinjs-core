@@ -208,9 +208,6 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
-  public decorate(context: DecorateContext): void { this.drawGrid(context); }
-
   /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
@@ -318,7 +315,7 @@ export abstract class ViewState extends ElementState {
 
   public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
-  /** Returns the appearance of the subcategory with the specified ID within this view, possibly as overridden by the display style. */
+  /** Returns the appearance of the subcategory with the specified Id within this view, possibly as overridden by the display style. */
   public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
     const app = this.subCategories.getSubCategoryAppearance(id.value);
     if (undefined === app)
@@ -337,7 +334,7 @@ export abstract class ViewState extends ElementState {
     return undefined === ovr || !ovr.invisible;
   }
 
-  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
+  /** Returns true if the set of elements returned by getAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
@@ -394,12 +391,17 @@ export abstract class ViewState extends ElementState {
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
+
   public createTerrain(context: SceneContext): void {
-    const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
-    if (undefined !== backgroundMapPlane) {
-      context.setBackgroundMapPlane(backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+    if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
-    }
+  }
+
+  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
+  public decorate(context: DecorateContext): void {
+    this.drawGrid(context);
+    if (undefined !== this.displayStyle.backgroundMapPlane)
+      this.displayStyle.backgroundMap.decorate(context);
   }
 
   public static getStandardViewMatrix(id: StandardViewId): Matrix3d { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
@@ -1360,7 +1362,6 @@ export abstract class ViewState3d extends ViewState {
   public getFocusDistance(): number { return this.camera.focusDist; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
-  // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public decorate(context: DecorateContext): void {
     super.decorate(context);
     this.drawSkyBox(context);
@@ -1667,10 +1668,6 @@ export class DrawingViewState extends ViewState2d {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  /** DEBUG ONLY - A list of attachment Ids that are the only ones that should be loaded. If this member is left undefined, all attachments will be loaded. */
-  private static _DEBUG_FILTER_ATTACHMENTS?: Id64Array;
-  // ------------------------------------------------------------------------------------------
-
   public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
@@ -1717,10 +1714,6 @@ export class SheetViewState extends ViewState2d {
 
     this._attachments.clear();
 
-    // DEBUG ONLY ---------------------
-    this.debugFilterAttachments();
-    // --------------------------------
-
     // Query all of the attachment properties using their ids
     const attachmentPropList = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
 
@@ -1733,20 +1726,6 @@ export class SheetViewState extends ViewState2d {
           this._attachments.add(new Attachments.Attachment2d(attachmentProps, view as ViewState2d));
       });
     }
-  }
-
-  /**
-   * DEBUG ONLY - Filter the attachments such that only attachments with ids in the DEBUG_FILTER_ATTACHMENTS list will be loaded.
-   * If the static array is undefined, all attachments will be loaded.
-   */
-  private debugFilterAttachments() {
-    const newAttachmentIds: Id64Array = [];
-    for (const id of this._attachmentIds)
-      if (SheetViewState._DEBUG_FILTER_ATTACHMENTS === undefined)
-        newAttachmentIds.push(id);
-      else if (SheetViewState._DEBUG_FILTER_ATTACHMENTS.indexOf(id) !== -1)
-        newAttachmentIds.push(id);
-    this._attachmentIds = newAttachmentIds;
   }
 
   /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */

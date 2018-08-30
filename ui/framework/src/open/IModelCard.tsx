@@ -11,7 +11,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import "./IModelCard.scss";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 import { Id64Props } from "@bentley/bentleyjs-core";
-import { Popup} from "./Popup";
+import { Popup, Position} from "./Popup";
+import { PopupTest } from "./PopupTest";
 
 export interface IModelCardProps {
   showDescription?: boolean;
@@ -33,15 +34,14 @@ interface IModelCardState {
   waitingForThumbnail: boolean;
   showViews: boolean;
   showOptions: boolean;
+  showPopupTest: boolean;
 }
 
 export class IModelCard extends React.Component<IModelCardProps, IModelCardState> {
 
   constructor(props: IModelCardProps, context?: any) {
     super(props, context);
-    this.state = {
-      waitingForThumbnail: false, showViews: false, showOptions: false,
-    };
+    this.state = { waitingForThumbnail: false, showViews: false, showOptions: false,      showPopupTest: false };
   }
 
   public static defaultProps: Partial<IModelCardProps> = {
@@ -69,7 +69,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onShowOptions = () => {
-    this.setState({ showOptions: true });
+    this.setState({ showOptions: !this.state.showOptions });
   }
 
   private _handleOnOutsideClick = () => {
@@ -95,8 +95,17 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showViews: true });
   }
 
+  private _onPopupTestClicked = () => {
+    this._onCloseOptions();
+    this.setState({ showPopupTest: true });
+  }
+
   private _onCloseOptions = () => {
     this.setState({ showOptions: false });
+  }
+
+  private _onClosePopupTest = () => {
+    this.setState({ showPopupTest: false });
   }
 
   private renderDescription() {
@@ -135,16 +144,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     }
   }
 
-  private renderDropdown() {
-    return (
-      <Popup className="options-dropdown fade-in-fast" showShadow={true} onClose={this._handleOnOutsideClick}>
-        <ul>
-          <li onClick={this._onViewsClicked}><span className="icon icon-visibility"/>Views</li>
-        </ul>
-      </Popup>
-    );
-  }
-
   public render() {
     return (
       <div className="imodel-card" >
@@ -156,13 +155,19 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
             <span className="text">{this.props.iModel.name}</span>
             <div className="options">
               <span className="icon icon-more-2" onClick={this._onShowOptions}></span>
-              {this.state.showOptions && this.renderDropdown()}
+              <Popup isShown={this.state.showOptions} position={Position.BottomRight} onClose={this._handleOnOutsideClick}>
+                <ul className="options-dropdown">
+                  <li onClick={this._onViewsClicked}><span className="icon icon-visibility"/>Views</li>
+                  <li onClick={this._onPopupTestClicked}><span className="icon icon-punch-list"/>Details</li>
+                </ul>
+              </Popup>
             </div>
           </div>
           {this.props.showDescription && this.renderDescription()}
         </div>
         {this.state.showViews &&
           <ViewSelector accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
+        {this.state.showPopupTest && <PopupTest onClose={this._onClosePopupTest} />}
       </div>
     );
   }

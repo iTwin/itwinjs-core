@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 export { default as UiCore } from "./UiCore";
+export { default as CommonProps } from "./Props";
 export * from "./enums";
 export * from "./expandable";
 export * from "./base";
