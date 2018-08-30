@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { ViewDefinitionProps, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
@@ -19,6 +19,7 @@ import * as path from "path";
 const resultsLocation = "D:\\output\\performanceData\\";
 const resultsFileName = "performanceResults_new.csv";
 const modelsLocation = "D:\\models\\TimingTests\\";
+let jsonFile: any;
 
 // const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 // const glContext: WebGLRenderingContext | null = null;
@@ -50,6 +51,127 @@ function removeFilesFromDir(startPath: string, filter: string) {
       fs.unlinkSync(filename); // Delete file
     }
   });
+}
+
+function readJsonFile() {
+  const jsonStr = fs.readFileSync("frontend\\performance\\DefaultConfig.json").toString();
+  jsonFile = JSON.parse(jsonStr);
+}
+
+function setViewFlagOverrides(config: any): ViewFlag.Overrides {
+  const vfo = new ViewFlag.Overrides();
+  const vf = config.viewFlags;
+  if (vf) {
+    if (vf.hasOwnProperty("dimensions"))
+      vfo.setShowDimensions(vf.dimensions);
+    if (vf.hasOwnProperty("patterns"))
+      vfo.setShowPatterns(vf.patterns);
+    if (vf.hasOwnProperty("weights"))
+      vfo.setShowWeights(vf.weights);
+    if (vf.hasOwnProperty("styles"))
+      vfo.setShowStyles(vf.styles);
+    if (vf.hasOwnProperty("transparency"))
+      vfo.setShowTransparency(vf.transparency);
+    if (vf.hasOwnProperty("fill"))
+      vfo.setShowFill(vf.fill);
+    if (vf.hasOwnProperty("textures"))
+      vfo.setShowTextures(vf.textures);
+    if (vf.hasOwnProperty("materials"))
+      vfo.setShowMaterials(vf.materials);
+    if (vf.hasOwnProperty("visibleEdges"))
+      vfo.setShowVisibleEdges(vf.visibleEdges);
+    if (vf.hasOwnProperty("hiddenEdges"))
+      vfo.setShowHiddenEdges(vf.hiddenEdges);
+    if (vf.hasOwnProperty("sourceLights"))
+      vfo.setShowSourceLights(vf.sourceLights);
+    if (vf.hasOwnProperty("cameraLights"))
+      vfo.setShowCameraLights(vf.cameraLights);
+    if (vf.hasOwnProperty("solarLights"))
+      vfo.setShowSolarLight(vf.solarLights);
+    if (vf.hasOwnProperty("shadows"))
+      vfo.setShowShadows(vf.shadows);
+    if (vf.hasOwnProperty("clipVolume"))
+      vfo.setShowClipVolume(vf.clipVolume);
+    if (vf.hasOwnProperty("constructions"))
+      vfo.setShowConstructions(vf.constructions);
+    if (vf.hasOwnProperty("monochrome"))
+      vfo.setMonochrome(vf.monochrome);
+    if (vf.hasOwnProperty("noGeometryMap"))
+      vfo.setIgnoreGeometryMap(vf.noGeometryMap);
+    if (vf.hasOwnProperty("backgroundMap"))
+      vfo.setShowBackgroundMap(vf.backgroundMap);
+    if (vf.hasOwnProperty("hLineMaterialColors"))
+      vfo.setUseHlineMaterialColors(vf.hLineMaterialColors);
+    if (vf.hasOwnProperty("edgeMask"))
+      vfo.setEdgeMask(Number(vf.edgeMask));
+  }
+
+  const rm: string = config.renderMode.toString();
+  switch (rm.toLowerCase().trim()) {
+    case "wireframe":
+      vfo.setRenderMode(RenderMode.Wireframe);
+      break;
+    case "hiddenline":
+      vfo.setRenderMode(RenderMode.HiddenLine);
+      break;
+    case "solidfill":
+      vfo.setRenderMode(RenderMode.SolidFill);
+      break;
+    case "smoothshade":
+      vfo.setRenderMode(RenderMode.SmoothShade);
+      break;
+    case "0":
+      vfo.setRenderMode(RenderMode.Wireframe);
+      break;
+    case "3":
+      vfo.setRenderMode(RenderMode.HiddenLine);
+      break;
+    case "4":
+      vfo.setRenderMode(RenderMode.SolidFill);
+      break;
+    case "6":
+      vfo.setRenderMode(RenderMode.SmoothShade);
+      break;
+  }
+  return vfo;
+}
+
+function getRenderMode(): string {
+  switch (activeViewState.viewState!.displayStyle.viewFlags.renderMode) {
+    case 0: return "Wireframe";
+    case 3: return "HiddenLine";
+    case 4: return "SolidFill";
+    case 6: return "SmoothShade";
+    default: return "";
+  }
+}
+
+function getViewFlagsString(): string {
+  const vf = activeViewState.viewState!.displayStyle.viewFlags;
+  let vfString = " ";
+  if (!vf.dimensions) vfString += "-dim";
+  if (!vf.patterns) vfString += "-pat";
+  if (!vf.weights) vfString += "-wt";
+  if (!vf.styles) vfString += "-sty";
+  if (!vf.transparency) vfString += "-trn";
+  if (!vf.fill) vfString += "-fll";
+  if (!vf.textures) vfString += "-txt";
+  if (!vf.materials) vfString += "-mat";
+  if (vf.visibleEdges) vfString += "+vsE";
+  if (vf.hiddenEdges) vfString += "+hdE";
+  if (vf.sourceLights) vfString += "+scL";
+  if (vf.cameraLights) vfString += "+cmL";
+  if (vf.solarLight) vfString += "+slL";
+  if (vf.shadows) vfString += "+shd";
+  if (!vf.clipVolume) vfString += "-clp";
+  if (vf.constructions) vfString += "+con";
+  if (vf.monochrome) vfString += "+mno";
+  if (vf.noGeometryMap) vfString += "+noG";
+  if (vf.backgroundMap) vfString += "+bkg";
+  if (vf.hLineMaterialColors) vfString += "+hln";
+  if (vf.edgeMask === 1) vfString += "+genM";
+  if (vf.edgeMask === 2) vfString += "+useM";
+  return vfString;
 }
 
 function createWindow() {
@@ -93,6 +215,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>): Map<string, 
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", /([^\\]+)$/.exec(configuration.iModelName)![1]);
   rowData.set("View", configuration.viewName ? configuration.viewName : "");
+  rowData.set("Render Mode", getRenderMode());
+  rowData.set("View Flags", getViewFlagsString());
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
   // Calculate average timings
@@ -265,11 +389,20 @@ async function mainBody() {
   await IModelApi.init();
 
   activeViewState = new SimpleViewState();
+  activeViewState.viewState;
 
   await openStandaloneIModel(activeViewState, configuration.iModelName);
 
   // open the specified view
   await loadView(activeViewState, configuration);
+
+  // Set the viewFlags
+  if (activeViewState.viewState !== undefined) {
+    readJsonFile();
+    const vfo = setViewFlagOverrides(jsonFile.modelSet[0].tests[1]);
+    vfo.setRenderMode(RenderMode.SmoothShade);
+    vfo.apply(activeViewState.viewState.displayStyle.viewFlags);
+  }
 
   // now connect the view to the canvas
   await openView(activeViewState);

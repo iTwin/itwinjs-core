@@ -1,0 +1,63 @@
+{
+  "outputFile": "performanceResults_new.csv",
+  "outputPath": "D:\\output\\performanceData\\",
+  "iModelLocation": "D:\\models\\TimingTests\\",
+  "modelSet": [
+    {
+      "iModelName": "Wraith.ibim",
+      "tests": [
+        {
+          "testType": "performance",
+          "viewName": "V0",
+          "viewFlags": {
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "renderMode": "SmoothShade"
+        },
+        {
+          "testType": "performance",
+          "viewName": "V0",
+          "viewFlags": "",
+          "renderMode": 6
+        }
+      ]
+    },
+    {
+      "iModelName": "Wraith_MultiMulti.ibim",
+      "tests": [
+        {
+          "testType": "performance",
+          "viewName": "V0",
+          "viewFlags": "",
+          "renderMode": ""
+        },
+        {
+          "testType": "timing",
+          "viewName": "V0",
+          "viewFlags": "",
+          "renderMode": ""
+        }
+      ]
+    }
+  ]
+}

@@ -116,7 +116,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
       } else {
         if (value === undefined) value = 0;
       }
-      if (colName === "iModel")
+      if (colName === "iModel" || colName === "View Flags")
         stringData += "\"" + value + "\",";
       else if (colName !== "" || index !== columns.length - 1)
         stringData += value + ",";
