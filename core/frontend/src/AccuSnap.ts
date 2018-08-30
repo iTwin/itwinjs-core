@@ -286,11 +286,11 @@ export class AccuSnap {
     const viewport = snap.viewport!;
     const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport.iModel);
 
-    this.cross.activate(crossSprite, viewport, crossPt, 0);
+    this.cross.activate(crossSprite, viewport, crossPt);
 
     const snapSprite = snap.sprite;
     if (snapSprite)
-      this.icon.activate(snapSprite, viewport, AccuSnap.adjustIconLocation(viewport, crossPt, snapSprite.size), 0);
+      this.icon.activate(snapSprite, viewport, AccuSnap.adjustIconLocation(viewport, crossPt, snapSprite.size));
   }
 
   private static adjustIconLocation(vp: Viewport, input: Point3d, iconSize: XAndY): Point3d {

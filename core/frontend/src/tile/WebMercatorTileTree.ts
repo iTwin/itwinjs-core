@@ -14,7 +14,7 @@ import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
+import { SceneContext, DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
@@ -26,7 +26,7 @@ function latitudeToMercator(latitude: number) {
 }
 
 function ecefToMercator(point: Point3d) {
-  const cartoGraphic = Cartographic.fromEcef(point) as Cartographic;
+  const cartoGraphic = Cartographic.fromEcef(point)!;
   return Point3d.create(longitudeToMercator(cartoGraphic.longitude), latitudeToMercator(cartoGraphic.latitude), 0.0);
 }
 
@@ -73,11 +73,11 @@ class QuadId {
 
   // get the lat long for pixels within this quadId.
   public pixelXYToLatLong(pixelX: number, pixelY: number): Point2d {
-    const mapSize: number = 256 << this.level;
-    const left: number = 256 * this.column;
-    const top: number = 256 * this.row;
-    const x: number = ((left + pixelX) / mapSize) - .5;
-    const y: number = 0.5 - ((top + pixelY) / mapSize);
+    const mapSize = 256 << this.level;
+    const left = 256 * this.column;
+    const top = 256 * this.row;
+    const x = ((left + pixelX) / mapSize) - .5;
+    const y = 0.5 - ((top + pixelY) / mapSize);
     const outPoint: Point2d = new Point2d(360.0 * x, 90.0 - 360.0 * Math.atan(Math.exp(-y * 2 * Math.PI)) / Math.PI);
     return outPoint;
   }
@@ -99,8 +99,8 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
-  public yAxisUp: boolean = true;
-  public isTerrain: boolean = true;
+  public yAxisUp = true;
+  public isTerrain = true;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
@@ -575,8 +575,6 @@ export class BackgroundMapState {
   /// private providerData: string;
   private _groundBias: number;
   private _mapType: MapType;
-  private _copyrightImageAddedToDOM: boolean = false;
-  private _copyrightMessageAddedToDOM: boolean = false;
   private _viewport?: ScreenViewport;  // this is stored in case we need it to get the display Tile list, which we need for some providers (Bing)
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
@@ -631,61 +629,40 @@ export class BackgroundMapState {
       return;
 
     this.loadTileTree();
-    if (undefined !== this._tileTree)
-      this._tileTree.drawScene(context);
+    if (undefined === this._tileTree)
+      return;
 
-    this.displayCopyrightImage(context);
-    this.displayCopyrightMessage(context);
+    context.backgroundMap = this;
+    this._tileTree.drawScene(context);
+    context.backgroundMap = undefined;
   }
 
-  private displayCopyrightImage(context: SceneContext) {
-    if (!(context.viewport instanceof ScreenViewport))
+  public decorate(context: DecorateContext) {
+    if (!this._provider)
       return;
 
-    const copyrightImage: HTMLImageElement | undefined = this._provider!.getCopyrightImage(this);
-    if (!copyrightImage)
-      return;
-
-    if (this._copyrightImageAddedToDOM)
-      return;
-
-    const vp: ScreenViewport = context.viewport as ScreenViewport;
-    if (vp.decorationDiv) {
-      copyrightImage.style.position = "absolute";
-      copyrightImage.style.left = "0px";
-      const positionString = `${(vp.canvas.clientHeight - copyrightImage.height).toString()}px`;
-      copyrightImage.style.top = positionString;
-      copyrightImage.style.pointerEvents = "none";
-      vp.decorationDiv.appendChild(copyrightImage);
+    const decorationDiv = context.decorationDiv;
+    const copyrightImage = this._provider.getCopyrightImage(this);
+    if (copyrightImage) {
+      decorationDiv.appendChild(copyrightImage);
+      const style = copyrightImage.style;
+      style.position = "absolute";
+      style.left = "0";
+      style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
+      style.pointerEvents = "none";
     }
-    this._copyrightImageAddedToDOM = true;
-  }
-
-  private displayCopyrightMessage(context: SceneContext) {
-    if (!(context.viewport instanceof ScreenViewport))
-      return;
-    const copyrightMessage: HTMLElement | undefined = this._provider!.getCopyrightMessage(this);
-    if (!copyrightMessage)
-      return;
-
-    if (this._copyrightMessageAddedToDOM)
-      return;
-
-    this._viewport = context.viewport as ScreenViewport;
-    if (this._viewport.decorationDiv) {
-      // append it so it has a width and height, so we can position it.
-      this._viewport.decorationDiv.appendChild(copyrightMessage);
-      copyrightMessage.style.display = "block";
-      copyrightMessage.style.position = "absolute";
-      const boundingRect: ClientRect = copyrightMessage.getBoundingClientRect();
-      const leftPositionString = `${(this._viewport.canvas.clientWidth - (boundingRect.width + 15)).toString()}px`;
-      copyrightMessage.style.left = leftPositionString;
-      const topPositionString = `${(this._viewport.canvas.clientHeight - (boundingRect.height + 5)).toString()}px`;
-      copyrightMessage.style.top = topPositionString;
-      copyrightMessage.style.color = "silver";
-      copyrightMessage.style.backgroundColor = "transparent";
-      copyrightMessage.style.pointerEvents = "initial";
+    const copyrightMessage = this._provider.getCopyrightMessage(this);
+    if (copyrightMessage) {
+      decorationDiv.appendChild(copyrightMessage);
+      const boundingRect = copyrightMessage.getBoundingClientRect();
+      const style = copyrightMessage.style;
+      style.display = "block";
+      style.position = "absolute";
+      style.left = (decorationDiv.clientWidth - (boundingRect.width + 15)) + "px";
+      style.top = (decorationDiv.clientHeight - (boundingRect.height + 5)) + "px";
+      style.color = "silver";
+      style.backgroundColor = "transparent";
+      style.pointerEvents = "initial";
     }
-    this._copyrightMessageAddedToDOM = true;
   }
 }
