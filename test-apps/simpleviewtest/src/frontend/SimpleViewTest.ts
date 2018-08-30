@@ -175,6 +175,17 @@ async function buildModelMenu(state: SimpleViewState) {
 
     modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
     curModelPropIndices.push(i);
+
+    let j = 0;
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        for (const classifier of model.jsonProperties.classifiers) {
+          modelMenu.innerHTML += '&nbsp;&nbsp;<input id="cbxModel' + i + "_" + j + '" type="checkbox"> ' + classifier.name + "\n<br>\n";
+          j++;
+        }
+      }
+    }
+
     i++;
   }
 
@@ -184,6 +195,19 @@ async function buildModelMenu(state: SimpleViewState) {
     const enabled = spatialView.modelSelector.has(curModelProps[c].id!.toString());
     updateCheckboxToggleState(cbxName, enabled);
     addModelToggleHandler(cbxName);
+
+    const model = spatialView.iModel.models.getLoaded(curModelProps[c].id!.toString());
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        let cc = 0;
+        for (const classifier of model.jsonProperties.classifiers) {
+          const classifierName = "cbxModel" + c + "_" + cc;
+          updateCheckboxToggleState(classifierName, classifier.isActive);
+          addClassifierToggleHandler(classifierName);
+          cc++;
+        }
+      }
+    }
   }
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
@@ -252,6 +276,33 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
+// apply a classifier checkbox state being changed (change isActive flag on classifier on a model)
+function applyClassifierToggleChange(cName: string) {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+  const view = theViewport!.view as SpatialViewState;
+
+  for (let c = 0; c < curNumModels; c++) {
+    const model = view.iModel.models.getLoaded(curModelProps[c].id!.toString());
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        let cc = 0;
+        for (const classifier of model.jsonProperties.classifiers) {
+          const classifierName = "cbxModel" + c + "_" + cc;
+          if (cName === classifierName) { // Found the classifier
+            classifier.isActive = getCheckboxToggleState(classifierName);
+            theViewport!.sync.invalidateScene();
+            const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+            menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+            return;
+          }
+          cc++;
+        }
+      }
+    }
+  }
+}
+
 function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
   view.changeCategoryDisplay(catId, !invis);
 }
@@ -296,6 +347,11 @@ function applyCategoryToggleAllChange() {
 // add a click handler to model checkbox
 function addModelToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
+}
+
+// add a click handler to classifier checkbox
+function addClassifierToggleHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyClassifierToggleChange(id));
 }
 
 // add a click handler to category checkbox
