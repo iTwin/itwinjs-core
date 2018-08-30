@@ -108,8 +108,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       return new SettingsResult(SettingsStatus.AuthorizationError, "Authorization failure " + JSON.stringify(response));
     } else if (404 === response.status) {
       return new SettingsResult(SettingsStatus.SettingNotFound);
-    } else if (409 === response.status) {
-      return new SettingsResult(SettingsStatus.SettingAlreadyExists, "The setting already exists " + JSON.stringify(response));
     } else {
       return new SettingsResult(SettingsStatus.ServerError, "Status indicates server error " + JSON.stringify(response));
     }
