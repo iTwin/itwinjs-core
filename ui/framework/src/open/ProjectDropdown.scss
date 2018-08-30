@@ -112,16 +112,13 @@ $pp-max-dropdown-width: 450px;
 
 /* dropdown (list of projects) */
 .pp-dropdown {
-  position: absolute;
-  top: 100%;
   color: #444;
   background: #fff;
   min-width: 100%;
+  width: 250px;
   max-width: $pp-max-dropdown-width;
-  z-index: 100;
   padding-bottom: .75em;
-  border-radius: 0px 0px 5px 5px;
-  
+
   /* first part of the dropdown is a list */
   ul {
     padding: 0px;
