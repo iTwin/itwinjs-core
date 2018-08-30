@@ -434,7 +434,7 @@ export namespace Tile {
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
       this.missing = context.requests.getMissing(root);
-      this.viewFrustum = (undefined !== context.backgroundMapPlane) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMapPlane) : context.viewport.viewFrustum;
+      this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
     }
