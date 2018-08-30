@@ -10,7 +10,7 @@ import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import Cell from "../../utilities/Cell";
-import { Anchor } from "../../widget/Stacked";
+import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { TargetType } from "./Target";
 
 export interface ZoneProps {
@@ -18,6 +18,7 @@ export interface ZoneProps {
   readonly bounds: RectangleProps;
   readonly floatingBounds?: RectangleProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
+  readonly anchor?: HorizontalAnchor;
 }
 
 export interface StatusZoneProps extends ZoneProps {
@@ -190,17 +191,32 @@ export class WidgetZone extends Zone {
     return widgets.length > 1 && widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
   }
 
-  public get anchor(): Anchor {
+  public get horizontalAnchor(): HorizontalAnchor {
+    if (this.props.anchor !== undefined)
+      return this.props.anchor;
+
+    return this.defaultHorizontalAnchor;
+  }
+
+  public get defaultHorizontalAnchor(): HorizontalAnchor {
     switch (this.props.id) {
       case 1:
       case 4:
-        return Anchor.Left;
       case 7:
-        return Anchor.BottomLeft;
-      case 9:
-        return Anchor.BottomRight;
+        return HorizontalAnchor.Left;
       default:
-        return Anchor.Right;
+        return HorizontalAnchor.Right;
+    }
+  }
+
+  public get verticalAnchor(): VerticalAnchor {
+    switch (this.props.id) {
+      case 7:
+      case 8:
+      case 9:
+        return VerticalAnchor.Bottom;
+      default:
+        return VerticalAnchor.Middle;
     }
   }
 
@@ -213,18 +229,6 @@ export class WidgetZone extends Zone {
       case 9:
         return true;
     }
-    return false;
-  }
-
-  public isFirstWidget(widget: Widget): boolean {
-    if (this.props.widgets.length > 0 && this.props.widgets[0].id === widget.props.id)
-      return true;
-    return false;
-  }
-
-  public isLastWidget(widget: Widget): boolean {
-    if (this.props.widgets.length > 0 && this.props.widgets[this.props.widgets.length - 1].id === widget.props.id)
-      return true;
     return false;
   }
 
@@ -271,12 +275,12 @@ export class WidgetZone extends Zone {
           return mergedBounds;
         break;
       }
-      case TargetType.Unmerge: {
+      case TargetType.Back: {
         const widgets = Widget.sort(draggingZone.getWidgets());
         const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
         const isHorizontal = draggingZone.isMergedHorizontally;
 
-        if (draggingZone.props.widgets.length > 2 && draggingZone.isLastWidget(targetWidget)) {
+        if (draggingZone.props.widgets.length > 2 && targetWidget.isLast(draggingZone)) {
           const widgetHeight = draggingZoneBounds.getHeight() / widgets.length;
           const widgetWidth = draggingZoneBounds.getWidth() / widgets.length;
 

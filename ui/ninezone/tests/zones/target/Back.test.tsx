@@ -7,10 +7,10 @@ import Back from "../../../src/zones/target/Back";
 
 describe("<Back />", () => {
   it("should render", () => {
-    mount(<Back />);
+    mount(<Back zoneIndex={9} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Back />).should.matchSnapshot();
+    shallow(<Back zoneIndex={9} />).should.matchSnapshot();
   });
 });

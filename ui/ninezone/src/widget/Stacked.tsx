@@ -12,44 +12,60 @@ import ResizeHandle from "./rectangular/ResizeHandle";
 import CommonProps, { NoChildrenProps } from "../utilities/Props";
 import "./Stacked.scss";
 
-/** Available [[Stacked]] widget anchor directions. */
-export enum Anchor {
-  BottomLeft,
-  BottomRight,
+/** Available [[Stacked]] widget horizontal anchors. */
+export enum HorizontalAnchor {
   Left,
   Right,
 }
 
-/** Helpers for [[Anchor]]. */
-export class AnchorHelpers {
-  /** Class name of [[ToolbarPanelAlignment.Start]] */
-  public static readonly BOTTOM_LEFT_CLASS_NAME = "nz-bottom-left-anchor";
-  /** Class name of [[ToolbarPanelAlignment.End]] */
-  public static readonly BOTTOM_RIGHT_CLASS_NAME = "nz-bottom-right-anchor";
-  /** Class name of [[ToolbarPanelAlignment.Start]] */
+/** Available [[Stacked]] widget vertical anchors. */
+export enum VerticalAnchor {
+  Middle,
+  Bottom,
+}
+
+/** Helpers for [[HorizontalAnchor]]. */
+export class HorizontalAnchorHelpers {
+  /** Class name of [[HorizontalAnchor.Left]] */
   public static readonly LEFT_CLASS_NAME = "nz-left-anchor";
-  /** Class name of [[ToolbarPanelAlignment.End]] */
+  /** Class name of [[HorizontalAnchor.Right]] */
   public static readonly RIGHT_CLASS_NAME = "nz-right-anchor";
 
-  /** @returns Class name of specified [[Anchor]] */
-  public static getCssClassName(anchor: Anchor): string {
+  /** @returns Class name of specified [[HorizontalAnchor]] */
+  public static getCssClassName(anchor: HorizontalAnchor): string {
     switch (anchor) {
-      case Anchor.BottomLeft:
-        return AnchorHelpers.BOTTOM_LEFT_CLASS_NAME;
-      case Anchor.BottomRight:
-        return AnchorHelpers.BOTTOM_RIGHT_CLASS_NAME;
-      case Anchor.Left:
-        return AnchorHelpers.LEFT_CLASS_NAME;
-      case Anchor.Right:
-        return AnchorHelpers.RIGHT_CLASS_NAME;
+      case HorizontalAnchor.Left:
+        return HorizontalAnchorHelpers.LEFT_CLASS_NAME;
+      case HorizontalAnchor.Right:
+        return HorizontalAnchorHelpers.RIGHT_CLASS_NAME;
+    }
+  }
+}
+
+/** Helpers for [[Anchor]]. */
+export class VerticalAnchorHelpers {
+  /** Class name of [[VerticalAnchor.Start]] */
+  public static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
+  /** Class name of [[VerticalAnchor.End]] */
+  public static readonly BOTTOM_CLASS_NAME = "nz-bottom-anchor";
+
+  /** @returns Class name of specified [[VerticalAnchor]] */
+  public static getCssClassName(anchor: VerticalAnchor): string {
+    switch (anchor) {
+      case VerticalAnchor.Middle:
+        return VerticalAnchorHelpers.MIDDLE_CLASS_NAME;
+      case VerticalAnchor.Bottom:
+        return VerticalAnchorHelpers.BOTTOM_CLASS_NAME;
     }
   }
 }
 
 /** Properties of [[Stacked]] component. */
 export interface StackedProps extends CommonProps, NoChildrenProps {
-  /** Describes to which side the widget is anchored. Defaults to [[Anchor.Right]] */
-  anchor?: Anchor;
+  /** Describes to which side the widget is horizontally anchored. Defaults to [[HorizontalAnchor.Right]] */
+  horizontalAnchor?: HorizontalAnchor;
+  /** Describes to which side the widget is vertically anchored. Defaults to [[VerticalAnchor.Middle]] */
+  verticalAnchor?: VerticalAnchor;
   /** Content of this widget. */
   content?: React.ReactNode;
   /** Describes if the widget is being dragged. */
@@ -68,9 +84,11 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
  */
 // tslint:disable-next-line:variable-name
 export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedProps) => {
+  const horizontalAnchor = props.horizontalAnchor === undefined ? HorizontalAnchor.Right : props.horizontalAnchor;
   const className = classnames(
     "nz-widget-stacked",
-    AnchorHelpers.getCssClassName(props.anchor === undefined ? Anchor.Right : props.anchor),
+    HorizontalAnchorHelpers.getCssClassName(horizontalAnchor),
+    VerticalAnchorHelpers.getCssClassName(props.verticalAnchor === undefined ? VerticalAnchor.Middle : props.verticalAnchor),
     !props.isOpen && "nz-is-closed",
     props.isDragged && "nz-is-dragged",
     props.className);
@@ -80,7 +98,7 @@ export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedPr
       <div className="nz-content-area">
         <Content
           className="nz-content"
-          anchor={props.anchor}
+          anchor={horizontalAnchor}
           content={props.content}
         />
         <ResizeGrip

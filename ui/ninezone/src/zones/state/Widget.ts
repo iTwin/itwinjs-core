@@ -16,7 +16,6 @@ export enum DropTarget {
 
 export interface WidgetProps {
   readonly id: WidgetZoneIndex;
-  readonly defaultZoneId?: WidgetZoneIndex;
   readonly tabIndex: number;
 }
 
@@ -64,12 +63,24 @@ export default class Widget {
 
   public get defaultZone(): WidgetZone {
     if (!this._defaultZone)
-      this._defaultZone = this.nineZone.getWidgetZone(this.props.defaultZoneId || this.props.id);
+      this._defaultZone = this.nineZone.getWidgetZone(this.props.id);
     return this._defaultZone;
   }
 
   public get isInHomeZone() {
     if (this.zone.equals(this.defaultZone))
+      return true;
+    return false;
+  }
+
+  public isFirst(zone: WidgetZone): boolean {
+    if (zone.props.widgets.length > 0 && zone.props.widgets[0].id === this.props.id)
+      return true;
+    return false;
+  }
+
+  public isLast(zone: WidgetZone): boolean {
+    if (zone.props.widgets.length > 0 && zone.props.widgets[zone.props.widgets.length - 1].id === this.props.id)
       return true;
     return false;
   }
@@ -87,7 +98,7 @@ export default class Widget {
     if (draggingZone.equals(targetZone))
       return DropTarget.Back;
 
-    if (targetZone.props.widgets.length > 1 && !targetZone.isFirstWidget(this))
+    if (targetZone.props.widgets.length > 1 && !this.isFirst(targetZone))
       return DropTarget.None;
 
     const draggingCell = draggingZone.cell;

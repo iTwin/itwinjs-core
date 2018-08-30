@@ -67,7 +67,7 @@ import Size from "@src/utilities/Size";
 import ResizeHandle from "@src/widget/rectangular/ResizeHandle";
 import WidgetTab from "@src/widget/rectangular/tab/Draggable";
 import TabSeparator from "@src/widget/rectangular/tab/Separator";
-import StackedWidget, { Anchor } from "@src/widget/Stacked";
+import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
 import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
@@ -1429,7 +1429,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         return (
           <BackTarget
             key={widgetId}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Unmerge, isTargeted)}
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Back, isTargeted)}
             zoneIndex={widgetId}
           />
         );
@@ -1452,7 +1452,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private getWidgetTabs(widget: WidgetProps, anchor: Anchor) {
+  private getWidgetTabs(widget: WidgetProps, anchor: HorizontalAnchor) {
     const lastPosition = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === widget.id ?
       this.state.nineZone.draggingWidget.lastPosition : undefined;
     switch (widget.id) {
@@ -1774,7 +1774,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTabs(zoneId: WidgetZoneIndex, anchor: Anchor) {
+  private getTabs(zoneId: WidgetZoneIndex, anchor: HorizontalAnchor) {
     let tabs: JSX.Element[] = [];
     let i = -1;
 
@@ -1812,14 +1812,15 @@ export default class ZonesExample extends React.Component<{}, State> {
     const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
     return (
       <StackedWidget
-        anchor={zone.anchor}
+        horizontalAnchor={zone.horizontalAnchor}
+        verticalAnchor={zone.verticalAnchor}
         content={this.getZoneContent(zoneId)}
         isDragged={isDragged}
         isOpen={isOpen}
         onResize={(x, y, handle) => {
           this._handleOnWidgetResize(zoneId, x, y, handle);
         }}
-        tabs={this.getTabs(zoneId, zone.anchor)}
+        tabs={this.getTabs(zoneId, zone.horizontalAnchor)}
       />
     );
   }

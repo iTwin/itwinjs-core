@@ -2,7 +2,8 @@
 
 exports[`<Back /> renders correctly 1`] = `
 <Target
-  className="nz-zones-target-back"
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
 >
   <Component
     className="nz-arrow"

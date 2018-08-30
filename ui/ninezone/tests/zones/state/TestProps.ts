@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { NineZoneProps, getDefaultProps } from "@src/zones/state/NineZone";
+import { HorizontalAnchor } from "@src/widget/Stacked";
 
 export namespace TestProps {
   export const defaultProps = getDefaultProps();
@@ -363,7 +364,6 @@ export namespace TestProps {
           },
           {
             id: 4,
-            defaultZoneId: 6,
             tabIndex: 1,
           },
         ],
@@ -388,7 +388,6 @@ export namespace TestProps {
           },
           {
             id: 4,
-            defaultZoneId: 9,
             tabIndex: -1,
           },
         ],
@@ -416,6 +415,40 @@ export namespace TestProps {
           },
         ],
       },
+    },
+  };
+
+  export const merged9And8To7: NineZoneProps = {
+    ...defaultProps,
+    zones: {
+      ...defaultProps.zones,
+      7: {
+        ...defaultProps.zones[7],
+        widgets: [
+          {
+            id: 7,
+            tabIndex: 1,
+          },
+          {
+            id: 8,
+            tabIndex: -1,
+          },
+          {
+            id: 9,
+            tabIndex: -1,
+          },
+        ],
+      },
+      8: {
+        ...defaultProps.zones[8],
+        widgets: [],
+        anchor: HorizontalAnchor.Left,
+      },
+      9: {
+        ...defaultProps.zones[9],
+        widgets: [],
+        anchor: HorizontalAnchor.Left,
+      }
     },
   };
 }

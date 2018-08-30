@@ -18,7 +18,7 @@
     @include nz-z-index(dragged-widget);
   }
 
-  &.nz-left-anchor, &.nz-bottom-left-anchor {
+  &.nz-left-anchor {
     grid-auto-columns: 1fr auto;
 
     > .nz-tabs-column {
@@ -68,7 +68,7 @@
     height: 100%;
     align-items: center;
 
-    &.nz-bottom-left-anchor, &.nz-bottom-right-anchor {
+    &.nz-bottom-anchor, &.nz-bottom-anchor {
       align-items: end;
     }
 

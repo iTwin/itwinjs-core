@@ -7,7 +7,7 @@ import NineZone, { WidgetZoneIndex } from "./NineZone";
 
 export enum TargetType {
   Merge,
-  Unmerge,
+  Back,
 }
 
 export interface TargetProps {

@@ -5,6 +5,7 @@ import * as chai from "chai";
 import DefaultStateManager, { StateManager } from "@src/zones/state/Manager";
 import { TargetType } from "@src/zones/state/Target";
 import { NineZoneProps } from "@src/zones/state/NineZone";
+import { HorizontalAnchor } from "@src/widget/Stacked";
 import TestProps from "./TestProps";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
@@ -108,7 +109,7 @@ describe("StateManager", () => {
       };
       const state = DefaultStateManager.mergeDrop(6, props);
 
-      expect(state.zones[6].floatingBounds).to.not.exist;
+      expect(state.zones[6].floatingBounds).undefined;
     });
 
     it("should merge all vertical zones between dragging zone and target zone", () => {
@@ -123,9 +124,9 @@ describe("StateManager", () => {
       const w7 = state.zones[7].widgets.find((w) => w.id === 7);
 
       state.zones[7].widgets.length.should.eq(3);
-      expect(w1).to.exist;
-      expect(w4).to.exist;
-      expect(w7).to.exist;
+      expect(w1).exist;
+      expect(w4).exist;
+      expect(w7).exist;
     });
 
     it("should merge widget 6 to zone 4", () => {
@@ -157,272 +158,62 @@ describe("StateManager", () => {
       w7.id.should.eq(7);
       w9.id.should.eq(9);
     });
+
+    it("should set default anchor of dragged zone", () => {
+      const props: NineZoneProps = {
+        ...TestProps.inWidgetMode,
+        draggingWidget: { id: 7, lastPosition: { x: 0, y: 0, }, },
+        zones: {
+          ...TestProps.inWidgetMode.zones,
+          7: {
+            ...TestProps.inWidgetMode.zones[7],
+            anchor: HorizontalAnchor.Right,
+          }
+        }
+      };
+      const state = DefaultStateManager.mergeDrop(8, props);
+
+      expect(state.zones[8].anchor).exist;
+      state.zones[8].anchor!.should.eq(HorizontalAnchor.Left);
+    });
   });
 
-  describe("unmergeDrop", () => {
-    it("should unmerge vertically merged zones", () => {
+  describe("backDrop", () => {
+    it("should unset anchor", () => {
       const props: NineZoneProps = {
-        ...TestProps.merged9To6,
-        draggingWidget: {
-          id: 9,
-          lastPosition: {
-            x: 0,
-            y: 0,
+        ...TestProps.defaultProps,
+        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
+        zones: {
+          ...TestProps.defaultProps.zones,
+          9: {
+            ...TestProps.defaultProps.zones[9],
+            anchor: HorizontalAnchor.Left,
           },
         },
       };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      const w6 = state.zones[6].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[9].widgets.find((w) => w.id === 9);
-
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-      expect(w6).to.exist;
-      expect(w9).to.exist;
+      const state = DefaultStateManager.backDrop(props);
+      expect(state.zones[9].anchor).undefined;
     });
 
-    it("should unmerge horizontally merged zones", () => {
+    it("should unset floating bounds", () => {
       const props: NineZoneProps = {
-        ...TestProps.merged3To2,
-        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(3, props);
-
-      const w2 = state.zones[2].widgets.find((w) => w.id === 2);
-      const w3 = state.zones[3].widgets.find((w) => w.id === 3);
-
-      state.zones[2].widgets.length.should.eq(1);
-      state.zones[3].widgets.length.should.eq(1);
-      expect(w2).to.exist;
-      expect(w3).to.exist;
-    });
-
-    it("should unmerge bounds of vertically merged zones", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9To6,
+        ...TestProps.defaultProps,
         draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
+        zones: {
+          ...TestProps.defaultProps.zones,
+          9: {
+            ...TestProps.defaultProps.zones[9],
+            floatingBounds: {
+              bottom: 10,
+              left: 99,
+              right: 999,
+              top: 0,
+            },
+          },
+        },
       };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      const b1 = state.zones[6].bounds;
-      b1.left.should.eq(10);
-      b1.top.should.eq(20);
-      b1.right.should.eq(99);
-      b1.bottom.should.eq(65);
-
-      const b2 = state.zones[9].bounds;
-      b2.left.should.eq(10);
-      b2.top.should.eq(65);
-      b2.right.should.eq(99);
-      b2.bottom.should.eq(110);
-    });
-
-    it("should unmerge bounds of horizontally merged zones", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged3To2,
-        draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(3, props);
-
-      const b1 = state.zones[2].bounds;
-      b1.left.should.eq(55);
-      b1.top.should.eq(20);
-      b1.right.should.eq(90);
-      b1.bottom.should.eq(30);
-
-      const b2 = state.zones[3].bounds;
-      b2.left.should.eq(90);
-      b2.top.should.eq(20);
-      b2.right.should.eq(125);
-      b2.bottom.should.eq(30);
-    });
-
-    it("should swap zones", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9To6,
-        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      const w6 = state.zones[9].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[6].widgets.find((w) => w.id === 9);
-
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-      expect(w6).to.exist;
-      expect(w9).to.exist;
-    });
-
-    it("should unmerge to lower zone", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged6To9,
-        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(6, props);
-
-      const w6 = state.zones[9].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[6].widgets.find((w) => w.id === 9);
-
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-      expect(w6).to.exist;
-      expect(w9).to.exist;
-    });
-
-    it("should unmerge widget 6 from zone 4 (and leave zone 5 empty)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged6To4,
-        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(6, props);
-
-      const z4 = state.zones[4];
-      const z6 = state.zones[6];
-
-      const w4 = z4.widgets.find((w) => w.id === 4);
-      const w6 = z6.widgets.find((w) => w.id === 6);
-
-      z4.widgets.length.should.eq(1);
-      z6.widgets.length.should.eq(1);
-      expect(w4).to.exist;
-      expect(w6).to.exist;
-
-      z4.bounds.left.should.eq(5);
-      z4.bounds.top.should.eq(20);
-      z4.bounds.right.should.eq(45);
-      z4.bounds.bottom.should.eq(30);
-
-      z6.bounds.left.should.eq(85);
-      z6.bounds.top.should.eq(20);
-      z6.bounds.right.should.eq(125);
-      z6.bounds.bottom.should.eq(30);
-    });
-
-    it("should unmerge widget 6 to zone 9 (widgets 9 and 6 in zone 6)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9And6To6,
-        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(6, props);
-
-      const w6 = state.zones[9].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[6].widgets.find((w) => w.id === 9);
-
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-      expect(w6).to.exist;
-      expect(w9).to.exist;
-    });
-
-    it("widgets 6, 9 and 3 in zone 6 should unmerge: (widgets 3, 6 to zone 3), (widget 9 to zone 9)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9And3To6,
-        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(3, props);
-
-      const w3 = state.zones[3].widgets.find((w) => w.id === 3);
-      const w6 = state.zones[3].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[9].widgets.find((w) => w.id === 9);
-
-      state.zones[3].widgets.length.should.eq(2);
-      state.zones[9].widgets.length.should.eq(1);
-
-      expect(w3).to.exist;
-      expect(w6).to.exist;
-      expect(w9).to.exist;
-    });
-
-    it("widgets 6, 9 and 3 in zone 6 should unmerge: (w6 to z3), (w9 to z6), (w3 to z9)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9And3To6,
-        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      const w3 = state.zones[9].widgets.find((w) => w.id === 3);
-      const w6 = state.zones[3].widgets.find((w) => w.id === 6);
-      const w9 = state.zones[6].widgets.find((w) => w.id === 9);
-
-      state.zones[3].widgets.length.should.eq(1);
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-
-      expect(w3).to.exist;
-      expect(w6).to.exist;
-      expect(w9).to.exist;
-    });
-
-    it("should unmerge widget 9 from zone 7 (and leave zone 8 empty if is in footer state)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9To7,
-        draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      const z7 = state.zones[7];
-      const z9 = state.zones[9];
-
-      const w7 = z7.widgets.find((w) => w.id === 7);
-      const w9 = z9.widgets.find((w) => w.id === 9);
-
-      z7.widgets.length.should.eq(1);
-      z9.widgets.length.should.eq(1);
-      expect(w7).to.exist;
-      expect(w9).to.exist;
-
-      z7.bounds.left.should.eq(5);
-      z7.bounds.top.should.eq(20);
-      z7.bounds.right.should.eq(45);
-      z7.bounds.bottom.should.eq(30);
-
-      z9.bounds.left.should.eq(85);
-      z9.bounds.top.should.eq(20);
-      z9.bounds.right.should.eq(125);
-      z9.bounds.bottom.should.eq(30);
-    });
-
-    it("should set defaultZoneId when swapping zones vertically", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged9To6,
-        draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(9, props);
-
-      expect(state.zones[6].widgets[0].defaultZoneId).to.eq(6);
-      expect(state.zones[9].widgets[0].defaultZoneId).to.eq(9);
-    });
-
-    it("should set defaultZoneId when swapping zones horizontally", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged6To4,
-        draggingWidget: { id: 4, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(6, props);
-
-      expect(state.zones[4].widgets[0].defaultZoneId).to.eq(4);
-      expect(state.zones[6].widgets[0].defaultZoneId).to.eq(6);
-    });
-
-    it("widgets 3, 6 and 4 in zone 3 should unmerge: (w3 to z3), (w4 to z6), (w6 to z9)", () => {
-      const props: NineZoneProps = {
-        ...TestProps.merged6And4To3,
-        draggingWidget: { id: 4, lastPosition: { x: 0, y: 0, }, },
-      };
-      const state = DefaultStateManager.unmergeDrop(6, props);
-
-      const w3 = state.zones[3].widgets.find((w) => w.id === 3);
-      const w4 = state.zones[6].widgets.find((w) => w.id === 4);
-      const w6 = state.zones[9].widgets.find((w) => w.id === 6);
-
-      state.zones[3].widgets.length.should.eq(1);
-      state.zones[6].widgets.length.should.eq(1);
-      state.zones[9].widgets.length.should.eq(1);
-
-      expect(w3).to.exist;
-      expect(w4).to.exist;
-      expect(w6).to.exist;
+      const state = DefaultStateManager.backDrop(props);
+      expect(state.zones[9].floatingBounds).undefined;
     });
   });
 
@@ -430,7 +221,7 @@ describe("StateManager", () => {
     it("should set floating bounds", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
 
-      expect(state.zones[6].floatingBounds).to.exist;
+      expect(state.zones[6].floatingBounds).exist;
       state.zones[6].floatingBounds!.left.should.eq(10);
       state.zones[6].floatingBounds!.top.should.eq(20);
       state.zones[6].floatingBounds!.right.should.eq(99);
@@ -461,7 +252,7 @@ describe("StateManager", () => {
       bounds9.left.should.eq(10, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").to.exist;
+      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
       state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
       state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
       state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
@@ -483,7 +274,7 @@ describe("StateManager", () => {
       bounds6.left.should.eq(10, "bounds6.left");
       bounds6.right.should.eq(99, "bounds6.right");
       bounds6.bottom.should.eq(82, "bounds6.bottom");
-      expect(state.zones[6].floatingBounds, "floatingBounds6").to.exist;
+      expect(state.zones[6].floatingBounds, "floatingBounds6").exist;
       state.zones[6].floatingBounds!.top.should.eq(54, "floatingBounds6.top");
       state.zones[6].floatingBounds!.left.should.eq(10, "floatingBounds6.left");
       state.zones[6].floatingBounds!.right.should.eq(99, "floatingBounds6.right");
@@ -505,7 +296,7 @@ describe("StateManager", () => {
       bounds9.left.should.eq(54.5, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").to.exist;
+      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
       state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
       state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
       state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
@@ -515,7 +306,7 @@ describe("StateManager", () => {
     it("should set dragging widget when unmerging", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 10, y: 20 }, { x: 0, y: 0 }, TestProps.merged9To6);
 
-      expect(state.draggingWidget).to.exist;
+      expect(state.draggingWidget).exist;
       state.draggingWidget!.id.should.eq(9);
       state.draggingWidget!.lastPosition.x.should.eq(10);
       state.draggingWidget!.lastPosition.y.should.eq(20);
@@ -561,6 +352,13 @@ describe("StateManager", () => {
       state.zones[6].widgets[0].id.should.eq(6, "z6");
       state.zones[9].widgets.length.should.eq(1, "z9");
       state.zones[9].widgets[0].id.should.eq(9, "z9");
+    });
+
+    it("should unset anchors for merged zones", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(7, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9And8To7);
+      expect(state.zones[7].anchor, "7").undefined;
+      expect(state.zones[8].anchor, "8").undefined;
+      expect(state.zones[9].anchor, "9").undefined;
     });
   });
 

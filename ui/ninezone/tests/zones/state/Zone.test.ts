@@ -58,7 +58,7 @@ describe("Zone", () => {
       };
       const bounds = new NineZone(props).getWidgetZone(9).getGhostOutlineBounds();
 
-      expect(bounds).to.exist;
+      expect(bounds).exist;
       bounds!.left.should.eq(10);
       bounds!.top.should.eq(54);
       bounds!.right.should.eq(99);
@@ -76,7 +76,7 @@ describe("Zone", () => {
       };
       const bounds = new NineZone(props).getWidgetZone(4).getGhostOutlineBounds();
 
-      expect(bounds).to.exist;
+      expect(bounds).exist;
       bounds!.left.should.eq(0);
       bounds!.top.should.eq(20);
       bounds!.right.should.eq(99);
@@ -94,7 +94,7 @@ describe("Zone", () => {
       };
       const bounds = new NineZone(props).getWidgetZone(6).getGhostOutlineBounds();
 
-      expect(bounds).to.exist;
+      expect(bounds).exist;
       bounds!.left.should.eq(10);
       bounds!.top.should.eq(20);
       bounds!.right.should.eq(99);
@@ -112,7 +112,7 @@ describe("Zone", () => {
       };
       const bounds = new NineZone(props).getWidgetZone(6).getGhostOutlineBounds();
 
-      expect(bounds).to.exist;
+      expect(bounds).exist;
       bounds!.left.should.eq(10);
       bounds!.top.should.eq(54);
       bounds!.right.should.eq(99);
@@ -125,20 +125,20 @@ describe("Zone", () => {
         draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
       const z6 = nineZone.getWidgetZone(6).getGhostOutlineBounds();
       const z9 = nineZone.getWidgetZone(9).getGhostOutlineBounds();
 
-      expect(z6).to.exist;
+      expect(z6).exist;
       z6!.left.should.eq(10);
       z6!.top.should.eq(20);
       z6!.right.should.eq(99);
       z6!.bottom.should.eq(65);
 
-      expect(z9).to.exist;
+      expect(z9).exist;
       z9!.left.should.eq(10);
       z9!.top.should.eq(65);
       z9!.right.should.eq(99);
@@ -151,7 +151,7 @@ describe("Zone", () => {
         draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 9,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
@@ -159,19 +159,19 @@ describe("Zone", () => {
       const z6 = nineZone.getWidgetZone(6).getGhostOutlineBounds();
       const z9 = nineZone.getWidgetZone(9).getGhostOutlineBounds();
 
-      expect(z3).to.exist;
+      expect(z3).exist;
       z3!.left.should.eq(10);
       z3!.top.should.eq(2);
       z3!.right.should.eq(99);
       z3!.bottom.should.eq(38);
 
-      expect(z6).to.exist;
+      expect(z6).exist;
       z6!.left.should.eq(10);
       z6!.top.should.eq(38);
       z6!.right.should.eq(99);
       z6!.bottom.should.eq(74);
 
-      expect(z9).to.exist;
+      expect(z9).exist;
       z9!.left.should.eq(10);
       z9!.top.should.eq(74);
       z9!.right.should.eq(99);
@@ -184,20 +184,20 @@ describe("Zone", () => {
         draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 3,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
       const z3 = nineZone.getWidgetZone(3).getGhostOutlineBounds();
       const z9 = nineZone.getWidgetZone(9).getGhostOutlineBounds();
 
-      expect(z3).to.exist;
+      expect(z3).exist;
       z3!.left.should.eq(10);
       z3!.top.should.eq(2);
       z3!.right.should.eq(99);
       z3!.bottom.should.eq(74);
 
-      expect(z9).to.exist;
+      expect(z9).exist;
       z9!.left.should.eq(10);
       z9!.top.should.eq(74);
       z9!.right.should.eq(99);
@@ -210,20 +210,20 @@ describe("Zone", () => {
         draggingWidget: { id: 3, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 3,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
       const z2 = nineZone.getWidgetZone(2).getGhostOutlineBounds();
       const z3 = nineZone.getWidgetZone(3).getGhostOutlineBounds();
 
-      expect(z2).to.exist;
+      expect(z2).exist;
       z2!.left.should.eq(55);
       z2!.top.should.eq(20);
       z2!.right.should.eq(90);
       z2!.bottom.should.eq(30);
 
-      expect(z3).to.exist;
+      expect(z3).exist;
       z3!.left.should.eq(90);
       z3!.top.should.eq(20);
       z3!.right.should.eq(125);
@@ -236,20 +236,20 @@ describe("Zone", () => {
         draggingWidget: { id: 6, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 6,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
       const z4 = nineZone.getWidgetZone(4).getGhostOutlineBounds();
       const z6 = nineZone.getWidgetZone(6).getGhostOutlineBounds();
 
-      expect(z4).to.exist;
+      expect(z4).exist;
       z4!.left.should.eq(5);
       z4!.top.should.eq(20);
       z4!.right.should.eq(45);
       z4!.bottom.should.eq(30);
 
-      expect(z6).to.exist;
+      expect(z6).exist;
       z6!.left.should.eq(85);
       z6!.top.should.eq(20);
       z6!.right.should.eq(125);
@@ -262,20 +262,20 @@ describe("Zone", () => {
         draggingWidget: { id: 9, lastPosition: { x: 0, y: 0, }, },
         target: {
           widgetId: 9,
-          type: TargetType.Unmerge,
+          type: TargetType.Back,
         },
       };
       const nineZone = new NineZone(props);
       const z7 = nineZone.getWidgetZone(7).getGhostOutlineBounds();
       const z9 = nineZone.getWidgetZone(9).getGhostOutlineBounds();
 
-      expect(z7).to.exist;
+      expect(z7).exist;
       z7!.left.should.eq(5);
       z7!.top.should.eq(20);
       z7!.right.should.eq(45);
       z7!.bottom.should.eq(30);
 
-      expect(z9).to.exist;
+      expect(z9).exist;
       z9!.left.should.eq(85);
       z9!.top.should.eq(20);
       z9!.right.should.eq(125);
