@@ -566,5 +566,3 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
 });
-
-
