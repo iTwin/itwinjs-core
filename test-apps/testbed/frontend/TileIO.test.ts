@@ -52,7 +52,7 @@ describe("TileIO", () => {
     if (imodel) await imodel.closeStandalone();
   });
 
-  it("should read tile headers", () => {
+  it.skip("should read tile headers", () => {
     const stream = new TileIO.StreamBuffer(rectangle);
     stream.reset();
     const header = new IModelTileIO.Header(stream);
@@ -74,7 +74,7 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it("should support canceling operation", async () => {
+  it.skip("should support canceling operation", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
@@ -86,7 +86,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing a single rectangle", async () => {
+  it.skip("should read an iModel tile containing a single rectangle", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
@@ -192,7 +192,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
+  it.skip("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(triangles);
@@ -410,7 +410,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing single open yellow line string", async () => {
+  it.skip("should read an iModel tile containing single open yellow line string", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineString);
@@ -528,7 +528,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing multiple line strings", async () => {
+  it.skip("should read an iModel tile containing multiple line strings", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineStrings);
@@ -729,7 +729,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing edges and silhouettes", async () => {
+  it.skip("should read an iModel tile containing edges and silhouettes", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(cylinder);
@@ -853,7 +853,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should obtain tiles from backend", async () => {
+  it.skip("should obtain tiles from backend", async () => {
     // This data set contains 4 physical models: 0x1c (empty), 0x22, 0x23, and 0x24. The latter 3 collectively contain 4 spheres.
     const modelProps = await imodel.models.getProps("0x22");
     expect(modelProps.length).to.equal(1);
