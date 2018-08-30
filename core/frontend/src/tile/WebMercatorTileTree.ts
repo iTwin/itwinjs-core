@@ -225,7 +225,7 @@ abstract class ImageryProvider {
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-  public abstract getCopyrightMessage(bgMapState: BackgroundMapState): HTMLElement | undefined;
+  public abstract getCopyrightMessage(bgMapState: BackgroundMapState, viewport: ScreenViewport): HTMLElement | undefined;
   public abstract getCopyrightImage(bgMapState: BackgroundMapState): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
@@ -387,10 +387,10 @@ class BingMapProvider extends ImageryProvider {
     return matchingAttributions;
   }
 
-  private showAttributions(state: BackgroundMapState, _event: MouseEvent) {
+  private showAttributions(state: BackgroundMapState, viewport: ScreenViewport) {
     // our "this" is the BingMapProvider for which we want to show the data provider attribution.
     // We need to get the tiles that are used in the view.
-    const tiles: Tile[] = state.getTilesForView();
+    const tiles: Tile[] = state.getTilesForView(viewport);
     const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
     let dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
     for (const match of matchingAttributions) {
@@ -401,10 +401,10 @@ class BingMapProvider extends ImageryProvider {
 
   public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return this._logoImage; }
 
-  public getCopyrightMessage(bgMapState: BackgroundMapState): HTMLElement | undefined {
+  public getCopyrightMessage(bgMapState: BackgroundMapState, viewport: ScreenViewport): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
     copyrightElement.className = "bgmap-copyright";
-    copyrightElement.onclick = this.showAttributions.bind(this, bgMapState);
+    copyrightElement.onclick = this.showAttributions.bind(this, bgMapState, viewport);
     copyrightElement.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
     copyrightElement.style.textDecoration = "underline";
     copyrightElement.style.cursor = "pointer";
@@ -555,7 +555,7 @@ class MapBoxProvider extends ImageryProvider {
 
   public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return undefined; }
 
-  public getCopyrightMessage(_bgMapState: BackgroundMapState): HTMLElement | undefined {
+  public getCopyrightMessage(_bgMapState: BackgroundMapState, _viewport: ScreenViewport): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
     copyrightElement.innerText = IModelApp.i18n.translate("IModelJs:BackgroundMap.MapBoxCopyright");
     copyrightElement.className = "bgmap-copyright";
@@ -572,10 +572,8 @@ export class BackgroundMapState {
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   private _provider?: ImageryProvider;
   private _providerName: string;
-  /// private providerData: string;
   private _groundBias: number;
   private _mapType: MapType;
-  private _viewport?: ScreenViewport;  // this is stored in case we need it to get the display Tile list, which we need for some providers (Bing)
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
@@ -585,11 +583,11 @@ export class BackgroundMapState {
     return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this._groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
   }
 
-  public getTilesForView(): Tile[] {
-    // we need the viewport
-    let displayTiles: Tile[] = new Array<Tile>();
-    if (this._viewport && this._tileTree) {
-      const sceneContext: SceneContext = new SceneContext(this._viewport, new TileRequests());
+  public getTilesForView(viewport: ScreenViewport): Tile[] {
+    let displayTiles: Tile[] = [];
+    if (this._tileTree) {
+      const sceneContext = new SceneContext(viewport, new TileRequests());
+      sceneContext.backgroundMap = this;
       displayTiles = this._tileTree.selectTilesForScene(sceneContext);
     }
     return displayTiles;
@@ -651,7 +649,7 @@ export class BackgroundMapState {
       style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
       style.pointerEvents = "none";
     }
-    const copyrightMessage = this._provider.getCopyrightMessage(this);
+    const copyrightMessage = this._provider.getCopyrightMessage(this, context.viewport as ScreenViewport);
     if (copyrightMessage) {
       decorationDiv.appendChild(copyrightMessage);
       const boundingRect = copyrightMessage.getBoundingClientRect();
