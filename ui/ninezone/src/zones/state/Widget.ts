@@ -5,8 +5,8 @@
 
 import { WidgetZone } from "./Zone";
 import Cell from "../../utilities/Cell";
-import NineZone, { WidgetZoneIndex } from "./NineZone";
 import { PointProps } from "../../utilities/Point";
+import NineZone, { WidgetZoneIndex } from "./NineZone";
 
 export enum DropTarget {
   None,

@@ -4,13 +4,12 @@
 /** @module Zone */
 
 import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
-
+import Cell from "../../utilities/Cell";
 import Layout from "./layout/Layout";
+import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
-import Cell from "../../utilities/Cell";
-import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { TargetType } from "./Target";
 
 export interface ZoneProps {
@@ -130,6 +129,14 @@ export default class Zone {
       return true;
     return false;
   }
+
+  public isFirst(zones: ReadonlyArray<Zone>) {
+    return zones.every((z) => z.id >= this.id);
+  }
+
+  public isLast(zones: ReadonlyArray<Zone>) {
+    return zones.every((z) => z.id <= this.id);
+  }
 }
 
 export class WidgetZone extends Zone {
@@ -232,15 +239,51 @@ export class WidgetZone extends Zone {
     return false;
   }
 
+  public getUnmergeWidgetBounds(widget: Widget): Array<{ id: WidgetZoneIndex, bounds: RectangleProps }> {
+    const defaultZone = widget.defaultZone;
+    const mergedZones = Widget.sort(this.getWidgets()).map((w) => w.defaultZone);
+    const isFirst = defaultZone.isFirst(mergedZones);
+    const isLast = defaultZone.isLast(mergedZones);
+    const isMergedHorizontally = this.isMergedHorizontally;
+    const isMergedVertically = this.isMergedVertically;
+
+    if ((!isFirst && !isLast) || mergedZones.length < 3 || (!isMergedHorizontally && !isMergedVertically))
+      return this.getUnmergeBounds();
+
+    const zoneBounds = Rectangle.create(this.props.bounds);
+    const segmentId = isFirst ? 0 : mergedZones.length - 1;
+    const defaultZoneBounds = isMergedHorizontally ? zoneBounds.getHorizontalSegmentBounds(segmentId, mergedZones.length) :
+      zoneBounds.getVerticalSegmentBounds(segmentId, mergedZones.length);
+    const bounds = isFirst ?
+      isMergedHorizontally ? zoneBounds.inset(defaultZoneBounds.getWidth(), 0, 0, 0) :
+        zoneBounds.inset(0, defaultZoneBounds.getHeight(), 0, 0) :
+      isMergedHorizontally ? zoneBounds.inset(0, 0, defaultZoneBounds.getWidth(), 0) :
+        zoneBounds.inset(0, 0, 0, defaultZoneBounds.getHeight());
+
+    return [
+      {
+        id: defaultZone.id,
+        bounds: defaultZoneBounds,
+      },
+      {
+        id: this.id,
+        bounds,
+      },
+    ];
+  }
+
   public getUnmergeBounds(): Array<{ id: WidgetZoneIndex, bounds: RectangleProps }> {
     const mergedZones = Widget.sort(this.getWidgets()).map((w) => w.defaultZone);
     const zoneBounds = Rectangle.create(this.props.bounds);
-    if (this.isMergedHorizontally) {
+    const isMergedHorizontally = this.isMergedHorizontally;
+    const isMergedVertically = this.isMergedVertically;
+
+    if (isMergedHorizontally) {
       return mergedZones.map((z, index) => ({
         id: z.id,
         bounds: zoneBounds.getHorizontalSegmentBounds(index, mergedZones.length),
       }));
-    } else if (this.isMergedVertically) {
+    } else if (isMergedVertically) {
       return mergedZones.map((z, index) => ({
         id: z.id,
         bounds: zoneBounds.getVerticalSegmentBounds(index, mergedZones.length),

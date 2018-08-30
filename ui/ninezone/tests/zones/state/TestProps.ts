@@ -424,6 +424,12 @@ export namespace TestProps {
       ...defaultProps.zones,
       7: {
         ...defaultProps.zones[7],
+        bounds: {
+          bottom: 100,
+          left: 20,
+          right: 80,
+          top: 10,
+        },
         widgets: [
           {
             id: 7,

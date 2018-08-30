@@ -144,8 +144,8 @@ export class StateManager {
       return { ...model.props };
 
     const defaultZone = widget.defaultZone;
-    const unmergeBounds = zone.getUnmergeBounds();
     if (widget.isInHomeZone) {
+      const unmergeBounds = zone.getUnmergeBounds();
       return {
         ...model.props,
         zones: {
@@ -196,6 +196,7 @@ export class StateManager {
       };
     }
 
+    const unmergeWidgetBounds = zone.getUnmergeWidgetBounds(widget);
     const floatingBounds = Rectangle.create(widget.zone.props.bounds).offset(offset);
     return {
       ...model.props,
@@ -203,7 +204,7 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const mergedZone = unmergeBounds.find((z) => z.id === id);
+          const mergedZone = unmergeWidgetBounds.find((z) => z.id === id);
           if (id === zone.props.id && mergedZone) {
             acc[id] = {
               ...model.props.zones[id],

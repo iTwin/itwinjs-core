@@ -360,6 +360,27 @@ describe("StateManager", () => {
       expect(state.zones[8].anchor, "8").undefined;
       expect(state.zones[9].anchor, "9").undefined;
     });
+
+    it("should set bounds when unmerging 3 widgets to 2 zones", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9And8To7);
+
+      state.zones[7].bounds.top.should.eq(10, "bounds7.top");
+      state.zones[7].bounds.left.should.eq(20, "bounds7.left");
+      state.zones[7].bounds.right.should.eq(60, "bounds7.right");
+      state.zones[7].bounds.bottom.should.eq(100, "bounds7.bottom");
+      expect(state.zones[7].floatingBounds, "floatingBounds7").undefined;
+
+      state.zones[9].bounds.top.should.eq(10, "bounds9.top");
+      state.zones[9].bounds.left.should.eq(60, "bounds9.left");
+      state.zones[9].bounds.right.should.eq(80, "bounds9.right");
+      state.zones[9].bounds.bottom.should.eq(100, "bounds9.bottom");
+
+      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
+      state.zones[9].floatingBounds!.top.should.eq(10, "floatingBounds9.top");
+      state.zones[9].floatingBounds!.left.should.eq(20, "floatingBounds9.left");
+      state.zones[9].floatingBounds!.right.should.eq(80, "floatingBounds9.right");
+      state.zones[9].floatingBounds!.bottom.should.eq(100, "floatingBounds9.bottom");
+    });
   });
 
   describe("handleTargetChanged", () => {
