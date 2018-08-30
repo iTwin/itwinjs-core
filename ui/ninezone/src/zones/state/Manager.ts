@@ -4,7 +4,7 @@
 /** @module Zone */
 
 import Point, { PointProps } from "../../utilities/Point";
-import Rectangle from "../../utilities/Rectangle";
+import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
@@ -144,102 +144,53 @@ export class StateManager {
       return { ...model.props };
 
     const defaultZone = widget.defaultZone;
-    if (widget.isInHomeZone) {
-      const unmergeBounds = zone.getUnmergeBounds();
-      return {
-        ...model.props,
-        zones: {
-          ...model.props.zones,
-          ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
-            const id = Number(key) as WidgetZoneIndex;
-            const mergedZone = unmergeBounds.find((z) => z.id === id);
-            if (id === zone.props.id && mergedZone) {
-              acc[id] = {
-                ...model.props.zones[id],
-                floatingBounds: defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds,
-                bounds: mergedZone.bounds,
-                widgets: model.props.zones[id].widgets.filter((w) => w.id === widgetId).map((w) => {
-                  if (w.id === id && w.tabIndex < 1)
-                    return {
-                      ...w,
-                      tabIndex: tabId,
-                    };
-                  return w;
-                }),
-              };
-            } else if (mergedZone) {
-              acc[id] = {
-                ...model.props.zones[id],
-                bounds: mergedZone.bounds,
-                anchor: undefined,
-                widgets: model.props.zones[zone.props.id].widgets.filter((w) => w.id === id).map((w) => {
-                  if (w.id === id && w.tabIndex < 1)
-                    return {
-                      ...w,
-                      tabIndex: 1,
-                    };
-                  return w;
-                }),
-              };
-            }
+    const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
+    let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
+    if (widget.isInHomeZone)
+      floatingBounds = defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds;
 
-            return acc;
-          }, {}),
-        },
-        draggingWidget: {
-          id: widgetId,
-          lastPosition: {
-            x: initialPosition.x,
-            y: initialPosition.y,
-          },
-        },
-      };
-    }
-
-    const unmergeWidgetBounds = zone.getUnmergeWidgetBounds(widget);
-    const floatingBounds = Rectangle.create(widget.zone.props.bounds).offset(offset);
+    // const restoreAllWidgets = widget.isInHomeZone || widget.isMiddle;
+    const isUnmerge = zone.getWidgets().length > unmergeBounds.length;
     return {
       ...model.props,
       zones: {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const mergedZone = unmergeWidgetBounds.find((z) => z.id === id);
-          if (id === zone.props.id && mergedZone) {
-            acc[id] = {
-              ...model.props.zones[id],
-              widgets: model.props.zones[id].widgets.filter((w) => w.id !== widgetId).map((w) => {
-                if (w.id === id && w.tabIndex < 1)
-                  return {
-                    ...w,
-                    tabIndex: 1,
-                  };
-                return w;
-              }),
-              bounds: mergedZone.bounds,
-            };
-          } else if (id === defaultZone.id && mergedZone) {
-            acc[id] = {
-              ...model.props.zones[id],
-              bounds: mergedZone.bounds,
-              floatingBounds,
-              widgets: [
-                ...model.props.zones[zone.props.id].widgets.filter((w) => w.id === widgetId).map((w) => {
-                  if (w.id === id && w.tabIndex < 1)
-                    return {
-                      ...w,
-                      tabIndex: tabId,
-                    };
-                  return w;
-                }),
-              ],
-            };
-          } else if (mergedZone) {
-            acc[id] = {
-              ...model.props.zones[id],
-              bounds: mergedZone.bounds,
-            };
-          }
+          const mergedZone = unmergeBounds.find((z) => z.id === id);
+
+          if (!mergedZone)
+            return acc;
+
+          const isDefaultZone = id === defaultZone.id;
+          const isZone = id === zone.id;
+
+          const filterOthers = isZone && isUnmerge;
+          const widgets = model.props.zones[zone.props.id].widgets.filter((w) => {
+            if (filterOthers)
+              return w.id !== widgetId;
+            return w.id === id;
+          }).map((w, index) => {
+            const isFirstWidget = index === 0;
+            const openWidget = isFirstWidget && w.tabIndex < 1;
+            if (openWidget) {
+              const tabIndex = isDefaultZone ? tabId : 1;
+              return {
+                ...w,
+                tabIndex,
+              };
+            }
+
+            return w;
+          });
+
+          acc[id] = {
+            ...model.props.zones[id],
+            ...defaultZone.id === id ? { floatingBounds } : {},
+            anchor: undefined,
+            bounds: mergedZone.bounds,
+            widgets,
+          };
 
           return acc;
         }, {}),
@@ -335,26 +286,16 @@ export class StateManager {
     const targetZone = targetWidget.zone;
     const draggingZone = draggingWidget.zone;
 
-    if (targetWidget.isFirst(draggingZone))
-      return {
-        ...model.props,
-        zones: {
-          ...model.props.zones,
-          [draggingZone.props.id]: {
-            ...model.props.zones[draggingZone.props.id],
-            floatingBounds: undefined,
-          },
-        },
-        draggingWidget: undefined,
-      };
-
     const zonesToUpdate: Partial<ZonesType> = {};
     const bounds = Rectangle.create(draggingZone.props.bounds).outerMergeWith(targetZone.props.bounds);
 
     const contentZone = model.getContentZone();
     const statusZone = model.getStatusZone();
-    const alignedCells = targetZone.cell.getAlignedCellsTo(draggingZone.cell);
-    alignedCells.push(targetZone.cell, draggingZone.cell);
+    const alignedCells = [
+      targetZone.cell,
+      ...targetZone.cell.getAlignedCellsTo(draggingZone.cell),
+      draggingZone.cell,
+    ];
     const alignedCellsFiltered = alignedCells.filter((cell) => {
       if (contentZone.cell.equals(cell))
         return false;

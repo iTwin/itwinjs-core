@@ -247,7 +247,7 @@ export class WidgetZone extends Zone {
     const isMergedHorizontally = this.isMergedHorizontally;
     const isMergedVertically = this.isMergedVertically;
 
-    if ((!isFirst && !isLast) || mergedZones.length < 3 || (!isMergedHorizontally && !isMergedVertically))
+    if ((!isFirst && !isLast) || mergedZones.length < 3 || (!isMergedHorizontally && !isMergedVertically) || widget.isInHomeZone)
       return this.getUnmergeBounds();
 
     const zoneBounds = Rectangle.create(this.props.bounds);
@@ -323,7 +323,7 @@ export class WidgetZone extends Zone {
         const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
         const isHorizontal = draggingZone.isMergedHorizontally;
 
-        if (draggingZone.props.widgets.length > 2 && targetWidget.isLast(draggingZone)) {
+        if (draggingZone.props.widgets.length > 2 && targetZone.equals(draggingZone) && targetWidget.isLast) {
           const widgetHeight = draggingZoneBounds.getHeight() / widgets.length;
           const widgetWidth = draggingZoneBounds.getWidth() / widgets.length;
 

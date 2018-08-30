@@ -73,14 +73,20 @@ export default class Widget {
     return false;
   }
 
-  public isFirst(zone: WidgetZone): boolean {
-    if (zone.props.widgets.length > 0 && zone.props.widgets[0].id === this.props.id)
+  public get isFirst(): boolean {
+    if (this.zone.props.widgets.length > 0 && this.zone.props.widgets[0].id === this.props.id)
       return true;
     return false;
   }
 
-  public isLast(zone: WidgetZone): boolean {
-    if (zone.props.widgets.length > 0 && zone.props.widgets[zone.props.widgets.length - 1].id === this.props.id)
+  public get isLast(): boolean {
+    if (this.zone.props.widgets.length > 0 && this.zone.props.widgets[this.zone.props.widgets.length - 1].id === this.props.id)
+      return true;
+    return false;
+  }
+
+  public get isMiddle(): boolean {
+    if (this.zone.props.widgets.length === 3 && this.zone.props.widgets[1].id === this.props.id)
       return true;
     return false;
   }
@@ -98,7 +104,7 @@ export default class Widget {
     if (draggingZone.equals(targetZone))
       return DropTarget.Back;
 
-    if (targetZone.props.widgets.length > 1 && !this.isFirst(targetZone))
+    if (targetZone.props.widgets.length > 1 && !this.isFirst)
       return DropTarget.None;
 
     const draggingCell = draggingZone.cell;
