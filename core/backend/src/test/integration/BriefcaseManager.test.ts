@@ -4,11 +4,11 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, AccessMode, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
 import { HubUtility } from "./HubUtility";
 import { TestConfig } from "../TestConfig";
-import { AccessToken, ChangeSet, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 
 describe("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
@@ -165,6 +165,37 @@ describe("BriefcaseManager", () => {
 
     await iModel5.close(accessToken, KeepBriefcase.No);
     assert.isFalse(IModelJsFs.existsSync(pathname3));
+  });
+
+  it("should optionally reuse open briefcases for exclusive access (#integration)", async () => {
+    // Note: Compare this with a similar test on the frontend
+    const iModel1: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel3: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
+
+    assert.equal(iModel1, iModel2);
+    assert.notEqual(iModel1.briefcase.pathname, iModel3.briefcase.pathname);
+
+    const iModel4: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel5: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel6: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    assert.exists(iModel6, "No iModel returned from call to BriefcaseManager.open");
+
+    assert.equal(iModel4, iModel5);
+    assert.notEqual(iModel4.briefcase.pathname, iModel6.briefcase.pathname);
+
+    await iModel1.close(accessToken, KeepBriefcase.No);
+    await iModel3.close(accessToken, KeepBriefcase.No);
+    await iModel4.close(accessToken, KeepBriefcase.No);
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
@@ -418,4 +449,33 @@ describe("BriefcaseManager", () => {
 
     await iModel.reinstateChanges(accessToken, IModelVersion.latest());
   });
+
+  const briefcaseExistsOnHub = async (iModelId: string, briefcaseId: number): Promise<boolean> => {
+    const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
+    return (hubBriefcases.length > 0) ? true : false;
+  };
+
+  it("should allow purging the cache and delete any acquired briefcases from the hub (#integration)", async () => {
+    const iModel1: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    let exists = await briefcaseExistsOnHub(testIModels[0].id, iModel2.briefcase.briefcaseId);
+    assert.isTrue(exists);
+
+    const iModel3: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    exists = await briefcaseExistsOnHub(testIModels[0].id, iModel3.briefcase.briefcaseId);
+    assert.isTrue(exists);
+
+    await BriefcaseManager.purgeCache(accessToken);
+
+    exists = await briefcaseExistsOnHub(testIModels[0].id, iModel2.briefcase.briefcaseId);
+    assert.isFalse(exists);
+
+    exists = await briefcaseExistsOnHub(testIModels[0].id, iModel3.briefcase.briefcaseId);
+    assert.isFalse(exists);
+
+    assert.isFalse(IModelJsFs.existsSync(BriefcaseManager.cacheDir));
+  });
+
 });

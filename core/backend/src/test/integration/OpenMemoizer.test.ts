@@ -3,7 +3,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { OpenParams } from "../../backend";
-import { memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../../IModelDb";
+import { OpenIModelDbMemoizer } from "../../rpc-impl/OpenIModelDbMemoizer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestConfig } from "../TestConfig";
@@ -11,6 +11,8 @@ import { TestConfig } from "../TestConfig";
 describe("OpenIModelDbMemoizer (#integration)", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
+
+  const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();
 
   const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -112,7 +112,7 @@ export class IModelConnection extends IModel {
     this._openAccessToken = accessToken;
   }
 
-  /** Open an IModelConnection to an iModel */
+  /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
