@@ -178,7 +178,7 @@ export class Tile implements IDisposable {
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
-      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      const builder = context.createGraphicBuilder(GraphicType.Scene);
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addRangeBox(this.contentRange);
       this._rangeGraphic = builder.finish();
@@ -448,7 +448,7 @@ export namespace Tile {
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
       this.missing = context.requests.getMissing(root);
-      this.viewFrustum = (undefined !== context.backgroundMapPlane) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMapPlane) : context.viewport.viewFrustum;
+      this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
     }
@@ -521,7 +521,7 @@ export class TileTree implements IDisposable {
     const prefixIndex = props.id.lastIndexOf("_");
     this.modelId = Id64.fromJSON(props.id.slice(prefixIndex < 0 ? 0 : prefixIndex + 1));
     this.location = props.location;
-    this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
+    this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.loader = props.loader;

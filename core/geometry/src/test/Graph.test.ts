@@ -11,7 +11,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
@@ -255,7 +255,7 @@ describe("Triangulation", () => {
         const yShiftVector = Vector3d.create(0, 2, 0);
         const rotation = Transform.createFixedPointAndMatrix(
           Point3d.create(1.5 * numPhase, 0, 0),
-          RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degrees)) as RotMatrix);
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degrees)) as Matrix3d);
         const points = Sample.createSquareWave(Point3d.create(0, 0, 0), 1, 0.5, 2, numPhase, 1);
         rotation.multiplyVector(yShiftVector, yShiftVector);
         if (degrees !== 0.0)

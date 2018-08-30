@@ -66,6 +66,10 @@
   @include bwc-expandable-blocks-list;
 }
 
+.Clickable {
+  pointer-events: auto;
+}
+
 .PropertyGrid {
   padding-top: 8px;
   padding-bottom: 8px;

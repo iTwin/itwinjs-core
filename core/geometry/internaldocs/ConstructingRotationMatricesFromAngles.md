@@ -1,7 +1,7 @@
 
 # Constructing Rotation Matrices from Angles
 
-The most common use of a A 3x3 matrix (RotMatrix class in the library) is to represent a pure rotation without scaling or mirroring.
+The most common use of a A 3x3 matrix (Matrix3d class in the library) is to represent a pure rotation without scaling or mirroring.
 
 A thorough discussion is of pure rotations is found at
  * https://en.wikipedia.org/wiki/Rotation_matrix

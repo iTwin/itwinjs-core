@@ -1,6 +1,45 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+### Updates
+
+- Improved arrow rotation for the CubeNavigationAid.
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+*Version update only*
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+*Version update only*
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- Enabled Sign In and IModel Open
+- Migrated CubeNavigationCube to use CSS3D to elliminate three.js dependency.
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- Added DragDrop API
+- Added user and version info to DefaultModelServices
+- Add SnapMode statusbar field to UI framework.
+- Second round of changes for IModel Open
+- Fixed warnings, improved SearchBox
+- Fixed warnings
+- TSLint New Rule Enforcements
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

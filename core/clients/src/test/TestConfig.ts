@@ -40,18 +40,18 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Deployment environment used by most tests */
-  public static readonly deploymentEnv: DeploymentEnv = "QA";
+  public static deploymentEnv: DeploymentEnv = "QA";
 
   /** Name of project used by most tests */
   public static readonly projectName: string = "NodeJsTestProject";
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: UserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
+  public static async login(user: UserCredentials = TestUsers.regular, env: DeploymentEnv = TestConfig.deploymentEnv): Promise<AuthorizationToken> {
     if (TestConfig.deploymentEnv === "DEV" || TestConfig.deploymentEnv === "PERF")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
-    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(user.email, user.password);
+    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient(env)).getToken(user.email, user.password);
     expect(authToken);
 
     return authToken;

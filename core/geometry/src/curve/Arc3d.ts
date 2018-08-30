@@ -8,13 +8,14 @@ import { Geometry, AxisOrder, Angle, AngleSweep, BeJSONFunctions } from "../Geom
 import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
 import { Point3d, Vector3d, XYAndZ } from "../PointVector";
 import { Range3d } from "../Range";
-import { Transform, RotMatrix } from "../Transform";
+import { Transform, Matrix3d } from "../Transform";
 import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";
+import { Matrix4d, Point4d } from "../numerics/Geometry4d";
 
 /* tslint:disable:variable-name no-empty*/
 /**
@@ -31,23 +32,34 @@ import { LineString3d } from "./LineString3d";
  * ** vector0 is the vector from the center to the major axis extreme.
  * ** vector90 is the vector from the center to the minor axis extreme.
  * ** note the constructing the vectors to the extreme points makes them perpendicular.
- * *  The method toScaledRotMatrix () can be called to convert the unrestricted vector0,vector90 to perpendicular form.
+ * *  The method toScaledMatrix3d () can be called to convert the unrestricted vector0,vector90 to perpendicular form.
  * * The unrestricted form is much easier to work with for common calculations -- stroking, projection to 2d, intersection with plane.
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Arc3d; }
   private _center: Point3d;
-  private _matrix: RotMatrix; // columns are [vector0, vector90, unitNormal]
+  private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
   private _sweep: AngleSweep; // sweep limits.
-
-  public get center(): Point3d { return this._center; }
+  /**
+   * read property for (clone of) center
+   */
+  public get center(): Point3d { return this._center.clone(); }
+  /**
+   * read property for (clone of) vector0
+   */
   public get vector0(): Vector3d { return this._matrix.columnX(); }
+  /**
+   * read property for (clone of) vector90
+   */
   public get vector90(): Vector3d { return this._matrix.columnY(); }
-  public get matrix(): RotMatrix { return this._matrix; }
+  /**
+   * read property for (clone of) matrix of vector0, vector90, unit normal
+   */
+  public get matrix(): Matrix3d { return this._matrix.clone(); }
   public get sweep(): AngleSweep { return this._sweep; }
 
   // constructor copies the pointers !!!
-  private constructor(center: Point3d, matrix: RotMatrix, sweep: AngleSweep) {
+  private constructor(center: Point3d, matrix: Matrix3d, sweep: AngleSweep) {
     super();
     this._center = center;
     this._matrix = matrix;
@@ -59,13 +71,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     c.tryTransformInPlace(transform);
     return c;
   }
-  public setRefs(center: Point3d, matrix: RotMatrix, sweep: AngleSweep) {
+  public setRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep) {
     this._center = center;
     this._matrix = matrix;
     this._sweep = sweep;
   }
 
-  public set(center: Point3d, matrix: RotMatrix, sweep: AngleSweep | undefined) {
+  public set(center: Point3d, matrix: Matrix3d, sweep: AngleSweep | undefined) {
     this.setRefs(center.clone(), matrix.clone(), sweep ? sweep.clone() : AngleSweep.create360());
   }
   public setFrom(other: Arc3d) {
@@ -77,7 +89,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return new Arc3d(this._center.clone(), this._matrix.clone(), this._sweep.clone());
   }
 
-  public static createRefs(center: Point3d, matrix: RotMatrix, sweep: AngleSweep, result?: Arc3d): Arc3d {
+  public static createRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep, result?: Arc3d): Arc3d {
     if (result) {
       result.setRefs(center, matrix, sweep);
       return result;
@@ -85,14 +97,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return new Arc3d(center, matrix, sweep);
   }
 
-  public static createScaledXYColumns(center: Point3d, matrix: RotMatrix, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d {
+  public static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d {
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
     return Arc3d.create(center, vector0.scale(radius0, vector0), vector90.scale(radius90, vector90), sweep, result);
   }
   public static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case ! !!
-    const matrix = RotMatrix.createColumns(vector0, vector90, normal);
+    const matrix = Matrix3d.createColumns(vector0, vector90, normal);
     if (result) {
       result.setRefs(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360());
       return result;
@@ -112,22 +124,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const ab = vectorAB.magnitude();
     const bc = vectorAC.magnitude();
     const normal = vectorAB.sizedCrossProduct(vectorAC, Math.sqrt(ab * bc));
-    const vectorToCenter = SmallSystem.linearSystem3d(
-      normal.x, normal.y, normal.z,
-      vectorAB.x, vectorAB.y, vectorAB.z,
-      vectorAC.x, vectorAC.y, vectorAC.z,
-      0,              // vectorToCenter DOT normal = 0
-      0.5 * ab * ab,  // vectorToCenter DOT vectorBA = 0.5 * vectorBA DOT vectorBA  (Rayleigh quotient)
-      0.5 * bc * bc); // vectorToCenter DOT vectorBC = 0.5 * vectorBC DOT vectorBC  (Rayleigh quotient)
-    if (vectorToCenter) {
-      const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
-      const vectorX = Vector3d.createStartEnd(center, pointA);
-      const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees (90));
-      if (vectorY) {
-        const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
-        const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
-        return Arc3d.create(center, vectorX, vectorY,
-          AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    if (normal) {
+      const vectorToCenter = SmallSystem.linearSystem3d(
+        normal.x, normal.y, normal.z,
+        vectorAB.x, vectorAB.y, vectorAB.z,
+        vectorAC.x, vectorAC.y, vectorAC.z,
+        0,              // vectorToCenter DOT normal = 0
+        0.5 * ab * ab,  // vectorToCenter DOT vectorBA = 0.5 * vectorBA DOT vectorBA  (Rayleigh quotient)
+        0.5 * bc * bc); // vectorToCenter DOT vectorBC = 0.5 * vectorBC DOT vectorBC  (Rayleigh quotient)
+      if (vectorToCenter) {
+        const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
+        const vectorX = Vector3d.createStartEnd(center, pointA);
+        const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees(90));
+        if (vectorY) {
+          const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
+          const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
+          return Arc3d.create(center, vectorX, vectorY,
+            AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+        }
       }
     }
     return LineString3d.create(pointA, pointB, pointC);
@@ -294,7 +308,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   public static createUnitCircle(): Arc3d {
-    return Arc3d.createRefs(Point3d.create(0, 0, 0), RotMatrix.createIdentity(), AngleSweep.create360());
+    return Arc3d.createRefs(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), AngleSweep.create360());
   }
   /**
    * @param center center of arc
@@ -305,14 +319,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     center: Point3d,
     radius: number,
     sweep: AngleSweep = AngleSweep.create360()): Arc3d {
-    return new Arc3d(center.clone(), RotMatrix.createScale(radius, radius, 1.0), sweep);
+    return new Arc3d(center.clone(), Matrix3d.createScale(radius, radius, 1.0), sweep);
   }
   public static createXYEllipse(
     center: Point3d,
     radiusA: number,
     radiusB: number,
     sweep: AngleSweep = AngleSweep.create360()): Arc3d {
-    return new Arc3d(center.clone(), RotMatrix.createScale(radiusA, radiusB, 1.0), sweep);
+    return new Arc3d(center.clone(), Matrix3d.createScale(radiusA, radiusB, 1.0), sweep);
   }
   public setVector0Vector90(vector0: Vector3d, vector90: Vector3d) {
     this._matrix.setColumns(vector0, vector90,
@@ -320,7 +334,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     );
   }
 
-  public toScaledRotMatrix(): { center: Point3d, axes: RotMatrix, r0: number, r90: number, sweep: AngleSweep } {
+  public toScaledMatrix3d(): { center: Point3d, axes: Matrix3d, r0: number, r90: number, sweep: AngleSweep } {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),
       this._matrix.columnYMagnitudeSquared(),
@@ -328,9 +342,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const vector0A = this._matrix.multiplyXY(angleData.c, angleData.s);
     const vector90A = this._matrix.multiplyXY(-angleData.s, angleData.c);
 
-    const axes = RotMatrix.createRigidFromColumns(vector0A, vector90A, AxisOrder.XYZ);
+    const axes = Matrix3d.createRigidFromColumns(vector0A, vector90A, AxisOrder.XYZ);
     return {
-      axes: (axes ? axes : RotMatrix.createIdentity()),
+      axes: (axes ? axes : Matrix3d.createIdentity()),
       center: this._center,
       r0: vector0A.magnitude(),
       r90: vector90A.magnitude(),
@@ -338,13 +352,40 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     };
   }
   /** Return the arc definition with center, two vectors, and angle sweep;
-   * The center and AngleSweep are references to inside the Arc3d.
    */
   public toVectors(): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
     return {
       center: this.center,
       vector0: this.matrix.columnX(),
       vector90: this.matrix.columnY(),
+      sweep: this.sweep,
+    };
+  }
+
+  /** Return the arc definition with center, two vectors, and angle sweep, optionally transformed.
+   */
+  public toTransformedVectors(transform?: Transform): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
+    return transform ? {
+      center: transform.multiplyPoint3d(this._center),
+      vector0: transform.multiplyVector(this._matrix.columnX()),
+      vector90: transform.multiplyVector(this._matrix.columnY()),
+      sweep: this.sweep,
+    }
+      : {
+        center: this._center.clone(),
+        vector0: this._matrix.columnX(),
+        vector90: this._matrix.columnY(),
+        sweep: this.sweep,
+      };
+  }
+
+  /** Return the arc definition with center, two vectors, and angle sweep, transformed to 4d points.
+   */
+  public toTransformedPoint4d(matrix: Matrix4d): { center: Point4d, vector0: Point4d, vector90: Point4d, sweep: AngleSweep } {
+    return {
+      center: matrix.multiplyPoint3d(this._center, 1.0),
+      vector0: matrix.multiplyPoint3d(this._matrix.columnX(), 0.0),
+      vector90: matrix.multiplyPoint3d(this._matrix.columnY(), 0.0),
       sweep: this.sweep,
     };
   }
@@ -359,7 +400,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this._sweep.setFromJSON(json.sweep);
     } else {
       this._center.set(0, 0, 0);
-      this._matrix.setFrom(RotMatrix.identity);
+      this._matrix.setFrom(Matrix3d.identity);
       this._sweep.setStartEndRadians();
     }
   }

@@ -9,7 +9,7 @@ import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Segment1d, Point3d, Vector3d } from "../PointVector";
 import { Range1d } from "../Range";
 import { Range3d } from "../Range";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Transform } from "../Transform";
 import { PolygonOps } from "../PointHelpers";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -615,7 +615,7 @@ describe("CurveClips", () => {
 
     const transform = Transform.createFixedPointAndMatrix(
       Point3d.create(1, 0.5),
-      RotMatrix.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!);
     const arc1 = arc.clone();
     arc1.tryTransformInPlace(transform);
     for (const clipper of clippers) {

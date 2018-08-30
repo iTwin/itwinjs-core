@@ -924,8 +924,7 @@ export namespace IModelDb {
   /** The collection of models in an [[IModelDb]]. */
   export class Models {
     /** @hidden */
-    public constructor(private _iModel: IModelDb) {
-    }
+    public constructor(private _iModel: IModelDb) { }
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.

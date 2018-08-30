@@ -6,16 +6,18 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Vector3d, Angle } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile, MissingNodes } from "./TileTree";
+import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
+import { TileLoader, TileTree, Tile, TileRequests, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
+import { SceneContext, DecorateContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }
 function latitudeToMercator(latitude: number) {
@@ -24,7 +26,7 @@ function latitudeToMercator(latitude: number) {
 }
 
 function ecefToMercator(point: Point3d) {
-  const cartoGraphic = Cartographic.fromEcef(point) as Cartographic;
+  const cartoGraphic = Cartographic.fromEcef(point)!;
   return Point3d.create(longitudeToMercator(cartoGraphic.longitude), latitudeToMercator(cartoGraphic.latitude), 0.0);
 }
 
@@ -46,7 +48,8 @@ class QuadId {
     this.column = parseInt(idParts[1], 10);
     this.row = parseInt(idParts[2], 10);
   }
-  public getMercatorCorners(): Point3d[] {
+  // gets the corners of a QuadId in a number between 0 and 1.
+  private getMercatorCorners(): Point3d[] {
     const nTiles = (1 << this.level);
     const scale = 1.0 / nTiles;
 
@@ -67,6 +70,27 @@ class QuadId {
     const corners = this.getCorners(mercatorToDb);
     return Range3d.createArray(corners);
   }
+
+  // get the lat long for pixels within this quadId.
+  public pixelXYToLatLong(pixelX: number, pixelY: number): Point2d {
+    const mapSize = 256 << this.level;
+    const left = 256 * this.column;
+    const top = 256 * this.row;
+    const x = ((left + pixelX) / mapSize) - .5;
+    const y = 0.5 - ((top + pixelY) / mapSize);
+    const outPoint: Point2d = new Point2d(360.0 * x, 90.0 - 360.0 * Math.atan(Math.exp(-y * 2 * Math.PI)) / Math.PI);
+    return outPoint;
+  }
+
+  public getLatLongRange(): Range2d {
+    const lowerLeft = this.pixelXYToLatLong(0, 256);
+    const upperRight = this.pixelXYToLatLong(256, 0);
+    const range: Range2d = new Range2d();
+    range.low = lowerLeft;
+    range.high = upperRight;
+    // first get range in pixels.
+    return range;
+  }
 }
 class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
@@ -75,8 +99,8 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
-  public yAxisUp: boolean = true;
-  public isTerrain: boolean = true;
+  public yAxisUp = true;
+  public isTerrain = true;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
@@ -98,12 +122,13 @@ class WebMercatorTileProps implements TileProps {
   }
 }
 class WebMercatorTileLoader extends TileLoader {
+  private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
   public mercatorToDb: Transform;
   constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number) {
     super();
-    const ecefLocation = _iModel.ecefLocation as EcefLocation;
-    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toRotMatrix());
+    const ecefLocation: EcefLocation = _iModel.ecefLocation!;
+    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
     const projectExtents = _iModel.projectExtents;
     const projectCenter = projectExtents.getCenter();
@@ -138,14 +163,18 @@ class WebMercatorTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+    if (!this._providerInitialized) {
+      if (undefined === this._providerInitializing)
+        this._providerInitializing = this._imageryProvider.initialize();
+      await this._providerInitializing;
+      this._providerInitialized = true;
+      this._providerInitializing = undefined;
+    }
+
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
         missingTile.setIsQueued();
-        if (!this._providerInitialized) {
-          await this._imageryProvider.initialize();
-          this._providerInitialized = true;
-        }
 
         const quadId = new QuadId(missingTile.id);
         const corners = quadId.getCorners(this.mercatorToDb);
@@ -194,8 +223,8 @@ abstract class ImageryProvider {
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-  public abstract getCopyrightMessage(): string;
-  public abstract getCopyrightImage(): Uint8Array | undefined;
+  public abstract getCopyrightMessage(bgMapState: BackgroundMapState, viewport: ScreenViewport): HTMLElement | undefined;
+  public abstract getCopyrightImage(bgMapState: BackgroundMapState): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -238,17 +267,44 @@ abstract class ImageryProvider {
 
 // Represents one range of geography and tile zoom levels for a bing data provider
 class Coverage {
-  constructor(public lowerLeftLongitude: number,
-    public lowerLeftLatitude: number,
-    public upperRightLongitude: number,
-    public upperRightLatitude: number,
-    public minimumZoomLevel: number,
-    public maximumZoomLevel: number) { }
+  constructor(private _lowerLeftLongitude: number,
+    private _lowerLeftLatitude: number,
+    private _upperRightLongitude: number,
+    private _upperRightLatitude: number,
+    private _minimumZoomLevel: number,
+    private _maximumZoomLevel: number) { }
+
+  public overlaps(quadId: QuadId): boolean {
+    const range: Range2d = quadId.getLatLongRange();
+    if (quadId.level < this._minimumZoomLevel)
+      return false;
+    if (quadId.level > this._maximumZoomLevel)
+      return false;
+    if (range.low.x > this._upperRightLongitude)
+      return false;
+    if (range.low.y > this._upperRightLatitude)
+      return false;
+    if (range.high.x < this._lowerLeftLongitude)
+      return false;
+    if (range.high.y < this._lowerLeftLatitude)
+      return false;
+
+    return true;
+  }
 }
 
 // Represents the copyright message and an array of coverage data for one of bing's data providers (HERE for example).
 class BingAttribution {
-  constructor(public copyrightMessage: string, public coverages: Coverage[]) { }
+  constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
+
+  public matchesTile(tile: Tile): boolean {
+    const quadId = new QuadId(tile.id);
+    for (const coverage of this._coverages) {
+      if (coverage.overlaps(quadId))
+        return true;
+    }
+    return false;
+  }
 }
 
 // Our ImageryProvider for Bing Maps.
@@ -262,7 +318,7 @@ class BingMapProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  public logoByteArray?: Uint8Array;
+  private _logoImage?: HTMLImageElement;
 
   constructor(mapType: MapType) {
     super(mapType);
@@ -309,8 +365,49 @@ class BingMapProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return this.logoByteArray; }
-  public getCopyrightMessage(): string { return ""; }    // NEEDSWORK
+  // gets the attributions that match the tile set.
+  private getMatchingAttributions(tiles: Tile[]): BingAttribution[] {
+    const matchingAttributions: BingAttribution[] = new Array<BingAttribution>();
+    if (!this._attributions)
+      return matchingAttributions;
+
+    const unmatchedSet: BingAttribution[] = this._attributions.slice();
+    for (const tile of tiles) {
+      // compare to the set of Bing attributions that we have not yet matched.
+      for (let iAttr = 0; iAttr < unmatchedSet.length; iAttr++) {
+        const attribution = unmatchedSet[iAttr];
+        if (attribution && attribution.matchesTile(tile)) {
+          matchingAttributions.push(attribution);
+          delete unmatchedSet[iAttr];
+        }
+      }
+    }
+    return matchingAttributions;
+  }
+
+  private showAttributions(state: BackgroundMapState, viewport: ScreenViewport) {
+    // our "this" is the BingMapProvider for which we want to show the data provider attribution.
+    // We need to get the tiles that are used in the view.
+    const tiles: Tile[] = state.getTilesForView(viewport);
+    const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
+    let dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
+    for (const match of matchingAttributions) {
+      dataString = dataString.concat("<li>", match.copyrightMessage, "</li>");
+    }
+    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information);
+  }
+
+  public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return this._logoImage; }
+
+  public getCopyrightMessage(bgMapState: BackgroundMapState, viewport: ScreenViewport): HTMLElement | undefined {
+    const copyrightElement: HTMLSpanElement = document.createElement("span");
+    copyrightElement.className = "bgmap-copyright";
+    copyrightElement.onclick = this.showAttributions.bind(this, bgMapState, viewport);
+    copyrightElement.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
+    copyrightElement.style.textDecoration = "underline";
+    copyrightElement.style.cursor = "pointer";
+    return copyrightElement;
+  }
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
     if (!this._missingTileData)
@@ -360,7 +457,11 @@ class BingMapProvider extends ImageryProvider {
       this.readAttributions(thisResourceProps.imageryProviders);
 
       // read the Bing logo data, used in getCopyrightImage
-      this.readLogo().then((logoByteArray) => { this.logoByteArray = logoByteArray; });
+      this.readLogo().then((logoByteArray) => {
+        this._logoImage = new Image();
+        const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
+        this._logoImage.src = "data:image/png;base64," + base64Data;
+      });
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
@@ -407,7 +508,7 @@ class BingMapProvider extends ImageryProvider {
   }
 }
 
-// Our ImageryProvider for Bing Maps.
+// Our ImageryProvider for MapBox.
 class MapBoxProvider extends ImageryProvider {
   private _zoomMin: number;
   private _zoomMax: number;
@@ -450,9 +551,14 @@ class MapBoxProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(): Uint8Array | undefined { return undefined; }
+  public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return undefined; }
 
-  public getCopyrightMessage(): string { return "(c) Mapbox, (c) OpenStreetMap contributors"; }
+  public getCopyrightMessage(_bgMapState: BackgroundMapState, _viewport: ScreenViewport): HTMLElement | undefined {
+    const copyrightElement: HTMLSpanElement = document.createElement("span");
+    copyrightElement.innerText = IModelApp.i18n.translate("IModelJs:BackgroundMap.MapBoxCopyright");
+    copyrightElement.className = "bgmap-copyright";
+    return copyrightElement;
+  }
 
   // no initialization needed for MapBoxProvider.
   public async initialize(): Promise<void> { }
@@ -462,8 +568,8 @@ class MapBoxProvider extends ImageryProvider {
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  private _provider?: ImageryProvider;
   private _providerName: string;
-  /// private providerData: string;
   private _groundBias: number;
   private _mapType: MapType;
 
@@ -474,6 +580,17 @@ export class BackgroundMapState {
   public getPlane(): Plane3dByOriginAndUnitNormal {
     return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this._groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
   }
+
+  public getTilesForView(viewport: ScreenViewport): Tile[] {
+    let displayTiles: Tile[] = [];
+    if (this._tileTree) {
+      const sceneContext = new SceneContext(viewport, new TileRequests());
+      sceneContext.backgroundMap = this;
+      displayTiles = this._tileTree.selectTilesForScene(sceneContext);
+    }
+    return displayTiles;
+  }
+
   public constructor(json: any, private _iModel: IModelConnection) {
     this._providerName = JsonUtils.asString(json.providerName, "BingProvider");
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
@@ -489,27 +606,59 @@ export class BackgroundMapState {
       return this._loadStatus;
     }
 
-    let provider: ImageryProvider | undefined;
-
     if ("BingProvider" === this._providerName) {
-      provider = new BingMapProvider(this._mapType);
+      this._provider = new BingMapProvider(this._mapType);
     } else if ("MapBoxProvider" === this._providerName) {
-      provider = new MapBoxProvider(this._mapType);
+      this._provider = new MapBoxProvider(this._mapType);
     }
-    if (provider === undefined)
+    if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(provider as ImageryProvider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this._provider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
+
   public addToScene(context: SceneContext) {
     if (!context.viewFlags.backgroundMap)
       return;
 
     this.loadTileTree();
-    if (undefined !== this._tileTree)
-      this._tileTree.drawScene(context);
+    if (undefined === this._tileTree)
+      return;
+
+    context.backgroundMap = this;
+    this._tileTree.drawScene(context);
+    context.backgroundMap = undefined;
+  }
+
+  public decorate(context: DecorateContext) {
+    if (!this._provider)
+      return;
+
+    const decorationDiv = context.decorationDiv;
+    const copyrightImage = this._provider.getCopyrightImage(this);
+    if (copyrightImage) {
+      decorationDiv.appendChild(copyrightImage);
+      const style = copyrightImage.style;
+      style.position = "absolute";
+      style.left = "0";
+      style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
+      style.pointerEvents = "none";
+    }
+    const copyrightMessage = this._provider.getCopyrightMessage(this, context.viewport as ScreenViewport);
+    if (copyrightMessage) {
+      decorationDiv.appendChild(copyrightMessage);
+      const boundingRect = copyrightMessage.getBoundingClientRect();
+      const style = copyrightMessage.style;
+      style.display = "block";
+      style.position = "absolute";
+      style.left = (decorationDiv.clientWidth - (boundingRect.width + 15)) + "px";
+      style.top = (decorationDiv.clientHeight - (boundingRect.height + 5)) + "px";
+      style.color = "silver";
+      style.backgroundColor = "transparent";
+      style.pointerEvents = "initial";
+    }
   }
 }

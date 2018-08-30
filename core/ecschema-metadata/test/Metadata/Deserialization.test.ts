@@ -232,7 +232,7 @@ describe("Full Schema Deserialization", () => {
         name: "TestSchema",
         version: "1.2.3",
         items: {
-          TestEnum: { schemaItemType: "Enumeration", backingTypeName: "int" },
+          TestEnum: { schemaItemType: "Enumeration", type: "int" },
           TestCategory: { schemaItemType: "PropertyCategory" },
           TestClass: { schemaItemType: "EntityClass" },
           Length: {
@@ -406,7 +406,7 @@ describe("Full Schema Deserialization", () => {
             description: "Description for AEntityClass",
             properties: [
               {
-                propertyType: "NavigationProperty",
+                type: "NavigationProperty",
                 name: "testNavProp",
                 relationshipName: "TestSchema.BRelationshipClass",
                 direction: "forward",
@@ -480,7 +480,7 @@ describe("Full Schema Deserialization", () => {
             description: "Description for BEntityClass",
             properties: [
               {
-                propertyType: "NavigationProperty",
+                type: "NavigationProperty",
                 name: "testNavProp",
                 relationshipName: "TestSchema.ARelationshipClass",
                 direction: "forward",

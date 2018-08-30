@@ -132,7 +132,7 @@ describe("iModelHub GlobalEventHandler", () => {
       imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
 
-    projectId = await utils.getProjectId();
+    projectId = await utils.getProjectId(accessToken);
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
     await utils.deleteIModelByName(accessToken, projectId, imodelName);

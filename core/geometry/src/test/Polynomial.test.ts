@@ -18,6 +18,7 @@ import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 
 import { Bezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
 import { GrowableFloat64Array } from "../GrowableArray";
+import { Point4d } from "../numerics/Geometry4d";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
@@ -179,6 +180,40 @@ describe("Ellipse.Intersection", () => {
           const circlePoint = Point3d.createFrom(Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0));
           const ellipsePoint = center.plus2Scaled(vectorU, Math.cos(ellipseAngles[i]), vectorV, Math.sin(ellipseAngles[i]));
           ck.testPoint3d(circlePoint, ellipsePoint);
+        }
+      }
+    }
+
+    ck.checkpoint("Ellipse.Intersection");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Ellipse.IntersectHomogeneous", () => {
+    const ck = new Checker();
+    const ellipseAngles: number[] = [];
+    const circleAngles: number[] = [];
+    // ellipse with major axis significantly larger than 1, minor axis significantly smaller
+    const majorRadius = 2.0;
+    const minorRadius = 0.4;
+    // t moves center from origin to points nearby.  At origin, the roots are symmetric.  Moving away makes them trickier.
+    for (const t of [0, 0.05]) {
+      const center = Point4d.create(t, 2.0 * t, 0, 0.98);
+      const vectorU = Point4d.create(majorRadius, 0, 0, 0.2);
+      const vectorV = Point4d.create(0.1, minorRadius, 0, 0.3);
+      TrigPolynomial.SolveUnitCircleHomogeneousEllipseIntersection(
+        center.x, center.y, center.w,
+        vectorU.x, vectorU.y, vectorU.w,
+        vectorV.x, vectorV.y, vectorV.w,
+        ellipseAngles, circleAngles);
+      if (ck.testExactNumber(ellipseAngles.length, circleAngles.length)) {
+        // verify that all returned values are intersections.  This prevents false positives but not false negatives.
+        for (let i = 0; i < ellipseAngles.length; i++) {
+          const circlePoint = Point3d.createFrom(Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0));
+          const ellipsePoint = center.plus2Scaled(vectorU, Math.cos(ellipseAngles[i]), vectorV, Math.sin(ellipseAngles[i]));
+          const ellipsePointXYZ = ellipsePoint.realPoint();
+          if (ck.testPointer(ellipsePointXYZ, "expect real point from ellipse ellipse homogeneous intersection")) {
+            ck.testPoint3d(circlePoint, ellipsePointXYZ!);
+          }
         }
       }
     }

@@ -4,23 +4,19 @@
 /** @module DragDrop */
 import * as React from "react";
 import { DragSource, DragSourceMonitor, ConnectDragSource, DragSourceConnector, ConnectDragPreview } from "react-dnd";
-import { DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "./DragDropDef";
+import { DragSourceArguments, DropEffects, DropStatus, DropTargetArguments, DragSourceProps } from "./DragDropDef";
 
 /** React properties for withDragSource Higher-Order Component */
 export interface WithDragSourceProps {
-  /** Triggered when DragSource has begun a drag. */
-  onDragSourceBegin?: (data: DragSourceArguments) => DragSourceArguments;
-  /**
-   * Triggered when a DragSource drag has ended.
-   * Callback is always called after an onDragSourceBegin callback, regardless of whether the drag was successful.
-   */
-  onDragSourceEnd?: (data: DragSourceArguments) => void;
-  /** Specifies the DragSource type. */
-  objectType?: (() => string) | string;
+  /** Properties and callbacks for DragSource. */
+  dragProps: DragSourceProps;
   /** Style properties for dropTarget wrapper element */
   dragStyle?: React.CSSProperties;
+  /** Which dropEffect dragSource should default to. */
   defaultDropEffect?: DropEffects;
+  /** Which dropEffect dragSource should be used when ctrl button is pressed during start of drag. */
   ctrlDropEffect?: DropEffects;
+  /** Which dropEffect dragSource should be used when alt button is pressed during start of drag. */
   altDropEffect?: DropEffects;
   /** @hidden */
   connectDragSource?: ConnectDragSource;
@@ -61,12 +57,12 @@ export const withDragSource = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
 ) => {
   type Props = ComponentProps & WithDragSourceProps;
-  return DragSource((props: Props): string => {
-    if (props.objectType) {
-      if (typeof props.objectType === "function")
-        return props.objectType();
+  return DragSource((props: Props): string | symbol => {
+    if (props.dragProps.objectType) {
+      if (typeof props.dragProps.objectType === "function")
+        return props.dragProps.objectType();
       else
-        return props.objectType;
+        return props.dragProps.objectType;
     }
     return "";
   }
@@ -91,7 +87,7 @@ export const withDragSource = <ComponentProps extends {}>(
         clientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
         initialClientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
       };
-      if (props.onDragSourceBegin) return props.onDragSourceBegin(obj);
+      if (props.dragProps.onDragSourceBegin) return props.dragProps.onDragSourceBegin(obj);
 
       return obj;
     },
@@ -101,7 +97,8 @@ export const withDragSource = <ComponentProps extends {}>(
       if (componentElement) {
         dragRect = componentElement.getBoundingClientRect();
       }
-      const obj: DropTargetArguments = monitor.getDropResult() as DropTargetArguments || {
+      const obj: DropTargetArguments = monitor.getDropResult() as DropTargetArguments ||
+        monitor.getItem() as DropTargetArguments || {
         dataObject: {},
         dropEffect: DropEffects.None,
         dropStatus: DropStatus.None,
@@ -125,8 +122,8 @@ export const withDragSource = <ComponentProps extends {}>(
         clientOffset, initialClientOffset, sourceClientOffset, initialSourceClientOffset,
         local, row, col,
       };
-      if (props.onDragSourceEnd)
-        props.onDragSourceEnd(dragObj);
+      if (props.dragProps.onDragSourceEnd)
+        props.dragProps.onDragSourceEnd(dragObj);
     },
     }, (connect: DragSourceConnector, monitor: DragSourceMonitor): Partial<WithDragSourceProps> => {
     return {
@@ -150,9 +147,10 @@ export const withDragSource = <ComponentProps extends {}>(
     };
     public render() {
       const {
-        onDragSourceBegin, onDragSourceEnd, objectType,
+        dragProps,
         connectDragSource, connectDragPreview,
         isDragging, canDrag, item, type,
+        defaultDropEffect, ctrlDropEffect, altDropEffect,
         dragStyle,
         ...props } = this.props as WithDragSourceProps;
       const p = {
@@ -167,13 +165,13 @@ export const withDragSource = <ComponentProps extends {}>(
         [DropEffects.Link]: "link",
       };
 
-      const defaultEffect = effectMap[this.props.defaultDropEffect as number];
-      const ctrlEffect = effectMap[this.props.ctrlDropEffect as number];
-      const altEffect = effectMap[this.props.altDropEffect as number];
+      const defaultEffect = effectMap[defaultDropEffect as number];
+      const ctrlEffect = effectMap[ctrlDropEffect as number];
+      const altEffect = effectMap[altDropEffect as number];
 
       const dropEffect = this.state.ctrlKey ? ctrlEffect || "copy" : this.state.altKey ? altEffect || "link" : defaultEffect || "move";
       return connectDragSource!(
-        <div ref={(el) => { this.rootElement = el; }} style={this.props.dragStyle}>
+        <div className={"drag-source-wrapper"} ref={(el) => { this.rootElement = el; }} style={this.props.dragStyle}>
           <Component {...props} {...(p as any)} />
         </div>,
         { dropEffect },

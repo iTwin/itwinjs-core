@@ -47,5 +47,10 @@
     "Model": "Model",
     "Category": "Category",
     "Type": "Class"
+  },
+  "BackgroundMap": {
+    "BingDataClickTarget": "Data Attribution",
+    "MapBoxCopyright": "(c) Mapbox, (c) OpenStreetMap contributors",
+    "BingDataAttribution": "Data Provided by: "
   }
 }

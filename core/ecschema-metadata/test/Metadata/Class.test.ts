@@ -283,22 +283,22 @@ describe("ECClass", () => {
             schemaItemType: "EntityClass",
             properties: [
               {
-                propertyType: "PrimitiveProperty",
+                type: "PrimitiveProperty",
                 typeName: "double",
                 name: "testPrimProp",
               },
               {
-                propertyType: "StructProperty",
+                type: "StructProperty",
                 name: "testStructProp",
                 typeName: "TestSchema.testStruct",
               },
               {
-                propertyType: "PrimitiveArrayProperty",
+                type: "PrimitiveArrayProperty",
                 typeName: "string",
                 name: "testPrimArrProp",
               },
               {
-                propertyType: "StructArrayProperty",
+                type: "StructArrayProperty",
                 name: "testStructArrProp",
                 typeName: "TestSchema.testStruct",
               },
@@ -401,22 +401,22 @@ describe("ECClass", () => {
             schemaItemType: "EntityClass",
             properties: [
               {
-                propertyType: "PrimitiveProperty",
+                type: "PrimitiveProperty",
                 typeName: "double",
                 name: "testPrimProp",
               },
               {
-                propertyType: "StructProperty",
+                type: "StructProperty",
                 name: "testStructProp",
                 typeName: "TestSchema.testStruct",
               },
               {
-                propertyType: "PrimitiveArrayProperty",
+                type: "PrimitiveArrayProperty",
                 typeName: "string",
                 name: "testPrimArrProp",
               },
               {
-                propertyType: "StructArrayProperty",
+                type: "StructArrayProperty",
                 name: "testStructArrProp",
                 typeName: "TestSchema.testStruct",
               },
@@ -489,8 +489,8 @@ describe("ECClass", () => {
               name: "ValidProp",
               description: "A really long description...",
               label: "SomeDisplayLabel",
-              propertyType: "PrimitiveProperty",
-              readOnly: true,
+              type: "PrimitiveProperty",
+              isReadOnly: true,
               priority: 100,
               typeName: "double",
             },
@@ -510,8 +510,8 @@ describe("ECClass", () => {
       expect(serialized.properties[0].name).eql("ValidProp");
       expect(serialized.properties[0].description).eql("A really long description...");
       expect(serialized.properties[0].label).eql("SomeDisplayLabel");
-      expect(serialized.properties[0].propertyType).eql("PrimitiveProperty");
-      expect(serialized.properties[0].readOnly).eql(true);
+      expect(serialized.properties[0].type).eql("PrimitiveProperty");
+      expect(serialized.properties[0].isReadOnly).eql(true);
       expect(serialized.properties[0].priority).eql(100);
     });
     it("sync - Simple serialization", () => {
@@ -524,8 +524,8 @@ describe("ECClass", () => {
       assert(serialized.properties[0].name, "ValidProp");
       assert(serialized.properties[0].description, "A really long description...");
       assert(serialized.properties[0].label, "SomeDisplayLabel");
-      assert(serialized.properties[0].propertyType, "PrimitiveProperty");
-      assert(serialized.properties[0].readOnly === true);
+      assert(serialized.properties[0].type, "PrimitiveProperty");
+      assert(serialized.properties[0].isReadOnly === true);
       assert(serialized.properties[0].priority === 100);
     });
     const schemaJsonFive = {
@@ -544,8 +544,8 @@ describe("ECClass", () => {
               name: "ValidProp",
               description: "A really long description...",
               label: "SomeDisplayLabel",
-              propertyType: "PrimitiveProperty",
-              readOnly: true,
+              type: "PrimitiveProperty",
+              isReadOnly: true,
               priority: 100,
               typeName: "double",
               customAttributes: [
@@ -603,22 +603,22 @@ describe("ECClass", () => {
           properties: [
             {
               name: "A",
-              propertyType: "PrimitiveProperty",
+              type: "PrimitiveProperty",
               typeName: "double",
             },
             {
               name: "B",
-              propertyType: "PrimitiveProperty",
+              type: "PrimitiveProperty",
               typeName: "double",
             },
             {
               name: "C",
-              propertyType: "PrimitiveProperty",
+              type: "PrimitiveProperty",
               typeName: "double",
             },
             {
               name: "D",
-              propertyType: "PrimitiveProperty",
+              type: "PrimitiveProperty",
               typeName: "double",
             },
           ],
@@ -766,7 +766,7 @@ describe("ECClass", () => {
         appliesTo: "Any",
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
@@ -782,7 +782,7 @@ describe("ECClass", () => {
         appliesTo: "Any",
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",

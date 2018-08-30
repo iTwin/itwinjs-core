@@ -9,7 +9,7 @@ import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentle
 import { PresentationError } from "@bentley/presentation-common";
 import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import "@helpers/Promises";
-import "./IModeHostSetup";
+import "./IModelHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@src/NativePlatform";
 
 describe("default NativePlatform", () => {

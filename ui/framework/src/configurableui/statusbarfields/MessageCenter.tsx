@@ -52,7 +52,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
   }
 
   public render(): React.ReactNode {
-    const messageCount = MessageManager.Messages.length;
+    const messageCount = MessageManager.messages.length;
     const footerMessages = (
       <MessageCenterIndicator
         ref={(element: any) => { this._element = element; }}
@@ -122,7 +122,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
   }
 
   private getMessages(): React.ReactChild[] {
-    const messages = MessageManager.Messages.slice(0).reverse();
+    const messages = MessageManager.messages.slice(0).reverse();
     const tabRows: React.ReactChild[] = new Array<React.ReactChild>();
 
     messages.forEach((details: NotifyMessageDetails, index: number) => {

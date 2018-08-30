@@ -9,14 +9,14 @@
 }
 
  /* content header */
-.cards-content .header {
+.cards-content > .header {
   display: flex;
   align-items: center;
   height: 60px;
   margin: 0 2em;
   border-bottom: 1px solid #eee;
 
-  .title {
+  > .title {
     font-size: 1.75em;
     font-weight: 500;
     color: #6d6e77;
@@ -25,24 +25,25 @@
   .searchbox {
     margin-left: auto;
     width: 15em;
-    margin-right: .5em;
+    margin-right: 12px;
   }
 
   .viewtype {
     padding: 7px;
     border: 1px solid #ccc;
-    font-size: 22px;
+    font-size: 18px;
     color: $bwc-icons-light;
     cursor: pointer;
-    -webkit-transition: color .3s ease;
-    -moz-transition: color .3s ease;
-    -o-transition: color .3s ease;
-    transition: color .3s ease;
+    -webkit-transition: color background-color.2s ease;
+    -moz-transition: color background-color.2s ease;
+    -o-transition: color background-color.2s ease;
+    transition: color background-color .2s ease;
   }
 
   .viewtype:hover,
   .viewtype.active {
-    color: $bwc-icons-dark;
+    color: $bwc-white;
+    background: $bwc-blue;
   }
 
   .icon-app-launcher {
@@ -58,6 +59,7 @@
   bottom: 0px;
   position: absolute;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -100,6 +102,8 @@
   position: absolute;
   top: 40%;
   left: 50%;
+  width: 100%;
+  text-align: center;
   transform: translate(-50%,-50%);
   font-style: italic;
   font-size: 1.25em;
@@ -146,4 +150,9 @@
   }
 
   tr:hover {background-color: #f5f5f5}
+}
+
+.toggle-offline {
+  height: 22px;
+  width : 48px;
 }

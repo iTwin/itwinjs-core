@@ -252,19 +252,11 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -277,19 +269,11 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -302,19 +286,11 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -327,23 +303,15 @@
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
       "args": [
+        "--opts",
+        "../mocha.opts",
         "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
         "-r",
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "--full-trace",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.{ts,tsx}"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",
@@ -352,22 +320,13 @@
       "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
       "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
+        "TS_NODE_PROJECT": "./tsconfig.json"
       },
       "args": [
-        "--no-timeouts",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "source-map-support/register",
-        "--full-trace",
-        "--file",
-        "src/index.test.ts",
+        "--opts",
+        "mocha.opts",
         "src/**/*.ts"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "name": "UI Test - Browser (frontend)",
@@ -384,7 +343,24 @@
         "webpack:///*": "*",
         "webpack:///packages/*": "${webRoot}/*",
       }
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run ConnectSettings Tests (Online)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test/",
+        "--debug",
+        "--recursive",
+        "--grep",
+        "Setting",
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
   ],
   "compounds": [
     {

@@ -28,7 +28,7 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
  */
 export interface FrameworkZoneProps {
   zoneState: NZ_ZoneState;
-  targetedBounds: RectangleProps | undefined;
+  targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   targetProvider: ZoneTargetProvider;
@@ -36,7 +36,7 @@ export interface FrameworkZoneProps {
 }
 
 interface FrameworkZoneState {
-  updatedWidgetDef: WidgetDef | undefined;
+  updatedWidgetDef?: WidgetDef;
 }
 
 /** ConfigurableUI Zone React Component.
@@ -52,11 +52,11 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   };
 
   public componentDidMount(): void {
-    FrontstageManager.WidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    FrontstageManager.WidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {

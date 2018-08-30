@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SearchBox } from "@src/index";
+import { SearchBox } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("SearchBox", () => {

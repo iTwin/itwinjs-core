@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { assert, BeDuration, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Point2d, Point3d, Range2d, RotMatrix, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { Angle, ClipVector, Point2d, Point3d, Range2d, Matrix3d, Transform, Range3d, IndexedPolyface, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import {
   ColorDef,
   Gradient,
@@ -29,7 +29,6 @@ import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/T
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
-import { UpdatePlan } from "./render/UpdatePlan";
 import { IModelConnection } from "./IModelConnection";
 
 /** Describes the geometry and styling of a sheet border decoration. */
@@ -124,10 +123,6 @@ export namespace Attachments {
     private _sceneDepth: number = 0xffffffff;
     private _scene?: GraphicList;
 
-    public constructor(view: ViewState) {
-      super(view);
-    }
-
     public get texture(): RenderTexture | undefined { return this._texture; }
 
     public createScene(currentState: State): State {
@@ -165,7 +160,7 @@ export namespace Attachments {
       }
 
       this.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
-      this.renderFrame(new UpdatePlan());
+      this.renderFrame();
 
       this._texture = undefined;
       return this.readImage();
@@ -353,7 +348,7 @@ export namespace Attachments {
     private get _rootAsTree3d(): Tree3d { return this.root as Tree3d; }
     /** Get the load state from the owner attachment's array at this tile's depth. */
     private getState(): State { return this._rootAsTree3d.getState(this.depth - 1); }
-    /** Set the load state of the onwner attachment's array at this tile's depth. */
+    /** Set the load state of the owner attachment's array at this tile's depth. */
     private setState(state: State) { this._rootAsTree3d.setState(this.depth - 1, state); }
 
     // override
@@ -362,9 +357,7 @@ export namespace Attachments {
     public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
 
     // override
-    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
-      return this.select(selected, args);
-    }
+    public selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent { return this.select(selected, args); }
 
     private select(selected: Tile[], args: Tile.DrawArgs, _numSkipped: number = 0): Tile.SelectParent {
       if (this.depth === 1)
@@ -550,7 +543,7 @@ export namespace Attachments {
       const fillColor = ColorDef.green.clone();
       fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
-      const builder = args.context.createGraphic(Transform.createIdentity(), GraphicType.Scene);
+      const builder = args.context.createGraphicBuilder(GraphicType.Scene);
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
         const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
@@ -622,7 +615,7 @@ export namespace Attachments {
       const worldToAttachment = Point3d.createFrom(attachment.placement.origin);
       worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
-      const location = Transform.createOriginAndMatrix(worldToAttachment, RotMatrix.createIdentity());
+      const location = Transform.createOriginAndMatrix(worldToAttachment, Matrix3d.createIdentity());
       this.location.setFrom(location);
 
       const aspectRatioSkew = view.getAspectRatioSkew();
@@ -668,11 +661,8 @@ export namespace Attachments {
       if (loadStatus === TileTree.LoadStatus.Loaded) {
         attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
         return State.Ready;
-      } else if (loadStatus === TileTree.LoadStatus.Loading) {
-        return State.Loading;
-      } else {
-        return State.Empty;
       }
+      return loadStatus === TileTree.LoadStatus.Loading ? State.Loading : State.Empty;
     }
   }
 
@@ -706,7 +696,7 @@ export namespace Attachments {
   /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
   export class Tree3d extends Tree {
     public readonly tileColor: ColorDef;
-    public readonly biasDistance: number; // distance in z to position tile in parent viweport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
+    public readonly biasDistance: number; // distance in z to position tile in parent viewport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
     public readonly viewport: AttachmentViewport;
     public readonly sheetView: SheetViewState;
     public readonly attachment: Attachment3d;
@@ -737,7 +727,7 @@ export namespace Attachments {
       this.viewport.setRect(new ViewRect(0, 0, dim, dim));
       this.viewport.setupFromView();
 
-      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), RotMatrix.createScale(scale.x, scale.y, 1)));
+      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), Matrix3d.createScale(scale.x, scale.y, 1)));
       this.viewport.npcToWorldArray(frust.points);
       this.viewport.setupViewFromFrustum(frust);
 
@@ -776,7 +766,7 @@ export namespace Attachments {
 
     public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
       const view = attachment.view as ViewState3d;
-      const viewport = new AttachmentViewport(view);
+      const viewport = AttachmentViewport.create(view) as AttachmentViewport;
       return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
     }
 
@@ -919,7 +909,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y + bbox.high.y),
         Point2d.create(origin.x, origin.y)];
 
-      const builder = context.createGraphic(Transform.createIdentity(), GraphicType.WorldDecoration);
+      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
       builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();

@@ -112,7 +112,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   origin: XYZProps;
   /** The extent of the view frustum. */
   extents: XYZProps;
-  /** Rotation of the view frustum (could be undefined if going RotMatrix -> YawPitchRoll). */
+  /** Rotation of the view frustum (could be undefined if going Matrix3d -> YawPitchRoll). */
   angles?: YawPitchRollProps;
   /** The camera used for this view. */
   camera: CameraProps;

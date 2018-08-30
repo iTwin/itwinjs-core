@@ -1,0 +1,107 @@
+@import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/buttons/classes.scss";
+
+/* The Modal (background) */
+.modal-background2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; /* Stay in place */
+  z-index: 10; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.popup-test {
+  background-color: #fefefe;
+  width: 690px;
+  height: 600px;
+  border: 1px solid #888;
+  position: relative;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.popup-test .buttons {
+  display: flex;
+  width: 100%;
+  justify-content: space-evenly;
+
+  button {
+    @extend .bwc-buttons-hollow;
+    width: 110px;
+    position: relative;
+  }
+}
+
+.popup-test .buttons:nth-child(2) {
+  justify-content: flex-start;
+  width: 74%;
+}
+
+.popup-test .buttons {
+  margin-bottom: 15px;
+}
+
+.popup-test .options {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  margin: 15px 0 25px 0;
+
+  label {
+    margin-right: 10px;
+  }
+}
+
+.popupcolors {
+  background: $bwc-white;
+  color: $bwc-white;
+}
+
+.statusbarcolors {
+  background: #3f4850;
+  color: #3f4850;
+}
+
+.popup-header {
+  flex: initial;
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  color: $bwc-text-color;
+  border-bottom: 1px solid #eee;
+
+  h3 {
+    margin: 0;
+  }
+
+  .close {
+    margin-left: auto;
+    font-size: 1em;
+    cursor: pointer;
+  }
+}
+
+
+.hello {
+  white-space: nowrap;
+  margin: 65px 30px;
+  color: #777;
+}

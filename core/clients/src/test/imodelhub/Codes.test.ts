@@ -4,7 +4,7 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { AccessToken, IModelClient } from "../../";
+import { AccessToken } from "../../";
 
 import {
   CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
@@ -23,7 +23,6 @@ describe("iModelHub CodeHandler", () => {
   let briefcaseId: number;
   let briefcaseId2: number;
   const imodelName = "imodeljs-clients Codes test";
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
 
   before(async () => {
@@ -46,7 +45,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(iModelId, code1, code2);
 
-    const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2]);
+    const result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code1, code2]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(2);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -60,7 +59,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(iModelId, code1, code2, code3);
 
-    const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
+    const result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -75,7 +74,7 @@ describe("iModelHub CodeHandler", () => {
 
     let receivedError: Error | undefined;
     try {
-      await imodelHubClient.Codes().update(accessToken, iModelId, [code2, code3, code4], { codesPerRequest: 1 });
+      await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code2, code3, code4], { codesPerRequest: 1 });
     } catch (error) {
       receivedError = error;
     }
@@ -91,7 +90,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(iModelId, code1, code2, code3);
 
-    const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
+    const result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -106,7 +105,7 @@ describe("iModelHub CodeHandler", () => {
 
     let receivedError: ConflictingCodesError | undefined;
     try {
-      await imodelHubClient.Codes().update(accessToken, iModelId, [code2, code3, code4],
+      await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code2, code3, code4],
         { deniedCodes: true, codesPerRequest: 1, continueOnConflict: true });
     } catch (error) {
       chai.expect(error).to.be.instanceof(ConflictingCodesError);
@@ -122,7 +121,7 @@ describe("iModelHub CodeHandler", () => {
   it("should update code multiple times", async () => {
     let code = utils.randomCode(briefcaseId);
     utils.mockUpdateCodes(iModelId, code);
-    let result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
+    let result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -133,7 +132,7 @@ describe("iModelHub CodeHandler", () => {
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
     utils.mockUpdateCodes(iModelId, code);
-    result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
+    result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -144,7 +143,7 @@ describe("iModelHub CodeHandler", () => {
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
     utils.mockUpdateCodes(iModelId, code);
-    result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
+    result = await utils.getClient(iModelId).Codes().update(accessToken, iModelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -154,17 +153,17 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get codes", async () => {
     utils.mockGetCodes(iModelId, "", utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
   });
 
   it("should get codes only with their values", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
+    if (TestConfig.enableMocks || !utils.getIModelProjectAbstraction().isIModelHub)   // imodel-bank ignores $select
       this.skip();
 
     const query = new CodeQuery().select("Values");
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     codes.forEach((code) => {
       chai.assert(code.value);
       chai.assert(!code.codeScope);
@@ -179,7 +178,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(iModelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.briefcaseId).to.be.equal(briefcaseId));
@@ -191,7 +190,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(iModelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeSpecId(codeSpecId);
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.codeSpecId!.toUpperCase()).to.be.equal(codeSpecId.toUpperCase()));
@@ -204,12 +203,12 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockGetCodes(iModelId, "?$filter=" + filter, ...codes);
     const query1 = new CodeQuery().byBriefcaseId(briefcaseId).byCodeSpecId(codeSpecId);
-    const queriedCodes1 = await imodelHubClient.Codes().get(accessToken, iModelId, query1);
+    const queriedCodes1 = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query1);
     chai.assert(queriedCodes1);
 
     utils.mockGetCodes(iModelId, "?$filter=" + filter, ...codes);
     const query2 = new CodeQuery().filter(filter);
-    const queriedCodes2 = await imodelHubClient.Codes().get(accessToken, iModelId, query2);
+    const queriedCodes2 = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query2);
     chai.assert(queriedCodes2);
 
     chai.expect(queriedCodes1).to.be.deep.equal(queriedCodes2);
@@ -221,7 +220,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(iModelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeScope(codeScope);
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.codeScope).to.be.equal(codeScope));
@@ -231,12 +230,12 @@ describe("iModelHub CodeHandler", () => {
     const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
     utils.mockGetCodes(iModelId, "", ...mockedCodes);
 
-    let existingCodes = await imodelHubClient.Codes().get(accessToken, iModelId);
+    let existingCodes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId);
     existingCodes = existingCodes.slice(0, 2);
 
     utils.mockGetCodes(iModelId, undefined, ...mockedCodes);
     const query = new CodeQuery().byCodes(existingCodes);
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
     chai.expect(codes.length).to.be.equal(existingCodes.length);
@@ -253,14 +252,14 @@ describe("iModelHub CodeHandler", () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcaseId}`;
     utils.mockGetCodes(iModelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
-    let codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    let codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.expect(codes.length).to.be.greaterThan(0);
 
     utils.mockDeleteAllCodes(iModelId, briefcaseId);
-    await imodelHubClient.Codes().deleteAll(accessToken, iModelId, briefcaseId);
+    await utils.getClient(iModelId).Codes().deleteAll(accessToken, iModelId, briefcaseId);
 
     utils.mockGetCodes(iModelId, filter);
-    codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.expect(codes.length).to.be.equal(0);
   });
 
@@ -274,7 +273,7 @@ describe("iModelHub CodeHandler", () => {
       utils.mockGetCodes(iModelId, filter, ...mockedCodes);
     }
     const query = new CodeQuery().unavailableCodes(briefcaseId);
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    const codes = await utils.getClient(iModelId).Codes().get(accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
     codes.forEach((code: Code) => {
@@ -309,7 +308,7 @@ describe("iModelHub CodeHandler", () => {
   it("should fail deleting all codes with invalid briefcase id", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Codes().deleteAll(accessToken, iModelId, 0);
+      await utils.getClient(iModelId).Codes().deleteAll(accessToken, iModelId, 0);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

@@ -79,7 +79,7 @@ describe("Mixin", () => {
         appliesTo: "TestSchema.TestEntity",
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",
@@ -104,7 +104,7 @@ describe("Mixin", () => {
         appliesTo: "TestSchema.TestEntity",
         properties: [
           {
-            propertyType: "NavigationProperty",
+            type: "NavigationProperty",
             name: "testNavProp",
             relationshipName: "TestSchema.NavPropRelationship",
             direction: "forward",

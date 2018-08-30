@@ -117,19 +117,20 @@
 .imodel-card:focus {
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
   -webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
-  cursor: pointer;
 }
 
 // hover over preview
 .imodel-card .imodel-card-preview.actions-show .preview-container,
 .imodel-card .imodel-card-content:hover .preview-container {
+  cursor: pointer;
+
   &:before {
     opacity: 1;
   }
 }
 
 // display "Open" on hover
-.imodel-card .imodel-card-content:hover .preview-container .open {
+.imodel-card .preview-container:hover .open {
   opacity: 1;
   filter: alpha(opacity=100);
   -webkit-transform: scale(1);
@@ -164,6 +165,7 @@
   margin-left: auto;
   flex: initial;
   position: relative;
+  cursor: pointer;
 }
 
 .imodel-card .imodel-card-name .icon {
@@ -175,14 +177,11 @@
 }
 
 .imodel-card .options-dropdown {
-  display: block;
-  position: absolute;
-  top: 100%;
-  z-index: 100;
-  float: left;
-  right: 0;
-  left: auto;
-  margin-top: 4px;
+  margin: 0;
+  padding: .5em 0;
+  font-size: $bwc-font-size;
+  list-style: none;
+  background-color: $bwc-white;
 }
 
 .imodel-card .options-dropdown ul {

@@ -1,0 +1,85 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+ @import "@bentley/ui-core/lib/colors";
+
+ //$toggle-handle-inset: 2px;
+
+ .toggle {
+  width: 64px;
+  height: 34px;
+  position: relative;
+  display: inline-block;
+  border-radius: 3px;
+  color: $bwc-white;
+  vertical-align: middle;
+  overflow: hidden;
+  font-size: $bwc-font-size;
+  cursor: pointer;
+}
+
+.toggle-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.toggle-label {
+  position: relative;
+  display: block;
+  height: inherit;
+  background: $bwc-gray-6;
+  color: $bwc-white;
+  border-radius: inherit;
+}
+
+/* Blue (default) */
+.toggle-input:checked ~ .toggle-label {
+  background: $bwc-blue;
+}
+
+/* Green (primary) */
+.toggle-primary > .toggle-input:checked ~ .toggle-label {
+  background: $bwc-green;
+}
+
+.toggle-handle {
+  position: absolute;
+  background: #FFF;
+  border-radius: 3px;
+  -webkit-transition: transform 0.2s ease-out;
+  -moz-transition: transform 0.2s ease-out;
+  -o-transition: transform 0.2s ease-out;
+  transition: transform 0.2s ease-out;
+}
+
+/* Disabled toggle */
+.toggle.disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.toggle.rounded .toggle-handle {
+  border-radius: 50%;
+}
+
+.toggle-checkmark {
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  opacity: 0;
+  transform: translateY(-50%);
+  -webkit-transition: left .2s ease-out;
+  -moz-transition: left .2s ease-out;
+  -o-transition: left .2s ease-out;
+  transition: left .2s ease-out;
+}
+
+.toggle-input:checked ~ .toggle-checkmark.visible {
+  opacity: 1;
+  color: $bwc-white;
+  font-size: inherit;
+  left: 15%;
+}

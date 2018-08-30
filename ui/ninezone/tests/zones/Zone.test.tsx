@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Zone from "@src/zones/Zone";
+import Zone from "../../src/zones/Zone";
 
 describe("<Zone />", () => {
   it("should render", () => {

@@ -8,7 +8,7 @@ import { DefaultWsgRequestOptionsProvider } from "../WsgClient";
 import * as https from "https";
 import { RequestOptions } from "../Request";
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelBankError } from "./Errors";
+import { IModelHubError } from "../imodelhub/Errors";
 import { FileHandler } from "..";
 
 /**
@@ -17,8 +17,8 @@ import { FileHandler } from "..";
 class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this._defaultOptions.errorCallback = IModelBankError.parse;
-    this._defaultOptions.retryCallback = IModelBankError.shouldRetry;
+    this._defaultOptions.errorCallback = IModelHubError.parse;
+    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
     this._defaultOptions.agent = agent;
   }
 }
@@ -28,6 +28,7 @@ class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsPr
  */
 export class IModelBankHandler extends IModelBaseHandler {
   private _defaultIModelBankOptionsProvider: DefaultIModelBankRequestOptionsProvider;
+  private _baseUrl: string;
 
   /**
    * Creates an instance of IModelBankWsgClient.
@@ -37,7 +38,7 @@ export class IModelBankHandler extends IModelBaseHandler {
    */
   public constructor(url: string, handler: FileHandler | undefined, keepAliveDuration = 30000) {
     super("PROD", keepAliveDuration, handler);
-    this._url = url;
+    this._baseUrl = url;
   }
 
   /**
@@ -57,7 +58,7 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
-  protected getDefaultUrl(): string { return this._url!; }
+  protected getDefaultUrl(): string { return this._baseUrl; }
 
   public async getUrl(excludeApiVersion?: boolean): Promise<string> {
     if (this._url)

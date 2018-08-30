@@ -90,6 +90,10 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
+  after(() => {
+    utils.getIModelProjectAbstraction().terminate();
+  });
+
   it("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(iModelId, 3);
     const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);

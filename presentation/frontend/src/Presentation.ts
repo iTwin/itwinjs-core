@@ -65,6 +65,8 @@ export default class Presentation {
    * before a call to [IModelApp.shutdown]($imodeljs-frontend)
    */
   public static terminate(): void {
+    if (presentationManager)
+      presentationManager.dispose();
     presentationManager = undefined;
     selectionManager = undefined;
     i18n = undefined;
@@ -81,6 +83,8 @@ export default class Presentation {
 
   /** @hidden */
   public static set presentation(value: PresentationManager) {
+    if (presentationManager)
+      presentationManager.dispose();
     presentationManager = value;
   }
 

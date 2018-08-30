@@ -5,7 +5,7 @@
 /** @module Solid */
 
 import { Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { GeometryQuery } from "../curve/CurvePrimitive";
@@ -87,7 +87,7 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBoxWithAxes(baseOrigin: Point3d, axes: RotMatrix,
+  public static createDgnBoxWithAxes(baseOrigin: Point3d, axes: Matrix3d,
     topOrigin: Point3d,
     baseX: number, baseY: number, topX: number, topY: number,
     capped: boolean): Box | undefined {

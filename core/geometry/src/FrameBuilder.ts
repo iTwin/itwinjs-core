@@ -8,7 +8,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry, AxisOrder, AxisScaleSelect } from "./Geometry";
 import { Point3d, Vector3d } from "./PointVector";
-import { Transform, RotMatrix } from "./Transform";
+import { Transform, Matrix3d } from "./Transform";
 import { Range3d } from "./Range";
 import { CurvePrimitive } from "./curve/CurvePrimitive";
 import { CurveCollection } from "./curve/CurveChain";
@@ -50,13 +50,13 @@ export class FrameBuilder {
   public getValidatedFrame(allowLeftHanded: boolean = false): Transform | undefined {
     if (this._origin && this._vector0 && this._vector1) {
       if (!allowLeftHanded) {
-        const matrix = RotMatrix.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
         if (matrix)
           return Transform.createOriginAndMatrix(this._origin, matrix);
         // uh oh -- vector1 was not really independent.  clear everything after vector0.
         this._vector1 = this._vector2 = undefined;
       } else if (this._vector2) {
-        const matrix = RotMatrix.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
         if (matrix) {
           if (this._vector0.tripleProduct(this._vector1, this._vector2) < 0)
             matrix.scaleColumns(1.0, 1.0, -1.0);
@@ -233,7 +233,7 @@ export class FrameBuilder {
       Point3dArray.vectorToMostDistantPoint(points, points[0], vector01);
       const vector02 = Vector3d.create();
       Point3dArray.vectorToPointWithMaxCrossProductMangitude(points, origin, vector01, vector02);
-      const matrix = RotMatrix.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
+      const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
       if (matrix)
         return Transform.createRefs(origin, matrix);
     }
@@ -267,7 +267,7 @@ export class FrameBuilder {
       b = Geometry.correctSmallMetricDistance(range.yLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionY, 0, 1);
       c = Geometry.correctSmallMetricDistance(range.zLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionZ, 0, 1);
     }
-    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), RotMatrix.createScale(a, b, c));
+    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), Matrix3d.createScale(a, b, c));
   }
 
 }

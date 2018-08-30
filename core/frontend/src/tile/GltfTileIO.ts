@@ -10,7 +10,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d, TextureMapping, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { Range3d, Point2d, Point3d, Vector3d, Transform, RotMatrix, Angle } from "@bentley/geometry-core";
+import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -282,7 +282,7 @@ export namespace GltfTileIO {
             const branch = new GraphicBranch();
             branch.add(renderGraphic);
             let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
-            if (this._yAxisUp) transform = transform.multiplyTransformRotMatrix(RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
+            if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
             renderGraphic = this._system.createBranch(branch, transform);
           }
         }

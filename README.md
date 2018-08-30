@@ -126,6 +126,9 @@ Use these instructions to update dependencies and devDependencies on external pa
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
-3. Build and run local TypeDoc documentation server: `npm run buildDocSite`
+
+## Build and run local documentation site
+1. Install bemetalsmith-cli globally: `npm install -g @bentley/bemetalsmith-cli`
+2. `buildDocSite core` or `buildDocSite ui`
 
 The full list of npm scripts can be found in the root `package.json` file.

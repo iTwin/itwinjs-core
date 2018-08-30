@@ -198,6 +198,7 @@ export class PolylineEdgeArgs {
 export abstract class RenderTexture implements IDisposable {
   public readonly key: string | undefined;
   public readonly type: RenderTexture.Type;
+  public readonly isOwned: boolean;
 
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
   public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
@@ -206,6 +207,7 @@ export abstract class RenderTexture implements IDisposable {
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;
     this.type = params.type;
+    this.isOwned = params.isOwned;
   }
 
   public abstract dispose(): void;
@@ -222,11 +224,13 @@ export namespace RenderTexture {
 
   export class Params {
     public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
-    public readonly type: Type = Type.Normal;
+    public readonly type: Type;
+    public readonly isOwned: boolean; // For unnamed textures, true if another object owns the texture. If true, the owner is responsible for disposing of the texture; otherwise the texture will be disposed along with the RenderGraphic with which it is associated.
 
-    public constructor(key?: string, type: Type = Type.Normal) {
+    public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
       this.key = key;
       this.type = type;
+      this.isOwned = isOwned;
     }
 
     public get isTileSection(): boolean { return Type.TileSection === this.type; }
@@ -1501,7 +1505,7 @@ export namespace Hilite {
 /**
  * Describes a "feature" within a batched RenderGraphic. A batched RenderGraphic can
  * contain multiple features. Each feature is associated with a unique combination of
- * attributes (element ID, subcategory, geometry class). This allows geometry to be
+ * attributes (elementId, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
  * individually.
  *

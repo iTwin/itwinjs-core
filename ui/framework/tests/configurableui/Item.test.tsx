@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ToolButton, GroupButton, CommandButton } from "@src/index";
+import { ToolButton, GroupButton, CommandButton } from "../../src/index";
 import TestUtils from "../TestUtils";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 

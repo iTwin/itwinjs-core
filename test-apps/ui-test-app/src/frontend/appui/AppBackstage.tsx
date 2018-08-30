@@ -69,11 +69,11 @@ class AppBackstage extends React.Component<AppBackstageProps> {
   }
 
   public componentDidMount() {
-    Backstage.BackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
+    Backstage.onBackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
   }
 
   public componentWillUnmount() {
-    Backstage.BackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
+    Backstage.onBackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
   }
 
   private _handleBackstageCloseEventEvent = (_args: BackstageCloseEventArgs) => {
@@ -88,6 +88,7 @@ class AppBackstage extends React.Component<AppBackstageProps> {
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconClass="icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconClass="icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconClass="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="Test5" labelKey="SampleApp:backstage.testFrontstage5" iconClass="icon-placeholder" />
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="Views Frontstage" iconClass="icon-placeholder" />
       </Backstage>

@@ -6,7 +6,7 @@
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
 import { Point3d, Vector3d } from "../PointVector";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../GrowableArray";
 
@@ -35,7 +35,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using an RotMatrix
+   *  *  If a flip would be possible, test the results of flipping using an Matrix3d
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static cleanupTriangulation(graph: HalfEdgeGraph) {
@@ -68,8 +68,8 @@ export class Triangulator {
       const alphaVector = Vector3d.createStartEnd(alphaPoint, preAlphaPoint);
       const betaVector = Vector3d.createStartEnd(alphaPoint, preBetaPoint);
 
-      // Use RotMatrix to determine if flip is necessary
-      const matrix = RotMatrix.createRowValues(
+      // Use Matrix3d to determine if flip is necessary
+      const matrix = Matrix3d.createRowValues(
         betaVector.x, betaVector.y, betaVector.x * betaVector.x + betaVector.y * betaVector.y,
         alphaVector.x, alphaVector.y, alphaVector.x * alphaVector.x + alphaVector.y * alphaVector.y,
         sharedVector.x, sharedVector.y, sharedVector.x * sharedVector.x + sharedVector.y * sharedVector.y,

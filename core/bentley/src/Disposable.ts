@@ -10,10 +10,24 @@ export interface IDisposable {
   dispose(): void;
 }
 
-/** Function for disposing of a disposable object that may be undefined. */
-export function dispose(disposable?: IDisposable) {
+/** Function for disposing of a disposable object that may be undefined.
+ * @returns undefined
+ */
+export function dispose(disposable?: IDisposable): undefined {
   if (undefined !== disposable)
     disposable.dispose();
+  return undefined;
+}
+
+/** Function for disposing of a array of disposable objects. The array argument may be undefined.
+ * @returns undefined
+ */
+export function disposeArray(list?: IDisposable[]): undefined {
+  if (undefined === list)
+    return undefined;
+  for (const entry of list)
+    entry.dispose();
+  list.length = 0;
   return undefined;
 }
 

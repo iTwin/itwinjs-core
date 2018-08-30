@@ -6,6 +6,7 @@
 import { DeploymentEnv, IModelHubClient, IModelClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";
+import { SettingsAdmin, ConnectSettingsClient } from "@bentley/imodeljs-clients";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
@@ -43,6 +44,8 @@ export class IModelApp {
   public static locateManager: ElementLocateManager;
   public static tentativePoint: TentativePoint;
   public static i18n: I18N;
+  public static settingsAdmin: SettingsAdmin;
+  public static applicationId: string;
 
   /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels. */
   public static hubDeploymentEnv: DeploymentEnv = "QA";
@@ -61,10 +64,7 @@ export class IModelApp {
     return this._imodelClient;
   }
 
-  public static set iModelClient(client: IModelClient) {
-    this._imodelClient = client;
-  }
-
+  public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
@@ -98,7 +98,15 @@ export class IModelApp {
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
 
-    this.onStartup(); // allow subclasses to register their tools, etc.
+    this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
+
+    // make sure the applicationId is set to something.
+    if (!IModelApp.applicationId) {
+      IModelApp.applicationId = "IModelJsApp";
+    }
+    if (!IModelApp.settingsAdmin) {
+      IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
+    }
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
@@ -122,6 +130,7 @@ export class IModelApp {
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
     IModelApp.toolAdmin.onShutDown();
+    IModelApp.viewManager.onShutDown();
     IModelApp._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._initialized = false;
   }

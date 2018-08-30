@@ -106,7 +106,7 @@ export class Workflow extends ItemDefBase {
   public setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
     task.onActivated();
-    WorkflowManager.TaskActivatedEvent.emit({ task, taskId: task.id });
+    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
   }
 
   public getSortedTasks(_onlyVisible?: boolean): Task[] {
@@ -165,8 +165,8 @@ export class WorkflowManager {
   private static _workflowActivatedEvent: WorkflowActivatedEvent = new WorkflowActivatedEvent();
   private static _taskActivatedEvent: TaskActivatedEvent = new TaskActivatedEvent();
 
-  public static get WorkflowActivatedEvent(): WorkflowActivatedEvent { return this._workflowActivatedEvent; }
-  public static get TaskActivatedEvent(): TaskActivatedEvent { return this._taskActivatedEvent; }
+  public static get onWorkflowActivatedEvent(): WorkflowActivatedEvent { return this._workflowActivatedEvent; }
+  public static get onTaskActivatedEvent(): TaskActivatedEvent { return this._taskActivatedEvent; }
 
   public static loadWorkflows(workflowsDef: WorkflowPropsList) {
     this._defaultWorkflowId = workflowsDef.defaultWorkflowId;
@@ -195,7 +195,7 @@ export class WorkflowManager {
 
   public static setActiveWorkflow(workflow: Workflow) {
     this._activeWorkflow = workflow;
-    WorkflowManager.WorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
+    WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
   }
 
   public static setActiveWorkflowAndTask(workflow: Workflow, task: Task) {

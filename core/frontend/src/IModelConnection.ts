@@ -366,36 +366,38 @@ export namespace IModelConnection {
     constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [RepositoryModel]($backend). */
-    public get repositoryModelId(): Id64 { return new Id64("0x1"); }
+    public get repositoryModelId(): string { return "0x1"; }
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
+    /** Find a ModelState in the set of loaded Models by ModelId. */
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
-    /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
+    /** load a set of Models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
-      Id64.toIdSet(modelIds).forEach((id) => {
-        const loaded = this.getLoaded(id);
-        if (!loaded)
+      for (const id of Id64.toIdSet(modelIds)) {
+        if (undefined === this.getLoaded(id))
           notLoaded.add(id);
-      });
+      }
 
       if (notLoaded.size === 0)
         return; // all requested models are already loaded
 
       try {
-        (await this.getProps(notLoaded)).forEach(async (props) => {
+        const propArray = await this.getProps(notLoaded);
+        for (const props of propArray) {
           let ctor = IModelConnection.findClass(props.classFullName);
-          if (undefined === ctor) // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
+          if (undefined === ctor) { // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
             ctor = await this._iModel.findRegisteredBaseClass(props.classFullName, ModelState); // must wait for this
+          }
           const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
           this.loaded.set(modelState.id.value, modelState as ModelState); // save it in loaded set
-        });
-      } catch (err) { } // ignore error, we had nothing to do.
+        }
+      } catch (err) { }  // ignore error, we had nothing to do.
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
@@ -577,8 +579,7 @@ export namespace IModelConnection {
      */
     public async saveThumbnail(viewId: Id64Props, thumbnail: ThumbnailProps): Promise<void> {
       const id = new Id64(viewId);
-      const thumbBytes = Math.ceil(thumbnail.image.length / 2) * 2; // must be a multiple of 2.
-      const val = new Uint8Array(thumbBytes + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
+      const val = new Uint8Array(thumbnail.image.length + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
       new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
       new Uint32Array(val.buffer, 8).set([id.getLowUint32(), id.getHighUint32()]); // viewId is 8 bytes starting at offset 8
       new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16

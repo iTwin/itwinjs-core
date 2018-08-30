@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 
-import Rectangle from "@src/utilities/Rectangle";
-import Layout from "@src/zones/state/layout/Layout";
+import Rectangle from "../../../../src/utilities/Rectangle";
+import Layout from "../../../../src/zones/state/layout/Layout";
 
 class RootLayoutMock extends Layout {
   public set bounds(bounds: Rectangle) {

@@ -584,22 +584,34 @@ export class ColorDef {
    */
   public adjustForContrast(other: ColorDef, alpha?: number): ColorDef {
     const visibility = this.visibilityCheck(other);
-    if (HsvConstants.VISIBILITY_GOAL <= visibility)
-      return this.clone();
+    if (HsvConstants.VISIBILITY_GOAL <= visibility) {
+      const color = this.clone();
+
+      if (undefined !== alpha)
+        color.setAlpha(alpha);
+
+      return color;
+    }
 
     const adjPercent = Math.floor(((HsvConstants.VISIBILITY_GOAL - visibility) / 255.0) * 100.0);
-    alpha = alpha ? alpha : this.getAlpha();
     const darkerHSV = this.toHSV();
     const brightHSV = darkerHSV.clone();
 
     darkerHSV.adjustColor(true, adjPercent);
     brightHSV.adjustColor(false, adjPercent);
+
+    if (undefined === alpha)
+      alpha = this.getAlpha();
+
     const darker = ColorDef.fromHSV(darkerHSV); darker.setAlpha(alpha);
     const bright = ColorDef.fromHSV(brightHSV); bright.setAlpha(alpha);
+
     if (bright.getRgb() === other.getRgb()) // Couldn't adjust brighter...
       return darker;
+
     if (darker.getRgb() === other.getRgb()) // Couldn't adjust darker...
       return bright;
+
     // NOTE: Best choice is the one most visible against the other color...
     return (bright.visibilityCheck(other) >= darker.visibilityCheck(other)) ? bright : darker;
   }

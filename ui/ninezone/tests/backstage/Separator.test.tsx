@@ -4,7 +4,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Separator from "@src/backstage/Separator";
+import Separator from "../../src/backstage/Separator";
 
 describe("<Separator />", () => {
   it("should render", () => {

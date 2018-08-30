@@ -1,9 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import "./Tabs.scss";
 
-export interface ITabProps {
+export interface TabProps {
   label?: string;
   icon?: string;
   isSeparator?: boolean;
@@ -12,19 +15,19 @@ export interface ITabProps {
   onTabClicked?: () => any;
 }
 
-export class Tab extends React.Component<ITabProps> {
+export class Tab extends React.Component<TabProps> {
 
-  constructor(props: ITabProps, context?: any) {
+  constructor(props: TabProps, context?: any) {
     super(props, context);
   }
 
-  public static defaultProps: Partial<ITabProps> = {
+  public static defaultProps: Partial<TabProps> = {
     label: "",
     icon: "",
     selectedTabIndex: 0,
   };
 
-  private onClick = () => {
+  private _onClick = () => {
     if (this.props.onTabClicked) {
       this.props.onTabClicked();
     }
@@ -47,7 +50,7 @@ export class Tab extends React.Component<ITabProps> {
     const classes = classnames("tabs-style-linemove", isActive && "tab-active");
     const icon = classnames("icon", this.props.icon);
     return (
-      <li className={classes} onClick={this.onClick}>
+      <li className={classes} onClick={this._onClick}>
         <a>
           <span className={icon} />
           <span className="text">{this.props.label}</span>
@@ -57,25 +60,25 @@ export class Tab extends React.Component<ITabProps> {
   }
 }
 
-export interface ITabsProps {
+export interface TabsProps {
   onClick?: (tabIndex: number) => any;
   defaultTab: number;
 }
 
-export interface ITabsState {
+export interface TabsState {
   activeTab: number;
 }
 
-export class Tabs extends React.Component<ITabsProps, ITabsState> {
+export class Tabs extends React.Component<TabsProps, TabsState> {
 
-  constructor(props: ITabsProps, context?: any) {
+  constructor(props: TabsProps, context?: any) {
     super(props, context);
 
     this.state = { activeTab: this.props.defaultTab };
   }
 
   // set active tab
-  private handleTabClick = (tabIndex: number, onTabClick: () => any) => {
+  private _handleTabClick = (tabIndex: number, onTabClick: () => any) => {
     this.setState( { activeTab: tabIndex });
 
     // fire the tab onClick
@@ -94,7 +97,7 @@ private renderChildren() {
       isActive: i === this.state.activeTab,
       index: i,
       selectedTabIndex: this.state.activeTab,
-      onTabClicked: this.handleTabClick.bind(this, i, child.props.onTabClicked) });
+      onTabClicked: this._handleTabClick.bind(this, i, child.props.onTabClicked) });
     });
   }
 

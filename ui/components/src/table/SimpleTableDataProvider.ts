@@ -4,9 +4,10 @@
 /** @module Table */
 
 import { SortDirection } from "@bentley/ui-core";
-import { PropertyDescription, PropertyRecord, PropertyValueFormat } from "../properties";
-import { TypeConverterManager } from "../converters";
 import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent } from "./TableDataProvider";
+import { PropertyRecord } from "../properties/Record";
+import { PropertyValueFormat } from "../properties/Value";
+import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 /**
  * A Table Data Provider using an array of items.
@@ -116,6 +117,14 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return result;
   }
 
+  private getPrimitiveValue(record: PropertyRecord): any {
+    let primitiveValue: any;
+    const recordValue = record.value;
+    if (recordValue.valueFormat === PropertyValueFormat.Primitive)
+      primitiveValue = recordValue.value;
+    return primitiveValue;
+  }
+
   private sortRows(a: RowItem, b: RowItem, columnIndex: number, sortDirection: SortDirection): number {
     const aCell = a.cells[columnIndex];
     const bCell = b.cells[columnIndex];
@@ -123,34 +132,16 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     let result: number = 0;
     const column = this._columns[columnIndex];
 
-    if (column.propertyDescription) {
-      const propertyDescription: PropertyDescription = column.propertyDescription;
-      const valueA = this.getPrimitiveValue(aCell.record as PropertyRecord);
-      const valueB = this.getPrimitiveValue(bCell.record as PropertyRecord);
-      if (valueA && valueB)
-        result = TypeConverterManager.getConverter(propertyDescription.typename).sortCompare(valueA, valueB, column.sortIgnoreCase);
-    } else if (typeof aCell.record === "string" && typeof bCell.record === "string") {
-      const valueA = aCell.record;
-      const valueB = bCell.record;
-      if (column.sortIgnoreCase)
-        result = valueA.toLocaleLowerCase().localeCompare(valueB.toLocaleLowerCase());
-      else
-        result = aCell.record.localeCompare(bCell.record);
-    }
+    const propertyDescription = column.propertyDescription;
+    const valueA = this.getPrimitiveValue(aCell.record as PropertyRecord);
+    const valueB = this.getPrimitiveValue(bCell.record as PropertyRecord);
+    if (valueA && valueB && propertyDescription)
+      result = TypeConverterManager.getConverter(propertyDescription.typename).sortCompare(valueA, valueB, column.sortIgnoreCase);
 
     if (sortDirection === SortDirection.Descending)
       result *= -1;
 
     return result;
-  }
-
-  private getPrimitiveValue(record: PropertyRecord): any {
-    let primitiveValue: any;
-    const recordValue = record.value;
-    if (recordValue.valueFormat === PropertyValueFormat.Primitive)
-      primitiveValue = recordValue.value;
-
-    return primitiveValue;
   }
 
   public addRow(rowItem: RowItem): number {

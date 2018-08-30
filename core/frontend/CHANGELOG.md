@@ -1,6 +1,48 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+### Updates
+
+- Fix clipping shader compilation errors on iOS.
+- AccuDraw compute intersection with nearest snap. AccuDraw smart rotation.
+- Fix FPS and Render Time shown in the SimpleViewTest app.
+- added ScreenViewport. You must now call ScreenViewport.create to create viewports
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+### Updates
+
+- Constructor for Viewport now takes an HTML div as the argument, creates the canvas, and adds it to the div. Bing logo now drawn when Bing background maps are drawn.
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+### Updates
+
+- rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager.
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- AccuDraw fixes
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- convertTouchMoveStartToButtonDownAndMotion now calls onMouseStartDrag. Added SelectTool touch support.
+- ViewManip touch event support. Don't disable snapping when touch move converted to mouse motion.
+- Fix TransientIdSequence. Fix AccuSnap.findLocatableHit not setting filtered status.
+- TSLint New Rule Enforcements
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

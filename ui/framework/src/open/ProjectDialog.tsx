@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
 import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
@@ -19,6 +22,7 @@ interface ProjectDialogState {
   isLoading: boolean;
   projects?: ProjectInfo[];
   activeFilter: ProjectScope;
+  filter: string;
 }
 
 export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDialogState> {
@@ -26,7 +30,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { isLoading: true, activeFilter: this.props.filterType! };
+    this.state = { isLoading: true, activeFilter: this.props.filterType!, filter: "" };
   }
 
   public static defaultProps: Partial<ProjectDialogProps> = {
@@ -45,42 +49,42 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     });
   }
 
-  private onClose = () => {
+  private _onClose = () => {
     if (this.props.onClose)
       this.props.onClose();
   }
 
-  private onMyProjectsClicked = () => {
+  private _onMyProjectsClicked = () => {
     this.getRecentProjects(ProjectScope.Invited);
   }
 
-  private onFavoritesClicked = () => {
+  private _onFavoritesClicked = () => {
     this.getRecentProjects(ProjectScope.Favorites);
   }
 
-  private onRecentClicked = () => {
+  private _onRecentClicked = () => {
     this.getRecentProjects(ProjectScope.MostRecentlyUsed);
   }
 
-  private onSearchClicked = () => {
+  private _onSearchClicked = () => {
     this.setState({ projects: undefined, activeFilter: ProjectScope.All });
     // this.getRecentProjects(ProjectScope.All);
   }
 
-  private onProjectSelected = (projectInfo: ProjectInfo) => {
+  private _onProjectSelected = (projectInfo: ProjectInfo) => {
     if (this.props.onProjectSelected) {
       this.props.onProjectSelected(projectInfo);
     }
   }
 
-  private handleSearchValueChanged = (value: string): void => {
+  private _handleSearchValueChanged = (value: string): void => {
     if (!value || value.trim().length === 0) {
-      this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All });
+      this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
     } else {
       const filter = "Name like '" + value + "'";
       this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
       UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.All, 40, 0, filter).then((projectInfos: ProjectInfo[]) => {
-        this.setState({ isLoading: false, projects: projectInfos });
+        this.setState({ isLoading: false, projects: projectInfos, filter: value });
       });
     }
   }
@@ -94,7 +98,10 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
       case ProjectScope.Invited:
         return "You have no projects assigned. Try a search.";
       default:
-        return "Search all projects by name, number, or other project attribute.";
+        if (this.state.filter.trim() !== "")
+          return "No matches found for '" + this.state.filter + "'";
+        else
+          return "Search all projects by name, number, or other project attribute.";
     }
   }
 
@@ -111,7 +118,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   private renderProject(project: ProjectInfo) {
     return (
-      <tr onClick={this.onProjectSelected.bind(this, project)}>
+      <tr key={project.wsgId} onClick={this._onProjectSelected.bind(this, project)}>
         <td>{project.projectNumber}</td>
         <td>{project.name}</td>
         <td />
@@ -127,18 +134,18 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
         <div className="projects animate">
           <div className="header">
             <h3>Select Project</h3>
-            <span onClick={this.onClose.bind(this)} className="icon icon-close" title="Close" />
+            <span onClick={this._onClose.bind(this)} className="icon icon-close" title="Close" />
           </div>
           <div className="projects-content">
             <div className="tabs-container">
               <Tabs defaultTab={this.getTabIndexFromProjectScope()}>
-                <Tab label="My Projects" icon="icon-manager" onTabClicked={this.onMyProjectsClicked} />
-                <Tab label="Favorites" icon="icon-star" onTabClicked={this.onFavoritesClicked} />
-                <Tab label="Recent" icon="icon-history" onTabClicked={this.onRecentClicked} />
-                <Tab label="Search" icon="icon-search" onTabClicked={this.onSearchClicked} />
+                <Tab label="My Projects" icon="icon-manager" onTabClicked={this._onMyProjectsClicked} />
+                <Tab label="Favorites" icon="icon-star" onTabClicked={this._onFavoritesClicked} />
+                <Tab label="Recent" icon="icon-history" onTabClicked={this._onRecentClicked} />
+                <Tab label="Search" icon="icon-search" onTabClicked={this._onSearchClicked} />
               </Tabs>
               <div className={searchClassName}>
-                <SearchBox placeholder="Search..." onValueChanged={this.handleSearchValueChanged} valueChangedDelay={400} />
+                <SearchBox placeholder="Search..." onValueChanged={this._handleSearchValueChanged} valueChangedDelay={400} />
               </div>
             </div>
             <div className="table-container">
@@ -152,11 +159,11 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
                   </tr>
                 </thead>
                 <tbody>
-                  {this.state.isLoading && <div className="projects-loading"><div><i /><i /><i /><i /><i /><i /></div></div>}
                   {(this.state.projects && this.state.projects.length > 0) && this.state.projects.map((project: ProjectInfo) => (this.renderProject(project)))}
-                  {(!this.state.isLoading && (!this.state.projects || this.state.projects.length === 0)) && <div className="projects-none">{this.getNoProjectsPrompt()}</div>}
                 </tbody>
               </table>
+              {this.state.isLoading && <div className="projects-loading"><div><i /><i /><i /><i /><i /><i /></div></div>}
+              {(!this.state.isLoading && (!this.state.projects || this.state.projects.length === 0)) && <div className="projects-none">{this.getNoProjectsPrompt()}</div>}
             </div>
           </div>
         </div>

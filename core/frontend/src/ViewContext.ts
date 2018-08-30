@@ -3,17 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Viewport } from "./Viewport";
-import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { Viewport, ScreenViewport } from "./Viewport";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
+import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume } from "./render/System";
-import { FeatureSymbology } from "./render/FeatureSymbology";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList } from "./render/System";
 import { ViewState3d } from "./ViewState";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 
 const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
 
@@ -30,41 +29,40 @@ export class ViewContext {
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
-  public getPixelSizeAtPoint(inPoint?: Point3d): number {
-    return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint);
-  }
+  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
 }
 
 export class NullContext extends ViewContext {
 }
 
-export class DynamicsContext extends ViewContext {
-}
-
 export class RenderContext extends ViewContext {
   constructor(vp: Viewport) { super(vp); }
-
   public get target(): RenderTarget { return this.viewport.target; }
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
+}
 
-  public createGraphic(tf: Transform, type: GraphicType): GraphicBuilder {
-    return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
+export class DynamicsContext extends RenderContext {
+  private _dynamics?: GraphicList;
+
+  public addGraphic(graphic: RenderGraphic) {
+    if (undefined === this._dynamics)
+      this._dynamics = [];
+    this._dynamics.push(graphic);
   }
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic {
-    return this.target.renderSystem.createBranch(branch, location, clip);
-  }
-  protected createPickableGraphic(tf: Transform, id: Id64, isOverlay: boolean): GraphicBuilder {
-    return this.target.createGraphic(GraphicBuilderCreateParams.pickableDecoration(this.viewport, id, isOverlay, tf));
-  }
+
+  /** @hidden */
+  public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
 }
 
 export class DecorateContext extends RenderContext {
-  private readonly _decorations: Decorations;
-  constructor(vp: Viewport, decorations: Decorations = new Decorations()) {
+  public decorationDiv: HTMLDivElement;
+  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
-    this._decorations = decorations;
+    this.decorationDiv = vp.decorationDiv;
   }
 
-  /** wrapped nRepetitions and min in object to preserve changes */
+  /** @hidden  */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
     let distLow = 0.0;
@@ -93,6 +91,7 @@ export class DecorateContext extends RenderContext {
     return true;
   }
 
+  /** @hidden */
   public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
     const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
     if (undefined === plane)
@@ -140,64 +139,40 @@ export class DecorateContext extends RenderContext {
     return intersections.map((cld: CurveLocationDetail) => cld.point.clone());
   }
 
-  public addNormal(graphic: RenderGraphic) {
-    if (undefined === this._decorations.normal)
-      this._decorations.normal = [];
+  public addDecorationFromBuilder(builder: GraphicBuilder) { this.addDecoration(builder.type, builder.finish()); }
 
-    this._decorations.normal.push(graphic);
+  public addDecoration(type: GraphicType, decoration: RenderGraphic) {
+    switch (type) {
+      case GraphicType.Scene:
+        if (undefined === this._decorations.normal)
+          this._decorations.normal = [];
+        this._decorations.normal.push(decoration);
+        break;
+
+      case GraphicType.WorldDecoration:
+        if (!this._decorations.world)
+          this._decorations.world = [];
+        this._decorations.world.push(decoration);
+        break;
+
+      case GraphicType.WorldOverlay:
+        if (!this._decorations.worldOverlay)
+          this._decorations.worldOverlay = [];
+        this._decorations.worldOverlay.push(decoration);
+        break;
+
+      case GraphicType.ViewOverlay:
+        if (!this._decorations.viewOverlay)
+          this._decorations.viewOverlay = [];
+        this._decorations.viewOverlay.push(decoration);
+        break;
+    }
   }
 
-  /** Display world coordinate graphic with smooth shading, default lighting, and z testing enabled. */
-  public addWorldDecoration(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
-    if (!this._decorations.world)
-      this._decorations.world = new DecorationList();
-    this._decorations.world.add(graphic, ovr);
-  }
-
-  /** Display world coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addWorldOverlay(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
-    if (!this._decorations.worldOverlay)
-      this._decorations.worldOverlay = new DecorationList();
-    this._decorations.worldOverlay.add(graphic, ovr);
-  }
-
-  /** Display view coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addViewOverlay(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
-    if (!this._decorations.viewOverlay)
-      this._decorations.viewOverlay = new DecorationList();
-    this._decorations.viewOverlay.add(graphic, ovr);
-  }
-
-  /**
-   * Display a sprite as view overlay graphic.
-   * @param sprite The sprite to draw
-   * @param location The location of the sprite, in view coordinates
-   * @param xVec The orientation of the sprite, in view coordinates
-   * @param transparency The transparency of the sprite (0-255, 0 == fully opaque)
-   */
-  public addSprite(sprite: Sprite, location: XAndY, xVec: XAndY, transparency: number) {
-    if (!sprite.texture)
-      return; // sprite not loaded
-
-    const xVector = new Vector3d(xVec.x, xVec.y, 0);
-    const yVector = xVector.rotate90CCWXY();
-    xVector.scaleToLength(sprite.size.x, xVector);
-    yVector.scaleToLength(sprite.size.y, yVector);
-
-    const org = new Point3d(location.x - (sprite.size.x * 0.5), location.y - (sprite.size.y * 0.5), 0.0);
-    const xCorn = org.plus(xVector);
-
-    let ovr: FeatureSymbology.Appearance | undefined;
-    if (transparency > 0)
-      ovr = FeatureSymbology.Appearance.fromJSON({ alpha: 255 - transparency });
-
-    this.addViewOverlay(this.target.renderSystem.createTile(sprite.texture, [org, xCorn, org.plus(yVector), xCorn.plus(yVector)])!, ovr);
-  }
-
-  private _pickableGrid: boolean = false; // ###TODO: Remove - testing only...
+  public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
   /** @private */
-  public drawStandardGrid(gridOrigin: Point3d, rMatrix: RotMatrix, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
+  public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
 
     // rotMatrix returns new Vectors instead of references
@@ -258,20 +233,20 @@ export class DecorateContext extends RenderContext {
     // values are "per 1000 pixels"
     const minGridSeparationPixels = 1000 / maxGridPts,
       minRefSeparation = 1000 / maxGridRefs;
-    let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
+    let meterPerPixel = vp.getPixelSizeAtPoint(testPt);
 
-    if ((refSpacing.x / uorPerPixel) < minRefSeparation || (refSpacing.y / uorPerPixel) < minRefSeparation)
+    if ((refSpacing.x / meterPerPixel) < minRefSeparation || (refSpacing.y / meterPerPixel) < minRefSeparation)
       gridsPerRef = 0;
 
     // Avoid z fighting with coincident geometry
-    gridOrg.plusScaled(viewZ, uorPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
-    uorPerPixel *= refScale;
+    gridOrg.plusScaled(viewZ, meterPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
+    meterPerPixel *= refScale;
 
-    const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeparationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeparationPixels);
-    const graphic = this._pickableGrid ? this.createPickableDecoration(new Id64("0xffffff0000000002")) : this.createWorldDecoration();
+    const drawDots = ((refSpacing.x / meterPerPixel) > minGridSeparationPixels) && ((refSpacing.y / meterPerPixel) > minGridSeparationPixels);
+    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, undefined, undefined);
 
-    DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
-    this.addWorldDecoration(graphic.finish()!);
+    DecorateContext.drawGrid(builder, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
+    this.addDecorationFromBuilder(builder);
   }
 
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
@@ -455,31 +430,23 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera.  See RenderSystem.createSkyBox(). */
+  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera. See RenderSystem.createSkyBox(). */
   public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
   public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
-
-  public createViewBackground(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewBackground)!; }
-  public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
-  public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldOverlay)!; }
-  public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewOverlay)!; }
-  public createPickableDecoration(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, false); }
-  public createPickableOverlay(id: Id64, tf = Transform.createIdentity()): GraphicBuilder { return this.createPickableGraphic(tf, id, true); }
 }
 
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
-  public readonly backgroundMap: RenderGraphic[] = [];
+  public readonly backgroundGraphics: RenderGraphic[] = [];
   public readonly requests: TileRequests;
-  public backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined = undefined;
+  public backgroundMap?: BackgroundMapState;
 
   public constructor(vp: Viewport, requests: TileRequests) {
     super(vp);
     this.requests = requests;
   }
 
-  public setBackgroundMapPlane(plane: Plane3dByOriginAndUnitNormal): void { this.backgroundMapPlane = plane; }
-  public outputGraphic(graphic: RenderGraphic): void { undefined !== this.backgroundMapPlane ? this.backgroundMap.push(graphic) : this.graphics.push(graphic); }
+  public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
 }

@@ -10,7 +10,7 @@ import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, Single
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { Pixel, DecorationList } from "../System";
+import { Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
@@ -297,7 +297,7 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract get currentRenderTargetIndex(): number;
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
-  public abstract drawForReadPixels(_commands: RenderCommands, overlays?: DecorationList): void;
+  public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
@@ -459,7 +459,7 @@ abstract class Compositor extends SceneCompositor {
 
   public get fullHeight(): number { return this._target.viewRect.height; }
 
-  public drawForReadPixels(commands: RenderCommands, overlays?: DecorationList) {
+  public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
     if (!this.update()) {
       assert(false);
       return;
@@ -476,7 +476,7 @@ abstract class Compositor extends SceneCompositor {
       this._target.popActiveVolume();
     }
 
-    if (undefined === overlays || 0 === overlays.list.length)
+    if (undefined === overlays || 0 === overlays.length)
       return;
 
     // Now populate the opaque passes with any pickable world overlays

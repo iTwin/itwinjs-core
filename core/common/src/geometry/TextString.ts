@@ -81,11 +81,11 @@ export class TextString {
 
   public transformInPlace(transform: Transform): boolean {
     const newOrigin = transform.multiplyPoint3d(this.origin, this.origin);
-    const newTransform = this.rotation.toRotMatrix().multiplyMatrixTransform(transform);
+    const newTransform = this.rotation.toMatrix3d().multiplyMatrixTransform(transform);
     const scales = new Vector3d();
     if (!newTransform.matrix.normalizeColumnsInPlace(scales))
       return false;
-    const newRotation = YawPitchRollAngles.createFromRotMatrix(newTransform.matrix);
+    const newRotation = YawPitchRollAngles.createFromMatrix3d(newTransform.matrix);
     if (undefined === newRotation)
       return false;
     const newHeight = this.height * scales.y;

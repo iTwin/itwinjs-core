@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
-import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsArray, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass, ModelProps, RelatedElementProps, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
@@ -377,8 +377,8 @@ describe("TileIO", () => {
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.length).to.equal(6);
         expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsList);
-        const list = batch.graphic as GraphicsList;
+        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        const list = batch.graphic as GraphicsArray;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(MeshGraphic);
@@ -694,8 +694,8 @@ describe("TileIO", () => {
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.length).to.equal(3);
         expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsList);
-        const list = batch.graphic as GraphicsList;
+        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        const list = batch.graphic as GraphicsArray;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(PolylinePrimitive);

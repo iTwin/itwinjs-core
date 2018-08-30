@@ -9,7 +9,7 @@ import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
 import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Transform, Point3d, RotMatrix, Angle, Vector3d } from "@bentley/geometry-core";
+import { Transform, Point3d, Matrix3d, Angle, Vector3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../IModelConnection";
 
 /** Deserializes an Pnts tile. */
@@ -76,7 +76,7 @@ export namespace PntsTileIO {
     if (yAxisUp) {
       const branch = new GraphicBranch();
       branch.add(renderGraphic!);
-      const transform = Transform.createOriginAndMatrix(undefined, RotMatrix.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as RotMatrix);
+      const transform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
 
       renderGraphic = system.createBranch(branch, transform);
     }

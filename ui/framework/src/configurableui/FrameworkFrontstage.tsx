@@ -46,11 +46,11 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
   };
 
   public componentDidMount(): void {
-    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public componentWillUnmount(): void {
-    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {

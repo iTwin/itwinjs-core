@@ -78,12 +78,12 @@ export abstract class Property {
   public toJson() {
     const schemaJson: any = {};
     schemaJson.name = this.name;
-    schemaJson.propertyType = propertyTypeToString(this._type);
+    schemaJson.type = propertyTypeToString(this._type);
     if (this.description !== undefined)
       schemaJson.description = this.description;
     if (this.label !== undefined)
       schemaJson.label = this.label;
-    schemaJson.readOnly = this.isReadOnly;
+    schemaJson.isReadOnly = this.isReadOnly;
     if (this.category !== undefined)
       schemaJson.category = this.category.fullName; // needs to be fully qualified name
     if (this.priority !== undefined)
@@ -125,10 +125,10 @@ export abstract class Property {
       this._priority = jsonObj.priority;
     }
 
-    if (undefined !== jsonObj.readOnly) {
-      if (typeof (jsonObj.readOnly) !== "boolean")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'readOnly' attribute. It should be of type 'boolean'.`);
-      this._isReadOnly = jsonObj.readOnly;
+    if (undefined !== jsonObj.isReadOnly) {
+      if (typeof (jsonObj.isReadOnly) !== "boolean")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`);
+      this._isReadOnly = jsonObj.isReadOnly;
     }
 
     if (undefined !== jsonObj.category) {

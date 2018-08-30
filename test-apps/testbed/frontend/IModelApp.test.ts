@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelApp, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MaybeRenderApp, WebGLTestContext } from "./WebGLTestContext";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -56,8 +56,10 @@ class TestApp extends MaybeRenderApp {
     const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
 
-    IModelApp.features.setGate("feature2", { a: true, b: false });
-    IModelApp.features.setGate("feature5", { val: { str1: "string1", doNot: false } });
+    IModelApp.features.setGate("feature2.a", true);
+    IModelApp.features.setGate("feature2.b", false);
+    IModelApp.features.setGate("feature5.val.str1", "string1");
+    IModelApp.features.setGate("feature5.val.doNot", false);
   }
 
   protected static supplyI18NOptions() { return { urlTemplate: `${TestbedConfig.localServerUrlPrefix}/locales/{{lng}}/{{ns}}.json` }; }
@@ -82,19 +84,22 @@ describe("IModelApp", () => {
     assert.isFalse(IModelApp.features.check("feature2.b"));
     assert.isFalse(IModelApp.features.check("feature5.val.doNot"));
     assert.equal(IModelApp.features.check("feature5.val.str1"), "string1");
-    const feature5 = IModelApp.features.check("feature5");
-    assert.equal(feature5.val.str1, "string1");
+    const feature5 = IModelApp.features.check("feature5.val.str1");
+    assert.equal(feature5, "string1");
 
     assert.isTrue(IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
 
+    let monitorCalls = 0;
+    IModelApp.features.addMonitor("feat2", (_val) => ++monitorCalls);
     IModelApp.features.setGate("feat2", false);
     IModelApp.features.setGate("feat3.sub1.val.a", true);
-    IModelApp.features.setGate("feat3.sub1.val.b", { yes: true });
+    IModelApp.features.setGate("feat3.sub1.val.b.yes", true);
     assert.isFalse(IModelApp.features.check("feat2"));
     assert.equal(IModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
     assert.isTrue(IModelApp.features.check("feat3.sub1.val.a"));
     assert.isTrue(IModelApp.features.check("feat3.sub1.val.b.yes"));
+    assert.equal(1, monitorCalls);
   });
 
   it("Should get localized keyin, flyover, and description for tools", async () => {
@@ -138,4 +143,15 @@ describe("IModelApp", () => {
     assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
   });
 
+  // Still failing to acquire WebGLRenderingContext on CI server.
+  it.skip("Should support WebGL", () => {
+    expect(TestApp.hasRenderSystem).to.be.true;
+    const canvas = WebGLTestContext.createCanvas();
+    expect(canvas).not.to.be.undefined;
+    if (undefined !== canvas) {
+      const context = canvas.getContext("webgl");
+      expect(context).not.to.be.null;
+      expect(context).not.to.be.undefined;
+    }
+  });
 });

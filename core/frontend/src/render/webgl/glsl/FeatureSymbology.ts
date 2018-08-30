@@ -19,7 +19,7 @@ import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
 import { GLSLVertex, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
-import { GLSLCommon } from "./Common";
+import { GLSLCommon, addEyeSpace } from "./Common";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { LUTDimension, FeatureDimension, computeFeatureDimension } from "../FeatureDimensions";
@@ -388,8 +388,6 @@ vec2 readDepthAndOrder(vec2 tc) {
 }
 `;
 
-export const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition).xyz;";
-
 const checkForEarlySurfaceDiscard = `
   if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
     return false;
@@ -415,7 +413,7 @@ const checkForEarlySurfaceDiscardWithElemID = `
   vec3 eyeDir;
   float dtWidthFactor;
   if (u_frustum.z == kFrustumType_Perspective) {
-    eyeDir = normalize(-v_eyeSpace);
+    eyeDir = normalize(-v_eyeSpace.xyz);
     dtWidthFactor = -v_eyeSpace.z * u_pixelWidthFactor;
   } else {
     eyeDir = vec3(0.0, 0.0, 1.0);
@@ -631,7 +629,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.addFunction(GLSLFragment.computeLinearDepth);
     frag.addFunction(GLSLDecode.depthRgb);
     frag.addFunction(readDepthAndOrder);
-    builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+    addEyeSpace(builder);
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
   } else {
     addFeatureIndex(vert);
@@ -647,7 +645,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.addFunction(readDepthAndOrder);
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithElemID);
 
-    builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+    addEyeSpace(builder);
     builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = ComputeLineWeight();");
     addElementId(builder);
   }

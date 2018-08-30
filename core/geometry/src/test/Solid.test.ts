@@ -6,7 +6,7 @@ import { Sample } from "../serialization/GeometrySamples";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Point3d } from "../PointVector";
 import { Transform } from "../Transform";
-import { RotMatrix } from "../Transform";
+import { Matrix3d } from "../Transform";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -22,7 +22,7 @@ function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
 }
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
-  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), RotMatrix.createUniformScale(2));
+  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
   for (const s of solids) {
     if (s instanceof SolidPrimitive) {
       const s1 = s.clone();
@@ -66,7 +66,7 @@ describe("Solids", () => {
       const vectorY = b.getVectorY();
       const vectorZ = b.getVectorZ();
       // well defined box will have independent vectors .
-      const matrix = RotMatrix.createColumns(vectorX, vectorY, vectorZ);
+      const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
       ck.testTrue(matrix.inverse() !== undefined, "Expect smaple box to have good coordinate frame.");
 
     }

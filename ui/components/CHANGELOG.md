@@ -1,6 +1,46 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 15 Aug 2018 17:08:54 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+### Updates
+
+- Added advanced selection modes to tree and table.
+- Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed.
+- added ScreenViewport.create
+- Tree and DataTree has a new parameter "highlightString". When set, it higlights a part of TreeNode label
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+### Updates
+
+- Constructor for viewport now takes an HTML div as the argument, creates the canvas and adds it to the div.
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+*Version update only*
+
+## 0.119.0
+Thu, 23 Aug 2018 15:25:49 GMT
+
+### Updates
+
+- Changed Tree, Table, and Breadcrumb to use Drag/Drop only when needed.
+- Bugfix for: uncaught Promise rejection when spamming viewport selection
+
+## 0.118.0
+Tue, 21 Aug 2018 17:20:41 GMT
+
+### Updates
+
+- Added DragDrop API
+- Fix PropertyGrid not updating after data provider is changed
+- TSLint New Rule Enforcements
+- Updated to use TypeScript 3.0
 
 ## 0.117.0
 Wed, 15 Aug 2018 17:08:54 GMT

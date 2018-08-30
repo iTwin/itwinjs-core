@@ -6,15 +6,21 @@
 import { RequestQueryOptions } from "./../Request";
 import { ArgumentCheck } from "./Errors";
 
-/** Base class for iModel Hub Query objects. */
+/** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub. */
 export class Query {
   protected _query: RequestQueryOptions = {};
-  /** Method used by iModel Hub handlers to translate this query into request's QueryOptions. */
+  /**
+   * Translate this object into QueryOptions.
+   * @hidden
+   */
   public getQueryOptions() {
     return this._query;
   }
 
-  /** Add a part of the filter to currently set filter. */
+  /**
+   * Append a part of the filter.
+   * @hidden
+   */
   protected addFilter(filter: string, operator: "and" | "or" = "and") {
     if (!this._query.$filter) {
       this._query.$filter = "";
@@ -25,8 +31,7 @@ export class Query {
   }
 
   /**
-   * Set filter to the specified filter string.
-   * This resets all previously set filters.
+   * Set filter to the specified filter string. This resets all previously set filters.
    * @param filter Filter string to set for the query.
    * @returns This query.
    */
@@ -35,7 +40,10 @@ export class Query {
     return this;
   }
 
-  /** Add a part of the select to currently set select. */
+  /**
+   * Append a part of the select.
+   * @hidden
+   */
   protected addSelect(select: string) {
     if (this._query.$select) {
       this._query.$select += ",";
@@ -45,8 +53,7 @@ export class Query {
   }
 
   /**
-   * Set select to specified select string.
-   * This resets all previously set selects.
+   * Set select to specified select string. This resets all previously set selects.
    * @param select Select string to set for the query.
    * @returns This query.
    */
@@ -56,8 +63,7 @@ export class Query {
   }
 
   /**
-   * Select only top entries from the query.
-   * This is applied after @see skip parameter.
+   * Select only top entries from the query. This is applied after [[Query.skip]].
    * @param n Number of top entries to select.
    * @returns This query.
    */
@@ -67,8 +73,7 @@ export class Query {
   }
 
   /**
-   * Skip first entries in the query.
-   * This is applied before @see top parameter.
+   * Skip first entries in the query. This is applied before [[Query.top]].
    * @param n Number of entries to skip.
    * @returns This query.
    */
@@ -78,8 +83,7 @@ export class Query {
   }
 
   /**
-   * Set order for the query.
-   * This resets any other orders set.
+   * Set order for the query. This resets any other orders set.
    * @param orderBy Order string to set.
    * @returns This query.
    */
@@ -91,6 +95,7 @@ export class Query {
 
 /** Query for instances with string based instance ids. */
 export class InstanceIdQuery extends Query {
+  /** @hidden */
   protected _byId?: string;
 
   /**
@@ -106,9 +111,8 @@ export class InstanceIdQuery extends Query {
   }
 
   /**
-   * Used by iModel Hub handlers to get the id that is queried.
+   * Used by iModelHub handlers to get the id that is queried.
    * @hidden
-   * @returns Value that was set with byId method.
    */
   public getId() {
     return this._byId;
@@ -116,8 +120,7 @@ export class InstanceIdQuery extends Query {
 }
 
 /**
- * Adds select for the download URL to the query.
- * @param query Query options where the select should be changed.
+ * Add select for the download URL to the query.
  * @hidden
  */
 export function addSelectFileAccessKey(query: RequestQueryOptions) {

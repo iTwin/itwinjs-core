@@ -29,8 +29,8 @@ import {
   RenderMode,
   SilhouetteEdgeArgs,
   OctEncodedNormalPair,
+  EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData,
 } from "@bentley/imodeljs-common";
-import { EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
@@ -78,6 +78,8 @@ export class MeshData extends MeshInfo implements IDisposable {
 
   public dispose() {
     dispose(this.lut);
+    if (undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned)
+      this.texture.dispose();
   }
 }
 

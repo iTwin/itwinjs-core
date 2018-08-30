@@ -187,7 +187,7 @@
     },
     {
       "name": "json-schema-faker",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "license-webpack-plugin",
@@ -204,6 +204,10 @@
     {
       "name": "mini-css-extract-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "mocha-multi-reporters",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mocha-tldr-reporter",
@@ -266,8 +270,16 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "react-highlight-words",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-redux",
