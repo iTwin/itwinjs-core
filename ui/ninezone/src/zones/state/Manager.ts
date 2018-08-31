@@ -197,6 +197,7 @@ export class StateManager {
       },
       draggingWidget: {
         id: widgetId,
+        tabIndex: tabId,
         lastPosition: {
           x: initialPosition.x,
           y: initialPosition.y,

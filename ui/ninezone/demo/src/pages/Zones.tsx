@@ -537,47 +537,13 @@ export default class ZonesExample extends React.Component<{}, State> {
         >
           Text element required.
         </TemporaryMessage>
-        <Zone bounds={this.state.nineZone.zones[1].bounds}>
-          <ToolsWidget
-            button={
-              <AppButton
-                icon={
-                  <i className="icon icon-home" />
-                }
-              />
-            }
-            horizontalToolbar={
-              <Toolbar
-                items={
-                  <>
-                    {this.getToolbarItem("angle")}
-                    {this.getToolbarItem("2d")}
-                  </>
-                }
-              />
-            }
-            verticalToolbar={
-              <Toolbar
-                expandsTo={Direction.Right}
-                items={
-                  <>
-                    {this.getToolbarItem("cube")}
-                    {this.getToolbarItem("attach")}
-                    {this.getToolbarItem("validate")}
-                  </>
-                }
-              />
-            }
-          />
-        </Zone>
-        <Zone bounds={this.state.nineZone.zones[2].bounds}>
-          {this.getToolSettingsWidget()}
-        </Zone>
+        {this.getZone(1)}
+        {this.getZone(2)}
         {this.getZone(3)}
         {this.getZone(4)}
         {this.getZone(6)}
         {this.getZone(7)}
-        {this.getStatusZone()}
+        {this.getZone(8)}
         {this.getZone(9)}
       </Zones>
     );
@@ -1455,6 +1421,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getWidgetTabs(widget: WidgetProps, anchor: HorizontalAnchor) {
     const lastPosition = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === widget.id ?
       this.state.nineZone.draggingWidget.lastPosition : undefined;
+    const tabIndex = this.state.nineZone.draggingWidget ? this.state.nineZone.draggingWidget.tabIndex : -1;
     switch (widget.id) {
       case 3: {
         return ([
@@ -1462,7 +1429,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="3_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1478,7 +1445,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="4_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1490,7 +1457,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="4_2"
             isActive={widget.tabIndex === 2}
             onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 2 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1506,7 +1473,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="6_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1522,7 +1489,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="7_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1538,7 +1505,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="8_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => {
               this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset);
               this._handleWidgetTabDragFinish();
@@ -1557,7 +1524,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="9_1"
             isActive={widget.tabIndex === 1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1569,7 +1536,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             key="9_2"
             isActive={widget.tabIndex === 2}
             onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            lastPosition={lastPosition}
+            lastPosition={tabIndex === 2 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
             onDragFinish={this._handleWidgetTabDragFinish}
             onDrag={this._handleWidgetTabDrag}
@@ -1827,8 +1794,14 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private getZone(zoneId: WidgetZoneIndex) {
     switch (zoneId) {
+      case 1:
+        return this.getZone1();
+      case 2:
+        return this.getZone2();
       case 3:
         return this.getZone3();
+      case 8:
+        return this.getStatusZone();
       default:
         return this.getFloatingZone(zoneId);
     }
@@ -1849,6 +1822,52 @@ export default class ZonesExample extends React.Component<{}, State> {
           <GhostOutline bounds={outlineBounds} />
         }
       </>
+    );
+  }
+
+  private getZone1() {
+    return (
+      <Zone bounds={this.state.nineZone.zones[1].bounds}>
+        <ToolsWidget
+          button={
+            <AppButton
+              icon={
+                <i className="icon icon-home" />
+              }
+            />
+          }
+          horizontalToolbar={
+            <Toolbar
+              items={
+                <>
+                  {this.getToolbarItem("angle")}
+                  {this.getToolbarItem("2d")}
+                </>
+              }
+            />
+          }
+          verticalToolbar={
+            <Toolbar
+              expandsTo={Direction.Right}
+              items={
+                <>
+                  {this.getToolbarItem("cube")}
+                  {this.getToolbarItem("attach")}
+                  {this.getToolbarItem("validate")}
+                </>
+              }
+            />
+          }
+        />
+      </Zone>
+    );
+  }
+
+  private getZone2() {
+    return (
+      <Zone bounds={this.state.nineZone.zones[2].bounds}>
+        {this.getToolSettingsWidget()}
+      </Zone>
     );
   }
 
@@ -1939,6 +1958,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getStatusZone() {
+    return undefined;
     const statusZone = new NineZone(this.state.nineZone).getStatusZone();
     const outlineBounds = statusZone.getGhostOutlineBounds();
 

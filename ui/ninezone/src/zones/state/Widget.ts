@@ -21,6 +21,7 @@ export interface WidgetProps {
 
 export interface DraggingWidgetProps {
   readonly id: WidgetZoneIndex;
+  readonly tabIndex: number;
   readonly lastPosition: PointProps;
 }
 
