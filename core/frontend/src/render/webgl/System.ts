@@ -12,6 +12,7 @@ import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { PointStringParams } from "../primitives/VertexTable";
 import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
@@ -455,11 +456,13 @@ export class System extends RenderSystem {
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
   public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
-    if (args.flags.isDisjoint)
-      return PointStringPrimitive.create(args);
-    else
+    if (!args.flags.isDisjoint)
       return PolylinePrimitive.create(args);
+
+    const params = PointStringParams.create(args);
+    return undefined !== params ? this.createPointString(params) : undefined;
   }
+  public createPointString(params: PointStringParams): RenderGraphic | undefined { return PointStringPrimitive.create(params); }
   public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }

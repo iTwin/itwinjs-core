@@ -10,6 +10,7 @@ import { ColorInfo } from "./ColorInfo";
 import { MeshArgs, PolylineArgs } from "../primitives/mesh/MeshPrimitives";
 import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
+import { VertexTable } from "../primitives/VertexTable";
 
 export namespace VertexLUT {
   /**
@@ -30,7 +31,7 @@ export namespace VertexLUT {
       this.numVertices = builder.numVertices;
       this.numRgbaPerVertex = builder.numRgbaPerVertex;
       const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
-      this.colorInfo = new ColorInfo(colorIndex);
+      this.colorInfo = ColorInfo.createFromColorIndex(colorIndex);
       this.dimensions = new LUTDimensions(this.numVertices, this.numRgbaPerVertex, numColors);
       assert(0 === this.dimensions.width % this.numRgbaPerVertex || (0 < numColors && 1 === this.dimensions.height));
 
@@ -67,14 +68,19 @@ export namespace VertexLUT {
 
     public static create(params: Params, qparams: QParams3d, uvParams?: QParams2d) {
       const texture = params.toTexture();
-      return undefined !== texture ? new Data(texture, params, qparams, uvParams) : undefined;
+      return undefined !== texture ? new Data(texture, params, params.colorInfo, qparams, uvParams) : undefined;
     }
 
-    private constructor(texture: TextureHandle, params: Params, qparams: QParams3d, uvParams?: QParams2d) {
+    public static createFromVertexTable(vt: VertexTable): Data | undefined {
+      const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
+      return undefined !== texture ? new Data(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, vt.uvParams) : undefined;
+    }
+
+    private constructor(texture: TextureHandle, params: Params | VertexTable, colorInfo: ColorInfo, qparams: QParams3d, uvParams?: QParams2d) {
       this.texture = texture;
       this.numVertices = params.numVertices;
       this.numRgbaPerVertex = params.numRgbaPerVertex;
-      this.colorInfo = params.colorInfo;
+      this.colorInfo = colorInfo;
       this.qOrigin = qorigin3dToArray(qparams.origin);
       this.qScale = qscale3dToArray(qparams.scale);
       if (undefined !== uvParams) {

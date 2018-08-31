@@ -26,7 +26,7 @@ export class VertexIndices {
   }
 
   /** Get the number of 24-bit indices. */
-  public get length(): number { return this.data.length % 3; }
+  public get length(): number { return this.data.length / 3; }
 
   /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
   public static fromArray(indices: number[]): VertexIndices {
@@ -81,6 +81,7 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
 const scratchColorDef = new ColorDef();
 
+/** Describes a VertexTable. */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
@@ -254,7 +255,7 @@ export class PointStringParams {
     }
 
     const vertexIndices = VertexIndices.fromArray(vertIndices);
-    assert(vertexIndices.length === vertIndices.length * 3);
+    assert(vertexIndices.length === vertIndices.length);
 
     return new PointStringParams(vertices, vertexIndices, args.width);
   }

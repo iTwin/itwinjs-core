@@ -32,6 +32,7 @@ import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PointStringParams } from "./primitives/VertexTable";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
@@ -313,6 +314,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create an indexed polyline primitive */
   public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
+
+  /** Create a point string primitive */
+  public createPointString(_params: PointStringParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }

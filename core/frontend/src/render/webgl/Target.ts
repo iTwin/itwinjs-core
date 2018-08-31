@@ -620,7 +620,7 @@ export abstract class Target extends RenderTarget {
   }
   public get edgeColor(): ColorInfo {
     assert(this.isEdgeColorOverridden);
-    return new ColorInfo(this._visibleEdgeOverrides.color!);
+    return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
   private _doDebugPaint: boolean = false;
