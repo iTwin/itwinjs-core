@@ -404,6 +404,8 @@ export class System extends RenderSystem {
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get techniques() { return this._techniques!; }
 
+  public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
+
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
     if (undefined !== this._drawBuffersExtension)

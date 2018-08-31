@@ -288,6 +288,8 @@ export abstract class RenderSystem implements IDisposable {
 
   public abstract dispose(): void;
 
+  public get maxTextureSize(): number { return 0; }
+
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
