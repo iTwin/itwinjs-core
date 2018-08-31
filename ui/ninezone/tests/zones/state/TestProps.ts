@@ -444,6 +444,7 @@ export namespace TestProps {
             tabIndex: -1,
           },
         ],
+        anchor: HorizontalAnchor.Left,
       },
       8: {
         ...defaultProps.zones[8],

@@ -1958,7 +1958,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getStatusZone() {
-    return undefined;
     const statusZone = new NineZone(this.state.nineZone).getStatusZone();
     const outlineBounds = statusZone.getGhostOutlineBounds();
 

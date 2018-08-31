@@ -149,7 +149,6 @@ export class StateManager {
     if (widget.isInHomeZone)
       floatingBounds = defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds;
 
-    // const restoreAllWidgets = widget.isInHomeZone || widget.isMiddle;
     const isUnmerge = zone.getWidgets().length > unmergeBounds.length;
     return {
       ...model.props,
@@ -164,17 +163,22 @@ export class StateManager {
 
           const isDefaultZone = id === defaultZone.id;
           const isZone = id === zone.id;
-
+          const unsetAnchor = !isDefaultZone;
           const filterOthers = isZone && isUnmerge;
-          const widgets = model.props.zones[zone.props.id].widgets.filter((w) => {
+
+          const filteredWidgets = model.props.zones[zone.props.id].widgets.filter((w) => {
             if (filterOthers)
               return w.id !== widgetId;
             return w.id === id;
-          }).map((w, index) => {
+          });
+
+          const isZoneOpen = filteredWidgets.some((w) => w.tabIndex > 0);
+          const widgets = isZoneOpen ? filteredWidgets : filteredWidgets.map((w, index) => {
             const isFirstWidget = index === 0;
-            const openWidget = isFirstWidget && w.tabIndex < 1;
+            const isClosed = w.tabIndex < 1;
+            const tabIndex = isDefaultZone ? tabId : 1;
+            const openWidget = isFirstWidget && isClosed;
             if (openWidget) {
-              const tabIndex = isDefaultZone ? tabId : 1;
               return {
                 ...w,
                 tabIndex,
@@ -187,7 +191,7 @@ export class StateManager {
           acc[id] = {
             ...model.props.zones[id],
             ...defaultZone.id === id ? { floatingBounds } : {},
-            anchor: undefined,
+            ...unsetAnchor ? { anchor: undefined } : {},
             bounds: mergedZone.bounds,
             widgets,
           };

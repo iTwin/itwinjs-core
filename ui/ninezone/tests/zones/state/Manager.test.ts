@@ -7,7 +7,6 @@ import { TargetType } from "@src/zones/state/Target";
 import { NineZoneProps } from "@src/zones/state/NineZone";
 import { HorizontalAnchor } from "@src/widget/Stacked";
 import TestProps from "./TestProps";
-import { WidgetProps } from "@src/zones/state/Widget";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;
@@ -333,11 +332,15 @@ describe("StateManager", () => {
       state.zones[9].widgets[0].id.should.eq(9, "z9");
     });
 
-    it("should unset anchors for merged zones", () => {
+    it("should unset anchors of unmerged zones", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(7, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9And8To7);
-      expect(state.zones[7].anchor, "7").undefined;
       expect(state.zones[8].anchor, "8").undefined;
       expect(state.zones[9].anchor, "9").undefined;
+    });
+
+    it("should not unset anchor of dragged zone", () => {
+      const state = DefaultStateManager.handleWidgetTabDragStart(7, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9And8To7);
+      state.zones[7].anchor!.should.eq(HorizontalAnchor.Left);
     });
 
     it("should set bounds when unmerging 3 widgets to 2 zones", () => {
@@ -385,15 +388,65 @@ describe("StateManager", () => {
     });
 
     it("should open 1st tab of home widget when unmerging", () => {
-      const props = { ...TestProps.merged9And8To7 };
-      const widgets: ReadonlyArray<{ -readonly [P in keyof WidgetProps]: WidgetProps[P] }> = props.zones[7].widgets;
-      widgets[0].tabIndex = -1;
-      widgets[2].tabIndex = 2;
-      const state = DefaultStateManager.handleWidgetTabDragStart(9, 3, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.merged9And8To7);
+      const props: NineZoneProps = {
+        ...TestProps.merged9And8To7,
+        zones: {
+          ...TestProps.merged9And8To7.zones,
+          7: {
+            ...TestProps.merged9And8To7.zones[7],
+            widgets: [
+              {
+                id: 7,
+                tabIndex: -1,
+              },
+              {
+                id: 8,
+                tabIndex: -1,
+              },
+              {
+                id: 9,
+                tabIndex: 2,
+              },
+            ],
+          },
+        },
+      };
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 3, { x: 0, y: 0 }, { x: 0, y: 0 }, props);
 
-      state.zones[7].widgets[0].tabIndex.should.eq(1, "z7.widgets[0]");
-      state.zones[7].widgets[1].tabIndex.should.eq(-1, "z7.widgets[1]");
-      state.zones[9].widgets[0].tabIndex.should.eq(2, "z9");
+      state.zones[7].widgets[0].tabIndex.should.eq(1, "w7");
+      state.zones[7].widgets[1].tabIndex.should.eq(-1, "w8");
+      state.zones[9].widgets[0].tabIndex.should.eq(2, "w9");
+    });
+
+    it("should not open 1st tab of home widget when other tab is active", () => {
+      const props: NineZoneProps = {
+        ...TestProps.merged9And8To7,
+        zones: {
+          ...TestProps.merged9And8To7.zones,
+          7: {
+            ...TestProps.merged9And8To7.zones[7],
+            widgets: [
+              {
+                id: 7,
+                tabIndex: -1,
+              },
+              {
+                id: 8,
+                tabIndex: 10,
+              },
+              {
+                id: 9,
+                tabIndex: -1,
+              },
+            ],
+          },
+        },
+      };
+      const state = DefaultStateManager.handleWidgetTabDragStart(9, 3, { x: 0, y: 0 }, { x: 0, y: 0 }, props);
+
+      state.zones[7].widgets[0].tabIndex.should.eq(-1, "w7");
+      state.zones[7].widgets[1].tabIndex.should.eq(10, "w8");
+      state.zones[9].widgets[0].tabIndex.should.eq(3, "w9");
     });
   });
 
