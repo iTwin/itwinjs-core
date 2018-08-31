@@ -10,7 +10,9 @@ import { Logger, BentleyError, HttpStatus, GetMetaDataFunction } from "@bentley/
 import { Config } from "./Config";
 
 import * as https from "https";
-const loggingCategory = "imodeljs-clients.Request";
+
+export const loggingCategory = "imodeljs-clients.Request";
+export const loggingCategoryFullUrl = "imodeljs-clients.Url";
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
@@ -204,11 +206,17 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   }
 
   let queryStr: string = "";
-  if (options.qs) {
+  let fullUrl: string = "";
+  if (options.qs && Object.keys(options.qs).length > 0) {
     const stringifyOptions: IStringifyOptions = { delimiter: "&", encode: false };
     queryStr = stringify(options.qs, stringifyOptions);
     sareq = sareq.query(queryStr);
+    fullUrl = url + "?" + queryStr;
+  } else {
+    fullUrl = url;
   }
+
+  Logger.logInfo(loggingCategoryFullUrl, fullUrl);
 
   if (options.auth) {
     sareq = sareq.auth(options.auth.user, options.auth.password);
