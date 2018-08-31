@@ -50,11 +50,18 @@ export class Sprite {
     });
   }
 
+  private onLoaded(image: HTMLImageElement) { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }
+
   /** Initialize this Sprite from an ImageSource.
    * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the image from the ImageSource asynchronously.
    */
-  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }); }
+  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => this.onLoaded(image)); }
+
+  /** Initialize this Sprite from a URL
+   * @param url The url of an image to load for this Sprite.
+   */
+  public fromUrl(url: string): void { ImageUtil.fromUrl(url).then((image) => this.onLoaded(image)); }
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
@@ -84,7 +91,7 @@ export class IconSprites {
  * A Sprite location. Sprites generally move around on the screen and this object holds the current location
  * and current Sprite within a Viewport. SpriteLocations can be either inactive (not visible) or active.
  *
- * A SpriteLocation can also specify that a Sprite should be drawn partially transparent so that you can "see through" the Sprite.
+ * A SpriteLocation can also specify that a Sprite should be drawn partially transparent
  */
 export class SpriteLocation {
   private _viewport?: ScreenViewport;
@@ -120,7 +127,7 @@ export class SpriteLocation {
     viewport.invalidateDecorations();
   }
 
-  /** Turn this SpriteLocation off so it will no longer show in its Viewport. */
+  /** Turn this SpriteLocation off so it will no longer show. */
   public deactivate() {
     if (!this.isActive)
       return;
@@ -128,7 +135,7 @@ export class SpriteLocation {
     this._viewport = undefined;
   }
 
-  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
+  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */
   public decorate(context: DecorateContext) {
     if (context.viewport === this._viewport)
       context.addHtmlDecoration(this._div!);

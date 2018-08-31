@@ -57,6 +57,7 @@ export class DynamicsContext extends RenderContext {
 
 export class DecorateContext extends RenderContext {
   public decorationDiv: HTMLDivElement;
+  public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
     this.decorationDiv = vp.decorationDiv;
