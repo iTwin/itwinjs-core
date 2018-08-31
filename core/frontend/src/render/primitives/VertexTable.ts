@@ -5,24 +5,42 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Range2d, Point2d } from "@bentley/geometry-core";
-import { ColorDef, ColorIndex, QPoint2d, QParams2d, QParams3d } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex, FeatureIndex, QPoint2d, QParams2d, QParams3d, FeatureIndexType } from "@bentley/imodeljs-common";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
 
-// Given 32-bit unsigned integer vertex indices, convert each to a vec3 in which each component is one byte of the index.
-// Requires the high 8 bits of the indices are unused.
-// These are decoded in the vertex shader to obtain the index as a float (hence the 24-bit restriction).
-function convertIndicesToTriplets(indices: number[]): Uint8Array {
-  const bytes = new Uint8Array(indices.length * 3);
-  for (let i = 0; i < indices.length; i++) {
-    const index = indices[i];
-    const j = i * 3;
-    bytes[j + 0] = index & 0x000000ff;
-    bytes[j + 1] = (index & 0x0000ff00) >> 8;
-    bytes[j + 2] = (index & 0x00ff0000) >> 16;
+/**
+ * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
+ * The order of the indices specifies the order in which vertices are drawn.
+ */
+export class VertexIndices {
+  public readonly data: Uint8Array;
+
+  /**
+   * Directly construct from an array of bytes in which each index occupies 3 contiguous bytes.
+   * The length of the array must be a multiple of 3. This object takes ownership of the array.
+   */
+  public constructor(data: Uint8Array) {
+    this.data = data;
+    assert(0 === this.data.length % 3);
   }
 
-  return bytes;
+  /** Get the number of 24-bit indices. */
+  public get length(): number { return this.data.length % 3; }
+
+  /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
+  public static fromArray(indices: number[]): VertexIndices {
+    const bytes = new Uint8Array(indices.length * 3);
+    for (let i = 0; i < indices.length; i++) {
+      const index = indices[i];
+      const j = i * 3;
+      bytes[j + 0] = index & 0x000000ff;
+      bytes[j + 1] = (index & 0x0000ff00) >> 8;
+      bytes[j + 2] = (index & 0x00ff0000) >> 16;
+    }
+
+    return new VertexIndices(bytes);
+  }
 }
 
 interface Dimensions {
@@ -76,6 +94,10 @@ export interface VertexTableProps {
   readonly hasTranslucency: boolean;
   /** If no color table exists, the color to use for all vertices. */
   readonly uniformColor?: ColorDef;
+  /** Describes the number of features (none, one, or multiple) contained. */
+  readonly featureIndexType: FeatureIndexType;
+  /** If featureIndexType is 'Uniform', the feature ID associated with all vertices. */
+  readonly uniformFeatureID?: number;
   /** The number of vertices in the table. Must be less than (width*height)/numRgbaPerVertex. */
   readonly numVertices: number;
   /** The number of 4-byte 'RGBA' values associated with each vertex. */
@@ -104,6 +126,10 @@ export class VertexTable implements VertexTableProps {
   public readonly hasTranslucency: boolean;
   /** If no color table exists, the color to use for all vertices. */
   public readonly uniformColor?: ColorDef;
+  /** Describes the number of features (none, one, or multiple) contained. */
+  public readonly featureIndexType: FeatureIndexType;
+  /** If featureIndexType is 'Uniform', the feature ID associated with all vertices. */
+  public readonly uniformFeatureID?: number;
   /** The number of vertices in the table. Must be less than (width*height)/numRgbaPerVertex. */
   public readonly numVertices: number;
   /** The number of 4-byte 'RGBA' values associated with each vertex. */
@@ -119,12 +145,14 @@ export class VertexTable implements VertexTableProps {
     this.height = props.height;
     this.hasTranslucency = true === props.hasTranslucency;
     this.uniformColor = props.uniformColor;
+    this.featureIndexType = props.featureIndexType;
+    this.uniformFeatureID = props.uniformFeatureID;
     this.numVertices = props.numVertices;
     this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.uvParams = props.uvParams;
   }
 
-  private static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex): VertexTable {
+  private static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
     const { numVertices, numRgbaPerVertex } = builder;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
     const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors);
@@ -150,6 +178,8 @@ export class VertexTable implements VertexTableProps {
       numVertices,
       numRgbaPerVertex,
       uvParams: builder.uvParams,
+      featureIndexType: featureIndex.type,
+      uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
     });
   }
 
@@ -181,19 +211,39 @@ export class VertexTable implements VertexTableProps {
     else
       builder = new MeshBuilder(args);
 
-    return this.buildFrom(builder, args.colors);
+    return this.buildFrom(builder, args.colors, args.features);
   }
 
   public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
-    // ###TODO: tesselate polylines...
-    return args.flags.isDisjoint ? this.createForPointString(args) : undefined;
+    const polylines = args.polylines;
+    if (0 < polylines.length)
+      return this.buildFrom(new SimpleBuilder(args), args.colors, args.features);
+    else
+      return undefined;
+  }
+}
+
+/** Describes point string geometry to be submitted to the rendering system. */
+export class PointStringParams {
+  public readonly vertices: VertexTable;
+  public readonly indices: VertexIndices;
+  public readonly weight: number;
+
+  public constructor(vertices: VertexTable, indices: VertexIndices, weight: number) {
+    this.vertices = vertices;
+    this.indices = indices;
+    this.weight = weight;
   }
 
-  private static createForPointString(args: PolylineArgs): VertexTable | undefined {
-    const polylines = args.polylines;
-    if (0 === polylines.length)
+  public static create(args: PolylineArgs): PointStringParams | undefined {
+    if (!args.flags.isDisjoint)
       return undefined;
 
+    const vertices = VertexTable.createForPolylines(args);
+    if (undefined === vertices)
+      return undefined;
+
+    const polylines = args.polylines;
     let vertIndices = polylines[0].vertIndices;
     if (1 < polylines.length) {
       // We used to assert this wouldn't happen - apparently it does...
@@ -203,10 +253,10 @@ export class VertexTable implements VertexTableProps {
           vertIndices.push(vertIndex);
     }
 
-    const vertexIndices = convertIndicesToTriplets(vertIndices); // ###TODO: actually return this...
+    const vertexIndices = VertexIndices.fromArray(vertIndices);
     assert(vertexIndices.length === vertIndices.length * 3);
 
-    return this.buildFrom(new SimpleBuilder(args), args.colors);
+    return new PointStringParams(vertices, vertexIndices, args.width);
   }
 }
 
