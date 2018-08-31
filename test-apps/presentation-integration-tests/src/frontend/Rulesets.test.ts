@@ -46,12 +46,12 @@ describe("Rulesets", async () => {
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.false;
   });
 
-  it("overwrites ruleset", async () => {
+  it("doesn't overwrite ruleset", async () => {
     const otherRuleset: Ruleset = require("../../test-rulesets/Rulesets/other");
     otherRuleset.id = ruleset.id;
     const registeredRuleset1 = await Presentation.presentation.rulesets().add(ruleset);
     const registeredRuleset2 = await Presentation.presentation.rulesets().add(otherRuleset);
-    expect(await Presentation.presentation.rulesets().remove(registeredRuleset1)).to.be.false;
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset1)).to.be.true;
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset2)).to.be.true;
   });
 

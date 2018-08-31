@@ -4,25 +4,50 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { using } from "@bentley/bentleyjs-core";
+import { IModelToken, RpcOperation, RpcRequest } from "@bentley/imodeljs-common";
+import { RpcRegistry } from "@bentley/imodeljs-common/lib/rpc/core/RpcRegistry";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
 } from "@src/index";
-import { VariableValueTypes } from "@src/IRulesetVariablesManager";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
-import { RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions, RulesetRpcRequestOptions, RulesetVariableRpcRequestOptions } from "@src/PresentationRpcInterface";
+import {
+  RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
+  ClientStateSyncRequestOptions,
+} from "@src/PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
+
+  it("finds imodel tokens in RPC requests", () => {
+    const token = new IModelToken();
+    const parameters = [{
+      imodel: token,
+      rulesetId: faker.random.word(),
+    }];
+    RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
+    const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
+    const operation = RpcOperation.lookup(PresentationRpcInterface, "getRootNodesCount");
+    const disposableRequest = {
+      request: new RpcRequest(client, "getRootNodesCount", parameters),
+      dispose: () => {
+        // no way to properly destroy the created request...
+        (disposableRequest.request as any).finalize();
+      },
+    };
+    using(disposableRequest, (dr) => {
+      const result = operation.policy.token(dr.request);
+      expect(result).to.eq(token);
+    });
+    RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
+  });
 
   describe("calls forwarding", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(operation: string, ...parameters: any[]) => Promise<T>)>;
-    const testData = {
-      imodelToken: new IModelToken(),
-    };
-    const defaultRpcOptions: RpcRequestOptions = { knownBackendIds: [] };
+    const imodelToken = new IModelToken();
+    const defaultRpcOptions: RpcRequestOptions = { imodel: imodelToken };
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
@@ -33,7 +58,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getRootNodes call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getRootNodes(options);
@@ -43,7 +67,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getRootNodesCount call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getRootNodesCount(options);
@@ -53,7 +76,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getChildren call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const parentKey = createRandomECInstanceNodeKey();
@@ -64,7 +86,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getChildrenCount call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const parentKey = createRandomECInstanceNodeKey();
@@ -75,7 +96,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getFilteredNodePaths call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(options, "filter");
@@ -85,7 +105,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodePaths call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
@@ -96,7 +115,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContentDescriptor call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getContentDescriptor(options, "test", new KeySet(), undefined);
@@ -106,7 +124,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContentSetSize call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
@@ -117,7 +134,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContent call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
@@ -128,7 +144,6 @@ describe("PresentationRpcInterface", () => {
     it("forwards getDistinctValues call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        imodel: testData.imodelToken,
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
@@ -138,78 +153,13 @@ describe("PresentationRpcInterface", () => {
       mock.verify((x) => x(options as any, descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, maximumValueCount), moq.Times.once());
     });
 
-    it("forwards getRuleset call", async () => {
-      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
-      const ruleset = { id: "", rules: [] };
-      const hash = faker.random.uuid();
-      mock.setup((x) => x(options as any, ruleset.id)).returns(async () => [ruleset, hash]).verifiable(moq.Times.once());
-      const resultTuple = await rpcInterface.getRuleset(options, ruleset.id);
-      mock.verifyAll();
-      expect(resultTuple![0]).to.deep.eq(ruleset);
-      expect(resultTuple![1]).to.deep.eq(hash);
-    });
-
-    it("forwards addRuleset call", async () => {
-      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
-      const ruleset = { id: "", rules: [] };
-      const hash = faker.random.uuid();
-      mock.setup((x) => x(options as any, ruleset)).returns(async () => hash).verifiable(moq.Times.once());
-      const resultHash = await rpcInterface.addRuleset(options, ruleset);
-      mock.verifyAll();
-      expect(resultHash).to.eq(hash);
-    });
-
-    it("forwards addRulesets call", async () => {
-      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
-      const ruleset = { id: "", rules: [] };
-      const hash = faker.random.uuid();
-      mock.setup((x) => x(options as any, [ruleset])).returns(async () => [hash]).verifiable(moq.Times.once());
-      const resultHashes = await rpcInterface.addRulesets(options, [ruleset]);
-      mock.verifyAll();
-      expect(resultHashes).to.deep.eq([hash]);
-    });
-
-    it("forwards removeRuleset call", async () => {
-      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
-      mock.setup((x) => x(options as any, "test id", "hash")).returns(async () => true).verifiable(moq.Times.once());
-      const result = await rpcInterface.removeRuleset(options, "test id", "hash");
-      mock.verifyAll();
-      expect(result).to.be.true;
-    });
-
-    it("forwards clearRulesets call", async () => {
-      const options: RulesetRpcRequestOptions = { ...defaultRpcOptions, clientId: faker.random.uuid() };
-      await rpcInterface.clearRulesets(options);
+    it("forwards syncClientState call", async () => {
+      const options: ClientStateSyncRequestOptions = {
+        ...defaultRpcOptions,
+        state: {},
+      };
+      await rpcInterface.syncClientState(options);
       mock.verify((x) => x(options as any), moq.Times.once());
-    });
-
-    it("forwards getRulesetVariableValue call", async () => {
-      const rulesetId = faker.random.uuid();
-      const variableId = faker.random.uuid();
-      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
-      const value = faker.random.words();
-      mock.setup((x) => x(params as any, variableId, VariableValueTypes.String)).returns(async () => value).verifiable(moq.Times.once());
-      const actualValue = await rpcInterface.getRulesetVariableValue(params, variableId, VariableValueTypes.String);
-      mock.verifyAll();
-      expect(actualValue).to.eq(value);
-    });
-
-    it("forwards setRulesetVariableValue call", async () => {
-      const rulesetId = faker.random.uuid();
-      const variableId = faker.random.uuid();
-      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
-      const value = faker.random.words();
-      await rpcInterface.setRulesetVariableValue(params, variableId, VariableValueTypes.String, value);
-      mock.verify((x) => x(params as any, variableId, VariableValueTypes.String, value), moq.Times.once());
-    });
-
-    it("forwards setRulesetVariableValues call", async () => {
-      const rulesetId = faker.random.uuid();
-      const variableId = faker.random.uuid();
-      const params: RulesetVariableRpcRequestOptions = { ...defaultRpcOptions, clientId: "client id", rulesetId };
-      const value = faker.random.words();
-      await rpcInterface.setRulesetVariableValues(params, [[variableId, VariableValueTypes.String, value]]);
-      mock.verify((x) => x(params as any, [[variableId, VariableValueTypes.String, value]]), moq.Times.once());
     });
 
   });

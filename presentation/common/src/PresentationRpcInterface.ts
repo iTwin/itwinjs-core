@@ -8,23 +8,21 @@ import {
   RpcInterface, IModelToken,
   RpcOperation, RpcRequest,
 } from "@bentley/imodeljs-common";
-import { Ruleset } from "./rules";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
-import { VariableValueTypes, VariableValue } from "./IRulesetVariablesManager";
 import KeySet from "./KeySet";
 import { InstanceKey } from "./EC";
 
 export interface RpcRequestOptions {
-  knownBackendIds: string[];
   clientId?: string;
+  clientStateId?: string;
   imodel: IModelToken;
 }
 export type HierarchyRpcRequestOptions = RpcRequestOptions & HierarchyRequestOptions<IModelToken>;
 export type ContentRpcRequestOptions = RpcRequestOptions & ContentRequestOptions<IModelToken>;
-export type RulesetRpcRequestOptions = RpcRequestOptions;
 export type RulesetVariableRpcRequestOptions = RpcRequestOptions & { rulesetId: string };
+export type ClientStateSyncRequestOptions = RpcRequestOptions & { state: { [id: string]: unknown } };
 
 /** Interface used for communication between Presentation backend and frontend. */
 export default class PresentationRpcInterface extends RpcInterface {
@@ -49,6 +47,13 @@ export default class PresentationRpcInterface extends RpcInterface {
   public constructor() {
     super();
     RpcOperation.forEach(PresentationRpcInterface, (op) => {
+      // note: `op` may be undefined if the instance is being created not through
+      // the RpcRegistry, however this is not coverable because of the way RpcRegistry
+      // is implemented...
+      // istanbul ignore if
+      if (!op)
+        return;
+
       // note: imodel tokens are nested inside the first parameter of each operation
       op.policy.token = (request: RpcRequest) => {
         const requestOptions: RpcRequestOptions = request.parameters[0];
@@ -79,21 +84,5 @@ export default class PresentationRpcInterface extends RpcInterface {
   /** See [[PresentationManager.getDistinctValues]] */
   public getDistinctValues(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
-  /** See [[IRulesetManager.get]] */
-  public getRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string): Promise<[Ruleset, string] | undefined> { return this.forward.apply(this, arguments); }
-  /** See [[IRulesetManager.add]] */
-  public addRuleset(_options: RulesetRpcRequestOptions, _ruleset: Ruleset): Promise<string> { return this.forward.apply(this, arguments); }
-  /** See [[IRulesetManager.add]] */
-  public addRulesets(_options: RulesetRpcRequestOptions, _rulesets: Ruleset[]): Promise<string[]> { return this.forward.apply(this, arguments); }
-  /** See [[IRulesetManager.remove]] */
-  public removeRuleset(_options: RulesetRpcRequestOptions, _rulesetId: string, _hash: string): Promise<boolean> { return this.forward.apply(this, arguments); }
-  /** See [[IRulesetManager.clear]] */
-  public clearRulesets(_options: RulesetRpcRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
-
-  /** Retrieves ruleset variable value */
-  public getRulesetVariableValue(_options: RulesetVariableRpcRequestOptions, _id: string, _type: VariableValueTypes): Promise<VariableValue> { return this.forward.apply(this, arguments); }
-  /** Sets ruleset variable value */
-  public setRulesetVariableValue(_options: RulesetVariableRpcRequestOptions, _id: string, _type: VariableValueTypes, _value: VariableValue): Promise<void> { return this.forward.apply(this, arguments); }
-  /** Sets multiple ruleset variable values */
-  public setRulesetVariableValues(_options: RulesetVariableRpcRequestOptions, _values: Array<[string, VariableValueTypes, VariableValue]>): Promise<void> { return this.forward.apply(this, arguments); }
+  public syncClientState(_options: ClientStateSyncRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
 }
