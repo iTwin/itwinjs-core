@@ -592,6 +592,26 @@ export class MeasurePointsTool extends PrimitiveTool {
         case "V":
           AccuDrawShortcuts.setStandardRotation(RotationMode.View);
           break;
+        case "o":
+        case "O":
+          AccuDrawShortcuts.setOrigin();
+          break;
+        case "c":
+        case "C":
+          AccuDrawShortcuts.rotateCycle(false);
+          break;
+        case "q":
+        case "Q":
+          AccuDrawShortcuts.rotateAxes(true);
+          break;
+        case "e":
+        case "E":
+          AccuDrawShortcuts.rotateToElement(false);
+          break;
+        case "r":
+        case "R":
+          AccuDrawShortcuts.defineACSByPoints();
+          break;
       }
     }
     return EventHandled.No;
@@ -656,7 +676,10 @@ export class ProjectExtentsDecoration {
 }
 
 // starts Measure between points tool
-function startMeasurePoints(_event: any) {
+function startMeasurePoints(event: any) {
+  const menu = document.getElementById("snapModeList") as HTMLDivElement;
+  if (event.target === menu)
+    return;
   IModelApp.tools.run("Measure.Points", theViewport!);
   // ProjectExtentsDecoration.toggle();
 }
