@@ -977,9 +977,7 @@ export class BriefcaseManager {
     }
 
     await this.deleteClosed(accessToken);
-
     BriefcaseManager.clearCache();
-    BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cacheDir);
   }
 
   /** Find the existing briefcase */

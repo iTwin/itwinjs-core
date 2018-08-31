@@ -19,7 +19,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const iModelRootDir = "d:\\temp\\IModelDumps\\";
 
   before(async () => {
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
+    accessToken = await HubUtility.login(TestUsers.super, "QA");
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
@@ -57,8 +57,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "NodeJsTestProject";
-    const iModelName = "TestModel";
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadWriteTest";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
