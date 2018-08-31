@@ -94,12 +94,14 @@ export abstract class GeometricModelState extends ModelState {
 
   private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean): TileTree.LoadStatus {
     const ids = new Set<string>();
-    ids.add(asClassifier ? ("Classifier_" + this.id.value) : this.id.value);
+    ids.add(asClassifier ? ("C_" + this.id.value) : this.id.value);
 
     this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
       tileTreeState.setTileTree(result[0], new IModelTileLoader(this.iModel, result[0].id, asClassifier));
       IModelApp.viewManager.onNewTilesReady();
-    }).catch((_err) => this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
+      }).catch((_err) => {
+        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
+      });
 
     return tileTreeState.loadStatus;
   }
