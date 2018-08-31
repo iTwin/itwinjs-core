@@ -114,9 +114,6 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
   }
 }
 
-// tslint:disable-next-line:variable-name
-const ContainedExpandableSection = WithContainInViewport(ExpandableSection);
-
 // List picker class
 // Used to provide an expandable list of items to enable/disable items
 export class ListPickerBase extends React.Component<ListPickerProps, ListPickerState> {
@@ -203,14 +200,13 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
         case ListItemType.Container:
           if (item.children!.length !== 0) {
             return (
-              <ContainedExpandableSection
+              <ExpandableSection
                 title={item.name}
-                className="ListPickerInnerContainer"
-                noVerticalContainment={true}>
+                className="ListPickerInnerContainer">
                 <Column>
                   {item.children!.map(listItemToElement)}
                 </Column>
-              </ContainedExpandableSection>
+              </ExpandableSection>
             );
           } else {
             return (<div />);
