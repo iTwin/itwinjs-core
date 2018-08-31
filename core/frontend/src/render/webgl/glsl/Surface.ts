@@ -19,7 +19,7 @@ import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { FloatPreMulRgba } from "../FloatRGBA";
-import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
+import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -109,7 +109,42 @@ function createCommon(): ProgramBuilder {
 
 export function createSurfaceHiliter(): ProgramBuilder {
   const builder = createCommon();
-  addHiliter(builder);
+
+  addSurfaceFlags(builder, true);
+
+  builder.vert.addFunction(GLSLDecode.unquantize2d);
+  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
+  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        const uvQParams = surfGeom.lut.uvQParams;
+        if (undefined !== uvQParams) {
+          uniform.setUniform4fv(uvQParams);
+        }
+      }
+    });
+  });
+
+  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
+  builder.frag.addFunction(sampleSurfaceTexture);
+  builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("s_texture", (uniform, params) => {
+      const surfGeom = params.geometry as SurfaceGeometry;
+      const surfFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        assert(undefined !== surfGeom.texture);
+        const texture = surfGeom.texture! as Texture;
+        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
+        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
+        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+      }
+    });
+  });
+
+  addSurfaceHiliter(builder);
   return builder;
 }
 
