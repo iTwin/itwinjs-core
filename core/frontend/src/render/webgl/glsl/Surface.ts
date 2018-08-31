@@ -111,39 +111,7 @@ export function createSurfaceHiliter(): ProgramBuilder {
   const builder = createCommon();
 
   addSurfaceFlags(builder, true);
-
-  builder.vert.addFunction(GLSLDecode.unquantize2d);
-  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
-  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
-      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        const uvQParams = surfGeom.lut.uvQParams;
-        if (undefined !== uvQParams) {
-          uniform.setUniform4fv(uvQParams);
-        }
-      }
-    });
-  });
-
-  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
-  builder.frag.addFunction(sampleSurfaceTexture);
-  builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("s_texture", (uniform, params) => {
-      const surfGeom = params.geometry as SurfaceGeometry;
-      const surfFlags = surfGeom.computeSurfaceFlags(params);
-      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        assert(undefined !== surfGeom.texture);
-        const texture = surfGeom.texture! as Texture;
-        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
-      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
-        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
-      }
-    });
-  });
-
+  addTexture(builder);
   addSurfaceHiliter(builder);
   return builder;
 }
@@ -290,26 +258,7 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
-  const builder = createCommon();
-  addShaderFlags(builder);
-
-  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
-  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
-  addSurfaceDiscard(builder, feat);
-  addNormal(builder);
-
-  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
-  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
-  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor;
-      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
-      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
-    });
-  });
-
-  // Vertex
+function addTexture(builder: ProgramBuilder) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
@@ -342,6 +291,29 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
       }
     });
   });
+}
+
+export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
+  const builder = createCommon();
+  addShaderFlags(builder);
+
+  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
+  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
+  addSurfaceDiscard(builder, feat);
+  addNormal(builder);
+
+  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
+  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
+      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+    });
+  });
+
+  addTexture(builder);
+
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
