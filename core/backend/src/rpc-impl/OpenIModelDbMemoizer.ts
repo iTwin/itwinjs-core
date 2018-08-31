@@ -11,6 +11,9 @@ const loggingCategory = "imodeljs-backend.OpenIModelDb";
  * @hidden
  */
 export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
+
+  private static _openIModelDbMemoizer: OpenIModelDbMemoizer;
+
   public constructor() {
     super(IModelDb.open, (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
       return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
@@ -33,7 +36,9 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
 
     Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => (iModelToken));
 
-    const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();
+    if (!OpenIModelDbMemoizer._openIModelDbMemoizer)
+      OpenIModelDbMemoizer._openIModelDbMemoizer = new OpenIModelDbMemoizer();
+    const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = OpenIModelDbMemoizer._openIModelDbMemoizer;
 
     const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
