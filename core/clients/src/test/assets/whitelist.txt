@@ -23,6 +23,7 @@ iModelScope/ChangeSet/?$select=*,FileAccessKey-forward-AccessKey.DownloadURL
 iModelScope/ChangeSet/?$skip=*
 iModelScope/Code/$query
 iModelScope/Code/DiscardReservedCodes-*
+iModelScope/CodeSequence/
 iModelScope/EventSAS/
 iModelScope/EventSubscription/
 iModelScope/EventSubscription/********-****-****-****-************
