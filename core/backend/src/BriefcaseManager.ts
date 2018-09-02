@@ -857,7 +857,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
@@ -891,7 +891,7 @@ export class BriefcaseManager {
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName, undefined, undefined, undefined, OpenMode.ReadWrite)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();

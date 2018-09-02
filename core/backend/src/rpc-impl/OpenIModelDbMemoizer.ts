@@ -31,7 +31,8 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
   }
 
   public static async openIModelDb(accessToken: AccessToken, iModelToken: IModelToken, openParams: OpenParams): Promise<IModel> {
-    const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    assert(!!iModelToken.changeSetId, "Expected a valid changeSetId in openIModelDb");
+    const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
     const accessTokenObj = AccessToken.fromJson(accessToken);
 
     Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => (iModelToken));

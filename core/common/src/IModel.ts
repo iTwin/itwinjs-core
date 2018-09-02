@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, GuidProps, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64, GuidProps, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
@@ -20,8 +20,10 @@ export class IModelToken {
     public readonly contextId?: string,
     /** Guid of the iModel - must be defined if the iModel exists in the Hub */
     public readonly iModelId?: string,
-    /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub */
+    /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
     public changeSetId?: string,
+    /** Mode used to open the iModel */
+    public openMode?: OpenMode,
   ) {
   }
 }

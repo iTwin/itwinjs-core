@@ -117,11 +117,8 @@ export class IModelConnection extends IModel {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
-    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelClient);
-    if (!changeSetId)
-      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
+    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelClient);
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
     const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
     const connection = new IModelConnection(openResponse, openMode, accessToken);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
