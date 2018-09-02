@@ -714,12 +714,12 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry) {
+    if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
       Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
     }
     // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    return briefcaseEntry.iModelDb!;
+    return briefcaseEntry.iModelDb;
   }
 
   /** Get the ClassMetaDataRegistry for this iModel. */
