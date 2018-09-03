@@ -17,8 +17,11 @@ import {
   RenderTexture,
   RenderMaterial,
   LinePixels,
+  OctEncodedNormalPair,
+  PolylineData,
+  MeshEdge,
 } from "@bentley/imodeljs-common";
-import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
+import { PolylineArgs, MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
 
 /**
@@ -43,15 +46,17 @@ export class VertexIndices {
   /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
   public static fromArray(indices: number[]): VertexIndices {
     const bytes = new Uint8Array(indices.length * 3);
-    for (let i = 0; i < indices.length; i++) {
-      const index = indices[i];
-      const j = i * 3;
-      bytes[j + 0] = index & 0x000000ff;
-      bytes[j + 1] = (index & 0x0000ff00) >> 8;
-      bytes[j + 2] = (index & 0x00ff0000) >> 16;
-    }
+    for (let i = 0; i < indices.length; i++)
+      this.encodeIndex(indices[i], bytes, i * 3);
 
     return new VertexIndices(bytes);
+  }
+
+  public static encodeIndex(index: number, bytes: Uint8Array, byteIndex: number): void {
+    assert(byteIndex + 2 < bytes.length);
+    bytes[byteIndex + 0] = index & 0x000000ff;
+    bytes[byteIndex + 1] = (index & 0x0000ff00) >> 8;
+    bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
 }
 
@@ -275,6 +280,69 @@ export interface SegmentEdgeParams {
   readonly endPointAndQuadIndices: Uint8Array;
 }
 
+function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
+  let numIndices = undefined !== edges ? edges.length : 0;
+  if (undefined !== polylines)
+    for (const pd of polylines)
+      numIndices += (pd.vertIndices.length - 1);
+
+  if (0 === numIndices)
+    return undefined;
+
+  numIndices *= 6;
+  const indexBytes = new Uint8Array(numIndices * 3);
+  const endPointAndQuadIndexBytes = new Uint8Array(numIndices * 4);
+
+  let ndx: number = 0;
+  let ndx2: number = 0;
+
+  const addPoint = (p0: number, p1: number, quadIndex: number) => {
+    VertexIndices.encodeIndex(p0, indexBytes, ndx);
+    ndx += 3;
+    VertexIndices.encodeIndex(p1, endPointAndQuadIndexBytes, ndx2);
+    endPointAndQuadIndexBytes[ndx2 + 3] = quadIndex;
+    ndx2 += 4;
+  };
+
+  if (undefined !== polylines) {
+    for (const pd of polylines) {
+      const num = pd.vertIndices.length - 1;
+      for (let i = 0; i < num; ++i) {
+        let p0 = pd.vertIndices[i];
+        let p1 = pd.vertIndices[i + 1];
+        if (p1 < p0) { // swap so that lower index is first.
+          p0 = p1;
+          p1 = pd.vertIndices[i];
+        }
+        addPoint(p0, p1, 0);
+        addPoint(p1, p0, 2);
+        addPoint(p0, p1, 1);
+        addPoint(p0, p1, 1);
+        addPoint(p1, p0, 2);
+        addPoint(p1, p0, 3);
+      }
+    }
+  }
+
+  if (undefined !== edges) {
+    for (const meshEdge of edges) {
+      const p0 = meshEdge.indices[0];
+      const p1 = meshEdge.indices[1];
+      addPoint(p0, p1, 0);
+      addPoint(p1, p0, 2);
+      addPoint(p0, p1, 1);
+      addPoint(p0, p1, 1);
+      addPoint(p1, p0, 2);
+      addPoint(p1, p0, 3);
+    }
+  }
+
+  return {
+    indices: new VertexIndices(indexBytes),
+    endPointAndQuadIndices: endPointAndQuadIndexBytes,
+  };
+}
+
 /**
  * A set of line segments representing edges of curved portions of a mesh.
  * Each vertex is augmented with a pair of oct-encoded normals used in the shader
@@ -285,6 +353,29 @@ export interface SilhouetteParams extends SegmentEdgeParams {
   readonly normalPairs: Uint8Array;
 }
 
+function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair[]): SilhouetteParams | undefined {
+  const base = convertPolylinesAndEdges(undefined, edges);
+  if (undefined === base)
+    return undefined;
+
+  const normalPairBytes = new Uint8Array(normalPairs.length * 6 * 4);
+  const normalPair16 = new Uint16Array(normalPairBytes.buffer);
+
+  let ndx = 0;
+  for (const pair of normalPairs) {
+    for (let i = 0; i < 6; i++) {
+      normalPair16[ndx++] = pair.first.value;
+      normalPair16[ndx++] = pair.second.value;
+    }
+  }
+
+  return {
+    indices: base.indices,
+    endPointAndQuadIndices: base.endPointAndQuadIndices,
+    normalPairs: normalPairBytes,
+  };
+}
+
 /**
  * Describes chains of edges of a mesh.
  * Each chain consists of 2 or more vertices.
@@ -293,6 +384,7 @@ export interface SilhouetteParams extends SegmentEdgeParams {
  */
 export interface PolylineEdgeParams {
   /* ###TODO */
+  indices: VertexIndices;
 }
 
 /** Describes the edges of a mesh. */
@@ -307,6 +399,30 @@ export interface EdgeParams {
   readonly silhouettes?: SilhouetteParams;
   /** Polyline edges, always displayed when edge display is enabled. */
   readonly polylines?: PolylineEdgeParams;
+}
+
+function convertEdges(args?: MeshArgsEdges): EdgeParams | undefined {
+  if (undefined === args)
+    return undefined;
+
+  // ###TODO: Determine if we wants polylines converted to segments or not...
+  // Also why the heck does PolylineEdgeArgs exist - its only member is a PolylineData[] ???
+  // Same deal with args.edges.edges like wtf?
+  const polylines = undefined;
+  const segments = convertPolylinesAndEdges(args.polylines.lines, args.edges.edges);
+
+  // ###TODO: why the heck are the edges and normals of SilhouetteEdgeArgs potentially undefined???
+  const silhouettes = undefined !== args.silhouettes.edges && undefined !== args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;
+  if (undefined === segments && undefined === silhouettes && undefined === polylines)
+    return undefined;
+
+  return {
+    weight: args.width,
+    linePixels: args.linePixels,
+    segments,
+    silhouettes,
+    polylines,
+  };
 }
 
 /**
@@ -332,6 +448,7 @@ export class MeshParams {
   public static create(args: MeshArgs): MeshParams {
     const builder = MeshBuilder.create(args);
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
+
     const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
     const surface: SurfaceParams = {
       type: builder.type,
@@ -342,9 +459,8 @@ export class MeshParams {
       material: args.material,
     };
 
-    // ###TODO: edges...
-
-    return new MeshParams(vertices, surface, undefined, args.isPlanar);
+    const edges = convertEdges(args.edges);
+    return new MeshParams(vertices, surface, edges, args.isPlanar);
   }
 }
 
