@@ -2,8 +2,13 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import {
+  createRandomECInstanceKey,
+  createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
+  createRandomDescriptor, createRandomRuleset, createRandomId,
+} from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -11,21 +16,15 @@ import {
   Paged, IRulesetManager,
   HierarchyRequestOptions, ContentRequestOptions, IRulesetVariablesManager,
 } from "@bentley/presentation-common";
-import { Node } from "@common/hierarchy";
-import { Descriptor, Content } from "@common/content";
+import { Node, Descriptor, Content } from "@bentley/presentation-common";
 import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions,
 } from "@bentley/presentation-common/lib/PresentationRpcInterface";
-import {
-  createRandomECInstanceKey,
-  createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomDescriptor, createRandomRuleset, createRandomId,
-} from "@helpers/random";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import PresentationManager from "@src/PresentationManager";
-import PresentationRpcImpl from "@src/PresentationRpcImpl";
-import Presentation from "@src/Presentation";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
+import PresentationManager from "../lib/PresentationManager";
+import PresentationRpcImpl from "../lib/PresentationRpcImpl";
+import Presentation from "../lib/Presentation";
 import "./IModelHostSetup";
 
 describe("PresentationRpcImpl", () => {

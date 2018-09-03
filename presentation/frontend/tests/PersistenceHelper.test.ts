@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
+import { createRandomECInstanceNodeKey, createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
-import { PersistenceHelper } from "@src/index";
-import { createRandomECInstanceNodeKey, createRandomId } from "@helpers/random";
 import { RelatedElementProps } from "@bentley/imodeljs-common/lib/common";
+import { PersistenceHelper } from "../lib/index";
 
 describe("PersistenceHelper", () => {
 

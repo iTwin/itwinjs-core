@@ -3,19 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "@helpers/Mocks";
+import * as moq from "./_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcOperation, RpcRequest } from "@bentley/imodeljs-common";
 import { RpcRegistry } from "@bentley/imodeljs-common/lib/rpc/core/RpcRegistry";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
-} from "@src/index";
-import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "@helpers/random";
+} from "../lib";
 import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,
-} from "@src/PresentationRpcInterface";
+} from "../lib/PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
 

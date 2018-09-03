@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
-import RulesetSchema from "@common/Ruleset.schema.json";
-import { Ruleset } from "@common/index";
+import RulesetSchema from "../../../Ruleset.schema.json";
+import { Ruleset } from "../../../lib";
 
 jsf.option({
   optionalsProbability: 0.8,

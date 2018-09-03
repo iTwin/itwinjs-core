@@ -2,11 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import { RegisteredRuleset } from "@bentley/presentation-common";
-import { NativePlatformDefinition } from "@src/NativePlatform";
-import RulesetManager from "@src/RulesetManager";
+import { NativePlatformDefinition } from "../lib/NativePlatform";
+import RulesetManager from "../lib/RulesetManager";
 
 describe("RulesetManager", () => {
 

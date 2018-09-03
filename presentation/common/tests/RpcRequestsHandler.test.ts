@@ -8,17 +8,17 @@ import {
   createRandomECInstanceNodeKey, createRandomECInstanceKey,
   createRandomECInstanceNode, createRandomNodePathElement,
   createRandomContent, createRandomDescriptor,
-} from "@helpers/random";
+} from "./_helpers/random";
+import { BeEvent, using } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo,
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, ContentRequestOptions,
-} from "@src/index";
-import { RpcRequestOptions, ClientStateSyncRequestOptions } from "@src/PresentationRpcInterface";
-import { IClientStateHolder } from "@src/RpcRequestsHandler";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
+} from "../lib";
+import { RpcRequestOptions, ClientStateSyncRequestOptions } from "../lib/PresentationRpcInterface";
+import { IClientStateHolder } from "../lib/RpcRequestsHandler";
 
 describe("RpcRequestsHandler", () => {
 

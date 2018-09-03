@@ -14,7 +14,7 @@
     "docs": "",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./",
-    "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha -r ts-node/register -r tsconfig-paths/register -r source-map-support/register --check-leaks --full-trace --no-timeouts --file ./src/index.test.ts ./src/**/*.ts",
+    "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha --opts ./mocha.opts ./src/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "dependencies": {
@@ -57,8 +57,7 @@
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "nyc": "^13.0.1",
-    "ts-node": "^6.0.3",
-    "tsconfig-paths": "^3.3.2",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "~3.0.0"
   }

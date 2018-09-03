@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy } from "chai";
 import * as faker from "faker";
-import { createRandomRuleset } from "@helpers/random";
-import RulesetManager from "@src/RulesetManager";
+import { createRandomRuleset } from "@bentley/presentation-common/tests/_helpers/random";
+import RulesetManager from "../lib/RulesetManager";
 
 describe("RulesetManager", () => {
 

@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy } from "chai";
 import * as moq from "typemoq";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "@bentley/presentation-common";
-import { SelectionManager } from "@src/selection";
-import { createRandomECInstanceKey } from "@helpers/random";
+import { SelectionManager } from "../../lib/selection";
 
 const generateSelection = (): InstanceKey[] => {
   return [

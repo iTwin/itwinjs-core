@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy } from "chai";
 import * as faker from "faker";
-import { createRandomId } from "@helpers/random";
+import { createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
 import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {

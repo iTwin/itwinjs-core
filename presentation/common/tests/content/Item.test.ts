@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECClassInfoJSON } from "@helpers/random";
-import Item, { ItemJSON } from "@src/content/Item";
+import { createRandomECClassInfoJSON } from "../_helpers/random";
+import Item, { ItemJSON } from "../../lib/content/Item";
 
 describe("Item", () => {
 

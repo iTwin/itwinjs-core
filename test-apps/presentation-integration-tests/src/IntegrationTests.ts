@@ -5,12 +5,12 @@ import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
 import * as rimraf from "rimraf";
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 // common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { LoggingNamespaces } from "@bentley/presentation-common";
-import TestRpcManager from "@helpers/TestRpcManager";
+import TestRpcManager from "@bentley/presentation-common/tests/_helpers/TestRpcManager";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";

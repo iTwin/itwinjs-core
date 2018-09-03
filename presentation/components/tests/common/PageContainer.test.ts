@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import PageContainer from "@src/common/PageContainer";
+import PageContainer from "../../lib/common/PageContainer";
 
 describe("PageContainer", () => {
 

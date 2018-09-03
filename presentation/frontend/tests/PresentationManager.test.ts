@@ -4,21 +4,21 @@
 import { expect } from "chai";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
-import * as moq from "@helpers/Mocks";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import {
   createRandomDescriptor,
   createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
   createRandomECInstanceKey,
-} from "@helpers/random";
+} from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, Descriptor, HierarchyRequestOptions,
   Paged, ContentRequestOptions, RequestOptions, RpcRequestsHandler,
-} from "@common/index";
-import PresentationManager from "@src/PresentationManager";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import RulesetManager from "@src/RulesetManager";
+} from "@bentley/presentation-common";
+import PresentationManager from "../lib/PresentationManager";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
+import RulesetManager from "../lib/RulesetManager";
 
 describe("PresentationManager", () => {
 

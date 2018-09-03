@@ -6,20 +6,18 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
-import { using } from "@bentley/bentleyjs-core";
-import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
-import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
-import PresentationManager from "@src/PresentationManager";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "@src/NativePlatform";
-import RulesetManager from "@src/RulesetManager";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import {
   createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
   createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
   createRandomDescriptor, createRandomCategory,
-} from "@helpers/random";
+} from "@bentley/presentation-common/tests/_helpers/random";
+import "@bentley/presentation-common/tests/_helpers/Promises";
+import "./IModelHostSetup";
+import { using } from "@bentley/bentleyjs-core";
+import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
 import { instanceKeyFromJSON } from "@bentley/presentation-common/lib/EC";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { ECInstanceNodeKeyJSON, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -30,8 +28,10 @@ import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley
 import { KindOfQuantityInfo } from "@bentley/presentation-common";
 import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
 import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
-import "@helpers/Promises";
-import "./IModelHostSetup";
+import { NativePlatformDefinition, NativePlatformRequestTypes } from "../lib/NativePlatform";
+import PresentationManager from "../lib/PresentationManager";
+import RulesetManager from "../lib/RulesetManager";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
 
 describe("PresentationManager", () => {
 
@@ -81,7 +81,7 @@ describe("PresentationManager", () => {
 
       it("sets up locale directories if supplied", () => {
         const suppliedDirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.resolve(__dirname, "../src/assets/locales"), "test1", "test2"];
+        const addonDirs = [path.resolve(__dirname, "../lib/assets/locales"), "test1", "test2"];
         addon.setup((x) => x.setupLocaleDirectories(addonDirs)).verifiable();
         using(new PresentationManager({ addon: addon.object, localeDirectories: suppliedDirs }), () => { });
         addon.verifyAll();

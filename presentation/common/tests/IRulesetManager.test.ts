@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "@helpers/Mocks";
-import { IRulesetManager, RegisteredRuleset } from "@src/IRulesetManager";
-import { Ruleset, RuleTypes } from "@src/rules";
+import * as moq from "./_helpers/Mocks";
+import { IRulesetManager, RegisteredRuleset } from "../lib/IRulesetManager";
+import { Ruleset, RuleTypes } from "../lib/rules";
 
 describe("RegisteredRuleset", () => {
 

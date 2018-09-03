@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
-import { createRandomId } from "@helpers/random";
+import { createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Ruleset, IRulesetVariablesManager } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";

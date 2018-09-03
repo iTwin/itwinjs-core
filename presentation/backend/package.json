@@ -17,7 +17,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src 1>&2 && npm run build:assets && npm run extract",
+    "build": "tsc -b ./src 1>&2 && npm run build:assets && npm run extract",
     "build:assets": "cpx ./assets/**/* ./lib/assets && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
@@ -25,7 +25,8 @@
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/backend",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/backend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
-    "lint": "tslint -p ./src 1>&2",
+    "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
+    "//lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
@@ -63,8 +64,7 @@
     "mocha-tldr-reporter": "^1.0.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
-    "ts-node": "^6.0.3",
-    "tsconfig-paths": "^3.3.2",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",

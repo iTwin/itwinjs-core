@@ -61,7 +61,7 @@
     "nyc": "^13.0.1",
     "mocha": "^5.2.0",
     "source-map-support": "^0.5.6",
-    "ts-node": "^6.0.3",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",

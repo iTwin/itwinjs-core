@@ -2,168 +2,168 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "@helpers/Mocks";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import * as faker from "faker";
+import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/tests/_helpers/random";
 import { NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import FilteredPresentationTreeDataProvider from "@src/tree/FilteredDataProvider";
-import IPresentationTreeDataProvider from "@src/tree/IPresentationTreeDataProvider";
-import { createTreeNodeItem } from "@src/tree/Utils";
-import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@helpers/random";
-import { createRandomTreeNodeItem } from "@helpers/UiComponents";
+import FilteredPresentationTreeDataProvider from "../../lib/tree/FilteredDataProvider";
+import IPresentationTreeDataProvider from "../../lib/tree/IPresentationTreeDataProvider";
+import { createTreeNodeItem } from "../../lib/tree/Utils";
 
 describe("FilteredTreeDataProvider", () => {
 
-  /*
-  A-1
-    A-1-1
-  A-2
-    A-2-1
-    A-2-2
-      A-2-2-1
-  */
-  const nodePaths: NodePathElement[] = [];
+    /*
+    A-1
+      A-1-1
+    A-2
+      A-2-1
+      A-2-2
+        A-2-2-1
+    */
+    const nodePaths: NodePathElement[] = [];
 
-  nodePaths[0] = createRandomNodePathElement();
-  nodePaths[0].node.label = "A-1";
+    nodePaths[0] = createRandomNodePathElement();
+    nodePaths[0].node.label = "A-1";
 
-  nodePaths[1] = createRandomNodePathElement();
-  nodePaths[1].node.label = "A-2";
+    nodePaths[1] = createRandomNodePathElement();
+    nodePaths[1].node.label = "A-2";
 
-  nodePaths[0].children = [];
-  nodePaths[0].children[0] = createRandomNodePathElement();
-  nodePaths[0].children[0].node.label = "A-1-1";
+    nodePaths[0].children = [];
+    nodePaths[0].children[0] = createRandomNodePathElement();
+    nodePaths[0].children[0].node.label = "A-1-1";
 
-  nodePaths[1].children = [];
-  nodePaths[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[0].node.label = "A-2-1";
+    nodePaths[1].children = [];
+    nodePaths[1].children[0] = createRandomNodePathElement();
+    nodePaths[1].children[0].node.label = "A-2-1";
 
-  nodePaths[1].children[1] = createRandomNodePathElement();
-  nodePaths[1].children[1].node.label = "A-2-2";
+    nodePaths[1].children[1] = createRandomNodePathElement();
+    nodePaths[1].children[1].node.label = "A-2-2";
 
-  nodePaths[1].children[1].children = [];
-  nodePaths[1].children[1].children[0] = createRandomNodePathElement();
-  nodePaths[1].children[1].children[0].node.label = "A-2-2-1";
+    nodePaths[1].children[1].children = [];
+    nodePaths[1].children[1].children[0] = createRandomNodePathElement();
+    nodePaths[1].children[1].children[0].node.label = "A-2-2-1";
 
-  let provider: FilteredPresentationTreeDataProvider;
-  let filter: string;
-  const parentProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const pageOptions: PageOptions = { size: 0, start: 0 };
+    let provider: FilteredPresentationTreeDataProvider;
+    let filter: string;
+    const parentProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
+    const imodelMock = moq.Mock.ofType<IModelConnection>();
+    const pageOptions: PageOptions = { size: 0, start: 0 };
 
-  beforeEach(() => {
-    parentProviderMock.reset();
-    filter = faker.random.word();
-    provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, filter, nodePaths);
-  });
-
-  describe("filter", () => {
-
-    it("returns filter with which it was initialized", () => {
-      expect(provider.filter).to.be.equal(filter);
+    beforeEach(() => {
+        parentProviderMock.reset();
+        filter = faker.random.word();
+        provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, filter, nodePaths);
     });
 
-  });
+    describe("filter", () => {
 
-  describe("rulesetId", () => {
+        it("returns filter with which it was initialized", () => {
+            expect(provider.filter).to.be.equal(filter);
+        });
 
-    it("returns rulesetId of the parent data provider", () => {
-      const expectedRulesetId = faker.random.word();
-      parentProviderMock.setup((x) => x.rulesetId)
-        .returns(() => expectedRulesetId)
-        .verifiable();
-      expect(provider.rulesetId).to.eq(expectedRulesetId);
-      parentProviderMock.verifyAll();
     });
 
-  });
+    describe("rulesetId", () => {
 
-  describe("connection", () => {
+        it("returns rulesetId of the parent data provider", () => {
+            const expectedRulesetId = faker.random.word();
+            parentProviderMock.setup((x) => x.rulesetId)
+                .returns(() => expectedRulesetId)
+                .verifiable();
+            expect(provider.rulesetId).to.eq(expectedRulesetId);
+            parentProviderMock.verifyAll();
+        });
 
-    it("returns connection of the parent data provider", () => {
-      parentProviderMock.setup((x) => x.connection)
-        .returns(() => imodelMock.object)
-        .verifiable();
-      expect(provider.connection).to.eq(imodelMock.object);
-      parentProviderMock.verifyAll();
     });
 
-  });
+    describe("connection", () => {
 
-  describe("getRootNodes", () => {
+        it("returns connection of the parent data provider", () => {
+            parentProviderMock.setup((x) => x.connection)
+                .returns(() => imodelMock.object)
+                .verifiable();
+            expect(provider.connection).to.eq(imodelMock.object);
+            parentProviderMock.verifyAll();
+        });
 
-    it("return root nodes", async () => {
-      const result = await provider.getRootNodes(pageOptions);
-      expect(result).to.matchSnapshot();
     });
 
-  });
+    describe("getRootNodes", () => {
 
-  describe("getRootNodesCount", () => {
+        it("return root nodes", async () => {
+            const result = await provider.getRootNodes(pageOptions);
+            expect(result).to.matchSnapshot();
+        });
 
-    it("returns root nodes count", async () => {
-      const result = await provider.getRootNodesCount();
-      expect(result).to.equal(nodePaths.length);
     });
 
-  });
+    describe("getRootNodesCount", () => {
 
-  describe("getChildNodes", () => {
+        it("returns root nodes count", async () => {
+            const result = await provider.getRootNodesCount();
+            expect(result).to.equal(nodePaths.length);
+        });
 
-    it("returns child nodes", async () => {
-      const parentNode = createTreeNodeItem(nodePaths[1].node);
-
-      const result = await provider.getChildNodes(parentNode, pageOptions);
-      expect(result).to.matchSnapshot();
     });
 
-  });
+    describe("getChildNodes", () => {
 
-  describe("getChildNodesCount", () => {
+        it("returns child nodes", async () => {
+            const parentNode = createTreeNodeItem(nodePaths[1].node);
 
-    it("returns child node count", async () => {
-      const parentNode = createTreeNodeItem(nodePaths[1].node);
+            const result = await provider.getChildNodes(parentNode, pageOptions);
+            expect(result).to.matchSnapshot();
+        });
 
-      const result = await provider.getChildNodesCount(parentNode);
-      expect(result).to.equal(nodePaths[1].children.length);
     });
 
-  });
+    describe("getChildNodesCount", () => {
 
-  describe("getFilteredNodePaths", () => {
+        it("returns child node count", async () => {
+            const parentNode = createTreeNodeItem(nodePaths[1].node);
 
-    it("calls parent data provider", async () => {
-      parentProviderMock.setup((x) => x.getFilteredNodePaths(filter))
-        .returns(async () => nodePaths)
-        .verifiable();
+            const result = await provider.getChildNodesCount(parentNode);
+            expect(result).to.equal(nodePaths[1].children.length);
+        });
 
-      const result = await provider.getFilteredNodePaths(filter);
-      expect(result).to.equal(nodePaths);
-      parentProviderMock.verifyAll();
     });
 
-  });
+    describe("getFilteredNodePaths", () => {
 
-  describe("getNodeKey", () => {
+        it("calls parent data provider", async () => {
+            parentProviderMock.setup((x) => x.getFilteredNodePaths(filter))
+                .returns(async () => nodePaths)
+                .verifiable();
 
-    it("returns node key", () => {
-      const key = createRandomECInstanceNodeKey();
-      const treeNode = createRandomTreeNodeItem(key);
+            const result = await provider.getFilteredNodePaths(filter);
+            expect(result).to.equal(nodePaths);
+            parentProviderMock.verifyAll();
+        });
 
-      const result = provider.getNodeKey(treeNode);
-      expect(result).to.deep.equal(key);
     });
 
-  });
+    describe("getNodeKey", () => {
 
-  describe("getAllNodeIds", () => {
+        it("returns node key", () => {
+            const key = createRandomECInstanceNodeKey();
+            const treeNode = createRandomTreeNodeItem(key);
 
-    it("returns all ids for all nodes", () => {
-      const allNodeIds = provider.getAllNodeIds();
-      expect(allNodeIds).to.matchSnapshot();
+            const result = provider.getNodeKey(treeNode);
+            expect(result).to.deep.equal(key);
+        });
+
     });
 
-  });
+    describe("getAllNodeIds", () => {
+
+        it("returns all ids for all nodes", () => {
+            const allNodeIds = provider.getAllNodeIds();
+            expect(allNodeIds).to.matchSnapshot();
+        });
+
+    });
 
 });

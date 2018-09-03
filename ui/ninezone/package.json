@@ -77,7 +77,7 @@
     "style-loader": "^0.21.0",
     "svg-react-loader": "^0.4.5",
     "ts-loader": "^4.4.1",
-    "ts-node": "^6.0.3",
+    "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
     "tslint-loader": "^3.6.0",
