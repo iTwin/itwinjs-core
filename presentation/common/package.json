@@ -24,7 +24,7 @@
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/common/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
-    "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
+    "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/rules/**/*.ts -- ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "tslint -p ./src 1>&2",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.ts",
