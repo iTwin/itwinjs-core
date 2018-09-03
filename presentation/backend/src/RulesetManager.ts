@@ -31,7 +31,7 @@ export default class RulesetManager implements IRulesetManager {
   public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
     if (Array.isArray(ruleset))
       return this._getNativePlatform().removeRuleset(ruleset[0], ruleset[1]);
-    return this._getNativePlatform().removeRuleset(ruleset.id, ruleset.hash);
+    return this._getNativePlatform().removeRuleset(ruleset.id, ruleset.uniqueIdentifier);
   }
 
   public async clear(): Promise<void> {

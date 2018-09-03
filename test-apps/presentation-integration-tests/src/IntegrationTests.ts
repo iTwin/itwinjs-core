@@ -13,7 +13,7 @@ import { LoggingNamespaces } from "@bentley/presentation-common";
 import TestRpcManager from "@helpers/TestRpcManager";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
-import { Presentation as PresentationBackend, Presentation } from "@bentley/presentation-backend";
+import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 // frontend includes
 import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
@@ -95,11 +95,11 @@ export const terminate = () => {
     return;
 
   // terminate backend
-  Presentation.terminate();
+  PresentationBackend.terminate();
   IModelHost.shutdown();
 
   // terminate frontend
-  Presentation.terminate();
+  PresentationFrontend.terminate();
   NoRenderApp.shutdown();
 
   isInitialized = false;

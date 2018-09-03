@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
@@ -36,7 +36,6 @@ describe("PresentationManager", () => {
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
     rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
-    rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
     manager = PresentationManager.create({ rpcRequestsHandler: rpcRequestsHandlerMock.object });
   });
 
@@ -63,7 +62,6 @@ describe("PresentationManager", () => {
 
     it("sets custom RpcRequestsHandler if supplied with props", async () => {
       const handler = moq.Mock.ofType<RpcRequestsHandler>();
-      handler.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
       const props = { rpcRequestsHandler: handler.object };
       const mgr = PresentationManager.create(props);
       expect(mgr.rpcRequestsHandler).to.eq(handler.object);
@@ -73,18 +71,9 @@ describe("PresentationManager", () => {
 
   describe("dispose", () => {
 
-    it("disposes rulesets manager", () => {
-      const rulesetsManager = manager.rulesets();
-      const disposeSpy = spy.on(rulesetsManager, RulesetManager.prototype.dispose.name);
+    it("disposes RPC requests handler", () => {
       manager.dispose();
-      expect(disposeSpy).to.be.called();
-    });
-
-    it("disposes rulesets manager", () => {
-      const varManagers = ["a", "b"].map((id) => manager.vars(id));
-      const disposeSpies = varManagers.map((m) => spy.on(m, RulesetVariablesManager.prototype.dispose.name));
-      manager.dispose();
-      disposeSpies.forEach((disposeSpy) => expect(disposeSpy).to.be.called());
+      rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
   });

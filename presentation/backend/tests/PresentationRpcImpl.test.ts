@@ -8,18 +8,19 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
   PageOptions, KeySet, PresentationError, InstanceKey,
-  Paged, IRulesetManager, RegisteredRuleset,
-  HierarchyRequestOptions, ContentRequestOptions,
+  Paged, IRulesetManager,
+  HierarchyRequestOptions, ContentRequestOptions, IRulesetVariablesManager,
 } from "@bentley/presentation-common";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
-import { RpcRequestOptions, HierarchyRpcRequestOptions } from "@bentley/presentation-common/lib/PresentationRpcInterface";
+import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import {
+  RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions,
+} from "@bentley/presentation-common/lib/PresentationRpcInterface";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomDescriptor,
-  createRandomRuleset,
+  createRandomDescriptor, createRandomRuleset, createRandomId,
 } from "@helpers/random";
 import RulesetVariablesManager from "@src/RulesetVariablesManager";
 import PresentationManager from "@src/PresentationManager";
@@ -42,7 +43,6 @@ describe("PresentationRpcImpl", () => {
   describe("calls forwarding", () => {
 
     let testData: any;
-    let rpcImplId: string;
     let defaultRpcParams: RpcRequestOptions;
     let impl: PresentationRpcImpl;
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
@@ -58,8 +58,6 @@ describe("PresentationRpcImpl", () => {
       Presentation.initialize({
         clientManagerFactory: () => presentationManagerMock.object,
       });
-      rpcImplId = faker.random.uuid();
-      defaultRpcParams = { knownBackendIds: [rpcImplId], clientId: faker.random.uuid() };
       testData = {
         imodelToken: new IModelToken(),
         imodelMock: moq.Mock.ofType<IModelDb>(),
@@ -68,18 +66,10 @@ describe("PresentationRpcImpl", () => {
         displayType: "sample display type",
         keys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
       };
+      defaultRpcParams = { clientId: faker.random.uuid(), imodel: testData.imodelToken };
       testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
       IModelDb.find = () => testData.imodelMock.object;
-      impl = new PresentationRpcImpl(rpcImplId);
-    });
-
-    it("throws when request's knownBackendIds doesn't contain impl id", async () => {
-      const options: HierarchyRequestOptions<IModelToken> = {
-        imodel: testData.imodelToken,
-        rulesetId: testData.rulesetId,
-      };
-      const request = impl.getRootNodesCount({ knownBackendIds: [], ...options });
-      await expect(request).to.eventually.be.rejectedWith(PresentationError, rpcImplId);
+      impl = new PresentationRpcImpl();
     });
 
     it("throws when using invalid imodel token", async () => {
@@ -89,8 +79,133 @@ describe("PresentationRpcImpl", () => {
         imodel: testData.imodelToken,
         rulesetId: testData.rulesetId,
       };
-      const request = impl.getRootNodes(options);
-      await expect(request).to.eventually.be.rejectedWith(PresentationError);
+      await expect(impl.getRootNodes(options)).to.eventually.be.rejectedWith(PresentationError);
+    });
+
+    describe("verifyRequest", () => {
+
+      beforeEach(() => {
+        presentationManagerMock.setup((x) => x.getRootNodesCount(moq.It.isAny())).returns(async () => faker.random.number());
+      });
+
+      it("succeeds if request doesn't specify clientStateId", async () => {
+        const options: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          clientStateId: undefined,
+          imodel: testData.imodelToken,
+          rulesetId: testData.rulesetId,
+        };
+        await expect(impl.getRootNodesCount(options)).to.eventually.be.fulfilled;
+      });
+
+      it("succeeds if clientStateId in request matches curret client state id", async () => {
+        const options: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          rulesetId: testData.rulesetId,
+        };
+        await impl.syncClientState({ ...defaultRpcParams, clientStateId: options.clientStateId, state: {} });
+        await expect(impl.getRootNodesCount(options)).to.eventually.be.fulfilled;
+      });
+
+      it("throws if clientStateId in request doesn't match current client state id", async () => {
+        const options: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          clientStateId: undefined,
+          imodel: testData.imodelToken,
+          rulesetId: testData.rulesetId,
+        };
+        await impl.getRootNodesCount(options); // this sets current client state id
+        const request = impl.getRootNodesCount({ ...options, clientStateId: faker.random.uuid() });
+        await expect(request).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+      it("handles undefined clientId", async () => {
+        const options: HierarchyRpcRequestOptions = {
+          clientId: undefined,
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          rulesetId: testData.rulesetId,
+        };
+        await impl.syncClientState({ clientId: "", clientStateId: options.clientStateId, imodel: options.imodel, state: {} });
+        await expect(impl.getRootNodesCount(options)).to.eventually.be.fulfilled;
+      });
+
+    });
+
+    describe("syncClientState", () => {
+
+      it("syncs rulesets", async () => {
+        const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
+        const options: ClientStateSyncRequestOptions = {
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          state: {
+            [IRulesetManager.STATE_ID]: rulesets,
+          },
+        };
+        await impl.syncClientState(options);
+        rulesetsMock.verify((x) => x.clear(), moq.Times.once());
+        rulesets.forEach((ruleset) => rulesetsMock.verify((x) => x.add(ruleset), moq.Times.once()));
+      });
+
+      it("throws if rulesets state object is not an array", async () => {
+        const ruleset = await createRandomRuleset();
+        const options: ClientStateSyncRequestOptions = {
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          state: {
+            [IRulesetManager.STATE_ID]: ruleset,
+          },
+        };
+        await expect(impl.syncClientState(options)).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+      it("syncs ruleset vars", async () => {
+        const values: IRulesetVariablesManager.State = {
+          a: [
+            [faker.random.word(), VariableValueTypes.String, faker.random.words()],
+            [faker.random.word(), VariableValueTypes.Int, faker.random.number()],
+          ],
+          b: [
+            [faker.random.word(), VariableValueTypes.Id64, createRandomId()],
+          ],
+        };
+        const options: ClientStateSyncRequestOptions = {
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          state: {
+            [IRulesetVariablesManager.STATE_ID]: values,
+          },
+        };
+        await impl.syncClientState(options);
+        presentationManagerMock.verify((x) => x.vars("a"), moq.Times.once());
+        presentationManagerMock.verify((x) => x.vars("b"), moq.Times.once());
+        variablesMock.verify((x) => x.setValue(values.a[0][0], values.a[0][1], values.a[0][2]), moq.Times.once());
+        variablesMock.verify((x) => x.setValue(values.a[1][0], values.a[1][1], values.a[1][2]), moq.Times.once());
+        variablesMock.verify((x) => x.setValue(values.b[0][0], values.b[0][1], values.b[0][2]), moq.Times.once());
+      });
+
+      it("throws if ruleset vars state object is not an object", async () => {
+        const options: ClientStateSyncRequestOptions = {
+          clientStateId: faker.random.uuid(),
+          imodel: testData.imodelToken,
+          state: {
+            [IRulesetVariablesManager.STATE_ID]: 456,
+          },
+        };
+        await expect(impl.syncClientState(options)).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+      it("throws if clientStateId is not specified", async () => {
+        const options: ClientStateSyncRequestOptions = {
+          imodel: testData.imodelToken,
+          state: {},
+        };
+        await expect(impl.syncClientState(options)).to.eventually.be.rejectedWith(PresentationError);
+      });
+
     });
 
     describe("getRootNodes", () => {
@@ -311,125 +426,6 @@ describe("PresentationRpcImpl", () => {
           testData.inputKeys, fieldName, maximumValueCount);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(distinctValues);
-      });
-
-    });
-
-    describe("getRuleset", () => {
-
-      it("calls manager", async () => {
-        const rulesetDefinition = { id: "", rules: [] };
-        const hash = faker.random.uuid();
-        rulesetsMock.setup((x) => x.get(rulesetDefinition.id)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
-        const resultTuple = await impl.getRuleset({ ...defaultRpcParams }, rulesetDefinition.id);
-        presentationManagerMock.verifyAll();
-        expect(resultTuple![0]).to.deep.eq(rulesetDefinition);
-        expect(resultTuple![1]).to.eq(hash);
-      });
-
-      it("handles undefined response", async () => {
-        const rulesetId = faker.random.uuid();
-        rulesetsMock.setup((x) => x.get(rulesetId)).returns(async () => undefined).verifiable();
-        const resultsTuple = await impl.getRuleset({ ...defaultRpcParams }, rulesetId);
-        presentationManagerMock.verifyAll();
-        expect(resultsTuple).to.be.undefined;
-      });
-
-    });
-
-    describe("addRuleset", () => {
-
-      it("calls manager", async () => {
-        const rulesetDefinition = { id: "", rules: [] };
-        const hash = faker.random.uuid();
-        rulesetsMock.setup((x) => x.add(rulesetDefinition)).returns(async () => new RegisteredRuleset(rulesetsMock.object, rulesetDefinition, hash)).verifiable();
-        const resultHash = await impl.addRuleset({ ...defaultRpcParams }, rulesetDefinition);
-        presentationManagerMock.verifyAll();
-        expect(resultHash).to.eq(hash);
-      });
-
-    });
-
-    describe("addRulesets", () => {
-
-      it("calls manager", async () => {
-        const rulesets = await Promise.all([createRandomRuleset(), createRandomRuleset()]);
-        const hashes = [faker.random.uuid(), faker.random.uuid()];
-        rulesets.forEach((ruleset, index) => {
-          rulesetsMock.setup((x) => x.add(ruleset))
-            .returns(async () => new RegisteredRuleset(rulesetsMock.object, ruleset, hashes[index]))
-            .verifiable();
-        });
-        const resultHashes = await impl.addRulesets({ ...defaultRpcParams }, rulesets);
-        presentationManagerMock.verifyAll();
-        expect(resultHashes).to.deep.eq(hashes);
-      });
-
-    });
-
-    describe("removeRuleset", () => {
-
-      it("calls manager", async () => {
-        const rulesetId = faker.random.uuid();
-        const hash = faker.random.uuid();
-        rulesetsMock.setup((x) => x.remove([rulesetId, hash])).returns(async () => true).verifiable();
-        const result = await impl.removeRuleset({ ...defaultRpcParams }, rulesetId, hash);
-        presentationManagerMock.verifyAll();
-        expect(result).to.be.true;
-      });
-
-    });
-
-    describe("clearRulesets", () => {
-
-      it("calls manager", async () => {
-        rulesetsMock.setup((x) => x.clear()).verifiable();
-        await impl.clearRulesets({ ...defaultRpcParams });
-        presentationManagerMock.verifyAll();
-      });
-
-    });
-
-    describe("getRulesetVariableValue", () => {
-
-      it("calls variables manager", async () => {
-        const rulesetId = faker.random.word();
-        const varId = faker.random.word();
-        const value = faker.random.word();
-        variablesMock.setup((x) => x.getValue(varId, VariableValueTypes.String))
-          .returns(async () => value)
-          .verifiable();
-        const result = await impl.getRulesetVariableValue({ ...defaultRpcParams, rulesetId }, varId, VariableValueTypes.String);
-        variablesMock.verifyAll();
-        expect(result).to.equal(value);
-      });
-
-    });
-
-    describe("setRulesetVariableValue", () => {
-
-      it("calls variables manager", async () => {
-        const rulesetId = faker.random.word();
-        const varId = faker.random.word();
-        const value = faker.random.word();
-        await impl.setRulesetVariableValue({ ...defaultRpcParams, rulesetId }, varId, VariableValueTypes.String, value);
-        variablesMock.verify((x) => x.setValue(varId, VariableValueTypes.String, value), moq.Times.once());
-      });
-
-    });
-
-    describe("setRulesetVariableValues", () => {
-
-      it("calls variables manager", async () => {
-        const rulesetId = faker.random.word();
-        const values: Array<[string, VariableValueTypes, VariableValue]> = [
-          [faker.random.word(), VariableValueTypes.String, faker.random.words()],
-          [faker.random.word(), VariableValueTypes.Int, faker.random.number()],
-        ];
-        variablesMock.setup((x) => x.setValue(values[0][0], values[0][1], values[0][2] as string)).returns(() => Promise.resolve()).verifiable();
-        variablesMock.setup((x) => x.setValue(values[1][0], values[1][1], values[1][2] as number)).returns(() => Promise.resolve()).verifiable();
-        await impl.setRulesetVariableValues({ ...defaultRpcParams, rulesetId }, values);
-        variablesMock.verifyAll();
       });
 
     });
