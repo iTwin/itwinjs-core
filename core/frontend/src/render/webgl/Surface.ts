@@ -6,7 +6,8 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceType } from "../primitives/VertexTable";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
 import { VertexLUT } from "./VertexLUT";
 import { System } from "./System";

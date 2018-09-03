@@ -5,7 +5,19 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Range2d, Point2d } from "@bentley/geometry-core";
-import { ColorDef, ColorIndex, FeatureIndex, QPoint2d, QParams2d, QParams3d, FeatureIndexType } from "@bentley/imodeljs-common";
+import {
+  ColorDef,
+  ColorIndex,
+  FeatureIndex,
+  QPoint2d,
+  QParams2d,
+  QParams3d,
+  FeatureIndexType,
+  FillFlags,
+  RenderTexture,
+  RenderMaterial,
+  LinePixels,
+} from "@bentley/imodeljs-common";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
 
@@ -153,7 +165,7 @@ export class VertexTable implements VertexTableProps {
     this.uvParams = props.uvParams;
   }
 
-  private static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
+  public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
     const { numVertices, numRgbaPerVertex } = builder;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
     const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors);
@@ -182,37 +194,6 @@ export class VertexTable implements VertexTableProps {
       featureIndexType: featureIndex.type,
       uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
     });
-  }
-
-  /** Create a VertexTable from a triangle mesh. */
-  public static createForMesh(args: MeshArgs): VertexTable {
-    const isLit = undefined !== args.normals && 0 < args.normals.length;
-    const isTextured = undefined !== args.texture;
-
-    let builder: VertexTableBuilder;
-    let uvParams: QParams2d | undefined;
-
-    if (isTextured) {
-      const uvRange = Range2d.createNull();
-      const fpts = args.textureUv;
-      const pt2d = new Point2d();
-      if (undefined !== fpts && fpts.length > 0)
-        for (let i = 0; i < args.points!.length; i++)
-          uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
-
-      uvParams = QParams2d.fromRange(uvRange);
-    }
-
-    if (isLit && isTextured)
-      builder = new TexturedLitMeshBuilder(args, uvParams!);
-    else if (isLit)
-      builder = new LitMeshBuilder(args);
-    else if (isTextured)
-      builder = new TexturedMeshBuilder(args, uvParams!);
-    else
-      builder = new MeshBuilder(args);
-
-    return this.buildFrom(builder, args.colors, args.features);
   }
 
   public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
@@ -261,8 +242,114 @@ export class PointStringParams {
   }
 }
 
+export const enum SurfaceType {
+    Unlit,
+    Lit,
+    Textured,
+    TexturedLit,
+    Classifier,
+}
+
+export interface SurfaceParams {
+  readonly type: SurfaceType;
+  readonly indices: VertexIndices;
+  readonly fillFlags: FillFlags;
+  readonly hasBakedLighting: boolean;
+  readonly texture?: RenderTexture;
+  readonly material?: RenderMaterial;
+}
+
+/**
+ * Describes a set of line segments representing edges of a mesh.
+ * Each segment is expanded into a quad defined by two triangles.
+ * The positions are adjusted in the shader to account for the edge width.
+ */
+export interface SegmentEdgeParams {
+  /** The 24-bit indices of the tesselated line segment */
+  readonly indices: VertexIndices;
+  /**
+   * For each 24-bit index, 4 bytes:
+   * the 24-bit index of the vertex at the other end of the segment, followed by
+   * an 8-bit 'quad index' in [0..3] indicating which point in the expanded quad the vertex represents.
+   */
+  readonly endPointAndQuadIndices: Uint8Array;
+}
+
+/**
+ * A set of line segments representing edges of curved portions of a mesh.
+ * Each vertex is augmented with a pair of oct-encoded normals used in the shader
+ * to determine whether or not the edge should be displayed.
+ */
+export interface SilhouetteParams extends SegmentEdgeParams {
+  /** Per index, 2 16-bit oct-encoded normals */
+  readonly normalPairs: Uint8Array;
+}
+
+/**
+ * Describes chains of edges of a mesh.
+ * Each chain consists of 2 or more vertices.
+ * The chains are triangulated, with joint triangles injected between segments to support rounded corners.
+ * Polyline edges are typically only used for 2d graphics, or for 3d shapes with explicitly wide edges.
+ */
+export interface PolylineEdgeParams {
+  /* ###TODO */
+}
+
+/** Describes the edges of a mesh. */
+export interface EdgeParams {
+  /** The edge width in pixels. */
+  readonly weight: number;
+  /** The line pattern in which edges are drawn. */
+  readonly linePixels: LinePixels;
+  /** Simple single-segment edges, always displayed when edge display is enabled. */
+  readonly segments?: SegmentEdgeParams;
+  /** Single-segment edges of curved surfaces, displayed based on edge normal relative to eye. */
+  readonly silhouettes?: SilhouetteParams;
+  /** Polyline edges, always displayed when edge display is enabled. */
+  readonly polylines?: PolylineEdgeParams;
+}
+
+/**
+ * Describes mesh geometry to be submitted to the rendering system.
+ * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.
+ * The surface and edges all refer to the same vertex table.
+ */
+export class MeshParams {
+  public readonly vertices: VertexTable;
+  public readonly surface: SurfaceParams;
+  public readonly edges?: EdgeParams;
+  public readonly isPlanar: boolean;
+
+  /** Directly construct a MeshParams. The MeshParams takes ownership of all input data. */
+  public constructor(vertices: VertexTable, surface: SurfaceParams, edges?: EdgeParams, isPlanar?: boolean) {
+    this.vertices = vertices;
+    this.surface = surface;
+    this.edges = edges;
+    this.isPlanar = true === isPlanar;
+  }
+
+  /** Construct from a MeshArgs. */
+  public static create(args: MeshArgs): MeshParams {
+    const builder = MeshBuilder.create(args);
+    const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
+    const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
+    const surface: SurfaceParams = {
+      type: builder.type,
+      indices: surfaceIndices,
+      fillFlags: args.fillFlags,
+      hasBakedLighting: args.hasBakedLighting,
+      texture: args.texture,
+      material: args.material,
+    };
+
+    // ###TODO: edges...
+
+    return new MeshParams(vertices, surface, undefined, args.isPlanar);
+  }
+}
+
 /** Builds a VertexTable from some data type supplying the vertex data. */
-abstract class VertexTableBuilder {
+export abstract class VertexTableBuilder {
   public data?: Uint8Array;
   private _curIndex: number = 0;
 
@@ -389,7 +476,38 @@ class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
 
 /** Supplies vertex data from a MeshArgs. */
 class MeshBuilder extends SimpleBuilder<MeshArgs> {
-  public constructor(args: MeshArgs) { super(args); }
+  public readonly type: SurfaceType;
+
+  protected constructor(args: MeshArgs, type: SurfaceType) {
+    super(args);
+    this.type = type;
+  }
+
+  public static create(args: MeshArgs): MeshBuilder {
+    if (args.asClassifier)
+      return new MeshBuilder(args, SurfaceType.Classifier);
+
+    const isLit = undefined !== args.normals && 0 < args.normals.length;
+    const isTextured = undefined !== args.texture;
+
+    let uvParams: QParams2d | undefined;
+
+    if (isTextured) {
+      const uvRange = Range2d.createNull();
+      const fpts = args.textureUv;
+      const pt2d = new Point2d();
+      if (undefined !== fpts && fpts.length > 0)
+        for (let i = 0; i < args.points!.length; i++)
+          uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+
+      uvParams = QParams2d.fromRange(uvRange);
+    }
+
+    if (isLit)
+      return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+    else
+      return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
+  }
 }
 
 /** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
@@ -400,8 +518,8 @@ class TexturedMeshBuilder extends MeshBuilder {
   private _qparams: QParams2d;
   private _qpoint = new QPoint2d();
 
-  public constructor(args: MeshArgs, qparams: QParams2d) {
-    super(args);
+  public constructor(args: MeshArgs, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
+    super(args, type);
     this._qparams = qparams;
     assert(undefined !== args.textureUv);
   }
@@ -428,7 +546,7 @@ class TexturedMeshBuilder extends MeshBuilder {
 /** As with TexturedMeshBuilder, but the color index is replaced with the oct-encoded normal value. */
 class TexturedLitMeshBuilder extends TexturedMeshBuilder {
   public constructor(args: MeshArgs, qparams: QParams2d) {
-    super(args, qparams);
+    super(args, qparams, SurfaceType.TexturedLit);
     assert(undefined !== args.normals);
   }
 
@@ -438,7 +556,7 @@ class TexturedLitMeshBuilder extends TexturedMeshBuilder {
 /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
 class LitMeshBuilder extends MeshBuilder {
   public constructor(args: MeshArgs) {
-    super(args);
+    super(args, SurfaceType.Lit);
     assert(undefined !== args.normals);
   }
 

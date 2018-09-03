@@ -4,10 +4,11 @@
 /** @module WebGL */
 
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
+import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { SurfaceType } from "../primitives/VertexTable";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { Graphic, wantJointTriangles, Batch } from "./Graphic";
