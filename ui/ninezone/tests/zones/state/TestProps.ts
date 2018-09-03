@@ -455,7 +455,7 @@ export namespace TestProps {
         ...defaultProps.zones[9],
         widgets: [],
         anchor: HorizontalAnchor.Left,
-      }
+      },
     },
   };
 }

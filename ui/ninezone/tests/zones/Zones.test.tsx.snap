@@ -1997,3 +1997,4927 @@ exports[`<Zones /> renders correctly 172`] = `
   className="nz-zones-zones"
 />
 `;
+
+exports[`<Zones /> renders correctly 173`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 174`] = `
+<div
+  className="nz-backstage-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 175`] = `
+<div
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 176`] = `
+<div
+  className="nz-backstage-item nz-is-active"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 177`] = `
+<div
+  className="nz-backstage-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 178`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 179`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;
+
+exports[`<Zones /> renders correctly 180`] = `""`;
+
+exports[`<Zones /> renders correctly 181`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 182`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 183`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 184`] = `
+<div
+  className="nz-footer-messageCenter-message"
+/>
+`;
+
+exports[`<Zones /> renders correctly 185`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <Unknown
+      content={
+        <Unknown
+          messages={undefined}
+          tabs={undefined}
+        />
+      }
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 186`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
+
+exports[`<Zones /> renders correctly 187`] = `
+<div
+  className="nz-footer-message-activity"
+/>
+`;
+
+exports[`<Zones /> renders correctly 188`] = `<Portal />`;
+
+exports[`<Zones /> renders correctly 189`] = `
+<Component
+  className="nz-footer-message-sticky"
+/>
+`;
+
+exports[`<Zones /> renders correctly 190`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;
+
+exports[`<Zones /> renders correctly 191`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 192`] = `
+<Component
+  className="nz-footer-snapMode-dialog"
+  content={
+    <UNDEFINED>
+      <div
+        className="nz-title"
+      />
+      <div
+        className="nz-snaps"
+      />
+    </UNDEFINED>
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 193`] = `<div />`;
+
+exports[`<Zones /> renders correctly 194`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 195`] = `
+<div
+  className="nz-footer-snapMode-snap"
+  onClick={[Function]}
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 196`] = `
+<div
+  className="nz-footer-toolAssistance-content"
+/>
+`;
+
+exports[`<Zones /> renders correctly 197`] = `
+<Component
+  className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 198`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-icons"
+    />
+    <span
+      className="nz-step-string"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 199`] = `
+<div
+  className="nz-footer-toolAssistance-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 200`] = `
+<div
+  className="nz-footer-toolAssistance-separator"
+>
+  <div
+    className="nz-label"
+  />
+  <div
+    className="nz-separator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 201`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 202`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;
+
+exports[`<Zones /> renders correctly 203`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 204`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 205`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+>
+  <MouseTracker
+    onCoordinatesChange={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 206`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-app"
+>
+  <div
+    className="nz-bars"
+  >
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+  </div>
+</ToolbarIcon>
+`;
+
+exports[`<Zones /> renders correctly 207`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-back"
+/>
+`;
+
+exports[`<Zones /> renders correctly 208`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+  <Portal />
+  <Portal />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 209`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow"
+/>
+`;
+
+exports[`<Zones /> renders correctly 210`] = `
+<div
+  className="nz-toolbar-item-expandable-group-column"
+/>
+`;
+
+exports[`<Zones /> renders correctly 211`] = `
+<div
+  className="nz-toolbar-item-expandable-group-columns"
+/>
+`;
+
+exports[`<Zones /> renders correctly 212`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 213`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 214`] = `
+<div
+  className="nz-toolbar-item-expandable-group-panel"
+/>
+`;
+
+exports[`<Zones /> renders correctly 215`] = `
+<div
+  className="nz-toolbar-item-expandable-group-title"
+/>
+`;
+
+exports[`<Zones /> renders correctly 216`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 217`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 218`] = `
+<HistoryItem
+  className="nz-toolbar-item-expandable-history-icon"
+/>
+`;
+
+exports[`<Zones /> renders correctly 219`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 220`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-is-active"
+/>
+`;
+
+exports[`<Zones /> renders correctly 221`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 222`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 223`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 224`] = `
+<Item
+  className="nz-toolbar-item-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</Item>
+`;
+
+exports[`<Zones /> renders correctly 225`] = `
+<div
+  className="nz-toolbar-item-item"
+>
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 226`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;
+
+exports[`<Zones /> renders correctly 227`] = `
+<div
+  className="nz-toolbar-scroll-chevron nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 228`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 229`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 230`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 231`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 232`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  panelAlignment={1}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 233`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Zones /> renders correctly 234`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 235`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 236`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 237`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 238`] = `
+<div
+  className="nz-widget-rectangular-content"
+>
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 239`] = `
+<PointerCaptor
+  className="nz-widget-rectangular-resizeGrip nz-direction-ew"
+  direction={0}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 240`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;
+
+exports[`<Zones /> renders correctly 241`] = `
+<div
+  className="nz-widget-rectangular-tab-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 242`] = `
+<div
+  className="nz-widget-rectangular-tab-tab"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 243`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 244`] = `
+<Settings
+  className="nz-widget-toolSettings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <div
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;
+
+exports[`<Zones /> renders correctly 245`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 246`] = `
+<div
+  className="nz-widget-toolSettings-settings"
+/>
+`;
+
+exports[`<Zones /> renders correctly 247`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 248`] = `
+<div
+  className="nz-widget-tools"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 249`] = `
+<Component
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-footer"
+/>
+`;
+
+exports[`<Zones /> renders correctly 250`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zones /> renders correctly 251`] = `
+<Target
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 252`] = `
+<div
+  className="nz-zones-target-container"
+/>
+`;
+
+exports[`<Zones /> renders correctly 253`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 254`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 255`] = `
+<div
+  className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zones /> renders correctly 256`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;
+
+exports[`<Zones /> renders correctly 257`] = `
+<div
+  className="nz-backstage-backstage"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 258`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 259`] = `
+<div
+  className="nz-backstage-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 260`] = `
+<div
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 261`] = `
+<div
+  className="nz-backstage-item nz-is-active"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 262`] = `
+<div
+  className="nz-backstage-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 263`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 264`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;
+
+exports[`<Zones /> renders correctly 265`] = `""`;
+
+exports[`<Zones /> renders correctly 266`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 267`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 268`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 269`] = `
+<div
+  className="nz-footer-messageCenter-message"
+/>
+`;
+
+exports[`<Zones /> renders correctly 270`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <Unknown
+      content={
+        <Unknown
+          messages={undefined}
+          tabs={undefined}
+        />
+      }
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 271`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
+
+exports[`<Zones /> renders correctly 272`] = `
+<div
+  className="nz-footer-message-activity"
+/>
+`;
+
+exports[`<Zones /> renders correctly 273`] = `<Portal />`;
+
+exports[`<Zones /> renders correctly 274`] = `
+<Component
+  className="nz-footer-message-sticky"
+/>
+`;
+
+exports[`<Zones /> renders correctly 275`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;
+
+exports[`<Zones /> renders correctly 276`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 277`] = `
+<Component
+  className="nz-footer-snapMode-dialog"
+  content={
+    <UNDEFINED>
+      <div
+        className="nz-title"
+      />
+      <div
+        className="nz-snaps"
+      />
+    </UNDEFINED>
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 278`] = `<div />`;
+
+exports[`<Zones /> renders correctly 279`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 280`] = `
+<div
+  className="nz-footer-snapMode-snap"
+  onClick={[Function]}
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 281`] = `
+<div
+  className="nz-footer-toolAssistance-content"
+/>
+`;
+
+exports[`<Zones /> renders correctly 282`] = `
+<Component
+  className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 283`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-icons"
+    />
+    <span
+      className="nz-step-string"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 284`] = `
+<div
+  className="nz-footer-toolAssistance-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 285`] = `
+<div
+  className="nz-footer-toolAssistance-separator"
+>
+  <div
+    className="nz-label"
+  />
+  <div
+    className="nz-separator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 286`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 287`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;
+
+exports[`<Zones /> renders correctly 288`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 289`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 290`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+>
+  <MouseTracker
+    onCoordinatesChange={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 291`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-app"
+>
+  <div
+    className="nz-bars"
+  >
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+  </div>
+</ToolbarIcon>
+`;
+
+exports[`<Zones /> renders correctly 292`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-back"
+/>
+`;
+
+exports[`<Zones /> renders correctly 293`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+  <Portal />
+  <Portal />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 294`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow"
+/>
+`;
+
+exports[`<Zones /> renders correctly 295`] = `
+<div
+  className="nz-toolbar-item-expandable-group-column"
+/>
+`;
+
+exports[`<Zones /> renders correctly 296`] = `
+<div
+  className="nz-toolbar-item-expandable-group-columns"
+/>
+`;
+
+exports[`<Zones /> renders correctly 297`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 298`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 299`] = `
+<div
+  className="nz-toolbar-item-expandable-group-panel"
+/>
+`;
+
+exports[`<Zones /> renders correctly 300`] = `
+<div
+  className="nz-toolbar-item-expandable-group-title"
+/>
+`;
+
+exports[`<Zones /> renders correctly 301`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 302`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 303`] = `
+<HistoryItem
+  className="nz-toolbar-item-expandable-history-icon"
+/>
+`;
+
+exports[`<Zones /> renders correctly 304`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 305`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-is-active"
+/>
+`;
+
+exports[`<Zones /> renders correctly 306`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 307`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 308`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 309`] = `
+<Item
+  className="nz-toolbar-item-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</Item>
+`;
+
+exports[`<Zones /> renders correctly 310`] = `
+<div
+  className="nz-toolbar-item-item"
+>
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 311`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;
+
+exports[`<Zones /> renders correctly 312`] = `
+<div
+  className="nz-toolbar-scroll-chevron nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 313`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 314`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 315`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 316`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 317`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  panelAlignment={1}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 318`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Zones /> renders correctly 319`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 320`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 321`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 322`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 323`] = `
+<div
+  className="nz-widget-rectangular-content"
+>
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 324`] = `
+<PointerCaptor
+  className="nz-widget-rectangular-resizeGrip nz-direction-ew"
+  direction={0}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 325`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;
+
+exports[`<Zones /> renders correctly 326`] = `
+<div
+  className="nz-widget-rectangular-tab-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 327`] = `
+<div
+  className="nz-widget-rectangular-tab-tab"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 328`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 329`] = `
+<Settings
+  className="nz-widget-toolSettings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <div
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;
+
+exports[`<Zones /> renders correctly 330`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 331`] = `
+<div
+  className="nz-widget-toolSettings-settings"
+/>
+`;
+
+exports[`<Zones /> renders correctly 332`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 333`] = `
+<div
+  className="nz-widget-tools"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 334`] = `
+<Component
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-footer"
+/>
+`;
+
+exports[`<Zones /> renders correctly 335`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zones /> renders correctly 336`] = `
+<Target
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 337`] = `
+<div
+  className="nz-zones-target-container"
+/>
+`;
+
+exports[`<Zones /> renders correctly 338`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 339`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 340`] = `
+<div
+  className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zones /> renders correctly 341`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;
+
+exports[`<Zones /> renders correctly 342`] = `
+<div
+  className="nz-backstage-backstage"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 343`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 344`] = `
+<div
+  className="nz-backstage-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 345`] = `
+<div
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 346`] = `
+<div
+  className="nz-backstage-item nz-is-active"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 347`] = `
+<div
+  className="nz-backstage-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 348`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 349`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;
+
+exports[`<Zones /> renders correctly 350`] = `""`;
+
+exports[`<Zones /> renders correctly 351`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 352`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 353`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 354`] = `
+<div
+  className="nz-footer-messageCenter-message"
+/>
+`;
+
+exports[`<Zones /> renders correctly 355`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <Unknown
+      content={
+        <Unknown
+          messages={undefined}
+          tabs={undefined}
+        />
+      }
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 356`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
+
+exports[`<Zones /> renders correctly 357`] = `
+<div
+  className="nz-footer-message-activity"
+/>
+`;
+
+exports[`<Zones /> renders correctly 358`] = `<Portal />`;
+
+exports[`<Zones /> renders correctly 359`] = `
+<Component
+  className="nz-footer-message-sticky"
+/>
+`;
+
+exports[`<Zones /> renders correctly 360`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;
+
+exports[`<Zones /> renders correctly 361`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 362`] = `
+<Component
+  className="nz-footer-snapMode-dialog"
+  content={
+    <UNDEFINED>
+      <div
+        className="nz-title"
+      />
+      <div
+        className="nz-snaps"
+      />
+    </UNDEFINED>
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 363`] = `<div />`;
+
+exports[`<Zones /> renders correctly 364`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 365`] = `
+<div
+  className="nz-footer-snapMode-snap"
+  onClick={[Function]}
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 366`] = `
+<div
+  className="nz-footer-toolAssistance-content"
+/>
+`;
+
+exports[`<Zones /> renders correctly 367`] = `
+<Component
+  className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 368`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-icons"
+    />
+    <span
+      className="nz-step-string"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 369`] = `
+<div
+  className="nz-footer-toolAssistance-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 370`] = `
+<div
+  className="nz-footer-toolAssistance-separator"
+>
+  <div
+    className="nz-label"
+  />
+  <div
+    className="nz-separator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 371`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 372`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;
+
+exports[`<Zones /> renders correctly 373`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 374`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 375`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+>
+  <MouseTracker
+    onCoordinatesChange={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 376`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-app"
+>
+  <div
+    className="nz-bars"
+  >
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+  </div>
+</ToolbarIcon>
+`;
+
+exports[`<Zones /> renders correctly 377`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-back"
+/>
+`;
+
+exports[`<Zones /> renders correctly 378`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+  <Portal />
+  <Portal />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 379`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow"
+/>
+`;
+
+exports[`<Zones /> renders correctly 380`] = `
+<div
+  className="nz-toolbar-item-expandable-group-column"
+/>
+`;
+
+exports[`<Zones /> renders correctly 381`] = `
+<div
+  className="nz-toolbar-item-expandable-group-columns"
+/>
+`;
+
+exports[`<Zones /> renders correctly 382`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 383`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 384`] = `
+<div
+  className="nz-toolbar-item-expandable-group-panel"
+/>
+`;
+
+exports[`<Zones /> renders correctly 385`] = `
+<div
+  className="nz-toolbar-item-expandable-group-title"
+/>
+`;
+
+exports[`<Zones /> renders correctly 386`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 387`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 388`] = `
+<HistoryItem
+  className="nz-toolbar-item-expandable-history-icon"
+/>
+`;
+
+exports[`<Zones /> renders correctly 389`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 390`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-is-active"
+/>
+`;
+
+exports[`<Zones /> renders correctly 391`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 392`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 393`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 394`] = `
+<Item
+  className="nz-toolbar-item-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</Item>
+`;
+
+exports[`<Zones /> renders correctly 395`] = `
+<div
+  className="nz-toolbar-item-item"
+>
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 396`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;
+
+exports[`<Zones /> renders correctly 397`] = `
+<div
+  className="nz-toolbar-scroll-chevron nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 398`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 399`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 400`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 401`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 402`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  panelAlignment={1}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 403`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Zones /> renders correctly 404`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 405`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 406`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 407`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 408`] = `
+<div
+  className="nz-widget-rectangular-content"
+>
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 409`] = `
+<PointerCaptor
+  className="nz-widget-rectangular-resizeGrip nz-direction-ew"
+  direction={0}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 410`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;
+
+exports[`<Zones /> renders correctly 411`] = `
+<div
+  className="nz-widget-rectangular-tab-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 412`] = `
+<div
+  className="nz-widget-rectangular-tab-tab"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 413`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 414`] = `
+<Settings
+  className="nz-widget-toolSettings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <div
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;
+
+exports[`<Zones /> renders correctly 415`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 416`] = `
+<div
+  className="nz-widget-toolSettings-settings"
+/>
+`;
+
+exports[`<Zones /> renders correctly 417`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 418`] = `
+<div
+  className="nz-widget-tools"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 419`] = `
+<Component
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-footer"
+/>
+`;
+
+exports[`<Zones /> renders correctly 420`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zones /> renders correctly 421`] = `
+<Target
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 422`] = `
+<div
+  className="nz-zones-target-container"
+/>
+`;
+
+exports[`<Zones /> renders correctly 423`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 424`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 425`] = `
+<div
+  className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zones /> renders correctly 426`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;
+
+exports[`<Zones /> renders correctly 427`] = `
+<div
+  className="nz-backstage-backstage"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 428`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 429`] = `
+<div
+  className="nz-backstage-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 430`] = `
+<div
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 431`] = `
+<div
+  className="nz-backstage-item nz-is-active"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 432`] = `
+<div
+  className="nz-backstage-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 433`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 434`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;
+
+exports[`<Zones /> renders correctly 435`] = `""`;
+
+exports[`<Zones /> renders correctly 436`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 437`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 438`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 439`] = `
+<div
+  className="nz-footer-messageCenter-message"
+/>
+`;
+
+exports[`<Zones /> renders correctly 440`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <Unknown
+      content={
+        <Unknown
+          messages={undefined}
+          tabs={undefined}
+        />
+      }
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 441`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
+
+exports[`<Zones /> renders correctly 442`] = `
+<div
+  className="nz-footer-message-activity"
+/>
+`;
+
+exports[`<Zones /> renders correctly 443`] = `<Portal />`;
+
+exports[`<Zones /> renders correctly 444`] = `
+<Component
+  className="nz-footer-message-sticky"
+/>
+`;
+
+exports[`<Zones /> renders correctly 445`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;
+
+exports[`<Zones /> renders correctly 446`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 447`] = `
+<Component
+  className="nz-footer-snapMode-dialog"
+  content={
+    <UNDEFINED>
+      <div
+        className="nz-title"
+      />
+      <div
+        className="nz-snaps"
+      />
+    </UNDEFINED>
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 448`] = `<div />`;
+
+exports[`<Zones /> renders correctly 449`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 450`] = `
+<div
+  className="nz-footer-snapMode-snap"
+  onClick={[Function]}
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 451`] = `
+<div
+  className="nz-footer-toolAssistance-content"
+/>
+`;
+
+exports[`<Zones /> renders correctly 452`] = `
+<Component
+  className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 453`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-icons"
+    />
+    <span
+      className="nz-step-string"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 454`] = `
+<div
+  className="nz-footer-toolAssistance-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 455`] = `
+<div
+  className="nz-footer-toolAssistance-separator"
+>
+  <div
+    className="nz-label"
+  />
+  <div
+    className="nz-separator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 456`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 457`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;
+
+exports[`<Zones /> renders correctly 458`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 459`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 460`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+>
+  <MouseTracker
+    onCoordinatesChange={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 461`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-app"
+>
+  <div
+    className="nz-bars"
+  >
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+  </div>
+</ToolbarIcon>
+`;
+
+exports[`<Zones /> renders correctly 462`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-back"
+/>
+`;
+
+exports[`<Zones /> renders correctly 463`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+  <Portal />
+  <Portal />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 464`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow"
+/>
+`;
+
+exports[`<Zones /> renders correctly 465`] = `
+<div
+  className="nz-toolbar-item-expandable-group-column"
+/>
+`;
+
+exports[`<Zones /> renders correctly 466`] = `
+<div
+  className="nz-toolbar-item-expandable-group-columns"
+/>
+`;
+
+exports[`<Zones /> renders correctly 467`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 468`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 469`] = `
+<div
+  className="nz-toolbar-item-expandable-group-panel"
+/>
+`;
+
+exports[`<Zones /> renders correctly 470`] = `
+<div
+  className="nz-toolbar-item-expandable-group-title"
+/>
+`;
+
+exports[`<Zones /> renders correctly 471`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 472`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 473`] = `
+<HistoryItem
+  className="nz-toolbar-item-expandable-history-icon"
+/>
+`;
+
+exports[`<Zones /> renders correctly 474`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 475`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-is-active"
+/>
+`;
+
+exports[`<Zones /> renders correctly 476`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 477`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 478`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 479`] = `
+<Item
+  className="nz-toolbar-item-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</Item>
+`;
+
+exports[`<Zones /> renders correctly 480`] = `
+<div
+  className="nz-toolbar-item-item"
+>
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 481`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;
+
+exports[`<Zones /> renders correctly 482`] = `
+<div
+  className="nz-toolbar-scroll-chevron nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 483`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 484`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 485`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 486`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 487`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  panelAlignment={1}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 488`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Zones /> renders correctly 489`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 490`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 491`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 492`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 493`] = `
+<div
+  className="nz-widget-rectangular-content"
+>
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 494`] = `
+<PointerCaptor
+  className="nz-widget-rectangular-resizeGrip nz-direction-ew"
+  direction={0}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 495`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;
+
+exports[`<Zones /> renders correctly 496`] = `
+<div
+  className="nz-widget-rectangular-tab-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 497`] = `
+<div
+  className="nz-widget-rectangular-tab-tab"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 498`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 499`] = `
+<Settings
+  className="nz-widget-toolSettings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <div
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;
+
+exports[`<Zones /> renders correctly 500`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 501`] = `
+<div
+  className="nz-widget-toolSettings-settings"
+/>
+`;
+
+exports[`<Zones /> renders correctly 502`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 503`] = `
+<div
+  className="nz-widget-tools"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 504`] = `
+<Component
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-footer"
+/>
+`;
+
+exports[`<Zones /> renders correctly 505`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zones /> renders correctly 506`] = `
+<Target
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 507`] = `
+<div
+  className="nz-zones-target-container"
+/>
+`;
+
+exports[`<Zones /> renders correctly 508`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 509`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 510`] = `
+<div
+  className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zones /> renders correctly 511`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;
+
+exports[`<Zones /> renders correctly 512`] = `
+<div
+  className="nz-backstage-backstage"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 513`] = `
+<div
+  className="nz-backstage-backstage nz-is-open"
+  onClick={[Function]}
+>
+  <div
+    className="nz-items"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 514`] = `
+<div
+  className="nz-backstage-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 515`] = `
+<div
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 516`] = `
+<div
+  className="nz-backstage-item nz-is-active"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 517`] = `
+<div
+  className="nz-backstage-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 518`] = `
+<div
+  className="nz-base-pointerCaptor"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 519`] = `
+<svg
+  className="nz-base-svgSprite"
+  height="100%"
+  width="100%"
+>
+  <use
+    xlinkHref="#test-sprite"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+  />
+</svg>
+`;
+
+exports[`<Zones /> renders correctly 520`] = `""`;
+
+exports[`<Zones /> renders correctly 521`] = `
+<div
+  className="nz-footer-footer"
+>
+  <div
+    className="nz-message"
+  />
+  <div
+    className="nz-indicators"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 522`] = `
+<div
+  className="nz-footer-messageCenter-content"
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 523`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
+  <span
+    className="nz-label"
+  />
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+      onClick={[Function]}
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 524`] = `
+<div
+  className="nz-footer-messageCenter-message"
+/>
+`;
+
+exports[`<Zones /> renders correctly 525`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <Unknown
+      content={
+        <Unknown
+          messages={undefined}
+          tabs={undefined}
+        />
+      }
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 526`] = `
+<div
+  className="nz-footer-messageCenter-tab"
+/>
+`;
+
+exports[`<Zones /> renders correctly 527`] = `
+<div
+  className="nz-footer-message-activity"
+/>
+`;
+
+exports[`<Zones /> renders correctly 528`] = `<Portal />`;
+
+exports[`<Zones /> renders correctly 529`] = `
+<Component
+  className="nz-footer-message-sticky"
+/>
+`;
+
+exports[`<Zones /> renders correctly 530`] = `
+<div
+  className="nz-footer-message-temporary"
+/>
+`;
+
+exports[`<Zones /> renders correctly 531`] = `
+<Component
+  className="nz-footer-message-toast nz-stage-visible"
+>
+  <div
+    className="nz-toast"
+    onTransitionEnd={[Function]}
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 532`] = `
+<Component
+  className="nz-footer-snapMode-dialog"
+  content={
+    <UNDEFINED>
+      <div
+        className="nz-title"
+      />
+      <div
+        className="nz-snaps"
+      />
+    </UNDEFINED>
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 533`] = `<div />`;
+
+exports[`<Zones /> renders correctly 534`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 535`] = `
+<div
+  className="nz-footer-snapMode-snap"
+  onClick={[Function]}
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 536`] = `
+<div
+  className="nz-footer-toolAssistance-content"
+/>
+`;
+
+exports[`<Zones /> renders correctly 537`] = `
+<Component
+  className="nz-footer-toolAssistance-dialog"
+  content={
+    <Unknown
+      content={<ToolAssistanceContent />}
+      titleBar={
+        <Unknown
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;
+
+exports[`<Zones /> renders correctly 538`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-icons"
+    />
+    <span
+      className="nz-step-string"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 539`] = `
+<div
+  className="nz-footer-toolAssistance-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 540`] = `
+<div
+  className="nz-footer-toolAssistance-separator"
+>
+  <div
+    className="nz-label"
+  />
+  <div
+    className="nz-separator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 541`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 542`] = `
+<div
+  className="nz-popup-popover-popover nz-direction-right"
+/>
+`;
+
+exports[`<Zones /> renders correctly 543`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={0}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 544`] = `
+<Component
+  className="nz-popup-popover-triangle"
+  direction={3}
+>
+  <div
+    className="nz-content"
+  />
+  <div
+    className="nz-triangle"
+  />
+</Component>
+`;
+
+exports[`<Zones /> renders correctly 545`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+>
+  <MouseTracker
+    onCoordinatesChange={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 546`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-app"
+>
+  <div
+    className="nz-bars"
+  >
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+    <div
+      className="nz-bar"
+    />
+  </div>
+</ToolbarIcon>
+`;
+
+exports[`<Zones /> renders correctly 547`] = `
+<ToolbarIcon
+  className="nz-toolbar-button-back"
+/>
+`;
+
+exports[`<Zones /> renders correctly 548`] = `
+<div
+  className="nz-toolbar-item-expandable-expandable"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-triangle"
+  />
+  <Portal />
+  <Portal />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 549`] = `
+<div
+  className="nz-toolbar-item-expandable-group-backArrow"
+/>
+`;
+
+exports[`<Zones /> renders correctly 550`] = `
+<div
+  className="nz-toolbar-item-expandable-group-column"
+/>
+`;
+
+exports[`<Zones /> renders correctly 551`] = `
+<div
+  className="nz-toolbar-item-expandable-group-columns"
+/>
+`;
+
+exports[`<Zones /> renders correctly 552`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-group"
+>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 553`] = `
+<Panel
+  className="nz-toolbar-item-expandable-group-nested"
+>
+  <div
+    className="nz-back-arrow-container"
+  >
+    <BackArrow />
+  </div>
+  <Title />
+  <Columns />
+</Panel>
+`;
+
+exports[`<Zones /> renders correctly 554`] = `
+<div
+  className="nz-toolbar-item-expandable-group-panel"
+/>
+`;
+
+exports[`<Zones /> renders correctly 555`] = `
+<div
+  className="nz-toolbar-item-expandable-group-title"
+/>
+`;
+
+exports[`<Zones /> renders correctly 556`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-expander"
+>
+  <Tool>
+    <div
+      className="nz-expansion-indicator"
+    >
+      &gt;
+    </div>
+  </Tool>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 557`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item"
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 558`] = `
+<HistoryItem
+  className="nz-toolbar-item-expandable-history-icon"
+/>
+`;
+
+exports[`<Zones /> renders correctly 559`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item"
+/>
+`;
+
+exports[`<Zones /> renders correctly 560`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-is-active"
+/>
+`;
+
+exports[`<Zones /> renders correctly 561`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 562`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+>
+  <div
+    className="nz-items"
+  />
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 563`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 564`] = `
+<Item
+  className="nz-toolbar-item-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</Item>
+`;
+
+exports[`<Zones /> renders correctly 565`] = `
+<div
+  className="nz-toolbar-item-item"
+>
+  <div
+    className="nz-gradient"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 566`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;
+
+exports[`<Zones /> renders correctly 567`] = `
+<div
+  className="nz-toolbar-scroll-chevron nz-direction-left"
+/>
+`;
+
+exports[`<Zones /> renders correctly 568`] = `
+<div
+  className="nz-toolbar-scroll-indicator nz-direction-left"
+>
+  <Chevron
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 569`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 570`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 571`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  expandsTo={0}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 572`] = `
+<Toolbar
+  className="nz-toolbar-scrollable"
+  panelAlignment={1}
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={5}
+/>
+`;
+
+exports[`<Zones /> renders correctly 573`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={3}
+/>
+`;
+
+exports[`<Zones /> renders correctly 574`] = `
+<Toolbar
+  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
+  items={
+    <UNDEFINED>
+      <div />
+      <div />
+      <div />
+      <div />
+    </UNDEFINED>
+  }
+  renderHistoryItems={[Function]}
+  renderItems={[Function]}
+  renderPanelItems={[Function]}
+  visibleItemThreshold={2}
+/>
+`;
+
+exports[`<Zones /> renders correctly 575`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 576`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={0}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 577`] = `
+<div
+  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-history"
+  />
+  <div
+    className="nz-expanded nz-panels"
+  />
+  <Items
+    className="nz-items"
+    direction={1}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 578`] = `
+<div
+  className="nz-widget-rectangular-content"
+>
+  <div />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 579`] = `
+<PointerCaptor
+  className="nz-widget-rectangular-resizeGrip nz-direction-ew"
+  direction={0}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 580`] = `
+<Tab
+  className="nz-widget-rectangular-tab-draggable"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</Tab>
+`;
+
+exports[`<Zones /> renders correctly 581`] = `
+<div
+  className="nz-widget-rectangular-tab-separator"
+/>
+`;
+
+exports[`<Zones /> renders correctly 582`] = `
+<div
+  className="nz-widget-rectangular-tab-tab"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 583`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-right-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-left-grip-container"
+    >
+      <ResizeGrip
+        className="nz-left-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 584`] = `
+<Settings
+  className="nz-widget-toolSettings-nested"
+>
+  <div
+    className="nz-header"
+  >
+    <div
+      className="nz-button"
+    />
+    <div
+      className="nz-label"
+    />
+  </div>
+</Settings>
+`;
+
+exports[`<Zones /> renders correctly 585`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 586`] = `
+<div
+  className="nz-widget-toolSettings-settings"
+/>
+`;
+
+exports[`<Zones /> renders correctly 587`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+    onClick={[Function]}
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<Zones /> renders correctly 588`] = `
+<div
+  className="nz-widget-tools"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Zones /> renders correctly 589`] = `
+<Component
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-footer"
+/>
+`;
+
+exports[`<Zones /> renders correctly 590`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zones /> renders correctly 591`] = `
+<Target
+  className="nz-zones-target-back nz-zone-9"
+  zoneIndex={9}
+>
+  <Component
+    className="nz-arrow"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 592`] = `
+<div
+  className="nz-zones-target-container"
+/>
+`;
+
+exports[`<Zones /> renders correctly 593`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;
+
+exports[`<Zones /> renders correctly 594`] = `
+<div
+  className="nz-zones-target-target"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+/>
+`;
+
+exports[`<Zones /> renders correctly 595`] = `
+<div
+  className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zones /> renders correctly 596`] = `
+<div
+  className="nz-zones-zones"
+/>
+`;

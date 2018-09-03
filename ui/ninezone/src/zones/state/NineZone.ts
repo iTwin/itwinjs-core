@@ -5,7 +5,7 @@
 
 import { CellProps } from "../../utilities/Cell";
 import { SizeProps } from "../../utilities/Size";
-import Root from "./layout/Root";
+import { NineZoneRoot as Root } from "./layout/Layouts";
 import Target, { TargetProps } from "./Target";
 import Widget, { DraggingWidgetProps, DraggingWidget } from "./Widget";
 import Zone, { getDefaultProps as getDefaultZoneProps, ZoneProps, ContentZone, WidgetZone, StatusZone, StatusZoneProps, getDefaultStatusZoneProps } from "./Zone";

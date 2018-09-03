@@ -4,20 +4,17 @@
 /** @module Zone */
 
 import Rectangle from "../../../utilities/Rectangle";
-import Size from "../../../utilities/Size";
-import NineZone from "../NineZone";
-
+import Size, { SizeProps } from "../../../utilities/Size";
 import Layout from "./Layout";
 
 export default class Root extends Layout {
   public static readonly FOOTER_HEIGHT = 48;
   private _isInFooterMode: boolean;
 
-  public constructor(public readonly nineZone: NineZone) {
-    super();
+  public constructor(size: SizeProps, isInFooterMode: boolean) {
+    super(Rectangle.createFromSize(size));
 
-    this._isInFooterMode = nineZone.getStatusZone().props.isInFooterMode;
-    this.setSize(nineZone.props.size);
+    this._isInFooterMode = isInFooterMode;
   }
 
   protected get _topZone() {
@@ -36,10 +33,6 @@ export default class Root extends Layout {
     return this;
   }
 
-  public get bounds() {
-    return this._bounds;
-  }
-
   public get isRoot() {
     return true;
   }
@@ -53,7 +46,7 @@ export default class Root extends Layout {
   }
 
   public setSize(size: Size) {
-    this._bounds = Rectangle.createFromSize(size);
+    this.setBounds(Rectangle.createFromSize(size));
   }
 
   public tryGrowTop(): number {
