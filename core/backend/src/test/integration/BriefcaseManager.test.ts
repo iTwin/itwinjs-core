@@ -405,6 +405,26 @@ describe("BriefcaseManager", () => {
     await iModelExclusive.close(accessToken, KeepBriefcase.No);
   });
 
+  it("should be able to gracefully error out if a bad cache dir is specified", async () => {
+    const config = new IModelHostConfiguration();
+    config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
+    IModelHost.shutdown();
+    IModelHost.startup(config);
+
+    let exceptionThrown = false;
+    try {
+      const iModelShared: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+      assert.notExists(iModelShared);
+    } catch (error) {
+      exceptionThrown = true;
+    }
+    assert.isTrue(exceptionThrown);
+
+    // Restart the backend to the default configuration
+    IModelHost.shutdown();
+    IModelTestUtils.startBackend();
+  });
+
   it.skip("should open briefcase of an iModel in both DEV and QA (#integration)", async () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     const config = new IModelHostConfiguration();

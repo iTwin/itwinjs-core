@@ -327,7 +327,9 @@ export class BriefcaseManager {
   private static makeDirectoryRecursive(dirPath: string) {
     if (IModelJsFs.existsSync(dirPath))
       return;
-    BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
+    const parentPath = path.dirname(dirPath);
+    if (parentPath !== dirPath)
+      BriefcaseManager.makeDirectoryRecursive(parentPath);
     IModelJsFs.mkdirSync(dirPath);
   }
 
@@ -471,8 +473,11 @@ export class BriefcaseManager {
     // NEEDS_WORK: initCache() is to be made synchronous and independent of the accessToken passed in.
     if (!BriefcaseManager._memoizedInitCache)
       BriefcaseManager._memoizedInitCache = BriefcaseManager.initCache(accessToken);
-    await BriefcaseManager._memoizedInitCache;
-    BriefcaseManager._memoizedInitCache = undefined;
+    try {
+      await BriefcaseManager._memoizedInitCache;
+    } finally {
+      BriefcaseManager._memoizedInitCache = undefined;
+    }
   }
 
   /** Get the index of the change set from its id */
