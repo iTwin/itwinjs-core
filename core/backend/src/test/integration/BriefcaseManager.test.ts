@@ -199,6 +199,23 @@ describe("BriefcaseManager", () => {
     await iModel6.close(accessToken, KeepBriefcase.No);
   });
 
+  it("should not reuse exclusive read-only briefcases for read-write purposes (#integration)", async () => {
+    const iModel1: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
+    const pathname1 = iModel1.briefcase.pathname;
+    iModel1.close(accessToken, KeepBriefcase.Yes);
+
+    const iModel2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
+    assert.notEqual(iModel2.briefcase.pathname, pathname1);
+    iModel2.close(accessToken, KeepBriefcase.No);
+
+    const iModel3: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
+    assert.equal(iModel3.briefcase.pathname, pathname1);
+    iModel3.close(accessToken, KeepBriefcase.No);
+  });
+
   it("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);

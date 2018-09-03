@@ -616,7 +616,7 @@ export class BriefcaseManager {
 
       // For PullAndPush briefcases, ensure that the user had acquired the briefcase the first time around
       // else if (requiredOpenParams.syncMode === SyncMode.PullAndPush)
-      return entry.userId === requiredUserId;
+      return entry.briefcaseId !== BriefcaseId.Standalone && entry.userId === requiredUserId;
     };
 
     const briefcases = this._cache.getFilteredBriefcases(filterBriefcaseFn);
