@@ -8,7 +8,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem } from "../render/System";
+import { RenderSystem, RenderGraphic } from "../render/System";
 import { ImageUtil } from "../ImageUtil";
 import {
   Feature,
@@ -26,6 +26,7 @@ import {
   Gradient,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
 export namespace IModelTileIO {
@@ -106,8 +107,8 @@ export namespace IModelTileIO {
       await this.loadNamedTextures();
       if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier });
-
-      return Promise.resolve({ readStatus: TileIO.ReadStatus.InvalidTileData, isLeaf, sizeMultiplier }); // ###TODO...
+      else
+        return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, sizeMultiplier));
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
@@ -302,6 +303,80 @@ export namespace IModelTileIO {
         stream.curPos = startPos + header.length;
 
       return undefined !== header;
+    }
+
+    private readMeshGraphic(primitive: any): RenderGraphic | undefined {
+      const materialName = JsonUtils.asString(primitive.material);
+      const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
+      const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
+      if (undefined === displayParams)
+        return undefined;
+
+      const isPlanar = JsonUtils.asBool(primitive.isPlanar);
+      const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
+      switch (primitiveType) {
+        case Mesh.PrimitiveType.Mesh:
+          return this.createMeshGraphic(primitive, displayParams, isPlanar);
+        case Mesh.PrimitiveType.Polyline:
+          return this.createPolylineGraphic(primitive, displayParams, isPlanar);
+        case Mesh.PrimitiveType.Point:
+          return this.createPointStringGraphic(primitive, displayParams, isPlanar);
+      }
+
+      assert(false, "unhandled primitive type");
+      return undefined;
+    }
+
+    private createPointStringGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
+      return undefined; // ###TODO
+    }
+
+    private createPolylineGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
+      return undefined; // ###TODO
+    }
+
+    private createMeshGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
+      return undefined; // ###TODO
+    }
+
+    private finishRead(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+      const graphics: RenderGraphic[] = [];
+
+      for (const meshKey of Object.keys(this._meshes)) {
+        const meshValue = this._meshes[meshKey];
+        const primitives = JsonUtils.asArray(meshValue.primitives);
+        if (undefined === primitives)
+          continue;
+
+        for (const primitive of primitives) {
+          const graphic = this.readMeshGraphic(primitive);
+          if (undefined !== graphic)
+            graphics.push(graphic);
+        }
+      }
+
+      let tileGraphic: RenderGraphic | undefined;
+      switch (graphics.length) {
+        case 0:
+          break;
+        case 1:
+          tileGraphic = graphics[0];
+          break;
+        default:
+          tileGraphic = this._system.createGraphicList(graphics);
+          break;
+      }
+
+      if (undefined !== tileGraphic)
+        tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange);
+
+      return {
+        readStatus: TileIO.ReadStatus.Success,
+        isLeaf,
+        sizeMultiplier,
+        contentRange,
+        renderGraphic: tileGraphic,
+      };
     }
   }
 }
