@@ -86,7 +86,7 @@ export abstract class GeometricModelState extends ModelState {
     tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
 
     if (!asClassifier && this.jsonProperties.tilesetUrl !== undefined) {
-      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, tileTreeState);
+      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
       return tileTreeState.loadStatus;
     }
     return this.loadIModelTileTree(tileTreeState, asClassifier);
@@ -99,9 +99,9 @@ export abstract class GeometricModelState extends ModelState {
     this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
       tileTreeState.setTileTree(result[0], new IModelTileLoader(this.iModel, result[0].id, asClassifier));
       IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => {
-        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
-      });
+    }).catch((_err) => {
+      this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
+    });
 
     return tileTreeState.loadStatus;
   }

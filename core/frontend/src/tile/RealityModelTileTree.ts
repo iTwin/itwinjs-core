@@ -139,30 +139,31 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @hidden */
 export class RealityModelTileTree {
-  public static loadRealityModelTileTree(url: string, tileTreeState: TileTreeState): void {
+  public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState): void {
 
-    this.getTileTreeProps(url, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
+    this.getTileTreeProps(url, tilesetToDb, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
       tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }
 
-  private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+  private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
     if (undefined !== url) {
       await RealityModelTileClient.setToken(); // ###TODO we should not set the token here in the future!
       const tileClient = new RealityModelTileClient(url);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
       const rootTransform: Transform = CesiumUtils.transformFromJson(json.root.transform);
-      let tileToDb = Transform.createIdentity();
+      let tilesetToDb = Transform.createIdentity();
 
-      if (ecefLocation !== undefined) {
+      if (undefined !== tilesetToDbJson) {
+        tilesetToDb.setFromJSON(tilesetToDbJson);
+      } else if (ecefLocation !== undefined) {
         const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
-        const ecefToDb = dbToEcef.inverse() as Transform;
-        tileToDb.setMultiplyTransformTransform(ecefToDb, rootTransform);
-      } else {
-        tileToDb = rootTransform;
+        tilesetToDb = dbToEcef.inverse() as Transform;
       }
+      const tileToDb = Transform.createIdentity();
+      tileToDb.setMultiplyTransformTransform(tilesetToDb, rootTransform);
       return new RealityModelTileTreeProps(json, tileClient, tileToDb);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
