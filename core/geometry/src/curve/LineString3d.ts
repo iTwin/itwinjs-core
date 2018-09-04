@@ -4,7 +4,7 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions, Angle } from "../Geometry";
+import { Geometry, BeJSONFunctions, Angle, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform, Matrix3d } from "../Transform";
@@ -456,7 +456,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *  Intersections within segments are recorded as CurveIntervalRole.isolated
    *   Intersections at isolated "on" vertex are recoded as CurveIntervalRole.isolatedAtVertex.
    */
-  public appendPlaneIntersectionPoints(plane: Plane3dByOriginAndUnitNormal, result: CurveLocationDetail[]): number {
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     if (this._points.length < 1) return 0;
     const initialLength = result.length;
     const n = this._points.length;
