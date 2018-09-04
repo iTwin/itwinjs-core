@@ -294,6 +294,7 @@ export default class Tree extends React.Component<Props, TreeState> {
 
   private createItemSelectionHandler(node: InspireTreeNode): SingleSelectionHandler<InspireTreeNode> {
     return {
+      preselect: () => { },
       select: () => node.select(),
       deselect: () => node.deselect(),
       isSelected: () => node.selected(),
