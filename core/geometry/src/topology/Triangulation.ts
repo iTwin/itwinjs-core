@@ -504,7 +504,7 @@ export class Triangulator {
     let list;
 
     for (let holeIndex = 1; holeIndex < loops.length; holeIndex++) {
-      list = Triangulator.createFaceLoop(loops[holeIndex], 0, Point2dArray.lengthWithoutWraparound(loops[holeIndex]), false, false);
+      list = Triangulator.createFaceLoop(loops[holeIndex], 0, Point2dArray.lengthWithoutWraparound(loops[holeIndex]), false, true);
       if (list && list === list.faceSuccessor) list.steiner = true;
       queue.push(Triangulator.getLeftmost(list));
     }
