@@ -4,6 +4,7 @@
 /** @module WebGL */
 
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -105,7 +106,7 @@ export abstract class CachedGeometry implements IDisposable {
 // Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
 export abstract class LUTGeometry extends CachedGeometry {
   // The texture containing the vertex data.
-  public abstract get lut(): VertexLUT.Data;
+  public abstract get lut(): VertexLUT;
 
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
@@ -585,11 +586,20 @@ export class PolylineBuffers implements IDisposable {
   public nextIndicesAndParams: BufferHandle;
   public distances: BufferHandle;
 
-  public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
     this.distances = distances;
+  }
+
+  public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
+    const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
+    const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
+    const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
+    const dist = BufferHandle.createArrayBuffer(polyline.distances);
+
+    return undefined !== indices && undefined !== prev && undefined !== next && undefined !== dist ? new PolylineBuffers(indices, prev, next, dist) : undefined;
   }
 
   public dispose() {

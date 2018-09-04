@@ -3,13 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
-import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
-import { SurfaceType } from "../primitives/VertexTable";
+import { SurfaceType, SurfaceParams, VertexIndices } from "../primitives/VertexTable";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
-import { VertexLUT } from "./VertexLUT";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
@@ -27,9 +25,8 @@ function wantLighting(vf: ViewFlags) {
 export class SurfaceGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
 
-  public static create(mesh: MeshData, indices: number[]): SurfaceGeometry | undefined {
-    const indexBytes = VertexLUT.convertIndicesToTriplets(indices);
-    const indexBuffer = BufferHandle.createArrayBuffer(indexBytes);
+  public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
+    const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
@@ -205,13 +202,8 @@ export class SurfaceGeometry extends MeshGeometry {
 }
 
 export class SurfacePrimitive extends MeshPrimitive {
-  public static create(args: MeshArgs, mesh: MeshGraphic): SurfacePrimitive | undefined {
-    if (undefined === args.vertIndices) {
-      assert(false);
-      return undefined;
-    }
-
-    const geom = SurfaceGeometry.create(mesh.meshData, args.vertIndices);
+  public static create(params: SurfaceParams, mesh: MeshGraphic): SurfacePrimitive | undefined {
+    const geom = SurfaceGeometry.create(mesh.meshData, params.indices);
     return undefined !== geom ? new SurfacePrimitive(geom, mesh) : undefined;
   }
 

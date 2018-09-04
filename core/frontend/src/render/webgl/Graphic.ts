@@ -408,12 +408,6 @@ function createPickTable(features: FeatureTable): PickTable {
     return { nonUniform: createNonUniformPickTable(features) };
 }
 
-export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
-  // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-  const jointWidthThreshold = 5;
-  return is2d || lineWeight > jointWidthThreshold;
-}
-
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }

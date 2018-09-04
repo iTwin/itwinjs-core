@@ -22,11 +22,11 @@ export class PointStringGeometry extends LUTGeometry {
   public readonly vertexParams: QParams3d;
   public readonly features: FeaturesInfo | undefined;
   public readonly weight: number;
-  public readonly lut: VertexLUT.Data;
+  public readonly lut: VertexLUT;
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT.Data, qparams: QParams3d, weight: number, features?: FeaturesInfo) {
+  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, features?: FeaturesInfo) {
     super();
     this.numIndices = numIndices;
     this.indices = indices;
@@ -59,7 +59,7 @@ export class PointStringGeometry extends LUTGeometry {
     if (undefined === indices)
       return undefined;
 
-    const lut = VertexLUT.Data.createFromVertexTable(params.vertices);
+    const lut = VertexLUT.createFromVertexTable(params.vertices);
     if (undefined === lut)
       return undefined;
 

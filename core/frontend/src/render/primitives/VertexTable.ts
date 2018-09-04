@@ -675,12 +675,16 @@ export class PolylineParams {
   public readonly polyline: TesselatedPolyline;
   public readonly isPlanar: boolean;
   public readonly type: PolylineTypeFlags;
+  public readonly weight: number;
+  public readonly linePixels: LinePixels;
 
   /** Directly construct a PolylineParams. The PolylineParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, polyline: TesselatedPolyline, isPlanar: boolean, type: PolylineTypeFlags = PolylineTypeFlags.Normal) {
+  public constructor(vertices: VertexTable, polyline: TesselatedPolyline, weight: number, linePixels: LinePixels, isPlanar: boolean, type: PolylineTypeFlags = PolylineTypeFlags.Normal) {
     this.vertices = vertices;
     this.polyline = polyline;
     this.isPlanar = isPlanar;
+    this.weight = weight;
+    this.linePixels = linePixels;
     this.type = type;
   }
 
@@ -695,12 +699,7 @@ export class PolylineParams {
     if (undefined === tesselator)
       return undefined;
 
-    return {
-      vertices,
-      polyline: tesselator.tesselate(),
-      isPlanar: args.flags.isPlanar,
-      type: args.flags.type,
-    };
+    return new PolylineParams(vertices, tesselator.tesselate(), args.width, args.linePixels, args.flags.isPlanar, args.flags.type);
   }
 }
 
