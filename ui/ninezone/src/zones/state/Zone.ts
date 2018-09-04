@@ -12,6 +12,12 @@ import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
 
+export enum DropTarget {
+  None,
+  Merge,
+  Back,
+}
+
 export interface ZoneProps {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
@@ -198,13 +204,6 @@ export class WidgetZone extends Zone {
     return widgets.length > 1 && widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
   }
 
-  public get horizontalAnchor(): HorizontalAnchor {
-    if (this.props.anchor !== undefined)
-      return this.props.anchor;
-
-    return this.defaultHorizontalAnchor;
-  }
-
   public get defaultHorizontalAnchor(): HorizontalAnchor {
     switch (this.props.id) {
       case 1:
@@ -214,6 +213,13 @@ export class WidgetZone extends Zone {
       default:
         return HorizontalAnchor.Right;
     }
+  }
+
+  public get horizontalAnchor(): HorizontalAnchor {
+    if (this.props.anchor !== undefined)
+      return this.props.anchor;
+
+    return this.defaultHorizontalAnchor;
   }
 
   public get verticalAnchor(): VerticalAnchor {
@@ -237,6 +243,40 @@ export class WidgetZone extends Zone {
         return true;
     }
     return false;
+  }
+
+  public getDropTarget(): DropTarget {
+    const draggingWidget = this.nineZone.draggingWidget;
+    if (!draggingWidget)
+      return DropTarget.None;
+
+    const draggingZone = draggingWidget.zone;
+    if (!this.isMergeable)
+      return DropTarget.None;
+
+    if (draggingZone.equals(this))
+      return DropTarget.Back;
+
+    const draggingCell = draggingZone.cell;
+    const targetCell = this.cell;
+    const cellsBetween = draggingCell.getAlignedCellsTo(targetCell);
+    for (const cell of cellsBetween) {
+      const zone = this.nineZone.findZone(cell);
+      if (!zone.isMergeable)
+        return DropTarget.None;
+    }
+
+    if (draggingCell.isRowAlignedWith(targetCell))
+      if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
+        if (this.isMergedHorizontally || this.props.widgets.length === 1)
+          return DropTarget.Merge;
+
+    if (draggingCell.isColumnAlignedWith(targetCell))
+      if (draggingZone.isMergedVertically || draggingZone.props.widgets.length === 1)
+        if (this.isMergedVertically || this.props.widgets.length === 1)
+          return DropTarget.Merge;
+
+    return DropTarget.None;
   }
 
   public getUnmergeWidgetBounds(widget: Widget): Array<{ id: WidgetZoneIndex, bounds: RectangleProps }> {
@@ -301,20 +341,17 @@ export class WidgetZone extends Zone {
       return undefined;
 
     const draggingWidget = this.nineZone.draggingWidget;
-    const widgetId = target.props.widgetId;
 
     if (!draggingWidget)
       return undefined;
 
-    const targetWidget = target.widget;
-    const targetZone = targetWidget.zone;
     const draggingZone = draggingWidget.zone;
 
     switch (target.type) {
       case TargetType.Merge: {
         const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
-        const mergedBounds = draggingZoneBounds.outerMergeWith(targetZone.props.bounds);
-        if (widgetId === this.props.id)
+        const mergedBounds = draggingZoneBounds.outerMergeWith(target.zone.props.bounds);
+        if (target.zone.id === this.props.id)
           return mergedBounds;
         break;
       }
@@ -323,7 +360,7 @@ export class WidgetZone extends Zone {
         const draggingZoneBounds = Rectangle.create(draggingZone.props.bounds);
         const isHorizontal = draggingZone.isMergedHorizontally;
 
-        if (draggingZone.props.widgets.length > 2 && targetZone.equals(draggingZone) && targetWidget.isLast) {
+        if (draggingZone.props.widgets.length > 2 && target.zone.equals(draggingZone)) {
           const widgetHeight = draggingZoneBounds.getHeight() / widgets.length;
           const widgetWidth = draggingZoneBounds.getWidth() / widgets.length;
 

@@ -190,43 +190,6 @@ export namespace TestProps {
     },
   };
 
-  export const swapped6and9: NineZoneProps = {
-    ...defaultProps,
-    zones: {
-      ...defaultProps.zones,
-      6: {
-        ...defaultProps.zones[6],
-        bounds: {
-          left: 10,
-          top: 20,
-          right: 99,
-          bottom: 54,
-        },
-        widgets: [
-          {
-            id: 9,
-            tabIndex: 1,
-          },
-        ],
-      },
-      9: {
-        ...defaultProps.zones[9],
-        bounds: {
-          left: 10,
-          top: 54,
-          right: 99,
-          bottom: 110,
-        },
-        widgets: [
-          {
-            id: 6,
-            tabIndex: 1,
-          },
-        ],
-      },
-    },
-  };
-
   export const merged9And3To6: NineZoneProps = {
     ...merged9To6,
     zones: {

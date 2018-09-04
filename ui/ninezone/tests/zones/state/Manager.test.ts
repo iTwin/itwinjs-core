@@ -39,13 +39,17 @@ describe("StateManager", () => {
     });
   });
 
-  describe("mergeDrop", () => {
+  describe("handleWidgetTabDragFinish", () => {
     it("should merge zones", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
         draggingWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 6,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(6, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       state.zones[6].widgets.length.should.eq(2);
       const w6 = state.zones[6].widgets[0];
@@ -55,27 +59,16 @@ describe("StateManager", () => {
       w9.id.should.eq(9);
     });
 
-    it("should merge swapped zones", () => {
-      const props: NineZoneProps = {
-        ...TestProps.swapped6and9,
-        draggingWidget: { id: 6, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
-      };
-      const state = DefaultStateManager.mergeDrop(9, props);
-
-      state.zones[6].widgets.length.should.eq(2);
-      const w6 = state.zones[6].widgets[1];
-      const w9 = state.zones[6].widgets[0];
-
-      w6.id.should.eq(6);
-      w9.id.should.eq(9);
-    });
-
     it("should merge bounds", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
         draggingWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 6,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(6, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       const bounds = state.zones[6].bounds;
       bounds.left.should.eq(10);
@@ -88,8 +81,12 @@ describe("StateManager", () => {
       const props: NineZoneProps = {
         ...TestProps.floatingOpenedZone6,
         draggingWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 6,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(6, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       expect(state.zones[6].floatingBounds).undefined;
     });
@@ -98,8 +95,12 @@ describe("StateManager", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidget: { id: 1, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 7,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(7, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       state.zones[7].widgets.length.should.eq(3);
       state.zones[7].widgets.findIndex((w) => w.id === 1).should.eq(2);
@@ -111,8 +112,12 @@ describe("StateManager", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
         draggingWidget: { id: 6, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 4,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(4, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       state.zones[4].widgets.length.should.eq(2);
       const w4 = state.zones[4].widgets[0];
@@ -126,8 +131,12 @@ describe("StateManager", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        target: {
+          zoneId: 7,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(7, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       state.zones[7].widgets.length.should.eq(2);
       const w7 = state.zones[7].widgets[0];
@@ -148,15 +157,17 @@ describe("StateManager", () => {
             anchor: HorizontalAnchor.Right,
           },
         },
+        target: {
+          zoneId: 8,
+          type: TargetType.Merge,
+        },
       };
-      const state = DefaultStateManager.mergeDrop(8, props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
 
       expect(state.zones[8].anchor).exist;
       state.zones[8].anchor!.should.eq(HorizontalAnchor.Left);
     });
-  });
 
-  describe("backDrop", () => {
     it("should unset anchor", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
@@ -168,8 +179,12 @@ describe("StateManager", () => {
             anchor: HorizontalAnchor.Left,
           },
         },
+        target: {
+          zoneId: 9,
+          type: TargetType.Back,
+        },
       };
-      const state = DefaultStateManager.backDrop(props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
       expect(state.zones[9].anchor).undefined;
     });
 
@@ -189,8 +204,12 @@ describe("StateManager", () => {
             },
           },
         },
+        target: {
+          zoneId: 9,
+          type: TargetType.Back,
+        },
       };
-      const state = DefaultStateManager.backDrop(props);
+      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
       expect(state.zones[9].floatingBounds).undefined;
     });
   });
@@ -456,10 +475,10 @@ describe("StateManager", () => {
         ...TestProps.openedZone6,
         draggingWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
       };
-      const state = DefaultStateManager.handleTargetChanged({ widgetId: 9, type: TargetType.Merge }, props);
+      const state = DefaultStateManager.handleTargetChanged({ zoneId: 9, type: TargetType.Merge }, props);
 
       expect(state.target).exist;
-      state.target!.widgetId.should.eq(9);
+      state.target!.zoneId.should.eq(9);
     });
   });
 });

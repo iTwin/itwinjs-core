@@ -54,7 +54,7 @@ export class StateManager {
     return newState;
   }
 
-  public handleInitialLayout(size: SizeProps, state: NineZoneProps): NineZoneProps {
+  public layout(size: SizeProps, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
     model.root.setSize(size);
 
@@ -104,7 +104,7 @@ export class StateManager {
     return newState;
   }
 
-  public handleChangeFooterMode(isInFooterMode: boolean, state: NineZoneProps): NineZoneProps {
+  public setIsInFooterMode(isInFooterMode: boolean, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
     const root = model.root;
     if (root.isInFooterMode === isInFooterMode)
@@ -213,23 +213,21 @@ export class StateManager {
   }
 
   public handleWidgetTabDragFinish(state: NineZoneProps): NineZoneProps {
-    if (state.target) {
-      switch (state.target.type) {
-        case TargetType.Merge: {
-          return this.mergeDrop(state.target.widgetId, state);
-        }
-        case TargetType.Back: {
-          return this.backDrop(state);
-        }
-        default:
-          break;
-      }
+    if (!state.target) {
+      return {
+        ...state,
+        draggingWidget: undefined,
+      };
     }
 
-    return {
-      ...state,
-      draggingWidget: undefined,
-    };
+    switch (state.target.type) {
+      case TargetType.Merge: {
+        return this.mergeDrop(state);
+      }
+      case TargetType.Back: {
+        return this.backDrop(state);
+      }
+    }
   }
 
   public handleWidgetTabDrag(dragged: PointProps, state: NineZoneProps): NineZoneProps {
@@ -276,21 +274,23 @@ export class StateManager {
     return {
       ...state,
       target: {
-        widgetId: target.widgetId,
+        zoneId: target.zoneId,
         type: target.type,
       },
     };
   }
 
-  public mergeDrop(targetWidgetId: number, state: NineZoneProps): NineZoneProps {
+  private mergeDrop(state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
+
+    if (!model.target)
+      return model.props;
 
     const draggingWidget = model.draggingWidget;
     if (!draggingWidget)
-      return { ...model.props };
+      return model.props;
 
-    const targetWidget = model.getWidget(targetWidgetId);
-    const targetZone = targetWidget.zone;
+    const targetZone = model.target.zone;
     const draggingZone = draggingWidget.zone;
 
     const zonesToUpdate: Partial<ZonesType> = {};
@@ -353,7 +353,7 @@ export class StateManager {
     };
   }
 
-  public backDrop(state: NineZoneProps): NineZoneProps {
+  private backDrop(state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
 
     const draggingWidget = model.draggingWidget;

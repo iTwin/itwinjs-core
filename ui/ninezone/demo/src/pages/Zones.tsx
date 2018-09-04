@@ -68,13 +68,15 @@ import ResizeHandle from "@src/widget/rectangular/ResizeHandle";
 import WidgetTab from "@src/widget/rectangular/tab/Draggable";
 import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
+import { TabMode } from "@src/widget/rectangular/tab/Tab";
 import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
 import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import NineZoneManager from "@src/zones/state/Manager";
-import { WidgetProps, DropTarget } from "@src/zones/state/Widget";
+import { WidgetProps } from "@src/zones/state/Widget";
 import { TargetType } from "@src/zones/state/Target";
+import { ZoneProps, DropTarget } from "@src/zones/state/Zone";
 import TargetContainer from "@src/zones/target/Container";
 import MergeTarget from "@src/zones/target/Merge";
 import BackTarget from "@src/zones/target/Back";
@@ -84,10 +86,6 @@ import GhostOutline from "@src/zones/GhostOutline";
 import ThemeContext from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import "./Zones.scss";
-import { TabMode } from "@src/widget/rectangular/tab/Tab";
-import { ZoneProps } from "@src/zones/state/Zone";
-
-/* tslint:disable */
 
 export interface State {
   tools: Tools;
@@ -199,7 +197,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._dialogContainer = document.createElement("div");
 
-    const nineZone = NineZoneManager.handleChangeFooterMode(false, getDefaultNineZone());
+    const nineZone = getDefaultNineZone();
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
@@ -800,7 +798,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private layout() {
     this.setState((prevState) => {
       const element = ReactDOM.findDOMNode(this);
-      const nineZone = NineZoneManager.handleInitialLayout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
+      const nineZone = NineZoneManager.layout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
       return {
         nineZone,
       };
@@ -810,7 +808,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
-      console.log("_handleWidgetTabClick", nineZone, tabIndex);
       return {
         nineZone,
       };
@@ -829,7 +826,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone);
-      console.log("_handleWidgetTabDragStart", nineZone, initialPosition, offset);
       return {
         nineZone,
       };
@@ -839,7 +835,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _handleWidgetTabDragFinish = () => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleWidgetTabDragFinish(prevState.nineZone);
-      console.log("_handleWidgetTabDragFinish", nineZone);
       return {
         nineZone,
       };
@@ -849,16 +844,15 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _handleWidgetTabDrag = (dragged: PointProps) => {
     this.setState((prevState) => {
       const nineZone = NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone);
-      console.log("_handleWidgetTabDrag", dragged, nineZone);
       return {
         nineZone,
       };
     });
   }
 
-  private _handleTargetChanged = (widgetId: WidgetZoneIndex, type: TargetType, isTargeted: boolean) => {
+  private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean) => {
     this.setState((prevState) => {
-      const nineZone = isTargeted ? NineZoneManager.handleTargetChanged({ widgetId, type }, prevState.nineZone) :
+      const nineZone = isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
         NineZoneManager.handleTargetChanged(undefined, prevState.nineZone);
 
       return {
@@ -1383,40 +1377,22 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTarget(widgetId: WidgetZoneIndex) {
-    const widget = new NineZone(this.state.nineZone).getWidget(widgetId);
-    const dropTarget = widget.getDropTarget();
-    switch (dropTarget) {
-      case DropTarget.Merge:
-        return (
-          <MergeTarget
-            key={widgetId}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Merge, isTargeted)}
-          />
-        );
-      case DropTarget.Back:
-        return (
-          <BackTarget
-            key={widgetId}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, TargetType.Back, isTargeted)}
-            zoneIndex={widgetId}
-          />
-        );
-      case DropTarget.None:
-      default:
-        return undefined;
-    }
-  }
-
-  private getTargets(zoneId: WidgetZoneIndex) {
+  private getTarget(zoneId: WidgetZoneIndex) {
     const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    const dropTarget = zone.getDropTarget();
     return (
       <TargetContainer>
-        {
-          zone.props.widgets.map((w) => {
-            return this.getTarget(w.id);
-          })
-        }
+        {dropTarget === DropTarget.Merge ? (
+          <MergeTarget
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Merge, isTargeted)}
+          />
+        ) : undefined}
+        {dropTarget === DropTarget.Back ? (
+          <BackTarget
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Back, isTargeted)}
+            zoneIndex={zoneId}
+          />
+        ) : undefined}
       </TargetContainer>
     );
   }
@@ -1683,7 +1659,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             <BlueButton
               onClick={() => {
                 this.setState((prevState) => {
-                  const nineZone = NineZoneManager.handleChangeFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
+                  const nineZone = NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
                   };
@@ -1842,7 +1818,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           {this.getWidget(zoneId)}
         </Zone>
         <Zone bounds={zone.props.bounds}>
-          {this.getTargets(zoneId)}
+          {this.getTarget(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
@@ -1974,7 +1950,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           />
         </Zone>
         <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
-          {this.getTargets(zoneId)}
+          {this.getTarget(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
@@ -2135,7 +2111,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             />
           </FooterZone>
           <Zone bounds={statusZone.props.bounds}>
-            {this.getTargets(statusZone.id)}
+            {this.getTarget(statusZone.id)}
           </Zone>
           {!outlineBounds ? undefined :
             <GhostOutline bounds={outlineBounds} />
@@ -2149,7 +2125,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           {this.getWidget(statusZone.id)}
         </Zone>
         <Zone bounds={statusZone.props.bounds}>
-          {this.getTargets(statusZone.id)}
+          {this.getTarget(statusZone.id)}
         </Zone>
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />

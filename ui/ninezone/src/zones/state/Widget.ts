@@ -8,12 +8,6 @@ import Cell from "../../utilities/Cell";
 import { PointProps } from "../../utilities/Point";
 import NineZone, { WidgetZoneIndex } from "./NineZone";
 
-export enum DropTarget {
-  None,
-  Merge,
-  Back,
-}
-
 export interface WidgetProps {
   readonly id: WidgetZoneIndex;
   readonly tabIndex: number;
@@ -91,44 +85,6 @@ export default class Widget {
     if (this.zone.props.widgets.length === 3 && this.zone.props.widgets[1].id === this.props.id)
       return true;
     return false;
-  }
-
-  public getDropTarget(): DropTarget {
-    const draggingWidget = this.nineZone.draggingWidget;
-    if (!draggingWidget)
-      return DropTarget.None;
-
-    const draggingZone = draggingWidget.zone;
-    const targetZone = this.zone;
-    if (!targetZone.isMergeable)
-      return DropTarget.None;
-
-    if (draggingZone.equals(targetZone))
-      return DropTarget.Back;
-
-    if (targetZone.props.widgets.length > 1 && !this.isFirst)
-      return DropTarget.None;
-
-    const draggingCell = draggingZone.cell;
-    const targetCell = targetZone.cell;
-    const cellsBetween = draggingCell.getAlignedCellsTo(targetCell);
-    for (const cell of cellsBetween) {
-      const zone = this.nineZone.findZone(cell);
-      if (!zone.isMergeable)
-        return DropTarget.None;
-    }
-
-    if (draggingCell.isRowAlignedWith(targetCell))
-      if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
-        if (targetZone.isMergedHorizontally || targetZone.props.widgets.length === 1)
-          return DropTarget.Merge;
-
-    if (draggingCell.isColumnAlignedWith(targetCell))
-      if (draggingZone.isMergedVertically || draggingZone.props.widgets.length === 1)
-        if (targetZone.isMergedVertically || targetZone.props.widgets.length === 1)
-          return DropTarget.Merge;
-
-    return DropTarget.None;
   }
 }
 

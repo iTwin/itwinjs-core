@@ -11,7 +11,7 @@ export enum TargetType {
 }
 
 export interface TargetProps {
-  readonly widgetId: WidgetZoneIndex;
+  readonly zoneId: WidgetZoneIndex;
   readonly type: TargetType;
 }
 
@@ -22,8 +22,8 @@ export default class Target {
   ) {
   }
 
-  public get widget() {
-    return this.nineZone.getWidget(this.props.widgetId);
+  public get zone() {
+    return this.nineZone.getWidgetZone(this.props.zoneId);
   }
 
   public get type() {
