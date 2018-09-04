@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -627,8 +627,29 @@ export class MeasurePointsTool extends PrimitiveTool {
 let activeExtentsDeco: ProjectExtentsDecoration | undefined;
 export class ProjectExtentsDecoration {
   public boxId?: Id64;
+  public markers: Marker[] = [];
 
-  public constructor() { IModelApp.viewManager.addDecorator(this); }
+  public constructor() {
+    IModelApp.viewManager.addDecorator(this);
+    const iModel = activeViewState.iModelConnection!;
+
+    const extents = iModel.projectExtents;
+    const markerSize = { x: 48, y: 48 };
+    //    const url = "http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Flag-2-Right-Azure-icon.png";
+    const url = "http://www.clker.com/cliparts/b/7/6/5/1308001441853739087google%20maps%20pin.svg";
+
+    const addMarker = (label: string, pos: Point3d): void => {
+      const marker = new Marker(pos, markerSize);
+      marker.label = label;
+      marker.imageOrigin.set(14, 40);
+      marker.setImageUrl(url);
+      this.markers.push(marker);
+    };
+
+    addMarker(iModel.iModelToken.key!, extents.getCenter());
+    addMarker("low", extents.low);
+    addMarker("high", extents.high);
+  }
   protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
 
   public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
@@ -652,6 +673,7 @@ export class ProjectExtentsDecoration {
     builder.setSymbology(white, black, 1);
     builder.addRangeBox(range);
     context.addDecorationFromBuilder(builder);
+    this.markers.forEach((marker) => marker.addDecoration(context));
   }
 
   public static add(): void {
@@ -681,7 +703,7 @@ function startMeasurePoints(event: any) {
   if (event.target === menu)
     return;
   IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
