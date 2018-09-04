@@ -191,6 +191,14 @@ export class Layout8 extends WidgetZoneLayout {
       return this.zone.nineZone.root;
     return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
   }
+
+  public getInitialBounds(): RectangleProps {
+    const parentBounds = this.zone.nineZone.root.bounds;
+    if (this.zone.nineZone.root.isInFooterMode)
+      return new Rectangle(parentBounds.left, parentBounds.bottom - Root.FOOTER_HEIGHT, parentBounds.right, parentBounds.bottom);
+
+    return super.getInitialBounds();
+  }
 }
 
 export class Layout9 extends WidgetZoneLayout {
