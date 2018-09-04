@@ -2,12 +2,16 @@
   "outputFile": "performanceResults_new.csv",
   "outputPath": "D:\\output\\performanceData\\",
   "iModelLocation": "D:\\models\\TimingTests\\",
+  "view": {
+    "width": 1000,
+    "height": 1000
+  },
   "modelSet": [
     {
       "iModelName": "Wraith.ibim",
       "tests": [
         {
-          "testType": "performance",
+          "testType": "timing",
           "viewName": "V0",
           "viewFlags": {
             "dimensions": true,
@@ -35,9 +39,11 @@
           "renderMode": "SmoothShade"
         },
         {
-          "testType": "performance",
+          "testType": "timing",
           "viewName": "V0",
-          "viewFlags": "",
+          "viewFlags": {
+            "fill": true
+          },
           "renderMode": 6
         }
       ]
@@ -46,16 +52,14 @@
       "iModelName": "Wraith_MultiMulti.ibim",
       "tests": [
         {
-          "testType": "performance",
+          "testType": "image",
           "viewName": "V0",
-          "viewFlags": "",
-          "renderMode": ""
+          "renderMode": "Wireframe"
         },
         {
           "testType": "timing",
           "viewName": "V0",
-          "viewFlags": "",
-          "renderMode": ""
+          "renderMode": "Wireframe"
         }
       ]
     }

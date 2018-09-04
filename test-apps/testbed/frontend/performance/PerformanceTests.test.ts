@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState, SceneContext, TileRequests } from "@bentley/imodeljs-frontend";
-import { ViewDefinitionProps, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
+import { ViewState, SceneContext, TileRequests/*, DisplayStyleState, DisplayStyle3dState*/ } from "@bentley/imodeljs-frontend";
+import { ViewDefinitionProps, ViewFlag, RenderMode/*, IModel, Code/*, DisplayStyleProps*/ } from "@bentley/imodeljs-common";
+// import { DisplayStyle, IModelDb } from "@bentley/imodeljs-backend";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients";
-import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { Target, PerformanceMetrics/*, System*/ } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelApi } from "./IModelApi";
@@ -15,16 +15,12 @@ import { StopWatch } from "@bentley/bentleyjs-core";
 import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
 import * as fs from "fs";
 import * as path from "path";
-
-const resultsLocation = "D:\\output\\performanceData\\";
-const resultsFileName = "performanceResults_new.csv";
-const modelsLocation = "D:\\models\\TimingTests\\";
-let jsonFile: any;
+// import { DisplayStyle, IModelDb } from "@bentley/imodeljs-backend";
 
 // const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
 // const glContext: WebGLRenderingContext | null = null;
 
-const wantConsoleOutput: boolean = false;
+const wantConsoleOutput: boolean = true;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
     console.log(msg); // tslint:disable-line
@@ -53,9 +49,9 @@ function removeFilesFromDir(startPath: string, filter: string) {
   });
 }
 
-function readJsonFile() {
-  const jsonStr = fs.readFileSync("frontend\\performance\\DefaultConfig.json").toString();
-  jsonFile = JSON.parse(jsonStr);
+function readJsonFile(jsonFile: string) {
+  const jsonStr = fs.readFileSync(jsonFile).toString();
+  return JSON.parse(jsonStr);
 }
 
 function setViewFlagOverrides(config: any): ViewFlag.Overrides {
@@ -180,9 +176,11 @@ function createWindow() {
   document.body.appendChild(canv);
 }
 
-async function waitForTilesToLoad() {
-  removeFilesFromDir(modelsLocation, ".Tiles");
-  removeFilesFromDir(modelsLocation, ".TileCache");
+async function waitForTilesToLoad(modelLocation?: string) {
+  if (modelLocation) {
+    removeFilesFromDir(modelLocation, ".Tiles");
+    removeFilesFromDir(modelLocation, ".TileCache");
+  }
 
   theViewport!.continuousRendering = false;
 
@@ -211,10 +209,11 @@ async function waitForTilesToLoad() {
   curTileLoadingTime = timer.current.milliseconds;
 }
 
-function getRowData(finalFrameTimings: Array<Map<string, number>>): Map<string, number | string> {
+function getRowData(finalFrameTimings: Array<Map<string, number>>, viewSize: ViewSize, iModelName = "", viewName = ""): Map<string, number | string> {
   const rowData = new Map<string, number | string>();
-  rowData.set("iModel", /([^\\]+)$/.exec(configuration.iModelName)![1]);
-  rowData.set("View", configuration.viewName ? configuration.viewName : "");
+  rowData.set("iModel", /([^\\]+)$/.exec(iModelName)![1]);
+  rowData.set("View", viewName);
+  rowData.set("Screen Size", viewSize.width + "X" + viewSize.height);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", getViewFlagsString());
   rowData.set("Tile Loading Time", curTileLoadingTime);
@@ -236,7 +235,7 @@ function printResults(filePath: string, fileName: string, rowData: Map<string, n
     addColumnsToCsvFile(filePath + fileName, rowData);
   else
     createNewCsvFile(filePath, fileName, rowData);
-  addDataToCsvFile(resultsLocation + resultsFileName, rowData);
+  addDataToCsvFile(filePath + fileName, rowData);
 }
 
 export function savePng() {
@@ -298,6 +297,29 @@ export function savePng() {
 
 }
 
+class ViewSize {
+  public width: number;
+  public height: number;
+
+  constructor(w = 0, h = 0) { this.width = w; this.height = h; }
+}
+
+class DefaultConfigs {
+  public outputFile = "performanceResults_new.csv";
+  public outputPath = "D:\\output\\performanceData\\";
+  public iModelLocation = "D:\\models\\TimingTests\\";
+  public view = new ViewSize(1000, 1000);
+}
+
+class DefaultModelConfigs {
+  public outputFile = "performanceResults_new.csv";
+  public outputPath = "D:\\output\\performanceData\\";
+  public iModelLocation = "D:\\models\\TimingTests\\";
+  public iModelName = "Wraith.ibim";
+  public viewName = "V0";
+  public get iModelFile(): string { return this.iModelLocation + this.iModelName; }
+}
+
 class SimpleViewState {
   public accessToken?: AccessToken;
   public project?: Project;
@@ -309,7 +331,6 @@ class SimpleViewState {
   constructor() { }
 }
 
-let configuration: SVTConfiguration;
 let theViewport: Viewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
 let curTileLoadingTime = 0;
@@ -320,11 +341,11 @@ async function _changeView(view: ViewState) {
 }
 
 // opens the view and connects it to the HTML canvas element.
-async function openView(state: SimpleViewState) {
+async function openView(state: SimpleViewState, viewSize: ViewSize) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = 1239;
-  htmlCanvas!.height = 685;
+  htmlCanvas!.width = viewSize.width; // 1239;
+  htmlCanvas!.height = viewSize.height; // 685;
   document.body.appendChild(htmlCanvas!);
 
   if (htmlCanvas) {
@@ -337,9 +358,8 @@ async function openView(state: SimpleViewState) {
 }
 
 // selects the configured view.
-async function loadView(state: SimpleViewState, configurations?: { viewName?: string }) {
-  const config = undefined !== configurations ? configurations : {};
-  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.sqlName, where: "CodeValue = '" + config.viewName + "'" });
+async function loadView(state: SimpleViewState, viewName: string) {
+  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.sqlName, where: "CodeValue = '" + viewName + "'" });
   if (1 === viewIds.size)
     state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
 
@@ -350,33 +370,30 @@ async function loadView(state: SimpleViewState, configurations?: { viewName?: st
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   try {
-    configuration.standalone = true;
     state.iModelConnection = await IModelConnection.openStandalone(filename);
   } catch (err) {
     debugPrint("openStandaloneIModel failed: " + err.toString());
     throw err;
   }
 }
-interface SVTConfiguration {
-  filename: string;
-  userName: string;
-  password: string;
-  projectName: string;
-  iModelName: string;
-  standalone: boolean;
-  viewName?: string;
-}
 
-async function mainBody() {
-  await PerformanceWriterClient.startup();
-
-  // this is the default configuration
-  configuration = {
-    userName: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-    iModelName: modelsLocation + "\\" + "Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // path.join(iModelLocation, "Wraith_MultiMulti.ibim"),
-    viewName: "V0",
-  } as SVTConfiguration;
+async function mainBody(configs: DefaultConfigs, modelData: any) {
+  // Create DefaultModelConfigs
+  const modConfigs = new DefaultModelConfigs();
+  if (modelData.iModelLocation)
+    modConfigs.iModelLocation = modelData.iModelLocation;
+  else if (configs.iModelLocation)
+    modConfigs.iModelLocation = configs.iModelLocation;
+  if (modelData.outputPath)
+    modConfigs.outputPath = modelData.outputPath;
+  else if (configs.outputPath)
+    modConfigs.outputPath = configs.outputPath;
+  if (modelData.outputFile)
+    modConfigs.outputFile = modelData.outputFile;
+  else if (configs.outputFile)
+    modConfigs.outputFile = configs.outputFile;
+  if (modelData.iModelName) modConfigs.iModelName = modelData.iModelName;
+  if (modelData.viewName) modConfigs.viewName = modelData.viewName;
 
   // Start the backend
   createWindow();
@@ -391,24 +408,56 @@ async function mainBody() {
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
 
-  await openStandaloneIModel(activeViewState, configuration.iModelName);
+  await openStandaloneIModel(activeViewState, modConfigs.iModelFile);
 
   // open the specified view
-  await loadView(activeViewState, configuration);
+  await loadView(activeViewState, modConfigs.viewName);
+
+  // now connect the view to the canvas
+  await openView(activeViewState, configs.view);
 
   // Set the viewFlags
   if (activeViewState.viewState !== undefined) {
-    readJsonFile();
-    const vfo = setViewFlagOverrides(jsonFile.modelSet[0].tests[1]);
+    // // Set the display style
+    // if (activeViewState.iModelConnection && theViewport!.view.is3d()) {
+    //   // activeViewState.iModelConnection!.elements.queryIds();
+
+    // const scopeModelId = IModel.dictionaryId; // ???
+    // const codeValue = "0_Shade";
+
+    // // const code: Code = DrawingCategory.createCode(iModel, scopeModelId, categoryName);
+    // const iModel = activeViewState.iModelConnection as IModel;
+    // const iModelDb = iModel as IModelDb;
+    // const code: Code = DisplayStyle.createCode(iModelDb, scopeModelId, codeValue);
+    // const styleId = iModelDb.elements.queryElementIdByCode(code);
+    // debugPrint("styleId: " + styleId);
+    // const elemProp = iModelDb.elements.getElementProps(styleId!);
+    // const view = theViewport!.view; // as ViewState3d;
+    // view.setDisplayStyle(new DisplayStyle3dState(elemProp as DisplayStyleProps, activeViewState.iModelConnection));
+
+    //   // iModelDb.elements.getElement(styleId)
+
+    //   // public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle; }
+
+    //   //////////////////////////////////
+
+    //   // const view = theViewport!.view; // as ViewState3d;
+    //   // view.setDisplayStyle(new DisplayStyleState());
+    //   // const displayStyle = view.getDisplayStyle3d();
+    //   // view.displayStyle = displayStyle;
+
+    //   // public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
+
+    // }
+
+    // Set the view flags & render mode
+    const vfo = setViewFlagOverrides(modelData.tests[1]);
     vfo.setRenderMode(RenderMode.SmoothShade);
     vfo.apply(activeViewState.viewState.displayStyle.viewFlags);
   }
 
-  // now connect the view to the canvas
-  await openView(activeViewState);
-
   // Load all tiles
-  await waitForTilesToLoad();
+  await waitForTilesToLoad(modConfigs.iModelLocation);
   debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
 
   // debugPrint("1111111111111111111111 - b4 save png ");
@@ -416,7 +465,7 @@ async function mainBody() {
   // debugPrint("1111111111111111111111 - after save png ");
 
   // Throw away the first n renderFrame times, until it's more consistent
-  for (let i = 0; i < 10; ++i) {
+  for (let i = 0; i < 15; ++i) {
     theViewport!.sync.setRedrawPending();
     theViewport!.renderFrame();
   }
@@ -434,7 +483,7 @@ async function mainBody() {
     theViewport!.sync.setRedrawPending();
     // debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame();
-    finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings; // .slice();
+    finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
   }
   timer.stop();
   debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
@@ -447,7 +496,7 @@ async function mainBody() {
     debugPrint(timingsString + "]");
   }
 
-  printResults(resultsLocation, resultsFileName, getRowData(finalFrameTimings));
+  printResults(modConfigs.outputPath, modConfigs.outputFile, getRowData(finalFrameTimings, configs.view, modConfigs.iModelName, modConfigs.viewName));
 
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
@@ -455,16 +504,31 @@ async function mainBody() {
   debugPrint("//" + (theViewport!.target as Target).performanceMetrics!.frameTimings);
 }
 
-describe("PerformanceTests - 1 (#WebGLPerformance)", () => {
-  it("Test 2 - Wraith_MultiMulti Model - V0", (done) => {
-    removeFilesFromDir(modelsLocation, ".Tiles");
-    removeFilesFromDir(modelsLocation, ".TileCache");
-    mainBody().then((_result) => {
-      removeFilesFromDir(modelsLocation, ".Tiles");
-      removeFilesFromDir(modelsLocation, ".TileCache");
-      done();
-    }).catch((error) => {
-      debugPrint("Exception in mainBody: " + error.toString());
+describe("Performance Tests (#WebGLPerformance)", () => {
+  const jsonFile = "frontend\\performance\\DefaultConfig.json";
+
+  // Create DefaultConfigs
+  const configs = new DefaultConfigs();
+  const jsonData = readJsonFile(jsonFile);
+  if (jsonData.outputFile) configs.outputFile = jsonData.outputFile;
+  if (jsonData.outputPath) configs.outputPath = jsonData.outputPath;
+  if (jsonData.iModelLocation) configs.iModelLocation = jsonData.iModelLocation;
+  if (jsonData.view) {
+    if (jsonData.width) configs.view.width = jsonData.width;
+    if (jsonData.height) configs.view.height = jsonData.height;
+  }
+
+  jsonData.modelSet.forEach((modelData: any) => {
+    it("Test " + modelData.iModelName, (done) => {
+      removeFilesFromDir(configs.iModelLocation, ".Tiles");
+      removeFilesFromDir(configs.iModelLocation, ".TileCache");
+      mainBody(configs, modelData).then((_result) => {
+        removeFilesFromDir(configs.iModelLocation, ".Tiles");
+        removeFilesFromDir(configs.iModelLocation, ".TileCache");
+        done();
+      }).catch((error) => {
+        debugPrint("Exception in mainBody: " + error.toString());
+      });
     });
   });
 });
