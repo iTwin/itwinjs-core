@@ -31,7 +31,6 @@ export namespace GltfTileIO {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
     contentRange?: ElementAlignedBox3d;
-    geometry?: TileIO.GeometryCollection;
     renderGraphic?: RenderGraphic;
     sizeMultiplier?: number;
   }
@@ -292,7 +291,6 @@ export namespace GltfTileIO {
         isLeaf,
         sizeMultiplier,
         contentRange,
-        geometry,
         renderGraphic,
       };
     }
