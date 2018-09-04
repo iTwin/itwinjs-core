@@ -133,10 +133,7 @@ export class Triangulator {
   /**
    * Triangulate the polygon made up of by a series of points.
    * * To triangulate a polygon with holes, use earcutFromOuterAndInnerLoops
-   *
-   * *  Outer-edge points must be passed in counter-clockwise order
-   * *  Inner-edge (hole) indices must be passed in clockwise order (following the outer edge points)
-   * *  Optional holeIndices array specifies which indices of points array given are the starts of holes
+   * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    */
   public static earcutSingleLoop(data: Point3d[]): HalfEdgeGraph {
     Triangulator._returnGraph = new HalfEdgeGraph();
@@ -245,15 +242,20 @@ export class Triangulator {
   private static assignMasksToNewFaceLoop(_graph: HalfEdgeGraph, base: HalfEdge | undefined, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     // base is the final coordinates
     if (base) {
-      base = base.faceSuccessor;
+      base = base.faceSuccessor; // because typical construction process leaves the "live" edge at the end of the loop.
       const area = base.signedFaceArea();
+      const mate = base.edgeMate;
       base.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
-      base.edgeMate.setMaskAroundFace(
-        markExterior ? (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.EXTERIOR)
-          : (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE));
-      if (area > 0 === returnPositiveAreaLoop)
-        return base;
-      else return base.vertexSuccessor;
+      mate.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
+
+      let preferredSide = base;
+      if (returnPositiveAreaLoop === (area < 0))
+        preferredSide = mate;
+      const otherSide = preferredSide.edgeMate;
+
+      if (markExterior)
+        otherSide.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+      return preferredSide;
     }
     return undefined;   // caller should not be calling with start <= end
   }
