@@ -28,7 +28,7 @@ import {
 import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
-export namespace IModelTileIO {
+export namespace DgnTileIO {
   export const enum Flags {
     None = 0,
     ContainsCurves = 1 << 0,

@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, DgnTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { TileData } from "./TileIO.data";
 import { TestData } from "./TestData";
 
@@ -209,7 +209,7 @@ describe("Disposal of WebGL Resources", () => {
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = new TileIO.StreamBuffer(TileData.triangles.buffer);
-    const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
+    const reader = DgnTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.renderGraphic!;
     assert.isDefined(tileGraphic);

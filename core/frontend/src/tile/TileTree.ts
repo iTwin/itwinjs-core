@@ -15,7 +15,7 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
-import { IModelTileIO } from "./IModelTileIO";
+import { DgnTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 import { SpatialModelState } from "../ModelState";
 
@@ -607,7 +607,7 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
         break;
 
       case TileIO.Format.Pnts:
