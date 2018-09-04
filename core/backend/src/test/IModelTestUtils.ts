@@ -116,10 +116,12 @@ export class IModelTestUtils {
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     for (const iModelInfo of testIModels) {
+      // TODO: must set BriefcaseManager's imodelClient to the right bank before calling the following function:
       iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
+      BriefcaseManager.setClientFromIModelTokenContext(testProjectId, iModelInfo.id);
       iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 

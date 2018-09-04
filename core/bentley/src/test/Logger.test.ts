@@ -2,8 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, Logger, LogLevel, PerfLogger } from "../bentleyjs-core";
+import { using, Logger, LogLevel, PerfLogger, DbResult } from "../bentleyjs-core";
 import { EnvMacroSubst } from "../Logger";
+import { BentleyError } from "../BentleyError";
 
 let outerr: any[];
 let outwarn: any[];
@@ -94,7 +95,7 @@ describe("Logger", () => {
       },
     };
     assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true));
-    EnvMacroSubst.replaceInProperties(testObj, true, {testy: "testy"});
+    EnvMacroSubst.replaceInProperties(testObj, true, { testy: "testy" });
     assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true)); // still contains ${testx}, which looks like a macro
     assert.equal(testObj.prop1, "test1");
     assert.equal(testObj.prop2, "test2");
@@ -444,4 +445,57 @@ describe("Logger", () => {
     assert.isTrue(perfMessages[2].startsWith("inner call,END,"));
     assert.isTrue(perfMessages[3].startsWith("outer call,END,"));
   });
+
+  it("should log exceptions", () => {
+    Logger.initialize(
+      (c, m, d) => outerr = [c, m, d ? d() : {}],
+      (c, m, d) => outwarn = [c, m, d ? d() : {}],
+      (c, m, d) => outinfo = [c, m, d ? d() : {}],
+      (c, m, d) => outtrace = [c, m, d ? d() : {}]);
+    Logger.setLevel("testcat", LogLevel.Error);
+
+    clearOutlets();
+    try {
+      throw new Error("error message");
+    } catch (err) {
+      Logger.logException("testcat", err);
+    }
+    checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    try {
+      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
+    } catch (_err) {
+    }
+    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ExceptionType: "BentleyError" }], [], [], []);
+  });
+
+  it("log should capture ActivityId", () => {
+    Logger.initialize(
+      (c, m, d) => outerr = [c, m, d ? d() : {}],
+      (c, m, d) => outwarn = [c, m, d ? d() : {}],
+      (c, m, d) => outinfo = [c, m, d ? d() : {}],
+      (c, m, d) => outtrace = [c, m, d ? d() : {}]);
+    Logger.setLevel("testcat", LogLevel.Error);
+
+    let activityId = "activity1";
+    Logger.activityIdGetter = () => activityId;
+
+    clearOutlets();
+    Logger.logError("testcat", "message1");
+    checkOutlets(["testcat", "message1", { ActivityId: activityId }], [], [], []);
+
+    clearOutlets();
+    activityId = "activity2";
+    Logger.logError("testcat", "message2");
+    checkOutlets(["testcat", "message2", { ActivityId: activityId }], [], [], []);
+
+    clearOutlets();
+    try {
+      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
+    } catch (_err) {
+    }
+    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: activityId, ExceptionType: "BentleyError" }], [], [], []);
+  });
+
 });

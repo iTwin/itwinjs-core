@@ -143,7 +143,7 @@ export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
-  private _decorations?: Decorations;
+  protected _decorations?: Decorations;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -573,8 +573,11 @@ export abstract class Target extends RenderTarget {
     }
 
     this.paintScene(sceneMilSecElapsed);
+    this.drawOverlayDecorations();
     assert(System.instance.frameBufferStack.isEmpty);
   }
+
+  protected drawOverlayDecorations(): void { }
 
   public queueReset(): void {
     this.reset();
@@ -932,11 +935,11 @@ export abstract class Target extends RenderTarget {
   protected abstract _endPaint(): void;
 }
 
-/** A Target which renders to a canvas on the screen */
+/** A Target that renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private _prevViewRect: ViewRect = new ViewRect();
+  private readonly _prevViewRect = new ViewRect();
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -1000,7 +1003,7 @@ export class OnScreenTarget extends Target {
       // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
       this._canvas.width = viewRect.width;
       this._canvas.height = viewRect.height;
-      this._prevViewRect = new ViewRect(0, 0, viewRect.width, viewRect.height);
+      this._prevViewRect.setFrom(viewRect);
       return true;
     }
     return false;
@@ -1045,6 +1048,19 @@ export class OnScreenTarget extends Target {
     onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
+
+  protected drawOverlayDecorations(): void {
+    if (undefined !== this._decorations && undefined !== this._decorations.overlay2d) {
+      const ctx = this._canvas.getContext("2d")!;
+      for (const overlay of this._decorations.overlay2d) {
+        ctx.save();
+        ctx.translate(overlay.origin.x, overlay.origin.y);
+        overlay.drawDecoration(ctx);
+        ctx.restore();
+      }
+    }
+  }
+
   public onResized(): void {
     this._dcAssigned = false;
     dispose(this._fbo);
@@ -1066,7 +1082,7 @@ export class OffScreenTarget extends Target {
     if (this.renderRect.equals(rect))
       return;
 
-    this.renderRect.copyFrom(rect);
+    this.renderRect.setFrom(rect);
     if (temporary) {
       // Temporarily adjust view rect in order to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures

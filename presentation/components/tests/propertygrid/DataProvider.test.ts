@@ -1,11 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 import * as path from "path";
 import { expect, spy } from "chai";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import {
+  createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
+  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath,
+} from "@bentley/presentation-common/tests/_helpers/random";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -13,12 +17,8 @@ import { ValuesDictionary } from "@bentley/presentation-common";
 import * as content from "@bentley/presentation-common/lib/content";
 import { Presentation } from "@bentley/presentation-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import PresentationPropertyDataProvider from "@src/propertygrid/DataProvider";
-import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import {
-  createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath,
-} from "@helpers/random";
+import PresentationPropertyDataProvider from "../../lib/propertygrid/DataProvider";
+import { CacheInvalidationProps } from "../../lib/common/ContentDataProvider";
 
 const favoritesCategoryName = "Favorite";
 
@@ -685,8 +685,8 @@ describe("PropertyDataProvider", () => {
         const values: ValuesDictionary<any> = {};
         const displayValues: ValuesDictionary<any> = {};
         fields.forEach((field) => {
-          values[field.name] = { };
-          displayValues[field.name] = { };
+          values[field.name] = {};
+          displayValues[field.name] = {};
         });
         const record = new content.Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);

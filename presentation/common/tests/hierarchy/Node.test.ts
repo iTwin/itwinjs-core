@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NodeJSON, fromJSON, listFromJSON } from "@src/hierarchy/Node";
+import { NodeJSON, fromJSON, listFromJSON } from "../../lib/hierarchy/Node";
 import {
   createRandomECInstanceNode, createRandomECInstanceNodeKey,
   createRandomECInstanceKeyJSON,
-} from "@helpers/random";
-import { ECInstanceNodeKeyJSON } from "@src/hierarchy/Key";
+} from "../_helpers/random";
+import { ECInstanceNodeKeyJSON } from "../../lib/hierarchy/Key";
 
 const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
   return {

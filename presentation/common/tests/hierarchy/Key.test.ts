@@ -3,8 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { fromJSON, StandardNodeTypes, BaseNodeKey, ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "@src/hierarchy/Key";
-import { createRandomId } from "@helpers/random";
+import {
+  fromJSON, StandardNodeTypes, BaseNodeKey,
+  ECInstanceNodeKeyJSON, ECClassGroupingNodeKey,
+  ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
+} from "../../lib/hierarchy/Key";
+import { createRandomId } from "../_helpers/random";
 
 describe("NodeKey fromJSON", () => {
 

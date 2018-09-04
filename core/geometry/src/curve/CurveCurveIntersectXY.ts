@@ -11,13 +11,14 @@ import { Geometry } from "../Geometry";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 // import { Arc3d } from "./Arc3d";
-import { Point3d, Vector2d } from "../PointVector";
+import { Point3d, Vector2d, XYAndZ } from "../PointVector";
 // import { LineString3d } from "./LineString3d";
 import { SmallSystem, AnalyticRoots, TrigPolynomial } from "../numerics/Polynomials";
 import { Matrix4d, Point4d } from "../numerics/Geometry4d";
 import { Transform, Matrix3d } from "../Transform";
 import { Arc3d } from "./Arc3d";
 import { GrowableFloat64Array } from "../GrowableArray";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -88,7 +89,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
    * filter by extension rules.
    * record with fraction mapping.
    */
-  private acceptPointWithLocalFractions(
+  private recordPointWithLocalFractions(
     localFractionA: number,
     cpA: CurvePrimitive,
     fractionA0: number,
@@ -101,6 +102,19 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   ) {
     const globalFractionA = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
     const globalFractionB = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
+    // ignore duplicate of most recent point .  ..
+    const numPrevious = this._results.dataA.length;
+    if (numPrevious > 0) {
+      const topFractionA = this._results.dataA[numPrevious - 1].fraction;
+      const topFractionB = this._results.dataB[numPrevious - 1].fraction;
+      if (reversed) {
+        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionB) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionA))
+          return;
+      } else {
+        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionA) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionB))
+          return;
+      }
+    }
     const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
       globalFractionA, cpA.fractionToPoint(globalFractionA));
     detailA.setIntervalRole(CurveIntervalRole.isolated);
@@ -144,7 +158,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       && this.acceptFraction(extendA0, uv.x, extendA1)
       && this.acceptFraction(extendB0, uv.y, extendB1)
     ) {
-      this.acceptPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
+      this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
     }
   }
   private static _workPointA0H = Point4d.create();
@@ -183,7 +197,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const fractionB = fractionAB.y;
       if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
         // final fraction acceptance uses original world points, with perspective-aware fractions
-        this.acceptPointWithLocalFractions(fractionA, cpA, fractionA0, fractionA1,
+        this.recordPointWithLocalFractions(fractionA, cpA, fractionA0, fractionA1,
           fractionB, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -269,7 +283,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
         if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
-          this.acceptPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
+          this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
         }
       }
@@ -293,7 +307,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
         if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
-          this.acceptPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
+          this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
         }
       }
@@ -328,7 +342,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
         const fractionB = cpA.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
         if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
-          this.acceptPointWithLocalFractions(fractionA, cpA, 0, 1,
+          this.recordPointWithLocalFractions(fractionA, cpA, 0, 1,
             fractionB, cpB, 0, 1, reversed);
         }
       }
@@ -371,6 +385,67 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcArc_thisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
     else
       this.dispatchArcArc_thisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
+  }
+  /**
+   * Apply the projection transform (if any) to (xyz, w)
+   * @param xyz xyz parts of input point.
+   * @param w   weight to use for homogeneous effects
+   */
+  private projectPoint(xyz: XYAndZ, w: number = 1.0): Point4d {
+    if (this._worldToLocalPerspective)
+      return this._worldToLocalPerspective.multiplyPoint3d(xyz, w);
+    if (this._worldToLocalAffine)
+      return this._worldToLocalAffine.multiplyXYZW(xyz.x, xyz.y, xyz.z, w);
+    return Point4d.createFromPointAndWeight(xyz, w);
+  }
+  private mapNPCPlaneToWorld(npcPlane: Point4d, worldPlane: Point4d) {
+    // for NPC pointY, Y^ * H = 0 is "on" plane H.  (Hat is tranpose)
+    // NPC Y is A*X for our transform A and worldPointX.
+    // hence (A X)^ * H = 0
+    // hence X^ * A^ * H = 0
+    // hence K = A^ * H
+    if (this._worldToLocalAffine) {
+      this._worldToLocalAffine.multiplyTransposeXYZW(npcPlane.x, npcPlane.y, npcPlane.z, npcPlane.w, worldPlane);
+    } else if (this._worldToLocalPerspective) {
+      this._worldToLocalPerspective.multiplyTransposePoint4d(npcPlane, worldPlane);
+    } else {
+      npcPlane.clone(worldPlane);
+    }
+  }
+  // Caller accesses data from segment and bsplineCurve
+  // Selects the best conditioned arc (in xy parts) as "circle after inversion"
+  // Solves the arc-arc equations
+  private dispatchSegmentBsplineCurve(
+    cpA: CurvePrimitive,
+    extendA0: boolean,
+    pointA0: Point3d,
+    fractionA0: number,
+    pointA1: Point3d,
+    fractionA1: number,
+    extendA1: boolean,
+    bcurve: BSplineCurve3d,
+    extendB: boolean,
+    reversed: boolean,
+  ) {
+    const pointA0H = this.projectPoint(pointA0);
+    const pointA1H = this.projectPoint(pointA1);
+    const planeCoffs = Point4d.createPlanePointPointZ(pointA0H, pointA1H);
+    this.mapNPCPlaneToWorld(planeCoffs, planeCoffs);
+    // NOW .. we have a plane in world space.  Intersect it with the bspline:
+    const intersections: CurveLocationDetail[] = [];
+    bcurve.appendPlaneIntersectionPoints(planeCoffs, intersections);
+    // intersections has WORLD points with bspline fractions.   (The bspline fractions are all good 0..1 fractions within the spline.)
+    // accept those that are within the segment range.
+    for (const detail of intersections) {
+      const fractionB = detail.fraction;
+      const curvePoint = detail.point;
+      const curvePointH = this.projectPoint(curvePoint);
+      const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, curvePointH);
+      if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB, fractionB, extendB)) {
+        this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
+          fractionB, bcurve, 0, 1, reversed);
+      }
+    }
   }
 
   private static _workPointAA0 = Point3d.create();
@@ -448,6 +523,10 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchSegmentArc(
         segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
         this._geometryB, this._extendB, this._extendB, false);
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchSegmentBsplineCurve(
+        segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
+        this._geometryB, this._extendB, false);
     }
   }
 
@@ -503,7 +582,19 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
-      // NEEDS WORK -- arc+arc intersection with all transformations
+    }
+    return undefined;
+  }
+
+  public handleBSplineCurve3d(curve: BSplineCurve3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.dispatchSegmentBsplineCurve(
+        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
+        curve, this._extendA, true);
+    } else if (this._geometryB instanceof LineString3d) {
+      // this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      // this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
     }
     return undefined;
   }

@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as h from "@common/hierarchy";
-import { ECInstanceNodeKeyJSON } from "@common/hierarchy/Key";
-import { NodeJSON } from "@common/hierarchy/Node";
-import { NodePathElementJSON } from "@common/hierarchy/NodePathElement";
+import * as h from "../../../lib/hierarchy";
+import { ECInstanceNodeKeyJSON } from "../../../lib/hierarchy/Key";
+import { NodeJSON } from "../../../lib/hierarchy/Node";
+import { NodePathElementJSON } from "../../../lib/hierarchy/NodePathElement";
 import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 

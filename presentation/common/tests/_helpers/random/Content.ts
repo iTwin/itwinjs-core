@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as c from "@common/content";
-import { SelectClassInfoJSON } from "@common/content/Descriptor";
+import * as c from "../../../lib/content";
+import { SelectClassInfoJSON } from "../../../lib/content/Descriptor";
 import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON } from "./EC";
 import { nullable } from "./Misc";
 

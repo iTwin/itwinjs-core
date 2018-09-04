@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "@helpers/Mocks";
-import { createRandomId } from "@helpers/random";
 import * as faker from "faker";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
-import { NativePlatformDefinition } from "@src/NativePlatform";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
+import { NativePlatformDefinition } from "../lib/NativePlatform";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {
 

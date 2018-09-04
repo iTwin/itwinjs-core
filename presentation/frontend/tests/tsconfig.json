@@ -4,23 +4,14 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "outDir": "../lib",
-    "baseUrl": "../node_modules/",
-    "paths": {
-      "@src*": [
-        "../src/*"
-      ],
-      "@common/*": [
-        "@bentley/presentation-common/lib/*",
-        "@bentley/presentation-common/*"
-      ],
-      "@helpers*": [
-        "../../common/tests/_helpers/*",
-        "../tests/_helpers/*"
-      ]
-    }
+    "outDir": "../lib"
   },
   "include": [
     "./**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../lib"
+    }
   ]
 }

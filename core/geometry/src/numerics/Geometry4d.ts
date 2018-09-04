@@ -179,6 +179,18 @@ export class Point4d implements BeJSONFunctions {
   }
   public static createZero(): Point4d { return new Point4d(0, 0, 0, 0); }
   /**
+   * Create plane coefficients for the plane containing pointA, pointB, and 0010.
+   * @param pointA first point
+   * @param pointB second point
+   */
+  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d) {
+    return Point4d.create(
+      pointA.y * pointB.w - pointA.w * pointB.y,
+      pointA.w * pointB.x - pointA.x * pointB.w,
+      0.0,
+      pointA.x * pointB.y - pointA.y * pointB.x);
+  }
+  /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
@@ -187,7 +199,7 @@ export class Point4d implements BeJSONFunctions {
     return new Point4d(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3]);
   }
 
-  public static createFromPointAndWeight(xyz: XYZ, w: number): Point4d {
+  public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
 
@@ -264,6 +276,20 @@ export class Point4d implements BeJSONFunctions {
   }
   public dotProductXYZW(x: number, y: number, z: number, w: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w;
+  }
+  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  public altitude(point: Point3d): number {
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
+  }
+
+  /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocity(vector: Vector3d): number {
+    return this.xyzw[0] * vector.x + this.xyzw[1] * vector.y + this.xyzw[2] * vector.z;
+  }
+
+  /** dotProduct with (x,y,z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocityXYZ(x: number, y: number, z: number): number {
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z;
   }
 
   /** unit X vector */

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="RefCommentedOut" alias="a" version="1.1.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" displayLabel="RefCommentedOut" description="This is a test Schema.">
+    <ECSchemaReference name="SchemaC" version="4.4" alias="c"/>
+    <!--<ECSchemaReference name="InteropLayerPlaceHolder" version="01.00.00" alias="IL"/>-->
+    <!--<ECSchemaReference name="DoesNotExistOne" version="01.00.00" alias="DNEOne"/>-->
+    <ECSchemaReference name="SchemaD" version="5.5" alias="d"/>
+    <!--<ECSchemaReference name="DoesNotExistTwo" version="01.00.00" alias="DNETwo"/>-->
+</ECSchema>

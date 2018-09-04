@@ -9,7 +9,6 @@ import {
   IPresentationManager, RpcRequestsHandler,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  IRulesetVariablesManager, IRulesetManager,
   Paged, RequestOptions, KeySet, InstanceKey,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "./RulesetVariablesManager";
@@ -43,14 +42,14 @@ export default class PresentationManager implements IPresentationManager<IModelC
   private constructor(props?: Props) {
     if (props)
       this.activeLocale = props.activeLocale;
-    this._requestsHandler = (props && props.rpcRequestsHandler) ? props.rpcRequestsHandler : new RpcRequestsHandler();
-    this._rulesets = new RulesetManager(this._requestsHandler);
+    this._rulesets = new RulesetManager();
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
+    this._requestsHandler = (props && props.rpcRequestsHandler) ? props.rpcRequestsHandler : new RpcRequestsHandler();
+    this._requestsHandler.registerClientStateHolder(this._rulesets);
   }
 
   public dispose() {
-    this._rulesets.dispose();
-    this._rulesetVars.forEach((v) => v.dispose());
+    this._requestsHandler.dispose();
   }
 
   /**
@@ -64,11 +63,14 @@ export default class PresentationManager implements IPresentationManager<IModelC
   /** @hidden */
   public get rpcRequestsHandler() { return this._requestsHandler; }
 
-  public rulesets(): IRulesetManager { return this._rulesets; }
+  public rulesets() { return this._rulesets; }
 
-  public vars(rulesetId: string): IRulesetVariablesManager {
-    if (!this._rulesetVars.has(rulesetId))
-      this._rulesetVars.set(rulesetId, new RulesetVariablesManager(this._requestsHandler, rulesetId));
+  public vars(rulesetId: string) {
+    if (!this._rulesetVars.has(rulesetId)) {
+      const varsManager = new RulesetVariablesManager(rulesetId);
+      this._rulesetVars.set(rulesetId, varsManager);
+      this._requestsHandler.registerClientStateHolder(varsManager);
+    }
     return this._rulesetVars.get(rulesetId)!;
   }
 

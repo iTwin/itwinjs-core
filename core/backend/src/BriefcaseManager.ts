@@ -16,7 +16,7 @@ import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, Chan
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
-import { IModelDb, OpenParams, SyncMode, AccessMode } from "./IModelDb";
+import { IModelDb, OpenParams, SyncMode, AccessMode, ExclusiveAccessOption } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
@@ -249,17 +249,17 @@ export class BriefcaseManager {
    * In the case of iModelHub, contextId will be a Connect project GUID. That means use _defaultHubClient.
    * In the case of iModelBank, contextId will be a JSON-encoded object that contains the iModelBankClient parameters that should be used.
    */
-  public static setClientFromIModelTokenContext(contextId: string | undefined) {
+  public static setClientFromIModelTokenContext(contextId: string | undefined, iModelId: string) {
     if (this._lastIModelClientContext === contextId)
       return;
     this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, new UrlFileHandler()) : undefined;
+    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, iModelId, new UrlFileHandler()) : undefined;
     this.setClientFromAccessContext(iModelBankAccessContext);
   }
 
   /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
   public static setClientForBriefcase(briefcase: BriefcaseEntry) {
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext);
+    this.setClientFromIModelTokenContext(briefcase.imodelClientContext, briefcase.iModelId);
   }
 
   private static _connectClient?: ConnectClient;
@@ -327,7 +327,9 @@ export class BriefcaseManager {
   private static makeDirectoryRecursive(dirPath: string) {
     if (IModelJsFs.existsSync(dirPath))
       return;
-    BriefcaseManager.makeDirectoryRecursive(path.dirname(dirPath));
+    const parentPath = path.dirname(dirPath);
+    if (parentPath !== dirPath)
+      BriefcaseManager.makeDirectoryRecursive(parentPath);
     IModelJsFs.mkdirSync(dirPath);
   }
 
@@ -471,8 +473,11 @@ export class BriefcaseManager {
     // NEEDS_WORK: initCache() is to be made synchronous and independent of the accessToken passed in.
     if (!BriefcaseManager._memoizedInitCache)
       BriefcaseManager._memoizedInitCache = BriefcaseManager.initCache(accessToken);
-    await BriefcaseManager._memoizedInitCache;
-    BriefcaseManager._memoizedInitCache = undefined;
+    try {
+      await BriefcaseManager._memoizedInitCache;
+    } finally {
+      BriefcaseManager._memoizedInitCache = undefined;
+    }
   }
 
   /** Get the index of the change set from its id */
@@ -492,7 +497,7 @@ export class BriefcaseManager {
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     await BriefcaseManager.memoizedInitCache(accessToken);
 
-    this.setClientFromIModelTokenContext(contextId);
+    this.setClientFromIModelTokenContext(contextId, iModelId);
 
     assert(!!BriefcaseManager.imodelClient);
 
@@ -509,19 +514,19 @@ export class BriefcaseManager {
 
     perfLogger = new PerfLogger("IModelDb.open, find cached briefcase");
     let briefcase = BriefcaseManager.findCachedBriefcaseToOpen(accessToken, iModelId, changeSetIndex, openParams);
-    if (briefcase && briefcase.isOpen) {
+    if (briefcase && briefcase.isOpen && briefcase.changeSetIndex === changeSetIndex) {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} without changes`);
-      assert(briefcase.changeSetIndex === changeSetIndex);
       return briefcase;
     }
+
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("IModelDb.open, preparing briefcase");
     let isNewBriefcase: boolean = false;
-    const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode); // Merge needs the Db to be opened ReadWrite
+    const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode, openParams.exclusiveAccessOption); // Merge needs the Db to be opened ReadWrite
     if (briefcase) {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} after upgrades (if necessary)`);
-      BriefcaseManager.reopenBriefcase(briefcase, tempOpenParams);
+      BriefcaseManager.reopenBriefcase(accessToken, briefcase, tempOpenParams);
     } else {
       briefcase = await BriefcaseManager.createBriefcase(accessToken, contextId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
       isNewBriefcase = true;
@@ -552,7 +557,7 @@ export class BriefcaseManager {
 
     // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode)
-      BriefcaseManager.reopenBriefcase(briefcase, openParams);
+      BriefcaseManager.reopenBriefcase(accessToken, briefcase, openParams);
 
     perfLogger.dispose();
 
@@ -586,22 +591,27 @@ export class BriefcaseManager {
 
   /** Finds any existing briefcase for the specified parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
   private static findCachedBriefcaseToOpen(accessToken: AccessToken, iModelId: string, requiredChangeSetIndex: number, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
-
     const requiredUserId = accessToken.getUserProfile()!.userId;
 
+    // Narrow down briefcases by various criteria (except their versions)
     const filterBriefcaseFn = (entry: BriefcaseEntry): boolean => {
-
       // Narrow down to entries for the specified iModel
       if (entry.iModelId !== iModelId)
         return false;
 
-      // Reject any previously open briefcases if exclusive access is required
-      if (entry.isOpen && requiredOpenParams.accessMode === AccessMode.Exclusive)
-        return false;
+      // Narrow down open briefcases
+      if (entry.isOpen) {
+        // If exclusive access is required, do not reuse if the user preference indicates so, or if the briefcase wasn't previously created by the same user
+        if (requiredOpenParams.accessMode === AccessMode.Exclusive && (requiredOpenParams.exclusiveAccessOption !== ExclusiveAccessOption.TryReuseOpenBriefcase || requiredUserId !== entry.userId))
+          return false;
 
-      // Narrow down to the exact same open parameters (if it was opened)
-      if (entry.isOpen && (entry.openParams!.openMode !== requiredOpenParams.openMode || entry.openParams!.accessMode !== requiredOpenParams.accessMode || entry.openParams!.syncMode !== requiredOpenParams.syncMode))
-        return false;
+        // Any open briefcase must have been opened with the exact same open parameters
+        if (!entry.openParams!.equals(requiredOpenParams))
+          return false;
+
+        if (entry.openParams!.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase)
+          return false;
+      }
 
       // For PullOnly or FixedVersion briefcases, ensure that the briefcase is opened Standalone, and does NOT have any reversed changes
       // Note: We currently allow reversal only in Exclusive briefcases. Also, we reinstate any reversed changes in all briefcases when the
@@ -611,64 +621,40 @@ export class BriefcaseManager {
 
       // For PullAndPush briefcases, ensure that the user had acquired the briefcase the first time around
       // else if (requiredOpenParams.syncMode === SyncMode.PullAndPush)
-      return entry.userId === requiredUserId;
+      return entry.briefcaseId !== BriefcaseId.Standalone && entry.userId === requiredUserId;
     };
 
-    // Narrow the cache down to the entries for the specified imodel, with the specified openMode (if defined) and those that don't have any change sets reversed
     const briefcases = this._cache.getFilteredBriefcases(filterBriefcaseFn);
     if (!briefcases || briefcases.length === 0)
       return undefined;
 
     let briefcase: BriefcaseEntry | undefined;
 
-    /* FixedVersion, PullOnly - find a standalone briefcase */
-    if (requiredOpenParams.syncMode !== SyncMode.PullAndPush) {
-
-      // first prefer a briefcase that's open, and with changeSetIndex = requiredChangeSetIndex (if exclusive access is not required)
-      if (requiredOpenParams.accessMode !== AccessMode.Exclusive) {
-        briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-          return entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
-        });
-        if (briefcase)
-          return briefcase;
-      }
-
-      // next prefer a briefcase that's closed, and with changeSetIndex = requiredChangeSetIndex
-      briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-        return !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
-      });
-      if (briefcase)
-        return briefcase;
-
-      // next prefer any standalone briefcase that's closed, and with changeSetIndex < requiredChangeSetIndex
-      briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-        return !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex;
-      });
-      if (briefcase)
-        return briefcase;
-
-      return undefined;
-    }
-
-    /* PullAndPush - find the acquired briefcase */
-
-    // first prefer any briefcase with changeSetIndex = requiredChangeSetIndex
+    // first prefer open briefcases, with a changeSetIndex that can be upgraded in case Exclusive access is required, or with the same exact changeSetIndex if Shared access is required
     briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      return entry.changeSetIndex === requiredChangeSetIndex;
-    });
-    if (briefcase) {
-      assert(!briefcase.isOpen); // PullAndPush require Exclusive access, and cannot reuse a previously open briefcase
-      return briefcase;
-    }
+      if (!entry.isOpen)
+        return false;
 
-    // next prefer any briefcase with changeSetIndex < requiredChangeSetIndex
-    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      return entry.changeSetIndex! < requiredChangeSetIndex;
+      return (requiredOpenParams.accessMode === AccessMode.Exclusive) ?
+        entry.changeSetIndex! <= requiredChangeSetIndex :
+        entry.changeSetIndex === requiredChangeSetIndex;
     });
-    if (briefcase) {
-      assert(!briefcase.isOpen); // PullAndPush require Exclusive access, and cannot reuse a previously open briefcase
+    if (briefcase)
       return briefcase;
-    }
+
+    // next prefer a briefcase that's closed, and with changeSetIndex = requiredChangeSetIndex
+    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
+      return !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
+    });
+    if (briefcase)
+      return briefcase;
+
+    // next prefer any standalone briefcase that's closed, and with changeSetIndex < requiredChangeSetIndex
+    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
+      return !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex;
+    });
+    if (briefcase)
+      return briefcase;
 
     return undefined;
   }
@@ -702,7 +688,7 @@ export class BriefcaseManager {
 
   /** Create a briefcase */
   private static async createBriefcase(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
-    this.setClientFromIModelTokenContext(contextId);
+    this.setClientFromIModelTokenContext(contextId, iModelId);
 
     const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
@@ -876,7 +862,7 @@ export class BriefcaseManager {
 
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
@@ -910,7 +896,7 @@ export class BriefcaseManager {
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName)))
+    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName, undefined, undefined, undefined, OpenMode.ReadWrite)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
@@ -944,8 +930,8 @@ export class BriefcaseManager {
       BriefcaseManager._cache.deleteBriefcase(briefcase);
   }
 
-  /** Purge closed briefcases */
-  public static async purgeClosed(accessToken: AccessToken) {
+  /** Delete closed briefcases */
+  public static async deleteClosed(accessToken: AccessToken) {
     await BriefcaseManager.memoizedInitCache(accessToken);
 
     const briefcases = BriefcaseManager._cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => !briefcase.isOpen);
@@ -983,11 +969,19 @@ export class BriefcaseManager {
     }
   }
 
-  /** Purge all briefcases and reset the briefcase manager */
-  public static purgeAll() {
-    if (IModelJsFs.existsSync(BriefcaseManager.cacheDir))
-      BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cacheDir);
+  /** Purges the cache of briefcases - closes any open briefcases,
+   *  releases any briefcases acquired from the hub, and deletes the cache
+   *  directory.
+   */
+  public static async purgeCache(accessToken: AccessToken) {
+    await BriefcaseManager.memoizedInitCache(accessToken);
 
+    const briefcases = BriefcaseManager._cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => briefcase.isOpen);
+    for (const briefcase of briefcases) {
+      await briefcase.iModelDb!.close(accessToken, KeepBriefcase.Yes);
+    }
+
+    await this.deleteClosed(accessToken);
     BriefcaseManager.clearCache();
   }
 
@@ -1032,7 +1026,7 @@ export class BriefcaseManager {
     briefcase.openParams = undefined;
   }
 
-  private static reopenBriefcase(briefcase: BriefcaseEntry, openParams: OpenParams) {
+  private static reopenBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry, openParams: OpenParams) {
     if (briefcase.isOpen)
       BriefcaseManager.closeBriefcase(briefcase);
 
@@ -1043,6 +1037,7 @@ export class BriefcaseManager {
       throw new IModelError(res, briefcase.pathname);
 
     briefcase.openParams = openParams;
+    briefcase.userId = accessToken.getUserProfile()!.userId;
     briefcase.isOpen = true;
   }
 

@@ -236,4 +236,22 @@ describe("SchemaXmlFileLocater tests:", () => {
     // Assert
     assert.isUndefined(stub);
   });
+  it("sync - should ignore commented out schema references", () => {
+    // Act
+    const stub = context.getSchemaSync(new SchemaKey("RefCommentedOut", 1, 1, 1), SchemaMatchType.LatestReadCompatible);
+
+    // Assert
+    assert.isDefined(stub);
+    assert.equal(stub!.schemaKey.name, "RefCommentedOut");
+    assert.equal(stub!.schemaKey.version.toString(), "1.1.1");
+  });
+  it("async - should ignore commented out schema references", async () => {
+    // Act
+    const stub = await context.getSchema(new SchemaKey("RefCommentedOut", 1, 1, 1), SchemaMatchType.LatestReadCompatible);
+
+    // Assert
+    assert.isDefined(stub);
+    assert.equal(stub!.schemaKey.name, "RefCommentedOut");
+    assert.equal(stub!.schemaKey.version.toString(), "1.1.1");
+  });
 });

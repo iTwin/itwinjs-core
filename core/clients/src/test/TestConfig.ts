@@ -8,10 +8,26 @@ import { Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelh
 import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
+import { loggingCategoryFullUrl } from "../Request";
+import * as fs from "fs";
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
-Logger.initializeToConsole();
+export const whitelistPath = "./lib/test/assets/whitelist.txt";
+export const logPath = "./lib/test/iModelClientsTests.log";
+
+const fileStream = fs.createWriteStream(logPath, { flags: "a" });
+
+// Initialize logger to file
+Logger.initialize(
+  (category: string, message: string): void => { fileStream.write("Error   |" + category + " | " + message + "\n"); },
+  (category: string, message: string): void => { fileStream.write("Warning |" + category + " | " + message + "\n"); },
+  (category: string, message: string): void => { fileStream.write("Info    |" + category + " | " + message + "\n"); },
+  (category: string, message: string): void => { fileStream.write("Trace   |" + category + " | " + message + "\n"); });
+
+// Log at minimum the full url category, so url validator test can execute
+Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
+
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
@@ -47,11 +63,11 @@ export class TestConfig {
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: UserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
+  public static async login(user: UserCredentials = TestUsers.regular, env: DeploymentEnv = TestConfig.deploymentEnv): Promise<AuthorizationToken> {
     if (TestConfig.deploymentEnv === "DEV" || TestConfig.deploymentEnv === "PERF")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
-    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(user.email, user.password);
+    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient(env)).getToken(user.email, user.password);
     expect(authToken);
 
     return authToken;

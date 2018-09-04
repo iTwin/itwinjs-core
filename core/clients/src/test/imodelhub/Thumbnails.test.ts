@@ -55,7 +55,7 @@ describe("iModelHub ThumbnailHandler", () => {
     }
 
     accessToken = await utils.login();
-    projectId = await utils.getProjectId();
+    projectId = await utils.getProjectId(accessToken);
     await utils.createIModel(accessToken, imodelName, projectId);
     iModelId = await utils.getIModelId(accessToken, imodelName);
 

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { createRandomECInstanceKey } from "@helpers/random";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import {
@@ -16,8 +16,8 @@ import {
 } from "@bentley/presentation-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
-import { PresentationPropertyDataProvider, withUnifiedSelection } from "@src/propertygrid";
+import IUnifiedSelectionComponent from "../../lib/common/IUnifiedSelectionComponent";
+import { PresentationPropertyDataProvider, withUnifiedSelection } from "../../lib/propertygrid";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = withUnifiedSelection(PropertyGrid);

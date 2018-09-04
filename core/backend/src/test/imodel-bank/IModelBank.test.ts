@@ -35,8 +35,8 @@ describe.skip("iModelBank", () => {
     const accessToken1 = NonBentleyProject.getAccessToken1();
     const accessToken2 = NonBentleyProject.getAccessToken2();
 
-    await BriefcaseManager.purgeClosed(accessToken1);
-    await BriefcaseManager.purgeClosed(accessToken2);
+    await BriefcaseManager.deleteClosed(accessToken1);
+    await BriefcaseManager.deleteClosed(accessToken2);
 
     const iModel1: IModelDb = await IModelDb.open(accessToken1, accessContext.toIModelTokenContextId(), imodelId, OpenParams.pullAndPush());
     assert.exists(iModel1);

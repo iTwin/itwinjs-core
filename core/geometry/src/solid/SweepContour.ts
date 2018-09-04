@@ -84,7 +84,7 @@ export class SweepContour {
           this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
           if (PolygonOps.sumTriangleAreasXY(points) < 0)
             points.reverse();
-          const graph = Triangulator.earcutFromPoints(points);
+          const graph = Triangulator.earcutSingleLoop(points);
           const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
           this._facets = unflippedPoly;
           this._facets.tryTransformInPlace(this.localToWorld);
