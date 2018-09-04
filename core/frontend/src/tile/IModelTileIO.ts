@@ -27,29 +27,31 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 
-/** Provides facilities for deserializing tiles in 'dgn' format. Such tiles contain element geometry. */
-export namespace DgnTileIO {
+/** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
+export namespace IModelTileIO {
   export const enum Flags {
     None = 0,
     ContainsCurves = 1 << 0,
-    Incomplete = 1 << 1,
-    IsLeaf = 1 << 2,
-    HasSizeMultiplier = 1 << 3,
+    Incomplete = 1 << 2,
   }
 
   export class Header extends TileIO.Header {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
-    public readonly sizeMultiplier: number;
+    public readonly tolerance: number;
+    public readonly numElementsIncluded: number;
+    public readonly numElementsExcluded: number;
     public readonly length: number;
 
-    public get isValid(): boolean { return TileIO.Format.Dgn === this.format; }
+    public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
       this.flags = stream.nextUint32;
       this.contentRange = ElementAlignedBox3d.createFromPoints(stream.nextPoint3d64, stream.nextPoint3d64);
-      this.sizeMultiplier = stream.nextFloat64;
+      this.tolerance = stream.nextFloat64;
+      this.numElementsIncluded = stream.nextUint32;
+      this.numElementsExcluded = stream.nextUint32;
       this.length = stream.nextUint32;
 
       if (stream.isPastTheEnd)
@@ -70,14 +72,14 @@ export namespace DgnTileIO {
       public readonly count: number) { }
   }
 
-  /** Deserializes a dgn tile. */
+  /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
-      // The feature table follows the dgnT header
+      // The feature table follows the iMdl header
       if (!this.skipFeatureTable(stream))
         return undefined;
 
@@ -86,86 +88,30 @@ export namespace DgnTileIO {
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled) : undefined;
     }
 
-    protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }  // Original IModel Tile creator set RTC unnecessarily and incorrectly.
-    private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
-      const startPos = stream.curPos;
-      const header = FeatureTableHeader.readFrom(stream);
-      if (undefined !== header)
-        stream.curPos = startPos + header.length;
-
-      return undefined !== header;
-    }
-
     public async read(): Promise<GltfTileIO.ReaderResult> {
-      // ###TODO don't re-read the headers...
       this._buffer.reset();
       const header = new Header(this._buffer);
-      let isLeaf = true;
+      const isLeaf = true;
       if (!header.isValid)
         return { readStatus: TileIO.ReadStatus.InvalidHeader, isLeaf };
 
-      isLeaf = Flags.None !== (header.flags & Flags.IsLeaf);
-      const hasSizeMultiplier = Flags.None !== (header.flags & Flags.HasSizeMultiplier);
-      const sizeMultiplier = hasSizeMultiplier ? header.sizeMultiplier : undefined;
+      // ###TODO: determine leafiness and size multiplier based on header metadata...
+      const sizeMultiplier = undefined;
+
       const featureTable = this.readFeatureTable();
       if (undefined === featureTable)
         return { readStatus: TileIO.ReadStatus.InvalidFeatureTable, isLeaf, sizeMultiplier };
-
-      const isComplete = Flags.None === (header.flags & Flags.Incomplete);
-      const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
 
       // Textures must be loaded asynchronously first...
       await this.loadNamedTextures();
       if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier });
-      else
-        return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange, sizeMultiplier));
+
+      return Promise.resolve({ readStatus: TileIO.ReadStatus.InvalidTileData, isLeaf, sizeMultiplier }); // ###TODO...
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, iModel, modelId, is3d, system, asClassifier, isCanceled);
-    }
-
-    protected readFeatureTable(): FeatureTable | undefined {
-      const startPos = this._buffer.curPos;
-      const header = FeatureTableHeader.readFrom(this._buffer);
-      if (undefined === header)
-        return undefined;
-
-      const featureTable = new FeatureTable(header.maxFeatures, this._modelId);
-      for (let i = 0; i < header.count; i++) {
-        const elementId = this._buffer.nextId64;
-        const subCategoryId = this._buffer.nextId64;
-        const geometryClass = this._buffer.nextUint32 as GeometryClass;
-        const index = this._buffer.nextUint32;
-
-        if (this._buffer.isPastTheEnd)
-          return undefined;
-
-        featureTable.insertWithIndex(new Feature(elementId, subCategoryId, geometryClass), index);
-      }
-
-      this._buffer.curPos = startPos + header.length;
-      return featureTable;
-    }
-
-    protected readFeatureIndices(json: any): number[] | undefined {
-      const featureId = json.featureID;
-      if (undefined !== featureId)
-        return [featureId as number];
-      else
-        return this.readIndices(json, "featureIDs");
-    }
-
-    protected readColorTable(colorTable: ColorMap, meshJson: any): boolean {
-      const json = JsonUtils.asArray(meshJson.colorTable);
-      if (undefined !== json) {
-        for (const color of json)
-          colorTable.insert(color as number);
-      }
-
-      return 0 < colorTable.length;
-    }
+    protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
+    protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { assert(false); return false; }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
@@ -291,6 +237,7 @@ export namespace DgnTileIO {
 
       return this.readNamedTexture(namedTex).then((result) => { namedTex.renderTexture = result; });
     }
+
     private async readNamedTexture(namedTex: any): Promise<RenderTexture | undefined> {
       const bufferViewId = JsonUtils.asString(namedTex.bufferView);
       const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
@@ -319,6 +266,42 @@ export namespace DgnTileIO {
         const params = new RenderTexture.Params(name, textureType);
         return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
       });
+    }
+
+    protected readFeatureTable(): FeatureTable | undefined {
+      const startPos = this._buffer.curPos;
+      const header = FeatureTableHeader.readFrom(this._buffer);
+      if (undefined === header)
+        return undefined;
+
+      const featureTable = new FeatureTable(header.maxFeatures, this._modelId);
+      for (let i = 0; i < header.count; i++) {
+        const elementId = this._buffer.nextId64;
+        const subCategoryId = this._buffer.nextId64;
+        const geometryClass = this._buffer.nextUint32 as GeometryClass;
+        const index = this._buffer.nextUint32;
+
+        if (this._buffer.isPastTheEnd)
+          return undefined;
+
+        featureTable.insertWithIndex(new Feature(elementId, subCategoryId, geometryClass), index);
+      }
+
+      this._buffer.curPos = startPos + header.length;
+      return featureTable;
+    }
+
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, iModel, modelId, is3d, system, asClassifier, isCanceled);
+    }
+
+    private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
+      const startPos = stream.curPos;
+      const header = FeatureTableHeader.readFrom(stream);
+      if (undefined !== header)
+        stream.curPos = startPos + header.length;
+
+      return undefined !== header;
     }
   }
 }
