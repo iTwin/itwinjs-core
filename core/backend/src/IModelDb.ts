@@ -54,7 +54,6 @@ import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -73,9 +72,17 @@ export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 /** Mode to access the IModelDb */
 export enum AccessMode { Shared = 1, Exclusive = 2 }
 
+/** Additional options for exclusive access to IModelDb  */
+export enum ExclusiveAccessOption {
+  /** Create or acquire a new briefcase every time the open call is made */
+  CreateNewBriefcase = 1,
+
+  /** Try and reuse an previously open briefcase every time the open call is made */
+  TryReuseOpenBriefcase = 2,
+}
+
 /** Parameters to open the iModelDb */
 export class OpenParams {
-
   // Constructor
   public constructor(
     /** Mode to Open the IModelDb */
@@ -86,6 +93,9 @@ export class OpenParams {
 
     /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
     public readonly syncMode?: SyncMode,
+
+    /** Additional hint for exclusive access to either create a new briefcase or try and reuse a previously opened briefcase */
+    public readonly exclusiveAccessOption?: ExclusiveAccessOption,
 
   ) {
     this.validate();
@@ -105,19 +115,28 @@ export class OpenParams {
     if (this.syncMode === SyncMode.PullAndPush && this.accessMode === AccessMode.Shared) {
       throw new IModelError(BentleyStatus.ERROR, "Pushing changes from a shared IModelDb is not supported");
     }
+
+    if (this.accessMode === AccessMode.Shared && this.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase) {
+      throw new IModelError(BentleyStatus.ERROR, "Accessing a shared IModelDb (i.e., setting AccessMode.Shared) implies that the briefcase would be reused if possible (i.e., need to pass BriefcaseOption.TryReuse)");
+    }
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion); }
+  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion, exclusiveAccessOption); }
 
   /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly); }
+  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly, exclusiveAccessOption); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush); }
+  public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
 
   /** Create parameters to open a standalone Db */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
+
+  /** Returns true if equal and false otherwise */
+  public equals(other: OpenParams) {
+    return other.accessMode === this.accessMode && other.openMode === this.openMode && other.syncMode === this.syncMode && other.exclusiveAccessOption === this.exclusiveAccessOption;
+  }
 }
 
 /**
@@ -203,7 +222,7 @@ export class IModelDb extends IModel {
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, openParams.openMode);
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
@@ -270,8 +289,9 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Open an iModel from iModelHub. IModelDb files are cached locally. If the requested version is already in the cache, then open will open it from there.
-   * Otherwise, open will download the requested version from iModelHub and cache it.
+   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from the iModelHub to the
+   * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
+   * Every open call must be matched with a call to close the IModelDb.
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.open]]
@@ -694,12 +714,12 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry) {
+    if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
       Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
     }
     // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    return briefcaseEntry.iModelDb!;
+    return briefcaseEntry.iModelDb;
   }
 
   /** Get the ClassMetaDataRegistry for this iModel. */
@@ -1219,7 +1239,7 @@ export namespace IModelDb {
     }
 
     /** Default parameters for iterating/querying ViewDefinitions. Includes all subclasses of ViewDefinition, excluding only those marked 'private'. */
-    public static readonly defaultQueryParams: ViewQueryParams = {  from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
+    public static readonly defaultQueryParams: ViewQueryParams = { from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
 
     /** Iterate all ViewDefinitions matching the supplied query.
      * @param params Specifies the query by which views are selected.
@@ -1399,27 +1419,3 @@ export namespace TxnManager {
     readonly _id: string;
   }
 }
-
-/** Utility to cache and retrieve results of long running open IModelDb requests
- * The cache is keyed on the input arguments passed to open
- * @hidden
- */
-class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
-  public constructor() {
-    super(IModelDb.open, (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
-      return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
-    });
-  }
-
-  private _superMemoize = this.memoize;
-  public memoize = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
-    return this._superMemoize(accessToken, contextId, iModelId, openParams, version);
-  }
-
-  private _superDeleteMemoized = this.deleteMemoized;
-  public deleteMemoized = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
-    this._superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
-  }
-}
-
-export const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();

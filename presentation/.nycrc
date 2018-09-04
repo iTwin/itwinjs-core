@@ -1,12 +1,14 @@
 {
   "require": [
     "source-map-support/register",
-    "ts-node/register",
-    "tsconfig-paths/register"
+    "ts-node/register"
+  ],
+  "include": [
+    "src/**/*",
+    "lib/**/*"
   ],
   "exclude": [
-    "**/*",
-    "!src/**/*"
+    "lib/test/**/*"
   ],
   "extension": [
     ".ts",
@@ -19,7 +21,7 @@
     "lcov",
     "cobertura"
   ],
-  "all": true,
+  "cache": false,
   "check-coverage": true,
   "statements": 100,
   "functions": 100,

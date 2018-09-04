@@ -26,7 +26,7 @@ import {
   RgbColor,
   ColorDef,
 } from "@bentley/imodeljs-common";
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
@@ -592,6 +592,26 @@ export class MeasurePointsTool extends PrimitiveTool {
         case "V":
           AccuDrawShortcuts.setStandardRotation(RotationMode.View);
           break;
+        case "o":
+        case "O":
+          AccuDrawShortcuts.setOrigin();
+          break;
+        case "c":
+        case "C":
+          AccuDrawShortcuts.rotateCycle(false);
+          break;
+        case "q":
+        case "Q":
+          AccuDrawShortcuts.rotateAxes(true);
+          break;
+        case "e":
+        case "E":
+          AccuDrawShortcuts.rotateToElement(false);
+          break;
+        case "r":
+        case "R":
+          AccuDrawShortcuts.defineACSByPoints();
+          break;
       }
     }
     return EventHandled.No;
@@ -656,7 +676,10 @@ export class ProjectExtentsDecoration {
 }
 
 // starts Measure between points tool
-function startMeasurePoints(_event: any) {
+function startMeasurePoints(event: any) {
+  const menu = document.getElementById("snapModeList") as HTMLDivElement;
+  if (event.target === menu)
+    return;
   IModelApp.tools.run("Measure.Points", theViewport!);
   // ProjectExtentsDecoration.toggle();
 }
@@ -1051,7 +1074,7 @@ async function main() {
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
   }
 
   const uiReady = displayUi();  // Get the browser started loading our html page and the svgs that it references but DON'T WAIT

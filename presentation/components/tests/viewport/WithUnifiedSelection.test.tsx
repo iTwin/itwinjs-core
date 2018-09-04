@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 import * as React from "react";
 import { expect, spy } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
-import * as moq from "@helpers/Mocks";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import {
   createRandomId,
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey,
   createRandomDescriptor,
-} from "@helpers/random";
-import { PromiseContainer } from "@helpers/Promises";
+} from "@bentley/presentation-common/tests/_helpers/random";
+import { PromiseContainer } from "@bentley/presentation-common/tests/_helpers/Promises";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
@@ -24,8 +24,8 @@ import {
 } from "@bentley/presentation-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { ViewportComponent } from "@bentley/ui-components";
-import IUnifiedSelectionComponent from "@src/common/IUnifiedSelectionComponent";
-import { default as withUnifiedSelection, ViewportSelectionHandler } from "@src/viewport/WithUnifiedSelection";
+import IUnifiedSelectionComponent from "../../lib/common/IUnifiedSelectionComponent";
+import { default as withUnifiedSelection, ViewportSelectionHandler } from "../../lib/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = withUnifiedSelection(ViewportComponent);
@@ -57,7 +57,7 @@ describe("Viewport withUnifiedSelection", () => {
       imodel={imodelMock.object}
       rulesetId={faker.random.word()}
       viewDefinitionId={viewDefinitionId}
-      selectionHandler={ selectionHandlerMock.object }
+      selectionHandler={selectionHandlerMock.object}
     />);
   });
 

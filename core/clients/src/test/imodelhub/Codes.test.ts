@@ -8,7 +8,7 @@ import { AccessToken } from "../../";
 
 import {
   CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubClientError,
+  IModelHubClientError, CodeSequence, CodeSequenceType,
 } from "../../";
 
 import { ResponseBuilder } from "../ResponseBuilder";
@@ -315,5 +315,70 @@ describe("iModelHub CodeHandler", () => {
     }
     chai.assert(error);
     chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
+  });
+});
+
+function formatSequenceValue(index: string) {
+  return `SequenceTest${index}`;
+}
+
+function createTestSequence(type: CodeSequenceType) {
+  const sequence = new CodeSequence();
+  sequence.valuePattern = formatSequenceValue("###");
+  sequence.codeScope = "TestScope";
+  sequence.codeSpecId = "0XA";
+  sequence.startIndex = 1;
+  sequence.incrementBy = 2;
+  sequence.type = type;
+  return sequence;
+}
+
+describe("iModelHub CodeSequenceHandler", () => {
+  let accessToken: AccessToken;
+  let imodelId: string;
+  let briefcaseId: number;
+  const imodelName = "imodeljs-clients Codes test";
+
+  before(async function (this: Mocha.Context) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    accessToken = await utils.login();
+    await utils.createIModel(accessToken, imodelName);
+    imodelId = await utils.getIModelId(accessToken, imodelName);
+
+    const briefcases = await utils.getBriefcases(accessToken, imodelId, 1);
+    briefcaseId = briefcases[0].briefcaseId!;
+  });
+
+  it("should acquire code with next available index value", async () => {
+    // Get next value in sequence
+    const sequence = createTestSequence(CodeSequenceType.NextAvailable);
+    const sequenceResult = await utils.getClient(imodelId).Codes().Sequences().get(accessToken, imodelId, sequence);
+    chai.assert(sequenceResult);
+
+    // Try to acquire Code with this value
+    const code = utils.randomCode(briefcaseId);
+    code.value = formatSequenceValue(sequenceResult);
+    code.state = CodeState.Used;
+    const reserveResult = await utils.getClient(imodelId).Codes().update(accessToken, imodelId, [code]);
+    chai.assert(reserveResult);
+  });
+
+  it("should query a code with largest used index value", async () => {
+    // Get next value in sequence
+    const sequence = createTestSequence(CodeSequenceType.LargestUsed);
+    const sequenceResult = await utils.getClient(imodelId).Codes().Sequences().get(accessToken, imodelId, sequence);
+    chai.assert(sequenceResult);
+
+    // Try to acquire Code with this value
+    const code = utils.randomCode(briefcaseId);
+    code.value = formatSequenceValue(sequenceResult);
+    code.state = CodeState.Used;
+    const query = new CodeQuery().byCodes([code]);
+    const queryResult = await utils.getClient(imodelId).Codes().get(accessToken, imodelId, query);
+    chai.assert(queryResult);
+    chai.expect(queryResult.length).to.be.gt(0);
+    chai.expect(queryResult[0].value).to.be.equal(code.value);
   });
 });

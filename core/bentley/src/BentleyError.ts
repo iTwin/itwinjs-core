@@ -4,7 +4,7 @@
 /** @module Errors */
 
 import { DbResult } from "./BeSQLite";
-import { LogFunction } from "./Logger";
+import { LogFunction, Logger } from "./Logger";
 
 /** Standard status code.
  * This status code should be rarely used.
@@ -306,7 +306,7 @@ export class BentleyError extends Error {
     this._getMetaData = getMetaData;
     this.name = this._initName();
     if (log)
-      log(category || "BentleyError", this.toString(), this._getMetaData);  // TODO: Can we come up with a better default category?
+      Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }

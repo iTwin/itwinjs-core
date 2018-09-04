@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelHost */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, FeatureGates, RpcInvocation, RpcInterface } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -60,6 +60,10 @@ export class IModelHost {
    * @see [[shutdown]].
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
+    Logger.activityIdGetter = () => {
+      return IModelHost.currentActivityContext ? IModelHost.currentActivityContext.activityId : "";
+    };
+
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 

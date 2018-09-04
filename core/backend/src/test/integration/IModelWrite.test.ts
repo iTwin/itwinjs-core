@@ -312,8 +312,8 @@ describe("IModelWriteTest", () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
 
     let timer = new Timer("delete iModels");
-    // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "ReadWriteTest";
+    // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
+    const iModelName = "OptimisticConcurrencyTest";
     const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
@@ -322,7 +322,7 @@ describe("IModelWriteTest", () => {
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
+    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();

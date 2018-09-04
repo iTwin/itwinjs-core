@@ -647,9 +647,8 @@ export class BackgroundMapState {
       style.position = "absolute";
       style.left = "0";
       style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
-      style.pointerEvents = "none";
     }
-    const copyrightMessage = this._provider.getCopyrightMessage(this, context.viewport as ScreenViewport);
+    const copyrightMessage = this._provider.getCopyrightMessage(this, context.screenViewport);
     if (copyrightMessage) {
       decorationDiv.appendChild(copyrightMessage);
       const boundingRect = copyrightMessage.getBoundingClientRect();

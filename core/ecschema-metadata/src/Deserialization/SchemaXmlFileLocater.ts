@@ -178,7 +178,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     if (!file)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
 
-    const data = file.toString();
+    const data = file.toString().replace(/(\s*)<!--.*?-->/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
 
     const keys: SchemaKey[] = [];
     const matches = data.match(/<ECSchemaReference ([^]+?)\/>/g);

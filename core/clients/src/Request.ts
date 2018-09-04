@@ -10,7 +10,9 @@ import { Logger, BentleyError, HttpStatus, GetMetaDataFunction } from "@bentley/
 import { Config } from "./Config";
 
 import * as https from "https";
-const loggingCategory = "imodeljs-clients.Request";
+
+export const loggingCategory = "imodeljs-clients.Request";
+export const loggingCategoryFullUrl = "imodeljs-clients.Url";
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
@@ -18,7 +20,9 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   // sendImmediately deprecated, user -> userName
 }
 
-/** Options to query the REST API */
+/** Typical option to query REST API. Note that services may not quite support these fields,
+ * and the interface is only provided as a hint.
+ */
 export interface RequestQueryOptions {
   /**
    * Select string used by the query (use the mapped EC property names, and not TypeScript property names)
@@ -32,7 +36,7 @@ export interface RequestQueryOptions {
    */
   $filter?: string;
 
-  /** Sets the limit on the number of entries to be returnd by the query */
+  /** Sets the limit on the number of entries to be returned by the query */
   $top?: number;
 
   /** Sets the number of entries to be skipped */
@@ -61,7 +65,7 @@ export interface RequestOptions {
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
   auth?: RequestBasicCredentials;
   body?: any;
-  qs?: any;
+  qs?: any | RequestQueryOptions;
   proxy?: RequestProxyConfig;
   responseType?: string;
   timeout?: number; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
@@ -204,11 +208,17 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   }
 
   let queryStr: string = "";
-  if (options.qs) {
+  let fullUrl: string = "";
+  if (options.qs && Object.keys(options.qs).length > 0) {
     const stringifyOptions: IStringifyOptions = { delimiter: "&", encode: false };
     queryStr = stringify(options.qs, stringifyOptions);
     sareq = sareq.query(queryStr);
+    fullUrl = url + "?" + queryStr;
+  } else {
+    fullUrl = url;
   }
+
+  Logger.logInfo(loggingCategoryFullUrl, fullUrl);
 
   if (options.auth) {
     sareq = sareq.auth(options.auth.user, options.auth.password);
@@ -326,7 +336,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)
   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
-  * superagent, but my plan is to switch to JavaScript's fetch library.
+  * superagent, but may eventually switch to JavaScript's fetch library.
   */
   return sareq
     .then((response: sarequest.Response) => {

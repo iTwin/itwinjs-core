@@ -1,16 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
 import { expect, spy } from "chai";
-import * as moq from "@helpers/Mocks";
-// import { initializeRpcInterface } from "@helpers/RpcHelper";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import "./_helpers/MockFrontendEnvironment";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { /*PresentationRpcInterface,*/ PresentationError } from "@common/index";
-import { Presentation } from "@src/index";
-import { SelectionManager } from "@src/selection";
-import PresentationManager from "@src/PresentationManager";
+import { PresentationError } from "@bentley/presentation-common";
+import { Presentation } from "../lib/index";
+import { SelectionManager } from "../lib/selection";
+import PresentationManager from "../lib/PresentationManager";
 
 describe("Presentation", () => {
 
@@ -22,9 +21,6 @@ describe("Presentation", () => {
   beforeEach(() => {
     shutdownIModelApp();
     NoRenderApp.startup();
-    // initializeRpcInterface(PresentationRpcInterface);
-    // const interfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-    // PresentationRpcInterface.getClient = () => interfaceMock.object;
     Presentation.terminate();
   });
 

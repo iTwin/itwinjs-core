@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
@@ -298,7 +299,7 @@ describe("RpcInterface", () => {
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
-    RpcOperation.fallbackToken = new IModelToken("test", "test", "test", "test");
+    RpcOperation.fallbackToken = new IModelToken("test", "test", "test", "test", OpenMode.Readonly);
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
     RpcOperation.fallbackToken = undefined;
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "none");

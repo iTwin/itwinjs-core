@@ -96,10 +96,11 @@ describe("ApplyChangeSets (#integration)", () => {
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "SampleBisPlant"; iModelName = "samplePlant20";
-    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-    await testAllOperations(accessToken, projectId, iModelId);
+    // Project was removed - find replacement
+    // projectName = "SampleBisPlant"; iModelName = "samplePlant20";
+    // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    // iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    // await testAllOperations(accessToken, projectId, iModelId);
 
     // iModel was removed - find permanent replacement
     // projectName = "plant-sta"; iModelName = "atp_10K.bim";

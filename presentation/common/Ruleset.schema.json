@@ -615,13 +615,13 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
-              },
-              {
                 "$ref": "#/definitions/ContentRelatedInstancesSpecification"
               },
               {
                 "$ref": "#/definitions/SelectedNodeInstancesSpecification"
+              },
+              {
+                "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
               }
             ]
           },
@@ -2113,16 +2113,16 @@
             "$ref": "#/definitions/StyleOverride"
           },
           {
-            "$ref": "#/definitions/ContentRule"
-          },
-          {
-            "$ref": "#/definitions/ContentModifier"
+            "$ref": "#/definitions/ChildNodeRule"
           },
           {
             "$ref": "#/definitions/RootNodeRule"
           },
           {
-            "$ref": "#/definitions/ChildNodeRule"
+            "$ref": "#/definitions/ContentModifier"
+          },
+          {
+            "$ref": "#/definitions/ContentRule"
           }
         ]
       },

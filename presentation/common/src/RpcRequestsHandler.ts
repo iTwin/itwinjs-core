@@ -3,16 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
-import { Ruleset } from "./rules";
 import KeySet from "./KeySet";
 import { PresentationStatus } from "./Error";
 import { InstanceKey } from "./EC";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
-import { VariableValue, VariableValueTypes } from "./IRulesetVariablesManager";
 import PresentationRpcInterface, { RpcRequestOptions } from "./PresentationRpcInterface";
 
 /**
@@ -30,29 +28,89 @@ export interface Props {
 }
 
 /**
+ * An interface for something that stores client state that needs
+ * to be synced with the backend.
+ *
+ * @hidden
+ */
+export interface IClientStateHolder<TState> {
+  key: string;
+  state: TState | undefined;
+  onStateChanged: BeEvent<() => void>;
+}
+
+/**
  * RPC requests handler that wraps [[PresentationRpcInterface]] and
  * adds handling for cases when backend needs to be synced with client
  * state.
  *
  * @hidden
  */
-export default class RpcRequestsHandler {
+export default class RpcRequestsHandler implements IDisposable {
+
+  private _clientStateId?: string;
+  private _clientStateHolders: Array<IClientStateHolder<any>>;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
 
-  /** IDs of the backends known to this client */
-  public readonly knownBackendIds = new Set<string>();
-
-  /** A list of synchronization handlers which sync backends with client state */
-  public readonly syncHandlers = new Array<() => Promise<void>>();
+  /** ID that identifies current client state */
+  public get clientStateId() { return this._clientStateId; }
 
   public constructor(props?: Props) {
     this.clientId = (props && props.clientId) ? props.clientId : Guid.createValue();
+    this._clientStateHolders = [];
   }
 
-  private async sync(): Promise<void> {
-    await Promise.all(this.syncHandlers.map((s) => s()));
+  public dispose() {
+    this._clientStateHolders.forEach((h) => h.onStateChanged.removeListener(this.onClientStateChanged));
+    this._clientStateHolders = [];
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
+
+  private createRequestOptions<T extends { imodel: IModelToken }>(options: T): RpcRequestOptions & T {
+    return Object.assign({}, options, {
+      clientId: this.clientId,
+      clientStateId: this._clientStateId,
+    });
+  }
+
+  public registerClientStateHolder(holder: IClientStateHolder<any>) {
+    this._clientStateHolders.push(holder);
+    holder.onStateChanged.addListener(this.onClientStateChanged);
+  }
+
+  public unregisterClientStateHolder(holder: IClientStateHolder<any>) {
+    const index = this._clientStateHolders.indexOf(holder);
+    if (- 1 !== index)
+      this._clientStateHolders.splice(index, 1);
+    holder.onStateChanged.removeListener(this.onClientStateChanged);
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private onClientStateChanged = (): void => {
+    this._clientStateId = Guid.createValue();
+  }
+
+  /**
+   * Syncs backend with the client state provided by client state holders
+   *
+   * @hidden
+   */
+  public async sync(token: IModelToken): Promise<void> {
+    const clientState: { [stateKey: string]: any } = {};
+    for (const holder of this._clientStateHolders) {
+      const holderState = holder.state;
+      const existing = clientState[holder.key];
+      if (existing && typeof existing === "object" && typeof holderState === "object") {
+        clientState[holder.key] = { ...existing, ...holderState };
+      } else {
+        clientState[holder.key] = holderState;
+      }
+    }
+    await this.rpcClient.syncClientState(this.createRequestOptions({ imodel: token, state: clientState }));
   }
 
   /**
@@ -63,53 +121,30 @@ export default class RpcRequestsHandler {
    *
    * @hidden
    */
-  public async doRequest<TResult>(request: () => Promise<TResult>, repeatRequest: boolean = true): Promise<TResult> {
+  public async request<TResult, TOptions extends RpcRequestOptions, TArg extends any[]>(context: any, func: (options: TOptions, ...args: TArg) => Promise<TResult>, options: TOptions, ...args: TArg): Promise<TResult> {
+    const doRequest = () => func.apply(context, [options, ...args]);
     try {
-      return await request();
+      return await doRequest();
     } catch (e) {
-      if (e.errorNumber === PresentationStatus.UnknownBackend) {
-        this.knownBackendIds.add(e.message); // note: e.message is the backend id
-        await this.doRequest<void>(() => this.sync(), false);
-        if (repeatRequest)
-          return await this.doRequest(request);
-        // note: we expect `repeatRequest` to be `false` only for `void`
-        // requests - it's up to the caller to ensure that
-        return undefined as any;
+      if (e.errorNumber === PresentationStatus.BackendOutOfSync) {
+        await this.sync(options.imodel);
+        return await doRequest();
       } else {
+        // unknown error - rethrow
         throw e;
       }
     }
   }
 
-  /** Get the frontend client of this interface */
-  private getClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
+  public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> { return await this.request(this.rpcClient, this.rpcClient.getRootNodes, this.createRequestOptions(options)); }
+  public async getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getRootNodesCount, this.createRequestOptions(options)); }
+  public async getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> { return await this.request(this.rpcClient, this.rpcClient.getChildren, this.createRequestOptions(options), parentKey); }
+  public async getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getChildrenCount, this.createRequestOptions(options), parentKey); }
+  public async getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> { return await this.request(this.rpcClient, this.rpcClient.getNodePaths, this.createRequestOptions(options), paths, markedIndex); }
+  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]> { return await this.request(this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText); }
 
-  private createRequestOptions<T>(options: T): RpcRequestOptions & T {
-    return Object.assign({}, options, {
-      clientId: this.clientId,
-      knownBackendIds: [...this.knownBackendIds],
-    });
-  }
-
-  public getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> { return this.doRequest(() => this.getClient().getRootNodes(this.createRequestOptions(options))); }
-  public getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> { return this.doRequest(() => this.getClient().getRootNodesCount(this.createRequestOptions(options))); }
-  public getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> { return this.doRequest(() => this.getClient().getChildren(this.createRequestOptions(options), parentKey)); }
-  public getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> { return this.doRequest(() => this.getClient().getChildrenCount(this.createRequestOptions(options), parentKey)); }
-  public getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> { return this.doRequest(() => this.getClient().getNodePaths(this.createRequestOptions(options), paths, markedIndex)); }
-  public getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]> { return this.doRequest(() => this.getClient().getFilteredNodePaths(this.createRequestOptions(options), filterText)); }
-
-  public getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> { return this.doRequest(() => this.getClient().getContentDescriptor(this.createRequestOptions(options), displayType, keys, selection)); }
-  public getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> { return this.doRequest(() => this.getClient().getContentSetSize(this.createRequestOptions(options), descriptor, keys)); }
-  public getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> { return this.doRequest(() => this.getClient().getContent(this.createRequestOptions(options), descriptor, keys)); }
-  public getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> { return this.doRequest(() => this.getClient().getDistinctValues(this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount)); }
-
-  public getRuleset(rulesetId: string): Promise<[Ruleset, string] | undefined> { return this.doRequest(() => this.getClient().getRuleset(this.createRequestOptions({}), rulesetId)); }
-  public addRuleset(ruleset: Ruleset): Promise<string> { return this.doRequest(() => this.getClient().addRuleset(this.createRequestOptions({}), ruleset)); }
-  public addRulesets(rulesets: Ruleset[]): Promise<string[]> { return this.doRequest(() => this.getClient().addRulesets(this.createRequestOptions({}), rulesets)); }
-  public removeRuleset(rulesetId: string, hash: string): Promise<boolean> { return this.doRequest(() => this.getClient().removeRuleset(this.createRequestOptions({}), rulesetId, hash)); }
-  public clearRulesets(): Promise<void> { return this.doRequest(() => this.getClient().clearRulesets(this.createRequestOptions({})), false); }
-
-  public getRulesetVariableValue(rulesetId: string, varId: string, varType: VariableValueTypes): Promise<VariableValue> { return this.doRequest(() => this.getClient().getRulesetVariableValue(this.createRequestOptions({ rulesetId }), varId, varType)); }
-  public setRulesetVariableValue(rulesetId: string, varId: string, varType: VariableValueTypes, value: VariableValue): Promise<void> { return this.doRequest(() => this.getClient().setRulesetVariableValue(this.createRequestOptions({ rulesetId }), varId, varType, value), false); }
-  public setRulesetVariableValues(rulesetId: string, values: Array<[string, VariableValueTypes, VariableValue]>): Promise<void> { return this.doRequest(() => this.getClient().setRulesetVariableValues(this.createRequestOptions({ rulesetId }), values), false); }
+  public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> { return await this.request(this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection); }
+  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptor, keys); }
+  public async getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> { return await this.request(this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptor, keys); }
+  public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> { return await this.request(this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount); }
 }
