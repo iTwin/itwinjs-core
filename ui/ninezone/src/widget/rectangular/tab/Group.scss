@@ -1,0 +1,68 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../../_variables";
+
+.nz-widget-rectangular-tab-group {
+  @mixin nz-handle-gradient($direction) {
+    background: linear-gradient($direction, $background-5, rgba($background-4, 0.5));
+  }
+
+  $border-radius: 2px;
+  $offset: $nz-tab-width - 2;
+  $width: 10px;
+
+  position: relative;
+
+  &:before {
+    content: "";
+    width: $width;
+    height: 100%;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  &.nz-left-anchor {
+    &:before {
+      border-top-right-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+      left: $offset;
+
+      @include nz-handle-gradient(to right);
+    }
+  }
+
+  &.nz-right-anchor {
+    &:before {
+      border-top-left-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+      right: $offset;
+
+      @include nz-handle-gradient(to left);
+    }
+  }
+
+  &.nz-handle-hover {
+    &:hover {
+      &:before {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.nz-handle-visible {
+    &:before {
+      transition: opacity 0;
+      opacity: 1;
+    }
+  }
+
+  &.nz-handle-timeout {
+    &:before {
+      transition-delay: 1s;
+      opacity: 0;
+    }
+  }
+}

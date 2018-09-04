@@ -74,7 +74,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   isOpen?: boolean;
   /** Function called when resize action is performed. */
   onResize?: (x: number, y: number, handle: ResizeHandle) => void;
-  /** One or more tabs/separators. See: [[Draggable]], [[TabSeparator]], [[Tab]] */
+  /** Widget tabs. See: [[Draggable]], [[TabSeparator]], [[Tab]], [[Group]] */
   tabs?: React.ReactNode;
 }
 

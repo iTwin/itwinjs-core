@@ -143,13 +143,14 @@ export class StateManager {
     if (!zone.isWidgetOpen)
       return { ...model.props };
 
+    const isUnmerge = zone.getWidgets().length > 1;
     const defaultZone = widget.defaultZone;
     const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
     let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
     if (widget.isInHomeZone)
       floatingBounds = defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds;
 
-    const isUnmerge = zone.getWidgets().length > unmergeBounds.length;
+    const keepSomeZonesMerged = zone.getWidgets().length > unmergeBounds.length;
     return {
       ...model.props,
       zones: {
@@ -164,7 +165,7 @@ export class StateManager {
           const isDefaultZone = id === defaultZone.id;
           const isZone = id === zone.id;
           const unsetAnchor = !isDefaultZone;
-          const filterOthers = isZone && isUnmerge;
+          const filterOthers = isZone && keepSomeZonesMerged;
 
           const filteredWidgets = model.props.zones[zone.props.id].widgets.filter((w) => {
             if (filterOthers)
@@ -206,6 +207,7 @@ export class StateManager {
           x: initialPosition.x,
           y: initialPosition.y,
         },
+        isUnmerge,
       },
     };
   }

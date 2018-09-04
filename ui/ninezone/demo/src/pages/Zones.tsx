@@ -67,6 +67,7 @@ import Size from "@src/utilities/Size";
 import ResizeHandle from "@src/widget/rectangular/ResizeHandle";
 import WidgetTab from "@src/widget/rectangular/tab/Draggable";
 import TabSeparator from "@src/widget/rectangular/tab/Separator";
+import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
 import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
@@ -83,6 +84,8 @@ import GhostOutline from "@src/zones/GhostOutline";
 import ThemeContext from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import "./Zones.scss";
+import { TabMode } from "@src/widget/rectangular/tab/Tab";
+import { ZoneProps } from "@src/zones/state/Zone";
 
 /* tslint:disable */
 
@@ -1418,16 +1421,31 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private getWidgetTabs(widget: WidgetProps, anchor: HorizontalAnchor) {
-    const lastPosition = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === widget.id ?
-      this.state.nineZone.draggingWidget.lastPosition : undefined;
-    const tabIndex = this.state.nineZone.draggingWidget ? this.state.nineZone.draggingWidget.tabIndex : -1;
+  private getTabHandleMode(zone: ZoneProps, widget: WidgetProps) {
+    const draggingWidget = this.state.nineZone.draggingWidget;
+    if (draggingWidget && draggingWidget.id === widget.id && draggingWidget.isUnmerge)
+      return VisibilityMode.Visible;
+
+    if (zone.widgets.length > 1)
+      return VisibilityMode.OnHover;
+
+    return VisibilityMode.Timeout;
+  }
+
+  private getWidgetTabs(zone: ZoneProps, widget: WidgetProps, isOpen: boolean, anchor: HorizontalAnchor) {
+    const draggingWidget = this.state.nineZone.draggingWidget;
+    const lastPosition = draggingWidget && draggingWidget.id === widget.id ?
+      draggingWidget.lastPosition : undefined;
+    const tabIndex = draggingWidget ? draggingWidget.tabIndex : -1;
+    const mode1 = !isOpen ? TabMode.Closed : widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
+    const mode2 = !isOpen ? TabMode.Closed : widget.tabIndex === 2 ? TabMode.Active : TabMode.Open;
+    const handleMode = this.getTabHandleMode(zone, widget);
     switch (widget.id) {
       case 3: {
         return ([
           <WidgetTab
             key="3_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
@@ -1440,38 +1458,42 @@ export default class ZonesExample extends React.Component<{}, State> {
         ]);
       }
       case 4: {
-        return ([
-          <WidgetTab
-            key="4_1"
-            isActive={widget.tabIndex === 1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
-            onDragFinish={this._handleWidgetTabDragFinish}
-            onDrag={this._handleWidgetTabDrag}
+        return (
+          <WidgetTabGroup
+            key="4"
             anchor={anchor}
+            handleMode={handleMode}
           >
-            <i className="icon icon-settings" />
-          </WidgetTab>,
-          <WidgetTab
-            key="4_2"
-            isActive={widget.tabIndex === 2}
-            onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            lastPosition={tabIndex === 2 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
-            onDragFinish={this._handleWidgetTabDragFinish}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-help" />
-          </WidgetTab>,
-        ]);
+            <WidgetTab
+              mode={mode1}
+              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              lastPosition={tabIndex === 1 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragFinish={this._handleWidgetTabDragFinish}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-settings" />
+            </WidgetTab>
+            <WidgetTab
+              mode={mode2}
+              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              lastPosition={tabIndex === 2 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragFinish={this._handleWidgetTabDragFinish}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-help" />
+            </WidgetTab>
+          </WidgetTabGroup >
+        );
       }
       case 6: {
         return ([
           <WidgetTab
             key="6_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
@@ -1487,7 +1509,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         return ([
           <WidgetTab
             key="7_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
@@ -1503,7 +1525,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         return ([
           <WidgetTab
             key="8_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
             onDragStart={(initialPosition, offset) => {
@@ -1519,32 +1541,36 @@ export default class ZonesExample extends React.Component<{}, State> {
         ]);
       }
       case 9: {
-        return ([
-          <WidgetTab
-            key="9_1"
-            isActive={widget.tabIndex === 1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
-            onDragFinish={this._handleWidgetTabDragFinish}
-            onDrag={this._handleWidgetTabDrag}
+        return (
+          <WidgetTabGroup
+            key="9"
             anchor={anchor}
+            handleMode={handleMode}
           >
-            <i className="icon icon-settings" />
-          </WidgetTab>,
-          <WidgetTab
-            key="9_2"
-            isActive={widget.tabIndex === 2}
-            onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            lastPosition={tabIndex === 2 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
-            onDragFinish={this._handleWidgetTabDragFinish}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-help" />
-          </WidgetTab>,
-        ]);
+            <WidgetTab
+              mode={mode1}
+              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              lastPosition={tabIndex === 1 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragFinish={this._handleWidgetTabDragFinish}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-settings" />
+            </WidgetTab>
+            <WidgetTab
+              mode={mode2}
+              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              lastPosition={tabIndex === 2 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragFinish={this._handleWidgetTabDragFinish}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-help" />
+            </WidgetTab>
+          </WidgetTabGroup>
+        );
       }
     }
     return undefined;
@@ -1741,14 +1767,14 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTabs(zoneId: WidgetZoneIndex, anchor: HorizontalAnchor) {
+  private getTabs(zoneId: WidgetZoneIndex, isOpen: boolean, anchor: HorizontalAnchor) {
     let tabs: JSX.Element[] = [];
     let i = -1;
 
     const zone = this.state.nineZone.zones[zoneId];
     for (const widget of zone.widgets) {
       i++;
-      const widgetTabs = this.getWidgetTabs(widget, anchor);
+      const widgetTabs = this.getWidgetTabs(zone, widget, isOpen, anchor);
       if (!widgetTabs)
         continue;
 
@@ -1787,7 +1813,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         onResize={(x, y, handle) => {
           this._handleOnWidgetResize(zoneId, x, y, handle);
         }}
-        tabs={this.getTabs(zoneId, zone.horizontalAnchor)}
+        tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
       />
     );
   }

@@ -23,6 +23,7 @@ export interface DraggingWidgetProps {
   readonly id: WidgetZoneIndex;
   readonly tabIndex: number;
   readonly lastPosition: PointProps;
+  readonly isUnmerge: boolean;
 }
 
 export const getDefaultProps = (id: WidgetZoneIndex): WidgetProps => {

@@ -15,7 +15,7 @@ import Rectangle from "../../../utilities/Rectangle";
 /** Properties of [[Draggable]] component. */
 export interface DraggableProps extends TabProps {
   /** Last pointer position of draggable tab. */
-  lastPosition: PointProps | undefined;
+  lastPosition?: PointProps;
   /** Function called when tab is dragged. */
   onDrag?: (dragged: PointProps) => void;
   /** Function called when tab drag action is started. */
@@ -88,6 +88,27 @@ export default class Draggable extends React.Component<DraggableProps> {
     return firstTab;
   }
 
+  private _getWidget(): HTMLElement {
+    const tab = ReactDOM.findDOMNode(this);
+    if (!tab || !(tab instanceof HTMLElement))
+      throw new TypeError();
+
+    let widget = tab.parentNode;
+    for (let i = 0; i < 2; i++) {
+      if (!widget || !(widget instanceof HTMLElement))
+        break;
+
+      if (widget.classList.contains("nz-widget-rectangular-tab-group")) {
+        widget = widget.parentNode;
+        continue;
+      }
+
+      return widget;
+    }
+
+    throw new TypeError();
+  }
+
   private _getTabElement(): HTMLElement {
     const tab = ReactDOM.findDOMNode(this);
     if (!tab || !(tab instanceof HTMLElement))
@@ -106,11 +127,10 @@ export default class Draggable extends React.Component<DraggableProps> {
 
     if (this._initial && current.getDistanceTo(this._initial) >= 6) {
       const firstTab = this._getFirstTab();
-      if (!firstTab.parentNode || !(firstTab.parentNode instanceof HTMLElement))
-        return;
+      const widget = this._getWidget();
 
       const tabRect = firstTab.getBoundingClientRect();
-      const parentRect = firstTab.parentNode.getBoundingClientRect();
+      const parentRect = widget.getBoundingClientRect();
       const offset: PointProps = {
         x: tabRect.left - parentRect.left,
         y: tabRect.top - parentRect.top,
