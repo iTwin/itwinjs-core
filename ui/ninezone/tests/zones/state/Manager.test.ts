@@ -39,7 +39,7 @@ describe("StateManager", () => {
     });
   });
 
-  describe("handleWidgetTabDragFinish", () => {
+  describe("handleWidgetTabDragEnd", () => {
     it("should merge zones", () => {
       const props: NineZoneProps = {
         ...TestProps.openedZone6,
@@ -49,7 +49,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       state.zones[6].widgets.length.should.eq(2);
       const w6 = state.zones[6].widgets[0];
@@ -68,7 +68,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       const bounds = state.zones[6].bounds;
       bounds.left.should.eq(10);
@@ -86,7 +86,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       expect(state.zones[6].floatingBounds).undefined;
     });
@@ -100,7 +100,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       state.zones[7].widgets.length.should.eq(3);
       state.zones[7].widgets.findIndex((w) => w.id === 1).should.eq(2);
@@ -117,7 +117,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       state.zones[4].widgets.length.should.eq(2);
       const w4 = state.zones[4].widgets[0];
@@ -136,7 +136,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       state.zones[7].widgets.length.should.eq(2);
       const w7 = state.zones[7].widgets[0];
@@ -162,7 +162,7 @@ describe("StateManager", () => {
           type: TargetType.Merge,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
       expect(state.zones[8].anchor).exist;
       state.zones[8].anchor!.should.eq(HorizontalAnchor.Left);
@@ -184,7 +184,7 @@ describe("StateManager", () => {
           type: TargetType.Back,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
       expect(state.zones[9].anchor).undefined;
     });
 
@@ -209,7 +209,7 @@ describe("StateManager", () => {
           type: TargetType.Back,
         },
       };
-      const state = DefaultStateManager.handleWidgetTabDragFinish(props);
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
       expect(state.zones[9].floatingBounds).undefined;
     });
   });

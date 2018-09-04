@@ -212,7 +212,7 @@ export class StateManager {
     };
   }
 
-  public handleWidgetTabDragFinish(state: NineZoneProps): NineZoneProps {
+  public handleWidgetTabDragEnd(state: NineZoneProps): NineZoneProps {
     if (!state.target) {
       return {
         ...state,

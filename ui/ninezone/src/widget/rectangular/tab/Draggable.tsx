@@ -21,7 +21,7 @@ export interface DraggableProps extends TabProps {
   /** Function called when tab drag action is started. */
   onDragStart?: (initialPosition: PointProps, widgetOffset: PointProps) => void;
   /** Function called when tab drag action is finished. */
-  onDragFinish?: () => void;
+  onDragEnd?: () => void;
 }
 
 /** Draggable tab of rectangular widget. Used in [[Stacked]] component. */
@@ -60,7 +60,7 @@ export default class Draggable extends React.Component<DraggableProps> {
   private _handleMouseUp = (e: MouseEvent) => {
     this._initial = undefined;
     if (this.props.lastPosition) {
-      this.props.onDragFinish && this.props.onDragFinish();
+      this.props.onDragEnd && this.props.onDragEnd();
       return;
     }
 
