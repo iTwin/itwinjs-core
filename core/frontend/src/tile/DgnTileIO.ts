@@ -42,7 +42,7 @@ export namespace DgnTileIO {
     public readonly contentRange: ElementAlignedBox3d;
     public readonly sizeMultiplier: number;
     public readonly length: number;
-    public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
+    public get isValid(): boolean { return TileIO.Format.Dgn === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
