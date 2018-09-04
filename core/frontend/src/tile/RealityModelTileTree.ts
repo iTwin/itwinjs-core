@@ -85,11 +85,11 @@ class RealityModelTileLoader extends TileLoader {
 
     const thisId = parent.id;
     const prefix = thisId.length ? thisId + "_" : "";
-    const json = this.findTileInJson(this._tree.tilesetJson, thisId, "");
+    const json = await this.findTileInJson(this._tree.tilesetJson, thisId, "");
     if (undefined !== json && Array.isArray(json.json.children)) {
       for (let i = 0; i < json.json.children.length; i++) {
         const childId = prefix + i;
-        const foundChild = this.findTileInJson(this._tree.tilesetJson, childId, "");
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "");
         if (undefined !== foundChild)
           props.push(new RealityModelTileProps(foundChild.json, foundChild.id));
       }
@@ -101,7 +101,7 @@ class RealityModelTileLoader extends TileLoader {
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
-        const foundChild = this.findTileInJson(this._tree.tilesetJson, missingTile.id, "");
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.id, "");
         if (foundChild !== undefined) {
           missingTile.setIsQueued();
           const content = await this._tree.client.getTileContent(foundChild.json.content.url);
@@ -113,7 +113,7 @@ class RealityModelTileLoader extends TileLoader {
     }));
   }
 
-  private findTileInJson(tilesetJson: any, id: string, parentId: string): FindChildResult | undefined {
+  private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<FindChildResult | undefined> {
     if (id.length === 0)
       return new FindChildResult(id, tilesetJson);    // Root.
     const separatorIndex = id.indexOf("_");
@@ -127,12 +127,11 @@ class RealityModelTileLoader extends TileLoader {
 
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
-    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (separatorIndex >= 0) { return await this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
-      this._tree.client.getTileJson(foundChild.content.url).then((subTree: any) => {
-        foundChild = subTree.root;
-        tilesetJson.children[childIndex] = subTree.root;
-      });
+      const subTree = await this._tree.client.getTileJson(foundChild.content.url);
+      foundChild = subTree.root;
+      tilesetJson.children[childIndex] = subTree.root;
     }
     return new FindChildResult(thisParentId, foundChild);
   }
