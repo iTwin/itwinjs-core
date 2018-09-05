@@ -5,10 +5,7 @@ As explained in the [overview](../overview/imodel-bridges.md), a "bridge" is a p
 2. Aligns the source data with the BIS schema and preferrably a domain schema, and
 3. Writes BIS data to an iModel.
 
-A bridge works directly with a local [briefcase](./Glossary.md#briefcase), using the [IModelDb]($backend) class. It then pushes [ChangeSets](./Glossary.md#changeset) to the server that manages the iModel, such as [iModelHub](../overview/imodelHub.md).
-
-## Bridge Tasks
-A bridge must:
+Specificaly, a bridge must:
 * [Open a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 * Import or Update Schema
   * Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
@@ -17,8 +14,8 @@ A bridge must:
   * Connect to the data source.
   * Detect changes to the source data.
   * [Transform](../overview/imodel-bridges.md#data-alignment) the new or changed source data into the target BIS schema.
-  * Write BIS data to the local briefcase.
-  * Handle deleted source data.
+  * Write the resulting BIS data to the local briefcase.
+  * Remove BIS data corresponding to deleted source data.
   * Obtain required Locks and Codes from the iModel server and/or code server.
   * Push changes to the iModel server.
 
