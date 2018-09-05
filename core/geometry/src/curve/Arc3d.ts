@@ -57,7 +57,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public get matrix(): Matrix3d { return this._matrix.clone(); }
   public get sweep(): AngleSweep { return this._sweep; }
-
+  public set sweep(value: AngleSweep) { this._sweep.setFrom(value); }
   // constructor copies the pointers !!!
   private constructor(center: Point3d, matrix: Matrix3d, sweep: AngleSweep) {
     super();
@@ -282,8 +282,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const constCoff = plane.altitude(this._center);
     const coffs = this._matrix.coffs;
-    const cosCoff = plane.velocityXYZ (coffs[0], coffs[3], coffs[6]);
-    const sinCoff = plane.velocityXYZ (coffs[1], coffs[4], coffs[7]);
+    const cosCoff = plane.velocityXYZ(coffs[0], coffs[3], coffs[6]);
+    const sinCoff = plane.velocityXYZ(coffs[1], coffs[4], coffs[7]);
     const trigPoints = Geometry.solveTrigForm(constCoff, cosCoff, sinCoff);
     let numIntersection = 0;
     if (trigPoints !== undefined) {
