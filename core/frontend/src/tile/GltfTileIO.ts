@@ -213,7 +213,7 @@ export namespace GltfTileIO {
         const extensions = JsonUtils.asObject(sceneValue.extensions);
         const samplers = JsonUtils.asObject(sceneValue.samplers);
 
-        if (undefined === materialValues || undefined === meshes || undefined === bufferViews || (requireAccessors && (undefined == accessors)))
+        if (undefined === materialValues || undefined === meshes || undefined === bufferViews || (requireAccessors && (undefined === accessors)))
           return undefined;
 
         return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);

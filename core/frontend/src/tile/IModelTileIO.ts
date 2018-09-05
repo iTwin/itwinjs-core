@@ -352,7 +352,7 @@ export namespace IModelTileIO {
     }
 
     private findBuffer(bufferViewId: string): Uint8Array | undefined {
-      if (typeof bufferViewId !== "string" || 0 == bufferViewId.length)
+      if (typeof bufferViewId !== "string" || 0 === bufferViewId.length)
         return undefined;
 
       const bufferViewJson = this._bufferViews[bufferViewId];
@@ -432,7 +432,7 @@ export namespace IModelTileIO {
       const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
       const distanceBytes = this.findBuffer(json.distances);
 
-      if (undefined === indices || undefined === prevIndices || undefined == nextIndicesAndParams || undefined === distanceBytes)
+      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
         return undefined;
 
       return {
