@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+
+## 0.123.0
+Wed, 05 Sep 2018 17:14:50 GMT
+
+### Updates
+
+- AccuDraw nearest snap intersection should use single segment of linestring. Support nearest snap with locked distance
+- PBI#30301: Add ability to reuse briefcases when opening a new IModelConnection/IModelDb. <br/> Opening a new ReadWrite IModelConnection at the frontend would try and reuse any existing briefcase that was previously opened by the same user. Opening a new Exclusive IModelDb at the backend can be configured to reuse or create/acquire a new briefcase. <br/> PBI#30302: Add method to purge the briefcase manager cache. <br/> When backend instances are brought down it's important that any briefcases they acquired from the Hub be properly disposed of. The iModelHub imposes an artificial limit of 20 briefcases per user, and acquiring more briefcases will cause an error.Added a new BriefcaseManager.purgeCache() method to help with this - the method closes any open briefcases, deletes the registered briefcase id from the Hub, and deletes the physical cache folder containing the Dbs. Note that the accessToken passed in to the method must match the accessToken used to acquire any briefcases that are to be deleted - so this only works in the limited environment where the entire cache was hydrated for the same user.
+- AccuDraw shortcuts. Make it easier to use AccuDraw and dynamics with an InputCollector.
 
 ## 0.122.0
 Tue, 28 Aug 2018 12:25:19 GMT
