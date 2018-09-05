@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { DictionaryModel, SpatialCategory, Element, IModelDb } from "../backend";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -19,6 +19,7 @@ describe("PerformanceElementsTests", () => {
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
+  const actx = new ActivityLoggingContext("");
 
   const values: any = {
     baseStr: "PerfElement - InitValue", sub1Str: "PerfElementSub1 - InitValue",
@@ -110,7 +111,7 @@ describe("PerformanceElementsTests", () => {
     }
     return passed;
   }
-  before(() => {
+  before(async () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
@@ -118,7 +119,7 @@ describe("PerformanceElementsTests", () => {
         if (!IModelJsFs.existsSync(pathname)) {
           seedIModel = IModelTestUtils.createStandaloneIModel(fileName, { rootSubject: { name: "PerfTest" } });
           const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-          seedIModel.importSchema(testSchemaName);
+          await seedIModel.importSchema(actx, testSchemaName);
           seedIModel.setAsMaster();
           const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
           assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");

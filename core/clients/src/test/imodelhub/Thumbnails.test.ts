@@ -9,6 +9,7 @@ import { AccessToken, IModelClient } from "../../";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 function getThumbnailLength(size: ThumbnailSize) {
   return size === "Small" ? 1000 : 3500;
@@ -47,6 +48,7 @@ describe("iModelHub ThumbnailHandler", () => {
   let versions: Version[];
   const imodelName = "imodeljs-clients Thumbnails test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
+  const actx = new ActivityLoggingContext("");
 
   before(async () => {
     if (!TestConfig.enableMocks) {
@@ -65,7 +67,7 @@ describe("iModelHub ThumbnailHandler", () => {
     }
 
     // Delete and create a new iModel if we have not expected number of versions.
-    versions = (await imodelHubClient.Versions().get(accessToken, iModelId));
+    versions = (await imodelHubClient.Versions().get(actx, accessToken, iModelId));
     if (versions.length !== 0 && versions.length !== 3) {
       await utils.createIModel(accessToken, imodelName, projectId, true);
       iModelId = await utils.getIModelId(accessToken, imodelName);
@@ -77,12 +79,12 @@ describe("iModelHub ThumbnailHandler", () => {
       const briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
       const changeSets: ChangeSet[] = await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 3);
       for (let i = 0; i < 3; i++)
-        await imodelHubClient.Versions().create(accessToken, iModelId, changeSets[i].id!, `Version ${i + 1}`);
-      versions = (await imodelHubClient.Versions().get(accessToken, iModelId));
+        await imodelHubClient.Versions().create(actx, accessToken, iModelId, changeSets[i].id!, `Version ${i + 1}`);
+      versions = (await imodelHubClient.Versions().get(actx, accessToken, iModelId));
 
       // Wait for all 4 thumbnails (tip and 3 named versions).
       for (let i = 0; i < 5; i++) {
-        const largeThumbnails: Thumbnail[] = await imodelHubClient.Thumbnails().get(accessToken, iModelId, "Large");
+        const largeThumbnails: Thumbnail[] = await imodelHubClient.Thumbnails().get(actx, accessToken, iModelId, "Large");
         if (largeThumbnails.length === 4)
           break;
         await utils.delay(6000);
@@ -106,7 +108,7 @@ describe("iModelHub ThumbnailHandler", () => {
     it(`should get ${params.size}Thumbnail's ids`, async () => {
       const mockedThumbnails = Array(3).fill(0).map(() => utils.generateThumbnail(params.size));
       utils.mockGetThumbnails(iModelId, params.size, ...mockedThumbnails);
-      params.thumbnails = await imodelHubClient.Thumbnails().get(accessToken, iModelId, params.size);
+      params.thumbnails = await imodelHubClient.Thumbnails().get(actx, accessToken, iModelId, params.size);
 
       if (params.thumbnails.length < 3) {
         utils.deleteIModelByName(accessToken, projectId, imodelName);
@@ -119,7 +121,7 @@ describe("iModelHub ThumbnailHandler", () => {
     it(`should get ${params.size}Thumbnail by id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailById(iModelId, params.size, params.thumbnails[i]);
-        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(accessToken, iModelId, params.size, new ThumbnailQuery().byId(params.thumbnails[i].wsgId)))[0];
+        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(actx, accessToken, iModelId, params.size, new ThumbnailQuery().byId(params.thumbnails[i].wsgId)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.wsgId).to.be.equal(params.thumbnails[i].wsgId);
       }
@@ -130,7 +132,7 @@ describe("iModelHub ThumbnailHandler", () => {
     it(`should get ${params.size}Thumbnail by version id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(iModelId, params.size, versions[i].wsgId, params.thumbnails[i]);
-        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(accessToken, iModelId, params.size, new ThumbnailQuery().byVersionId(versions[i].wsgId)))[0];
+        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(actx, accessToken, iModelId, params.size, new ThumbnailQuery().byVersionId(versions[i].wsgId)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.wsgId).to.be.equal(params.thumbnails[i].wsgId);
       }
@@ -140,7 +142,7 @@ describe("iModelHub ThumbnailHandler", () => {
   test.forEach((params: TestParameters) => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
       mockDownloadLatestThumbnail(projectId, iModelId, params.size);
-      const image: string = await imodelHubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: params.size });
+      const image: string = await imodelHubClient.Thumbnails().download(actx, accessToken, iModelId, { projectId: projectId!, size: params.size });
       chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));
       chai.assert(image.startsWith(pngPrefixStr));
@@ -152,7 +154,7 @@ describe("iModelHub ThumbnailHandler", () => {
       const expectedLength = getThumbnailLength(params.size);
       for (let i = 0; i < 3; i++) {
         mockDownloadThumbnailById(iModelId, params.thumbnails[i].wsgId, params.size);
-        const image: string = await imodelHubClient.Thumbnails().download(accessToken, iModelId, params.thumbnails[i]);
+        const image: string = await imodelHubClient.Thumbnails().download(actx, accessToken, iModelId, params.thumbnails[i]);
         chai.assert(image);
         chai.expect(image.length).greaterThan(expectedLength);
         chai.assert(image.startsWith(pngPrefixStr));

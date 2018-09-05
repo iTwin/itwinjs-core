@@ -8,6 +8,7 @@ import { IModelClient } from "./IModelClient";
 import { ProgressInfo } from "./Request";
 import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Information needed to create an iModel */
 export interface IModelProjectAbstractionIModelCreateParams {
@@ -25,16 +26,16 @@ export abstract class IModelProjectAbstraction {
   public abstract terminate(): void;
 
   // User management
-  public abstract authorizeUser(userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
+  public abstract authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 
   // Project management
-  public abstract queryProject(accessToken: AccessToken, query: any | undefined): Promise<Project>;
+  public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
   // Server deployment
-  public abstract getClientForIModel(projectId: string | undefined, imodelId: string): IModelClient;
+  public abstract getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
 
   // IModel management
-  public abstract createIModel(accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository>;
-  public abstract deleteIModel(accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
-  public abstract queryIModels(accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]>;
+  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository>;
+  public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
+  public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]>;
 }

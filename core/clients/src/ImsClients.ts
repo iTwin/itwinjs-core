@@ -10,6 +10,7 @@ import { request, RequestOptions, Response } from "./Request";
 import { Config } from "./Config";
 import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client API for the IMS Federated Authentication Service. */
 export class ImsFederatedAuthenticationClient extends Client {
@@ -103,8 +104,8 @@ export class ImsActiveSecureTokenClient extends Client {
    * @param password  Password
    * @returns Resolves to the token and user profile.
    */
-  public async getToken(user: string, password: string): Promise<AuthorizationToken> {
-    const url: string = await this.getUrl();
+  public async getToken(alctx: ActivityLoggingContext, user: string, password: string): Promise<AuthorizationToken> {
+    const url: string = await this.getUrl(alctx);
 
     const options: RequestOptions = {
       method: "POST",
@@ -121,7 +122,7 @@ export class ImsActiveSecureTokenClient extends Client {
     };
     await this.setupOptionDefaults(options);
 
-    return request(url, options)
+    return request(alctx, url, options)
       .then((res: Response): Promise<AuthorizationToken> => {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
@@ -176,8 +177,8 @@ export class ImsDelegationSecureTokenClient extends Client {
    * @param relyingPartyUri Relying party URI required by the service - defaults to a value defined by the configuration.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getToken(authorizationToken: AuthorizationToken, relyingPartyUri: string = Config.host.relyingPartyUri): Promise<AccessToken> {
-    const url: string = await this.getUrl() + "/json/IssueEx";
+  public async getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri: string = Config.host.relyingPartyUri): Promise<AccessToken> {
+    const url: string = await this.getUrl(alctx) + "/json/IssueEx";
 
     const options: RequestOptions = {
       method: "POST",
@@ -195,7 +196,7 @@ export class ImsDelegationSecureTokenClient extends Client {
     };
     await this.setupOptionDefaults(options);
 
-    return request(url, options)
+    return request(alctx, url, options)
       .then((res: Response): Promise<AccessToken> => {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));

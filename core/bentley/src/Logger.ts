@@ -5,6 +5,7 @@
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
+import { ActivityLoggingContext } from "./ActivityLoggingContext";
 
 /** Defines the *signature* for a log function. */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
@@ -44,7 +45,6 @@ export class Logger {
   private static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
-  private static _activityIdGetter: (() => string) | undefined = undefined;
   private static _logExceptionCallstacks = false;
 
   /** Initialize the logger streams. Should be called at application initialization time. */
@@ -68,21 +68,11 @@ export class Logger {
     );
   }
 
-  /** The function that provides the activityId value that should be set as a property of the metadata of all logging messages. Note that only non-empty activity values are associated with logging messages. An empty activityId is ignored. */
-  public static set activityIdGetter(f: (() => string) | undefined) {
-    Logger._activityIdGetter = f;
-  }
-
-  /** The function that provides the activityId value that should be set as a property of the metadata of all logging messages. */
-  public static get activityIdGetter(): (() => string) | undefined {
-    return Logger._activityIdGetter;
-  }
-
   /** Add the currently registered activityId, if any, to the specified metadata. */
   public static addActivityId(mdata: any) {
-    if ((Logger._activityIdGetter === undefined) || mdata.hasOwnProperty("ActivityId"))
+    if ((ActivityLoggingContext.current === undefined) || mdata.hasOwnProperty("ActivityId"))
       return;
-    const activityId = Logger._activityIdGetter();
+    const activityId = ActivityLoggingContext.current.activityId;
     if (activityId !== "")
       mdata.ActivityId = activityId;
   }
@@ -99,7 +89,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && !Logger._activityIdGetter)
+    if (!getMetaData && (ActivityLoggingContext.current === undefined))
       return;
     const mdata: any = getMetaData ? getMetaData() : {};
     Logger.addActivityId(mdata);
@@ -108,7 +98,7 @@ export class Logger {
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && !Logger._activityIdGetter)
+    if (!getMetaData && (ActivityLoggingContext.current === undefined))
       return "";
     return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }
