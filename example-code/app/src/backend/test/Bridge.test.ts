@@ -127,4 +127,3 @@ describe.only("Bridge", async () => {
     runBridgeFirstTime(accessToken, imodelRepository.wsgId, testProjectId);
   });
 });
-
