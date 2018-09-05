@@ -254,10 +254,10 @@ export namespace IModelTileIO {
       if (undefined !== texture)
         return Promise.resolve();
 
-      return this.readNamedTexture(namedTex).then((result) => { namedTex.renderTexture = result; });
+      return this.readNamedTexture(namedTex, name).then((result) => { namedTex.renderTexture = result; });
     }
 
-    private async readNamedTexture(namedTex: any): Promise<RenderTexture | undefined> {
+    private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
       const bufferViewId = JsonUtils.asString(namedTex.bufferView);
       const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
       if (undefined === bufferViewJson)
