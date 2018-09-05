@@ -13,8 +13,12 @@ import {
   TesselatedPolyline,
   PolylineParams,
   SurfaceParams,
+  SurfaceType,
   isValidSurfaceType,
   MeshParams,
+  SegmentEdgeParams,
+  SilhouetteParams,
+  EdgeParams,
   } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
@@ -383,9 +387,9 @@ export namespace IModelTileIO {
 
       const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
       let uvParams: QParams2d | undefined;
-      if (undefined !== json.surface && undefined !== json.surface.uvParams) {
-        const uvMin = JsonUtils.asArray(json.surface.uvParams.decodedMin);
-        const uvMax = JsonUtils.asArray(json.surface.uvParams.decodedMax);
+      if (undefined !== primitive.surface && undefined !== primitive.surface.uvParams) {
+        const uvMin = JsonUtils.asArray(primitive.surface.uvParams.decodedMin);
+        const uvMax = JsonUtils.asArray(primitive.surface.uvParams.decodedMax);
         if (undefined === uvMin || undefined === uvMax)
           return undefined;
 
@@ -477,14 +481,64 @@ export namespace IModelTileIO {
       };
     }
 
+    private readSegmentEdges(json: any): SegmentEdgeParams | undefined {
+      const indices = this.readVertexIndices(json.indices);
+      const endPointAndQuadIndices = this.findBuffer(json.endPointAndQuadIndices);
+      return undefined !== indices && undefined !== endPointAndQuadIndices ? { indices, endPointAndQuadIndices } : undefined;
+    }
+
+    private readSilhouettes(json: any): SilhouetteParams | undefined {
+      const segments = this.readSegmentEdges(json);
+      const normalPairs = this.findBuffer(json.normalPairs);
+      return undefined !== segments && undefined !== normalPairs ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices } : undefined;
+    }
+
+    private readEdges(json: any, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
+      let segments: SegmentEdgeParams | undefined;
+      let silhouettes: SilhouetteParams | undefined;
+      let polylines: TesselatedPolyline | undefined;
+
+      let succeeded = false;
+      if (undefined !== json.segments && undefined === (segments = this.readSegmentEdges(json.segments)))
+        return { succeeded };
+
+      if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
+        return { succeeded };
+
+      if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
+        return { succeeded };
+
+      succeeded = true;
+      let params: EdgeParams | undefined;
+      if (undefined !== segments || undefined !== silhouettes || undefined !== polylines) {
+        params = {
+          segments,
+          silhouettes,
+          polylines,
+          weight: displayParams.width,
+          linePixels: displayParams.linePixels,
+        };
+      }
+
+      return { succeeded, params };
+    }
+
     private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean): RenderGraphic | undefined {
       const surface = this.readSurface(primitive, displayParams);
       if (undefined === surface)
         return undefined;
 
-      // ###TODO edges...
+      // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
+      let edgeParams: EdgeParams | undefined;
+      if (undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
+        const edgeResult = this.readEdges(primitive.edges, displayParams);
+        if (!edgeResult.succeeded)
+          return undefined;
+        else
+          edgeParams = edgeResult.params;
+      }
 
-      const params = new MeshParams(vertices, surface, undefined, isPlanar);
+      const params = new MeshParams(vertices, surface, edgeParams, isPlanar);
       return this._system.createMesh(params);
     }
 
