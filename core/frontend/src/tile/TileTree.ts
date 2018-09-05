@@ -16,6 +16,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { DgnTileIO } from "./DgnTileIO";
+import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 import { SpatialModelState } from "../ModelState";
 
@@ -611,12 +612,16 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.IModel:
-        assert(false, "###TODO iMdl tile format");
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
         break;
 
       case TileIO.Format.Pnts:
           tile.setGraphic(PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp));
           return;
+
+        default:
+          assert(false, "unknown tile format " + format);
+          break;
     }
 
     if (undefined === reader) {

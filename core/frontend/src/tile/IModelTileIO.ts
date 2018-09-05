@@ -6,6 +6,7 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { VertexTable, VertexIndices, PointStringParams } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic } from "../render/System";
@@ -24,9 +25,12 @@ import {
   RenderTexture,
   RenderMaterial,
   Gradient,
+  QParams2d,
+  QParams3d,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
 export namespace IModelTileIO {
@@ -85,7 +89,7 @@ export namespace IModelTileIO {
         return undefined;
 
       // A glTF header follows the feature table
-      const props = GltfTileIO.ReaderProps.create(stream);
+      const props = GltfTileIO.ReaderProps.create(stream, false, false);
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled) : undefined;
     }
 
@@ -312,30 +316,107 @@ export namespace IModelTileIO {
       if (undefined === displayParams)
         return undefined;
 
+      const vertices = this.readVertexTable(primitive);
+      if (undefined === vertices) {
+        assert(false, "bad vertex table in tile data.");
+        return undefined;
+      }
+
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       switch (primitiveType) {
         case Mesh.PrimitiveType.Mesh:
-          return this.createMeshGraphic(primitive, displayParams, isPlanar);
+          return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar);
         case Mesh.PrimitiveType.Polyline:
-          return this.createPolylineGraphic(primitive, displayParams, isPlanar);
+          return this.createPolylineGraphic(primitive, displayParams, vertices, isPlanar);
         case Mesh.PrimitiveType.Point:
-          return this.createPointStringGraphic(primitive, displayParams, isPlanar);
+          return this.createPointStringGraphic(primitive, displayParams, vertices);
       }
 
       assert(false, "unhandled primitive type");
       return undefined;
     }
 
-    private createPointStringGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
+    private findBuffer(bufferViewId: string): Uint8Array | undefined {
+      if (typeof bufferViewId !== "string" || 0 == bufferViewId.length)
+        return undefined;
+
+      const bufferViewJson = this._bufferViews[bufferViewId];
+      if (undefined === bufferViewJson)
+        return undefined;
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      return this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+    }
+
+    private readVertexTable(primitive: any): VertexTable | undefined {
+      const json = primitive.vertices;
+      if (undefined === json)
+        return undefined;
+
+      const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+      if (undefined === bytes)
+        return undefined;
+
+      const uniformFeatureID = undefined !== json.featureID ? JsonUtils.asInt(json.featureID) : undefined;
+
+      const rangeMin = JsonUtils.asArray(json.params.decodedMin);
+      const rangeMax = JsonUtils.asArray(json.params.decodedMax);
+      if (undefined === rangeMin || undefined === rangeMax)
+        return undefined;
+
+      const qparams = QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2])));
+
+      const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
+      let uvParams: QParams2d | undefined;
+      if (undefined !== json.surface && undefined !== json.surface.uvParams) {
+        const uvMin = JsonUtils.asArray(json.surface.uvParams.decodedMin);
+        const uvMax = JsonUtils.asArray(json.surface.uvParams.decodedMax);
+        if (undefined === uvMin || undefined === uvMax)
+          return undefined;
+
+        const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
+        uvParams = QParams2d.fromRange(uvRange);
+      }
+
+      return new VertexTable({
+        data: bytes,
+        qparams,
+        width: json.width,
+        height: json.height,
+        hasTranslucency: json.hasTranslucency,
+        uniformColor,
+        featureIndexType: json.featureIndexType,
+        uniformFeatureID,
+        numVertices: json.count,
+        numRgbaPerVertex: json.numRgbaPerVertex,
+        uvParams,
+      });
+    }
+
+    private readVertexIndices(json: any): VertexIndices | undefined {
+      const bytes = this.findBuffer(json as string);
+      return undefined !== bytes ? new VertexIndices(bytes) : undefined;
+    }
+
+    private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable): RenderGraphic | undefined {
+      const indices = this.readVertexIndices(primitive.indices);
+      if (undefined === indices)
+        return undefined;
+
+      const params = new PointStringParams(vertices, indices, displayParams.width);
+      return this._system.createPointString(params);
+    }
+
+    private createPolylineGraphic(_primitive: any, _displayParams: DisplayParams, _vertices: VertexTable, _isPlanar: boolean): RenderGraphic | undefined {
       return undefined; // ###TODO
     }
 
-    private createPolylineGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
-      return undefined; // ###TODO
-    }
-
-    private createMeshGraphic(_primitive: any, _displayParams: DisplayParams, _isPlanar: boolean): RenderGraphic | undefined {
+    private createMeshGraphic(_primitive: any, _displayParams: DisplayParams, _vertices: VertexTable, _isPlanar: boolean): RenderGraphic | undefined {
       return undefined; // ###TODO
     }
 

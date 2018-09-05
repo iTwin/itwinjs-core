@@ -27,7 +27,7 @@ export namespace TileIO {
     Gltf = 0x46546c67, // "glTF"
     Dgn = 0x546e6764, // "dgnT"
     Pnts = 0x73746e70,  // "pnts"
-    IModel = 0x6c4d6469, // "iMdl"
+    IModel = 0x6c644d69, // "iMdl"
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
