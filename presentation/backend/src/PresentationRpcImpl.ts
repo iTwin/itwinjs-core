@@ -22,6 +22,7 @@ import {
 import Presentation from "./Presentation";
 import PresentationManager from "./PresentationManager";
 import RulesetVariablesManager from "./RulesetVariablesManager";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -80,36 +81,43 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getRootNodes(requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return [...await this.getManager(requestOptions.clientId).getRootNodes(this.toIModelDbOptions(requestOptions))];
   }
 
   public async getRootNodesCount(requestOptions: HierarchyRpcRequestOptions): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getRootNodesCount(this.toIModelDbOptions(requestOptions));
   }
 
   public async getChildren(requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return [...await this.getManager(requestOptions.clientId).getChildren(this.toIModelDbOptions(requestOptions), parentKey)];
   }
 
   public async getChildrenCount(requestOptions: HierarchyRpcRequestOptions, parentKey: Readonly<NodeKey>): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getChildrenCount(this.toIModelDbOptions(requestOptions), parentKey);
   }
 
   public async getNodePaths(requestOptions: HierarchyRpcRequestOptions, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getNodePaths(this.toIModelDbOptions(requestOptions), paths, markedIndex);
   }
 
   public async getFilteredNodePaths(requestOptions: HierarchyRpcRequestOptions, filterText: string): Promise<NodePathElement[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getFilteredNodePaths(this.toIModelDbOptions(requestOptions), filterText);
   }
 
   public async getContentDescriptor(requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(this.toIModelDbOptions(requestOptions), displayType, keys, selection);
     if (descriptor)
@@ -118,11 +126,13 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getContentSetSize(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getContentSetSize(this.toIModelDbOptions(requestOptions), descriptor, keys);
   }
 
   public async getContent(requestOptions: Paged<ContentRpcRequestOptions>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     const content: Content = await this.getManager(requestOptions.clientId).getContent(this.toIModelDbOptions(requestOptions), descriptor, keys);
     content.descriptor.resetParentship();
@@ -130,11 +140,13 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getDistinctValues(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     this.verifyRequest(requestOptions);
     return await this.getManager(requestOptions.clientId).getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
   }
 
   public async syncClientState(options: ClientStateSyncRequestOptions): Promise<void> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
     if (!options.clientStateId)
       throw new PresentationError(PresentationStatus.InvalidArgument, "clientStateId must be set when syncing with client state");
 
