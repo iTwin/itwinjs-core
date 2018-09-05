@@ -12,6 +12,7 @@ import MergeTarget from "@bentley/ui-ninezone/lib/zones/target/Merge";
 import BackTarget from "@bentley/ui-ninezone/lib/zones/target/Back";
 import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 import { DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
 
 /** Props for the ZoneTargets.
  */
@@ -37,14 +38,14 @@ export default class ZoneTargets extends React.Component<ZoneTargetsProps> {
       case DropTarget.Merge:
         return (
           <MergeTarget
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, DropTarget.Merge, isTargeted)}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Merge, isTargeted)}
           />
         );
       case DropTarget.Back:
         return (
           <BackTarget
             zoneIndex={this.props.zoneId}
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, DropTarget.Back, isTargeted)}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Back, isTargeted)}
           />
         );
       case DropTarget.None:

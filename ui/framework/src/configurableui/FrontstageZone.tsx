@@ -5,28 +5,19 @@
 
 import * as React from "react";
 
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, GhostOutlineProvider } from "./FrontstageComposer";
+import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { FrameworkZone } from "./FrameworkZone";
 import { ToolSettingsZone } from "./ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
-import { FrontstageManager } from "./FrontstageManager";
 
-import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import NineZone from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import { DropTarget as ZoneDropTarget } from "@bentley/ui-ninezone/lib/zones/state/Management";
-import { MergeCell as MergeTargetCell } from "@bentley/ui-ninezone/lib/zones/target/Merge";
-import { UnmergeCell as UnmergeTargetCell } from "@bentley/ui-ninezone/lib/zones/target/Unmerge";
+import { ZoneProps as NZ_ZoneState, isStatusZone, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
+import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
 // -----------------------------------------------------------------------------
-
-/** Interface for a Zone Target provider */
-export interface ZoneTargetProvider {
-  getDropTargets(zoneId: number): Array<{ widgetId: number, target: ZoneDropTarget }>;
-  getMergeTargetCells(widgetId: number): MergeTargetCell[];
-  getUnmergeTargetCells(widgetId: number): UnmergeTargetCell[];
-}
 
 /** Props for the Frontstage Zone Component.
  */
@@ -35,13 +26,18 @@ export interface FrontstageZoneProps {
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
-  nineZone: NineZone;
-  ghostOutlineProvider: GhostOutlineProvider;
+  ghostOutline: RectangleProps | undefined;
+  dropTarget: DropTarget;
+  horizontalAnchor: HorizontalAnchor;
+  verticalAnchor: VerticalAnchor;
+  isDragged: boolean | undefined;
+  lastPosition: PointProps | undefined;
+  isUnmergeDrag: boolean;
 }
 
 /** Frontstage Zone React Component.
  */
-export class FrontstageZone extends React.Component<FrontstageZoneProps> implements ZoneTargetProvider {
+export class FrontstageZone extends React.Component<FrontstageZoneProps> {
   public render(): React.ReactNode {
     if (this.props.zoneState.widgets.length === 1) {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
@@ -52,18 +48,19 @@ export class FrontstageZone extends React.Component<FrontstageZoneProps> impleme
         return (
           <ToolSettingsZone
             zoneDef={zoneDef}
-            reactZoneState={this.props.zoneState} />
+            zoneState={this.props.zoneState} />
         );
       } else if (zoneDef.isStatusBar) {
+        if (!isStatusZone(this.props.zoneState))
+          throw new TypeError();
         return (
           <StatusBarZone
             zoneDef={zoneDef}
             zoneState={this.props.zoneState}
-            isInFooterMode={this.props.nineZone.isInFooterMode}
             widgetChangeHandler={this.props.widgetChangeHandler}
             targetChangeHandler={this.props.targetChangeHandler}
-            targetedBounds={this.props.ghostOutlineProvider.getGhostOutlineBounds(this.props.zoneState.id)}
-            targetProvider={this}
+            targetedBounds={this.props.ghostOutline}
+            dropTarget={this.props.dropTarget}
           />
         );
       }
@@ -73,28 +70,16 @@ export class FrontstageZone extends React.Component<FrontstageZoneProps> impleme
       <FrameworkZone
         zoneState={this.props.zoneState}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        targetedBounds={this.props.ghostOutlineProvider.getGhostOutlineBounds(this.props.zoneState.id)}
+        targetedBounds={this.props.ghostOutline}
         targetChangeHandler={this.props.targetChangeHandler}
-        targetProvider={this}
         zoneDefProvider={this.props.zoneDefProvider}
+        dropTarget={this.props.dropTarget}
+        horizontalAnchor={this.props.horizontalAnchor}
+        verticalAnchor={this.props.verticalAnchor}
+        isDragged={this.props.isDragged}
+        lastPosition={this.props.lastPosition}
+        isUnmergeDrag={this.props.isUnmergeDrag}
       />
     );
-  }
-
-  public getDropTargets(zoneId: number): Array<{ widgetId: number, target: ZoneDropTarget }> {
-    const zone = FrontstageManager.NineZoneStateManagement.getZone(zoneId, this.props.nineZone);
-    const dropTargets = zone.widgets.map((widget) => ({
-      widgetId: widget.id,
-      target: FrontstageManager.NineZoneStateManagement.getDropTarget(widget.id, this.props.nineZone),
-    }));
-    return dropTargets;
-  }
-
-  public getMergeTargetCells(widgetId: number): MergeTargetCell[] {
-    return FrontstageManager.NineZoneStateManagement.getMergeTargetCells(widgetId, this.props.nineZone);
-  }
-
-  public getUnmergeTargetCells(widgetId: number): UnmergeTargetCell[] {
-    return FrontstageManager.NineZoneStateManagement.getUnmergeTargetCells(widgetId, this.props.nineZone);
   }
 }

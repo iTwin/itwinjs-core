@@ -31,6 +31,12 @@ export interface StatusZoneProps extends ZoneProps {
   readonly isInFooterMode: boolean;
 }
 
+export const isStatusZone = (zone: ZoneProps): zone is StatusZoneProps => {
+  if (zone.id === 8)
+    return true;
+  return false;
+};
+
 export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
   return {
     id,
