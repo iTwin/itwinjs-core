@@ -577,7 +577,7 @@ export namespace IModelTileIO {
         readStatus: TileIO.ReadStatus.Success,
         isLeaf,
         sizeMultiplier,
-        contentRange,
+        contentRange: contentRange.isNull ? undefined : contentRange,
         renderGraphic: tileGraphic,
       };
     }
