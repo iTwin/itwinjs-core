@@ -112,6 +112,15 @@ export class DisableNativeAssertions implements IDisposable {
 
 export class IModelTestUtils {
 
+  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
+  //   try {
+  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
+  //     BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, existingid);
+  //   } catch (_err) {
+  //   }
+  //   return BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, name, seedFile);
+  // }
+
   public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
     const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
