@@ -933,7 +933,7 @@ export abstract class ViewState extends ElementState {
       if (classifier.isActive) {
         const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
         if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(true);
+          classifierModel.loadTileTree(true, classifier.expand);
           if (undefined !== classifierModel.classifierTileTree)
             classifierModel.classifierTileTree.drawScene(context);
         }
