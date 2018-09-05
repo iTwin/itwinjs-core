@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code,
@@ -178,7 +178,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
+  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion, _activityId: ActivityLoggingContext) => void>();
 
   /** Event raised just after an IModelDb is opened.
    * @note This event is *not* raised for standalone IModelDbs.
@@ -188,7 +188,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
+  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb, _activityId: ActivityLoggingContext) => void>();
   /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
   public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _args: CreateIModelProps) => void>();
   /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
@@ -271,10 +271,11 @@ export class IModelDb extends IModel {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+    actx.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(accessToken, contextId, fileName, args);
-    return IModelDb.open(accessToken, contextId, iModelId);
+    const iModelId: string = await BriefcaseManager.create(actx, accessToken, contextId, fileName, args);
+    return IModelDb.open(actx, accessToken, contextId, iModelId);
   }
 
   /** Open an iModel from a local file.
@@ -302,12 +303,14 @@ export class IModelDb extends IModel {
    * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
    */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openParams, version);
+  public static async open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    actx.enter();
+    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, actx);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(actx, accessToken, contextId, iModelId, openParams, version);
+    actx.enter();
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
-    IModelDb.onOpened.raiseEvent(imodelDb);
+    IModelDb.onOpened.raiseEvent(imodelDb, actx);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
   }
@@ -337,17 +340,18 @@ export class IModelDb extends IModel {
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel
    */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+  public async close(actx: ActivityLoggingContext, accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
 
     try {
-      await BriefcaseManager.close(accessToken, this.briefcase, keepBriefcase);
+      await BriefcaseManager.close(actx, accessToken, this.briefcase, keepBriefcase);
     } catch (error) {
       throw error;
     } finally {
+      actx.enter();
       this.clearBriefcaseEntry();
     }
   }
@@ -621,9 +625,11 @@ export class IModelDb extends IModel {
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  public async pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    actx.enter();
     this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.pullAndMergeChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.concurrencyControl.onMergedChanges();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
@@ -635,9 +641,11 @@ export class IModelDb extends IModel {
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
+  public async pushChanges(actx: ActivityLoggingContext, accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
+    actx.enter();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
+    await BriefcaseManager.pushChanges(actx, accessToken, this.briefcase, description);
+    actx.enter();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
@@ -648,8 +656,9 @@ export class IModelDb extends IModel {
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    */
-  public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reverseChanges(accessToken, this.briefcase, version);
+  public async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reverseChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.initializeIModelDb();
   }
 
@@ -659,8 +668,9 @@ export class IModelDb extends IModel {
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
    */
-  public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase, version);
+  public async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reinstateChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.initializeIModelDb();
   }
 
@@ -685,12 +695,15 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(schemaFileName: string): Promise<void> {
+  public async importSchema(actx: ActivityLoggingContext, schemaFileName: string): Promise<void> {
+    actx.enter();
+
     if (!this.briefcase)
       throw this.newNotOpenError();
 
     if (!this.briefcase.isStandalone) {
-      await this.concurrencyControl.lockSchema(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      await this.concurrencyControl.lockSchema(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      actx.enter();
     }
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -700,8 +713,9 @@ export class IModelDb extends IModel {
       try {
         // The schema import logic and/or imported Domains may have created new elements and models.
         // Make sure we have the supporting locks and codes.
-        await this.concurrencyControl.request(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+        await this.concurrencyControl.request(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
       } catch (err) {
+        actx.enter();
         this.abandonChanges();
         throw err;
       }
@@ -895,7 +909,8 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public requestSnap(connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public requestSnap(actx: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    actx.enter();
     let request = this._snaps.get(connectionId);
     if (undefined === request) {
       request = (new (NativePlatformRegistry.getNativePlatform()).SnapRequest()) as SnapRequest;

@@ -10,7 +10,7 @@ import { AccessToken } from "../Token";
 import { IModelRepository, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
-import { Guid, IModelHubStatus, WSStatus, LoggerLevelsConfig, assert, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus, WSStatus, LoggerLevelsConfig, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "../IModelProjectAbstraction";
 import { IModelHubError, IModelHubClientError } from "../imodelhub/Errors";
 import { UrlFileHandler } from "../UrlFileHandler";
@@ -129,7 +129,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     throw new Error(`iModel ${iModelId} not registered in this project.`);
   }
 
-  public getClientForIModel(_projectId: string | undefined, iModelId: string): IModelClient {
+  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, iModelId: string): IModelClient {
     if (process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) {
       assert(false);
       return {} as IModelClient;
@@ -208,7 +208,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return props.iModelBankProjectAccessContextGroup.name === name;
   }
 
-  public queryProject(_accessToken: AccessToken, query: any | undefined): Promise<Project> {
+  public queryProject(_actx: ActivityLoggingContext, _accessToken: AccessToken, query: any | undefined): Promise<Project> {
     if (!this.matchesProjectFilter(this.group, query))
       return Promise.reject(`Project matching ${JSON.stringify(query)} not registered`);
 
@@ -243,7 +243,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return { wsgId: id, ecId: id, name };
   }
 
-  public queryIModels(_accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
+  public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
     if (projectId !== undefined) {
       if (projectId === "")
         return Promise.reject(new IModelHubClientError(IModelHubStatus.UndefinedArgumentError));
@@ -264,8 +264,9 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve(repos);
   }
 
-  public async createIModel(_accessToken: AccessToken, _projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
-    const existing = await this.queryIModels(_accessToken, _projectId, new IModelQuery().byName(params.name));
+  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+    const existing = await this.queryIModels(alctx, _accessToken, _projectId, new IModelQuery().byName(params.name));
+    alctx.enter();
     if (existing.length !== 0)
       return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
 
@@ -278,7 +279,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve({ wsgId: id, ecId: id, name: params.name, initialized: true });
   }
 
-  public deleteIModel(_accessToken: AccessToken, _projectId: string, iModelId: string): Promise<void> {
+  public deleteIModel(_actx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, iModelId: string): Promise<void> {
     const running: RunningBank | undefined = this.runningBanks.get(iModelId);
     if (running !== undefined) {
       this.killIModelBank(running);
@@ -294,7 +295,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve();
   }
 
-  public authorizeUser(userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
+  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
     if (!userProfile)
       userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
     const foreignAccessTokenWrapper: any = {};

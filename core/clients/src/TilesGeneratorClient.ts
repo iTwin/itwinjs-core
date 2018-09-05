@@ -9,6 +9,7 @@ import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { IModelWebNavigatorClient } from "./IModelWebNavigatorClient";
 import { RequestQueryOptions } from "./Request";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Job */
 @ECJsonTypeMap.classToJson("wsg", "TilePublisher.Job", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -91,8 +92,8 @@ export class TilesGeneratorClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to array of jobs.
    */
-  public async getJobs(token: AccessToken, queryOptions?: RequestQueryOptions): Promise<Job[]> {
-    return this.getInstances<Job>(Job, token, "/Repositories/BentleyCONNECT--Main/TilePublisher/Job", queryOptions);
+  public async getJobs(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RequestQueryOptions): Promise<Job[]> {
+    return this.getInstances<Job>(alctx, Job, token, "/Repositories/BentleyCONNECT--Main/TilePublisher/Job", queryOptions);
   }
 
   /**
@@ -101,8 +102,8 @@ export class TilesGeneratorClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found job. Rejects if no jobs, or more than one job is found.
    */
-  public async getJob(token: AccessToken, queryOptions?: RequestQueryOptions): Promise<Job> {
-    return this.getJobs(token, queryOptions)
+  public async getJob(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RequestQueryOptions): Promise<Job> {
+    return this.getJobs(alctx, token, queryOptions)
       .then((jobs: Job[]) => {
         if (jobs.length !== 1) {
           return Promise.reject(new Error("Expected a single version to be returned by query"));
@@ -118,7 +119,7 @@ export class TilesGeneratorClient extends WsgClient {
    * @param iModelId Id of the iModel to be navigated.
    * @param versionId Id of the named version to be navigated.
    */
-  public async buildWebNavigatorUrl(accessToken: AccessToken, projectId: string, iModelId: string, versionId: string): Promise<string> {
+  public async buildWebNavigatorUrl(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string, versionId: string): Promise<string> {
     // The service can be queried ONLY by single instance ID filter.
     const instanceId: string = `${projectId}--${iModelId}--${versionId}`;
     const queryOptions: RequestQueryOptions = {
@@ -126,10 +127,10 @@ export class TilesGeneratorClient extends WsgClient {
       $filter: `$id+eq+'${instanceId}'`,
     };
 
-    const job: Job = await this.getJob(accessToken, queryOptions);
+    const job: Job = await this.getJob(alctx, accessToken, queryOptions);
 
     const webNavigatorClient = new IModelWebNavigatorClient(this.deploymentEnv);
-    const webNavigatorUrl: string = await webNavigatorClient.getUrl();
+    const webNavigatorUrl: string = await webNavigatorClient.getUrl(alctx);
 
     return `${webNavigatorUrl}/?id=${job.tilesId}&projectId=${job.contextId}&dataId=${job.dataId}`;
   }

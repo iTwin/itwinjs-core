@@ -7,7 +7,7 @@ import * as deepAssign from "deep-assign";
 import { AccessToken } from "./Token";
 import { Config } from "./Config";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** The deployment environment of the services - this also identifies the URL location of the service */
 export type DeploymentEnv = "DEV" | "QA" | "PROD" | "PERF";
@@ -100,7 +100,7 @@ export abstract class Client {
    * sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
-  public async getUrl(): Promise<string> {
+  public async getUrl(alctx: ActivityLoggingContext): Promise<string> {
     if (this._url) {
       return Promise.resolve(this._url);
     }
@@ -109,7 +109,7 @@ export abstract class Client {
     // todo: Investigate why QA/DEV are not working
     const searchKey: string = this.getUrlSearchKey();
 
-    return urlDiscoveryClient.discoverUrl(searchKey, this.deploymentEnv)
+    return urlDiscoveryClient.discoverUrl(alctx, searchKey, this.deploymentEnv)
       .then((url: string): Promise<string> => {
         this._url = url;
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
@@ -121,15 +121,17 @@ export abstract class Client {
   }
 
   /** used by clients to send delete requests */
-  protected async delete(token: AccessToken, relativeUrlPath: string): Promise<void> {
-    const url: string = await this.getUrl() + relativeUrlPath;
+  protected async delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void> {
+    alctx.enter();
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
     Logger.logInfo(loggingCategory, `Sending DELETE request to ${url}`);
     const options: RequestOptions = {
       method: "DELETE",
       headers: { authorization: token.toTokenString() },
     };
     await this.setupOptionDefaults(options);
-    await request(url, options);
+    await request(alctx, url, options);
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Successful DELETE request to ${url}`);
   }
 }
@@ -192,7 +194,8 @@ export class UrlDiscoveryClient extends Client {
    * @param searchDeploymentEnv The deployment environment to search for.
    * @returns Registered URL for the service.
    */
-  public async discoverUrl(searchKey: string, searchDeploymentEnv: string): Promise<string> {
+  public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, searchDeploymentEnv: string): Promise<string> {
+    alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
 
     const options: RequestOptions = {
@@ -203,8 +206,9 @@ export class UrlDiscoveryClient extends Client {
       },
     };
     await this.setupOptionDefaults(options);
+    alctx.enter();
 
-    const response: Response = await request(url, options);
+    const response: Response = await request(alctx, url, options);
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
 
     return Promise.resolve(discoveredUrl);

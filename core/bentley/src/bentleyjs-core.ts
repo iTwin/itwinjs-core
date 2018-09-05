@@ -14,6 +14,7 @@ export * from "./IndexMap";
 export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";
+export * from "./ActivityLoggingContext";
 export * from "./LRUMap";
 export * from "./PromiseUtil";
 export * from "./SortedArray";

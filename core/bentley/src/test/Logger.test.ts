@@ -5,6 +5,7 @@ import { assert } from "chai";
 import { using, Logger, LogLevel, PerfLogger, DbResult } from "../bentleyjs-core";
 import { EnvMacroSubst } from "../Logger";
 import { BentleyError } from "../BentleyError";
+import { ActivityLoggingContext } from "../ActivityLoggingContext";
 
 let outerr: any[];
 let outwarn: any[];
@@ -478,24 +479,22 @@ describe("Logger", () => {
       (c, m, d) => outtrace = [c, m, d ? d() : {}]);
     Logger.setLevel("testcat", LogLevel.Error);
 
-    let activityId = "activity1";
-    Logger.activityIdGetter = () => activityId;
-
+    const lctx1 = new ActivityLoggingContext("activity1").enter();
     clearOutlets();
     Logger.logError("testcat", "message1");
-    checkOutlets(["testcat", "message1", { ActivityId: activityId }], [], [], []);
+    checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
 
+    const lctx2 = new ActivityLoggingContext("activity2").enter();
     clearOutlets();
-    activityId = "activity2";
     Logger.logError("testcat", "message2");
-    checkOutlets(["testcat", "message2", { ActivityId: activityId }], [], [], []);
+    checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);
 
     clearOutlets();
     try {
       throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
     } catch (_err) {
     }
-    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: activityId, ExceptionType: "BentleyError" }], [], [], []);
+    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: lctx2.activityId, ExceptionType: "BentleyError" }], [], [], []);
   });
 
 });
