@@ -12,6 +12,9 @@ import {
   PointStringParams,
   TesselatedPolyline,
   PolylineParams,
+  SurfaceParams,
+  isValidSurfaceType,
+  MeshParams,
   } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
@@ -449,8 +452,40 @@ export namespace IModelTileIO {
       return this._system.createPolyline(params);
     }
 
-    private createMeshGraphic(_primitive: any, _displayParams: DisplayParams, _vertices: VertexTable, _isPlanar: boolean): RenderGraphic | undefined {
-      return undefined; // ###TODO
+    private readSurface(mesh: any, displayParams: DisplayParams): SurfaceParams | undefined {
+      const surf = mesh.surface;
+      if (undefined === surf)
+        return undefined;
+
+      const indices = this.readVertexIndices(surf.indices);
+      if (undefined === indices)
+        return undefined;
+
+      const type = JsonUtils.asInt(surf.type, -1);
+      if (!isValidSurfaceType(type))
+        return undefined;
+
+      const texture = undefined !== displayParams.textureMapping ? displayParams.textureMapping.texture : undefined;
+
+      return {
+        type,
+        indices,
+        fillFlags: displayParams.fillFlags,
+        hasBakedLighting: this._hasBakedLighting,
+        material: displayParams.material,
+        texture,
+      };
+    }
+
+    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean): RenderGraphic | undefined {
+      const surface = this.readSurface(primitive, displayParams);
+      if (undefined === surface)
+        return undefined;
+
+      // ###TODO edges...
+
+      const params = new MeshParams(vertices, surface, undefined, isPlanar);
+      return this._system.createMesh(params);
     }
 
     private finishRead(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {

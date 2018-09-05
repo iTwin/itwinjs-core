@@ -455,6 +455,19 @@ export const enum SurfaceType {
     Classifier,
 }
 
+export function isValidSurfaceType(value: number): boolean {
+  switch (value) {
+    case SurfaceType.Unlit:
+    case SurfaceType.Lit:
+    case SurfaceType.Textured:
+    case SurfaceType.TexturedLit:
+    case SurfaceType.Classifier:
+      return true;
+    default:
+      return false;
+  }
+}
+
 export interface SurfaceParams {
   readonly type: SurfaceType;
   readonly indices: VertexIndices;
