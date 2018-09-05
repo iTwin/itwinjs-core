@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy } from "chai";
 import * as lolex from "lolex";
-import * as moq from "@helpers/Mocks";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import { using } from "@bentley/bentleyjs-core";
-import TemporaryStorage from "@src/TemporaryStorage";
+import TemporaryStorage from "../lib/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
 

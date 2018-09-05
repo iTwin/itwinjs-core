@@ -10,6 +10,7 @@ import { AccessToken } from "./Token";
 import { URL } from "url";
 import { request, RequestOptions } from "./Request";
 import { Config } from "./Config";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** RealityData */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -176,8 +177,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns an array of RealityData
    */
-  public async getRealityData(token: AccessToken, projectId: string, tilesId: string): Promise<RealityData[]> {
-    return this.getInstances<RealityData>(RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
+  public async getRealityData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<RealityData[]> {
+    return this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
   }
 
   /**
@@ -187,8 +188,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns an array of FileAccessKey
    */
-  public async getAppDataFileAccessKey(token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
-    return this.getFileAccessKey(token, projectId, tilesId, "Bim_AppData.json");
+  public async getAppDataFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
+    return this.getFileAccessKey(alctx, token, projectId, tilesId, "Bim_AppData.json");
   }
 
   /**
@@ -199,9 +200,9 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns a string url
    */
-  public async getFileAccessKey(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<FileAccessKey[]> {
+  public async getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<FileAccessKey[]> {
     const path = encodeURIComponent(tilesId + "/" + this.updateModelName(name)).split("%").join("~");
-    return this.getInstances<FileAccessKey>(FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/Document/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
+    return this.getInstances<FileAccessKey>(alctx, FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/Document/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
   /**
@@ -212,8 +213,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns a string url
    */
-  public async getTileDataBlobUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const keys: FileAccessKey[] = await this.getFileAccessKey(token, projectId, tilesId, name);
+  public async getTileDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
+    const keys: FileAccessKey[] = await this.getFileAccessKey(alctx, token, projectId, tilesId, name);
     return keys[0].url!;
   }
 
@@ -225,8 +226,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns a string url
    */
-  public async getAppDataBlobUrl(token: AccessToken, projectId: string, tilesId: string): Promise<string> {
-    const keys: FileAccessKey[] = await this.getFileAccessKey(token, projectId, tilesId, "Bim_AppData.json");
+  public async getAppDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<string> {
+    const keys: FileAccessKey[] = await this.getFileAccessKey(alctx, token, projectId, tilesId, "Bim_AppData.json");
     return keys[0].url!;
   }
 
@@ -238,8 +239,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns app data json object
    */
-  public async getAppData(token: AccessToken, projectId: string, tilesId: string): Promise<any> {
-    return this.getTileJson(token, projectId, tilesId, "Bim_AppData.json");
+  public async getAppData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<any> {
+    return this.getTileJson(alctx, token, projectId, tilesId, "Bim_AppData.json");
   }
 
   /**
@@ -260,8 +261,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns tile data json
    */
-  public async getModelData(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
-    return this.getTileJson(token, projectId, tilesId, this.cleanTilesetUrl(name));
+  public async getModelData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
+    return this.getTileJson(alctx, token, projectId, tilesId, this.cleanTilesetUrl(name));
   }
 
   /**
@@ -272,8 +273,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns app URL object for blob url
    */
-  public async getBlobUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<URL> {
-    const urlString = await this.getTileDataBlobUrl(token, projectId, tilesId, name);
+  public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<URL> {
+    const urlString = await this.getTileDataBlobUrl(alctx, token, projectId, tilesId, name);
     if (typeof this._blobUrl === "undefined")
       this._blobUrl = (Config.isBrowser) ? new window.URL(urlString) : new URL(urlString);
     return Promise.resolve(this._blobUrl);
@@ -287,8 +288,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns string url for blob data
    */
-  public async getBlobStringUrl(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = undefined === this._blobUrl ? await this.getBlobUrl(token, projectId, tilesId, name) : this._blobUrl;
+  public async getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
+    const url = undefined === this._blobUrl ? await this.getBlobUrl(alctx, token, projectId, tilesId, name) : this._blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
@@ -302,13 +303,13 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns app data json object
    */
-  public async getTileJson(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(token, projectId, tilesId, name);
+  public async getTileJson(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
+    const stringUrl = await this.getBlobStringUrl(alctx, token, projectId, tilesId, name);
     const options: RequestOptions = {
       method: "GET",
       responseType: "json",
     };
-    const data = await request(stringUrl, options);
+    const data = await request(alctx, stringUrl, options);
     return data.body;
   }
 
@@ -320,13 +321,13 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns array buffer of tile content
    */
-  public async getTileContent(token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(token, projectId, tilesId, this.cleanTilesetUrl(name));
+  public async getTileContent(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any> {
+    const stringUrl = await this.getBlobStringUrl(alctx, token, projectId, tilesId, this.cleanTilesetUrl(name));
     const options: RequestOptions = {
       method: "GET",
       responseType: "arraybuffer",
     };
-    const data = await request(stringUrl, options);
+    const data = await request(alctx, stringUrl, options);
     return data.body;
   }
 
@@ -337,8 +338,9 @@ export class RealityDataServicesClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns tile data json
    */
-  public async getRootDocumentJson(token: AccessToken, projectId: string, tilesId: string): Promise<any> {
-    const realityData: RealityData[] = await this.getRealityData(token, projectId, tilesId);
+  public async getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<any> {
+    const realityData: RealityData[] = await this.getRealityData(alctx, token, projectId, tilesId);
+    alctx.enter();
     let root = realityData[0].rootDocument!;
 
     // reset the blob url when a root document is requested to ensure the previous blob storage key isn't reused
@@ -349,7 +351,7 @@ export class RealityDataServicesClient extends WsgClient {
     if (root.includes("/"))
       root = root.split("/")[root.split("/").length - 1];
 
-    return (await this.getModelData(token, projectId, tilesId, root));
+    return (await this.getModelData(alctx, token, projectId, tilesId, root));
   }
 
   /**

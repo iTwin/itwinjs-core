@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import KeySet, { KeySetJSON } from "@src/KeySet";
-import { InstanceKey } from "@src/EC";
-import { PresentationError } from "@src/Error";
 import {
   createRandomECInstanceNodeKey,
   createRandomECInstanceKey, createRandomECInstanceId,
   createRandomEntityProps,
-} from "@helpers/random";
+} from "./_helpers/random";
+import KeySet, { KeySetJSON } from "../lib/KeySet";
+import { InstanceKey } from "../lib/EC";
+import { PresentationError } from "../lib/Error";
 
 describe("KeySet", () => {
 

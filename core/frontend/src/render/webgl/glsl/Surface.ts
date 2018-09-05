@@ -19,7 +19,7 @@ import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { FloatPreMulRgba } from "../FloatRGBA";
-import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
+import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -109,7 +109,10 @@ function createCommon(): ProgramBuilder {
 
 export function createSurfaceHiliter(): ProgramBuilder {
   const builder = createCommon();
-  addHiliter(builder);
+
+  addSurfaceFlags(builder, true);
+  addTexture(builder);
+  addSurfaceHiliter(builder);
   return builder;
 }
 
@@ -255,26 +258,7 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
-  const builder = createCommon();
-  addShaderFlags(builder);
-
-  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
-  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
-  addSurfaceDiscard(builder, feat);
-  addNormal(builder);
-
-  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
-  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
-  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor;
-      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
-      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
-    });
-  });
-
-  // Vertex
+function addTexture(builder: ProgramBuilder) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
@@ -307,6 +291,29 @@ export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
       }
     });
   });
+}
+
+export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
+  const builder = createCommon();
+  addShaderFlags(builder);
+
+  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
+  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
+  addSurfaceDiscard(builder, feat);
+  addNormal(builder);
+
+  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
+  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
+      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+    });
+  });
+
+  addTexture(builder);
+
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;

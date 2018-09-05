@@ -5,6 +5,7 @@ import * as chai from "chai";
 import { IModelWebNavigatorClient } from "../IModelWebNavigatorClient";
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -26,21 +27,23 @@ export class IModelWebNavigatorUrlMock {
 }
 
 describe("IModelWebNavigatorClient", () => {
+  const actx = new ActivityLoggingContext("");
+
   it("should setup its URLs", async () => {
     IModelWebNavigatorUrlMock.mockGetUrl("DEV");
-    let url: string = await new IModelWebNavigatorClient("DEV").getUrl();
+    let url: string = await new IModelWebNavigatorClient("DEV").getUrl(actx);
     chai.expect(url).equals("https://dev-connect-imodelweb.bentley.com");
 
     IModelWebNavigatorUrlMock.mockGetUrl("QA");
-    url = await new IModelWebNavigatorClient("QA").getUrl();
+    url = await new IModelWebNavigatorClient("QA").getUrl(actx);
     chai.expect(url).equals("https://qa-connect-imodelweb.bentley.com");
 
     IModelWebNavigatorUrlMock.mockGetUrl("PROD");
-    url = await new IModelWebNavigatorClient("PROD").getUrl();
+    url = await new IModelWebNavigatorClient("PROD").getUrl(actx);
     chai.expect(url).equals("https://connect-imodelweb.bentley.com");
 
     IModelWebNavigatorUrlMock.mockGetUrl("PERF");
-    url = await new IModelWebNavigatorClient("PERF").getUrl();
+    url = await new IModelWebNavigatorClient("PERF").getUrl(actx);
     chai.expect(url).equals("https://connect-imodelweb.bentley.com");
   });
 

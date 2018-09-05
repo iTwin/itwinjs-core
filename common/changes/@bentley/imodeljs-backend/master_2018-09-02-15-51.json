@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Product Backlog Item 30601: Fix the HTTP path (Route) for ReadWrite workflows to not include changeSetId. The Db would always be at the latest change set id for ReadWrite workflows.  So it doesn't make sense to include that in the route and keep changing it as we make PullMergeAndPush calls from the backend. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

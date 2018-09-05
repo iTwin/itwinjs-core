@@ -5,7 +5,7 @@
 
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
@@ -41,6 +41,9 @@ export class RpcInvocation {
   /** The fulfillment for this request. */
   public readonly fulfillment: Promise<RpcRequestFulfillment>;
 
+  /** The frontend request context in which this backend invocation is made */
+  public readonly context: ActivityLoggingContext;
+
   /** The status for this request. */
   public get status(): RpcRequestStatus {
     if (this._threw) {
@@ -73,6 +76,7 @@ export class RpcInvocation {
     this._timeIn = new Date().getTime();
     this.protocol = protocol;
     this.request = request;
+    this.context = new ActivityLoggingContext(this.request.id);
 
     try {
       try {
@@ -116,6 +120,7 @@ export class RpcInvocation {
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
+    this.context.enter();  // Sets ActivityLoggingContext.current := this.context
     return Promise.resolve(op.call(impl, ...parameters));
   }
 

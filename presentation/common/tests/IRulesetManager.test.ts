@@ -3,21 +3,23 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "@helpers/Mocks";
-import { IRulesetManager, RegisteredRuleset } from "@src/IRulesetManager";
-import { Ruleset, RuleTypes } from "@src/rules";
+import * as moq from "./_helpers/Mocks";
+import { IRulesetManager, RegisteredRuleset } from "../lib/IRulesetManager";
+import { Ruleset, RuleTypes } from "../lib/rules";
 
 describe("RegisteredRuleset", () => {
 
+  let uniqueIdentifier: string;
   const managerMock = moq.Mock.ofType<IRulesetManager>();
+
   beforeEach(() => {
     managerMock.reset();
+    uniqueIdentifier = faker.random.uuid();
   });
 
   describe("Ruleset implementation", () => {
 
     let ruleset: Ruleset;
-    let hash: string;
     let registered: RegisteredRuleset;
     beforeEach(() => {
       ruleset = {
@@ -35,12 +37,11 @@ describe("RegisteredRuleset", () => {
           vars: [],
         }],
       };
-      hash = faker.random.uuid();
-      registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
+      registered = new RegisteredRuleset(managerMock.object, ruleset, uniqueIdentifier);
     });
 
     it("returns wrapper ruleset properties", () => {
-      expect(registered.hash).to.eq(hash);
+      expect(registered.uniqueIdentifier).to.eq(uniqueIdentifier);
       expect(registered.id).to.deep.equal(ruleset.id);
       expect(registered.supportedSchemas).to.deep.equal(ruleset.supportedSchemas);
       expect(registered.supplementationInfo).to.deep.equal(ruleset.supplementationInfo);
@@ -58,8 +59,7 @@ describe("RegisteredRuleset", () => {
         id: faker.random.uuid(),
         rules: [],
       };
-      const hash = faker.random.uuid();
-      const registered = new RegisteredRuleset(managerMock.object, ruleset, hash);
+      const registered = new RegisteredRuleset(managerMock.object, ruleset, uniqueIdentifier);
       registered.dispose();
       managerMock.verify((x) => x.remove(registered), moq.Times.once());
     });

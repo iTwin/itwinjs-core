@@ -33,12 +33,12 @@ export class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> 
   private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [
     { label: IModelApp.i18n.translate("UiFramework:snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.intersection"), value: SnapMode.Intersection as number, iconName: "intersection" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.center"), value: SnapMode.Center as number, iconName: "circle" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.nearest"), value: SnapMode.Nearest as number, iconName: "edit" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.origin"), value: SnapMode.Origin as number, iconName: "origin" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "zoom-in" },
-    { label: IModelApp.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "zoom-out" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.intersection"), value: SnapMode.Intersection as number, iconName: "snaps-intersection" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.center"), value: SnapMode.Center as number, iconName: "snaps-center" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.nearest"), value: SnapMode.Nearest as number, iconName: "snaps-nearest" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.origin"), value: SnapMode.Origin as number, iconName: "snaps-origin" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
+    { label: IModelApp.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
 
   constructor(props?: any, context?: any) {
@@ -48,19 +48,18 @@ export class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> 
     this._className = instance.name;
   }
 
-  private _getSnapModeIconNameFromMode(snapMode: number): string {
+  private getSnapModeIconNameFromMode(snapMode: number): string {
     for (const mode of this._snapModeFieldArray) {
       if (mode.value === snapMode)
         return mode.iconName;
     }
 
     if (snapMode > 0)
-      return "placeholder";
+      return "snaps-multione";
 
     return "placeholder";
   }
 
-  // TODO !!!
   public render(): React.ReactNode {
     return (
       <SnapModeIndicator
@@ -68,20 +67,20 @@ export class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> 
         isLabelVisible={this.props.isInFooterMode}
         onClick={this._handleSnapModeIndicatorClick}
         icon={
-          <SnapModeIcon iconName={this._getSnapModeIconNameFromMode(this.props.snapMode)} className="nz-footer-icon" />
+          <SnapModeIcon iconName={this.getSnapModeIconNameFromMode(this.props.snapMode)} className="nz-footer-icon" />
         }
         dialog={
           this.props.openWidget !== this._className ? undefined :
             <SnapModeDialog
               title={IModelApp.i18n.translate("UiFramework:snapModeField.snapMode")}
-              snaps={this._getSnapEntries()}
+              snaps={this.getSnapEntries()}
             />
         }
       />
     );
   }
 
-  private _getSnapEntries(): JSX.Element[] {
+  private getSnapEntries(): JSX.Element[] {
     return this._snapModeFieldArray.map((item: SnapModeFieldEntry, index: number) => {
       return (
         <SnapRow

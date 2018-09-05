@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
 import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -11,6 +11,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
+  const actx = new ActivityLoggingContext("");
 
   before(() => {
     imodel = IModelTestUtils.openIModel("test.bim");
@@ -66,7 +67,7 @@ describe("Class Registry", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    imodel.importSchema(schemaPathname); // will throw an exception if import fails
+    imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
     const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
 

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code,
@@ -54,7 +54,6 @@ import { Entity } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -73,9 +72,17 @@ export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 /** Mode to access the IModelDb */
 export enum AccessMode { Shared = 1, Exclusive = 2 }
 
+/** Additional options for exclusive access to IModelDb  */
+export enum ExclusiveAccessOption {
+  /** Create or acquire a new briefcase every time the open call is made */
+  CreateNewBriefcase = 1,
+
+  /** Try and reuse an previously open briefcase every time the open call is made */
+  TryReuseOpenBriefcase = 2,
+}
+
 /** Parameters to open the iModelDb */
 export class OpenParams {
-
   // Constructor
   public constructor(
     /** Mode to Open the IModelDb */
@@ -86,6 +93,9 @@ export class OpenParams {
 
     /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
     public readonly syncMode?: SyncMode,
+
+    /** Additional hint for exclusive access to either create a new briefcase or try and reuse a previously opened briefcase */
+    public readonly exclusiveAccessOption?: ExclusiveAccessOption,
 
   ) {
     this.validate();
@@ -105,19 +115,28 @@ export class OpenParams {
     if (this.syncMode === SyncMode.PullAndPush && this.accessMode === AccessMode.Shared) {
       throw new IModelError(BentleyStatus.ERROR, "Pushing changes from a shared IModelDb is not supported");
     }
+
+    if (this.accessMode === AccessMode.Shared && this.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase) {
+      throw new IModelError(BentleyStatus.ERROR, "Accessing a shared IModelDb (i.e., setting AccessMode.Shared) implies that the briefcase would be reused if possible (i.e., need to pass BriefcaseOption.TryReuse)");
+    }
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion); }
+  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion, exclusiveAccessOption); }
 
   /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly); }
+  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly, exclusiveAccessOption); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush); }
+  public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
 
   /** Create parameters to open a standalone Db */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
+
+  /** Returns true if equal and false otherwise */
+  public equals(other: OpenParams) {
+    return other.accessMode === this.accessMode && other.openMode === this.openMode && other.syncMode === this.syncMode && other.exclusiveAccessOption === this.exclusiveAccessOption;
+  }
 }
 
 /**
@@ -159,7 +178,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
+  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion, _activityId: ActivityLoggingContext) => void>();
 
   /** Event raised just after an IModelDb is opened.
    * @note This event is *not* raised for standalone IModelDbs.
@@ -169,7 +188,7 @@ export class IModelDb extends IModel {
    * [[include:IModelDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
+  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb, _activityId: ActivityLoggingContext) => void>();
   /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
   public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _args: CreateIModelProps) => void>();
   /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
@@ -203,7 +222,7 @@ export class IModelDb extends IModel {
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, openParams.openMode);
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
@@ -252,10 +271,11 @@ export class IModelDb extends IModel {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+    actx.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(accessToken, contextId, fileName, args);
-    return IModelDb.open(accessToken, contextId, iModelId);
+    const iModelId: string = await BriefcaseManager.create(actx, accessToken, contextId, fileName, args);
+    return IModelDb.open(actx, accessToken, contextId, iModelId);
   }
 
   /** Open an iModel from a local file.
@@ -270,8 +290,9 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Open an iModel from iModelHub. IModelDb files are cached locally. If the requested version is already in the cache, then open will open it from there.
-   * Otherwise, open will download the requested version from iModelHub and cache it.
+   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from the iModelHub to the
+   * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
+   * Every open call must be matched with a call to close the IModelDb.
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.open]]
@@ -282,12 +303,14 @@ export class IModelDb extends IModel {
    * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
    */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openParams, version);
+  public static async open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    actx.enter();
+    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, actx);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(actx, accessToken, contextId, iModelId, openParams, version);
+    actx.enter();
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
-    IModelDb.onOpened.raiseEvent(imodelDb);
+    IModelDb.onOpened.raiseEvent(imodelDb, actx);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
   }
@@ -317,17 +340,18 @@ export class IModelDb extends IModel {
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel
    */
-  public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+  public async close(actx: ActivityLoggingContext, accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
 
     try {
-      await BriefcaseManager.close(accessToken, this.briefcase, keepBriefcase);
+      await BriefcaseManager.close(actx, accessToken, this.briefcase, keepBriefcase);
     } catch (error) {
       throw error;
     } finally {
+      actx.enter();
       this.clearBriefcaseEntry();
     }
   }
@@ -601,9 +625,11 @@ export class IModelDb extends IModel {
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  public async pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    actx.enter();
     this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.pullAndMergeChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.concurrencyControl.onMergedChanges();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
@@ -615,9 +641,11 @@ export class IModelDb extends IModel {
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
+  public async pushChanges(actx: ActivityLoggingContext, accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
+    actx.enter();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
+    await BriefcaseManager.pushChanges(actx, accessToken, this.briefcase, description);
+    actx.enter();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
@@ -628,8 +656,9 @@ export class IModelDb extends IModel {
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    */
-  public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reverseChanges(accessToken, this.briefcase, version);
+  public async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reverseChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.initializeIModelDb();
   }
 
@@ -639,8 +668,9 @@ export class IModelDb extends IModel {
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
    */
-  public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase, version);
+  public async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reinstateChanges(actx, accessToken, this.briefcase, version);
+    actx.enter();
     this.initializeIModelDb();
   }
 
@@ -665,12 +695,15 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(schemaFileName: string): Promise<void> {
+  public async importSchema(actx: ActivityLoggingContext, schemaFileName: string): Promise<void> {
+    actx.enter();
+
     if (!this.briefcase)
       throw this.newNotOpenError();
 
     if (!this.briefcase.isStandalone) {
-      await this.concurrencyControl.lockSchema(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      await this.concurrencyControl.lockSchema(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      actx.enter();
     }
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -680,8 +713,9 @@ export class IModelDb extends IModel {
       try {
         // The schema import logic and/or imported Domains may have created new elements and models.
         // Make sure we have the supporting locks and codes.
-        await this.concurrencyControl.request(IModelDb.getAccessToken(this.iModelToken.iModelId!));
+        await this.concurrencyControl.request(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
       } catch (err) {
+        actx.enter();
         this.abandonChanges();
         throw err;
       }
@@ -694,12 +728,12 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry) {
+    if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
       Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
       throw new IModelNotFoundResponse();
     }
     // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-    return briefcaseEntry.iModelDb!;
+    return briefcaseEntry.iModelDb;
   }
 
   /** Get the ClassMetaDataRegistry for this iModel. */
@@ -875,7 +909,8 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public requestSnap(connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public requestSnap(actx: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    actx.enter();
     let request = this._snaps.get(connectionId);
     if (undefined === request) {
       request = (new (NativePlatformRegistry.getNativePlatform()).SnapRequest()) as SnapRequest;
@@ -1219,7 +1254,7 @@ export namespace IModelDb {
     }
 
     /** Default parameters for iterating/querying ViewDefinitions. Includes all subclasses of ViewDefinition, excluding only those marked 'private'. */
-    public static readonly defaultQueryParams: ViewQueryParams = {  from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
+    public static readonly defaultQueryParams: ViewQueryParams = { from: "BisCore.ViewDefinition", where: "IsPrivate=FALSE" };
 
     /** Iterate all ViewDefinitions matching the supplied query.
      * @param params Specifies the query by which views are selected.
@@ -1412,27 +1447,3 @@ export namespace TxnManager {
     readonly _id: string;
   }
 }
-
-/** Utility to cache and retrieve results of long running open IModelDb requests
- * The cache is keyed on the input arguments passed to open
- * @hidden
- */
-class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
-  public constructor() {
-    super(IModelDb.open, (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
-      return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
-    });
-  }
-
-  private _superMemoize = this.memoize;
-  public memoize = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
-    return this._superMemoize(accessToken, contextId, iModelId, openParams, version);
-  }
-
-  private _superDeleteMemoized = this.deleteMemoized;
-  public deleteMemoized = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
-    this._superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
-  }
-}
-
-export const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();

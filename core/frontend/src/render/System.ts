@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface, XAndY } from "@bentley/geometry-core";
 import { assert, Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
@@ -113,6 +113,12 @@ export abstract class RenderClipVolume implements IDisposable {
 
 export type GraphicList = RenderGraphic[];
 
+export interface Overlay2dDecoration {
+  drawDecoration(ctx: CanvasRenderingContext2D): void;
+  origin: XAndY;
+}
+export type Overlay2dList = Overlay2dDecoration[];
+
 /**
  * Various of lists of RenderGraphics that are "decorated" into the RenderTarget, in addition to the Scene.
  */
@@ -123,6 +129,7 @@ export class Decorations implements IDisposable {
   private _world?: GraphicList;        // drawn with zbuffer, with default lighting, smooth shading
   private _worldOverlay?: GraphicList; // drawn in overlay mode, world units
   private _viewOverlay?: GraphicList;  // drawn in overlay mode, view units
+  public overlay2d?: Overlay2dList;
 
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
   public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }

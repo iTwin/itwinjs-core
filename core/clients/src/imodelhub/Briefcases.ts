@@ -7,7 +7,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubClientError } from "./Errors";
 
 import { AccessToken } from "../Token";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
@@ -165,15 +165,16 @@ export class BriefcaseHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.MaximumNumberOfBriefcasesPerUser]($bentley) or [IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute]($bentley) if a limit of Briefcases for that user was reached. Users should use the Briefcases they have previously acquired. If that is no longer possible, they should delete them, to be able to acquire new ones.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(token: AccessToken, imodelId: string): Promise<Briefcase> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string): Promise<Briefcase> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Acquiring briefcase for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let briefcase: Briefcase = new Briefcase();
 
-    briefcase = await this._handler.postInstance<Briefcase>(Briefcase, token, this.getRelativeUrl(imodelId), briefcase);
-
+    briefcase = await this._handler.postInstance<Briefcase>(alctx, Briefcase, token, this.getRelativeUrl(imodelId), briefcase);
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Acquired briefcase ${briefcase.briefcaseId!} for iModel ${imodelId}`);
 
     return briefcase;
@@ -186,14 +187,15 @@ export class BriefcaseHandler {
    * @param briefcaseId Id of the Briefcase to be deleted.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting briefcase ${briefcaseId} from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(token, this.getRelativeUrl(imodelId, briefcaseId));
-
+    await this._handler.delete(alctx, token, this.getRelativeUrl(imodelId, briefcaseId));
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Deleted briefcase ${briefcaseId} from iModel ${imodelId}`);
   }
 
@@ -206,15 +208,16 @@ export class BriefcaseHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[BriefcaseQuery.byId]] is used and a Briefcase with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, imodelId: string, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying briefcases for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     const id = query.getId();
 
-    const briefcases = await this._handler.getInstances<Briefcase>(Briefcase, token, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
-
+    const briefcases = await this._handler.getInstances<Briefcase>(alctx, Briefcase, token, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
+    alctx.enter();
     for (const briefcase of briefcases) {
       briefcase.iModelId = imodelId;
     }
@@ -236,7 +239,8 @@ export class BriefcaseHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.FileHandlerNotSet]($bentley) if [[FileHandler]] instance was not set for [[IModelClient]].
    * @throws [[ResponseError]] if the briefcase cannot be downloaded.
    */
-  public async download(briefcase: Briefcase, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(alctx: ActivityLoggingContext, briefcase: Briefcase, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
     ArgumentCheck.defined("briefcase", briefcase);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
@@ -250,8 +254,8 @@ export class BriefcaseHandler {
     if (!briefcase.downloadUrl)
       return Promise.reject(IModelHubClientError.missingDownloadUrl("briefcase"));
 
-    await this._fileHandler.downloadFile(briefcase.downloadUrl, downloadToPathname, parseInt(briefcase.fileSize!, 10), progressCallback);
-
+    await this._fileHandler.downloadFile(alctx, briefcase.downloadUrl, downloadToPathname, parseInt(briefcase.fileSize!, 10), progressCallback);
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
   }
 }

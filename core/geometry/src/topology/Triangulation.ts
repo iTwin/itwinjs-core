@@ -5,10 +5,12 @@
 /** @module Topology */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
-import { Point3d, Vector3d } from "../PointVector";
+import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../GrowableArray";
+import { Point2dArray } from "../PointHelpers";
+import { Range2d } from "../Range";
 
 export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation
@@ -129,15 +131,13 @@ export class Triangulator {
     return undefined;
   }
   /**
-   * Triangulate the polygon made up of by a series of points
-   *
-   * *  Outer-edge points must be passed in counter-clockwise order
-   * *  Inner-edge (hole) indices must be passed in clockwise order (following the outer edge points)
-   * *  Optional holeIndices array specifies which indices of points array given are the starts of holes
+   * Triangulate the polygon made up of by a series of points.
+   * * To triangulate a polygon with holes, use earcutFromOuterAndInnerLoops
+   * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    */
-  public static earcutFromPoints(data: Point3d[], holeIndices?: number[]): HalfEdgeGraph {
+  public static earcutSingleLoop(data: Point3d[]): HalfEdgeGraph {
     Triangulator._returnGraph = new HalfEdgeGraph();
-    let outerLen = (holeIndices && holeIndices.length) ? holeIndices[0] : data.length;
+    let outerLen = data.length;
 
     // Do not include points on end of array that match the starting point
     for (let i = outerLen - 1; i > 0; i--) {
@@ -147,7 +147,7 @@ export class Triangulator {
         break;
     }
 
-    let startingNode = Triangulator.createFaceLoop(data, 0, outerLen, true, true);
+    const startingNode = Triangulator.createFaceLoop(data, 0, outerLen, true, true);
 
     if (!startingNode) return Triangulator._returnGraph;
 
@@ -158,8 +158,6 @@ export class Triangulator {
     let x;
     let y;
     let size;
-
-    if (holeIndices && holeIndices.length) startingNode = Triangulator.eliminateHoles(data, startingNode, holeIndices);
 
     // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
     if (data.length > 80) {
@@ -182,6 +180,35 @@ export class Triangulator {
     Triangulator.earcutLinked(startingNode, minX, minY, size);
     return Triangulator._returnGraph;
   }
+  /**
+   * Triangulate the polygon made up of multiple loops.
+   * * only xy parts are considered.
+   * * First loop is assumed outer -- will be reordered as CCW
+   * * Additional loops assumed inner -- will be reordered as CW
+   */
+  public static earcutOuterAndInnerLoops(loops: Point3d[][]): HalfEdgeGraph {
+    Triangulator._returnGraph = new HalfEdgeGraph();
+    const range = Range2d.createNull();
+    const numLoops = loops.length;
+    // let totalPoints = 0;
+    // trim trailing duplicates from each array.
+    for (const loop of loops) {
+      // totalPoints += n;
+      const n = loop.length;
+      for (let i = 0; i < n; i++)
+        range.extendXY(loop[i].x, loop[i].y);
+    }
+    let startingNode = Triangulator.createFaceLoop(loops[0], 0, Point2dArray.lengthWithoutWraparound(loops[0]), true, true);
+
+    if (!startingNode)
+      return Triangulator._returnGraph;
+
+    if (numLoops > 1)
+      startingNode = Triangulator.spliceHoleLoops(loops, startingNode);
+    // NEEDS WORK: When 80 or more points, pass range go earcutLinked.  This triggers hashing for performance.
+    Triangulator.earcutLinked(startingNode);
+    return Triangulator._returnGraph;
+  }
 
   private static directcreateFaceLoopFromGrowableXYZ(graph: HalfEdgeGraph, data: GrowableXYZArray): HalfEdge | undefined {
     let i;
@@ -195,12 +222,13 @@ export class Triangulator {
     return base;
   }
 
-  private static directCreateFaceLoopFromPointArraySubset(graph: HalfEdgeGraph, data: Point3d[], start: number, end: number): HalfEdge | undefined {
+  private static directCreateFaceLoopFromPointArraySubset(graph: HalfEdgeGraph, data: XAndY[], start: number, end: number): HalfEdge | undefined {
     let i;
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let base: HalfEdge | undefined;
     for (i = start; i < end; i++) {
-      base = graph.splitEdge(base, data[i].x, data[i].y, data[i].z);
+      base = graph.splitEdge(base, data[i].x, data[i].y,
+        data[i].hasOwnProperty("z") ? (data[i] as any).z : 0);
     }
     return base;
   }
@@ -214,22 +242,30 @@ export class Triangulator {
   private static assignMasksToNewFaceLoop(_graph: HalfEdgeGraph, base: HalfEdge | undefined, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     // base is the final coordinates
     if (base) {
-      base = base.faceSuccessor;
+      base = base.faceSuccessor; // because typical construction process leaves the "live" edge at the end of the loop.
       const area = base.signedFaceArea();
+      const mate = base.edgeMate;
       base.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
-      base.edgeMate.setMaskAroundFace(
-        markExterior ? (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.EXTERIOR)
-          : (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE));
-      if (area > 0 === returnPositiveAreaLoop)
-        return base;
-      else return base.vertexSuccessor;
+      mate.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
+
+      let preferredSide = base;
+      if (returnPositiveAreaLoop === (area < 0))
+        preferredSide = mate;
+      const otherSide = preferredSide.edgeMate;
+
+      if (markExterior)
+        otherSide.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+      return preferredSide;
     }
     return undefined;   // caller should not be calling with start <= end
   }
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
+   * * If start and end are both zero, use the whole array.
    */
-  private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  private static createFaceLoop(data: XAndY[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+    if (start === 0 && end === 0)
+      end = data.length;
     const graph = Triangulator._returnGraph;
     const base = Triangulator.directCreateFaceLoopFromPointArraySubset(graph, data, start, end);
     return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
@@ -462,19 +498,15 @@ export class Triangulator {
     } while (a !== start);
   }
 
-  /** link every hole into the outer loop, producing a single-ring polygon without holes */
-  private static eliminateHoles(data: Point3d[], outerNode: HalfEdge | undefined, holeIndices: number[]) {
+  /** link loops[1], loops[2] etc into the outer loop, producing a single-ring polygon without holes
+   *
+   */
+  private static spliceHoleLoops(loops: Point3d[][], outerNode: HalfEdge | undefined) {
     const queue: HalfEdge[] = [];
-    let i;
-    let len;
-    let start;
-    let end;
     let list;
 
-    for (i = 0, len = holeIndices.length; i < len; i++) {
-      start = holeIndices[i];
-      end = i < len - 1 ? holeIndices[i + 1] : data.length;
-      list = Triangulator.createFaceLoop(data, start, end, false, false);
+    for (let holeIndex = 1; holeIndex < loops.length; holeIndex++) {
+      list = Triangulator.createFaceLoop(loops[holeIndex], 0, Point2dArray.lengthWithoutWraparound(loops[holeIndex]), false, true);
       if (list && list === list.faceSuccessor) list.steiner = true;
       queue.push(Triangulator.getLeftmost(list));
     }
@@ -482,8 +514,8 @@ export class Triangulator {
     queue.sort(Triangulator.compareX);
 
     // process holes from left to right
-    for (i = 0; i < queue.length; i++) {
-      Triangulator.eliminateHole(queue[i], outerNode);
+    for (const holeStart of queue) {
+      Triangulator.eliminateHole(holeStart, outerNode);
       outerNode = Triangulator.filterPoints(outerNode, (outerNode) ? outerNode.faceSuccessor : undefined);
     }
 

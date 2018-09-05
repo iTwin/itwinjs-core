@@ -48,6 +48,7 @@ Config.devCorsProxyServer = "https://localhost:3001";
 setupStandaloneConfiguration();
 Logger.setLevelDefault(LogLevel.Error);
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
+Logger.setLevel("imodeljs-backend", LogLevel.Trace);
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());

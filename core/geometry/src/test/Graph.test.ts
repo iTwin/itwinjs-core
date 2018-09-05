@@ -23,6 +23,7 @@ import { Angle } from "../Geometry";
 import { Sample } from "../serialization/GeometrySamples";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { Loop } from "../curve/CurveChain";
+import { GeometryQuery } from "../curve/CurvePrimitive";
 
 function exportGraph(graph: HalfEdgeGraph, filename: string) {
   const toExport = PolyfaceBuilder.graphToPolyface(graph);
@@ -88,7 +89,7 @@ function exportAnnotatedGraph(graph: HalfEdgeGraph, filename: string) {
       }
     }
   }
-  GeometryCoreTestIO.saveGeometry (data, "Graph", filename);
+  GeometryCoreTestIO.saveGeometry(data, "Graph", filename);
 }
 
 function dumpGraph(graph: HalfEdgeGraph) {
@@ -216,31 +217,66 @@ function verifyGraphCounts(ck: Checker,
 describe("Triangulation", () => {
   const ck = new Checker();
 
-  it("SpecificTriangulationCase", () => {
-    const myArray1: Point3d[] = [
-      // Outer
-      Point3d.create(0, 0, 0),
-      Point3d.create(3, -2, 0),
-      Point3d.create(6, 2, 0),
-      Point3d.create(5, 5, 0),
-      Point3d.create(4, 2, 0),
-      Point3d.create(1, 3, 0),
+  it("TriangulateLoops", () => {
+    let yShift = 0;
+    const dx = 20.0;
+    const dy = 30.0;
+    const allGeometry: GeometryQuery[] = [];
+    for (const myLoops of [
+      [[
+        // Outer
+        Point3d.create(0, 0, 0),
+        Point3d.create(3, -2, 0),
+        Point3d.create(6, 2, 0),
+        Point3d.create(5, 5, 0),
+        Point3d.create(4, 2, 0),
+        Point3d.create(1, 3, 0)],
+      [
+        // Hole
+        Point3d.create(1, 1, 0),
+        Point3d.create(2, 2, 0),
+        Point3d.create(3, 1, 0)]],
+      // triangle with one hole
+      [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
+      [Point3d.create(2, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)]],
+      // triangle with one hole, CCW orientation on the hole (expect it to be corrected)
+      [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
+      [Point3d.create(2, 1, 0), Point3d.create(3, 0, 0), Point3d.create(3, 1, 0)]],
+      // rectangle with 2 holes
+      [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
+      [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0)],
+      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0)]]]) {
+      let xShift = 0;
+      // triangulate and flip in the outer loop only . . .
+      const graph1 = Triangulator.earcutSingleLoop(myLoops[0]);
+      const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
+      unflippedOuter.tryTranslateInPlace(xShift, yShift, 0);
+      allGeometry.push(unflippedOuter);
+      xShift += dx;
 
-      // Holes
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 2, 0),
-      Point3d.create(3, 1, 0),
-    ];
+      Triangulator.cleanupTriangulation(graph1);
+      const flippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
+      flippedOuter.tryTranslateInPlace(xShift, yShift, 0);
+      allGeometry.push(flippedOuter);
+      xShift += 2 * dx;
 
-    const graph = Triangulator.earcutFromPoints(myArray1, [6]);
+      // triangulate with the hole
+      const graph2 = Triangulator.earcutOuterAndInnerLoops(myLoops);
+      const unflipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+      unflipped2.tryTranslateInPlace(xShift, yShift, 0);
+      allGeometry.push(unflipped2);
+      xShift += dx;
 
-    const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph);
-    Triangulator.cleanupTriangulation(graph);
-    const flippedPoly = PolyfaceBuilder.graphToPolyface(graph);
-    GeometryCoreTestIO.saveGeometry ([unflippedPoly], "Graph", "TriangulationBeforeFlip");
-    GeometryCoreTestIO.saveGeometry ([flippedPoly], "Graph", "TriangulationAfterFlip");
+      Triangulator.cleanupTriangulation(graph2);
+      const flipped2 = PolyfaceBuilder.graphToPolyface(graph2);
+      flipped2.tryTranslateInPlace(xShift, yShift, 0);
+      allGeometry.push(flipped2);
+      xShift += dx;
 
-    ck.checkpoint("SpecificTriangulationCase");
+      yShift += dy;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateAndFlip");
+    ck.checkpoint("TriangulateAndFlip");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -262,7 +298,7 @@ describe("Triangulation", () => {
           rotation.multiplyPoint3dArrayInPlace(points);
         if (Checker.noisy.squareWaves)
           console.log(name, "Rotation angle ", degrees, " numPhase", numPhase);
-        const graph = Triangulator.earcutFromPoints(points);
+        const graph = Triangulator.earcutSingleLoop(points);
         const pfA = PolyfaceBuilder.graphToPolyface(graph);
         Triangulator.cleanupTriangulation(graph);
 
@@ -280,7 +316,7 @@ describe("Triangulation", () => {
 
         ls1.tryTranslateInPlace(x0, y0);
         y0 += 3 + 4 * numPhase;
-        GeometryCoreTestIO.saveGeometry ([ls1, ls, pfA, pfB], "Graph", name);
+        GeometryCoreTestIO.saveGeometry([ls1, ls, pfA, pfB], "Graph", name);
       }
       degreeCount++;
     }
@@ -442,7 +478,7 @@ describe("VUGraph", () => {
         transform.multiplyPoint3dArray(points, points);
         baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
         allGeometry.push(Loop.create(LineString3d.create(points)));
-        const graph = Triangulator.earcutFromPoints(points);
+        const graph = Triangulator.earcutSingleLoop(points);
         if (graph) {
           const pfA = PolyfaceBuilder.graphToPolyface(graph);
           pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
@@ -456,6 +492,6 @@ describe("VUGraph", () => {
       baseVectorA.addInPlace(Vector3d.create(0, 8.0 * yMax, 0));
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "LargeCuontTriangulation");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "LargeCountTriangulation");
   });
 });

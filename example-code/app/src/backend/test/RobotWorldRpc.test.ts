@@ -7,14 +7,16 @@ import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IMod
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
 import { RobotWorld } from "../RobotWorldSchema";
 
+const actx = new ActivityLoggingContext("<backend-initialization>");
+
 function simulateBackendDeployment() {
-  RobotWorldEngine.initialize();
+  RobotWorldEngine.initialize(actx);
 }
 
 function simulateBackendShutdown() {
@@ -26,7 +28,7 @@ const bimName = "RobotWorldRpc.bim";
 function setUpTest() {
   // Make a copy for the tests to work on
   let cc = IModelTestUtils.openIModel("empty.bim", { copyFilename: bimName, deleteFirst: true, openMode: OpenMode.ReadWrite });
-  RobotWorld.importSchema(cc);
+  RobotWorld.importSchema(actx, cc);
   cc.saveChanges();
   cc.closeStandalone();
   cc = IModelTestUtils.openIModelFromOut(bimName, { openMode: OpenMode.ReadWrite });

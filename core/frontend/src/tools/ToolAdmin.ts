@@ -113,6 +113,8 @@ export class SuspendedToolState {
     viewManager.setViewCursor(this._viewCursor);
     if (this._inDynamics)
       viewManager.beginDynamicsMode();
+    else
+      viewManager.endDynamicsMode();
   }
 }
 
@@ -1079,10 +1081,15 @@ export class ToolAdmin {
     this.setInputCollector(undefined);
     if (unsuspend)
       this.onUnsuspendTool();
+
+    IModelApp.accuDraw.onInputCollectorExit();
+    this.updateDynamics();
   }
 
   /** @hidden */
   public startInputCollector(newTool: InputCollector): void {
+    IModelApp.accuDraw.onInputCollectorInstall();
+
     if (undefined !== this._inputCollector) {
       this.setInputCollector(undefined);
     } else {
@@ -1092,8 +1099,10 @@ export class ToolAdmin {
       this._suspendedByInputCollector = new SuspendedToolState();
     }
 
+    IModelApp.viewManager.endDynamicsMode();
     this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
+
     this.setInputCollector(newTool);
   }
 
@@ -1139,6 +1148,7 @@ export class ToolAdmin {
       this._suspendedByViewTool = new SuspendedToolState();
     }
 
+    IModelApp.viewManager.endDynamicsMode();
     this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
@@ -1152,12 +1162,8 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public setPrimitiveTool(primitiveTool?: PrimitiveTool) {
-    const newTool = primitiveTool;  // in case we're restarting the same tool
-
+  public setPrimitiveTool(newTool?: PrimitiveTool) {
     if (undefined !== this._primitiveTool) {
-      IModelApp.viewManager.endDynamicsMode();
-
       this._primitiveTool.onCleanup();
       this._primitiveTool = undefined;
     }
@@ -1174,9 +1180,8 @@ export class ToolAdmin {
     // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
     this.exitInputCollector();
 
-    // raise event that tool has started.
+    IModelApp.viewManager.endDynamicsMode();
     this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
-
     this.setIncompatibleViewportCursor(true); // Don't restore this
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.None;

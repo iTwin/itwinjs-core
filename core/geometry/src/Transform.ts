@@ -2159,6 +2159,18 @@ export class Transform implements BeJSONFunctions {
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     return Matrix3d.XYZPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
+  /** Multiply the tranposed transform (as 4x4 with 0001 row) by Point4d given as xyzw..  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
+    const coffs = this._matrix.coffs;
+    const origin = this._origin;
+    return Point4d.create(
+      x * coffs[0] + y * coffs[3] + z * coffs[6],
+      x * coffs[1] + y * coffs[4] + z * coffs[7],
+      x * coffs[2] + y * coffs[5] + z * coffs[8],
+      x * origin.x + y * origin.y + z * origin.z + w,
+      result);
+  }
+
   /** for each point:  replace point by Transform*point */
   public multiplyPoint3dArrayInPlace(points: Point3d[]) {
     let point;

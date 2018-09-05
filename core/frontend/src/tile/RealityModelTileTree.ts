@@ -5,7 +5,7 @@
 
 import { IModelError, TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader, MissingNodes } from "./TileTree";
@@ -217,8 +217,9 @@ class RealityModelTileClient {
       RealityModelTileClient._token = token;
     } else if (undefined === RealityModelTileClient._token) {
       // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
-      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(authToken);
+      const alctx = new ActivityLoggingContext(Guid.createValue());
+      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(alctx, "Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
+      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(alctx, authToken);
     }
     if (undefined === RealityModelTileClient._onCloseListener)
       RealityModelTileClient._onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
@@ -237,28 +238,31 @@ class RealityModelTileClient {
   }
 
   public async getRootDocument(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getRootDocumentJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+      return RealityModelTileClient._client.getRootDocumentJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
     this.setBaseUrl(url);
-    return getJson(url);
+    return getJson(alctx, url);
   }
 
   public async getTileContent(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileContent(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+      return RealityModelTileClient._client.getTileContent(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
-      return getArrayBuffer(tileUrl);
+      return getArrayBuffer(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
 
   public async getTileJson(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+      return RealityModelTileClient._client.getTileJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
-      return getJson(tileUrl);
+      return getJson(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
   }

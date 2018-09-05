@@ -8,9 +8,9 @@ import {
   createRandomRelationshipPath, createRandomRelationshipPathJSON,
   createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomEditorDescription, createRandomPrimitiveField,
-} from "@helpers/random";
-import { BaseFieldJSON, PropertiesFieldJSON, NestedContentFieldJSON } from "@src/content/Fields";
-import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "@src/content";
+} from "../_helpers/random";
+import { BaseFieldJSON, PropertiesFieldJSON, NestedContentFieldJSON } from "../../lib/content/Fields";
+import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "../../lib/content";
 
 const generateTestData = () => {
   const testData: any = {};

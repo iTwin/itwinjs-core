@@ -4,7 +4,7 @@
 
 /** @module Curve */
 
-import { Geometry, AxisOrder, Angle, AngleSweep, BeJSONFunctions } from "../Geometry";
+import { Geometry, AxisOrder, Angle, AngleSweep, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
 import { Point3d, Vector3d, XYAndZ } from "../PointVector";
 import { Range3d } from "../Range";
@@ -279,11 +279,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /** Return the larger of the two defining vectors. */
   public maxVectorLength(): number { return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude()); }
 
-  public appendPlaneIntersectionPoints(plane: Plane3dByOriginAndUnitNormal, result: CurveLocationDetail[]): number {
-    const normal = plane.getNormalRef();
-    const constCoff = normal.dotProductStartEnd(plane.getOriginRef(), this._center);
-    const cosCoff = this._matrix.dotColumnX(normal);
-    const sinCoff = this._matrix.dotColumnY(normal);
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
+    const constCoff = plane.altitude(this._center);
+    const coffs = this._matrix.coffs;
+    const cosCoff = plane.velocityXYZ (coffs[0], coffs[3], coffs[6]);
+    const sinCoff = plane.velocityXYZ (coffs[1], coffs[4], coffs[7]);
     const trigPoints = Geometry.solveTrigForm(constCoff, cosCoff, sinCoff);
     let numIntersection = 0;
     if (trigPoints !== undefined) {

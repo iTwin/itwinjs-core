@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ChangeSetApplyOption, ChangeSetStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { OpenMode, ChangeSetApplyOption, ChangeSetStatus, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, ChangeSetToken, OpenParams } from "../../backend";
@@ -14,6 +14,7 @@ import { KnownLocations } from "../../Platform";
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
+  const actx = new ActivityLoggingContext("");
 
   before(async () => {
     // Note: Change to LogLevel.Info for useful debug information
@@ -62,7 +63,7 @@ describe("ApplyChangeSets (#integration)", () => {
   };
 
   const testOpen = async (accessToken: AccessToken, projectId: string, iModelId: string) => {
-    const iModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelDb = await IModelDb.open(actx, accessToken, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert(!!iModelDb);
   };
 
@@ -96,10 +97,11 @@ describe("ApplyChangeSets (#integration)", () => {
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "SampleBisPlant"; iModelName = "samplePlant20";
-    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-    await testAllOperations(accessToken, projectId, iModelId);
+    // Project was removed - find replacement
+    // projectName = "SampleBisPlant"; iModelName = "samplePlant20";
+    // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    // iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    // await testAllOperations(accessToken, projectId, iModelId);
 
     // iModel was removed - find permanent replacement
     // projectName = "plant-sta"; iModelName = "atp_10K.bim";

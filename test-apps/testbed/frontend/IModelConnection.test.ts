@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -28,7 +28,8 @@ describe("IModelConnection (#integration)", () => {
   });
 
   after(async () => {
-    await iModel.close(TestData.accessToken);
+    if (iModel)
+      await iModel.close(TestData.accessToken);
     IModelApp.shutdown();
   });
 
@@ -115,6 +116,24 @@ describe("IModelConnection (#integration)", () => {
 
     queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
+  });
+
+  it("should reuse open briefcases for exclusive access", async () => {
+    // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
+    // Note that the IModelDb is opened with OpenParams.FixedVersion(AccessMode.Shared) in the case of ReadOnly connections, and
+    // OpenParams.PullAndPush(AccessMode.Exclusive) in the case of ReadWrite connections.
+    const openModes: OpenMode[] = [OpenMode.Readonly, OpenMode.ReadWrite];
+    for (const openMode of openModes) {
+      const iModel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, openMode, IModelVersion.latest());
+      assert.isNotNull(iModel1);
+      let n = 0;
+      while (++n < 5) {
+        const iModel2 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, openMode, IModelVersion.latest());
+        assert.isNotNull(iModel2);
+        assert.equal(iModel2.iModelToken.key, iModel1.iModelToken.key);
+      }
+      await iModel1.close(TestData.accessToken);
+    }
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
