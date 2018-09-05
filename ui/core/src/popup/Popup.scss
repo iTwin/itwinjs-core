@@ -11,9 +11,9 @@
   border: 1px solid $bwc-inputs-border-color;
   visibility: hidden;
   z-index: 100;
-  transition-timing-function: ease;
-  transition-duration: 250ms;
-  transition-property: -webkit-transform, transform;
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
 }
 
 .popup.arrow::after, .popup.arrow::before {
@@ -63,14 +63,14 @@
 
 .popup.popup-left.arrow::after,
 .popup.popup-left.arrow::before {
-	left: 100%;
-	top: 50%;
+  top: 50%;
+  left: 100%;
 }
 
 .popup.popup-right.arrow::after,
 .popup.popup-right.arrow::before {
-	right: 100%;
-	top: 50%;
+  top: 50%;
+  right: 100%;
 }
 
 .popup.popup-bottom.arrow::before,
@@ -129,112 +129,103 @@
   margin-top: -8px;
 }
 
-.popup.popup-top-left.visible {
-   visibility: visible;
-   transform: translateY(-100%) scale(1);
-}
-
-.popup.popup-top-right.visible {
-  visibility: visible;
-  transform: translateY(-100%) scale(1);
-}
-
-.popup.popup-bottom-left.visible {
-  visibility: visible;
-  transform: translateY(100%) scale(1);
-}
-
-.popup.popup-bottom-right.visible {
-  visibility: visible;
-  transform: translateY(100%) scale(1);
-}
-
-.popup.popup-top.visible {
-  visibility: visible;
-  transform: translate(-50%,-100%) scale(1);
-}
-
-.popup.popup-bottom.visible {
-  visibility: visible;
-  transform: translate(-50%,100%) scale(1);
-}
-
-.popup.popup-left.visible {
-  visibility: visible;
-  transform: translate(-100%,-50%) scale(1);
-}
-
-.popup.popup-right.visible {
-  visibility: visible;
-  transform: translate(100%,-50%) scale(1);
-}
-
 .popup-top-left {
   top: -4px;
   left: 0;
-  transform: translateY(-100%) scale(0);
+  transform: translateY(-100%);
   transform-origin: left bottom 0px;
 }
 
-.popup-top-right {
-  top: -4px;
-  right: 0;
-  transform: translateY(-100%) scale(0);
-  transform-origin: right bottom 0px;
-}
-
-.popup-bottom-left {
-  bottom: -4px;
-  left: 0;
-  transform: translateY(100%) scale(0);
-  transform-origin: left top 0px;
-}
-
-.popup-bottom-right {
-  bottom: -4px;
-  right: 0;
-  transform: translateY(100%) scale(0);
-  transform-origin: right top 0px;
+.popup.popup-top-left.visible {
+  animation-name: animate-top-corner;
 }
 
 .popup-top {
   top: -4px;
   left: 50%;
-  transform: translate(-50%,-100%) scale(1, 0);
+  transform: translate(-50%,-100%);
   transform-origin: bottom;
 }
 
+.popup.popup-top.visible {
+  animation-name: animate-top;
+}
+
+.popup-top-right {
+  top: -4px;
+  right: 0;
+  transform: translateY(-100%);
+  transform-origin: right bottom 0px;
+}
+
+.popup.popup-top-right.visible {
+  animation-name: animate-top-corner;
+}
+
+.popup-bottom-left {
+  top: calc(100% + 4px);
+  left: 0;
+  transform-origin: left top 0px;
+}
+
+.popup.popup-bottom-left.visible {
+  animation-name: animate-bottom-corner;
+}
+
 .popup-bottom {
-  bottom: -4px;
+  top: calc(100% + 4px);
   left: 50%;
-  transform: translate(-50%,100%) scale(1, 0);
+  transform: translateX(-50%);
   transform-origin: top;
+}
+
+.popup.popup-bottom.visible {
+  animation-name: animate-bottom;
+}
+
+.popup-bottom-right {
+  //bottom: -4px;
+  top: calc(100% + 4px);
+  right: 0;
+  transform-origin: right top 0px;
+}
+
+.popup.popup-bottom-right.visible {
+  animation-name: animate-bottom-corner;
 }
 
 .popup-left {
   left: -4px;
   top: 50%;
-  transform: translate(-100%,-50%) scale(0, 1);
+  transform: translate(-100%,-50%);
   transform-origin: right;
+}
+
+.popup.popup-left.visible {
+  animation-name: animate-left;
 }
 
 .popup-right {
   right: -4px;
   top: 50%;
-  transform: translate(100%,-50%) scale(0, 1);
+  transform: translate(100%,-50%);
   transform-origin: left;
+}
+
+.popup.popup-right.visible {
+  animation-name: animate-right;
+}
+
+.popup.popup-bottom-left.arrow,
+.popup.popup-bottom.arrow,
+.popup.popup-bottom-right.arrow {
+  top: calc(100% + 12px);
 }
 
 .popup.popup-top.arrow,
 .popup.popup-top-left.arrow,
 .popup.popup-top-right.arrow {
   top: -12px;
-}
-
-.popup.popup-bottom.arrow,
-.popup.popup-bottom-left.arrow,
-.popup.popup-bottom-right.arrow {
-  bottom: -12px;
 }
 
 .popup.popup-left.arrow {
@@ -247,9 +238,12 @@
 
 .popup-shadow {
   -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-  box-shadow: 0px 6px 12px rgba (0,0,0,0.25);
+  box-shadow: 0px 6px 12px rgba(0,0,0,0.25);
   background-clip: padding-box;
   //box-shadow: rgba(67, 90, 111, 0.416) 0px 0px 1px, rgba(67, 90, 111, 0.3) 0px 8px 10px -4px;
+
+  //-webkit-box-shadow: 0 2px 4px 0 rgba(34,36,38,.12), 0 2px 10px 0 rgba(34,36,38,.15);
+  //box-shadow: 0 2px 4px 0 rgba(34,36,38,.12), 0 2px 10px 0 rgba(34,36,38,.15);
 }
 
 .popup-overlay {
@@ -266,4 +260,71 @@
 
 .popup-overlay.show {
   background: rgba(0, 0, 0, 0.1);
+}
+
+@keyframes animate-bottom {
+  from {
+    visibility: hidden;
+    transform: translateX(-50%) scale(1,0);
+  }
+  to {
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes animate-top {
+  from {
+    visibility: hidden;
+    transform: translate(-50%,-100%) scale(1,0);
+  }
+  to {
+    visibility: visible;
+    transform: translate(-50%,-100%) scale(1);
+  }
+}
+
+@keyframes animate-top-corner {
+  from {
+    visibility: hidden;
+    transform: translateY(-100%) scale(0);
+  }
+  to {
+    visibility: visible;
+    transform: translateY(-100%) scale(1);
+  }
+}
+
+@keyframes animate-bottom-corner {
+  from {
+    visibility: hidden;
+    transform: scale(0);
+  }
+  to {
+    visibility: visible;
+    transform: scale(1);
+  }
+}
+
+@keyframes animate-left {
+  from {
+    visibility: hidden;
+    transform: translate(-100%,-50%) scale(0,1);
+  }
+  to {
+    visibility: visible;
+    transform: translate(-100%,-50%) scale(1);
+  }
+}
+
+
+@keyframes animate-right {
+  from {
+    visibility: hidden;
+    transform: translate(100%,-50%) scale(0,1);
+  }
+  to {
+    visibility: visible;
+    transform: translate(100%,-50%) scale(1);
+  }
 }

@@ -7,7 +7,7 @@ import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { Popup, Position } from "./Popup";
+import { Popup, Position} from "@bentley/ui-core";
 import "./ProjectDropdown.scss";
 
 export interface ProjectDropdownProps {
