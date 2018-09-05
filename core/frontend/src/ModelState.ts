@@ -78,7 +78,7 @@ export abstract class GeometricModelState extends ModelState {
   }
 
   /** @hidden */
-  public loadTileTree(asClassifier: boolean = false): TileTree.LoadStatus {
+  public loadTileTree(asClassifier: boolean = false, classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;
@@ -89,12 +89,12 @@ export abstract class GeometricModelState extends ModelState {
       RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
       return tileTreeState.loadStatus;
     }
-    return this.loadIModelTileTree(tileTreeState, asClassifier);
+    return this.loadIModelTileTree(tileTreeState, asClassifier, classifierExpansion);
   }
 
-  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean): TileTree.LoadStatus {
+  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean, classifierExpansion?: number): TileTree.LoadStatus {
     const ids = new Set<string>();
-    ids.add(asClassifier ? ("C_" + this.id.value) : this.id.value);
+    ids.add(asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id.value) : this.id.value);
 
     this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
       tileTreeState.setTileTree(result[0], new IModelTileLoader(this.iModel, result[0].id, asClassifier));
