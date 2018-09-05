@@ -164,4 +164,25 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("LineStringBsplineMapped", () => {
+    const ck = new Checker();
+    for (const map of createSamplePerspectiveMaps()) {
+      const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
+      const g0 = LineString3d.create(
+        Point3d.create(0, 0, 0), Point3d.create(4, 2, 0), Point3d.create(5, 1, 0), Point3d.create(0, -1, 0));
+
+      const bspline1 = BSplineCurve3d.createUniformKnots(
+        [Point3d.create(1, 2, 0), Point3d.create(1, 1, 0), Point3d.create(1, 0, 0), Point3d.create(0, -1, 0), Point3d.create(0, -2, 0)], 3)!;
+
+      const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, g0, false, bspline1, false);
+      testIntersectionsXY(ck, worldToLocal, intersectionsAB, 2, 2);
+
+      const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline1, false, g0, false);
+      testIntersectionsXY(ck, worldToLocal, intersectionsBA, 2, 2);
+
+    }
+    ck.checkpoint("CurveCurve.LineStringBsplineMapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

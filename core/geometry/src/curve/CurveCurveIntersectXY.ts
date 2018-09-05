@@ -453,6 +453,27 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private static _workPointBB0 = Point3d.create();
   private static _workPointBB1 = Point3d.create();
 
+  public dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any {
+    const numA = lsA.numPoints();
+    if (numA > 1) {
+      const dfA = 1.0 / (numA - 1);
+      let fA0;
+      let fA1;
+      fA0 = 0.0;
+      const pointA0 = CurveCurveIntersectXY._workPointA0;
+      const pointA1 = CurveCurveIntersectXY._workPointA1;
+      lsA.pointAt(0, pointA0);
+      for (let iA = 1; iA < numA; iA++ , pointA0.setFrom(pointA1), fA0 = fA1) {
+        lsA.pointAt(iA, pointA1);
+        fA1 = iA * dfA;
+        this.dispatchSegmentBsplineCurve(
+          lsA, iA === 1 && extendA, pointA0, fA0, pointA1, fA1, (iA + 1) === numA && extendA,
+          curveB, extendB, reversed);
+      }
+    }
+    return undefined;
+  }
+
   public computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
     const pointA0 = lsA.point0Ref;
     const pointA1 = lsA.point1Ref;
@@ -569,6 +590,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeSegmentLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     } else if (this._geometryB instanceof Arc3d) {
       this.computeArcLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchLineStringBSplineCurve(lsA, this._extendA, this._geometryB, this._extendB, false);
     }
     return undefined;
   }
@@ -592,7 +615,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
         curve, this._extendA, true);
     } else if (this._geometryB instanceof LineString3d) {
-      // this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
+      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
     } else if (this._geometryB instanceof Arc3d) {
       // this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
     }
