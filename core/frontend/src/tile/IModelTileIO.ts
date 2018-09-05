@@ -6,7 +6,13 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { VertexTable, VertexIndices, PointStringParams } from "../render/primitives/VertexTable";
+import {
+  VertexTable,
+  VertexIndices,
+  PointStringParams,
+  TesselatedPolyline,
+  PolylineParams,
+  } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic } from "../render/System";
@@ -27,6 +33,7 @@ import {
   Gradient,
   QParams2d,
   QParams3d,
+  PolylineTypeFlags,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -412,8 +419,34 @@ export namespace IModelTileIO {
       return this._system.createPointString(params);
     }
 
-    private createPolylineGraphic(_primitive: any, _displayParams: DisplayParams, _vertices: VertexTable, _isPlanar: boolean): RenderGraphic | undefined {
-      return undefined; // ###TODO
+    private readTesselatedPolyline(json: any): TesselatedPolyline | undefined {
+      const indices = this.readVertexIndices(json.indices);
+      const prevIndices = this.readVertexIndices(json.prevIndices);
+      const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
+      const distanceBytes = this.findBuffer(json.distances);
+
+      if (undefined === indices || undefined === prevIndices || undefined == nextIndicesAndParams || undefined === distanceBytes)
+        return undefined;
+
+      return {
+        indices,
+        prevIndices,
+        nextIndicesAndParams,
+        distances: new Float32Array(distanceBytes.buffer),
+      };
+    }
+
+    private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean): RenderGraphic | undefined {
+      const polyline = this.readTesselatedPolyline(primitive);
+      if (undefined === polyline)
+        return undefined;
+
+      let flags = PolylineTypeFlags.Normal;
+      if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
+        flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
+
+      const params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
+      return this._system.createPolyline(params);
     }
 
     private createMeshGraphic(_primitive: any, _displayParams: DisplayParams, _vertices: VertexTable, _isPlanar: boolean): RenderGraphic | undefined {
