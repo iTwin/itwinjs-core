@@ -192,7 +192,7 @@ export namespace GltfTileIO {
       public readonly samplers: any,
       public readonly yAxisUp: boolean) { }
 
-    public static create(buffer: TileIO.StreamBuffer, yAxisUp: boolean = false, requireAccessors: boolean = true): ReaderProps | undefined {
+    public static create(buffer: TileIO.StreamBuffer, yAxisUp: boolean = false): ReaderProps | undefined {
       const header = new Header(buffer);
       if (!header.isValid)
         return undefined;
@@ -213,7 +213,7 @@ export namespace GltfTileIO {
         const extensions = JsonUtils.asObject(sceneValue.extensions);
         const samplers = JsonUtils.asObject(sceneValue.samplers);
 
-        if (undefined === materialValues || undefined === meshes || undefined === bufferViews || (requireAccessors && (undefined === accessors)))
+        if (undefined === meshes)
           return undefined;
 
         return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);

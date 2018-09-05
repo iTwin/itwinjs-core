@@ -103,7 +103,7 @@ export namespace IModelTileIO {
         return undefined;
 
       // A glTF header follows the feature table
-      const props = GltfTileIO.ReaderProps.create(stream, false, false);
+      const props = GltfTileIO.ReaderProps.create(stream, false);
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled) : undefined;
     }
 
