@@ -70,7 +70,7 @@ export class RobotWorld extends Schema {
     }
     // __PUBLISH_EXTRACT_END__
 
-    private static bootStrapDefinitions(iModelDb: IModelDb) {
+    public static bootStrapDefinitions(iModelDb: IModelDb) {
         // Insert some pre-defined categories
         const dictionary = iModelDb.models.getModel(IModelDb.dictionaryId) as DictionaryModel;
 

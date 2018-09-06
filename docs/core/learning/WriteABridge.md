@@ -27,7 +27,7 @@ A bridge would import the following packages:
 [[include:Bridge.imports.example-code]]
 ```
 
-When the bridge runs for the very first time, it would look like this:
+When the bridge runs for the very first time, it would look like the following. This example revolves around the fictitious "RobotWorld" schema. RobotWorld consists of Robots and Barriers. The details of RobotWorld and its schema are not important. The steps, such as importing a schema, reserving codes, pushing changesets, creating definition models, etc., are the important points to see in the example code.
 
 ``` ts
 [[include:Bridge.firstTime.example-code]]
@@ -37,6 +37,18 @@ See:
 * [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 * [AccessToken](./common/AccessToken.md)
 * [IModelDb.create]($backend)
+* [IModelDb.saveChanges]($backend)
+* [IModelDb.pullAndMergeChanges]($backend)
+* [IModelDb.pushChanges]($backend)
+* [ConcurrencyControl](./backend/ConcurrencyControl.md)
+* [Insert a DefinitionModel](./backend/CreateModels.md#DefinitionModel)
+* [Insert a PhysicalModel](./backend/CreateModels.md#PhysicalModel)
+* [Insert a Subject element](./backend/CreateElements.md#Subject)
+* [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
+* [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)
+* [Insert a DisplayStyle3d element](./backend/CreateElements.md#DisplayStyle3d)
+* [Insert a OrthographicViewDefinition element](./backend/CreateElements.md#OrthographicViewDefinition)
+* [Logging](./common/Logging.md)
 
 Here is a simple example of a fictitious source data format and the logic to convert and write it to an iModel:
 

@@ -3,15 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelDb, SpatialCategory, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, ViewDefinition, Subject, DefinitionPartition, DefinitionModel } from "@bentley/imodeljs-backend";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { CodeSpec, CodeScopeSpec, ColorDef, CategoryProps, SubCategoryAppearance, ModelSelectorProps, CategorySelectorProps, DefinitionElementProps, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, InformationPartitionElementProps, IModel } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeScopeSpec, ColorDef, CategoryProps, SubCategoryAppearance, ModelSelectorProps, CategorySelectorProps, DefinitionElementProps, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, InformationPartitionElementProps, IModel, Code, BisCodeSpec } from "@bentley/imodeljs-common";
 import { XYZProps, Arc3d, Point3d } from "@bentley/geometry-core";
 
 // __PUBLISH_EXTRACT_START__ insertSubject.example-code
 export function insertSubject(parentElement: Subject, name: string): Subject {
+  const codeSpec: CodeSpec = parentElement.iModel.codeSpecs.getByName(BisCodeSpec.subject);
+  const code = new Code({ spec: codeSpec.id, scope: parentElement.id, value: name });
   const subjectProps: SubjectProps = {
     classFullName: Subject.classFullName,
     model: parentElement.model,
-    name,
+    code,
   };
   const id = parentElement.iModel.elements.insertElement(subjectProps);
   return parentElement.iModel.elements.getElement(id) as Subject;
