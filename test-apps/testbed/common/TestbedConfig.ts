@@ -15,6 +15,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3 } from "./TestRpcInterface";
+import { OpenMode } from "@bentley/bentleyjs-core";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
 
@@ -92,7 +93,7 @@ export class TestbedConfig {
 
   private static initializeBentleyCloudCommon() {
     for (const definition of TestbedConfig.rpcInterfaces) {
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test"));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
     }
   }
 }

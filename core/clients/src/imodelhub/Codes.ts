@@ -10,7 +10,7 @@ import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -300,6 +300,91 @@ export class CodeQuery extends Query {
   }
 }
 
+/** Type of [[CodeSequence]] results. */
+export enum CodeSequenceType {
+  /** Return largest already used value. */
+  LargestUsed = 0,
+  /** Return next available value in the sequence. */
+  NextAvailable = 1,
+}
+
+/** Sequence of [[Code]]s matching a pattern. This class allows getting next available index based [[Code]] */
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.CodeSequence", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class CodeSequence extends WsgInstance {
+  /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
+  public codeSpecId?: string;
+
+  /** Code scope. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")
+  public codeScope?: string;
+
+  /** Pattern describing the sequence. # characters will be replaced with the index. Only a single group of # characters is allowed in the pattern. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ValuePattern")
+  public valuePattern?: string;
+
+  /** Suggested index value returned from the query. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
+  public value?: string;
+
+  /** Starting index of the sequence. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.StartIndex")
+  public startIndex?: number;
+
+  /** Index difference between two consecutive members in this sequence. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.IncrementBy")
+  public incrementBy?: number;
+
+  /** Type of the sequence results. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
+  public type?: CodeSequenceType;
+}
+
+/**
+ * Handler for querying [[CodeSequence]]s. Use [[CodeHandler.Sequences]] to get an instance of this class.
+ */
+export class CodeSequenceHandler {
+  private _handler: IModelBaseHandler;
+
+  /**
+   * Constructor for CodeHandler.
+   * @hidden
+   * @param handler Handler for WSG requests.
+   */
+  constructor(handler: IModelBaseHandler) {
+    this._handler = handler;
+  }
+
+  /**
+   * Get relative url for Code sequence requests.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   */
+  private getRelativeUrl(imodelId: string) {
+    return `/Repositories/iModel--${imodelId}/iModelScope/CodeSequence/`;
+  }
+
+  /**
+   * Get an index value based on the [[CodeSequence]]. This only suggests the last used or next available index value in the sequence and does not reserve the Code.
+   * @param token Delegation token of the authorized user.
+   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param sequence Code sequence describing the format of the Code value.
+   * @returns Resolves to the suggested index value.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, sequence: CodeSequence): Promise<string> {
+    alctx.enter();
+    Logger.logInfo(loggingCategory, `Querying code sequence for iModel ${imodelId}`);
+    ArgumentCheck.defined("token", token);
+    ArgumentCheck.validGuid("imodelId", imodelId);
+
+    const result = await this._handler.postInstance<CodeSequence>(alctx, CodeSequence, token, this.getRelativeUrl(imodelId), sequence);
+    alctx.enter();
+    Logger.logTrace(loggingCategory, `Queried code sequence for iModel ${imodelId}`);
+
+    return result.value!;
+  }
+}
+
 /**
  * Handler for managing [[Code]]s. Use [[IModelClient.Codes]] to get an instance of this class. In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
  */
@@ -314,6 +399,11 @@ export class CodeHandler {
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
+  }
+
+  /** Get handler for querying [[CodeSequence]]s. */
+  public Sequences(): CodeSequenceHandler {
+    return new CodeSequenceHandler(this._handler);
   }
 
   /**
@@ -378,7 +468,8 @@ export class CodeHandler {
   }
 
   /** Send partial request for code updates */
-  private async updateInternal(token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+    alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
       requestOptions = {};
@@ -396,7 +487,7 @@ export class CodeHandler {
         requestOptions = undefined;
     }
 
-    const result = await this._handler.postInstances<MultiCode>(MultiCode, token, `/Repositories/iModel--${imodelId}/$changeset`, CodeHandler.convertCodesToMultiCodes(codes), requestOptions);
+    const result = await this._handler.postInstances<MultiCode>(alctx, MultiCode, token, `/Repositories/iModel--${imodelId}/$changeset`, CodeHandler.convertCodesToMultiCodes(codes), requestOptions);
     return CodeHandler.convertMultiCodesToCodes(result);
   }
 
@@ -414,7 +505,8 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical Codes in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -430,8 +522,10 @@ export class CodeHandler {
     for (let i = 0; i < codes.length; i += updateOptions.codesPerRequest!) {
       const chunk = codes.slice(i, i + updateOptions.codesPerRequest!);
       try {
-        result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
+        result.push(...await this.updateInternal(alctx, token, imodelId, chunk, updateOptions));
+        alctx.enter();
       } catch (error) {
+        alctx.enter();
         if (error instanceof ResponseError) {
           if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubError && (
             error.errorNumber === IModelHubStatus.CodeReservedByAnotherBriefcase ||
@@ -472,17 +566,20 @@ export class CodeHandler {
    * @returns Resolves to an array of Codes matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let codes: Code[];
     if (query.isMultiCodeQuery) {
-      const multiCodes = await this._handler.getInstances<MultiCode>(MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      const multiCodes = await this._handler.getInstances<MultiCode>(alctx, MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      alctx.enter();
       codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
     } else {
-      codes = await this._handler.postQuery<Code>(Code, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      codes = await this._handler.postQuery<Code>(alctx, Code, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      alctx.enter();
     }
 
     Logger.logTrace(loggingCategory, `Queried ${codes.length} codes for iModel ${imodelId}`);
@@ -499,13 +596,14 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DiscardReservedCodes-${briefcaseId}`));
+    await this._handler.delete(alctx, token, this.getRelativeUrl(imodelId, false, `DiscardReservedCodes-${briefcaseId}`));
 
     Logger.logTrace(loggingCategory, `Deleted all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
   }

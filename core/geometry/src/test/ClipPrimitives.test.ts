@@ -629,7 +629,7 @@ describe("ClipPrimitive", () => {
         continue;
       }
 
-      const polygonGraph = Triangulator.earcutFromPoints(polygon);
+      const polygonGraph = Triangulator.earcutSingleLoop(polygon);
       Triangulator.cleanupTriangulation(polygonGraph);
 
       polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
@@ -658,7 +658,7 @@ describe("ClipPrimitive", () => {
     const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonB, clipShape);
 
     for (const polygon of clippedPolygons) {
-      const polygonGraph = Triangulator.earcutFromPoints(polygon);
+      const polygonGraph = Triangulator.earcutSingleLoop(polygon);
       Triangulator.cleanupTriangulation(polygonGraph);
 
       polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {

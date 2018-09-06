@@ -7,7 +7,7 @@ import * as deepAssign from "deep-assign";
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { Logger, HttpStatus, WSStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import { Logger, HttpStatus, WSStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
@@ -231,12 +231,12 @@ export abstract class WsgClient extends Client {
    * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
    * @returns URL for the service
    */
-  public async getUrl(excludeApiVersion?: boolean): Promise<string> {
+  public async getUrl(alctx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url) {
       return Promise.resolve(this._url);
     }
 
-    return super.getUrl()
+    return super.getUrl(alctx)
       .then((url: string): Promise<string> => {
         this._url = url;
         if (!excludeApiVersion) {
@@ -251,14 +251,16 @@ export abstract class WsgClient extends Client {
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(authorizationToken, this.relyingPartyUri);
+    return imsClient.getToken(alctx, authorizationToken, this.relyingPartyUri);
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
-  protected async deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
-    const url: string = await this.getUrl() + relativeUrlPath;
+  protected async deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+    alctx.enter();
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
+    alctx.enter();
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
       method: "DELETE",
@@ -271,11 +273,12 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
-    return request(url, options).then(() => Promise.resolve());
+    return request(alctx, url, options).then(() => Promise.resolve());
   }
 
   /**
    * Used by clients to post strongly typed instances through standard WSG REST API
+   * @param alctx The activity logging context
    * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
    * @param token Delegation token
    * @param relativeUrlPath Relative path to the REST resource.
@@ -283,8 +286,9 @@ export abstract class WsgClient extends Client {
    * @param requestOptions WSG options for the request.
    * @returns The posted instance that's returned back from the server.
    */
-  protected async postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
-    const url: string = await this.getUrl() + relativeUrlPath;
+  protected async postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
@@ -299,8 +303,9 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
-
-    const res: Response = await request(url, options);
+    alctx.enter();
+    const res: Response = await request(alctx, url, options);
+    alctx.enter();
     if (!res.body || !res.body.changedInstance || !res.body.changedInstance.instanceAfterChange) {
       return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
     }
@@ -325,8 +330,10 @@ export abstract class WsgClient extends Client {
    * @param requestOptions WSG options for the request.
    * @returns The posted instances that's returned back from the server.
    */
-  protected async postInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
-    const url: string = await this.getUrl() + relativeUrlPath;
+  protected async postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
+    alctx.enter();
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
     const untypedInstances: any[] = instances.map((value: T) => ECJsonTypeMap.toJson<T>("wsg", value));
 
@@ -341,8 +348,10 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
+    alctx.enter();
 
-    const res: Response = await request(url, options);
+    const res: Response = await request(alctx, url, options);
+    alctx.enter();
     if (!res.body || !res.body.changedInstances) {
       return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
     }
@@ -372,8 +381,10 @@ export abstract class WsgClient extends Client {
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  protected async getInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
-    const url: string = await this.getUrl() + relativeUrlPath;
+  protected async getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
+    alctx.enter();
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
 
     const options: RequestOptions = {
@@ -384,8 +395,10 @@ export abstract class WsgClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
+    alctx.enter();
 
-    const res: Response = await request(url, options);
+    const res: Response = await request(alctx, url, options);
+    alctx.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
       return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
     }
@@ -436,8 +449,10 @@ export abstract class WsgClient extends Client {
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  protected async postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
-    const url: string = `${await this.getUrl()}${relativeUrlPath}$query`;
+  protected async postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+    alctx.enter();
+    const url: string = `${await this.getUrl(alctx)}${relativeUrlPath}$query`;
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
 
     const options: RequestOptions = {
@@ -447,8 +462,10 @@ export abstract class WsgClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
+    alctx.enter();
 
-    const res: Response = await request(url, options);
+    const res: Response = await request(alctx, url, options);
+    alctx.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
       return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
     }

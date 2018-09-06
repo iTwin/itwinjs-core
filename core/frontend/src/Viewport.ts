@@ -112,13 +112,13 @@ export class ViewRect {
    */
   public equals(other: ViewRect): boolean { return this.left === other.left && this.right === other.right && this.bottom === other.bottom && this.top === other.top; }
   /** Initialize this ViewRect from another ViewRect. */
-  public copyFrom(other: ViewRect): void { this.init(other.left, other.top, other.right, other.bottom); }
+  public setFrom(other: ViewRect): void { this.init(other.left, other.top, other.right, other.bottom); }
   /** Duplicate this ViewRect.
    * @param result Optional ViewRect for result. If undefined, a new ViewRect is created.
    */
   public clone(result?: ViewRect): ViewRect {
     if (undefined !== result) {
-      result.copyFrom(this);
+      result.setFrom(this);
       return result;
     }
     return new ViewRect(this.left, this.top, this.right, this.bottom);

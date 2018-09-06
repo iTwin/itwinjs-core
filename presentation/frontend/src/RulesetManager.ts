@@ -3,70 +3,76 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-import {
-  RpcRequestsHandler,
-  IRulesetManager, RegisteredRuleset, Ruleset,
-} from "@bentley/presentation-common";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { IRulesetManager, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
+import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
 
 /** @hidden */
-export default class RulesetManager implements IRulesetManager, IDisposable {
+export default class RulesetManager implements IRulesetManager, IClientStateHolder<IRulesetManager.State> {
 
-  private _requestsHandler: RpcRequestsHandler;
-  private _clientRulesets = new Map<string, Ruleset>();
+  private _clientRulesets = new Map<string, RegisteredRuleset[]>();
+  public key = IRulesetManager.STATE_ID;
+  public onStateChanged = new BeEvent<() => void>();
 
-  public constructor(requestsHandler: RpcRequestsHandler) {
-    this._requestsHandler = requestsHandler;
-    this._requestsHandler.syncHandlers.push(this.syncWithBackend);
-  }
-
-  public dispose() {
-    const index = this._requestsHandler.syncHandlers.indexOf(this.syncWithBackend);
-    if (-1 !== index)
-      this._requestsHandler.syncHandlers.splice(index, 1);
-  }
-
-  // tslint:disable-next-line:naming-convention
-  private syncWithBackend = async (): Promise<void> => {
-    if (0 === this._clientRulesets.size)
-      return;
-
-    const rulesets: Ruleset[] = [];
-    this._clientRulesets.forEach((r) => rulesets.push(r));
-    await this._requestsHandler.addRulesets(rulesets);
+  public get state(): IRulesetManager.State {
+    const rulesets: IRulesetManager.State = [];
+    this._clientRulesets.forEach((m) => {
+      m.forEach((r) => rulesets.push(r.toJSON()));
+    });
+    return rulesets;
   }
 
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
-    const tuple = await this._requestsHandler.getRuleset(id);
-    if (tuple) {
-      const [ruleset, hash] = tuple;
-      return new RegisteredRuleset(this, ruleset, hash);
-    }
-    return undefined;
+    const m = this._clientRulesets.get(id);
+    if (!m)
+      return undefined;
+    return m[0];
   }
 
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    this._clientRulesets.set(ruleset.id, ruleset);
-    const hash = await this._requestsHandler.addRuleset(ruleset);
-    return new RegisteredRuleset(this, ruleset, hash);
+    const registered = new RegisteredRuleset(this, ruleset, Guid.createValue());
+    if (!this._clientRulesets.has(ruleset.id))
+      this._clientRulesets.set(ruleset.id, []);
+    this._clientRulesets.get(ruleset.id)!.push(registered);
+    this.onStateChanged.raiseEvent();
+    return registered;
   }
 
   public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
-    let id = "", hash = "";
+    let rulesetId, uniqueIdentifier: string;
     if (Array.isArray(ruleset)) {
-      id = ruleset[0];
-      hash = ruleset[1];
+      rulesetId = ruleset[0];
+      uniqueIdentifier = ruleset[1];
     } else {
-      id = ruleset.id;
-      hash = ruleset.hash;
+      rulesetId = ruleset.id;
+      uniqueIdentifier = ruleset.uniqueIdentifier;
     }
-    this._clientRulesets.delete(id);
-    return await this._requestsHandler.removeRuleset(id, hash);
+
+    const m = this._clientRulesets.get(rulesetId);
+    if (!m)
+      return false;
+
+    let didRemove = false;
+    for (let i = 0; i < m.length; ++i) {
+      if (m[i].uniqueIdentifier === uniqueIdentifier) {
+        m.splice(i, 1);
+        didRemove = true;
+        break;
+      }
+    }
+
+    if (didRemove)
+      this.onStateChanged.raiseEvent();
+
+    return didRemove;
   }
 
   public async clear(): Promise<void> {
+    if (0 === this._clientRulesets.size)
+      return;
+
     this._clientRulesets.clear();
-    await this._requestsHandler.clearRulesets();
+    this.onStateChanged.raiseEvent();
   }
 
 }

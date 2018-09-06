@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
 import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
@@ -239,9 +239,10 @@ abstract class ImageryProvider {
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileUrl: string = this.constructUrl(row, column, zoomLevel);
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
-      const tileResponse: Response = await request(tileUrl, tileRequestOptions);
+      const tileResponse: Response = await request(alctx, tileUrl, tileRequestOptions);
       const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
       if (!byteArray || (byteArray.length === 0))
         return undefined;
@@ -429,6 +430,7 @@ class BingMapProvider extends ImageryProvider {
     // get the template url
     // NEEDSWORK - should get bing key from server.
     const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
+    const alctx = new ActivityLoggingContext(Guid.createValue());
 
     let imagerySet = "Road";
     if (MapType.Aerial === this.mapType)
@@ -443,7 +445,7 @@ class BingMapProvider extends ImageryProvider {
       method: "GET",
     };
     try {
-      const response: Response = await request(bingRequestUrl, requestOptions);
+      const response: Response = await request(alctx, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
       this._logoUrl = bingResponseProps.brandLogoUri;
 
@@ -479,10 +481,11 @@ class BingMapProvider extends ImageryProvider {
 
   // reads the Bing logo from the url returned as part of the first response.
   private readLogo(): Promise<Uint8Array | undefined> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (!this._logoUrl || (this._logoUrl.length === 0))
       return Promise.resolve(undefined);
     const logoRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    return request(this._logoUrl, logoRequestOptions).then((logoResponse: Response) => {
+    return request(alctx, this._logoUrl, logoRequestOptions).then((logoResponse: Response) => {
       const byteArray = new Uint8Array(logoResponse.body);
       if (!byteArray || (byteArray.length === 0))
         return undefined;
@@ -647,9 +650,8 @@ export class BackgroundMapState {
       style.position = "absolute";
       style.left = "0";
       style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
-      style.pointerEvents = "none";
     }
-    const copyrightMessage = this._provider.getCopyrightMessage(this, context.viewport as ScreenViewport);
+    const copyrightMessage = this._provider.getCopyrightMessage(this, context.screenViewport);
     if (copyrightMessage) {
       decorationDiv.appendChild(copyrightMessage);
       const boundingRect = copyrightMessage.getBoundingClientRect();

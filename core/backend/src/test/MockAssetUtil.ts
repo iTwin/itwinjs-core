@@ -11,6 +11,9 @@ import {
   ConnectRequestQueryOptions,
 } from "@bentley/imodeljs-clients";
 import { KnownLocations } from "../Platform";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+
+const actx = new ActivityLoggingContext("");
 
 /** Parse a single typed instance from a JSON string using ECJsonTypeMap */
 const getTypedInstance = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T => {
@@ -133,7 +136,7 @@ export class MockAssetUtil {
     (BriefcaseManager as any)._defaultHubClient = iModelHubClientMock.object;
 
     // Get test projectId from the mocked connection client
-    const project: Project = await connectClientMock.object.getProject(accessToken as any, {
+    const project: Project = await connectClientMock.object.getProject(actx, accessToken as any, {
       $select: "*",
       $filter: "Name+eq+'NodeJstestproject'",
     });
@@ -142,7 +145,7 @@ export class MockAssetUtil {
 
     // Get test iModelIds from the mocked iModelHub client
     for (const iModelInfo of testIModels) {
-      const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
+      const iModels = await iModelHubClientMock.object.IModels().get(actx, accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].wsgId;
@@ -150,7 +153,7 @@ export class MockAssetUtil {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
-      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
+      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(actx, accessToken as any, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
       assert.exists(iModelInfo.changeSets);
 
@@ -169,8 +172,8 @@ export class MockAssetUtil {
   /** Setup functions for the ConnectClient mock */
   public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>, assetDir: string) {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
-    connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-      .returns((_tok: AccessToken, query: ConnectRequestQueryOptions) => {
+    connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, query: ConnectRequestQueryOptions) => {
         for (const project of this._projectMap) {
           if (query.$filter!.toLocaleLowerCase().includes(project[1].toLocaleLowerCase())) {
             const assetPath = path.join(assetDir, "Projects", `${project[1]}.json`);
@@ -197,14 +200,14 @@ export class MockAssetUtil {
     const userInfoHandlerMock = TypeMoq.Mock.ofType(UserInfoHandler);
 
     // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
-    iModelHandlerMock.setup((f: IModelHandler) => f.create(TypeMoq.It.isAny(),
+    iModelHandlerMock.setup((f: IModelHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny(),
       TypeMoq.It.isAny(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
         _callback: ((progress: any) => void) | undefined, _timeOut: number) => {
         setTimeout(() => { }, 100);
         for (const pair of this._iModelMap) {
@@ -220,10 +223,10 @@ export class MockAssetUtil {
 
     // For any call with request parameters contianing the iModel name, grab that iModel's json file
     // and parse it into an instance
-    iModelHandlerMock.setup((f: IModelHandler) => f.get(TypeMoq.It.isAny(),
+    iModelHandlerMock.setup((f: IModelHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_tok: AccessToken, _projId: string, query: IModelQuery) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, query: IModelQuery) => {
         let iModelPath: string = "";
         if (query.getId()) {
           const testCaseName = this._iModelMap.get(query.getId()!);
@@ -249,10 +252,10 @@ export class MockAssetUtil {
 
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
     // resides there
-    iModelHandlerMock.setup((f: IModelHandler) => f.delete(TypeMoq.It.isAny(),
+    iModelHandlerMock.setup((f: IModelHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString()))
-      .returns((_tok: AccessToken, _projId: string, iModelId: string) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, iModelId: string) => {
         const testCaseName = this._iModelMap.get(iModelId);
         if (testCaseName) {
           const iModelCacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId);
@@ -265,10 +268,10 @@ export class MockAssetUtil {
 
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
     // into the provided cache location
-    iModelHandlerMock.setup((f: IModelHandler) => f.download(TypeMoq.It.isAny(),
+    iModelHandlerMock.setup((f: IModelHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString()))
-      .returns((_tok: AccessToken, iModelId: string, seedPathname: string) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, seedPathname: string) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const testModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
@@ -284,9 +287,9 @@ export class MockAssetUtil {
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_tok: AccessToken, iModelId: string) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -297,9 +300,9 @@ export class MockAssetUtil {
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_tok: AccessToken, iModelId: string) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -312,9 +315,9 @@ export class MockAssetUtil {
 
     // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
     // need to change this to return specific briefcaseIds
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((briefcase: Briefcase, outPath: string) => {
+      .returns((_alctx: ActivityLoggingContext, briefcase: Briefcase, outPath: string) => {
         const briefcaseName = briefcase.fileName!.slice(0, briefcase.fileName!.lastIndexOf(".bim"));
         let iModelName = "";
         for (const pair of this._iModelMap) {
@@ -332,19 +335,19 @@ export class MockAssetUtil {
       });
 
     // Since the Hub is being mocked away, no action is necessary when deleting a briefacse
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_tok: AccessToken, _iModelId: string, _briefcaseId: number) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: string, _briefcaseId: number) => {
         return Promise.resolve();
       });
 
     // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
     // and parse them into instances
-    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(),
+    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_tok: AccessToken, iModelId: string, query: ChangeSetQuery) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, query: ChangeSetQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const csetPath = path.join(assetDir, iModelName, `${iModelName}ChangeSets.json`);
@@ -376,9 +379,9 @@ export class MockAssetUtil {
 
     // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
     // into the provided cache location
-    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.download(TypeMoq.It.isAny(),
+    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((csets: ChangeSet[], outPath: string) => {
+      .returns((_alctx: ActivityLoggingContext, csets: ChangeSet[], outPath: string) => {
         for (const cset of csets) {
           const csetPath = path.join(outPath, cset.fileName!);
           if (!IModelJsFs.existsSync(csetPath))
@@ -393,10 +396,10 @@ export class MockAssetUtil {
           .then(() => Promise.resolve());
       });
 
-    versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(),
+    versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_tok: AccessToken, iModelId: string, query: VersionQuery) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, query: VersionQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           for (const versionName of this._versionNames) {
@@ -412,10 +415,10 @@ export class MockAssetUtil {
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(),
+    userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_tok: AccessToken, _iModelId: string, _query: UserInfoQuery) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: string, _query: UserInfoQuery) => {
         const user = new UserInfo();
         user.firstName = "test";
         user.lastName = "user";

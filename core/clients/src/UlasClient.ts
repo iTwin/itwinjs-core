@@ -5,7 +5,7 @@ import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, Response } from "./Request";
-import { Logger, BentleyStatus, Guid, GuidProps, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "./UserProfile";
 
 const loggingCategory: string = "imodeljs-clients.Ulas";
@@ -200,9 +200,9 @@ export class UlasClient extends Client {
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(authorizationToken);
+    return imsClient.getToken(alctx, authorizationToken);
   }
 
   /**
@@ -211,9 +211,9 @@ export class UlasClient extends Client {
    * @param entry Usage log entry.
    * @returns Response from the service.
    */
-  public async logUsage(token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
+  public async logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
     const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
-    return await this.logEntry(token, entryJson, false);
+    return await this.logEntry(alctx, token, entryJson, false);
   }
 
   /**
@@ -222,16 +222,17 @@ export class UlasClient extends Client {
    * @param entries One or more feature log entries.
    * @returns Response from the service.
    */
-  public async logFeature(token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+  public async logFeature(alctx: ActivityLoggingContext, token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
     if (entries.length === 0)
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
     const entriesJson: any = UlasLogEntryLogConverter.toFeatureLogJson(token, entries, this._policyIds);
-    return await this.logEntry(token, entriesJson, true);
+    return await this.logEntry(alctx, token, entriesJson, true);
   }
 
-  private async logEntry(token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
-    let postUrl: string = (await this.getUrl());
+  private async logEntry(alctx: ActivityLoggingContext, token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
+    let postUrl: string = (await this.getUrl(alctx));
+    alctx.enter();
     if (isFeatureEntry)
       postUrl += "/featureLog";
 
@@ -242,12 +243,12 @@ export class UlasClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-
+    alctx.enter();
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
 
-    const resp: Response = await request(postUrl, options);
-
+    const resp: Response = await request(alctx, postUrl, options);
+    alctx.enter();
     const requestDetails = { url: postUrl, body: entryJson, response: resp };
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);

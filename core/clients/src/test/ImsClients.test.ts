@@ -9,6 +9,7 @@ import { TestConfig, TestUsers, UserCredentials } from "./TestConfig";
 
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -30,21 +31,23 @@ export class FederatedImsUrlMock {
 }
 
 describe("ImsFederatedAuthenticationClient", () => {
+  const actx = new ActivityLoggingContext("");
+
   it("should setup its URLs correctly", async () => {
     FederatedImsUrlMock.mockGetUrl("DEV");
-    let url: string = await new ImsFederatedAuthenticationClient("DEV").getUrl();
+    let url: string = await new ImsFederatedAuthenticationClient("DEV").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("QA");
-    url = await new ImsFederatedAuthenticationClient("QA").getUrl();
+    url = await new ImsFederatedAuthenticationClient("QA").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PROD");
-    url = await new ImsFederatedAuthenticationClient("PROD").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PROD").getUrl(actx);
     chai.expect(url).equals("https://ims.bentley.com");
 
     FederatedImsUrlMock.mockGetUrl("PERF");
-    url = await new ImsFederatedAuthenticationClient("PERF").getUrl();
+    url = await new ImsFederatedAuthenticationClient("PERF").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com");
   });
 });
@@ -67,23 +70,25 @@ export class ActiveImsUrlMock {
 }
 
 describe("ImsActiveSecureTokenClient", () => {
+  const actx = new ActivityLoggingContext("");
+
   it("should setup its URLs correctly", async () => {
     const prodClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
 
     ActiveImsUrlMock.mockGetUrl("DEV");
-    let url: string = await (new ImsActiveSecureTokenClient("DEV")).getUrl();
+    let url: string = await (new ImsActiveSecureTokenClient("DEV")).getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
     ActiveImsUrlMock.mockGetUrl("QA");
-    url = await (new ImsActiveSecureTokenClient("QA")).getUrl();
+    url = await (new ImsActiveSecureTokenClient("QA")).getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
     ActiveImsUrlMock.mockGetUrl("PROD");
-    url = await prodClient.getUrl();
+    url = await prodClient.getUrl(actx);
     chai.expect(url).equals("https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
     ActiveImsUrlMock.mockGetUrl("PERF");
-    url = await (new ImsActiveSecureTokenClient("PERF")).getUrl();
+    url = await (new ImsActiveSecureTokenClient("PERF")).getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
   });
 
@@ -99,13 +104,13 @@ describe("ImsActiveSecureTokenClient", () => {
     for (const client of clients) {
       let loginError: any;
       try {
-        await client.getToken(TestUsers.regular.email, "WrongPassword");
+        await client.getToken(actx, TestUsers.regular.email, "WrongPassword");
       } catch (err) {
         loginError = err;
       }
       chai.assert(!!loginError);
 
-      const authToken = await client.getToken(TestUsers.regular.email, TestUsers.regular.password);
+      const authToken = await client.getToken(actx, TestUsers.regular.email, TestUsers.regular.password);
       chai.assert(!!authToken);
 
       const tokenStr = authToken!.toTokenString();
@@ -142,22 +147,23 @@ export class DelegationImsUrlMock {
 
 describe("ImsDelegationSecureTokenClient", () => {
   const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient(TestConfig.deploymentEnv);
+  const actx = new ActivityLoggingContext("");
 
   it("should setup its URLs correctly", async () => {
     DelegationImsUrlMock.mockGetUrl("DEV");
-    let url: string = await new ImsDelegationSecureTokenClient("DEV").getUrl();
+    let url: string = await new ImsDelegationSecureTokenClient("DEV").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
 
     DelegationImsUrlMock.mockGetUrl("QA");
-    url = await new ImsDelegationSecureTokenClient("QA").getUrl();
+    url = await new ImsDelegationSecureTokenClient("QA").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
 
     DelegationImsUrlMock.mockGetUrl("PROD");
-    url = await new ImsDelegationSecureTokenClient("PROD").getUrl();
+    url = await new ImsDelegationSecureTokenClient("PROD").getUrl(actx);
     chai.expect(url).equals("https://ims.bentley.com/rest/DelegationSTSService");
 
     DelegationImsUrlMock.mockGetUrl("PERF");
-    url = await new ImsDelegationSecureTokenClient("PERF").getUrl();
+    url = await new ImsDelegationSecureTokenClient("PERF").getUrl(actx);
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
   });
 
@@ -178,10 +184,10 @@ describe("ImsDelegationSecureTokenClient", () => {
 
     for (const accessClient of clients) {
       for (const user of users) {
-        const authToken: AuthorizationToken = await authorizationClient.getToken(user.email, user.password);
+        const authToken: AuthorizationToken = await authorizationClient.getToken(actx, user.email, user.password);
         chai.expect(!!authToken);
 
-        const accessToken: AccessToken = await accessClient.getToken(authToken);
+        const accessToken: AccessToken = await accessClient.getToken(actx, authToken);
         chai.expect(!!accessToken);
 
         const tokenString = accessToken.toTokenString();

@@ -4,6 +4,7 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 export class TilesDataUrlMock {
   private static readonly _urlDescriptor: UrlDescriptor = {
@@ -26,6 +27,7 @@ describe("TileDataAccessClient", () => {
 
   let accessToken: AccessToken;
   const tileDataAccessClient = new TileDataAccessClient("QA");
+  const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
@@ -33,24 +35,24 @@ describe("TileDataAccessClient", () => {
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login(TestUsers.user3);
-    accessToken = await tileDataAccessClient.getAccessToken(authToken);
+    accessToken = await tileDataAccessClient.getAccessToken(actx, authToken);
   });
 
   it("should setup its URLs", async () => {
     TilesDataUrlMock.mockGetUrl("DEV");
-    let url: string = await new TileDataAccessClient("DEV").getUrl(true);
+    let url: string = await new TileDataAccessClient("DEV").getUrl(actx, true);
     chai.expect(url).equals("https://dev-connect-tilesdataaccess.bentley.com");
 
     TilesDataUrlMock.mockGetUrl("QA");
-    url = await new TileDataAccessClient("QA").getUrl(true);
+    url = await new TileDataAccessClient("QA").getUrl(actx, true);
     chai.expect(url).equals("https://qa-connect-tilesdataaccess.bentley.com");
 
     TilesDataUrlMock.mockGetUrl("PROD");
-    url = await new TileDataAccessClient("PROD").getUrl(true);
+    url = await new TileDataAccessClient("PROD").getUrl(actx, true);
     chai.expect(url).equals("https://connect-tilesdataaccess.bentley.com");
 
     TilesDataUrlMock.mockGetUrl("PERF");
-    url = await new TileDataAccessClient("PERF").getUrl(true);
+    url = await new TileDataAccessClient("PERF").getUrl(actx, true);
     chai.expect(url).equals("https://perf-connect-tilesdataaccess.bentley.com");
   });
 
@@ -58,7 +60,7 @@ describe("TileDataAccessClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const tileDataAccessData: InstanceData[] = await tileDataAccessClient.getPropertyData(accessToken, "e9987eb3-c3a1-43b6-a368-e36876ad8e47", "2199023255773");
+    const tileDataAccessData: InstanceData[] = await tileDataAccessClient.getPropertyData(actx, accessToken, "e9987eb3-c3a1-43b6-a368-e36876ad8e47", "2199023255773");
     chai.assert(tileDataAccessData);
   });
 

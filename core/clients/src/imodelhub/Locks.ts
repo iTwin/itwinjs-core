@@ -9,7 +9,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AggregateResponseError, Query } from "./index";
 import { IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -413,7 +413,8 @@ export class LockHandler {
   }
 
   /** Send partial request for lock updates */
-  private async updateInternal(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+    alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
       requestOptions = {};
@@ -432,7 +433,8 @@ export class LockHandler {
       }
     }
 
-    const result = await this._handler.postInstances<MultiLock>(MultiLock, token, `/Repositories/iModel--${imodelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
+    const result = await this._handler.postInstances<MultiLock>(alctx, MultiLock, token, `/Repositories/iModel--${imodelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
+    alctx.enter();
     return LockHandler.convertMultiLocksToLocks(result);
   }
 
@@ -452,7 +454,8 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical locks in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -468,8 +471,10 @@ export class LockHandler {
     for (let i = 0; i < locks.length; i += updateOptions.locksPerRequest!) {
       const chunk = locks.slice(i, i + updateOptions.locksPerRequest!);
       try {
-        result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
+        result.push(...await this.updateInternal(alctx, token, imodelId, chunk, updateOptions));
+        alctx.enter();
       } catch (error) {
+        alctx.enter();
         if (error instanceof ResponseError) {
           if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubError
             && (error.errorNumber === IModelHubStatus.LockOwnedByAnotherBriefcase || error.errorNumber === IModelHubStatus.ConflictsAggregate)) {
@@ -509,17 +514,20 @@ export class LockHandler {
    * @returns Resolves to an array of Locks matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let locks: Lock[];
     if (query.isMultiLockQuery) {
-      const result = await this._handler.getInstances<MultiLock>(MultiLock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      const result = await this._handler.getInstances<MultiLock>(alctx, MultiLock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      alctx.enter();
       locks = LockHandler.convertMultiLocksToLocks(result);
     } else {
-      locks = await this._handler.postQuery<Lock>(Lock, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      locks = await this._handler.postQuery<Lock>(alctx, Lock, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      alctx.enter();
       locks = locks.map((value: Lock) => {
         const result = new Lock();
         result.briefcaseId = value.briefcaseId;
@@ -546,14 +554,15 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DeleteAll-${briefcaseId}`));
-
+    await this._handler.delete(alctx, token, this.getRelativeUrl(imodelId, false, `DeleteAll-${briefcaseId}`));
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Deleted all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
   }
 }

@@ -5,7 +5,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError, FeatureGates, RpcInvocation, RpcInterface } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
@@ -95,107 +95,4 @@ export class IModelHost {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
 
-  /** The current iModel activity context for logging and correlation (if available). */
-  public static get currentActivityContext(): IModelActivityContext | undefined {
-    return IModelActivityContext.current;
-  }
-}
-
-enum ContextEvent { None, Enter, Suspend, Resume, Exit }
-
-/** An activity context for logging and correlation of iModel backend requests. */
-export class IModelActivityContext {
-  /** The current activity context (if available). */
-  public static get current() { return IModelActivityContext._current; }
-  private static _current: IModelActivityContext | undefined;
-
-  /**
-   * Creates an activity context for the current RPC request.
-   * @note The return value of this function is only reliable in an RPC impl class member function where program control was received from the RpcInvocation constructor function.
-   */
-  public static createForCurrentRpcRequest(rpcImpl: RpcInterface): IModelActivityContext {
-    const invocation = RpcInvocation.current(rpcImpl);
-    return new IModelActivityContext(invocation.request.id);
-  }
-
-  /** The activity id for this context. */
-  public readonly activityId: string;
-
-  private _entry: ContextEvent[];
-
-  /**
-   * Constructs an activity context.
-   * @note Only one activity context should be created per backend request. Consumers should create and enter a context in their RPC backend impl function and then pass it to all awaited function calls.
-   * @note Most consumers should use IModelActivityContext.createForCurrentRpcRequest to obtain a context with the correct activity id instead of calling the constructor directly.
-   * @note Consumers must call enter before using an activity context.
-   */
-  public constructor(activityId: string) {
-    this.activityId = activityId;
-    this._entry = [];
-  }
-
-  /**
-   * Enters the activity context.
-   * @note Consumers of imodeljs-backend must call this at the beginning of every async function.
-   */
-  public enter(): this {
-    if (this._state !== ContextEvent.None && this._state !== ContextEvent.Suspend) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot enter iModel activity context that is already entered.");
-    }
-
-    this._entry.push(ContextEvent.Enter);
-    IModelActivityContext._current = this;
-    return this;
-  }
-
-  /**
-   * Suspends the activity context.
-   * @note Consumers of imodeljs-backend must call this before awaiting an async function call.
-   */
-  public suspend(): this {
-    if (this._state !== ContextEvent.Enter) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot suspend iModel activity context that is not entered.");
-    }
-
-    this._entry.push(ContextEvent.Suspend);
-    IModelActivityContext._current = undefined;
-    return this;
-  }
-
-  /**
-   * Resumes the activity context.
-   * @note Consumers of imodeljs-backend must call this when program control is received again after an awaited function call.
-   */
-  public resume(): this {
-    if (this._state !== ContextEvent.Suspend) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot resume iModel activity context that is not suspended.");
-    }
-
-    this._entry.pop();
-    IModelActivityContext._current = this;
-    return this;
-  }
-
-  /**
-   * Exits the activity context.
-   * @note Consumers of imodeljs-backend must call this before returning from an async function.
-   */
-  public exit(): this {
-    if (this._state !== ContextEvent.Enter) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot exit iModel activity context that is not entered.");
-    }
-
-    this._entry.pop();
-    IModelActivityContext._current = undefined;
-    return this;
-  }
-
-  private get _state(): ContextEvent {
-    const entry = this._entry.length;
-    if (entry) {
-      return this._entry[entry - 1];
-    }
-
-    return ContextEvent.None;
-  }
 }
