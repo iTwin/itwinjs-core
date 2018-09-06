@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
+@import "../_z-index";
 @import "_variables";
 
 .nz-widget-stacked {
@@ -13,20 +14,16 @@
 
   $border-width: $nz-widget-border-width;
 
-  &.nz-left-anchor, &.nz-bottom-left-anchor {
+  &.nz-is-dragged {
+    @include nz-z-index(dragged-widget);
+  }
+
+  &.nz-left-anchor {
     grid-auto-columns: 1fr auto;
 
     > .nz-tabs-column {
       grid-row: 1;
       grid-column: 2;
-
-      > .nz-tabs {
-        > * {
-          &.nz-is-active {
-            margin-left: -$border-width;
-          }
-        }
-      }
     }
 
     > .nz-content-area {
@@ -44,18 +41,6 @@
 
     &.nz-is-closed {
       grid-auto-columns: auto 1fr;
-
-      > .nz-tabs-column {
-        > .nz-tabs {
-          > * {
-            border-left-width: $border-width;
-
-            &.nz-is-active {
-              margin-left: unset;
-            }
-          }
-        }
-      }
     }
   }
 
@@ -63,7 +48,7 @@
     height: 100%;
     align-items: center;
 
-    &.nz-bottom-left-anchor, &.nz-bottom-right-anchor {
+    &.nz-bottom-anchor, &.nz-bottom-anchor {
       align-items: end;
     }
 
@@ -82,9 +67,6 @@
 
       > .nz-tabs {
         > * {
-          border-right-width: $border-width;
-          border-radius: $nz-widget-border-radius;
-
           &.nz-is-active {
             margin-right: unset;
           }
@@ -118,16 +100,6 @@
     > .nz-tabs {
       grid-row: 1;
       grid-column: 1;
-
-      > * {
-        &:not(:first-child) {
-          margin-top: -1px;
-        }
-
-        &.nz-is-active {
-          margin-right: -$border-width;
-        }
-      }
     }
   }
 

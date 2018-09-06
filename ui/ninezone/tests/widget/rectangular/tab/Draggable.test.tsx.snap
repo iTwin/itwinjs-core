@@ -2,7 +2,9 @@
 
 exports[`<Draggable /> renders correctly 1`] = `
 <Tab
+  anchor={0}
   className="nz-widget-rectangular-tab-draggable"
+  mode={1}
 >
   <PointerCaptor
     className="nz-draggable"

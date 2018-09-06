@@ -244,6 +244,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: 9zone",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/ninezone",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[Presentation] Tests: Common",
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
