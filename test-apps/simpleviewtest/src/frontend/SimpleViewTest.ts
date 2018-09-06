@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker, ImageUtil, MarkerDrawFunc, MarkerSet, ClusterMarker,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -27,7 +27,7 @@ import {
   ColorDef,
 } from "@bentley/imodeljs-common";
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
+import { Point3d, XAndY, Transform, Vector3d, XYAndZ, Point2d } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -624,31 +624,115 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
+class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
+  public warningSign?: HTMLImageElement;
+
+  constructor() {
+    super();
+    ImageUtil.fromUrl("http://www.clker.com/cliparts/5/7/d/b/1195442352382851478zeimusu_Warning_sign.svg").then((image) => this.warningSign = image);
+  }
+
+  private static _drawFunc: MarkerDrawFunc = (ctx, _marker) => {
+    ctx.beginPath();
+    ctx.strokeStyle = "#8B0000";
+    ctx.fillStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  protected getClusterMarker(cluster: ClusterMarker<IncidentMarker>): Marker {
+    const marker = cluster.markers[0].clone();
+    marker.image = this.warningSign;
+    marker.imageOffset = new Point3d(0, 28);
+    marker.imageSize = new Point2d(30, 30);
+    let total = 0;
+    cluster.markers.forEach((m) => total += m.severity);
+    marker.label = total.toString();
+    marker.labelColor = "black";
+    marker.labelFont = "bold 14px san-serif";
+    marker.drawFunc = IncidentMarkerSet._drawFunc;
+    return marker;
+  }
+}
+
+class IncidentMarker extends Marker {
+  private static _size = { x: 30, y: 30 };
+  private static _imageSize = { x: 40, y: 40 };
+  private static _imageOffset = { x: 0, y: 30 };
+
+  private static _drawFunc: MarkerDrawFunc = (ctx, _marker) => {
+    ctx.beginPath();
+    ctx.fillStyle = "blue";
+    ctx.rect(-10, -11, 20, 20);
+    ctx.fill();
+    ctx.strokeStyle = "white";
+    ctx.stroke();
+  }
+
+  constructor(location: XYAndZ, public severity: number, icon: Promise<HTMLImageElement>) {
+    super(location, IncidentMarker._size);
+    this.setImage(icon);
+    this.imageOffset = IncidentMarker._imageOffset;
+    this.imageSize = IncidentMarker._imageSize;
+    this.label = severity.toString();
+    this.drawFunc = IncidentMarker._drawFunc;
+  }
+}
+
 let activeExtentsDeco: ProjectExtentsDecoration | undefined;
 export class ProjectExtentsDecoration {
   public boxId?: Id64;
   public markers: Marker[] = [];
+  public incidents = new IncidentMarkerSet();
 
   public constructor() {
     IModelApp.viewManager.addDecorator(this);
     const iModel = activeViewState.iModelConnection!;
-
     const extents = iModel.projectExtents;
     const markerSize = { x: 48, y: 48 };
-    //    const url = "http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Flag-2-Right-Azure-icon.png";
-    const url = "http://www.clker.com/cliparts/b/7/6/5/1308001441853739087google%20maps%20pin.svg";
+    const image = ImageUtil.fromUrl("http://www.clker.com/cliparts/b/7/6/5/1308001441853739087google%20maps%20pin.svg");
+    const imageOffset = { x: 14, y: 40 };
+    const markerDrawFunc: MarkerDrawFunc = (ctx, _marker) => {
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, 2 * Math.PI);
+      ctx.fillStyle = "green";
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "black";
+      ctx.fill();
+      ctx.stroke();
+    };
 
-    const addMarker = (label: string, pos: Point3d): void => {
-      const marker = new Marker(pos, markerSize);
+    const createMarker = (label: string, markerPos: Point3d): void => {
+      const marker = new Marker(markerPos, markerSize);
+      marker.drawFunc = markerDrawFunc;
       marker.label = label;
-      marker.imageOrigin.set(14, 40);
-      marker.setImageUrl(url);
+      marker.imageOffset = imageOffset;
+      marker.setImage(image);
       this.markers.push(marker);
     };
 
-    addMarker(iModel.iModelToken.key!, extents.getCenter());
-    addMarker("low", extents.low);
-    addMarker("high", extents.high);
+    createMarker(iModel.iModelToken.key!, extents.getCenter());
+    createMarker("low", extents.low);
+    createMarker("high", extents.high);
+
+    const makerIcons = [
+      ImageUtil.fromUrl("http://www.clker.com/cliparts/1/f/6/a/1194984837934379280DangerElectrique.svg"),
+      ImageUtil.fromUrl("http://www.clker.com/cliparts/6/8/2/2/1194984852624127072RisqueBiologique.svg"),
+      ImageUtil.fromUrl("http://www.clker.com/cliparts/b/6/f/4/11949848391240007341Trebuchement.svg"),
+      ImageUtil.fromUrl("http://www.clker.com/cliparts/c/3/7/0/11949848502071192471MatieresToxiques.svg"),
+      ImageUtil.fromUrl("http://www.clker.com/cliparts/3/3/e/f/1194984848430162199MatieresInflammables.svg"),
+    ];
+    const pos = new Point3d();
+    for (let i = 0; i < 1000; ++i) {
+      pos.x = extents.low.x + (Math.random() * extents.xLength());
+      pos.y = extents.low.y + (Math.random() * extents.yLength());
+      pos.z = extents.low.z + (Math.random() * extents.zLength());
+      const marker = new IncidentMarker(pos, 1 + Math.round(Math.random() * 10), makerIcons[i % makerIcons.length]);
+      this.incidents.markers.add(marker);
+    }
+
   }
   protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
 
@@ -674,6 +758,8 @@ export class ProjectExtentsDecoration {
     builder.addRangeBox(range);
     context.addDecorationFromBuilder(builder);
     this.markers.forEach((marker) => marker.addDecoration(context));
+
+    this.incidents.addDecoration(context);
   }
 
   public static add(): void {

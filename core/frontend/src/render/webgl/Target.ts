@@ -1054,7 +1054,7 @@ export class OnScreenTarget extends Target {
       const ctx = this._canvas.getContext("2d")!;
       for (const overlay of this._decorations.overlay2d) {
         ctx.save();
-        ctx.translate(overlay.origin.x, overlay.origin.y);
+        ctx.translate(overlay.position.x, overlay.position.y);
         overlay.drawDecoration(ctx);
         ctx.restore();
       }

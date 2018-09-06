@@ -114,7 +114,7 @@ export type GraphicList = RenderGraphic[];
 
 export interface Overlay2dDecoration {
   drawDecoration(ctx: CanvasRenderingContext2D): void;
-  origin: XAndY;
+  position: XAndY;
 }
 export type Overlay2dList = Overlay2dDecoration[];
 
