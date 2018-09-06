@@ -1347,7 +1347,7 @@ export namespace IModelDb {
       return new Promise<TileTreeProps>((resolve, reject) => {
         this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
-            reject(new IModelError(ret.error.status, "TreeId=" + id))
+            reject(new IModelError(ret.error.status, "TreeId=" + id));
           else
             resolve(ret.result! as TileTreeProps);
         });
