@@ -311,7 +311,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "superagent",
