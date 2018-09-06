@@ -4,7 +4,7 @@
 /** @module Tile */
 
 import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
+import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests, MissingNodes } from "./TileTree";
@@ -107,7 +107,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   }
 }
 class WebMercatorTileProps implements TileProps {
-  public readonly id: TileId;
+  public readonly contentId: string;
   public readonly range: Range3dProps;
   public readonly contentRange?: Range3dProps;
   public readonly maximumSize: number;
@@ -115,7 +115,7 @@ class WebMercatorTileProps implements TileProps {
   public readonly isLeaf: boolean = false;
 
   constructor(thisId: string, mercatorToDb: Transform) {
-    this.id = new TileId("", thisId);
+    this.contentId = thisId;
     const quadId = new QuadId(thisId);
     this.range = quadId.getRange(mercatorToDb);
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
@@ -147,7 +147,7 @@ class WebMercatorTileLoader extends TileLoader {
   }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
-    const quadId = new QuadId(parent.id);
+    const quadId = new QuadId(parent.contentId);
     const level = quadId.level + 1;
     const column = quadId.column * 2;
     const row = quadId.row * 2;
@@ -176,7 +176,7 @@ class WebMercatorTileLoader extends TileLoader {
       if (missingTile.isNotLoaded) {
         missingTile.setIsQueued();
 
-        const quadId = new QuadId(missingTile.id);
+        const quadId = new QuadId(missingTile.contentId);
         const corners = quadId.getCorners(this.mercatorToDb);
         const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
         if (undefined === imageSource) {
@@ -299,7 +299,7 @@ class BingAttribution {
   constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
 
   public matchesTile(tile: Tile): boolean {
-    const quadId = new QuadId(tile.id);
+    const quadId = new QuadId(tile.contentId);
     for (const coverage of this._coverages) {
       if (coverage.overlaps(quadId))
         return true;

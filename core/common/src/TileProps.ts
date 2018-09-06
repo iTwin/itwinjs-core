@@ -5,23 +5,6 @@
 
 import { TransformProps, Range3dProps } from "@bentley/geometry-core";
 
-export interface TileIdProps {
-  treeId: string;
-  tileId: string;
-}
-
-export class TileId implements TileIdProps {
-  public readonly treeId: string;
-  public readonly tileId: string;
-
-  public constructor(treeId: string, tileId: string) {
-    this.treeId = treeId;
-    this.tileId = tileId;
-  }
-
-  public static fromJSON(props: TileIdProps): TileId { return new TileId(props.treeId, props.tileId); }
-}
-
 /**
  * The metadata describing a single Tile.
  * Note that a Tile's metadata is distinct from its content (geometry, from which graphics are created).
@@ -35,13 +18,13 @@ export class TileId implements TileIdProps {
  * Due to tile caching optimizations, some of this metadata may be retrieved from the backend cache before the tile content is loaded.
  */
 export interface TileProps {
-  /** The unique identifier of the tile within the iModel */
-  id: TileIdProps;
+  /** The unique identifier of the tile's content */
+  contentId: string;
   /** The volume in which all of the tile's contents reside */
   range: Range3dProps;
   /** Optional  volume within the tile's range which more tightly encloses the tile geometry */
   contentRange?: Range3dProps;
-  /** The maximum size in pixels at which the tile should be drawn on the screen. Excludes the optional sizeMultiplier which is applied separately. */
+  /** The maximum size in pixels at which the tile should be drawn on the screen. Excludes the optional sizeMultiplier which is applied separately. 0.0 indicates this tile is not displayable. */
   maximumSize: number;
   /** Optional scaling factor applied to this tile's maximum size. Defaults to 1.0 if undefined. */
   sizeMultiplier?: number;

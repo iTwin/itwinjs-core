@@ -310,8 +310,7 @@ describe("iModel", () => {
     expect(tf.matrix.isIdentity).to.be.true;
     expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
 
-    expect(tree.rootTile.id.treeId).to.equal(tree.id);
-    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0/1");
+    expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
 
     const range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;

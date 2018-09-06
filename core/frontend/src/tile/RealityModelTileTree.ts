@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { IModelError, TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
@@ -53,7 +53,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
 }
 
 class RealityModelTileProps implements TileProps {
-  public readonly id: TileId;
+  public readonly contentId: string;
   public readonly range: Range3dProps;
   public readonly contentRange?: Range3dProps;
   public readonly maximumSize: number;
@@ -61,7 +61,7 @@ class RealityModelTileProps implements TileProps {
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
   constructor(json: any, thisId: string) {
-    this.id = new TileId("", thisId);
+    this.contentId = thisId;
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.hasContents = undefined !== json.content && undefined !== json.content.url;
@@ -83,7 +83,7 @@ class RealityModelTileLoader extends TileLoader {
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
-    const thisId = parent.id;
+    const thisId = parent.contentId;
     const prefix = thisId.length ? thisId + "_" : "";
     const json = await this.findTileInJson(this._tree.tilesetJson, thisId, "");
     if (undefined !== json && Array.isArray(json.json.children)) {
@@ -101,7 +101,7 @@ class RealityModelTileLoader extends TileLoader {
     const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
       if (missingTile.isNotLoaded) {
-        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.id, "");
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
         if (foundChild !== undefined) {
           missingTile.setIsQueued();
           const content = await this._tree.client.getTileContent(foundChild.json.content.url);

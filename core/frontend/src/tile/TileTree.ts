@@ -4,7 +4,7 @@
 /** @module Tile */
 
 import { assert, compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable, base64StringToUint8Array } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId, ColorDef } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { RenderGraphic, GraphicBranch } from "../render/System";
@@ -22,7 +22,7 @@ import { SpatialModelState } from "../ModelState";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
-  return 0 === diff ? compareStrings(lhs.id, rhs.id) : diff;
+  return 0 === diff ? compareStrings(lhs.contentId, rhs.contentId) : diff;
 }
 
 // ###TODO: TileRequests and MissingNodes are likely to change...
@@ -64,7 +64,7 @@ export class Tile implements IDisposable {
   public readonly parent: Tile | undefined;
   public readonly depth: number;
   public loadStatus: Tile.LoadStatus;
-  public readonly id: string;
+  public readonly contentId: string;
   public readonly center: Point3d;
   public readonly radius: number;
   protected readonly _maximumSize: number;
@@ -83,7 +83,7 @@ export class Tile implements IDisposable {
     this.parent = props.parent;
     this.depth = undefined !== this.parent ? this.parent.depth + 1 : 0;
     this.loadStatus = Tile.LoadStatus.NotLoaded;
-    this.id = props.id;
+    this.contentId = props.contentId;
     this._maximumSize = props.maximumSize;
     this._isLeaf = (true === props.isLeaf);
     this._childrenLastUsed = BeTimePoint.now();
@@ -486,7 +486,7 @@ export namespace Tile {
   export class Params {
     public constructor(
       public readonly root: TileTree,
-      public readonly id: string,
+      public readonly contentId: string,
       public readonly range: ElementAlignedBox3d,
       public readonly maximumSize: number,
       public readonly isLeaf?: boolean,
@@ -496,7 +496,7 @@ export namespace Tile {
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, props.sizeMultiplier);
+      return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, props.sizeMultiplier);
     }
   }
 }
@@ -568,8 +568,6 @@ export class TileTree implements IDisposable {
     const purgeOlderThan = now.minus(this.expirationTime);
     return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVector);
   }
-
-  public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
 }
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
@@ -662,7 +660,7 @@ export class IModelTileLoader extends TileLoader {
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
     for (const tile of missingTiles.extractArray()) {
       tile.setIsQueued();
-      this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: Uint8Array) => {
+      this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
         if (tile.isQueued)
           this.loadGraphics(tile, content, this._asClassifier);
       }).catch((_err: any) => {

@@ -571,7 +571,7 @@ export namespace Attachments {
       super(new TileTree.Params(
         modelId.value,
         {
-          id: { treeId: "", tileId: "" },
+          contentId: "",
           range: {
             low: { x: 0, y: 0, z: 0 },
             high: { x: 0, y: 0, z: 0 },

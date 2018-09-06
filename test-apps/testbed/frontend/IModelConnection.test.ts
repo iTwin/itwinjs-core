@@ -152,8 +152,7 @@ describe("IModelConnection (#integration)", () => {
     expect(tf.origin.isAlmostEqualXYZ(0.0025, 0.0025, 10.001)).to.be.true;
 
     const rootTile = tree.rootTile;
-    expect(rootTile.id.treeId).to.equal(tree.id);
-    expect(rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(rootTile.contentId).to.equal("0/0/0/0/1");
 
     const range = Range3d.fromJSON(rootTile.range);
     expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
