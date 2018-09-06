@@ -28,7 +28,6 @@ import {
   FilePropertyProps,
   IModelToken,
   TileTreeProps,
-  TileProps,
   IModelNotFoundResponse,
   EcefLocation,
   SnapRequestProps,
@@ -1355,29 +1354,18 @@ export namespace IModelDb {
     }
 
     /** @hidden */
-    public getChildrenProps(treeId: string, parentId: string): TileProps[] {
+    public getTileContent(treeId: string, tileId: string): Promise<string> {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getChildren(treeId, parentId);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + treeId + " ParentId=" + parentId);
-
-      assert(Array.isArray(result));
-      return result! as TileProps[];
-    }
-
-    /** @hidden */
-    public getTileContent(treeId: string, tileId: string): string {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
-
-      const { error, result } = this._iModel.nativeDb.getTileContent(treeId, tileId);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + treeId + " TileId=" + tileId);
-
-      assert("string" === typeof(result));
-      return result as string;
+      return new Promise<string>((resolve, reject) => {
+        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, string>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+          else
+            resolve(ret.result!);
+        });
+      });
     }
   }
 }

@@ -96,7 +96,7 @@ export abstract class GeometricModelState extends ModelState {
     const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id.value) : this.id.value;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, result.id, asClassifier));
+      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier));
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
       this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.

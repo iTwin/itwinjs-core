@@ -7,7 +7,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { IModelToken } from "../IModel";
-import { TileId, TileProps, TileTreeProps } from "../TileProps";
+import { TileId, TileTreeProps } from "../TileProps";
 
 export abstract class IModelTileRpcInterface extends RpcInterface {
   public static version = "0.1.0";
@@ -21,6 +21,5 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
 
   public getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps> { return this.forward.apply(this, arguments); }
-  public getChildrenProps(_iModelToken: IModelToken, _parentId: TileId): Promise<TileProps[]> { return this.forward.apply(this, arguments); }
   public getTileContent(_iModelToken: IModelToken, _id: TileId): Promise<string> { return this.forward.apply(this, arguments); }
 }

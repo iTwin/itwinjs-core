@@ -7,7 +7,6 @@ import { IModelDb } from "../IModelDb";
 import {
   IModelTileRpcInterface,
   IModelToken,
-  TileProps,
   TileId,
   TileTreeProps,
   RpcInterface,
@@ -21,11 +20,6 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public async getTileTreeProps(iModelToken: IModelToken, id: string): Promise<TileTreeProps> {
     const db = IModelDb.find(iModelToken);
     return db.tiles.requestTileTreeProps(id);
-  }
-
-  public async getChildrenProps(iModelToken: IModelToken, parentId: TileId): Promise<TileProps[]> {
-    const db = IModelDb.find(iModelToken);
-    return db.tiles.getChildrenProps(parentId.treeId, parentId.tileId);
   }
 
   public async getTileContent(iModelToken: IModelToken, id: TileId): Promise<string> {
