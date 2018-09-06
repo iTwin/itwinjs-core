@@ -30,15 +30,6 @@ interface RobotWorldProps {
   robots: RobotProps[];
 }
 
-const data0: RobotWorldProps = {
-  barriers: [
-    { location: { x: 0, y: 5, z: 0 }, angle: { degrees: 0 }, length: 5 },
-  ],
-  robots: [
-    { location: { x: 0, y: 0, z: 0 }, name: "r1" },
-  ],
-};
-
 function convertToBis(briefcase: IModelDb, modelId: Id64, data: RobotWorldProps) {
   for (const barrier of data.barriers) {
     RobotWorldEngine.insertBarrier(briefcase, modelId, Point3d.fromJSON(barrier.location), Angle.fromJSON(barrier.angle), barrier.length);
@@ -48,6 +39,15 @@ function convertToBis(briefcase: IModelDb, modelId: Id64, data: RobotWorldProps)
   }
 }
 // __PUBLISH_EXTRACT_END__
+
+const data0: RobotWorldProps = {
+  barriers: [
+    { location: { x: 0, y: 5, z: 0 }, angle: { degrees: 0 }, length: 5 },
+  ],
+  robots: [
+    { location: { x: 0, y: 0, z: 0 }, name: "r1" },
+  ],
+};
 
 function createModel(briefcase: IModelDb) {
   return IModelTestUtils.createNewModel(briefcase.elements.getRootSubject(), "RobotWorld", false);

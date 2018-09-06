@@ -19,7 +19,7 @@ Specificaly, a bridge must:
   * Obtain required Locks and Codes from the iModel server and/or code server.
   * Push changes to the iModel server.
 
-## Example
+## Bridge tasks
 
 A bridge would import the following packages:
 
@@ -32,6 +32,8 @@ The bridge must obtain an AccessToken. Here is an example for Connect/iModelHub:
 ``` ts
 [[include:Bridge.getAccessToken.example-code]]
 ```
+
+## Running a bridge for the first time.
 
 If necessary, a bridge working with iModelHub may create an iModel from scratch. (This does not apply to bridges that work with iModelBank).
 
@@ -51,8 +53,54 @@ Importing a schema and bootstrapping definitions would look like this:
 [[include:IModelDb.importSchema]]
 ```
 
-Here is a simple example of a fictitious source data format:
+Here is a simple example of a fictitious source data format and the logic to convert and write it to an iModel:
 
 ``` ts
 [[include:Bridge.source-data.example-code]]
 ```
+
+## Detecting and pushing changes
+
+Rather than starting over when the source data changes, a bridge should be able to detect and convert only the changes. That makes for compact, meaningful ChangeSets, which are added to the iModel's
+[timeline](../../overview/IModelHub.md#the-timeline-of-changes-to-an-imodel).
+
+In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
+
+In order to do incremental updates, a bridge must do ID mapping and change-detection.
+
+### ID mapping
+
+ID mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data.
+
+If the source data has stable, unique IDs, then ID mapping could be straightforward. The bridge just needs to record the source -> BIS ID mappings somewhere. If the source data IDs are GUIDs, then the bridge can assign them to the federationGuid property value of the BIS elements that it creates. That way, the mappings will be directly recorded in the iModel itself.
+
+If the soruce data does not have stable, unique IDs, then the bridge will have to use some other means of identifying pieces of source data in a stable way. A crytographic hash of the source data itself can work as a stable ID -- that is, it can be used to identify data that has not changed.
+
+
+### Change-detection
+
+Change-detection is a way of detecting changes in the source data.
+
+If the source data is timestamped in some way, then the change-detection logic should be easy. The bridge just has to save the highest timestamp at the end of the conversion and then look for source data with later timestamps the next time it runs.
+
+If timestamps are not available, then the bridge will have to use some other means of recording and then comparing the state of the source data from run to run. If conversion is cheap, then the source data can be be converted again and the results compared to the previous results, as stored in the iModel. Or, a crytographic hash of the source data may be used to represent the source data. The hash could be stored along with the mappings and used to detect changes.
+
+A basic change-detection algorithm is:
+* For each source data item:
+  * add source item's ID to the *source_items_seen* set
+  * Look in the mappings for the corresponding data in the iModel (element, aspect, model)
+  * If found,
+    * Detect if the source item's current data has changed. If so,
+      * Convert the source item to BIS data.
+      * Update the corresponding data in the iModel
+  * Else,
+    * Convert the source data to BIS data
+    * Insert the new data into the iModel
+    * Add the source data item's ID to the mappings
+
+Infer deletions:
+* For each source data item ID previously converted
+  * if item ID is not in *source_items_seen*
+    * Find the the corresponind data in the iModel
+      * Delete the data in the iModel
+      * Remove the the source data item's ID from the mappings

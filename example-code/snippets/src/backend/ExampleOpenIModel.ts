@@ -25,13 +25,6 @@ async function getUserAccessToken(userCredentials: UserCredentials, env: Deploym
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ IModelDb.open
-async function openModel(activityContext: ActivityLoggingContext, projectid: string, imodelid: string, accessToken: AccessToken) {
-    const imodel: IModelDb = await IModelDb.open(activityContext, accessToken, projectid, imodelid, OpenParams.fixedVersion());
-    return imodel;
-}
-// __PUBLISH_EXTRACT_END__
-
 // __PUBLISH_EXTRACT_START__ Service.readConfig
 function readConfigParams(): any {
     const config = require("./MyService.config.json");
@@ -74,11 +67,9 @@ function configureIModel() {
     // __PUBLISH_EXTRACT_END__
 }
 
+// Call the above functions, to avoid lint errors.
 const cred = { email: "Regular.IModelJsTestUser@mailinator.com", password: "Regular@iMJs" };
-getUserAccessToken(cred, "PROD").then((accessToken: AccessToken) => {
-    const im = openModel(actx, "x", "y", accessToken);
-    if (im === undefined)
-        return;
+getUserAccessToken(cred, "PROD").then((_accessToken: AccessToken) => {
 });
 
 configureIModel();
