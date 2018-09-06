@@ -8,3 +8,9 @@ To insert a new [Model]($backend) into an iModelDb,
 ``` ts
 [[include:IModelDb.Models.createModel.example-code]]
 ```
+
+Create a Definition model:
+
+``` ts
+[[include:insertDefinitionModel.example-code]]
+```

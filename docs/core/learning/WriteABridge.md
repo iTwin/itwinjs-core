@@ -19,26 +19,12 @@ Specificaly, a bridge must:
   * Obtain required Locks and Codes from the iModel server and/or code server.
   * Push changes to the iModel server.
 
-## Bridge tasks
+## Writing a bridge
 
 A bridge would import the following packages:
 
 ``` ts
 [[include:Bridge.imports.example-code]]
-```
-
-The bridge must obtain an AccessToken. Here is an example for Connect/iModelHub:
-
-``` ts
-[[include:Bridge.getAccessToken.example-code]]
-```
-
-## Running a bridge for the first time.
-
-If necessary, a bridge working with iModelHub may create an iModel from scratch. (This does not apply to bridges that work with iModelBank).
-
-``` ts
-[[include:Bridge.create-imodel.example-code]]
 ```
 
 When the bridge runs for the very first time, it would look like this:
@@ -47,11 +33,10 @@ When the bridge runs for the very first time, it would look like this:
 [[include:Bridge.firstTime.example-code]]
 ```
 
-Importing a schema and bootstrapping definitions would look like this:
-
-``` ts
-[[include:IModelDb.importSchema]]
-```
+See:
+* [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
+* [AccessToken](./common/AccessToken.md)
+* [IModelDb.create]($backend)
 
 Here is a simple example of a fictitious source data format and the logic to convert and write it to an iModel:
 

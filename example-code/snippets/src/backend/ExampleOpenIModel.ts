@@ -5,8 +5,6 @@ import { IModelDb, ConcurrencyControl, AutoPush, OpenParams } from "@bentley/imo
 import { OpenMode, EnvMacroSubst, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 
-const actx = new ActivityLoggingContext("");
-
 // __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
 import { AccessToken, DeploymentEnv, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 

@@ -75,12 +75,10 @@ export class RobotWorld extends Schema {
         const dictionary = iModelDb.models.getModel(IModelDb.dictionaryId) as DictionaryModel;
 
         if (true) {
-            // __PUBLISH_EXTRACT_START__ Element.createSpatialCategory.example-code
             const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Robot);
             cat.id = iModelDb.elements.insertElement(cat);
             cat.setDefaultAppearance(new SubCategoryAppearance({ color: ColorByName.silver }));
             iModelDb.elements.updateElement(cat);
-            // __PUBLISH_EXTRACT_END__
         }
 
         if (true) {
