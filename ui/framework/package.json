@@ -75,6 +75,7 @@
     "mocha": "^5.2.0",
     "mocha-tldr-reporter": "^1.0.0",
     "nyc": "^13.0.1",
+    "raf": "^3.4.0",
     "rimraf": "^2.6.2",
     "sinon": "^6.1.4",
     "sinon-chai": "^3.2.0",
