@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.123.0",
+      "tag": "@bentley/webpack-tools_v0.123.0",
+      "date": "Wed, 05 Sep 2018 17:14:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed test script excluding *all* filenames beginning with \"web\" and \"electron\"."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.122.0",
       "tag": "@bentley/webpack-tools_v0.122.0",
       "date": "Tue, 28 Aug 2018 12:25:19 GMT",

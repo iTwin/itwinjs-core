@@ -142,7 +142,12 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
+  public velocityXYZ(x: number, y: number, z: number): number { return this._normal.dotProductXYZ(x, y, z); }
+  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+   * for a point moving at speed one along the spaceVector.
+   */
   public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }
+
   /** @returns the altitude of a point given as separate x,y,z components. */
   public altitudeXYZ(x: number, y: number, z: number): number {
     return this._normal.dotProductStartEndXYZ(this._origin, x, y, z);

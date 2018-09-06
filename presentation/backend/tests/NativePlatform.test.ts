@@ -4,13 +4,13 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
+import "@bentley/presentation-common/tests/_helpers/Promises";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { PresentationError } from "@bentley/presentation-common";
 import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
-import "@helpers/Promises";
 import "./IModelHostSetup";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@src/NativePlatform";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "../lib/NativePlatform";
 
 describe("default NativePlatform", () => {
 

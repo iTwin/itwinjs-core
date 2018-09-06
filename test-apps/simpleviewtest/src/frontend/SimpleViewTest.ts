@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -26,7 +26,7 @@ import {
   RgbColor,
   ColorDef,
 } from "@bentley/imodeljs-common";
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
@@ -592,6 +592,26 @@ export class MeasurePointsTool extends PrimitiveTool {
         case "V":
           AccuDrawShortcuts.setStandardRotation(RotationMode.View);
           break;
+        case "o":
+        case "O":
+          AccuDrawShortcuts.setOrigin();
+          break;
+        case "c":
+        case "C":
+          AccuDrawShortcuts.rotateCycle(false);
+          break;
+        case "q":
+        case "Q":
+          AccuDrawShortcuts.rotateAxes(true);
+          break;
+        case "e":
+        case "E":
+          AccuDrawShortcuts.rotateToElement(false);
+          break;
+        case "r":
+        case "R":
+          AccuDrawShortcuts.defineACSByPoints();
+          break;
       }
     }
     return EventHandled.No;
@@ -607,8 +627,29 @@ export class MeasurePointsTool extends PrimitiveTool {
 let activeExtentsDeco: ProjectExtentsDecoration | undefined;
 export class ProjectExtentsDecoration {
   public boxId?: Id64;
+  public markers: Marker[] = [];
 
-  public constructor() { IModelApp.viewManager.addDecorator(this); }
+  public constructor() {
+    IModelApp.viewManager.addDecorator(this);
+    const iModel = activeViewState.iModelConnection!;
+
+    const extents = iModel.projectExtents;
+    const markerSize = { x: 48, y: 48 };
+    //    const url = "http://icons.iconarchive.com/icons/icons-land/vista-map-markers/48/Map-Marker-Flag-2-Right-Azure-icon.png";
+    const url = "http://www.clker.com/cliparts/b/7/6/5/1308001441853739087google%20maps%20pin.svg";
+
+    const addMarker = (label: string, pos: Point3d): void => {
+      const marker = new Marker(pos, markerSize);
+      marker.label = label;
+      marker.imageOrigin.set(14, 40);
+      marker.setImageUrl(url);
+      this.markers.push(marker);
+    };
+
+    addMarker(iModel.iModelToken.key!, extents.getCenter());
+    addMarker("low", extents.low);
+    addMarker("high", extents.high);
+  }
   protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
 
   public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
@@ -632,6 +673,7 @@ export class ProjectExtentsDecoration {
     builder.setSymbology(white, black, 1);
     builder.addRangeBox(range);
     context.addDecorationFromBuilder(builder);
+    this.markers.forEach((marker) => marker.addDecoration(context));
   }
 
   public static add(): void {
@@ -656,9 +698,12 @@ export class ProjectExtentsDecoration {
 }
 
 // starts Measure between points tool
-function startMeasurePoints(_event: any) {
+function startMeasurePoints(event: any) {
+  const menu = document.getElementById("snapModeList") as HTMLDivElement;
+  if (event.target === menu)
+    return;
   IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1051,7 +1096,7 @@ async function main() {
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
   }
 
   const uiReady = displayUi();  // Get the browser started loading our html page and the svgs that it references but DON'T WAIT

@@ -1,24 +1,24 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
-import * as moq from "@helpers/Mocks";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import {
   createRandomDescriptor,
   createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
   createRandomECInstanceKey,
-} from "@helpers/random";
+} from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, Descriptor, HierarchyRequestOptions,
   Paged, ContentRequestOptions, RequestOptions, RpcRequestsHandler,
-} from "@common/index";
-import PresentationManager from "@src/PresentationManager";
-import RulesetVariablesManager from "@src/RulesetVariablesManager";
-import RulesetManager from "@src/RulesetManager";
+} from "@bentley/presentation-common";
+import PresentationManager from "../lib/PresentationManager";
+import RulesetVariablesManager from "../lib/RulesetVariablesManager";
+import RulesetManager from "../lib/RulesetManager";
 
 describe("PresentationManager", () => {
 
@@ -36,7 +36,6 @@ describe("PresentationManager", () => {
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
     rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
-    rpcRequestsHandlerMock.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
     manager = PresentationManager.create({ rpcRequestsHandler: rpcRequestsHandlerMock.object });
   });
 
@@ -63,7 +62,6 @@ describe("PresentationManager", () => {
 
     it("sets custom RpcRequestsHandler if supplied with props", async () => {
       const handler = moq.Mock.ofType<RpcRequestsHandler>();
-      handler.setup((x) => x.syncHandlers).returns(() => new Array<() => Promise<void>>());
       const props = { rpcRequestsHandler: handler.object };
       const mgr = PresentationManager.create(props);
       expect(mgr.rpcRequestsHandler).to.eq(handler.object);
@@ -73,18 +71,9 @@ describe("PresentationManager", () => {
 
   describe("dispose", () => {
 
-    it("disposes rulesets manager", () => {
-      const rulesetsManager = manager.rulesets();
-      const disposeSpy = spy.on(rulesetsManager, RulesetManager.prototype.dispose.name);
+    it("disposes RPC requests handler", () => {
       manager.dispose();
-      expect(disposeSpy).to.be.called();
-    });
-
-    it("disposes rulesets manager", () => {
-      const varManagers = ["a", "b"].map((id) => manager.vars(id));
-      const disposeSpies = varManagers.map((m) => spy.on(m, RulesetVariablesManager.prototype.dispose.name));
-      manager.dispose();
-      disposeSpies.forEach((disposeSpy) => expect(disposeSpy).to.be.called());
+      rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
   });

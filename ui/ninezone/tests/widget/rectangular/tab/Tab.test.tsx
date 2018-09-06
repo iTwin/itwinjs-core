@@ -3,15 +3,21 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
-import Tab from "../../../../src/widget/rectangular/tab/Tab";
+import Tab, { TabMode } from "../../../../src/widget/rectangular/tab/Tab";
+import { HorizontalAnchor } from "../../../../src/widget/Stacked";
 
 describe("<Tab />", () => {
   it("should render", () => {
-    mount(<Tab />);
+    mount(<Tab
+      anchor={HorizontalAnchor.Left}
+      mode={TabMode.Open}
+    />);
   });
 
   it("renders correctly", () => {
-    shallow(<Tab />).should.matchSnapshot();
+    shallow(<Tab
+      anchor={HorizontalAnchor.Left}
+      mode={TabMode.Open}
+    />).should.matchSnapshot();
   });
 });

@@ -7,8 +7,8 @@ import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 import { DefaultWsgRequestOptionsProvider } from "../WsgClient";
 import * as https from "https";
 import { RequestOptions } from "../Request";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelBankError } from "./Errors";
+import { assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelHubError } from "../imodelhub/Errors";
 import { FileHandler } from "..";
 
 /**
@@ -17,8 +17,8 @@ import { FileHandler } from "..";
 class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this._defaultOptions.errorCallback = IModelBankError.parse;
-    this._defaultOptions.retryCallback = IModelBankError.shouldRetry;
+    this._defaultOptions.errorCallback = IModelHubError.parse;
+    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
     this._defaultOptions.agent = agent;
   }
 }
@@ -60,7 +60,7 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   protected getDefaultUrl(): string { return this._baseUrl; }
 
-  public async getUrl(excludeApiVersion?: boolean): Promise<string> {
+  public async getUrl(_actx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return Promise.resolve(this._url!);
 

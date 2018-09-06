@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { request, Response } from "@bentley/imodeljs-clients";
 import { PerformanceDataEntry } from "./PerformanceInterface";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 /**
  * client for posting asynchronous calls to the listening PerformanceWriterServer
@@ -15,7 +16,8 @@ export class PerformanceWriterClient {
    * @param output the file location of the excel file to write to
    */
   public static async startup(input?: string, output?: string): Promise<Response> {
-    return await request("http://localhost:3002/startup", { method: "POST", body: { input, output } });
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    return await request(alctx, "http://localhost:3002/startup", { method: "POST", body: { input, output } });
   }
 
   /**
@@ -23,13 +25,15 @@ export class PerformanceWriterClient {
    * @param data must conform to PerformanceDataEntry interface
    */
   public static async addEntry(data: PerformanceDataEntry): Promise<Response> {
-    return await request("http://localhost:3002/addEntry", { method: "POST", body: { data: JSON.stringify(data) } });
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    return await request(alctx, "http://localhost:3002/addEntry", { method: "POST", body: { data: JSON.stringify(data) } });
   }
 
   /**
    * write the min times of the performance result series in the active excel worksheet
    */
   public static async finishSeries(): Promise<Response> {
-    return await request("http://localhost:3002/finishSeries", { method: "POST" });
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    return await request(alctx, "http://localhost:3002/finishSeries", { method: "POST" });
   }
 }

@@ -102,3 +102,8 @@ export interface IRulesetVariablesManager {
    */
   setId64s(variableId: string, value: Id64[]): Promise<void>;
 }
+
+export namespace IRulesetVariablesManager {
+  export const STATE_ID = "ruleset variables";
+  export interface State { [rulesetId: string]: Array<[string, VariableValueTypes, VariableValue]>; }
+}

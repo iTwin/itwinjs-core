@@ -9,6 +9,7 @@ import { IModelClient } from "../IModelClient";
 import { FileHandler } from "../";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -31,8 +32,8 @@ export class IModelHubClient extends IModelClient {
    * @throws [[ResponseError]] if request to delegation service failed.
    * @throws Error if failed to parse response.
    */
-  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     ArgumentCheck.defined("authorizationToken", authorizationToken);
-    return this._handler.getAccessToken(authorizationToken);
+    return this._handler.getAccessToken(alctx, authorizationToken);
   }
 }

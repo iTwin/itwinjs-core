@@ -55,7 +55,32 @@ export const enum AxisScaleSelect {
   NonUniformRangeContainment = 2,
 }
 export interface TrigValues { c: number; s: number; radians: number; }
+/**
+ * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
+ *
+ * Specific implementors are
+ * * Plane3dByOriginAndUnitNormal
+ * * Point4d (used for homogeneous plane coefficients)
+ */
+export interface PlaneAltitudeEvaluator {
+  /**
+   * Return the altitude of the point from the plane.
+   * @param point point for evaluation
+   */
+  altitude(point: Point3d): number;
+  /**
+   * Return the derivative of altitude wrt motion along a vector.
+   * @param point point for evaluation
+   */
+  velocity(vector: Vector3d): number;
 
+  /**
+   * Return the derivative of altitude wrt motion along a vector given by components
+   * @param point point for evaluation
+   */
+  velocityXYZ(x: number, y: number, z: number): number;
+
+}
 export interface BeJSONFunctions {
   /**
    * Set content from a JSON object.

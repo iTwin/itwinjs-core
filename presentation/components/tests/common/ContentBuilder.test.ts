@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { PresentationError } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common/lib/content";
 import {
   createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath,
-} from "@helpers/random";
-import ContentBuilder from "@src/common/ContentBuilder";
+} from "@bentley/presentation-common/tests/_helpers/random";
+import { PresentationError } from "@bentley/presentation-common";
+import * as content from "@bentley/presentation-common/lib/content";
+import ContentBuilder from "../../lib/common/ContentBuilder";
 
 describe("ContentBuilder", () => {
 

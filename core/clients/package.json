@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.122.0",
+  "version": "0.123.0",
   "description": "Clients for various Bentley Services used by iModelJs",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -18,9 +18,12 @@
     "cover:integration": "nyc --temp-directory ./.nyc_output/integration --report-dir ./lib/test/coverage/integration mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
-    "test": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\"",
-    "test:integration": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+    "pretest": "rimraf \"./lib/test/iModelClientsTests.log\"",
+    "test": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep=\"URL Whitelist Validator\" --invert",
+    "test:online": "npm run copy:test-assets && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --grep=\"URL Whitelist Validator\" --invert",
+    "test:integration": "npm run pretest && npm run test:online & npm run test:url",
     "test:settings": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --grep Setting",
+    "test:url": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --grep=\"URL Whitelist Validator\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},
@@ -35,15 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0"
+    "@bentley/bentleyjs-core": "0.123.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0",
-    "@bentley/bentleyjs-tools": "0.122.0",
+    "@bentley/bentleyjs-tools": "0.123.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
@@ -58,7 +60,7 @@
     "nyc": "^13.0.1",
     "mocha": "^5.2.0",
     "source-map-support": "^0.5.6",
-    "ts-node": "^6.0.3",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
@@ -66,6 +68,7 @@
     "webpack": "^4.16.4"
   },
   "dependencies": {
+    "@bentley/bentleyjs-core": "0.123.0",
     "deep-assign": "^2.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",

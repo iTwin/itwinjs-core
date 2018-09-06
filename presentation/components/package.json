@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-components",
-  "version": "0.122.0",
+  "version": "0.123.0",
   "description": "React components based on iModelJs Presentation library",
   "keywords": [
     "Bentley",
@@ -19,7 +19,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src 1>&2 && npm run build:assets && npm run build:scss && npm run extract",
+    "build": "tsc -b ./src 1>&2 && npm run build:assets && npm run build:scss && npm run extract",
     "build:scss": "cpx ./src/**/*.scss ./lib",
     "build:assets": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
@@ -28,7 +28,8 @@
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/components",
     "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/components/json/file.json --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
-    "lint": "tslint -p ./src 1>&2",
+    "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
+    "//lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -39,29 +40,29 @@
     "react-dom": "^16.4.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0",
-    "@bentley/imodeljs-i18n": "0.122.0",
-    "@bentley/imodeljs-common": "0.122.0",
-    "@bentley/imodeljs-frontend": "0.122.0",
-    "@bentley/presentation-common": "0.122.0",
-    "@bentley/presentation-frontend": "0.122.0",
-    "@bentley/ui-core": "0.122.0",
-    "@bentley/ui-components": "0.122.0"
+    "@bentley/bentleyjs-core": "0.123.0",
+    "@bentley/imodeljs-i18n": "0.123.0",
+    "@bentley/imodeljs-common": "0.123.0",
+    "@bentley/imodeljs-frontend": "0.123.0",
+    "@bentley/presentation-common": "0.123.0",
+    "@bentley/presentation-frontend": "0.123.0",
+    "@bentley/ui-core": "0.123.0",
+    "@bentley/ui-components": "0.123.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0",
-    "@bentley/bentleyjs-tools": "0.122.0",
-    "@bentley/imodeljs-i18n": "0.122.0",
-    "@bentley/imodeljs-common": "0.122.0",
-    "@bentley/imodeljs-frontend": "0.122.0",
-    "@bentley/presentation-common": "0.122.0",
-    "@bentley/presentation-frontend": "0.122.0",
-    "@bentley/ui-core": "0.122.0",
-    "@bentley/ui-components": "0.122.0",
+    "@bentley/bentleyjs-core": "0.123.0",
+    "@bentley/bentleyjs-tools": "0.123.0",
+    "@bentley/imodeljs-i18n": "0.123.0",
+    "@bentley/imodeljs-common": "0.123.0",
+    "@bentley/imodeljs-frontend": "0.123.0",
+    "@bentley/presentation-common": "0.123.0",
+    "@bentley/presentation-frontend": "0.123.0",
+    "@bentley/ui-core": "0.123.0",
+    "@bentley/ui-components": "0.123.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
-    "@types/chai-spies": "^0",
+    "@types/chai-spies": "^1.0.0",
     "@types/enzyme": "^3.1.12",
     "@types/faker": "^4.1.0",
     "@types/lodash": "^4.14.0",
@@ -82,8 +83,7 @@
     "mocha-tldr-reporter": "^1.0.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
-    "ts-node": "^6.0.3",
-    "tsconfig-paths": "^3.3.2",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
@@ -96,7 +96,6 @@
     "require": [
       "source-map-support/register",
       "ts-node/register",
-      "tsconfig-paths/register",
       "ignore-styles",
       "jsdom-global/register"
     ]

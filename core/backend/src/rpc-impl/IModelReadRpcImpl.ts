@@ -3,14 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64Set, assert, BeDuration } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken,
-  IModelVersion, ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData, ImageSourceFormat,
+  EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken, RpcInvocation,
+  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
+import { IModelDb, OpenParams } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
+import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
@@ -22,40 +23,21 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
   public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
-    const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const accessTokenObj = AccessToken.fromJson(accessToken);
-    const openParams = OpenParams.fixedVersion();
-
-    Logger.logTrace(loggingCategory, "Received open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
-
-    // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
-    const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
-
-    await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
-
-    if (qp.isPending) {
-      Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
-      throw new RpcPendingResponse();
-    }
-
-    deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
-
-    if (qp.isFulfilled) {
-      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => ({ ...iModelToken, pathname: qp.result!.briefcase.pathname }));
-      return qp.result!;
-    }
-
-    assert(qp.isRejected);
-    Logger.logTrace(loggingCategory, "Rejected open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
-    throw qp.error!;
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return OpenIModelDbMemoizer.openIModelDb(activityContext, AccessToken.fromJson(accessToken)!, iModelToken, OpenParams.fixedVersion());
   }
 
-  public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
-    IModelDb.find(iModelToken).close(AccessToken.fromJson(accessToken)!);
-    return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
+  public close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!);
+    return Promise.resolve(true);
   }
 
   public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rows: any[] = iModelDb.executeQuery(sql, bindings);
     Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
@@ -63,6 +45,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
@@ -80,11 +64,16 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryModelProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ModelProps[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const ids = await this.queryEntityIds(iModelToken, params);
+    activityContext.enter();
     return this.getModelProps(iModelToken, ids);
   }
 
   public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<ElementProps[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
@@ -99,13 +88,24 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ElementProps[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const ids = await this.queryEntityIds(iModelToken, params);
-    return this.getElementProps(iModelToken, ids);
+    activityContext.enter();
+    const res = this.getElementProps(iModelToken, ids);
+    return res;
   }
 
-  public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> { return IModelDb.find(iModelToken).queryEntityIds(params); }
+  public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    const res = IModelDb.find(iModelToken).queryEntityIds(params);
+    return res;
+  }
 
   public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const formatArray: any[] = [];
     for (const elementId of elementIds) {
@@ -116,6 +116,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getClassHierarchy(iModelToken: IModelToken, classFullName: string): Promise<string[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const classArray: string[] = [];
     while (true) {
@@ -130,6 +132,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async loadMetaDataForClassHierarchy(iModelToken: IModelToken, startClassName: string): Promise<EntityMetaDataProps[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     let classFullName: string = startClassName;
     const classArray: any[] = [];
@@ -145,6 +149,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const codeSpecs: any[] = [];
     IModelDb.find(iModelToken).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
@@ -154,25 +160,67 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateData> { return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId); }
-  public async readFontJson(iModelToken: IModelToken): Promise<any> { return IModelDb.find(iModelToken).readFontJson(); }
-  public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> { return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken)); }
-  public async attachChangeCache(iModelToken: IModelToken): Promise<void> { ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
+  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateData> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
+  }
+
+  public async readFontJson(iModelToken: IModelToken): Promise<any> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return IModelDb.find(iModelToken).readFontJson();
+  }
+
+  public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken));
+  }
+
+  public async attachChangeCache(iModelToken: IModelToken): Promise<void> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken));
+  }
+
   public async detachChangeCache(iModelToken: IModelToken): Promise<void> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const iModel: IModelDb = IModelDb.find(iModelToken);
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
   }
-  public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> { return IModelDb.find(iModelToken).requestSnap(connectionId, props); }
-  public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> { return IModelDb.find(iModelToken).cancelSnap(connectionId); }
-  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> { return IModelDb.loadNativeAsset(assetName); }
+
+  public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return IModelDb.find(iModelToken).requestSnap(activityContext, connectionId, props);
+  }
+
+  public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return IModelDb.find(iModelToken).cancelSnap(connectionId);
+  }
+
+  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
+    return IModelDb.loadNativeAsset(assetName);
+  }
+
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const el = IModelDb.find(iModelToken).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in an 8-byte prefix header. */
   public async getViewThumbnail(iModelToken: IModelToken, viewId: string): Promise<Uint8Array> {
+    const activityContext = RpcInvocation.current(this).context;
+    activityContext.enter();
     const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       return Promise.reject(new Error("no thumbnail"));

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
@@ -17,9 +17,10 @@ import { BriefcaseManager } from "../../BriefcaseManager";
 describe.skip("DebugHubIssues (#integration)", () => {
   let accessToken: AccessToken;
   const iModelRootDir = "d:\\temp\\IModelDumps\\";
+  const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
+    accessToken = await HubUtility.login(TestUsers.super, "QA");
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
@@ -30,18 +31,18 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.pushIModel(accessToken, projectId, pathname);
 
-    const iModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelDb = await IModelDb.open(actx, accessToken, projectId, iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
     const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
-    await iModelDb.pushChanges(accessToken!);
+    await iModelDb.pushChanges(actx, accessToken!);
 
     // Create a named version on the just uploaded change set
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, BriefcaseManager.imodelClient);
+    await BriefcaseManager.imodelClient.Versions().create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
@@ -57,8 +58,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "NodeJsTestProject";
-    const iModelName = "TestModel";
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadWriteTest";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
@@ -71,11 +72,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(accessToken);
+    iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to create a change set from a standalone iModel)", async () => {
@@ -96,11 +97,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(accessToken);
+    iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {

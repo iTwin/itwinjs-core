@@ -661,7 +661,7 @@ export class ClipShape extends ClipPrimitive {
 
   /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
   private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], cameraFocalLength?: number): boolean {
-    const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
+    const triangulatedPolygon = Triangulator.earcutSingleLoop(polygon);
     Triangulator.cleanupTriangulation(triangulatedPolygon);
     triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {   // For every facet in the triangulated polygon....
 

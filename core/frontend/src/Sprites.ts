@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @module Views */
 
-import { XYAndZ, Point2d } from "@bentley/geometry-core";
+import { XYAndZ, Point2d, Point3d } from "@bentley/geometry-core";
 import { ScreenViewport } from "./Viewport";
 import { DecorateContext } from "./ViewContext";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { ImageUtil } from "./ImageUtil";
+import { Overlay2dDecoration } from "./render/System";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -24,8 +25,6 @@ import { ImageUtil } from "./ImageUtil";
  * (an x,y point) and a Sprite to draw at that point. A Sprite
  * can be used many times by many SpriteLocations and a single SpriteLocation can
  * change both position and which Sprite is shown at that position over time.
- *
- * Sprites are defined from PNG files.
  *
  */
 export class Sprite {
@@ -50,11 +49,18 @@ export class Sprite {
     });
   }
 
+  private onLoaded(image: HTMLImageElement) { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }
+
   /** Initialize this Sprite from an ImageSource.
    * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the image from the ImageSource asynchronously.
    */
-  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }); }
+  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => this.onLoaded(image)); }
+
+  /** Initialize this Sprite from a URL
+   * @param url The url of an image to load for this Sprite.
+   */
+  public fromUrl(url: string): void { ImageUtil.fromUrl(url).then((image) => this.onLoaded(image)); }
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
@@ -84,11 +90,13 @@ export class IconSprites {
  * A Sprite location. Sprites generally move around on the screen and this object holds the current location
  * and current Sprite within a Viewport. SpriteLocations can be either inactive (not visible) or active.
  *
- * A SpriteLocation can also specify that a Sprite should be drawn partially transparent so that you can "see through" the Sprite.
+ * A SpriteLocation can also specify that a Sprite should be drawn partially transparent
  */
-export class SpriteLocation {
+export class SpriteLocation implements Overlay2dDecoration {
   private _viewport?: ScreenViewport;
-  private _div?: HTMLDivElement;
+  private _sprite?: Sprite;
+  private _alpha?: number;
+  public readonly origin = new Point3d();
   public get isActive(): boolean { return this._viewport !== undefined; }
 
   /**
@@ -99,28 +107,20 @@ export class SpriteLocation {
    * @param sprite  The Sprite to draw at this SpriteLocation
    * @param viewport The Viewport onto which the Sprite is drawn
    * @param locationWorld The position, in world coordinates
-   * @param opacity Optional opacity for the Sprite. Must be a number between 0 and 1.
+   * @param alpha Optional alpha for the Sprite. Must be a number between 0 (fully transparent) and 1 (fully opaque).
    */
-  public activate(sprite: Sprite, viewport: ScreenViewport, locationWorld: XYAndZ, opacity?: number): void {
+  public activate(sprite: Sprite, viewport: ScreenViewport, locationWorld: XYAndZ, alpha?: number): void {
     if (!sprite.isLoaded)
       return;
 
-    const locationView = viewport.worldToView(locationWorld);
-    const offset = sprite.offset;
-    const div = document.createElement("div");
-    const style = div.style;
-    style.position = "absolute";
-    style.left = (locationView.x - offset.x) + "px";
-    style.top = (locationView.y - offset.y) + "px";
-    if (undefined !== opacity) style.opacity = opacity.toString();
-    div.appendChild(sprite.image!);
-
-    this._div = div;
+    viewport.worldToView(locationWorld, this.origin);
+    this._sprite = sprite;
+    this._alpha = alpha;
     this._viewport = viewport;
     viewport.invalidateDecorations();
   }
 
-  /** Turn this SpriteLocation off so it will no longer show in its Viewport. */
+  /** Turn this SpriteLocation off so it will no longer show. */
   public deactivate() {
     if (!this.isActive)
       return;
@@ -128,9 +128,17 @@ export class SpriteLocation {
     this._viewport = undefined;
   }
 
-  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    const sprite = this._sprite!;
+    if (undefined !== this._alpha)
+      ctx.globalAlpha = this._alpha;
+
+    ctx.drawImage(sprite.image!, -sprite.offset.x, -sprite.offset.y);
+  }
+
+  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */
   public decorate(context: DecorateContext) {
     if (context.viewport === this._viewport)
-      context.addHtmlDecoration(this._div!);
+      context.addOverlay2dDecoration(this);
   }
 }

@@ -9,7 +9,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList } from "./render/System";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList, Overlay2dDecoration } from "./render/System";
 import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
@@ -57,6 +57,7 @@ export class DynamicsContext extends RenderContext {
 
 export class DecorateContext extends RenderContext {
   public decorationDiv: HTMLDivElement;
+  public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
     this.decorationDiv = vp.decorationDiv;
@@ -167,6 +168,12 @@ export class DecorateContext extends RenderContext {
         this._decorations.viewOverlay.push(decoration);
         break;
     }
+  }
+
+  public addOverlay2dDecoration(decoration: Overlay2dDecoration) {
+    if (undefined === this._decorations.overlay2d)
+      this._decorations.overlay2d = [];
+    this._decorations.overlay2d.push(decoration);
   }
 
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }

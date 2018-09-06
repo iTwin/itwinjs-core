@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 import { expect, spy } from "chai";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { PromiseContainer } from "@helpers/Promises";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import { PromiseContainer } from "@bentley/presentation-common/tests/_helpers/Promises";
+import { createRandomDescriptor } from "@bentley/presentation-common/tests/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import * as content from "@bentley/presentation-common/lib/content";
 import { KeySet, PageOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import ContentDataProvider, { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import { createRandomDescriptor } from "@helpers/random";
+import ContentDataProvider, { CacheInvalidationProps } from "../../lib/common/ContentDataProvider";
 
 /**
  * The Provider class is used to make protected ContentDataProvider

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PresentationError, PresentationStatus } from "@src/Error";
+import { PresentationError, PresentationStatus } from "../lib/Error";
 
 describe("PresentationError", () => {
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import { createRandomRuleset } from "@helpers/random";
+import { createRandomRuleset } from "@bentley/presentation-common/tests/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { Ruleset, PropertyGroupingValue, Rule, RuleTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";

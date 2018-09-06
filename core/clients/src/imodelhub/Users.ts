@@ -6,7 +6,7 @@
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { InstanceIdQuery } from "./Query";
 import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -157,8 +157,9 @@ export class UserStatisticsHandler {
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, imodelId: string,
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -170,13 +171,13 @@ export class UserStatisticsHandler {
 
     let userStatistics: UserStatistics[];
     if (query.isQueriedByIds) {
-      userStatistics = await this._handler.postQuery<UserStatistics>(UserStatistics, token,
+      userStatistics = await this._handler.postQuery<UserStatistics>(alctx, UserStatistics, token,
         this.getRelativeUrl(imodelId), query.getQueryOptions());
     } else {
-      userStatistics = await this._handler.getInstances<UserStatistics>(UserStatistics, token,
+      userStatistics = await this._handler.getInstances<UserStatistics>(alctx, UserStatistics, token,
         this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
-
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${imodelId}`);
     return userStatistics;
   }
@@ -257,17 +258,19 @@ export class UserInfoHandler {
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, imodelId: string, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let users: UserInfo[];
     if (query.isQueriedByIds) {
-      users = await this._handler.postQuery<UserInfo>(UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.postQuery<UserInfo>(alctx, UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     } else {
-      users = await this._handler.getInstances<UserInfo>(UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.getInstances<UserInfo>(alctx, UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Queried users for iModel ${imodelId}`);
 
     return users;

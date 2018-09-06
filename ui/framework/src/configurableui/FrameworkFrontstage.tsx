@@ -7,13 +7,13 @@ import * as React from "react";
 import { CSSProperties } from "react";
 
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, GhostOutlineProvider } from "./FrontstageComposer";
+import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageZone } from "./FrontstageZone";
 import { ContentLayout } from "./ContentLayout";
 
 import NZ_Zones from "@bentley/ui-ninezone/lib/zones/Zones";
-import NineZone from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import NineZone, { NineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 
 // -----------------------------------------------------------------------------
 // Frontstage React component
@@ -23,11 +23,10 @@ import NineZone from "@bentley/ui-ninezone/lib/zones/state/NineZone";
  */
 export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;
-  nineZone: NineZone;
+  nineZone: NineZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
-  ghostOutlineProvider: GhostOutlineProvider;
 }
 
 /** State for the FrameworkFrontstage component.
@@ -85,24 +84,38 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
       pointerEvents: "none",
     };
 
-    const zones = [1, 2, 3, 4, 6, 7, 8, 9];
+    const zones: WidgetZoneIndex[] = [1, 2, 3, 4, 6, 7, 8, 9];
+    const nineZone = new NineZone(this.props.nineZone);
     return (
       <div style={divStyle}>
         {this.doContentLayoutRender()}
 
         <NZ_Zones style={zonesStyle}>
           {
-            zones.map((zoneId) => (
-              <FrontstageZone
-                key={zoneId}
-                zoneState={FrontstageManager.NineZoneStateManagement.getZone(zoneId, this.props.nineZone)}
-                nineZone={this.props.nineZone}
-                widgetChangeHandler={this.props.widgetChangeHandler}
-                targetChangeHandler={this.props.targetChangeHandler}
-                zoneDefProvider={this.props.zoneDefProvider}
-                ghostOutlineProvider={this.props.ghostOutlineProvider}
-              />
-            ))
+            zones.map((zoneId) => {
+              const zone = nineZone.getWidgetZone(zoneId);
+              const isDragged = this.props.nineZone.draggingWidget && this.props.nineZone.draggingWidget.id === zoneId;
+              const lastPosition = isDragged ? this.props.nineZone.draggingWidget!.lastPosition : undefined;
+              const isUnmergeDrag = isDragged ? this.props.nineZone.draggingWidget!.isUnmerge : false;
+              const ghostOutline = zone.getGhostOutlineBounds();
+              const dropTarget = zone.getDropTarget();
+              return (
+                <FrontstageZone
+                  key={zoneId}
+                  zoneState={this.props.nineZone.zones[zoneId]}
+                  widgetChangeHandler={this.props.widgetChangeHandler}
+                  targetChangeHandler={this.props.targetChangeHandler}
+                  zoneDefProvider={this.props.zoneDefProvider}
+                  ghostOutline={ghostOutline}
+                  dropTarget={dropTarget}
+                  horizontalAnchor={zone.horizontalAnchor}
+                  verticalAnchor={zone.verticalAnchor}
+                  isDragged={isDragged}
+                  lastPosition={lastPosition}
+                  isUnmergeDrag={isUnmergeDrag}
+                />
+              );
+            })
           }
         </NZ_Zones>
       </div>

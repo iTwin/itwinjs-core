@@ -6,7 +6,7 @@ import { BlueButton } from "@bentley/bwc/lib/buttons/BlueButton";
 import Backstage from "@src/backstage/Backstage";
 import Item from "@src/backstage/Item";
 import Separator from "@src/backstage/Separator";
-import * as AlignCenter from "!!svg-react-loader!@bentley/svg-icons/icons/align-center.svg";
+import * as AlignCenter from "!!svg-react-loader!@bentley/svg-icons/icons/align/align-center-vertical.svg";
 
 export interface State {
   isOpen: boolean;
@@ -32,7 +32,7 @@ export default class BackstagePage extends React.Component<{}, State> {
         />
         <Item
           icon={
-            <i className="icon icon-align-justify" />
+            <i className="icon icon-align-align-top" />
           }
           label="Item2"
           isActive={this.state.activeItem === 2}
@@ -46,7 +46,7 @@ export default class BackstagePage extends React.Component<{}, State> {
         <Separator />
         <Item
           icon={
-            <i className="icon icon-align-right" />
+            <i className="icon icon-align-align-right" />
           }
           label="Item4"
           isActive={this.state.activeItem === 4}
@@ -54,7 +54,7 @@ export default class BackstagePage extends React.Component<{}, State> {
         />
         <Item
           icon={
-            <i className="icon icon-align-left" />
+            <i className="icon icon-align-align-left" />
           }
           label="Item5"
           isActive={this.state.activeItem === 5}
