@@ -1354,12 +1354,12 @@ export namespace IModelDb {
     }
 
     /** @hidden */
-    public getTileContent(treeId: string, tileId: string): Promise<string> {
+    public getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      return new Promise<string>((resolve, reject) => {
-        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, string>) => {
+      return new Promise<Uint8Array>((resolve, reject) => {
+        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
           else

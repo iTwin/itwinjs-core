@@ -263,9 +263,9 @@ export declare class NativeDgnDb {
    * Get the content (geometry) of a tile as a base-64-encoded string
    * @param treeId The ID of the tile tree
    * @param tileId The ID of the tile
-   * @param callback Function invoked with result of the call. In case of success, the result property will be the binary tile content as a base64-encoded s tring.
+   * @param callback Function invoked with result of the call. In case of success, the result property will be the binary tile content.
    */
-  public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, string>) => void): void;
+  public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
 
   /**
    * Insert an element.

@@ -588,6 +588,8 @@ export abstract class TileLoader {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
       blob = base64StringToUint8Array(geometry as string);
+    } else if (geometry instanceof Uint8Array) {
+      blob = geometry;
     } else if (geometry instanceof ArrayBuffer) {
       blob = new Uint8Array(geometry as ArrayBuffer);
     } else {
@@ -660,7 +662,7 @@ export class IModelTileLoader extends TileLoader {
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
     for (const tile of missingTiles.extractArray()) {
       tile.setIsQueued();
-      this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: string) => {
+      this._iModel.tiles.getTileContent(tile.root.constructTileId(tile.id)).then((content: Uint8Array) => {
         if (tile.isQueued)
           this.loadGraphics(tile, content, this._asClassifier);
       }).catch((_err: any) => {
