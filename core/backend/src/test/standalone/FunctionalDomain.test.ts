@@ -4,13 +4,23 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
+import { FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
+import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
 
-  it.only("should populate FunctionalModel", async () => {
+  before(() => {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("imodeljs-addon", LogLevel.Warning);
+    Logger.setLevel("imodeljs-backend", LogLevel.Warning);
+    Logger.setLevel("DgnCore", LogLevel.Warning);
+    Logger.setLevel("ECObjectsNative", LogLevel.Warning);
+    Logger.setLevel("ECDb", LogLevel.Warning);
+  });
+
+  it("should populate FunctionalModel", async () => {
     const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("FunctionalTest.bim", {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
@@ -19,18 +29,14 @@ describe("Functional Domain", () => {
       guid: new Guid(true),
     });
 
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("imodeljs-backend", LogLevel.Trace);
-    Logger.setLevel("DgnCore", LogLevel.Trace);
-    Logger.setLevel("ECObjectsNative", LogLevel.Trace);
-    Logger.setLevel("ECDb", LogLevel.Trace);
-
     // Import the Functional schema
     // TODO: Waiting for BIS Schemas to be available as NPM packages
-    await iModelDb.importSchema(path.join(__dirname, "../../../../../common/temp/node_modules/@bentley/imodeljs-native-platform-api/lib/@bentley/imodeljs-n_8-win32-x64/addon/Assets/ECSchemas/Domain/Functional.ecschema.xml"));
+    // await iModelDb.importSchema(path.join(__dirname, "../../../../../common/temp/node_modules/@bentley/imodeljs-native-platform-api/lib/@bentley/imodeljs-n_8-win32-x64/addon/Assets/ECSchemas/Domain/Functional.ecschema.xml"));
+    await Functional.importSchema(iModelDb);
     Functional.registerSchema();
     iModelDb.saveChanges("Import Functional schema");
+
+    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
     await iModelDb.importSchema(path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
     iModelDb.saveChanges("Import TestFunctional schema");
@@ -53,6 +59,23 @@ describe("Functional Domain", () => {
     }) as FunctionalModel;
     const modelId: Id64 = iModelDb.models.insertModel(model);
     assert.isTrue(modelId.isValid);
+
+    const breakdownProps: FunctionalElementProps = {
+      classFullName: "TestFunctional:Breakdown",
+      model: modelId,
+      userLabel: "Breakdown1",
+    };
+    const breakdownId: Id64 = iModelDb.elements.insertElement(breakdownProps);
+    assert.isTrue(breakdownId.isValid);
+
+    const componentProps: FunctionalElementProps = {
+      classFullName: "TestFunctional:Component",
+      model: modelId,
+      userLabel: "Component1",
+    };
+    const componentId: Id64 = iModelDb.elements.insertElement(componentProps);
+    assert.isTrue(componentId.isValid);
+
     iModelDb.saveChanges("Insert Functional elements");
     iModelDb.closeStandalone();
   });
