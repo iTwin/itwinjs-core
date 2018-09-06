@@ -21,32 +21,38 @@ Specificaly, a bridge must:
 
 ## Example
 
-* Bridge imports:
+A bridge would import the following packages:
+
 ``` ts
 [[include:Bridge.imports.example-code]]
 ```
 
-* The bridge must obtain an AccessToken (iModelHub):
+The bridge must obtain an AccessToken. Here is an example for Connect/iModelHub:
+
 ``` ts
 [[include:Bridge.getAccessToken.example-code]]
 ```
 
-* If necessary, the bridge may create an iModel in the server (iModelHub only):
+If necessary, a bridge working with iModelHub may create an iModel from scratch. (This does not apply to bridges that work with iModelBank).
+
 ``` ts
 [[include:Bridge.create-imodel.example-code]]
 ```
 
-* The bridge converts source data for the very first time:
+When the bridge runs for the very first time, it would look like this:
+
 ``` ts
 [[include:Bridge.firstTime.example-code]]
 ```
 
-* Importing a schema and bootstrapping definitions, such as categories:
+Importing a schema and bootstrapping definitions would look like this:
+
 ``` ts
 [[include:IModelDb.importSchema]]
 ```
 
-* A simple example of a fictitious source data format:
+Here is a simple example of a fictitious source data format:
+
 ``` ts
 [[include:Bridge.source-data.example-code]]
 ```
