@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import DefaultStateManager, { StateManager } from "@src/zones/state/Manager";
-import { TargetType } from "@src/zones/state/Target";
-import { NineZoneProps } from "@src/zones/state/NineZone";
-import { HorizontalAnchor } from "@src/widget/Stacked";
+import DefaultStateManager, { StateManager } from "../../../src/zones/state/Manager";
+import { TargetType } from "../../../src/zones/state/Target";
+import { NineZoneProps } from "../../../src/zones/state/NineZone";
+import { HorizontalAnchor } from "../../../src/widget/Stacked";
 import TestProps from "./TestProps";
 
 // use expect, because dirty-chai ruins the should.exist() helpers

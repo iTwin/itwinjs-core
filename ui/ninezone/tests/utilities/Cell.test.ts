@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import Cell from "@src/utilities/Cell";
+import Cell from "../../src/utilities/Cell";
 
 describe("Cell", () => {
   it("should specify row and col in constructor", () => {

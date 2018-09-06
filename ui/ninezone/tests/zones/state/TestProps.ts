@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NineZoneProps, getDefaultProps } from "@src/zones/state/NineZone";
-import { HorizontalAnchor } from "@src/widget/Stacked";
+import { NineZoneProps, getDefaultProps } from "../../../src/zones/state/NineZone";
+import { HorizontalAnchor } from "../../../src/widget/Stacked";
 
 export namespace TestProps {
   export const defaultProps = getDefaultProps();

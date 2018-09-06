@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import TestProps from "./TestProps";
-import { TargetType } from "@src/zones/state/Target";
-import NineZone, { NineZoneProps } from "@src/zones/state/NineZone";
-import { DropTarget } from "@src/zones/state/Zone";
+import { TargetType } from "../../../src/zones/state/Target";
+import NineZone, { NineZoneProps } from "../../../src/zones/state/NineZone";
+import { DropTarget } from "../../../src/zones/state/Zone";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;

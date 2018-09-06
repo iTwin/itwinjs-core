@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import TestProps from "./TestProps";
-import NineZone from "@src/zones/state/NineZone";
+import NineZone from "../../../src/zones/state/NineZone";
 
 describe("Widget", () => {
   describe("equals", () => {
