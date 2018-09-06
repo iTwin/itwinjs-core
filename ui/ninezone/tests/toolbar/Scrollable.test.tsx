@@ -3,11 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import Scrollable, { ScrollableState } from "../../src/toolbar/Scrollable";
 import { Direction } from "../../src/utilities/Direction";
 import Chevron from "../../src/toolbar/scroll/Chevron";
 import { ToolbarPanelAlignment } from "../../src/toolbar/Toolbar";
+
+// tslint:disable-next-line:variable-name
+const Item: React.StatelessComponent = () => {
+  return <div />;
+};
 
 describe("<Scrollable />", () => {
   it("should render", () => {
@@ -36,10 +40,10 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={3}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
+            <Item />
+            <Item />
+            <Item />
+            <Item />
           </>
         }
       />,
@@ -56,10 +60,10 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
+            <Item />
+            <Item />
+            <Item />
+            <Item />
           </>
         }
       />,
@@ -96,11 +100,11 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
+            <Item />
+            <Item />
+            <Item />
+            <Item />
+            <Item />
           </>
         }
       />,
