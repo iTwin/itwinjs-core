@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Id64Set } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import {
   IModelTileRpcInterface,
@@ -19,20 +18,9 @@ import {
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async getTileTreeProps(iModelToken: IModelToken, ids: Id64Set): Promise<TileTreeProps[]> {
+  public async getTileTreeProps(iModelToken: IModelToken, id: string): Promise<TileTreeProps> {
     const db = IModelDb.find(iModelToken);
-    const result: TileTreeProps[] = [];
-    for (const id of ids) {
-      try {
-        const props = db.tiles.getTileTreeProps(id);
-        result.push(props);
-      } catch (error) {
-        if (1 === ids.size)
-          throw error;
-      }
-    }
-
-    return result;
+    return db.tiles.requestTileTreeProps(id);
   }
 
   public async getChildrenProps(iModelToken: IModelToken, parentId: TileId): Promise<TileProps[]> {

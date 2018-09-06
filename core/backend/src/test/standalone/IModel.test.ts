@@ -297,9 +297,9 @@ describe("iModel", () => {
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
   });
 
-  it("should find a tile tree for a geometric model", () => {
+  it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const tree = imodel1.tiles.getTileTreeProps("0x1c");
+    const tree = await imodel1.tiles.requestTileTreeProps("0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");

@@ -589,7 +589,7 @@ export namespace IModelConnection {
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
     public async getChildrenProps(parentId: TileId): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getChildrenProps(this._iModel.iModelToken, parentId); }
     public async getTileContent(id: TileId): Promise<string> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, id); }
   }

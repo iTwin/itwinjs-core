@@ -1340,19 +1340,19 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public getTileTreeJson(id: string): any {
+    public requestTileTreeProps(id: string): Promise<TileTreeProps> {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTileTree(id);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + id);
-
-      return result!;
+      return new Promise<TileTreeProps>((resolve, reject) => {
+        this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + id))
+          else
+            resolve(ret.result! as TileTreeProps);
+        });
+      });
     }
-
-    /** @hidden */
-    public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
 
     /** @hidden */
     public getChildrenProps(treeId: string, parentId: string): TileProps[] {
