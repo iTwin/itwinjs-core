@@ -64,10 +64,10 @@ export class Tile implements IDisposable {
   public readonly parent: Tile | undefined;
   public readonly depth: number;
   public loadStatus: Tile.LoadStatus;
-  public readonly contentId: string;
+  public contentId: string;
   public readonly center: Point3d;
   public readonly radius: number;
-  protected readonly _maximumSize: number;
+  protected _maximumSize: number;
   protected _isLeaf: boolean;
   protected _childrenLastUsed: BeTimePoint;
   protected _childrenLoadStatus: TileTree.LoadStatus;
@@ -130,13 +130,22 @@ export class Tile implements IDisposable {
 
   public setGraphic(graphic: RenderGraphic | undefined, isLeaf?: boolean, contentRange?: ElementAlignedBox3d, sizeMultiplier?: number): void {
     this._graphic = graphic;
-    if (undefined !== isLeaf) {
+    if (undefined === graphic)
+      this._maximumSize = 0;
+    else if (0 === this._maximumSize)
+      this._maximumSize = 512;
+
+    if (undefined !== isLeaf && isLeaf !== this._isLeaf) {
       this._isLeaf = isLeaf;
       this.unloadChildren(BeTimePoint.now());
     }
 
-    if (undefined !== sizeMultiplier)
+    if (undefined !== sizeMultiplier && sizeMultiplier !== this._sizeMultiplier) {
       this._sizeMultiplier = sizeMultiplier;
+      this.contentId = this.contentId.substring(0, this.contentId.lastIndexOf("/") + 1) + sizeMultiplier;
+      if (undefined !== this._children && this._children.length > 1)
+        this.unloadChildren(BeTimePoint.now());
+    }
 
     if (undefined !== contentRange)
       this._contentRange = contentRange;
@@ -643,6 +652,26 @@ export abstract class TileLoader {
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
 }
 
+function bisectRange3d(range: Range3d, takeLow: boolean): void {
+  const diag = range.diagonal();
+  const pt = takeLow ? range.high : range.low;
+  if (diag.x > diag.y && diag.x > diag.z)
+    pt.x = (range.low.x + range.high.x) / 2.0;
+  else if (diag.y > diag.z)
+    pt.y = (range.low.y + range.high.y) / 2.0;
+  else
+    pt.z = (range.low.z + range.high.z) / 2.0;
+}
+
+function bisectRange2d(range: Range3d, takeLow: boolean): void {
+  const diag = range.diagonal();
+  const pt = takeLow ? range.high : range.low;
+  if (diag.x > diag.y)
+    pt.x = (range.low.x + range.high.x) / 2.0;
+  else
+    pt.y = (range.low.y + range.high.y) / 2.0;
+}
+
 export class IModelTileLoader extends TileLoader {
   constructor(private _iModel: IModelConnection, private _asClassifier: boolean) { super(); }
 
@@ -652,9 +681,61 @@ export class IModelTileLoader extends TileLoader {
   protected static _viewFlagOverrides = new ViewFlag.Overrides();
   public get viewFlagOverrides() { return IModelTileLoader._viewFlagOverrides; }
 
-  public async getChildrenProps(_parent: Tile): Promise<TileProps[]> {
-    // ###TODO...
-    return Promise.resolve([]);
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    const kids: TileProps[] = [];
+
+    // Leaf nodes have no children.
+    if (parent.isLeaf)
+      return kids;
+
+    // One child, same range as parent, higher-resolution.
+    if (parent.hasSizeMultiplier) {
+      const sizeMultiplier = 2 * parent.sizeMultiplier;
+      let contentId = parent.contentId;
+      const lastSlashPos = contentId.lastIndexOf("/");
+      assert(-1 !== lastSlashPos);
+      contentId = contentId.substring(0, lastSlashPos + 1) + sizeMultiplier;
+      kids.push({
+        contentId,
+        range: parent.range,
+        contentRange: parent.contentRange,
+        sizeMultiplier,
+        isLeaf: false,
+        maximumSize: 512,
+      });
+
+      return kids;
+    }
+
+    // Eight children sub-dividing parent's range
+    // ###TODO: Only produce 4 for 2d tile trees...
+    const parentIdParts = parent.contentId.split("/");
+    assert(5 === parentIdParts.length);
+
+    const pI = parseInt(parentIdParts[1], 10);
+    const pJ = parseInt(parentIdParts[2], 10);
+    const pK = parseInt(parentIdParts[3], 10);
+
+    const bisectRange = parent.root.is3d ? bisectRange3d : bisectRange2d;
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        for (let k = 0; k < 2; k++) {
+          const range = parent.range.clone();
+          bisectRange(range, 0 === i);
+          bisectRange(range, 0 === j);
+          bisectRange(range, 0 === k);
+
+          const cI = pI * 2 + i;
+          const cJ = pJ * 2 + j;
+          const cK = pK * 2 + k;
+          const childId = (parent.depth + 1) + "/" + cI + "/" + cJ + "/" + cK + "/1";
+
+          kids.push({ contentId: childId, range, maximumSize: 512 });
+        }
+      }
+    }
+
+    return kids;
   }
 
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
