@@ -105,6 +105,6 @@
   },
   "rulesDirectory": [
     "./node_modules/tslint-consistent-codestyle/rules",
-    "./tslint-rules"
+    "./src/tslint-rules"
   ]
 }
