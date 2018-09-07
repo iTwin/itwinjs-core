@@ -709,8 +709,7 @@ export class IModelTileLoader extends TileLoader {
       return kids;
     }
 
-    // Eight children sub-dividing parent's range
-    // ###TODO: Only produce 4 for 2d tile trees...
+    // Sub-divide parent's range into 4 (for 2d trees) or 8 (for 3d trees) child tiles.
     const parentIdParts = parent.contentId.split("/");
     assert(5 === parentIdParts.length);
 
@@ -718,14 +717,16 @@ export class IModelTileLoader extends TileLoader {
     const pJ = parseInt(parentIdParts[2], 10);
     const pK = parseInt(parentIdParts[3], 10);
 
-    const bisectRange = parent.root.is3d ? bisectRange3d : bisectRange2d;
+    const is2d = parent.root.is2d;
+    const bisectRange = is2d ? bisectRange2d : bisectRange3d;
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
-        for (let k = 0; k < 2; k++) {
+        for (let k = 0; k < (is2d ? 1 : 2); k++) {
           const range = parent.range.clone();
           bisectRange(range, 0 === i);
           bisectRange(range, 0 === j);
-          bisectRange(range, 0 === k);
+          if (!is2d)
+            bisectRange(range, 0 === k);
 
           const cI = pI * 2 + i;
           const cJ = pJ * 2 + j;
