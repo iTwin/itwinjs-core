@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
@@ -15,6 +15,8 @@ import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
+
+const actx = new ActivityLoggingContext("");
 
 /** Class for simple test timing */
 export class Timer {
@@ -110,6 +112,15 @@ export class DisableNativeAssertions implements IDisposable {
 
 export class IModelTestUtils {
 
+  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
+  //   try {
+  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
+  //     BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, existingid);
+  //   } catch (_err) {
+  //   }
+  //   return BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, name, seedFile);
+  // }
+
   public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
     const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
@@ -122,7 +133,7 @@ export class IModelTestUtils {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       BriefcaseManager.setClientFromIModelTokenContext(testProjectId, iModelInfo.id);
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");

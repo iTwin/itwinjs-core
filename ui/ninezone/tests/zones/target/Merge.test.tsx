@@ -3,15 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import Merge from "../../../src/zones/target/Merge";
 
 describe("<Merge />", () => {
   it("should render", () => {
-    mount(<Merge columns={1} rows={1} cells={[]} />);
+    mount(<Merge />);
   });
 
   it("renders correctly", () => {
-    shallow(<Merge columns={1} rows={1} cells={[]} />).should.matchSnapshot();
+    shallow(<Merge />).should.matchSnapshot();
   });
 });

@@ -4,7 +4,16 @@ To insert a new [Model]($backend) into an iModelDb,
 1. Create and insert the modeled element.
 1. Create and insert the model, refering to the modeled element.
 
-*Example:*
+Here are some examples:
+
+## PhysicalModel
+
 ``` ts
 [[include:IModelDb.Models.createModel.example-code]]
+```
+
+## DefinitionModel
+
+``` ts
+[[include:insertDefinitionModel.example-code]]
 ```

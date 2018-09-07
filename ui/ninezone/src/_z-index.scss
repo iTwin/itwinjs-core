@@ -1,7 +1,7 @@
 @import "_helpers";
 
 // Order matters, last is top-most on screen.
-$nz-internal-z-index-layers: content, zones, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbarHistory, toolbarPanel, message, dialog, tooltip;
+$nz-internal-z-index-layers: content, zones, dragged-widget, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbarHistory, toolbarPanel, message, dialog, tooltip;
 
 $nz-z-index-step: 1000;
 

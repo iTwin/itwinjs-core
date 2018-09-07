@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+
+## 0.123.0
+Wed, 05 Sep 2018 17:14:50 GMT
+
+### Updates
+
+- Fix IModelToken not being found in RPC requests
 
 ## 0.122.0
 Tue, 28 Aug 2018 12:25:19 GMT

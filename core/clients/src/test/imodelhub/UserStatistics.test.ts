@@ -11,7 +11,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub";
 import { TestUsers } from "../TestConfig";
-import { IModelHubStatus } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -61,6 +61,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
   const imodelName = "imodeljs-clients Statistics test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
+  const actx = new ActivityLoggingContext("");
 
   const user1BriefcasesCount = 2;
   const user1OwnedLocksCount = 1;
@@ -103,7 +104,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId], [user1BriefcasesCount]), textQuery);
 
-    const briefcasesCount = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId, query))[0];
+    const briefcasesCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId, query))[0];
 
     chai.assert(briefcasesCount);
     chai.expect(briefcasesCount.briefcasesCount).to.be.equal(user1BriefcasesCount);
@@ -116,7 +117,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId], undefined,
       [user1OwnedLocksCount]), textQuery);
 
-    const ownedLocksCount = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId, query))[0];
+    const ownedLocksCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId, query))[0];
 
     chai.assert(ownedLocksCount);
     chai.expect(ownedLocksCount.ownedLocksCount).to.be.equal(user1OwnedLocksCount);
@@ -129,7 +130,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId], undefined,
       undefined, [user1PushedChangesetsCount]), textQuery);
 
-    const pushedChangesetsCount = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId,
+    const pushedChangesetsCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId,
       query))[0];
 
     chai.assert(pushedChangesetsCount);
@@ -143,7 +144,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId], undefined,
       undefined, undefined, ["date"]), textQuery);
 
-    const lastChangeSetPushDate = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId,
+    const lastChangeSetPushDate = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId,
       query))[0];
 
     chai.assert(lastChangeSetPushDate);
@@ -160,7 +161,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId], undefined,
       undefined, [user1PushedChangesetsCount], ["date"]), textQuery);
 
-    const changesetStatistics = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId,
+    const changesetStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId,
       query))[0];
 
     chai.assert(changesetStatistics);
@@ -176,7 +177,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(iModelId, generateUsersStatistics(1, [accessTokens[0].getUserProfile()!.userId],
       [user1BriefcasesCount], [user1OwnedLocksCount]), textQuery);
 
-    const briefcasesLocksStatistics = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId,
+    const briefcasesLocksStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId,
       query))[0];
 
     chai.assert(briefcasesLocksStatistics);
@@ -192,7 +193,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [accessTokens[0].getUserProfile()!.userId, accessTokens[1].getUserProfile()!.userId],
       [user1BriefcasesCount, user2BriefcasesCount]), textQuery);
 
-    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId, query));
+    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId, query));
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -210,7 +211,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [accessTokens[0].getUserProfile()!.userId, accessTokens[1].getUserProfile()!.userId],
       undefined, undefined, [user1PushedChangesetsCount, user2PushedChangesetsCount]));
 
-    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId, query));
+    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId, query));
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -228,7 +229,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [user1OwnedLocksCount, user2OwnedLocksCount], [user1PushedChangesetsCount, user2PushedChangesetsCount]),
       textQuery);
 
-    const iModelStatistics = await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId);
+    const iModelStatistics = await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId);
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -244,7 +245,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   it("should fail to get user statistics without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Users().Statistics().get(accessTokens[0], iModelId, new UserStatisticsQuery().byIds([]));
+      await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], iModelId, new UserStatisticsQuery().byIds([]));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

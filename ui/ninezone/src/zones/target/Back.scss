@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "../../_prefix";
+
+.nz-zones-target-back {
+  > .nz-arrow {
+    @include nz-backface-visibility(hidden);
+  }
+
+  @mixin nz-arrow($zone, $rotation) {
+    &.nz-zone-#{$zone} {
+      > .nz-arrow {
+        transform: rotateZ($rotation * 1deg);
+      }
+    }
+  }
+
+  @include nz-arrow(6, 45 * 0);
+  @include nz-arrow(9, 45 * 1);
+  @include nz-arrow(8, 45 * 2);
+  @include nz-arrow(7, 45 * 3);
+  @include nz-arrow(4, 45 * 4);
+  @include nz-arrow(1, 45 * 5);
+  @include nz-arrow(2, 45 * 6);
+  @include nz-arrow(3, 45 * 7);
+}

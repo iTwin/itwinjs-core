@@ -5,7 +5,7 @@
 
 import { AccessToken, IModelClient, ChangeSet, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
@@ -86,7 +86,7 @@ export class IModelVersion {
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
    */
-  public evaluateChangeSet(accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
+  public evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
     if (this._first)
       return Promise.resolve("");
 
@@ -95,27 +95,27 @@ export class IModelVersion {
     }
 
     if (this._latest) {
-      return IModelVersion.getLatestChangeSetId(imodelClient, accessToken, iModelId);
+      return IModelVersion.getLatestChangeSetId(alctx, imodelClient, accessToken, iModelId);
     }
 
     if (this._versionName) {
-      return IModelVersion.getChangeSetFromNamedVersion(imodelClient, accessToken, iModelId, this._versionName);
+      return IModelVersion.getChangeSetFromNamedVersion(alctx, imodelClient, accessToken, iModelId, this._versionName);
     }
 
     return Promise.reject(new IModelError(BentleyStatus.ERROR, "Invalid version"));
   }
 
   /** Gets the last change set that was applied to the imodel */
-  private static async getLatestChangeSetId(imodelClient: IModelClient, accessToken: AccessToken, iModelId: string): Promise<string> {
-    const changeSets: ChangeSet[] = await imodelClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().top(1).latest());
+  private static async getLatestChangeSetId(alctx: ActivityLoggingContext, imodelClient: IModelClient, accessToken: AccessToken, iModelId: string): Promise<string> {
+    const changeSets: ChangeSet[] = await imodelClient.ChangeSets().get(alctx, accessToken, iModelId, new ChangeSetQuery().top(1).latest());
     // todo: Need a more efficient iModel Hub API to get this information from the Hub.
 
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
   /** Get the change set from the specified named version */
-  private static async getChangeSetFromNamedVersion(imodelClient: IModelClient, accessToken: AccessToken, iModelId: string, versionName: string): Promise<string> {
-    const versions = await imodelClient.Versions().get(accessToken, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
+  private static async getChangeSetFromNamedVersion(alctx: ActivityLoggingContext, imodelClient: IModelClient, accessToken: AccessToken, iModelId: string, versionName: string): Promise<string> {
+    const versions = await imodelClient.Versions().get(alctx, accessToken, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId) {
       return Promise.reject(new IModelError(BentleyStatus.ERROR));

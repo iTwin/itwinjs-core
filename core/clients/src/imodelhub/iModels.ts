@@ -8,7 +8,7 @@ import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -168,11 +168,12 @@ class SeedFileHandler {
    * @param query Optional query object to filter the queried SeedFiles or select different data from them.
    * @returns Resolves to the seed file.
    */
-  public async get(token: AccessToken, imodelId: string, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying seed files for iModel ${imodelId}`);
 
-    const seedFiles = await this._handler.getInstances<SeedFile>(SeedFile, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
-
+    const seedFiles = await this._handler.getInstances<SeedFile>(alctx, SeedFile, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Queried ${seedFiles.length} seed files for iModel ${imodelId}`);
 
     return seedFiles;
@@ -187,7 +188,8 @@ class SeedFileHandler {
    * @param seedPathname Pathname of the SeedFile to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadSeedFile(token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+  public async uploadSeedFile(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
 
     const seedFile = new SeedFile();
@@ -196,16 +198,16 @@ class SeedFileHandler {
     if (seedFileDescription)
       seedFile.fileDescription = seedFileDescription;
 
-    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(SeedFile, token, this.getRelativeUrl(imodelId), seedFile);
-
-    await this._fileHandler!.uploadFile(createdSeedFile.uploadUrl!, seedPathname, progressCallback);
-
+    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(alctx, SeedFile, token, this.getRelativeUrl(imodelId), seedFile);
+    alctx.enter();
+    await this._fileHandler!.uploadFile(alctx, createdSeedFile.uploadUrl!, seedPathname, progressCallback);
+    alctx.enter();
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
     createdSeedFile.isUploaded = true;
 
-    const confirmSeedFile = await this._handler.postInstance<SeedFile>(SeedFile, token, this.getRelativeUrl(imodelId, createdSeedFile.wsgId), createdSeedFile);
-
+    const confirmSeedFile = await this._handler.postInstance<SeedFile>(alctx, SeedFile, token, this.getRelativeUrl(imodelId, createdSeedFile.wsgId), createdSeedFile);
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Uploaded seed file ${seedFile.wsgId} to iModel ${imodelId}`);
 
     return confirmSeedFile;
@@ -267,13 +269,14 @@ export class IModelHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an IModelRepository with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Querying iModels in project ${contextId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
-    const imodels = await this._handler.getInstances<IModelRepository>(IModelRepository, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
-
+    const imodels = await this._handler.getInstances<IModelRepository>(alctx, IModelRepository, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${contextId}`);
 
     return imodels;
@@ -288,7 +291,8 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(token: AccessToken, contextId: string, imodelId: string): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodelId: string): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${contextId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("contextId", contextId);
@@ -299,11 +303,11 @@ export class IModelHandler {
       const iModelRepository = new IModelRepository();
       iModelRepository.wsgId = imodelId;
       iModelRepository.changeState = "deleted";
-      await this._handler.deleteInstance(token, this.getRelativeUrl(contextId, imodelId), iModelRepository);
+      await this._handler.deleteInstance(alctx, token, this.getRelativeUrl(contextId, imodelId), iModelRepository);
     } else {
-      await this._handler.delete(token, this.getRelativeUrl(contextId, imodelId));
+      await this._handler.delete(alctx, token, this.getRelativeUrl(contextId, imodelId));
     }
-
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Deleted iModel with id ${imodelId} from project ${contextId}`);
   }
 
@@ -315,7 +319,8 @@ export class IModelHandler {
    * @param iModelName Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
    */
-  private async createIModelInstance(token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<IModelRepository> {
+  private async createIModelInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<IModelRepository> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Creating iModel with name ${iModelName} in project ${projectId}`);
 
     let imodel: IModelRepository;
@@ -325,9 +330,11 @@ export class IModelHandler {
       iModel.description = description;
 
     try {
-      imodel = await this._handler.postInstance<IModelRepository>(IModelRepository, token, this.getRelativeUrl(projectId), iModel);
+      imodel = await this._handler.postInstance<IModelRepository>(alctx, IModelRepository, token, this.getRelativeUrl(projectId), iModel);
+      alctx.enter();
       Logger.logTrace(loggingCategory, `Created iModel instance with name ${iModelName} in project ${projectId}`);
     } catch (err) {
+      alctx.enter();
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
         Logger.logWarning(loggingCategory, `Can not create iModel: ${err.message}`);
 
@@ -343,8 +350,8 @@ export class IModelHandler {
 
       Logger.logInfo(loggingCategory, `Querying iModel by name ${iModelName} in project ${projectId}`);
 
-      const imodels = await this.get(token, projectId, new IModelQuery().byName(iModelName));
-
+      const imodels = await this.get(alctx, token, projectId, new IModelQuery().byName(iModelName));
+      alctx.enter();
       Logger.logTrace(loggingCategory, `Queried iModel by name ${iModelName} in project ${projectId}`);
 
       if (imodels.length > 0) {
@@ -367,8 +374,9 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async getInitializationState(token: AccessToken, imodelId: string): Promise<InitializationState> {
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(token, imodelId, new SeedFileQuery().latest());
+  public async getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string): Promise<InitializationState> {
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(alctx, token, imodelId, new SeedFileQuery().latest());
+    alctx.enter();
     if (seedFiles.length < 1)
       return Promise.reject(new IModelHubError(IModelHubStatus.FileDoesNotExist));
 
@@ -392,9 +400,10 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(token: AccessToken, contextId: string, name: string, pathName: string,
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
     description?: string, progressCallback?: (progress: ProgressInfo) => void,
     timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModelRepository> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Creating iModel in project ${contextId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("contextId", contextId);
@@ -410,21 +419,23 @@ export class IModelHandler {
     if (!this._fileHandler.exists(pathName) || this._fileHandler.isDirectory(pathName))
       return Promise.reject(IModelHubClientError.fileNotFound());
 
-    const iModel = await this.createIModelInstance(token, contextId, name, description);
+    const iModel = await this.createIModelInstance(alctx, token, contextId, name, description);
+    alctx.enter();
 
     try {
-      await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description, progressCallback);
+      await this._seedFileHandler.uploadSeedFile(alctx, token, iModel.wsgId, pathName, description, progressCallback);
     } catch (err) {
-      await this.delete(token, contextId, iModel.wsgId);
+      await this.delete(alctx, token, contextId, iModel.wsgId);
       return Promise.reject(err);
     }
+    alctx.enter();
 
     const errorMessage = "Cannot upload SeedFile " + pathName;
     const retryDelay = timeOutInMilliseconds / 10;
     for (let retries = 10; retries > 0; --retries) {
       try {
-        const initState = await this.getInitializationState(token, iModel.wsgId);
-
+        const initState = await this.getInitializationState(alctx, token, iModel.wsgId);
+        alctx.enter();
         if (initState === InitializationState.Successful) {
           Logger.logTrace(loggingCategory, `Created iModel with id ${iModel.wsgId} in project ${contextId}`);
           iModel.initialized = true;
@@ -438,7 +449,9 @@ export class IModelHandler {
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        alctx.enter();
       } catch (err) {
+        alctx.enter();
         Logger.logWarning(loggingCategory, errorMessage);
         return Promise.reject(err);
       }
@@ -456,7 +469,8 @@ export class IModelHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async download(token: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    alctx.enter();
     Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -468,13 +482,14 @@ export class IModelHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubClientError.fileHandler());
 
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(token, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(alctx, token, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
+    alctx.enter();
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       return Promise.reject(IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file."));
 
-    await this._fileHandler.downloadFile(seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
-
+    await this._fileHandler.downloadFile(alctx, seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
+    alctx.enter();
     Logger.logTrace(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
   }
 }

@@ -11,7 +11,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import "./IModelCard.scss";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 import { Id64Props } from "@bentley/bentleyjs-core";
-import { Popup, Position} from "./Popup";
+import { Popup, Position} from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
 
 export interface IModelCardProps {
@@ -41,7 +41,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
 
   constructor(props: IModelCardProps, context?: any) {
     super(props, context);
-    this.state = { waitingForThumbnail: false, showViews: false, showOptions: false,      showPopupTest: false };
+    this.state = { waitingForThumbnail: false, showViews: false, showOptions: false, showPopupTest: false };
   }
 
   public static defaultProps: Partial<IModelCardProps> = {
@@ -72,8 +72,14 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showOptions: !this.state.showOptions });
   }
 
-  private _handleOnOutsideClick = () => {
+  private _onClose = () => {
+    // alert ("on closing imodelcard");
     this.setState((_prevState) => ({ showOptions: false }));
+  }
+
+  private _onOpen = () => {
+    // alert ("on open imodelcard");
+    this.setState((_prevState) => ({ showOptions: true }));
   }
 
   private _onViewsClose = () => {
@@ -101,6 +107,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onCloseOptions = () => {
+    // alert ("on close options");
     this.setState({ showOptions: false });
   }
 
@@ -153,9 +160,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
           </div>
           <div className="imodel-card-name">
             <span className="text">{this.props.iModel.name}</span>
-            <div className="options">
+            <div className="options" >
               <span className="icon icon-more-2" onClick={this._onShowOptions}></span>
-              <Popup isShown={this.state.showOptions} position={Position.BottomRight} onClose={this._handleOnOutsideClick}>
+              <Popup isShown={this.state.showOptions} position={Position.BottomRight}
+                    onOpen={this._onOpen} onClose={this._onClose}>
                 <ul className="options-dropdown">
                   <li onClick={this._onViewsClicked}><span className="icon icon-visibility"/>Views</li>
                   <li onClick={this._onPopupTestClicked}><span className="icon icon-punch-list"/>Details</li>

@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class TestData {
   public static user = {
@@ -25,17 +26,19 @@ export class TestData {
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestData.user.email, TestData.user.password);
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(alctx, TestData.user.email, TestData.user.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(alctx, authToken!);
     assert(accessToken);
 
     return accessToken;
   }
 
   public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
-    const project: Project = await TestData.connectClient.getProject(accessToken, {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const project: Project = await TestData.connectClient.getProject(alctx, accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
@@ -44,7 +47,8 @@ export class TestData {
   }
 
   public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModels = await TestData.imodelClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const iModels = await TestData.imodelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

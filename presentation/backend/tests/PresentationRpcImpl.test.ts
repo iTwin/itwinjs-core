@@ -26,6 +26,7 @@ import PresentationManager from "../lib/PresentationManager";
 import PresentationRpcImpl from "../lib/PresentationRpcImpl";
 import Presentation from "../lib/Presentation";
 import "./IModelHostSetup";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 describe("PresentationRpcImpl", () => {
 
@@ -69,6 +70,8 @@ describe("PresentationRpcImpl", () => {
       testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
       IModelDb.find = () => testData.imodelMock.object;
       impl = new PresentationRpcImpl();
+      const actx = new ActivityLoggingContext("");
+      actx.enter();
     });
 
     it("throws when using invalid imodel token", async () => {

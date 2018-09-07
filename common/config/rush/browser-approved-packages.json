@@ -250,6 +250,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "raf",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
@@ -307,7 +311,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "superagent",
