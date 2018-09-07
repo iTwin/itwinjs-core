@@ -7,7 +7,7 @@ import { Point3d, Point2d, XAndY, Transform, Vector3d } from "@bentley/geometry-
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
-import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager } from "./ElementLocateManager";
+import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
 import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
@@ -460,17 +460,18 @@ export class AccuSnap {
         continue;
 
       // Pass the snap path instead of the hit path in case a filter modifies the path contents.
-      let filtered = false;
+      let filterStatus = LocateFilterStatus.Accept;
       if (this.isLocateEnabled)
-        filtered = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
+        filterStatus = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
 
       const thisDist = thisSnap.hitPoint.distance(thisSnap.snapPoint);
-      if (!filtered && !(bestSnap && (thisDist >= bestDist))) {
+      if (LocateFilterStatus.Accept === filterStatus && !(bestSnap && (thisDist >= bestDist))) {
         bestHit = thisHit;
         bestSnap = thisSnap;
         bestDist = thisDist;
-      } else if (filtered)
+      } else if (LocateFilterStatus.Reject === filterStatus) {
         out.snapStatus = SnapStatus.FilteredByApp;
+      }
     }
 
     if (bestHit) {
@@ -552,7 +553,7 @@ export class AccuSnap {
     const ignore = new LocateResponse();
     // keep looking through hits until we find one that is accu-snappable.
     while (undefined !== (thisHit = thisList.getNextHit())) {
-      if (!IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
+      if (LocateFilterStatus.Accept === IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
         return thisHit;
 
       // we only care about the status of the first hit.

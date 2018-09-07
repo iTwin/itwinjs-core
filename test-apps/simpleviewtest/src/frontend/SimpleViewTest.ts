@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker, ImageUtil, MarkerDrawFunc, MarkerSet, ClusterMarker,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker, ImageUtil, MarkerDrawFunc, MarkerSet, ClusterMarker, EditManipulator, CoordinateLockOverrides,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -25,9 +25,10 @@ import {
   LinePixels,
   RgbColor,
   ColorDef,
+  AxisAlignedBox3d,
 } from "@bentley/imodeljs-common";
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY, Transform, Vector3d, XYAndZ, Point2d } from "@bentley/geometry-core";
+import { Point3d, XAndY, Transform, Vector3d, XYAndZ, Point2d, Arc3d, Matrix3d, AngleSweep } from "@bentley/geometry-core";
 import { showStatus, showError } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -624,14 +625,43 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
-export class ProjectExtentsDecoration {
+export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
+  protected init(): void {
+    this.receivedDownEvent = true;
+    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
+    IModelApp.accuSnap.enableLocate(false);
+    IModelApp.accuSnap.enableSnap(false);
+    IModelApp.accuDraw.deactivate();
+    this.beginDynamics();
+  }
+
+  protected accept(_ev: BeButtonEvent): boolean { return true; }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    const builder = context.createGraphicBuilder(GraphicType.Scene);
+
+    const black = ColorDef.black.clone();
+    const white = ColorDef.white.clone();
+
+    builder.setSymbology(white, black, 10);
+    builder.addPointString([ev.point]);
+    context.addGraphic(builder.finish());
+  }
+}
+
+export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectExtentsDecoration;
-  public boxId?: Id64;
+  protected _extents: AxisAlignedBox3d;
+  protected _boxId?: string;
+  protected _controlIds: string[] = [];
   public markers: Marker[] = [];
 
   public constructor() {
-    const iModel = activeViewState.iModelConnection!;
-    const extents = iModel.projectExtents;
+    super(activeViewState.iModelConnection!);
+    this._extents = this._iModel.projectExtents.clone();
+    this._boxId = this._iModel.transientIds.next.value;
+    this.updateDecorationListener(true);
+
     const image = ImageUtil.fromUrl("map_pin.svg");
     const markerDrawFunc: MarkerDrawFunc = (ctx, _marker) => {
       ctx.beginPath();
@@ -654,38 +684,144 @@ export class ProjectExtentsDecoration {
       this.markers.push(marker);
     };
 
-    createBoundsMarker(iModel.iModelToken.key!, extents.getCenter());
-    createBoundsMarker("low", extents.low);
-    createBoundsMarker("high", extents.high);
+    createBoundsMarker(this._iModel.iModelToken.key!, this._extents.getCenter());
+    createBoundsMarker("low", this._extents.low);
+    createBoundsMarker("high", this._extents.high);
   }
 
-  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
-  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
+  protected stop(): void {
+    const selectedId = (undefined !== this._boxId && this._iModel.selectionSet.has(this._boxId)) ? this._boxId : undefined;
+    this._boxId = undefined; // Invalidate id so that decorator will be dropped...
+    super.stop();
+    if (undefined !== selectedId)
+      this._iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
+  }
+
+  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, elementIds); }
+
+  protected async createControls(): Promise<boolean> {
+    /*     if (1 === this._iModel.selectionSet.size) {
+          const props = await this.getElementProps(this._iModel.selectionSet.elements);
+          if (0 !== props.length && undefined !== props[0].placement) {
+            const placement = Placement3d.fromJSON(props[0].placement);
+            this._extents = placement.calculateRange();
+            return true;
+          }
+        } */
+
+    // Decide if resize controls should be presented.
+    if (undefined === this._boxId)
+      return false;
+
+    // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
+    let showControls = false;
+    if (this._iModel.selectionSet.size <= this._controlIds.length + 1 && this._iModel.selectionSet.has(this._boxId)) {
+      showControls = true;
+      if (this._iModel.selectionSet.size > 1) {
+        this._iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+      }
+    }
+    return showControls;
+  }
+
+  protected clearControls(): void {
+    if (0 !== this._controlIds.length && this._iModel.selectionSet.isActive) {
+      for (const controlId of this._controlIds) {
+        if (!this._iModel.selectionSet.has(controlId))
+          continue;
+        this._iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+        break;
+      }
+    }
+    super.clearControls();
+  }
+
+  protected modifyControls(_hit: HitDetail, _ev: BeButtonEvent): boolean {
+    const manipTool = new ProjectExtentsResizeTool(this);
+    return manipTool.run();
+  }
+
+  public testDecorationHit(id: string): boolean { return (id === this._boxId || this._controlIds.includes(id)); }
+  public async getDecorationToolTip(hit: HitDetail): Promise<string> { return (hit.sourceId === this._boxId ? "Project Extents" : "Resize Project Extents"); }
+  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._boxId ? EventHandled.No : super.onDecorationButtonEvent(hit, ev)); }
+
+  protected updateDecorationListener(_add: boolean) {
+    super.updateDecorationListener(undefined !== this._boxId); // Decorator isn't just for resize controls...
+  }
 
   public decorate(context: DecorateContext): void {
-    const vp = context.viewport;
+    if (undefined === this._boxId)
+      return;
 
+    const vp = context.viewport;
     if (!vp.view.isSpatialView())
       return;
 
-    if (undefined === this.boxId)
-      this.boxId = vp.view.iModel.transientIds.next;
-
-    const range = vp.view.iModel.projectExtents;
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._boxId);
 
     builder.setSymbology(ColorDef.white, ColorDef.black, 1);
-    builder.addRangeBox(range);
+    builder.addRangeBox(this._extents);
     context.addDecorationFromBuilder(builder);
+
     this.markers.forEach((marker) => marker.addDecoration(context));
+
+    if (!this._isActive)
+      return;
+
+    if (0 === this._controlIds.length) {
+      this._controlIds[0] = vp.view.iModel.transientIds.next.value;
+      this._controlIds[1] = vp.view.iModel.transientIds.next.value;
+      this._controlIds[2] = vp.view.iModel.transientIds.next.value;
+      this._controlIds[3] = vp.view.iModel.transientIds.next.value;
+      this._controlIds[4] = vp.view.iModel.transientIds.next.value;
+      this._controlIds[5] = vp.view.iModel.transientIds.next.value;
+    }
+
+    const center = this._extents.getCenter();
+    const outlineColor = vp.getContrastToBackgroundColor();
+    const faceColors: ColorDef[] = [];
+    const faceCenters: Point3d[] = [];
+    const faceNormals: Vector3d[] = [];
+    const radius = Math.min(this._extents.xLength(), this._extents.yLength(), this._extents.zLength()) * 0.1;
+
+    faceColors[0] = ColorDef.red.clone(); faceColors[0].setAlpha(100);
+    faceColors[1] = faceColors[0];
+    faceNormals[0] = Vector3d.unitX(0.5 * this._extents.xLength());
+    faceNormals[1] = Vector3d.unitX(-0.5 * this._extents.xLength());
+    faceCenters[0] = center.plus(faceNormals[0]);
+    faceCenters[1] = center.plus(faceNormals[1]);
+
+    faceColors[2] = ColorDef.green.clone(); faceColors[2].setAlpha(100);
+    faceColors[3] = faceColors[2];
+    faceNormals[2] = Vector3d.unitY(0.5 * this._extents.yLength());
+    faceNormals[3] = Vector3d.unitY(-0.5 * this._extents.yLength());
+    faceCenters[2] = center.plus(faceNormals[2]);
+    faceCenters[3] = center.plus(faceNormals[3]);
+
+    faceColors[4] = ColorDef.blue.clone(); faceColors[4].setAlpha(100);
+    faceColors[5] = faceColors[4];
+    faceNormals[4] = Vector3d.unitZ(0.5 * this._extents.zLength());
+    faceNormals[5] = Vector3d.unitZ(-0.5 * this._extents.zLength());
+    faceCenters[4] = center.plus(faceNormals[4]);
+    faceCenters[5] = center.plus(faceNormals[5]);
+
+    for (let iFace = 0; iFace < faceCenters.length; iFace++) {
+      const faceBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._controlIds[iFace]);
+      const ellipse = Arc3d.createScaledXYColumns(faceCenters[iFace], Matrix3d.createRigidHeadsUp(faceNormals[iFace]), radius, radius, AngleSweep.create360());
+
+      faceBuilder.setSymbology(outlineColor, faceColors[iFace], 1);
+      faceBuilder.addArc(ellipse, true, true);
+      faceBuilder.addArc(ellipse, false, false);
+      context.addDecorationFromBuilder(faceBuilder);
+    }
   }
 
   public static toggle = () => {
     if (undefined === ProjectExtentsDecoration._decorator) {
       ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration();
-      IModelApp.viewManager.addDecorator(ProjectExtentsDecoration._decorator);
+      IModelApp.toolAdmin.startDefaultTool();
     } else {
-      IModelApp.viewManager.dropDecorator(ProjectExtentsDecoration._decorator);
+      ProjectExtentsDecoration._decorator.stop();
       ProjectExtentsDecoration._decorator = undefined;
     }
   }
@@ -794,7 +930,7 @@ function startMeasurePoints(event: any) {
   if (event.target === menu)
     return;
   IModelApp.tools.run("Measure.Points", theViewport!);
-  ProjectExtentsDecoration.toggle();
+  // ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
