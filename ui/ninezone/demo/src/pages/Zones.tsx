@@ -85,7 +85,10 @@ import Zones from "@src/zones/Zones";
 import GhostOutline from "@src/zones/GhostOutline";
 import ThemeContext from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
+import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import "./Zones.scss";
+
+const adjustTooltipPosition = offsetAndContainInContainer();
 
 export interface State {
   tools: Tools;
@@ -94,8 +97,7 @@ export interface State {
   isNestedPopoverOpen: boolean;
   isTooltipVisible: boolean;
   visibleMessage: Message;
-  x: number;  // Last mouse X coordinate
-  y: number;  // Last mouse Y coordinate
+  mousePosition: PointProps;
   temporaryMessageX: number;
   temporaryMessageY: number;
   isTemporaryMessageVisible: boolean;
@@ -181,7 +183,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private _temporaryMessageTimer = new Timer(2000);
   private _zones: React.RefObject<Zones>;
   private _app: React.RefObject<App>;
-  private _content: React.RefObject<Content>;
   private _footerMessages: React.RefObject<MessageCenterIndicator>;
   private _dialogContainer: HTMLDivElement;
 
@@ -192,7 +193,6 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._app = React.createRef();
     this._zones = React.createRef();
-    this._content = React.createRef();
     this._footerMessages = React.createRef();
 
     this._dialogContainer = document.createElement("div");
@@ -486,8 +486,10 @@ export default class ZonesExample extends React.Component<{}, State> {
         } as SimpleTool,
       },
       visibleMessage: Message.None,
-      x: 0,
-      y: 0,
+      mousePosition: {
+        x: 0,
+        y: 0,
+      },
       isOverflowItemOpen: false,
       currentTheme: PrimaryTheme,
     };
@@ -520,15 +522,18 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getZones() {
     return (
       <Zones ref={this._zones}>
-        <MouseTracker onCoordinatesChange={this._handleCoordinatesChange} />
-        <Tooltip
-          stepString="Start Point"
-          timeout={2000}
-          isVisible={this.state.isTooltipVisible}
-          onIsVisibleChange={this._handleTooltipIsVisibleChange}
-        >
-          <i className="icon icon-cursor" />
-        </Tooltip>
+        <MouseTracker onPositionChange={this._handlePositionChange} />
+        {this.state.isTooltipVisible && (
+          <Tooltip
+            stepString="Start Point"
+            timeout={2000}
+            onTimeout={this._handleTooltipTimeout}
+            position={this.state.mousePosition}
+            adjustPosition={adjustTooltipPosition}
+          >
+            <i className="icon icon-cursor" />
+          </Tooltip>
+        )}
         <TemporaryMessage
           style={{
             display: this.state.isTemporaryMessageVisible ? "block" : "none",
@@ -557,7 +562,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getContent() {
     return (
       <Content
-        ref={this._content}
         onClick={this._handleContentClick}
       >
         <iframe
@@ -599,22 +603,10 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private _handleCoordinatesChange = (x: number, y: number) => {
-    if (!this._content.current)
-      return;
-
-    const contentElement = ReactDOM.findDOMNode(this._content.current);
-    if (!(contentElement instanceof HTMLElement)) {
-      return;
-    }
-
-    const containerRect = contentElement.getBoundingClientRect();
-    this.setState(() => {
-      return {
-        x: x - containerRect.left,
-        y: y - containerRect.top,
-      };
-    });
+  private _handlePositionChange = (mousePosition: PointProps) => {
+    this.setState(() => ({
+      mousePosition,
+    }));
   }
 
   private _handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -625,16 +617,16 @@ export default class ZonesExample extends React.Component<{}, State> {
     this.setState((prevState) => {
       return {
         isTemporaryMessageVisible: true,
-        temporaryMessageX: prevState.x,
-        temporaryMessageY: prevState.y,
+        temporaryMessageX: prevState.mousePosition.x,
+        temporaryMessageY: prevState.mousePosition.y,
       };
     });
   }
 
-  private _handleTooltipIsVisibleChange = (isVisible: boolean) => {
+  private _handleTooltipTimeout = () => {
     this.setState(() => {
       return {
-        isTooltipVisible: isVisible,
+        isTooltipVisible: false,
       };
     });
   }

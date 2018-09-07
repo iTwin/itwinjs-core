@@ -27,7 +27,7 @@ export const GhostOutline: React.StatelessComponent<GhostOutlineProps> = (props:
     props.className);
 
   const style: React.CSSProperties = {
-    ...props.bounds ? CssProperties.fromRectangle(props.bounds) : undefined,
+    ...props.bounds ? CssProperties.fromBounds(props.bounds) : undefined,
     ...props.style,
   };
 

@@ -5,27 +5,26 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Div, withTimeout } from "@bentley/ui-core";
-import PopupTooltip from "../../popup/tooltip/Tooltip";
-import CommonProps from "../../utilities/Props";
+import { withTimeout } from "@bentley/ui-core";
+import Tooltip, { TooltipProps } from "../../popup/tooltip/Tooltip";
 import "./Tooltip.scss";
 
 // tslint:disable-next-line:variable-name
-const DivWithTimeout = withTimeout(Div);
+const TooltipWithTimeout = withTimeout(Tooltip);
 
 /**
  * Properties of [[ToolSettingsTooltip]] component.
  * @note Component defaults [[ToolSettingsTooltipProps]]
  */
-export interface ToolSettingsTooltipProps extends CommonProps {
-  /** Describes if the tooltip is visible. */
-  isVisible?: boolean;
-  /** Function called when visibility of tooltip changes. */
-  onIsVisibleChange?: (isVisible: boolean) => void;
+export interface ToolSettingsTooltipProps extends TooltipProps {
+  /** Tool settings icon. */
+  children?: React.ReactNode;
   /** Tooltip content. */
   stepString?: string;
   /** Timeout (in ms) after which the tooltip is hidden. */
   timeout?: number;
+  /** Function called when the timeout expires. */
+  onTimeout?: () => void;
 }
 
 /** Defaults of [[ToolSettingsTooltipProps]]. */
@@ -47,42 +46,34 @@ export default class ToolSettingsTooltip extends React.Component<ToolSettingsToo
   }
 
   public render() {
-    const className = classnames(
-      "nz-widget-toolSettings-tooltip",
-      this.props.isVisible && "nz-is-visible",
-      this.props.className);
-
     if (!this.isWithDefaultProps())
       return;
 
+    const { className, children, stepString, timeout, onTimeout, ...props } = this.props;
+    const tooltipClassName = classnames(
+      "nz-widget-toolSettings-tooltip",
+      className);
+
     return (
-      <PopupTooltip
-        className={className}
-        style={this.props.style}
+      <TooltipWithTimeout
+        className={tooltipClassName}
+        timeout={this.props.timeout}
+        onTimeout={this._handleTimeout}
+        {...props}
       >
-        <DivWithTimeout
+        <div
           className="nz-tool-icon"
-          startTimeout={this.props.isVisible}
-          timeout={this.props.timeout}
-          onTimeout={this._handleTimeout}
         >
           {this.props.children}
-        </DivWithTimeout>
+        </div>
         <div className="nz-step-string">
           {this.props.stepString}
         </div>
-      </PopupTooltip>
+      </TooltipWithTimeout>
     );
   }
 
   private _handleTimeout = () => {
-    this.setIsVisible(false);
-  }
-
-  private setIsVisible(isVisible: boolean) {
-    if (this.props.isVisible === isVisible)
-      return;
-
-    this.props.onIsVisibleChange && this.props.onIsVisibleChange(isVisible);
+    this.props.onTimeout && this.props.onTimeout();
   }
 }

@@ -160,10 +160,10 @@ export default class Rectangle implements RectangleProps {
   }
 
   /**
-   * Checks if rectangle is within bounds of other rectangle.
+   * @returns true if this rectangle contains other rectangle.
    * @note Inclusive.
    */
-  public containsRectangle(other: RectangleProps) {
+  public contains(other: RectangleProps) {
     return other.left >= this.left && other.right <= this.right && other.top >= this.top && other.bottom <= this.bottom;
   }
 

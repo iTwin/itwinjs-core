@@ -1,14 +1,10 @@
 .nz-widget-toolSettings-tooltip {
   background-color: rgba(#333, 0.9);
-  display: none;
+  display: flex;
   flex-direction: row;
   align-items: center;
   padding: 5px 10px;
   color: #FFF;
-
-  &.nz-is-visible {
-    display: flex;
-  }
 
   > .nz-step-string {
     white-space: nowrap;

@@ -45,7 +45,7 @@ export const withContainIn = <ComponentProps extends {}>(
 
     public getComponentBounds(root: HTMLElement): Rectangle {
       const bounds = root.getBoundingClientRect();
-      return new Rectangle(bounds.left, bounds.top, bounds.right, bounds.bottom);
+      return Rectangle.create(bounds);
     }
 
     public componentDidMount() {
