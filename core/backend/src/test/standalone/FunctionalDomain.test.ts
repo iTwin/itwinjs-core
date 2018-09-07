@@ -3,21 +3,23 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
 import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
+  const activityLoggingContext = new ActivityLoggingContext("");
 
   before(() => {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("imodeljs-addon", LogLevel.Warning);
-    Logger.setLevel("imodeljs-backend", LogLevel.Warning);
-    Logger.setLevel("DgnCore", LogLevel.Warning);
-    Logger.setLevel("ECObjectsNative", LogLevel.Warning);
-    Logger.setLevel("ECDb", LogLevel.Warning);
+    // Logger.initializeToConsole();
+    // Logger.setLevelDefault(LogLevel.Warning);
+    // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
+    // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
+    // Logger.setLevel("DgnCore", LogLevel.Warning);
+    // Logger.setLevel("ECObjectsNative", LogLevel.Warning);
+    // Logger.setLevel("ECDb", LogLevel.Warning);
   });
 
   it("should populate FunctionalModel", async () => {
@@ -30,15 +32,13 @@ describe("Functional Domain", () => {
     });
 
     // Import the Functional schema
-    // TODO: Waiting for BIS Schemas to be available as NPM packages
-    // await iModelDb.importSchema(path.join(__dirname, "../../../../../common/temp/node_modules/@bentley/imodeljs-native-platform-api/lib/@bentley/imodeljs-n_8-win32-x64/addon/Assets/ECSchemas/Domain/Functional.ecschema.xml"));
-    await Functional.importSchema(iModelDb);
+    await Functional.importSchema(activityLoggingContext, iModelDb);
     Functional.registerSchema();
     iModelDb.saveChanges("Import Functional schema");
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchema(path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+    await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
     iModelDb.saveChanges("Import TestFunctional schema");
 
     // Create and populate a FunctionalModel
