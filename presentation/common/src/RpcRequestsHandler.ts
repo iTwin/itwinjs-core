@@ -70,7 +70,7 @@ export default class RpcRequestsHandler implements IDisposable {
   // tslint:disable-next-line:naming-convention
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
-  private createRequestOptions<T extends { imodel: IModelToken }>(options: T): RpcRequestOptions & T {
+  private createRequestOptions<T>(options: T): RpcRequestOptions & T {
     return Object.assign({}, options, {
       clientId: this.clientId,
       clientStateId: this._clientStateId,
@@ -110,7 +110,7 @@ export default class RpcRequestsHandler implements IDisposable {
         clientState[holder.key] = holderState;
       }
     }
-    await this.rpcClient.syncClientState(this.createRequestOptions({ imodel: token, state: clientState }));
+    await this.rpcClient.syncClientState(token, this.createRequestOptions({ state: clientState }));
   }
 
   /**
@@ -121,8 +121,14 @@ export default class RpcRequestsHandler implements IDisposable {
    *
    * @hidden
    */
-  public async request<TResult, TOptions extends RpcRequestOptions, TArg extends any[]>(context: any, func: (options: TOptions, ...args: TArg) => Promise<TResult>, options: TOptions, ...args: TArg): Promise<TResult> {
-    const doRequest = () => func.apply(context, [options, ...args]);
+  public async request<TResult, TOptions extends RpcRequestOptions & { imodel: IModelToken }, TArg extends any[]>(
+    context: any,
+    func: (token: IModelToken, options: TOptions, ...args: TArg) => Promise<TResult>,
+    options: TOptions,
+    ...args: TArg): Promise<TResult> {
+
+    const { imodel, ...rpcOptions } = options as (RpcRequestOptions & { imodel: IModelToken });
+    const doRequest = () => func.apply(context, [imodel, rpcOptions, ...args]);
     try {
       return await doRequest();
     } catch (e) {
@@ -136,15 +142,45 @@ export default class RpcRequestsHandler implements IDisposable {
     }
   }
 
-  public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> { return await this.request(this.rpcClient, this.rpcClient.getRootNodes, this.createRequestOptions(options)); }
-  public async getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getRootNodesCount, this.createRequestOptions(options)); }
-  public async getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> { return await this.request(this.rpcClient, this.rpcClient.getChildren, this.createRequestOptions(options), parentKey); }
-  public async getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getChildrenCount, this.createRequestOptions(options), parentKey); }
-  public async getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> { return await this.request(this.rpcClient, this.rpcClient.getNodePaths, this.createRequestOptions(options), paths, markedIndex); }
-  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]> { return await this.request(this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText); }
+  public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> {
+    return await this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>, any>(
+      this.rpcClient, this.rpcClient.getRootNodes, this.createRequestOptions(options));
+  }
+  public async getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> {
+    return await this.request<number, HierarchyRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getRootNodesCount, this.createRequestOptions(options));
+  }
+  public async getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
+    return await this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>, any>(
+      this.rpcClient, this.rpcClient.getChildren, this.createRequestOptions(options), parentKey);
+  }
+  public async getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> {
+    return await this.request<number, HierarchyRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getChildrenCount, this.createRequestOptions(options), parentKey);
+  }
+  public async getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    return await this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getNodePaths, this.createRequestOptions(options), paths, markedIndex);
+  }
+  public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]> {
+    return await this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText);
+  }
 
-  public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> { return await this.request(this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection); }
-  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> { return await this.request(this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptor, keys); }
-  public async getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> { return await this.request(this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptor, keys); }
-  public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> { return await this.request(this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount); }
+  public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> {
+    return await this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
+  }
+  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    return await this.request<number, ContentRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptor, keys);
+  }
+  public async getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> {
+    return await this.request<Content, ContentRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptor, keys);
+  }
+  public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
+    return await this.request<string[], ContentRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
+  }
 }
