@@ -239,8 +239,10 @@ export namespace IModelTileIO {
       const name = JsonUtils.asString(json.name);
       const namedTex = 0 !== name.length ? this._namedTextures[name] : undefined;
       const texture = undefined !== namedTex ? namedTex.renderTexture as RenderTexture : undefined;
-      if (undefined === texture)
+      if (undefined === texture) {
+        assert(false, "bad texture mapping json");
         return undefined;
+      }
 
       const paramsJson = json.params;
       const tf = paramsJson.transform;
@@ -275,8 +277,10 @@ export namespace IModelTileIO {
         return Promise.resolve();
 
       const texture = this._system.findTexture(name, this._iModel);
-      if (undefined !== texture)
+      if (undefined !== texture) {
+        namedTex.renderTexture = texture;
         return Promise.resolve();
+      }
 
       return this.readNamedTexture(namedTex, name).then((result) => { namedTex.renderTexture = result; });
     }
