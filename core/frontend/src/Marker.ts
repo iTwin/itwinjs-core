@@ -33,20 +33,11 @@ export class Marker implements Overlay2dDecoration {
     this.position = new Point3d();
   }
 
-  public clone(): Marker {
+  /** Make a new Marker at the same position and size as this Marker. */
+  public makeFrom(): Marker {
     const out = new Marker(this.worldLocation, this.size);
     out.rect.setFrom(this.rect);
     out.position.setFrom(this.position);
-    out.drawFunc = this.drawFunc;
-    out.image = this.image;
-    out.imageOffset = this.imageOffset;
-    out.imageSize = this.imageSize;
-    out.label = this.label;
-    out.labelOffset = this.labelOffset;
-    out.labelColor = this.labelColor;
-    out.labelAlign = this.labelAlign;
-    out.labelBaseline = this.labelBaseline;
-    out.labelFont = this.labelFont;
     return out;
   }
 
@@ -100,9 +91,10 @@ export class ClusterMarker<T extends Marker> {
   public readonly rect: ViewRect;
   public readonly markers: T[] = [];
 
-  public constructor(marker: T) {
-    this.rect = marker.rect;
-    this.markers.push(marker);
+  public constructor(marker1: T, marker2: T) {
+    this.rect = marker1.rect;
+    this.markers.push(marker1);
+    this.markers.push(marker2);
   }
 }
 
@@ -110,30 +102,40 @@ export abstract class MarkerSet<T extends Marker> {
   public minimumClusterSize = 1;
   public readonly markers = new Set<T>();
 
+  /** Add all of the Markers in this MarkerSet to the decoration set. Any that overlap one other are turned into a ClusterMarker. */
   public addDecoration(context: DecorateContext) {
-    const clusters: Array<ClusterMarker<T>> = [];
-
+    const entries: Array<ClusterMarker<T> | T> = []; // this is an array that holds either Markers or a cluster of markers.
     const vp = context.viewport;
-    for (const marker of this.markers) {
-      if (marker.setPosition(vp)) {
+    for (const marker of this.markers) { // loop through all of the Markers in the MarkerSet.
+      if (marker.setPosition(vp)) {     // establish the screen position for this marker. If it's not in view, setPosition returns false
         let added = false;
-        for (const cluster of clusters) {
-          if (marker.rect.overlaps(cluster.rect)) {
-            cluster.markers.push(marker);
-            added = true;
-            break;
+        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible makers/clusters
+          const entry = entries[i];
+          if (marker.rect.overlaps(entry.rect)) { // does new Marker overlap with this entry?
+            added = true; // yes, we're going to save it as a Cluster
+            if (entry instanceof ClusterMarker) { // is the entry already a Cluster?
+              entry.markers.push(marker); // yes, just add this to the existing cluster
+            } else {
+              entries[i] = new ClusterMarker<T>(entry, marker); // no, make a new Cluster holding both
+            }
+            break; // this Marker has been handled, we can stop looking for overlaps
           }
         }
         if (!added)
-          clusters.push(new ClusterMarker(marker));
+          entries.push(marker); // there was no overlap, save this Marker to be drawn
       }
     }
 
-    for (const cluster of clusters) {
-      if (cluster.markers.length <= this.minimumClusterSize) {
-        cluster.markers.forEach((marker) => context.addOverlay2dDecoration(marker));
+    // we now have an arry of Markers and Clusters, add them to context
+    for (const entry of entries) {
+      if (entry instanceof ClusterMarker) {
+        if (entry.markers.length <= this.minimumClusterSize) {
+          entry.markers.forEach((marker) => context.addOverlay2dDecoration(marker));
+        } else {
+          context.addOverlay2dDecoration(this.getClusterMarker(entry));
+        }
       } else {
-        context.addOverlay2dDecoration(this.getClusterMarker(cluster));
+        context.addOverlay2dDecoration(entry);
       }
     }
   }

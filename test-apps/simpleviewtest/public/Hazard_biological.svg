@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg height="144.407" id="svg1603" inkscape:version="0.40" sodipodi:docbase="/mnt/donnees/09-Mes_images/Travaux/Travaux vectoriel/pictogrammes/s  cu SVG/Avertissement" sodipodi:docname="RisqueBiologique.svg" sodipodi:version="0.32" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <metadata>
+    <rdf:RDF xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <cc:Work rdf:about="">
+        <dc:title>advertising</dc:title>
+        <dc:description></dc:description>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li></rdf:li>
+            <rdf:li>caution</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>warning</rdf:li>
+            <rdf:li>signs_and_symbols</rdf:li>
+            <rdf:li>sign</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://www.openclipart.org">
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date></dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://web.resource.org/cc/PublicDomain"/>
+        <dc:language>en</dc:language>
+      </cc:Work>
+      <cc:License rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="svg1603" inkscape:cx="62.504797" inkscape:cy="57.762799" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1121" inkscape:window-width="1590" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="8.1626931" pagecolor="#ffffff"/>
+  <defs id="defs1604">
+    <marker id="ArrowEnd" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="0" refY="5" viewBox="0 0 10 10">
+      <path d="M 0 0 L 10 5 L 0 10 z" id="path1606"/>
+    </marker>
+    <marker id="ArrowStart" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="10" refY="5" viewBox="0 0 10 10">
+      <path d="M 10 0 L 0 5 L 10 10 z" id="path1608"/>
+    </marker>
+  </defs>
+  <g id="g1609">
+    <path d="M 12.473000,121.08200 C 11.492258,122.80712 10.481800,124.49000 10.481700,126.42300 L 10.521980,126.94626 C 10.521980,131.11826 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.78214,130.73542 145.78214,126.56342 L 145.78000,125.81500 C 145.78000,123.88200 144.75508,122.20699 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path1610" sodipodi:nodetypes="cccccccsccs" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
+    <path d="M 78.703 16.2916L 15.2797 128.128L 76.4667 128.128L 79.3188 128.128L 139.826 128.128L 79.5155 16.2916L 78.703 16.2916z" id="path1611" style="stroke:#000000; stroke-width:4.8516000000000004; stroke-linejoin:round; stroke-linecap:round; fill:#ffcc00"/>
+  </g>
+  <g id="g1612">
+    <path d="M 96.4719 72.5801C 97.2376 75.2056 98.1128 78.4875 97.0189 81.2224C 100.629 82.9728 103.692 85.9264 106.427 88.552C 107.849 91.0681 108.615 93.6936 110.146 96.2097C 110.912 99.8197 111.021 104.961 109.599 108.243L 108.615 108.243C 109.709 101.898 108.287 95.2251 103.036 91.1775C 98.8786 89.4271 94.2839 89.0989 90.2363 89.6459C 89.2517 90.5211 88.2672 91.0681 87.0638 91.1775C 85.9698 92.709 85.0946 94.0218 83.6725 94.8969C 82.2504 93.3654 82.3597 90.3023 79.7343 89.6459C 78.9685 89.4271 78.2027 88.4425 78.8591 87.7862L 78.8591 87.2392C 82.4692 86.0359 87.5014 85.8171 88.9235 81.4412L 91.7678 75.6432C 90.8927 69.9546 90.0175 62.8438 83.8914 60.7653C 82.688 59.7808 80.7188 60.4372 79.7343 59.1244C 80.7188 56.9365 83.0162 58.9057 84.4383 59.1244C 90.2363 62.1875 93.9558 66.7821 96.4719 72.5801z" id="path1613" style="stroke:none; fill:#000000"/>
+    <path d="M 74.702 59.1244C 69.998 60.109 66.8255 62.8438 64.2 67.0009C 62.0121 73.8929 63.3249 79.5815 68.1383 84.6137C 70.6544 85.8171 73.3892 86.5828 76.2336 87.0204C 77.437 90.6304 71.5296 90.3023 73.3892 94.5687L 72.6235 95.1157C 68.6852 91.9433 65.1846 87.3486 59.496 88.7708C 57.8551 89.6459 55.7765 89.3177 54.245 90.0835C 49.9785 92.1621 48.0094 96.3191 47.6812 100.914L 48.447 107.478C 47.6812 107.915 46.9155 107.04 46.3684 106.384C 44.9463 97.7412 47.5718 87.458 56.1047 82.2069C 60.6993 80.5661 56.9799 74.768 59.1678 71.7049C 60.9182 65.6882 66.6067 60.109 72.6235 58.3586C 73.2799 58.5774 74.9208 57.7023 74.702 59.1244z" id="path1614" style="stroke:none; fill:#000000"/>
+    <path d="M 87.6108 78.5969C 87.8296 79.5815 86.298 80.8942 85.2041 81.2224C 80.6094 79.9096 75.796 78.9251 70.9826 81.2224C 69.6698 81.5507 68.6852 80.5661 68.1383 79.5815C 69.2322 75.9714 73.6081 76.9559 76.2336 75.6432C 80.5001 75.5339 84.2195 76.6278 87.6108 78.5969z" id="path1615" style="stroke:none; fill:#000000"/>
+    <path d="M 64.2 92.2714C 63.4342 94.2406 65.6222 95.9909 64.9658 97.96C 66.1691 98.6164 65.841 100.476 66.8255 101.461C 68.0289 103.758 73.0611 104.852 70.7638 108.243C 67.7007 108.462 64.747 104.852 63.1061 102.227C 61.6839 99.1634 60.59 95.8815 61.0276 91.9433C 62.0121 90.9587 63.3249 91.7245 64.2 92.2714z" id="path1616" style="stroke:none; fill:#000000"/>
+    <path d="M 95.4873 91.9433C 95.2685 99.1634 93.2994 105.837 86.298 108.79C 85.4229 108.79 84.7664 107.806 84.4383 107.149C 83.7819 104.852 86.6262 105.29 87.2826 103.539C 89.6893 100.914 92.5336 97.413 91.549 93.8029C 91.549 92.8184 92.3148 91.7245 93.2994 91.7245C 93.8464 92.1621 94.7215 91.9433 95.4873 91.9433z" id="path1617" style="stroke:none; fill:#000000"/>
+    <path d="M 82.3597 97.1943C 82.4692 97.8506 82.141 99.054 81.2658 99.6009C 79.0779 104.524 81.4846 109.447 84.6571 113.275C 89.2517 117.214 96.8001 118.964 102.27 115.901C 103.911 115.135 104.02 113.166 105.989 113.713L 105.442 115.354C 99.2068 121.48 88.8141 121.59 81.2658 118.198C 79.9531 116.557 77.5463 116.776 75.796 117.214C 69.998 120.933 62.0121 120.058 56.1047 117.98C 54.245 116.229 51.51 115.245 50.8537 112.729L 51.2912 112.182C 53.3698 114.151 56.1047 115.682 58.7302 116.886C 63.9812 117.542 69.998 115.682 73.1705 110.322C 74.2645 106.384 75.4679 101.789 73.1705 97.96C 75.0302 94.5687 78.4215 99.2728 81.2658 96.9755L 82.3597 97.1943z" id="path1618" style="stroke:none; fill:#000000"/>
+  </g>
+</svg>

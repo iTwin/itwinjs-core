@@ -624,12 +624,79 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
+export class ProjectExtentsDecoration {
+  private static _decorator?: ProjectExtentsDecoration;
+  public boxId?: Id64;
+  public markers: Marker[] = [];
+
+  public constructor() {
+    const iModel = activeViewState.iModelConnection!;
+    const extents = iModel.projectExtents;
+    const image = ImageUtil.fromUrl("map_pin.svg");
+    const markerDrawFunc: MarkerDrawFunc = (ctx, _marker) => {
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, 2 * Math.PI);
+      ctx.fillStyle = "green";
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "black";
+      ctx.fill();
+      ctx.stroke();
+    };
+
+    const markerSize = { x: 48, y: 48 };
+    const imageOffset = { x: -11, y: 32 };
+    const createBoundsMarker = (label: string, markerPos: Point3d): void => {
+      const marker = new Marker(markerPos, markerSize);
+      marker.drawFunc = markerDrawFunc;
+      marker.label = label;
+      marker.imageOffset = imageOffset;
+      marker.setImage(image);
+      this.markers.push(marker);
+    };
+
+    createBoundsMarker(iModel.iModelToken.key!, extents.getCenter());
+    createBoundsMarker("low", extents.low);
+    createBoundsMarker("high", extents.high);
+  }
+
+  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
+  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
+
+  public decorate(context: DecorateContext): void {
+    const vp = context.viewport;
+
+    if (!vp.view.isSpatialView())
+      return;
+
+    if (undefined === this.boxId)
+      this.boxId = vp.view.iModel.transientIds.next;
+
+    const range = vp.view.iModel.projectExtents;
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
+
+    builder.setSymbology(ColorDef.white, ColorDef.black, 1);
+    builder.addRangeBox(range);
+    context.addDecorationFromBuilder(builder);
+    this.markers.forEach((marker) => marker.addDecoration(context));
+  }
+
+  public static toggle = () => {
+    if (undefined === ProjectExtentsDecoration._decorator) {
+      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration();
+      IModelApp.viewManager.addDecorator(ProjectExtentsDecoration._decorator);
+    } else {
+      IModelApp.viewManager.dropDecorator(ProjectExtentsDecoration._decorator);
+      ProjectExtentsDecoration._decorator = undefined;
+    }
+  }
+}
+
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   public warningSign?: HTMLImageElement;
 
   constructor() {
     super();
-    ImageUtil.fromUrl("http://www.clker.com/cliparts/5/7/d/b/1195442352382851478zeimusu_Warning_sign.svg").then((image) => this.warningSign = image);
+    ImageUtil.fromUrl("Warning_sign.svg").then((image) => this.warningSign = image);
   }
 
   private static _drawFunc: MarkerDrawFunc = (ctx, _marker) => {
@@ -643,7 +710,7 @@ class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   }
 
   protected getClusterMarker(cluster: ClusterMarker<IncidentMarker>): Marker {
-    const marker = cluster.markers[0].clone();
+    const marker = cluster.markers[0].makeFrom();
     marker.image = this.warningSign;
     marker.imageOffset = new Point3d(0, 28);
     marker.imageSize = new Point2d(30, 30);
@@ -681,49 +748,30 @@ class IncidentMarker extends Marker {
   }
 }
 
-let activeExtentsDeco: ProjectExtentsDecoration | undefined;
-export class ProjectExtentsDecoration {
-  public boxId?: Id64;
-  public markers: Marker[] = [];
+export class IncidentMarkerDemo {
   public incidents = new IncidentMarkerSet();
+  private static _decorator?: IncidentMarkerDemo;
+
+  public static toggle = () => {
+    if (undefined === IncidentMarkerDemo._decorator) {
+      IncidentMarkerDemo._decorator = new IncidentMarkerDemo();
+      IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
+    } else {
+      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo._decorator);
+      IncidentMarkerDemo._decorator = undefined;
+    }
+  }
 
   public constructor() {
-    IModelApp.viewManager.addDecorator(this);
-    const iModel = activeViewState.iModelConnection!;
-    const extents = iModel.projectExtents;
-    const markerSize = { x: 48, y: 48 };
-    const image = ImageUtil.fromUrl("http://www.clker.com/cliparts/b/7/6/5/1308001441853739087google%20maps%20pin.svg");
-    const imageOffset = { x: 14, y: 40 };
-    const markerDrawFunc: MarkerDrawFunc = (ctx, _marker) => {
-      ctx.beginPath();
-      ctx.arc(0, 0, 15, 0, 2 * Math.PI);
-      ctx.fillStyle = "green";
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = "black";
-      ctx.fill();
-      ctx.stroke();
-    };
-
-    const createMarker = (label: string, markerPos: Point3d): void => {
-      const marker = new Marker(markerPos, markerSize);
-      marker.drawFunc = markerDrawFunc;
-      marker.label = label;
-      marker.imageOffset = imageOffset;
-      marker.setImage(image);
-      this.markers.push(marker);
-    };
-
-    createMarker(iModel.iModelToken.key!, extents.getCenter());
-    createMarker("low", extents.low);
-    createMarker("high", extents.high);
-
     const makerIcons = [
-      ImageUtil.fromUrl("http://www.clker.com/cliparts/1/f/6/a/1194984837934379280DangerElectrique.svg"),
-      ImageUtil.fromUrl("http://www.clker.com/cliparts/6/8/2/2/1194984852624127072RisqueBiologique.svg"),
-      ImageUtil.fromUrl("http://www.clker.com/cliparts/b/6/f/4/11949848391240007341Trebuchement.svg"),
-      ImageUtil.fromUrl("http://www.clker.com/cliparts/c/3/7/0/11949848502071192471MatieresToxiques.svg"),
-      ImageUtil.fromUrl("http://www.clker.com/cliparts/3/3/e/f/1194984848430162199MatieresInflammables.svg"),
+      ImageUtil.fromUrl("Hazard_biological.svg"),
+      ImageUtil.fromUrl("Hazard_electric.svg"),
+      ImageUtil.fromUrl("Hazard_flammable.svg"),
+      ImageUtil.fromUrl("Hazard_toxic.svg"),
+      ImageUtil.fromUrl("Hazard_tripping.svg"),
     ];
+
+    const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
     for (let i = 0; i < 1000; ++i) {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
@@ -734,52 +782,9 @@ export class ProjectExtentsDecoration {
     }
 
   }
-  protected stop(): void { IModelApp.viewManager.dropDecorator(this); }
-
-  public testDecorationHit(id: string): boolean { return id === this.boxId!.value; }
-  public async getDecorationToolTip(_hit: HitDetail): Promise<string> { return "Project Extents"; }
-
   public decorate(context: DecorateContext): void {
-    const vp = context.viewport;
-
-    if (!vp.view.isSpatialView())
-      return;
-
-    if (undefined === this.boxId)
-      this.boxId = vp.view.iModel.transientIds.next;
-
-    const range = vp.view.iModel.projectExtents.clone();
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this.boxId);
-
-    const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone();
-
-    builder.setSymbology(white, black, 1);
-    builder.addRangeBox(range);
-    context.addDecorationFromBuilder(builder);
-    this.markers.forEach((marker) => marker.addDecoration(context));
-
-    this.incidents.addDecoration(context);
-  }
-
-  public static add(): void {
-    if (undefined !== activeExtentsDeco)
-      return;
-    activeExtentsDeco = new ProjectExtentsDecoration();
-  }
-
-  public static remove(): void {
-    if (undefined === activeExtentsDeco)
-      return;
-    activeExtentsDeco.stop();
-    activeExtentsDeco = undefined;
-  }
-
-  public static toggle(): void {
-    if (undefined === activeExtentsDeco)
-      this.add();
-    else
-      this.remove();
+    if (context.viewport.view.isSpatialView())
+      this.incidents.addDecoration(context);
   }
 }
 
@@ -931,7 +936,7 @@ function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
     const modelList = document.createElement("select");
     modelList.id = "modelList";
-    // Use hardcoded list for test sample files for mobile
+    // Use hardcoded list for test sample files
     modelList.innerHTML =
       " <option value='04_Plant.i.ibim'>04_Plant</option> \
         <option value='almostopaque.ibim'>almostopaque</option> \
@@ -958,6 +963,7 @@ function wireIconsToFunctions() {
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
   document.getElementById("startSelect")!.addEventListener("click", startSelect);
   document.getElementById("startMeasurePoints")!.addEventListener("click", startMeasurePoints);
+  document.getElementById("incidentMarkers")!.addEventListener("click", IncidentMarkerDemo.toggle);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
@@ -1203,8 +1209,6 @@ async function main() {
   }
 
   await uiReady; // Now wait for the HTML UI to finish loading.
-
-  // Now we have both the UI and the iModel.
 
   // open the specified view
   showStatus("opening View", configuration.viewName);
