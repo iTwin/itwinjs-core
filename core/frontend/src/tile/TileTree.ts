@@ -88,6 +88,7 @@ export class Tile implements IDisposable {
     this._isLeaf = (true === props.isLeaf);
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+    this._sizeMultiplier = props.sizeMultiplier;
 
     if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
@@ -140,7 +141,7 @@ export class Tile implements IDisposable {
       this.unloadChildren(BeTimePoint.now());
     }
 
-    if (undefined !== sizeMultiplier && sizeMultiplier !== this._sizeMultiplier) {
+    if (undefined !== sizeMultiplier && (undefined === this._sizeMultiplier || sizeMultiplier > this._sizeMultiplier)) {
       this._sizeMultiplier = sizeMultiplier;
       this.contentId = this.contentId.substring(0, this.contentId.lastIndexOf("/") + 1) + sizeMultiplier;
       if (undefined !== this._children && this._children.length > 1)
@@ -189,7 +190,8 @@ export class Tile implements IDisposable {
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
       const builder = context.createGraphicBuilder(GraphicType.Scene);
-      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
+      builder.setSymbology(color, color, 1);
       builder.addRangeBox(this.contentRange);
       this._rangeGraphic = builder.finish();
     }
@@ -621,7 +623,7 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
 
       case TileIO.Format.Pnts:

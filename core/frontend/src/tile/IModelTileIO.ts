@@ -91,9 +91,14 @@ export namespace IModelTileIO {
       public readonly count: number) { }
   }
 
+  const maxLeafTolerance = 1.0;
+  const minElementsPerTile = 100;
+
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    private readonly _sizeMultiplier?: number;
+
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -104,29 +109,48 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream, false);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled, sizeMultiplier) : undefined;
     }
 
     public async read(): Promise<GltfTileIO.ReaderResult> {
       this._buffer.reset();
       const header = new Header(this._buffer);
-      const isLeaf = true;
+      let isLeaf = true;
       if (!header.isValid)
         return { readStatus: TileIO.ReadStatus.InvalidHeader, isLeaf };
 
-      // ###TODO: determine leafiness and size multiplier based on header metadata...
-      const sizeMultiplier = undefined;
-
       const featureTable = this.readFeatureTable();
       if (undefined === featureTable)
-        return { readStatus: TileIO.ReadStatus.InvalidFeatureTable, isLeaf, sizeMultiplier };
+        return { readStatus: TileIO.ReadStatus.InvalidFeatureTable, isLeaf };
 
       // Textures must be loaded asynchronously first...
       await this.loadNamedTextures();
       if (this._isCanceled)
-        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier });
-      else
-        return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, sizeMultiplier));
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+
+      // Determine subdivision based on header data
+      isLeaf = false;
+      let sizeMultiplier = this._sizeMultiplier;
+      const completeTile = 0 === (header.flags & IModelTileIO.Flags.Incomplete);
+      const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
+      if (emptyTile) {
+        isLeaf = true;
+      } else {
+        const canSkipSubdivision = header.tolerance <= maxLeafTolerance;
+        if (canSkipSubdivision) {
+          if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
+            const containsCurves = 0 !== (header.flags & IModelTileIO.Flags.ContainsCurves);
+            if (!containsCurves)
+              isLeaf = true;
+            else if (undefined === sizeMultiplier)
+              sizeMultiplier = 1.0;
+          } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
+            sizeMultiplier = 1.0;
+          }
+        }
+      }
+
+      return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, sizeMultiplier));
     }
 
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
@@ -310,8 +334,9 @@ export namespace IModelTileIO {
       return featureTable;
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
       super(props, iModel, modelId, is3d, system, asClassifier, isCanceled);
+      this._sizeMultiplier = sizeMultiplier;
     }
 
     private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
