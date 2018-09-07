@@ -138,14 +138,14 @@ export class Tile implements IDisposable {
 
     if (undefined !== isLeaf && isLeaf !== this._isLeaf) {
       this._isLeaf = isLeaf;
-      this.unloadChildren(BeTimePoint.now());
+      this.unloadChildren();
     }
 
     if (undefined !== sizeMultiplier && (undefined === this._sizeMultiplier || sizeMultiplier > this._sizeMultiplier)) {
       this._sizeMultiplier = sizeMultiplier;
       this.contentId = this.contentId.substring(0, this.contentId.lastIndexOf("/") + 1) + sizeMultiplier;
       if (undefined !== this._children && this._children.length > 1)
-        this.unloadChildren(BeTimePoint.now());
+        this.unloadChildren();
     }
 
     if (undefined !== contentRange)
@@ -336,13 +336,13 @@ export class Tile implements IDisposable {
     }
   }
 
-  protected unloadChildren(olderThan: BeTimePoint): void {
+  protected unloadChildren(olderThan?: BeTimePoint): void {
     const children = this.children;
     if (undefined === children) {
       return;
     }
 
-    if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
+    if (undefined !== olderThan && this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
       // this node has been used recently. Keep it, but potentially unload its grandchildren.
       for (const child of children)
         child.unloadChildren(olderThan);
@@ -713,6 +713,8 @@ export class IModelTileLoader extends TileLoader {
     const parentIdParts = parent.contentId.split("/");
     assert(5 === parentIdParts.length);
 
+    const pDepth = parseInt(parentIdParts[0], 10);
+    assert(parent.depth === pDepth);
     const pI = parseInt(parentIdParts[1], 10);
     const pJ = parseInt(parentIdParts[2], 10);
     const pK = parseInt(parentIdParts[3], 10);
@@ -743,6 +745,9 @@ export class IModelTileLoader extends TileLoader {
 
   public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
     for (const tile of missingTiles.extractArray()) {
+      if (!tile.isNotLoaded)
+        continue;
+
       tile.setIsQueued();
       this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
         if (tile.isQueued)
