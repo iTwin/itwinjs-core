@@ -59,7 +59,7 @@ Here is a simple example of a fictitious source data format and the logic to con
 ## Detecting and pushing changes
 
 Rather than starting over when the source data changes, a bridge should be able to detect and convert only the changes. That makes for compact, meaningful ChangeSets, which are added to the iModel's
-[timeline](../../overview/IModelHub.md#the-timeline-of-changes-to-an-imodel).
+[timeline](../overview/IModelHub.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
 
