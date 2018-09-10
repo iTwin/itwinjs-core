@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, Overlay2dDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -140,10 +140,10 @@ export class PerformanceMetrics {
 }
 
 export abstract class Target extends RenderTarget {
+  protected _decorations?: Decorations;
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
-  protected _decorations?: Decorations;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -1059,6 +1059,20 @@ export class OnScreenTarget extends Target {
         ctx.restore();
       }
     }
+  }
+
+  public pickOverlayDecoration(pt: XAndY): Overlay2dDecoration | undefined {
+    let overlays: Overlay2dDecoration[] | undefined;
+    if (undefined === this._decorations || undefined === (overlays = this._decorations.overlay2d))
+      return undefined;
+
+    // loop over array backwards, because later entries are drawn on top.
+    for (let i = overlays.length - 1; i >= 0; --i) {
+      const overlay = overlays[i];
+      if (undefined !== overlay.pick && overlay.pick(pt))
+        return overlay;
+    }
+    return undefined;
   }
 
   public onResized(): void {

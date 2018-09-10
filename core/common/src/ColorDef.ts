@@ -12,6 +12,7 @@
  */
 export enum ColorByName {
   aliceBlue = 0xFFF8F0,
+  amber = 0x00BFFF,
   antiqueWhite = 0xD7EBFA,
   aqua = 0xFFFF00,
   aquamarine = 0xD4FF7F,

@@ -25,6 +25,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
+import { ToolTipOptions } from "./NotificationManager";
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -150,6 +151,15 @@ export class ViewRect {
    * @note The inset operation can cause a previously valid ViewRect to become invalid.
    */
   public insetUniform(offset: number): void { this.inset(offset, offset); }
+
+  /** Scale this ViewRect about its center by the supplied scale factors. */
+  public scaleAboutCenter(xScale: number, yScale: number): void {
+    const w = this.width;
+    const h = this.height;
+    const xDelta = (w - (w * xScale)) * 0.5;
+    const yDelta = (h - (h * yScale)) * 0.5;
+    this.inset(xDelta, yDelta);
+  }
 
   /** Inset this ViewRect by a percentage of its current width.
    * @param percent The percentage of this ViewRect's width to inset in all directions.
@@ -1765,6 +1775,10 @@ export class ScreenViewport extends Viewport {
     this.setCursor();
   }
 
+  public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
+    IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
+  }
+
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
@@ -1784,6 +1798,8 @@ export class ScreenViewport extends Viewport {
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
   }
+
+  public pickOverlayDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }

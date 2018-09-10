@@ -4,7 +4,7 @@
 import {
   IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState, SpatialModelState, AccuDraw, MessageBoxType, MessageBoxIconType, MessageBoxValue,
   PrimitiveTool, SnapMode, AccuSnap, NotificationManager, ToolTipOptions, NotifyMessageDetails, DecorateContext, AccuDrawHintBuilder,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker, ImageUtil, MarkerDrawFunc, MarkerSet, ClusterMarker,
+  BeButtonEvent, EventHandled, AccuDrawShortcuts, HitDetail, ScreenViewport, DynamicsContext, RotationMode, Marker, ImageUtil, MarkerSet, ClusterMarker,
 } from "@bentley/imodeljs-frontend";
 import { Target, FeatureSymbology, PerformanceMetrics, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
@@ -25,6 +25,7 @@ import {
   LinePixels,
   RgbColor,
   ColorDef,
+  ColorByName,
 } from "@bentley/imodeljs-common";
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY, Transform, Vector3d, XYAndZ, Point2d } from "@bentley/geometry-core";
@@ -624,7 +625,7 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
-export class ProjectExtentsDecoration {
+class ProjectExtentsDecoration {
   private static _decorator?: ProjectExtentsDecoration;
   public boxId?: Id64;
   public markers: Marker[] = [];
@@ -633,7 +634,7 @@ export class ProjectExtentsDecoration {
     const iModel = activeViewState.iModelConnection!;
     const extents = iModel.projectExtents;
     const image = ImageUtil.fromUrl("map_pin.svg");
-    const markerDrawFunc: MarkerDrawFunc = (ctx, _marker) => {
+    const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, 15, 0, 2 * Math.PI);
       ctx.fillStyle = "green";
@@ -651,6 +652,7 @@ export class ProjectExtentsDecoration {
       marker.label = label;
       marker.imageOffset = imageOffset;
       marker.setImage(image);
+      marker.setScaleFactor({ low: .4, high: 1.5 });
       this.markers.push(marker);
     };
 
@@ -664,7 +666,6 @@ export class ProjectExtentsDecoration {
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-
     if (!vp.view.isSpatialView())
       return;
 
@@ -691,76 +692,76 @@ export class ProjectExtentsDecoration {
   }
 }
 
-class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
-  public warningSign?: HTMLImageElement;
-
-  constructor() {
-    super();
-    ImageUtil.fromUrl("Warning_sign.svg").then((image) => this.warningSign = image);
-  }
-
-  private static _drawFunc: MarkerDrawFunc = (ctx, _marker) => {
-    ctx.beginPath();
-    ctx.strokeStyle = "#8B0000";
-    ctx.fillStyle = "white";
-    ctx.lineWidth = 1;
-    ctx.arc(0, 0, 13, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  protected getClusterMarker(cluster: ClusterMarker<IncidentMarker>): Marker {
-    const marker = cluster.markers[0].makeFrom();
-    marker.image = this.warningSign;
-    marker.imageOffset = new Point3d(0, 28);
-    marker.imageSize = new Point2d(30, 30);
-    let total = 0;
-    cluster.markers.forEach((m) => total += m.severity);
-    marker.label = total.toString();
-    marker.labelColor = "black";
-    marker.labelFont = "bold 14px san-serif";
-    marker.drawFunc = IncidentMarkerSet._drawFunc;
-    return marker;
-  }
-}
-
 class IncidentMarker extends Marker {
-  private static _size = { x: 30, y: 30 };
-  private static _imageSize = { x: 40, y: 40 };
-  private static _imageOffset = { x: 0, y: 30 };
-
-  private static _drawFunc: MarkerDrawFunc = (ctx, _marker) => {
+  private static _size = Point2d.create(30, 30);
+  private static _imageSize = Point2d.create(40, 40);
+  private static _imageOffset = Point2d.create(0, 30);
+  private static _amber = new ColorDef(ColorByName.amber);
+  public color: string;
+  public drawFunc(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = this.color;
     ctx.rect(-10, -11, 20, 20);
     ctx.fill();
     ctx.strokeStyle = "white";
     ctx.stroke();
   }
 
-  constructor(location: XYAndZ, public severity: number, icon: Promise<HTMLImageElement>) {
+  public clusterDrawFunc = (ctx: CanvasRenderingContext2D) => {
+    ctx.beginPath();
+    ctx.strokeStyle = this.color;
+    ctx.fillStyle = "white";
+    ctx.lineWidth = 5;
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  public get wantImage() { return this._isHilited; }
+  public static makeColor(severity: number): string {
+    return severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.).toHexString() :
+      this._amber.lerp(ColorDef.red, (severity - 16) / 14.).toHexString();
+  }
+  constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
     super(location, IncidentMarker._size);
+    this.color = IncidentMarker.makeColor(severity);
     this.setImage(icon);
     this.imageOffset = IncidentMarker._imageOffset;
     this.imageSize = IncidentMarker._imageSize;
     this.label = severity.toString();
-    this.drawFunc = IncidentMarker._drawFunc;
+    this.title = "Incident Id: " + id;
+    this.setScaleFactor({ low: .2, high: 1.4 });
   }
 }
 
-export class IncidentMarkerDemo {
-  public incidents = new IncidentMarkerSet();
-  private static _decorator?: IncidentMarkerDemo;
+class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
+  private _warningSign = ImageUtil.fromUrl("Warning_sign.svg");
 
-  public static toggle = () => {
-    if (undefined === IncidentMarkerDemo._decorator) {
-      IncidentMarkerDemo._decorator = new IncidentMarkerDemo();
-      IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
-    } else {
-      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo._decorator);
-      IncidentMarkerDemo._decorator = undefined;
-    }
+  protected getClusterMarker(cluster: ClusterMarker<IncidentMarker>): Marker {
+    let total = cluster.markers.length;
+    let highest = 0;
+    cluster.markers.forEach((m) => {
+      total += m.severity;
+      if (m.severity > highest)
+        highest = m.severity;
+    });
+    const average = total / cluster.markers.length;
+    const marker = cluster.markers[0].makeFrom() as IncidentMarker;
+    marker.drawFunc = marker.clusterDrawFunc;
+    marker.setImage(this._warningSign);
+    marker.imageOffset = new Point3d(0, 28);
+    marker.imageSize = new Point2d(30, 30);
+    marker.label = cluster.markers.length.toString();
+    marker.labelColor = "black";
+    marker.labelFont = "bold 14px san-serif";
+    marker.title = "Total severity = " + total + "<br>Average severity = " + average + "<br>Highest severity = " + highest;
+    marker.color = IncidentMarker.makeColor(highest);
+    return marker;
   }
+}
+
+class IncidentMarkerDemo {
+  private _incidents = new IncidentMarkerSet();
+  private static _decorator?: IncidentMarkerDemo;
 
   public constructor() {
     const makerIcons = [
@@ -773,22 +774,31 @@ export class IncidentMarkerDemo {
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
-    for (let i = 0; i < 1000; ++i) {
+    for (let i = 0; i < 500; ++i) {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
       pos.y = extents.low.y + (Math.random() * extents.yLength());
       pos.z = extents.low.z + (Math.random() * extents.zLength());
-      const marker = new IncidentMarker(pos, 1 + Math.round(Math.random() * 10), makerIcons[i % makerIcons.length]);
-      this.incidents.markers.add(marker);
+      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, makerIcons[i % makerIcons.length]));
     }
-
   }
-  public decorate(context: DecorateContext): void {
+
+  public decorate(context: DecorateContext) {
     if (context.viewport.view.isSpatialView())
-      this.incidents.addDecoration(context);
+      this._incidents.addDecoration(context);
+  }
+
+  public static toggle = () => {
+    if (undefined === IncidentMarkerDemo._decorator) {
+      IncidentMarkerDemo._decorator = new IncidentMarkerDemo();
+      IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
+    } else {
+      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo._decorator);
+      IncidentMarkerDemo._decorator = undefined;
+    }
   }
 }
 
-// starts Measure between points tool
+// Starts Measure between points tool
 function startMeasurePoints(event: any) {
   const menu = document.getElementById("snapModeList") as HTMLDivElement;
   if (event.target === menu)
@@ -1125,7 +1135,7 @@ class SVTNotifications extends NotificationManager {
     this._tooltipDiv = undefined;
   }
 
-  public showToolTip(el: HTMLElement, message: string, pt?: XAndY, _options?: ToolTipOptions): void {
+  protected _showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
     this.clearToolTip();
 
     const rect = el.getBoundingClientRect();
@@ -1145,7 +1155,7 @@ class SVTNotifications extends NotificationManager {
 
     this._el = el;
     this._tooltipDiv = location;
-    this._toolTip = new ttjs.default(location, { trigger: "manual", html: true, placement: "auto", title: message });
+    this._toolTip = new ttjs.default(location, { trigger: "manual", html: true, placement: (options && options.placement) ? options.placement as any : "right-start", title: message });
     this._toolTip!.show();
   }
 }

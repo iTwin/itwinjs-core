@@ -12,6 +12,7 @@ import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
@@ -37,10 +38,8 @@ export class AccuSnap {
   private _candidateSnapMode = SnapMode.Nearest;
   /** Number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools */
   private _suppressed = 0;
-  /** Number of times "noMotion" has been called since last motion */
-  private _noMotionCount = 0;
-  /** Anchor point for tooltip window is cleared when cursor moves away from this point. */
-  private readonly _toolTipPt = new Point3d();
+  /** Time motion stopped. */
+  private _motionStopTime = 0;
   /** Location of cursor when we last checked for motion */
   private readonly _lastCursorPos = new Point2d();
   public readonly toolState = new AccuSnap.ToolState();
@@ -190,7 +189,7 @@ export class AccuSnap {
 
   private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: string) {
     if (IModelApp.viewManager.doesHostHaveFocus())
-      IModelApp.notifications.showToolTip(vp.toolTipDiv, msg, viewPt);
+      vp.openToolTip(msg, viewPt);
   }
 
   public async displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d) {
@@ -218,10 +217,10 @@ export class AccuSnap {
         if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
           return;
 
-        timeout = 3;
+        timeout = BeDuration.fromSeconds(.3);
       } else {
         // if uorPt is nullptr, that means that we want to display the tooltip almost immediately.
-        timeout = 1;
+        timeout = BeDuration.fromSeconds(.1);
       }
 
       theHit = tpHit;
@@ -233,11 +232,8 @@ export class AccuSnap {
     }
 
     // have we waited long enough to show the balloon?
-    if (this._noMotionCount < timeout) {
+    if ((this._motionStopTime + timeout.milliseconds) > Date.now())
       return;
-    }
-
-    this._toolTipPt.setFrom(viewPt);
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
@@ -266,11 +262,10 @@ export class AccuSnap {
   }
 
   public clearToolTip(ev?: BeButtonEvent): void {
-    this._noMotionCount = 0;
     if (!IModelApp.notifications.isToolTipOpen)
       return;
 
-    if (ev && (5 > ev.viewPoint.distanceXY(this._toolTipPt)))
+    if (ev && (5 > ev.viewPoint.distanceXY(IModelApp.notifications.toolTipLocation)))
       return;
 
     IModelApp.notifications.clearToolTip();
@@ -721,10 +716,11 @@ export class AccuSnap {
 
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
-    const out = new LocateResponse();
-    out.snapStatus = SnapStatus.Disabled;
 
     this.clearToolTip(ev);
+
+    const out = new LocateResponse();
+    out.snapStatus = SnapStatus.Disabled;
 
     let hit: HitDetail | undefined;
     if (this.isActive) {
@@ -742,12 +738,8 @@ export class AccuSnap {
     this.showSnapError(out.snapStatus, ev);
   }
 
-  public onMotionStopped(_ev: BeButtonEvent): void { }
-
-  public async onNoMotion(ev: BeButtonEvent) {
-    this._noMotionCount++;
-    return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
-  }
+  public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }
+  public async onNoMotion(ev: BeButtonEvent) { return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint); }
 
   private flashElements(context: DecorateContext): void {
     const viewport = context.viewport!;
@@ -862,6 +854,6 @@ export namespace AccuSnap {
     public hiliteColdHits = true;
     public enableFlag = true;
     public toolTip = true;
-    public toolTipDelay = 5; // delay before tooltip pops up - in 10th of a second
+    public toolTipDelay = BeDuration.fromSeconds(.5); // delay before tooltip pops up
   }
 }
