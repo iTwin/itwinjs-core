@@ -223,11 +223,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -251,7 +251,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "3d-cube",
+                      icon: "icon-3d-cube",
                       trayId: undefined,
                     },
                   },
@@ -275,11 +275,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -306,11 +306,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -335,7 +335,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "arc",
+                      icon: "icon-arc",
                       trayId: undefined,
                     },
                   },
@@ -361,11 +361,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -390,31 +390,31 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                     Test2123123: {
-                      icon: "align-justify",
+                      icon: "icon-text-align-text-align-justify",
                       trayId: undefined,
                     },
                     Test3: {
-                      icon: "align-left",
+                      icon: "icon-text-align-text-align-left",
                       trayId: "tray2",
                     },
                     Test4: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test5: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test6: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test7: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                   },
@@ -422,7 +422,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 1: {
                   items: {
                     Test5: {
-                      icon: "app-1",
+                      icon: "icon-app-1",
                       trayId: undefined,
                     },
                   },
@@ -430,7 +430,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 2: {
                   items: {
                     ":)": {
-                      icon: "app-2",
+                      icon: "icon-app-2",
                       trayId: undefined,
                     },
                   },
@@ -443,7 +443,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                   },
@@ -469,7 +469,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Validate: {
-                      icon: "validate",
+                      icon: "icon-validate",
                       trayId: undefined,
                     },
                   },
@@ -901,7 +901,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 key={entry.key}
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
               >
-                <i className={`icon icon-${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
+                <i className={`icon ${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
               </HistoryIcon>
             );
           })
@@ -1056,7 +1056,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                     ref={itemKey}
                     label={itemKey}
                     icon={
-                      <i className={`icon icon-${item.icon}`} />
+                      <i className={`icon ${item.icon}`} />
                     }
                     onClick={() => this.setState((prevState) => {
                       const toolGroup = prevState.tools[toolKey] as ToolGroup;
@@ -1081,7 +1081,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   label={itemKey}
                   onClick={() => this.handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
                   icon={
-                    <i className={`icon icon-${item.icon}`} />
+                    <i className={`icon ${item.icon}`} />
                   }
                 />
               );
