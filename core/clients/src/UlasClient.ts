@@ -203,9 +203,7 @@ export class UlasClient extends Client {
   public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     alctx.enter();
     const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    const token: AccessToken = await imsClient.getToken(alctx, authorizationToken);
-    alctx.enter();
-    return token;
+    return await imsClient.getToken(alctx, authorizationToken);
   }
 
   /**
@@ -217,9 +215,7 @@ export class UlasClient extends Client {
   public async logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
     alctx.enter();
     const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
-    const resp: LogPostingResponse = await this.logEntry(alctx, token, entryJson, false);
-    alctx.enter();
-    return resp;
+    return await this.logEntry(alctx, token, entryJson, false);
   }
 
   /**
@@ -234,9 +230,7 @@ export class UlasClient extends Client {
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
     const entriesJson: any = UlasLogEntryLogConverter.toFeatureLogJson(token, entries, this._policyIds);
-    const resp: LogPostingResponse = await this.logEntry(alctx, token, entriesJson, true);
-    alctx.enter();
-    return resp;
+    return await this.logEntry(alctx, token, entriesJson, true);
   }
 
   private async logEntry(alctx: ActivityLoggingContext, token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
