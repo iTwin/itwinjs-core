@@ -30,6 +30,7 @@ export const enum CoordinateLockOverrides {
 }
 
 export const enum StartOrResume { Start = 1, Resume = 2 }
+export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
@@ -663,6 +664,12 @@ export class ToolAdmin {
    */
   public readonly activeToolChanged = new BeEvent<(tool: Tool, start: StartOrResume) => void>();
 
+  /**
+   * Event raised by tools that support edit manipulators like the SelectTool.
+   * @param tool The current tool
+   */
+  public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
+
   public getCursorView(): Viewport | undefined { return this.currentInputState.viewport; }
 
   /** Called when a viewport is closed */
@@ -1219,6 +1226,8 @@ export class ToolAdmin {
    * @hidden
    */
   public startDefaultTool() { IModelApp.tools.run(this._defaultTool); }
+
+  public isDefaultTool(tool?: Tool) { return (undefined !== tool && tool.toolId === this._defaultTool); }
 
   public setCursor(cursor: BeCursor | undefined): void {
     if (undefined === this._saveCursor)

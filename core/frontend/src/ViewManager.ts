@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import { ScreenViewport } from "./Viewport";
-import { BeCursor } from "./tools/Tool";
+import { BeCursor, EventHandled, BeButtonEvent } from "./tools/Tool";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
@@ -30,6 +30,13 @@ export interface Decorator {
    * @returns A promise with the string with the tooltip message. May contain HTML.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<string>;
+
+  /** If the [[testDecorationHit] returned true, implement this method to handle a button event for this Decorator. Optional.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @param ev The BeButtonEvent that identified this decoration.
+   * @returns Yes if event completely handled by decoration and event should not be processed by the calling tool.
+   */
+  onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
 }
 
 export interface SelectedViewportChangedArgs {
@@ -273,6 +280,17 @@ export class ViewManager {
         return decorator.getDecorationToolTip(hit);
     }
     return "";
+  }
+
+  /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
+   *  @hidden
+   */
+  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.onDecorationButtonEvent && decorator.testDecorationHit(hit.sourceId))
+        return decorator.onDecorationButtonEvent(hit, ev);
+    }
+    return EventHandled.No;
   }
 
   /** Change the cursor shown in all Viewports.

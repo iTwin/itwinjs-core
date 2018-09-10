@@ -6,16 +6,15 @@
 import { Point3d, Point2d, Range2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
-import { CoordinateLockOverrides } from "./ToolAdmin";
+import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
 import { BeButtonEvent, BeButton, BeCursor, BeModifierKeys, EventHandled, BeTouchEvent, InputSource } from "./Tool";
-import { LocateResponse } from "../ElementLocateManager";
+import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { ViewRect } from "../Viewport";
 import { Pixel } from "../rendering";
-import { EditManipulator } from "./EditManipulator";
 import { GraphicType } from "../render/GraphicBuilder";
 
 /** The method for choosing elements with the [[SelectionTool]] */
@@ -57,14 +56,14 @@ export class SelectionTool extends PrimitiveTool {
   public isSelectByPoints = false;
   public isSuspended = false;
   public readonly points: Point3d[] = [];
-  public manipulator?: EditManipulator.Provider;
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
 
-  // protected getManipulator(): EditManipulator.Provider | undefined { return new TestEditManipulatorProvider(this.iModel); } // NEEDSWORK: Testing...
-  protected getManipulator(): EditManipulator.Provider | undefined { return undefined; } // Override to create sub-class of EditManipulator.Provider...
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
+  protected wantEditManipulators(): boolean { return SelectionMethod.Pick === this.getSelectionMethod(); } // NEEDSWORK: Settings...send ManipulatorToolEvent.Stop/Start as appropriate when value changes...
+  protected wantPickableDecorations(): boolean { return this.wantEditManipulators(); } // Allow pickable decorations selection to be independent of manipulators...
+
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; } // NEEDSWORK: Setting...
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; } // NEEDSWORK: Settings...
   protected wantToolSettings(): boolean { return true; } // NEEDSWORK: Settings...
@@ -82,8 +81,7 @@ export class SelectionTool extends PrimitiveTool {
 
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.locateManager.initToolLocate();
-    // IModelApp.locateManager.options.allowDecorations = (undefined !== this.manipulator && this.manipulator.allowTransientControls());
-    IModelApp.locateManager.options.allowDecorations = true;
+    IModelApp.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
 
     IModelApp.accuSnap.enableLocate(enableLocate);
     IModelApp.accuSnap.enableSnap(false);
@@ -223,7 +221,7 @@ export class SelectionTool extends PrimitiveTool {
       }
       if (undefined !== outline && 0 !== outline.size) {
         const inside = new Set<string>();
-        Id64.toIdSet(contents).forEach((id) => { if (!outline.has(id)) inside.add(id); });
+        contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
         contents = inside;
       }
     } else {
@@ -240,6 +238,9 @@ export class SelectionTool extends PrimitiveTool {
         }
       }
     }
+
+    if (!this.wantPickableDecorations())
+      contents.forEach((id) => { if (Id64.isTransientId(id)) contents.delete(id); });
 
     if (0 === contents.size) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
@@ -301,18 +302,25 @@ export class SelectionTool extends PrimitiveTool {
       ev.viewport.invalidateDecorations();
   }
 
+  public async selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled> {
+    if (undefined === currHit)
+      currHit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+
+    if (undefined !== currHit && !currHit.isElementHit)
+      return IModelApp.viewManager.onDecorationButtonEvent(currHit, ev);
+
+    return EventHandled.No;
+  }
+
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    if (SelectionMethod.Pick === this.getSelectionMethod()) {
-      if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
-        return EventHandled.Yes;
-      if (InputSource.Touch === ev.inputSource)
-        return EventHandled.No; // Require method change for line/box selection...allow IdleTool to handle touch move...
-    }
+    if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
+      return EventHandled.Yes;
+    if (InputSource.Touch === ev.inputSource && SelectionMethod.Pick === this.getSelectionMethod())
+      return EventHandled.No; // Require method change for line/box selection...allow IdleTool to handle touch move...
     return this.selectByPointsStart(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
   public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // NOTE: If manipulator installed an input collector, it would get the end drag event directly
     return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
@@ -323,6 +331,8 @@ export class SelectionTool extends PrimitiveTool {
     if (this.selectByPointsEnd(ev))
       return EventHandled.Yes;
 
+    /* ###TODO: Could allow pick on marker type decorations here. Return on EventHandled.Yes to allow marker to pop-up info dialog, etc. */
+
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
         this.iModel.selectionSet.emptyAll();
@@ -331,12 +341,11 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
     }
 
-    if (this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
-      return EventHandled.Yes;
-
-    // NOTE: Non-element hits are only handled by a manipulator that specifically requested them, can be ignored here
     const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit !== undefined && hit.isElementHit) {
+    if (hit !== undefined) {
+      if (EventHandled.Yes === await this.selectDecoration(ev, hit))
+        return EventHandled.Yes;
+
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
           this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
@@ -367,9 +376,6 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
     }
 
-    if (SelectionMethod.Pick === this.getSelectionMethod() && this.manipulator && EventHandled.Yes === await this.manipulator.onButtonEvent(ev))
-      return EventHandled.Yes;
-
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
     if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
@@ -391,12 +397,15 @@ export class SelectionTool extends PrimitiveTool {
       }
     }
 
+    if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
+      return EventHandled.Yes;
+
     IModelApp.accuSnap.resetButton();
     return EventHandled.Yes;
   }
 
-  public onSuspend(): void { this.isSuspended = true; }
-  public onUnsuspend(): void { this.isSuspended = false; }
+  public onSuspend(): void { this.isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
+  public onUnsuspend(): void { this.isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); }
 
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this.isSelectByPoints)
@@ -414,36 +423,31 @@ export class SelectionTool extends PrimitiveTool {
     return (modifier === BeModifierKeys.Shift && this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {
+  public filterHit(hit: HitDetail, _out?: LocateResponse): LocateFilterStatus {
+    if (!this.wantPickableDecorations() && !hit.isElementHit)
+      return LocateFilterStatus.Reject;
+
     const mode = this.getSelectionMode();
     if (SelectionMode.Replace === mode)
-      return true;
+      return LocateFilterStatus.Accept;
 
-    const elementId = (hit.isElementHit ? hit.sourceId : undefined);
-    if (!elementId)
-      return true; // Don't reject transients...
-
-    const isSelected = this.iModel.selectionSet.has(elementId);
-    return (SelectionMode.Add === mode ? !isSelected : isSelected);
+    const isSelected = this.iModel.selectionSet.has(hit.sourceId);
+    return ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
   }
 
   public onRestartTool(): void { this.exitTool(); }
 
   public onCleanup(): void {
-    super.onCleanup();
-    if (this.manipulator) {
-      this.manipulator.clear();
-      this.manipulator = undefined;
-    }
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
   }
 
   public onPostInstall(): void {
     super.onPostInstall();
     if (!this.targetView)
       return;
-    this.manipulator = this.getManipulator();
-    if (this.manipulator)
-      this.manipulator.init(); // create controls for an existing selection set...
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Start);
     this.initSelectTool();
   }
 

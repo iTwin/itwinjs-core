@@ -722,11 +722,7 @@ export class BriefcaseManager {
       /* FixedVersion, PullOnly => Create standalone briefcase */
       briefcase.pathname = BriefcaseManager.buildStandalonePathname(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
-      // tslint:disable-next-line:no-console
-      console.log("DOWNLOADING SEED FILE " + actx.activityId);
       await BriefcaseManager.downloadSeedFile(actx, accessToken, iModelId, briefcase.pathname);
-      // tslint:disable-next-line:no-console
-      console.log("DOWNLOADED SEED FILE " + actx.activityId);
       actx.enter();
       briefcase.changeSetId = "";
       briefcase.changeSetIndex = 0;

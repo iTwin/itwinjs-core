@@ -19,18 +19,11 @@ export const enum LocateAction {
 
 /**
  * Values to return from a locate filter.
- *
- * @note It would be rare and extreme for a locate filter to ever return Accept.
- *
- * Usually, filters will return Reject to indicate the element is unacceptable, or Neutral to
- * indicate that the element is acceptable <i>as far as this filter is concerned.</i> By returning Accept, a
- * single filter can cause the element to be accepted, *without calling other filters* that might otherwise reject the element.
- * Indicates the reason an element was rejected by a filter.
+ * @return Reject to indicate the element is unacceptable.
  */
 export const enum LocateFilterStatus {
-  Reject = 0,
-  Neutral = 1,
-  Accept = 2,
+  Accept = 0,
+  Reject = 1,
 }
 
 export const enum SnapStatus {
@@ -233,22 +226,22 @@ export class ElementLocateManager {
     return preLocated;
   }
 
-  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
+  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): LocateFilterStatus {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.isElementHit && !this.options.allowDecorations) {
+    if (!this.options.allowDecorations && !hit.isElementHit) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
-      return true;
+      return LocateFilterStatus.Reject;
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
     if (!(tool && tool instanceof PrimitiveTool))
-      return false;
+      return LocateFilterStatus.Accept;
 
-    const retVal = !tool.onPostLocate(hit, out);
-    if (retVal)
+    const status = tool.filterHit(hit, out);
+    if (LocateFilterStatus.Reject === status)
       out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
 
-    return retVal;
+    return status;
   }
 
   public initLocateOptions() { this.options.init(); }
@@ -269,7 +262,7 @@ export class ElementLocateManager {
 
       // if we're snapped to something, that path has the highest priority and becomes the active hit.
       if (hit) {
-        if (!filterHits || !this.filterHit(hit, LocateAction.Identify, response))
+        if (!filterHits || LocateFilterStatus.Accept === this.filterHit(hit, LocateAction.Identify, response))
           return hit;
 
         response = new LocateResponse(); // we have the reason and explanation we want.
@@ -284,7 +277,7 @@ export class ElementLocateManager {
 
     let newHit: HitDetail | undefined;
     while (undefined !== (newHit = this.getNextHit())) {
-      if (!filterHits || !this.filterHit(newHit, LocateAction.Identify, response))
+      if (!filterHits || LocateFilterStatus.Accept === this.filterHit(newHit, LocateAction.Identify, response))
         return newHit;
       response = new LocateResponse(); // we have the reason and explanation we want.
     }
