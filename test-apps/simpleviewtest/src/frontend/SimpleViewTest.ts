@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d } from "@bentley/geometry-core";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -23,6 +23,7 @@ import { NonConnectProject } from "./NonConnectProject";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { SimpleViewState } from "./SimpleViewState";
 import { showError, showStatus } from "./Utils";
+import { Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 type Tooltip = ttjs.default;
 
@@ -613,25 +614,66 @@ export class MeasurePointsTool extends PrimitiveTool {
 }
 
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
+  protected _anchorIndex: number;
+  protected _anchorPoint: Point3d;
+  protected _ids: string[];
+  protected _base: Point3d[];
+  protected _axis: Vector3d[];
+
+  public constructor(manipulator: EditManipulator.HandleProvider, ev: BeButtonEvent, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
+    super(manipulator);
+    this._anchorIndex = ids.indexOf(hitId);
+    this._anchorPoint = ev.point;
+    this._ids = ids;
+    this._base = base;
+    this._axis = axis;
+  }
+
   protected init(): void {
     this.receivedDownEvent = true;
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.accuSnap.enableLocate(false);
     IModelApp.accuSnap.enableSnap(false);
-    IModelApp.accuDraw.deactivate();
+
+    const hints = new AccuDrawHintBuilder();
+    hints.setOrigin(this._base[this._anchorIndex]);
+    hints.setXAxis2(this._axis[this._anchorIndex]);
+    hints.sendHints();
+
     this.beginDynamics();
   }
 
   protected accept(_ev: BeButtonEvent): boolean { return true; }
 
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (-1 === this._anchorIndex || undefined === ev.viewport)
+      return;
+
+    const ray = Ray3d.create(this._base[this._anchorIndex], this._axis[this._anchorIndex]);
+    const projectedPt1 = this._base[this._anchorIndex];
+    const projectedPt2 = ray.projectPointToRay(ev.point);
+    const offsetVec = Vector3d.createStartEnd(projectedPt1, projectedPt2);
+
+    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
+    if (offset < Geometry.smallMetricDistance)
+      return;
+    if (offsetVec.dotProduct(this._axis[this._anchorIndex]) < 0.0)
+      offset *= -1.0;
+
+    const adjustedPts: Point3d[] = [];
+    for (let iFace = 0; iFace < this._ids.length; iFace++) {
+      if (iFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[iFace]))
+        adjustedPts.push(this._base[iFace].plusScaled(this._axis[iFace], offset));
+      else
+        adjustedPts.push(this._base[iFace]);
+    }
+
+    const extents = Range3d.create();
+    extents.extendArray(adjustedPts);
+
     const builder = context.createGraphicBuilder(GraphicType.Scene);
-
-    const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone();
-
-    builder.setSymbology(white, black, 10);
-    builder.addPointString([ev.point]);
+    builder.setSymbology(ev.viewport!.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
+    builder.addRangeBox(extents);
     context.addGraphic(builder.finish());
   }
 }
@@ -639,14 +681,16 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
 export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectExtentsDecoration;
   protected _extents: AxisAlignedBox3d;
+  protected _markers: Marker[] = [];
   protected _boxId?: string;
   protected _controlIds: string[] = [];
-  public markers: Marker[] = [];
+  protected _controlPoint: Point3d[] = [];
+  protected _controlAxis: Vector3d[] = [];
 
   public constructor() {
     super(activeViewState.iModelConnection!);
-    this._extents = this._iModel.projectExtents;
-    this._boxId = this._iModel.transientIds.next.value;
+    this._extents = this.iModel.projectExtents;
+    this._boxId = this.iModel.transientIds.next.value;
     this.updateDecorationListener(true);
 
     const image = ImageUtil.fromUrl("map_pin.svg");
@@ -669,27 +713,28 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
       marker.imageOffset = imageOffset;
       marker.setImage(image);
       marker.setScaleFactor({ low: .4, high: 1.5 });
-      this.markers.push(marker);
+      this._markers.push(marker);
     };
 
-    createBoundsMarker(this._iModel.iModelToken.key!, this._extents.getCenter());
+    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.getCenter());
     createBoundsMarker("low", this._extents.low);
     createBoundsMarker("high", this._extents.high);
   }
 
   protected stop(): void {
-    const selectedId = (undefined !== this._boxId && this._iModel.selectionSet.has(this._boxId)) ? this._boxId : undefined;
+    const selectedId = (undefined !== this._boxId && this.iModel.selectionSet.has(this._boxId)) ? this._boxId : undefined;
     this._boxId = undefined; // Invalidate id so that decorator will be dropped...
     super.stop();
     if (undefined !== selectedId)
-      this._iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
+      this.iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
   }
 
-  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, elementIds); }
+  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this.iModel.iModelToken, elementIds); }
 
   protected async createControls(): Promise<boolean> {
-    /*     if (1 === this._iModel.selectionSet.size) {
-          const props = await this.getElementProps(this._iModel.selectionSet.elements);
+    /* // TESTING ELEMENT QUERY
+         if (1 === this.iModel.selectionSet.size) {
+          const props = await this.getElementProps(this.iModel.selectionSet.elements);
           if (0 !== props.length && undefined !== props[0].placement) {
             const placement = Placement3d.fromJSON(props[0].placement);
             this._extents = placement.calculateRange();
@@ -703,29 +748,64 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 
     // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this._iModel.selectionSet.size <= this._controlIds.length + 1 && this._iModel.selectionSet.has(this._boxId)) {
+    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._boxId)) {
       showControls = true;
-      if (this._iModel.selectionSet.size > 1) {
-        this._iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+      if (this.iModel.selectionSet.size > 1) {
+        this.iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
       }
     }
-    return showControls;
+
+    if (!showControls)
+      return false;
+
+    this._extents = this.iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
+
+    if (0 === this._controlIds.length) {
+      this._controlIds[0] = this.iModel.transientIds.next.value;
+      this._controlIds[1] = this.iModel.transientIds.next.value;
+      this._controlIds[2] = this.iModel.transientIds.next.value;
+      this._controlIds[3] = this.iModel.transientIds.next.value;
+      this._controlIds[4] = this.iModel.transientIds.next.value;
+      this._controlIds[5] = this.iModel.transientIds.next.value;
+    }
+
+    const xOffset = 0.5 * this._extents.xLength();
+    const yOffset = 0.5 * this._extents.yLength();
+    const zOffset = 0.5 * this._extents.zLength();
+    const center = this._extents.getCenter();
+
+    this._controlAxis[0] = Vector3d.unitX();
+    this._controlAxis[1] = Vector3d.unitX(-1.0);
+    this._controlPoint[0] = center.plusScaled(this._controlAxis[0], xOffset);
+    this._controlPoint[1] = center.plusScaled(this._controlAxis[1], xOffset);
+
+    this._controlAxis[2] = Vector3d.unitY();
+    this._controlAxis[3] = Vector3d.unitY(-1.0);
+    this._controlPoint[2] = center.plusScaled(this._controlAxis[2], yOffset);
+    this._controlPoint[3] = center.plusScaled(this._controlAxis[3], yOffset);
+
+    this._controlAxis[4] = Vector3d.unitZ();
+    this._controlAxis[5] = Vector3d.unitZ(-1.0);
+    this._controlPoint[4] = center.plusScaled(this._controlAxis[4], zOffset);
+    this._controlPoint[5] = center.plusScaled(this._controlAxis[5], zOffset);
+
+    return true;
   }
 
   protected clearControls(): void {
-    if (0 !== this._controlIds.length && this._iModel.selectionSet.isActive) {
+    if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
       for (const controlId of this._controlIds) {
-        if (!this._iModel.selectionSet.has(controlId))
+        if (!this.iModel.selectionSet.has(controlId))
           continue;
-        this._iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+        this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
         break;
       }
     }
     super.clearControls();
   }
 
-  protected modifyControls(_hit: HitDetail, _ev: BeButtonEvent): boolean {
-    const manipTool = new ProjectExtentsResizeTool(this);
+  protected modifyControls(hit: HitDetail, ev: BeButtonEvent): boolean {
+    const manipTool = new ProjectExtentsResizeTool(this, ev, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
     return manipTool.run();
   }
 
@@ -747,60 +827,31 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._boxId);
 
-    builder.setSymbology(ColorDef.white, ColorDef.black, 1);
+    builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 3);
     builder.addRangeBox(this._extents);
     context.addDecorationFromBuilder(builder);
 
-    this.markers.forEach((marker) => marker.addDecoration(context));
+    this._markers.forEach((marker) => marker.addDecoration(context));
 
     if (!this._isActive)
       return;
 
-    if (0 === this._controlIds.length) {
-      this._controlIds[0] = vp.view.iModel.transientIds.next.value;
-      this._controlIds[1] = vp.view.iModel.transientIds.next.value;
-      this._controlIds[2] = vp.view.iModel.transientIds.next.value;
-      this._controlIds[3] = vp.view.iModel.transientIds.next.value;
-      this._controlIds[4] = vp.view.iModel.transientIds.next.value;
-      this._controlIds[5] = vp.view.iModel.transientIds.next.value;
-    }
+    const outlineColor = ColorDef.black.adjustForContrast(vp.view.backgroundColor, 100);
+    for (let iFace = 0; iFace < this._controlIds.length; iFace++) {
+      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, this._controlPoint[iFace], this._controlAxis[iFace], 0.75);
+      if (undefined === transform)
+        continue;
 
-    const center = this._extents.getCenter();
-    const outlineColor = vp.getContrastToBackgroundColor();
-    const faceColors: ColorDef[] = [];
-    const faceCenters: Point3d[] = [];
-    const faceNormals: Vector3d[] = [];
-    const radius = Math.min(this._extents.xLength(), this._extents.yLength(), this._extents.zLength()) * 0.1;
+      const fillColor = (0.0 !== this._controlAxis[iFace].x ? ColorDef.red : (0.0 !== this._controlAxis[iFace].y ? ColorDef.green : ColorDef.blue)).adjustForContrast(vp.view.backgroundColor, 100);
+      const shapePts = EditManipulator.HandleUtils.getArrowShape(0.0, 0.15, 0.55, 1.0, 0.3, 0.5, 0.1);
+      const arrowBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
 
-    faceColors[0] = ColorDef.red.clone(); faceColors[0].setAlpha(100);
-    faceColors[1] = faceColors[0];
-    faceNormals[0] = Vector3d.unitX(0.5 * this._extents.xLength());
-    faceNormals[1] = Vector3d.unitX(-0.5 * this._extents.xLength());
-    faceCenters[0] = center.plus(faceNormals[0]);
-    faceCenters[1] = center.plus(faceNormals[1]);
+      arrowBuilder.setSymbology(outlineColor, outlineColor, 2);
+      arrowBuilder.addLineString(shapePts);
+      arrowBuilder.setBlankingFill(fillColor);
+      arrowBuilder.addShape(shapePts);
 
-    faceColors[2] = ColorDef.green.clone(); faceColors[2].setAlpha(100);
-    faceColors[3] = faceColors[2];
-    faceNormals[2] = Vector3d.unitY(0.5 * this._extents.yLength());
-    faceNormals[3] = Vector3d.unitY(-0.5 * this._extents.yLength());
-    faceCenters[2] = center.plus(faceNormals[2]);
-    faceCenters[3] = center.plus(faceNormals[3]);
-
-    faceColors[4] = ColorDef.blue.clone(); faceColors[4].setAlpha(100);
-    faceColors[5] = faceColors[4];
-    faceNormals[4] = Vector3d.unitZ(0.5 * this._extents.zLength());
-    faceNormals[5] = Vector3d.unitZ(-0.5 * this._extents.zLength());
-    faceCenters[4] = center.plus(faceNormals[4]);
-    faceCenters[5] = center.plus(faceNormals[5]);
-
-    for (let iFace = 0; iFace < faceCenters.length; iFace++) {
-      const faceBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._controlIds[iFace]);
-      const ellipse = Arc3d.createScaledXYColumns(faceCenters[iFace], Matrix3d.createRigidHeadsUp(faceNormals[iFace]), radius, radius, AngleSweep.create360());
-
-      faceBuilder.setSymbology(outlineColor, faceColors[iFace], 1);
-      faceBuilder.addArc(ellipse, true, true);
-      faceBuilder.addArc(ellipse, false, false);
-      context.addDecorationFromBuilder(faceBuilder);
+      context.addDecorationFromBuilder(arrowBuilder);
     }
   }
 

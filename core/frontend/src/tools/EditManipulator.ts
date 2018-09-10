@@ -10,6 +10,9 @@ import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
+import { Viewport } from "../Viewport";
+import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry } from "@bentley/geometry-core";
+import { Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /**
  * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
@@ -51,7 +54,7 @@ export namespace EditManipulator {
     protected _removeSelectionListener?: () => void;
     protected _removeDecorationListener?: () => void;
 
-    public constructor(protected _iModel: IModelConnection) { this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener(this.onManipulatorToolEvent, this); }
+    public constructor(public iModel: IModelConnection) { this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener(this.onManipulatorToolEvent, this); }
 
     protected stop(): void {
       if (this._removeSelectionListener) {
@@ -70,8 +73,8 @@ export namespace EditManipulator {
         case ManipulatorToolEvent.Start: {
           if (this._removeSelectionListener)
             break;
-          this._removeSelectionListener = this._iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
-          if (this._iModel.selectionSet.isActive)
+          this._removeSelectionListener = this.iModel.selectionSet.onChanged.addListener(this.onSelectionChanged, this);
+          if (this.iModel.selectionSet.isActive)
             this.onManipulatorEvent(EventType.Synch); // Give opportunity to add controls when tool is started with an existing selection...
           break;
         }
@@ -85,7 +88,7 @@ export namespace EditManipulator {
       }
     }
 
-    public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this._iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
+    public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
 
     protected updateDecorationListener(add: boolean): void {
       if (this._removeDecorationListener) {
@@ -153,6 +156,50 @@ export namespace EditManipulator {
         return EventHandled.Yes; // Handle modification. Install InputCollector to modify using hold+drag, release or click+click.
 
       return EventHandled.No;
+    }
+  }
+
+  export class HandleUtils {
+    public static getBoresite(origin: Point3d, vp: Viewport): Ray3d {
+      const eyePoint = vp.worldToViewMap.transform1.columnZ();
+      const direction = Vector3d.createFrom(eyePoint);
+      const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
+      if (aa !== undefined) {
+        const xyzEye = direction.scale(aa);
+        direction.setFrom(origin.vectorTo(xyzEye));
+      }
+      direction.scaleToLength(-1.0, direction);
+      return Ray3d.create(origin, direction);
+    }
+
+    /** Get a transform to orient arrow shape to view direction. If arrow direction is almost perpendicular to view direction will return undefined. */
+    public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
+      const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
+      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99)
+        return undefined;
+
+      const pixelSize = vp.pixelsFromInches(sizeInches);
+      const scale = vp.viewFrustum.getPixelSizeAtPoint(base) * pixelSize;
+      const matrix = Matrix3d.createRigidFromColumns(direction, boresite.direction, AxisOrder.XZY);
+      if (undefined === matrix)
+        return undefined;
+
+      matrix.scaleColumnsInPlace(scale, scale, scale);
+      return Transform.createRefs(base.clone(), matrix);
+    }
+
+    /** Return array of shape points representing a unit arrow in xy plane pointing in positive x direction. */
+    public static getArrowShape(baseStart: number = 0.0, baseWidth: number = 0.15, tipStart: number = 0.55, tipEnd: number = 1.0, tipWidth: number = 0.3, flangeStart: number = tipStart, flangeWidth: number = baseWidth): Point3d[] {
+      const shapePts: Point3d[] = [];
+      shapePts[0] = Point3d.create(tipEnd, 0.0);
+      shapePts[1] = Point3d.create(flangeStart, tipWidth);
+      shapePts[2] = Point3d.create(tipStart, flangeWidth);
+      shapePts[3] = Point3d.create(baseStart, baseWidth);
+      shapePts[4] = Point3d.create(baseStart, -baseWidth);
+      shapePts[5] = Point3d.create(tipStart, -flangeWidth);
+      shapePts[6] = Point3d.create(flangeStart, -tipWidth);
+      shapePts[7] = shapePts[0].clone();
+      return shapePts;
     }
   }
 }
