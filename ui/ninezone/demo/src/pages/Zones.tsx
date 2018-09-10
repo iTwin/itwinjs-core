@@ -5,7 +5,7 @@ import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BlueButton, HollowButton } from "@bentley/bwc/lib/index";
-import { Timer } from "@bentley/ui-core";
+import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
 import AppButton from "@src/toolbar/button/App";
@@ -89,6 +89,8 @@ import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import "./Zones.scss";
 
 const adjustTooltipPosition = offsetAndContainInContainer();
+// tslint:disable-next-line:variable-name
+const TooltipWithTimeout = withTimeout(Tooltip);
 
 export interface State {
   tools: Tools;
@@ -524,7 +526,7 @@ export default class ZonesExample extends React.Component<{}, State> {
       <Zones ref={this._zones}>
         <MouseTracker onPositionChange={this._handlePositionChange} />
         {this.state.isTooltipVisible && (
-          <Tooltip
+          <TooltipWithTimeout
             stepString="Start Point"
             timeout={2000}
             onTimeout={this._handleTooltipTimeout}
@@ -532,7 +534,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             adjustPosition={adjustTooltipPosition}
           >
             <i className="icon icon-cursor" />
-          </Tooltip>
+          </TooltipWithTimeout>
         )}
         <TemporaryMessage
           style={{
