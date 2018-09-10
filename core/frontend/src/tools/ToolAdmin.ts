@@ -742,7 +742,7 @@ export class ToolAdmin {
       if (tool)
         await tool.onMouseNoMotion(ev);
 
-      if (InputSource.Mouse === current.inputSource) {
+      if (InputSource.Mouse === current.inputSource && this.cursorView) {
         await IModelApp.accuSnap.onNoMotion(ev);
         // Application.accuDraw.onNoMotion(ev);
       }

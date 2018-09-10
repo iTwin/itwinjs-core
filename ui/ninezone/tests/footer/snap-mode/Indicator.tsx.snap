@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Indicator /> renders correctly 1`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+  onClick={[Function]}
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    />
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
