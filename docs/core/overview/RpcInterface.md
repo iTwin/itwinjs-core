@@ -54,3 +54,27 @@ The in-process RPC configuration marshalls calls on an [RpcInterface](#RpcInterf
 ## RpcInterface Performance
 
 Apps must be designed with remote communication in mind. In the case where a server or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and servers. RpcInterface methods must be "chunky" and not "chatty".
+
+## Logging and ActivityIds
+
+A request may pass through many communication tiers. A request will generally be carried out by backends running on other machines. Finally, the backends that carry out a request may run asynchronously. Yet, all of those steps make up a single "activity". To make it possible to understand and troubleshoot such distributed and asynchronous activities, RpcInterface associates a unique "ActivityId" with every client request that goes out over the wire. The ActivityId that was assigned the original request then appears in logging messages emitted by downstream communications and backend methods that handle the request. That allows a log browser to correlate all of the operations with the original request, no matter where or when they were carried out.
+
+Frontend methods may also optionally log additional messages that are tagged with the same ActivityId, to provide useful information about the purpose of the activity.
+
+Frontend methods that invoke imodeljs-clients methods directly are responsible for generating or forwarding an ActivityId to them.
+
+A backend method that turns around an invokes another backend's method via RpcInterfaces will propagate the current ActivityId to it.
+
+Briefly, here is how it works:
+* Frontend/client
+  * iModelJs on the frontend assigns a unique ActivityId value to an RpcIntereface call.
+  * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
+* Backend
+  * iModelJs on the backend gets the ActivityId from the HTTP header.
+  * RpcInvocation passes the ActivityId to RpcInterface implementation methods.
+  * RpcInvocation and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
+  * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
+* Log Browsers
+  * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
+
+See [managing the ActivityLoggingContext](../learning/backend/ManagingLoggingActivityContext.md) for details.
