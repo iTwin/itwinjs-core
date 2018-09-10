@@ -117,7 +117,7 @@ export interface Overlay2dDecoration {
   drawDecoration(ctx: CanvasRenderingContext2D): void;
   pick?(pt: XAndY): boolean;
   onMouseEnter?(ev: BeButtonEvent): void;
-  onMouseLeave?(ev: BeButtonEvent): void;
+  onMouseLeave?(): void;
   onMouseMove?(ev: BeButtonEvent): void;
   onMouseDown?(ev: BeButtonEvent): void;
   onMouseUp?(ev: BeButtonEvent): void;

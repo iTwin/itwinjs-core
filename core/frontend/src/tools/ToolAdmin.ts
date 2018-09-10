@@ -305,7 +305,7 @@ export class ToolAdmin {
   private _overlayDecoration?: Overlay2dDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
-  public cursorView?: Viewport;
+  public cursorView?: ScreenViewport;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
   private _idleTool?: IdleTool;
@@ -679,11 +679,11 @@ export class ToolAdmin {
     this.currentInputState.clearViewport(vp);
   }
 
-  private async onMouseEnter(vp: Viewport) { this.cursorView = vp; }
-  private async onMouseLeave(vp: Viewport) {
+  private async onMouseEnter(vp: ScreenViewport) { this.cursorView = vp; }
+  private async onMouseLeave(vp: ScreenViewport) {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
-    vp.invalidateDecorations();
+    this.setOverlayDecoration(vp);
   }
 
   /** @hidden */
@@ -776,12 +776,13 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
-  public setOverlayDecoration(dec: Overlay2dDecoration | undefined, ev: BeButtonEvent) {
+  public setOverlayDecoration(vp: ScreenViewport, dec?: Overlay2dDecoration, ev?: BeButtonEvent) {
     if (dec !== this._overlayDecoration) {
-      if (this._overlayDecoration && this._overlayDecoration.onMouseLeave) this._overlayDecoration.onMouseLeave(ev);
-      if (dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+      if (this._overlayDecoration && this._overlayDecoration.onMouseLeave)
+        this._overlayDecoration.onMouseLeave();
       this._overlayDecoration = dec;
-      ev.viewport!.invalidateDecorations();
+      if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+      vp.invalidateDecorations();
     }
 
   }
@@ -799,10 +800,10 @@ export class ToolAdmin {
     current.toEvent(ev, false);
 
     if (undefined !== this.viewTool) {
-      this.setOverlayDecoration(undefined, ev);
+      this.setOverlayDecoration(vp);
     } else {
       const overlayHit = vp.pickOverlayDecoration(ev.viewPoint);
-      this.setOverlayDecoration(overlayHit, ev);
+      this.setOverlayDecoration(vp, overlayHit, ev);
       if (undefined !== overlayHit) {
         if (overlayHit.onMouseMove)
           overlayHit.onMouseMove(ev);
