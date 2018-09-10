@@ -532,8 +532,7 @@ export class RenderCommands {
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
     if (anyHilited) {
-      const hiliteCommands = this.getCommands(RenderPass.Hilite);
-      (batch.graphic as Graphic).addHiliteCommands(hiliteCommands, batch);
+      (batch.graphic as Graphic).addHiliteCommands(this, batch);
     }
 
     this._opaqueOverrides = this._translucentOverrides = false;

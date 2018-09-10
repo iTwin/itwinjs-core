@@ -13,7 +13,7 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
-import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
+import { RenderCommands, DrawCommand } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 
@@ -113,11 +113,11 @@ export abstract class Primitive extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
-  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+  public addHiliteCommands(commands: RenderCommands, batch: Batch): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
     if (!this.isEdge) {
-      commands.push(DrawCommand.createForPrimitive(this, batch));
+      commands.getCommands(RenderPass.Hilite).push(DrawCommand.createForPrimitive(this, batch));
     }
   }
 
