@@ -5,7 +5,6 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import Css, { CssProperties } from "../../utilities/Css";
 import CommonProps from "../../utilities/Props";
 import Point, { PointProps } from "../../utilities/Point";
@@ -58,6 +57,8 @@ export default class Tooltip extends React.Component<TooltipProps> {
     },
   };
 
+  private _tooltip = React.createRef<HTMLDivElement>();
+
   public render() {
     const className = classnames(
       "nz-popup-tooltip-tooltip",
@@ -72,6 +73,7 @@ export default class Tooltip extends React.Component<TooltipProps> {
       <div
         className={className}
         style={style}
+        ref={this._tooltip}
       >
         {this.props.children}
       </div>
@@ -87,9 +89,9 @@ export default class Tooltip extends React.Component<TooltipProps> {
   }
 
   private adjustPosition() {
-    const tooltip = ReactDOM.findDOMNode(this);
-    if (!tooltip || !(tooltip instanceof HTMLElement))
-      throw new TypeError();
+    const tooltip = this._tooltip.current;
+    if (!tooltip)
+      return;
 
     const container = this.props.containIn!(tooltip);
 
