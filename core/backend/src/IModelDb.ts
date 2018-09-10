@@ -1339,11 +1339,13 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public requestTileTreeProps(id: string): Promise<TileTreeProps> {
+    public requestTileTreeProps(actx: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       return new Promise<TileTreeProps>((resolve, reject) => {
+        actx.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + id));
@@ -1354,11 +1356,13 @@ export namespace IModelDb {
     }
 
     /** @hidden */
-    public getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
+    public requestTileContent(actx: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       return new Promise<Uint8Array>((resolve, reject) => {
+        actx.enter();
         this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));

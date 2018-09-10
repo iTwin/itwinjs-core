@@ -14,7 +14,7 @@ import { Robot } from "../RobotElement";
 const actx = new ActivityLoggingContext("");
 
 describe("RobotWorld", () => {
-    it("should run robotworld", () => {
+    it("should run robotworld", async () => {
         RobotWorldEngine.initialize(actx);
 
         const iModel: IModelDb = IModelTestUtils.openIModel("empty.bim", { copyFilename: "should-run-robotworld.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });

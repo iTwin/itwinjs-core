@@ -299,7 +299,8 @@ describe("iModel", () => {
 
   it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const tree = await imodel1.tiles.requestTileTreeProps("0x1c");
+    const actx2 = new ActivityLoggingContext("tiletreetest");
+    const tree = await imodel1.tiles.requestTileTreeProps(actx2, "0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -316,7 +317,7 @@ describe("iModel", () => {
     expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
 
-    expect(tree.rootTile.maximumSize).to.equal(512.0);
+    expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
     expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
   });
