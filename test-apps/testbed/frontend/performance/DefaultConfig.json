@@ -1,5 +1,5 @@
 {
-  "outputFile": "performanceResults_new.csv",
+  "outputName": "performanceResults_new.csv",
   "outputPath": "D:\\output\\performanceData\\",
   "iModelLocation": "D:\\models\\TimingTests\\",
   "view": {
@@ -14,6 +14,7 @@
           "testType": "timing",
           "viewName": "V0",
           "viewFlags": {
+            "renderMode": "SmoothShade",
             "dimensions": true,
             "patterns": true,
             "weights": true,
@@ -36,7 +37,7 @@
             "hLineMaterialColors": false,
             "edgeMask": 0
           },
-          "renderMode": "SmoothShade"
+          "displayStyle": "Filled Hidden Line"
         },
         {
           "testType": "timing",
@@ -44,7 +45,7 @@
           "viewFlags": {
             "fill": true
           },
-          "renderMode": 6
+          "displayStyle": "Filled Hidden Line"
         }
       ]
     },
@@ -54,12 +55,14 @@
         {
           "testType": "image",
           "viewName": "V0",
-          "renderMode": "Wireframe"
+          "displayStyle": "Smooth"
         },
         {
           "testType": "timing",
           "viewName": "V0",
-          "renderMode": "Wireframe"
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
         }
       ]
     }

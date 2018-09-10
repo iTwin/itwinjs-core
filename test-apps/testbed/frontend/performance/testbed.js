@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 const program = require("commander");
-const floss = require("../floss");
+const floss = require("../../floss");
 
 program
   .version("0.1.0")
@@ -14,8 +14,6 @@ program
   .option('-c, --coveragePattern <pattern>', 'Generate json coverage report')
   .option('--coverageSourceMaps', 'Remap json report using sourcemaps')
   .parse(process.argv);
-
-const perfServer = (program.usePerfWriterServer) ? PerformanceWriterServer.run() : undefined;
 
 floss(
   {

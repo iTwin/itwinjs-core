@@ -30,7 +30,7 @@
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",
     "test:frontend": "cd test-apps/testbed && node bin/testbed.js --grep \"#integration|#WebGLPerformance\" --invert",
     "test:frontend:integration": "cd test-apps/testbed && node bin/testbed.js --fgrep #integration",
-    "test:frontend:performance": "cd test-apps/testbed && npm run build:perf && node bin/testbed.js --usePerfWriterServer",
+    "test:frontend:performance": "cd test-apps/testbed && npm run build:perf && node frontend/performance/testbed.js",
     "test:ecschema-metadata": "cd core/ecschema-metadata && npm run test",
     "test:example-code-snippets": "cd example-code/snippets && npm run test",
     "test:example-code-app": "cd example-code/app && npm run test",
