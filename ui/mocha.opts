@@ -1,4 +1,5 @@
 --require ../scripts/copy-test-setup.js
+--require raf/polyfill
 --require ts-node/register
 --require source-map-support/register
 --require jsdom-global/register

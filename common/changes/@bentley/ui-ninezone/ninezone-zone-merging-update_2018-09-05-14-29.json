@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update zone merging interactions.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

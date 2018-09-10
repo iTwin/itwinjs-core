@@ -6,10 +6,6 @@ An IModelDb is used by a service or by the backend of an iModelJs app.
 
 Use [IModelDb.open]($backend) to obtain and open an IModelDb from iModelHub.
 
-*Example*:
-``` ts
-[[include:IModelDb.open]]
-```
 Use [IModelDb.close]($backend) to close the local briefcase.
 
 Note that an [AccessToken](../common/AccessToken.md) is an argument to IModelDb.open.

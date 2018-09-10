@@ -3,24 +3,22 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY, Vector3d, Transform, Matrix3d, Angle, Constant } from "@bentley/geometry-core";
-import { ViewStatus, ViewState3d } from "../ViewState";
-import { Viewport, ScreenViewport } from "../Viewport";
-import {
-  BeModifierKeys, BeButtonState, BeButton, Tool, BeButtonEvent, CoordSource,
-  BeCursor, BeWheelEvent, InputSource, InteractiveTool, InputCollector, EventHandled, BeTouchEvent,
-} from "./Tool";
-import { ViewTool } from "./ViewTool";
-import { IdleTool } from "./IdleTool";
-import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
-import { HitDetail } from "../HitDetail";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
+import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
+import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
+import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
+import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
+import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IconSprites } from "../Sprites";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
+import { ScreenViewport, Viewport } from "../Viewport";
+import { ViewState3d, ViewStatus } from "../ViewState";
+import { IdleTool } from "./IdleTool";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { BeButton, BeButtonEvent, BeButtonState, BeCursor, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
+import { ViewTool } from "./ViewTool";
+import { Overlay2dDecoration } from "../render/System";
 
 // tslint:disable:no-console
 
@@ -32,6 +30,7 @@ export const enum CoordinateLockOverrides {
 }
 
 export const enum StartOrResume { Start = 1, Resume = 2 }
+export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
@@ -303,6 +302,7 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
   public readonly toolState = new ToolState();
+  private _overlayDecoration?: Overlay2dDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
   public cursorView?: Viewport;
@@ -664,6 +664,12 @@ export class ToolAdmin {
    */
   public readonly activeToolChanged = new BeEvent<(tool: Tool, start: StartOrResume) => void>();
 
+  /**
+   * Event raised by tools that support edit manipulators like the SelectTool.
+   * @param tool The current tool
+   */
+  public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
+
   public getCursorView(): Viewport | undefined { return this.currentInputState.viewport; }
 
   /** Called when a viewport is closed */
@@ -736,7 +742,7 @@ export class ToolAdmin {
       if (tool)
         await tool.onMouseNoMotion(ev);
 
-      if (InputSource.Mouse === current.inputSource) {
+      if (InputSource.Mouse === current.inputSource && this.cursorView) {
         await IModelApp.accuSnap.onNoMotion(ev);
         // Application.accuDraw.onNoMotion(ev);
       }
@@ -770,6 +776,15 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
+  public setOverlayDecoration(dec: Overlay2dDecoration | undefined, ev: BeButtonEvent) {
+    if (dec !== this._overlayDecoration) {
+      if (this._overlayDecoration && this._overlayDecoration.onMouseLeave) this._overlayDecoration.onMouseLeave(ev);
+      if (dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+      this._overlayDecoration = dec;
+      ev.viewport!.invalidateDecorations();
+    }
+
+  }
   public async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
@@ -782,6 +797,18 @@ export class ToolAdmin {
     const ev = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
+
+    if (undefined !== this.viewTool) {
+      this.setOverlayDecoration(undefined, ev);
+    } else {
+      const overlayHit = vp.pickOverlayDecoration(ev.viewPoint);
+      this.setOverlayDecoration(overlayHit, ev);
+      if (undefined !== overlayHit) {
+        if (overlayHit.onMouseMove)
+          overlayHit.onMouseMove(ev);
+        return;   // we're inside a pickable decoration, don't send event to tool
+      }
+    }
 
     await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
 
@@ -1199,6 +1226,8 @@ export class ToolAdmin {
    * @hidden
    */
   public startDefaultTool() { IModelApp.tools.run(this._defaultTool); }
+
+  public isDefaultTool(tool?: Tool) { return (undefined !== tool && tool.toolId === this._defaultTool); }
 
   public setCursor(cursor: BeCursor | undefined): void {
     if (undefined === this._saveCursor)

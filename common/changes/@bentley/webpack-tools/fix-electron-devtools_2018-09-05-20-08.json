@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed electron devtools extension installation in development builds.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}

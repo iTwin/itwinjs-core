@@ -9,16 +9,16 @@ import { WidgetType, WidgetDef } from "./WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { StackedWidget, EachWidgetProps } from "./StackedWidget";
 import ZoneTargets from "./ZoneTargets";
-import { ZoneTargetProvider } from "./FrontstageZone";
 import { StatusBar } from "./StatusBar";
 import { ZoneDef } from "./ZoneDef";
 import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageManager";
 
-import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { ZoneProps as NZ_ZoneState, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
-import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
+import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
@@ -27,12 +27,17 @@ import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Manage
 /** Props for the FrameworkZone Component.
  */
 export interface FrameworkZoneProps {
+  horizontalAnchor: HorizontalAnchor;
+  verticalAnchor: VerticalAnchor;
   zoneState: NZ_ZoneState;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
-  targetProvider: ZoneTargetProvider;
+  dropTarget: DropTarget;
   zoneDefProvider: ZoneDefProvider;
+  isDragged: boolean | undefined;
+  lastPosition: PointProps | undefined;
+  isUnmergeDrag: boolean;
 }
 
 interface FrameworkZoneState {
@@ -74,15 +79,14 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
         <NZ_Zone bounds={this.props.zoneState.bounds}>
           <ZoneTargets
             zoneId={this.props.zoneState.id}
-            targetProvider={this.props.targetProvider}
+            dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
         </NZ_Zone>
         {
-          this.props.targetedBounds &&
-          <NZ_Zone bounds={this.props.targetedBounds}>
-            <GhostOutline />
-          </NZ_Zone>
+          this.props.targetedBounds && (
+            <GhostOutline bounds={this.props.targetedBounds} />
+          )
         }
       </>
     );
@@ -166,7 +170,11 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
         zoneId={this.props.zoneState.id}
         widgets={widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        anchor={NineZoneStateManagement.getZoneAnchor(this.props.zoneState.id)}
+        horizontalAnchor={this.props.horizontalAnchor}
+        verticalAnchor={this.props.verticalAnchor}
+        isDragged={this.props.isDragged}
+        lastPosition={this.props.lastPosition}
+        isUnmergeDrag={this.props.isUnmergeDrag}
       >
         {content}
       </StackedWidget>

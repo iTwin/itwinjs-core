@@ -583,13 +583,7 @@ export class IModelDb extends IModel {
     this.updateIModelProps();
   }
 
-  /** Update the IModelProps of this iModel in the database.
-   *
-   * Example:
-   * ``` ts
-   * [[include:IModelDb.updateIModelProps]]
-   * ```
-   */
+  /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**

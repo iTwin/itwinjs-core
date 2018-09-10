@@ -6,17 +6,24 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import CommonProps from "../../../utilities/Props";
-import { Anchor } from "../../Stacked";
+import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import "./Tab.scss";
+
+/** Describes available tab modes. */
+export enum TabMode {
+  Closed,
+  Open,
+  Active,
+}
 
 /** Properties of [[Tab]] component. */
 export interface TabProps extends CommonProps {
   /** Tab icon. */
   children?: React.ReactNode;
   /** Describes to which side the widget of this tab is anchored. */
-  anchor?: Anchor;
-  /** Describes if the tab is active. */
-  isActive?: boolean;
+  anchor: HorizontalAnchor;
+  /** Describes current tab mode. */
+  mode: TabMode;
   /** Function called when the tab is clicked. */
   onClick?: () => void;
 }
@@ -29,8 +36,9 @@ export default class Tab extends React.Component<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",
-      (this.props.anchor === Anchor.Left || this.props.anchor === Anchor.BottomLeft) && "nz-left-anchor",
-      this.props.isActive && "nz-is-active",
+      HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
+      this.props.mode === TabMode.Active && "nz-mode-active",
+      this.props.mode === TabMode.Open && "nz-mode-open",
       this.props.className);
 
     return (

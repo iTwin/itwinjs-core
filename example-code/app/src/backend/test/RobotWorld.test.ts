@@ -27,7 +27,7 @@ describe("RobotWorld", () => {
             // expect countRobots to fail
         }
 
-        RobotWorld.importSchema(actx, iModel);
+        await RobotWorld.importSchema(actx, iModel);
         iModel.saveChanges();
 
         assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");

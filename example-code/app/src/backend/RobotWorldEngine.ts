@@ -128,11 +128,11 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
     public static insertRobot(iModelDb: IModelDb, modelId: Id64Props, name: string, location: Point3d): Id64Props {
-        const props: GeometricElement3dProps = {      // I know what class and category to use.
+        const props: GeometricElement3dProps = {
             model: modelId,
-            classFullName: RobotWorld.Class.Robot,
+            classFullName: RobotWorld.Class.Robot,      // In this example, I know what class and category to use.
             category: Robot.getCategory(iModelDb).id,
-            geom: Robot.generateGeometry(),
+            geom: Robot.generateGeometry(),             // In this example, I know how to generate geometry, and I know that the placement is empty.
             placement: { origin: location, angles: new YawPitchRollAngles() },
             userLabel: name,
         };

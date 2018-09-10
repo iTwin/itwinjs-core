@@ -25,6 +25,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
+import { ToolTipOptions } from "./NotificationManager";
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -123,6 +124,12 @@ export class ViewRect {
     }
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
+  public extend(other: ViewRect) {
+    if (this.left > other.left) this.left = other.left;
+    if (this.top > other.top) this.top = other.top;
+    if (this.right < other.right) this.right = other.right;
+    if (this.bottom < other.bottom) this.bottom = other.bottom;
+  }
 
   /** Inset this ViewRect by values in the x and y directions. Positive values make the ViewRect smaller, and negative values will make it larger.
    * @param deltaX The distance to inset the ViewRect in the x direction.
@@ -145,6 +152,15 @@ export class ViewRect {
    */
   public insetUniform(offset: number): void { this.inset(offset, offset); }
 
+  /** Scale this ViewRect about its center by the supplied scale factors. */
+  public scaleAboutCenter(xScale: number, yScale: number): void {
+    const w = this.width;
+    const h = this.height;
+    const xDelta = (w - (w * xScale)) * 0.5;
+    const yDelta = (h - (h * yScale)) * 0.5;
+    this.inset(xDelta, yDelta);
+  }
+
   /** Inset this ViewRect by a percentage of its current width.
    * @param percent The percentage of this ViewRect's width to inset in all directions.
    * @note The ViewRect will become smaller (or larger, if percent is negative) by `percent * width * 2` in each direction, since each side is moved by that distance.
@@ -161,32 +177,27 @@ export class ViewRect {
    */
   public containsPoint(point: XAndY): boolean { return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom; }
 
-  /** Return the rectangle that is the overlap (intersection) of this ViewRect and another ViewRect. */
-  public overlaps(other: ViewRect, overlap?: ViewRect): boolean {
+  /** Determine whether this ViewRect overlaps another. */
+  public overlaps(other: ViewRect): boolean { return this.left <= other.right && this.top <= other.bottom && this.right >= other.left && this.bottom >= other.top; }
+
+  /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.
+   * If the two ViewRects are equal, their value is the result. Otherwise, the result will always be smaller than either of them.
+   */
+  public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
     const maxOrgX = Math.max(this.left, other.left);
     const maxOrgY = Math.max(this.top, other.top);
     const minCrnX = Math.min(this.right, other.right);
     const minCrnY = Math.min(this.bottom, other.bottom);
 
     if (maxOrgX > minCrnX || maxOrgY > minCrnY)
-      return false;
+      return undefined;
 
-    if (undefined !== overlap) {
-      overlap.left = maxOrgX;
-      overlap.right = minCrnX;
-      overlap.top = maxOrgY;
-      overlap.bottom = minCrnY;
-    }
-
-    return true;
-  }
-
-  /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.
-   * If the two ViewRects are equal, their value is the result. Otherwise, the result will always be smaller than either of them.
-   */
-  public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
     const result = undefined !== out ? out : new ViewRect();
-    return this.overlaps(other, result) ? result : undefined;
+    result.left = maxOrgX;
+    result.right = minCrnX;
+    result.top = maxOrgY;
+    result.bottom = minCrnY;
+    return result;
   }
 }
 
@@ -1765,6 +1776,10 @@ export class ScreenViewport extends Viewport {
     this.setCursor();
   }
 
+  public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
+    IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
+  }
+
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
@@ -1784,6 +1799,8 @@ export class ScreenViewport extends Viewport {
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
   }
+
+  public pickOverlayDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
