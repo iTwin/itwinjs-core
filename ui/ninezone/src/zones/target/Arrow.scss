@@ -19,6 +19,8 @@
   &:after {
     content: "";
     position: relative;
+    left: -1px;
+
     @include triangle-right(25px, 15px);
   }
 }
