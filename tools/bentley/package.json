@@ -6,7 +6,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "",
+    "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
     "test": ""
