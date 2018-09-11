@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Sep 2018 13:52:59 GMT and should not be manually modified.
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- Add initial support for the Functional domain.
 
 ## 0.123.0
 Wed, 05 Sep 2018 17:14:50 GMT
