@@ -6,7 +6,7 @@ import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Brie
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelServerOrchestrator } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
 import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
 import { IModelBankLocalOrchestrator } from "@bentley/imodeljs-clients/lib/IModelBank/LocalOrchestrator";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -364,14 +364,14 @@ class TestIModelHubProject extends IModelProjectAbstraction {
   }
 }
 
-class TestIModelHubServerOrchestrator implements IModelServerOrchestrator {
+class TestIModelHubServerOrchestrator implements IModelOrchestratorAbstraction {
   public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
     return BriefcaseManager.imodelClient;
   }
 }
 
 let projectAbstraction: IModelProjectAbstraction;
-let serverOrchestrator: IModelServerOrchestrator;
+let serverOrchestrator: IModelOrchestratorAbstraction;
 const usingMocks = false;
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
@@ -395,7 +395,7 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   return projectAbstraction;
 }
 
-export function getServerOrchestrator(): IModelServerOrchestrator {
+export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
   if (serverOrchestrator !== undefined)
     return serverOrchestrator;
 

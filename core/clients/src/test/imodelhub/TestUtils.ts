@@ -21,9 +21,9 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
-import { IModelProjectAbstraction, IModelServerOrchestrator } from "../../IModelProjectAbstraction";
-import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig } from "../../IModelBank/IModelBankFileSystemProject";
-import { TestIModelHubProject, TestIModelHubServerOrchestrator } from "./IModelHubProject";
+import { IModelProjectAbstraction, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "../../IModelProjectAbstraction";
+import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankPermissionDummy } from "../../IModelBank/IModelBankFileSystemProject";
+import { TestIModelHubProject, TestIModelHubOrchestrator, TestIModelHubUserMgr } from "./IModelHubProject";
 import { IModelBankLocalOrchestrator } from "../../IModelBank/LocalOrchestrator";
 
 /** Other services */
@@ -103,7 +103,7 @@ export class IModelHubUrlMock {
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
 export function getClient(imodelId: string): IModelClient {
-  return getServerOrchestrator().getClientForIModel(actx, undefined, imodelId);
+  return getIModelOrchestrator().getClientForIModel(actx, undefined, imodelId);
 }
 
 export function getDefaultClient() {
@@ -158,7 +158,7 @@ export async function login(userCredentials?: UserCredentials): Promise<AccessTo
     return new MockAccessToken();
 
   userCredentials = userCredentials || TestUsers.regular;
-  return projectAbstraction.authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
+  return getPermissionAbstraction().authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
 }
 
 export async function getProjectId(accessToken: AccessToken, projectName?: string): Promise<string> {
@@ -711,7 +711,19 @@ export class ProgressTracker {
 }
 
 let projectAbstraction: IModelProjectAbstraction;
-let serverOrchestrator: IModelServerOrchestrator;
+let orchestratorAbstraction: IModelOrchestratorAbstraction;
+let permissionAbstraction: IModelPermissionAbstraction;
+
+export function getPermissionAbstraction(): IModelPermissionAbstraction {
+  if (permissionAbstraction !== undefined)
+    return permissionAbstraction;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
+    return permissionAbstraction = new TestIModelHubUserMgr();
+  }
+
+  return permissionAbstraction = new IModelBankPermissionDummy();
+}
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)
@@ -734,12 +746,12 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   return projectAbstraction;
 }
 
-export function getServerOrchestrator(): IModelServerOrchestrator {
-  if (serverOrchestrator !== undefined)
-    return serverOrchestrator;
+export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
+  if (orchestratorAbstraction !== undefined)
+    return orchestratorAbstraction;
 
   if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
-    return serverOrchestrator = new TestIModelHubServerOrchestrator();
+    return orchestratorAbstraction = new TestIModelHubOrchestrator();
   }
 
   const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
@@ -748,6 +760,6 @@ export function getServerOrchestrator(): IModelServerOrchestrator {
   const serverConfig: IModelBankServerConfig = require(serverConfigFile);
   EnvMacroSubst.replaceInProperties(serverConfig, true);
   const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
-  serverOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
-  return serverOrchestrator;
+  orchestratorAbstraction = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
+  return orchestratorAbstraction;
 }

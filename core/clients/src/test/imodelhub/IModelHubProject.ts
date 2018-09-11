@@ -5,7 +5,7 @@ import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, Deploym
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
 import { IModelRepository } from "../../imodelhub";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelServerOrchestrator } from "../../IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "../../IModelProjectAbstraction";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
@@ -13,11 +13,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 export class TestIModelHubProject extends IModelProjectAbstraction {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
-  public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-    const authToken = await TestConfig.login(userCredentials, env);
-    const client = getDefaultClient() as IModelHubClient;
-    return client.getAccessToken(alctx, authToken);
-  }
+
   public async queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project> {
     const client = await new ConnectClient(TestConfig.deploymentEnv);
     return client.getProject(alctx, accessToken, query);
@@ -36,8 +32,16 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
   }
 }
 
-export class TestIModelHubServerOrchestrator implements IModelServerOrchestrator {
+export class TestIModelHubOrchestrator implements IModelOrchestratorAbstraction {
   public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
     return getDefaultClient();
+  }
+}
+
+export class TestIModelHubUserMgr implements IModelPermissionAbstraction {
+  public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+    const authToken = await TestConfig.login(userCredentials, env);
+    const client = getDefaultClient() as IModelHubClient;
+    return client.getAccessToken(alctx, authToken);
   }
 }

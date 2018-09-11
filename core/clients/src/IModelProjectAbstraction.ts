@@ -10,7 +10,7 @@ import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** Information needed to create an iModel */
+/** Information needed by a project abstraction to create an iModel */
 export interface IModelProjectAbstractionIModelCreateParams {
   name: string;
   description: string;
@@ -18,17 +18,14 @@ export interface IModelProjectAbstractionIModelCreateParams {
   tracker?: (progress: ProgressInfo) => void;
 }
 
-/** Manages users, projects, and imodels and their servers. */
+/** Manages projects and imodels. */
 export abstract class IModelProjectAbstraction {
 
   public abstract isIModelHub: boolean;
 
   public abstract terminate(): void;
 
-  // User management
-  public abstract authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
-
-  // Project management
+  // Project queries
   public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
   // IModel management
@@ -38,6 +35,11 @@ export abstract class IModelProjectAbstraction {
 }
 
 /** Interface implemented by an agent that allows client apps to connect to an iModel server */
-export interface IModelServerOrchestrator {
+export interface IModelOrchestratorAbstraction {
   getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
+}
+
+/** Interface implemented by an agent that authorizes users. */
+export interface IModelPermissionAbstraction {
+  authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 }

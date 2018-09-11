@@ -11,7 +11,7 @@ import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
 import { assert, ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
-import { IModelServerOrchestrator } from "../IModelProjectAbstraction";
+import { IModelOrchestratorAbstraction } from "../IModelProjectAbstraction";
 import { IModelBankFileSystemProject } from "./IModelBankFileSystemProject";
 
 /** The format of a config file that imodel-bank's runWebServer program will read
@@ -77,7 +77,7 @@ interface RunningBank {
   proc: child_process.ChildProcess;
 }
 
-export class IModelBankLocalOrchestrator implements IModelServerOrchestrator {
+export class IModelBankLocalOrchestrator implements IModelOrchestratorAbstraction {
   public nextPort: number;
   public runningBanks: Map<string, RunningBank>;
   public serverConfig: IModelBankServerConfig;
