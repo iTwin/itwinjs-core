@@ -165,6 +165,7 @@ export interface Tools {
 
 export interface SimpleTool {
   icon: string;
+  isDisabled?: boolean;
 }
 
 export interface ToolGroup {
@@ -176,6 +177,7 @@ export interface ToolGroup {
   history: History<HistoryItem>;
   isExtended: boolean;
   isToolGroupOpen: boolean;
+  isDisabled?: boolean;
 }
 
 const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup => {
@@ -246,33 +248,8 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-angle",
         } as SimpleTool,
         "attach": {
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    "3D#1": {
-                      icon: "icon-3d",
-                      trayId: undefined,
-                    },
-                    "3D#2": {
-                      icon: "icon-3d",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Right,
-          history: [],
           icon: "icon-attach",
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
+        } as SimpleTool,
         "browse": {
           icon: "icon-browse",
         } as SimpleTool,
@@ -844,6 +821,46 @@ export default class ZonesExample extends React.Component<{}, State> {
     this.changeTab(MessageCenterActiveTab.Problems);
   }
 
+  private _handleDisableItemsClick = () => {
+    this.setState((prevState) => {
+      return {
+        tools: {
+          ...prevState.tools,
+          cube: {
+            ...prevState.tools.cube,
+            isDisabled: !prevState.tools.cube.isDisabled,
+            isToolGroupOpen: false,
+          },
+          validate: {
+            ...prevState.tools.validate,
+            isDisabled: !prevState.tools.validate.isDisabled,
+            isToolGroupOpen: false,
+          },
+          channel: {
+            ...prevState.tools.channel,
+            isDisabled: !prevState.tools.channel.isDisabled,
+            isToolGroupOpen: false,
+          },
+          chat: {
+            ...prevState.tools.chat,
+            isDisabled: !prevState.tools.chat.isDisabled,
+            isToolGroupOpen: false,
+          },
+          browse: {
+            ...prevState.tools.browse,
+            isDisabled: !prevState.tools.browse.isDisabled,
+            isToolGroupOpen: false,
+          },
+          chat1: {
+            ...prevState.tools.chat1,
+            isDisabled: !prevState.tools.chat1.isDisabled,
+            isToolGroupOpen: false,
+          },
+        },
+      };
+    });
+  }
+
   private changeTab(newTab: MessageCenterActiveTab) {
     this.setState((prevState) => ({
       ...prevState,
@@ -974,12 +991,14 @@ export default class ZonesExample extends React.Component<{}, State> {
           key={toolKey}
           onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended, toolKey)}
           panel={this.getToolGroup(toolKey)}
+          isDisabled={tool.isDisabled}
         >
           <ToolbarIcon
             icon={
               <i className={`icon ${tool.icon}`} />
             }
             onClick={() => this._handleOnExpandableItemClick(toolKey)}
+            isDisabled={tool.isDisabled}
           />
         </ExpandableItem>
       );
@@ -991,6 +1010,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         icon={
           <i className={`icon ${tool.icon}`} />
         }
+        isDisabled={tool.isDisabled}
       />
     );
   }
@@ -1836,7 +1856,13 @@ export default class ZonesExample extends React.Component<{}, State> {
               items={
                 <>
                   {this.state.showAllItems && this.getToolbarItem("cube")}
-                  {this.getToolbarItem("attach")}
+                  <ToolbarIcon
+                    key={"attach"}
+                    icon={
+                      <i className={`icon ${this.state.tools.attach.icon}`} />
+                    }
+                    onClick={this._handleDisableItemsClick}
+                  />
                   {this.state.showAllItems && this.getToolbarItem("validate")}
                 </>
               }
