@@ -6,7 +6,7 @@ import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Brie
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
 import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
 import { IModelBankLocalOrchestrator } from "@bentley/imodeljs-clients/lib/IModelBank/LocalOrchestrator";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -38,7 +38,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
 
   public static async login(user: UserCredentials, imsDeploymentEnv: DeploymentEnv = defaultEnv): Promise<AccessToken> {
-    return getIModelProjectAbstraction().authorizeUser(actx, undefined, user, imsDeploymentEnv);
+    return getIModelPermissionAbstraction().authorizeUser(actx, undefined, user, imsDeploymentEnv);
   }
 
   private static makeDirectoryRecursive(dirPath: string) {
@@ -331,6 +331,12 @@ export class HubUtility {
 
 }
 
+class ImsUserMgr implements IModelPermissionAbstraction {
+  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+    return await doImsLogin(userCredentials, env);
+  }
+}
+
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestIModelHubProject extends IModelProjectAbstraction {
   public get isIModelHub(): boolean { return true; }
@@ -340,9 +346,6 @@ class TestIModelHubProject extends IModelProjectAbstraction {
     return BriefcaseManager.imodelClient as IModelHubClient;
   }
 
-  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-    return await doImsLogin(userCredentials, env);
-  }
   public async queryProject(_actx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project> {
     const client = BriefcaseManager.connectClient;
     return client.getProject(actx, accessToken, query);
@@ -372,7 +375,19 @@ class TestIModelHubServerOrchestrator implements IModelOrchestratorAbstraction {
 
 let projectAbstraction: IModelProjectAbstraction;
 let serverOrchestrator: IModelOrchestratorAbstraction;
+let authorizationAbstraction: IModelPermissionAbstraction;
 const usingMocks = false;
+
+export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
+  if (authorizationAbstraction !== undefined)
+    return authorizationAbstraction;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
+    return authorizationAbstraction = new ImsUserMgr();
+  }
+
+  throw new Error("WIP");
+}
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)

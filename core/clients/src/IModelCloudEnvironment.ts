@@ -11,7 +11,7 @@ import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Information needed by a project abstraction to create an iModel */
-export interface IModelProjectAbstractionIModelCreateParams {
+export interface IModelProjectIModelCreateParams {
   name: string;
   description: string;
   seedFile: string;
@@ -19,7 +19,7 @@ export interface IModelProjectAbstractionIModelCreateParams {
 }
 
 /** Manages projects and imodels. */
-export abstract class IModelProjectAbstraction {
+export abstract class IModelProjectClient {
 
   public abstract isIModelHub: boolean;
 
@@ -29,17 +29,17 @@ export abstract class IModelProjectAbstraction {
   public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
   // IModel management
-  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository>;
+  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository>;
   public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
   public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]>;
 }
 
-/** Interface implemented by an agent that allows client apps to connect to an iModel server */
-export interface IModelOrchestratorAbstraction {
+/** Interface implemented by a service that allows client apps to connect to an iModel server */
+export interface IModelOrchestrationClient {
   getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
 }
 
-/** Interface implemented by an agent that authorizes users. */
-export interface IModelPermissionAbstraction {
+/** Interface implemented by a service that authorizes users. */
+export interface IModelAuthorizationClient {
   authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 }

@@ -21,7 +21,7 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
-import { IModelProjectAbstraction, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "../../IModelProjectAbstraction";
+import { IModelProjectClient, IModelOrchestrationClient, IModelAuthorizationClient } from "../../IModelCloudEnvironment";
 import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankPermissionDummy } from "../../IModelBank/IModelBankFileSystemProject";
 import { TestIModelHubProject, TestIModelHubOrchestrator, TestIModelHubUserMgr } from "./IModelHubProject";
 import { IModelBankLocalOrchestrator } from "../../IModelBank/LocalOrchestrator";
@@ -710,11 +710,11 @@ export class ProgressTracker {
   }
 }
 
-let projectAbstraction: IModelProjectAbstraction;
-let orchestratorAbstraction: IModelOrchestratorAbstraction;
-let permissionAbstraction: IModelPermissionAbstraction;
+let projectAbstraction: IModelProjectClient;
+let orchestratorAbstraction: IModelOrchestrationClient;
+let permissionAbstraction: IModelAuthorizationClient;
 
-export function getPermissionAbstraction(): IModelPermissionAbstraction {
+export function getPermissionAbstraction(): IModelAuthorizationClient {
   if (permissionAbstraction !== undefined)
     return permissionAbstraction;
 
@@ -725,7 +725,7 @@ export function getPermissionAbstraction(): IModelPermissionAbstraction {
   return permissionAbstraction = new IModelBankPermissionDummy();
 }
 
-export function getIModelProjectAbstraction(): IModelProjectAbstraction {
+export function getIModelProjectAbstraction(): IModelProjectClient {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
@@ -746,7 +746,7 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   return projectAbstraction;
 }
 
-export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
+export function getIModelOrchestrator(): IModelOrchestrationClient {
   if (orchestratorAbstraction !== undefined)
     return orchestratorAbstraction;
 

@@ -11,7 +11,7 @@ import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
 import { assert, ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
-import { IModelOrchestratorAbstraction } from "../IModelProjectAbstraction";
+import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
 import { IModelBankFileSystemProject } from "./IModelBankFileSystemProject";
 
 /** The format of a config file that imodel-bank's runWebServer program will read
@@ -37,47 +37,27 @@ export interface IModelBankServerConfig {
   adminConnectUserPassword: string;
 }
 
-export class IModelBankAccessContext {
-  private _client: IModelBankClient;
-  private _iModelId: string;
-  private _url: string;
-  // private _env: DeploymentEnv;
+// A running instance of iModelBank
+class RunningBank {
+  public client: IModelBankClient;
+  public iModelId: string;
+  public url: string;
+  public proc: child_process.ChildProcess;
 
   constructor(iModelId: string, url: string, env: DeploymentEnv, handler: FileHandler | undefined) {
-    this._iModelId = iModelId;
-    this._client = new IModelBankClient(url, env, handler);
-    this._url = url;
-    // this._env = env;
+    this.iModelId = iModelId;
+    this.client = new IModelBankClient(url, env, handler);
+    this.url = url;
   }
 
-  public get url(): string { return this._url; }
-  public get iModelId(): string { return this._iModelId; }
-
-  public get client(): IModelClient | undefined { return this._client; }
-
-  /** @hidden */
-  // public toJson(): IModelAccessContextProps {
-  //   return {
-  //     imodeljsCoreClientsIModelBankAccessContext: {
-  //       iModelId: this._iModelId,
-  //       url: this._url,
-  //       env: this._env,
-  //     },
-  //   };
-  // }
-
-  public static fromJson(obj: IModelAccessContextProps, handler: FileHandler): IModelBankAccessContext | undefined {
+  public static fromJson(obj: IModelAccessContextProps, handler: FileHandler): RunningBank | undefined {
     const props = obj.imodeljsCoreClientsIModelBankAccessContext;
-    return new IModelBankAccessContext(props.iModelId, props.url, props.env, handler);
+    return new RunningBank(props.iModelId, props.url, props.env, handler);
   }
 }
 
-interface RunningBank {
-  context: IModelBankAccessContext;
-  proc: child_process.ChildProcess;
-}
-
-export class IModelBankLocalOrchestrator implements IModelOrchestratorAbstraction {
+// Runs iModelBank server programs on this machine, one per iModel
+export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
   public nextPort: number;
   public runningBanks: Map<string, RunningBank>;
   public serverConfig: IModelBankServerConfig;
@@ -121,7 +101,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestratorAbstractio
 
     const running = this.runningBanks.get(iModelId);
     if (running !== undefined)
-      return running.context.client!;
+      return running.client!;
 
     const props: NamedIModelAccessContextProps = this.queryContextPropsFor(iModelId);
 
@@ -130,7 +110,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestratorAbstractio
     props.imodeljsCoreClientsIModelBankAccessContext.url = `${this.serverConfig.baseUrl}:${port}`;
 
     // Prepare a client for this bank, pointing to the assigned url
-    const context = IModelBankAccessContext.fromJson(props, new UrlFileHandler())!;
+    const bankToRun = RunningBank.fromJson(props, new UrlFileHandler())!;
 
     //  Run the bank
     const imodelDir = this.proj.fsAdmin.getIModelDir(this.proj.group.iModelBankProjectAccessContextGroup.name, iModelId);
@@ -160,24 +140,24 @@ export class IModelBankLocalOrchestrator implements IModelOrchestratorAbstractio
       (thisBankLoggingConfigFile),
     ];
 
-    const proc = child_process.spawn("node", cmdargs, { stdio: "inherit" });
+    bankToRun.proc = child_process.spawn("node", cmdargs, { stdio: "inherit" });
 
-    this.runningBanks.set(iModelId, { context, proc });
+    this.runningBanks.set(iModelId, bankToRun);
 
-    proc.on("exit", () => {
+    bankToRun.proc.on("exit", () => {
       this.runningBanks.delete(iModelId);
     });
 
-    proc.on("error", (err: Error) => {
+    bankToRun.proc.on("error", (err: Error) => {
       this.runningBanks.delete(iModelId);
       throw err;
     });
 
-    return context.client!;
+    return bankToRun.client!;
   }
 
   private killIModelBank(running: RunningBank): void {
-    console.log(`killing ${running.context.url} - ${running.context.iModelId}`);
+    console.log(`killing ${running.url} - ${running.iModelId}`);
     running.proc.kill();
   }
 }
