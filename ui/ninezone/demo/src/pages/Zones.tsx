@@ -109,6 +109,7 @@ export interface State {
   nineZone: NineZoneProps;
   isOverflowItemOpen: boolean;
   currentTheme: Theme;
+  showAllItems: boolean;
 }
 
 export enum MessageCenterActiveTab {
@@ -242,29 +243,8 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-2d",
         } as ToolGroup,
         "angle": {
-          trayId: "3d",
-          backTrays: [],
-          trays: {
-            "3d": {
-              title: "3D Tools",
-              columns: {
-                0: {
-                  items: {
-                    Test1: {
-                      icon: "icon-3d-cube",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Bottom,
-          history: [],
-          isExtended: false,
-          isToolGroupOpen: false,
           icon: "icon-angle",
-        } as ToolGroup,
+        } as SimpleTool,
         "attach": {
           trayId: "tray1",
           backTrays: [],
@@ -494,6 +474,7 @@ export default class ZonesExample extends React.Component<{}, State> {
       },
       isOverflowItemOpen: false,
       currentTheme: PrimaryTheme,
+      showAllItems: true,
     };
   }
 
@@ -1837,8 +1818,14 @@ export default class ZonesExample extends React.Component<{}, State> {
             <Toolbar
               items={
                 <>
-                  {this.getToolbarItem("angle")}
-                  {this.getToolbarItem("2d")}
+                  {this.state.showAllItems && this.getToolbarItem("2d")}
+                  <ToolbarIcon
+                    key={"angle"}
+                    icon={
+                      <i className={`icon ${this.state.tools.angle.icon}`} />
+                    }
+                    onClick={() => this.setState((prevState) => ({ showAllItems: !prevState.showAllItems }))}
+                  />
                 </>
               }
             />
@@ -1848,9 +1835,9 @@ export default class ZonesExample extends React.Component<{}, State> {
               expandsTo={Direction.Right}
               items={
                 <>
-                  {this.getToolbarItem("cube")}
+                  {this.state.showAllItems && this.getToolbarItem("cube")}
                   {this.getToolbarItem("attach")}
-                  {this.getToolbarItem("validate")}
+                  {this.state.showAllItems && this.getToolbarItem("validate")}
                 </>
               }
             />
@@ -1888,37 +1875,37 @@ export default class ZonesExample extends React.Component<{}, State> {
               <Toolbar
                 items={
                   <>
-                    <OverflowItem
-                      key="0"
-                      onClick={() => this.setState((prevState) => ({
-                        ...prevState,
-                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                      }))}
-                      panel={
-                        !this.state.isOverflowItemOpen ? undefined :
-                          (
-                            <ToolGroupComponent
-                              title={"Overflow Button"}
-                              container={this._zones}
-                              columns={
-                                <GroupColumn>
-                                  <GroupTool
-                                    onClick={() => this.setState((prevState) => ({
-                                      ...prevState,
-                                      isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                                    }))}
-                                  >
-                                    Tool1
+                    {this.state.showAllItems &&
+                      <OverflowItem
+                        key="0"
+                        onClick={() => this.setState((prevState) => ({
+                          ...prevState,
+                          isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                        }))}
+                        panel={
+                          !this.state.isOverflowItemOpen ? undefined :
+                            (
+                              <ToolGroupComponent
+                                title={"Overflow Button"}
+                                container={this._zones}
+                                columns={
+                                  <GroupColumn>
+                                    <GroupTool
+                                      onClick={() => this.setState((prevState) => ({
+                                        ...prevState,
+                                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                                      }))}
+                                    >
+                                      Tool1
                                 </GroupTool>
-                                </GroupColumn>
-                              }
-                            />
-                          )
+                                  </GroupColumn>
+                                }
+                              />
+                            )
 
-                      }
-                    >
-
-                    </OverflowItem>
+                        }
+                      />
+                    }
                     {this.getToolbarItemWithToolSettings("chat")}
                   </>
                 }
@@ -1931,11 +1918,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 onScroll={this._handleOnScrollableToolbarScroll}
                 items={
                   <>
-                    {this.getToolbarItem("channel")}
+                    {this.state.showAllItems && this.getToolbarItem("channel")}
                     {this.getToolbarItem("chat")}
-                    {this.getToolbarItem("browse")}
+                    {this.state.showAllItems && this.getToolbarItem("browse")}
                     {this.getToolbarItem("clipboard")}
-                    {this.getToolbarItem("calendar")}
+                    {this.state.showAllItems && this.getToolbarItem("calendar")}
                     {this.getToolbarItem("chat1")}
                     {this.getToolbarItem("document")}
                   </>
