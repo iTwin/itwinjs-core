@@ -26,6 +26,8 @@ export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCore";
+export * from "./domains/Functional";
+export * from "./domains/FunctionalElements";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

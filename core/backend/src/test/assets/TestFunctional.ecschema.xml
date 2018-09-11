@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestFunctional" alias="testFunc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+    <ECSchemaReference name="Functional" version="1.0" alias="func" />
+
+    <ECEntityClass typeName="Breakdown" displayLabel="Test Functional Breakdown">
+        <BaseClass>func:FunctionalBreakdownElement</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Component" displayLabel="Test Functional Component">
+        <BaseClass>func:FunctionalComponentElement</BaseClass>
+        <ECProperty propertyName="DoubleProperty" typeName="double"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Type" displayLabel="Test Functional Type">
+        <BaseClass>func:FunctionalType</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string" />
+        <ECProperty propertyName="IntProperty" typeName="int" />
+    </ECEntityClass>
+
+</ECSchema>

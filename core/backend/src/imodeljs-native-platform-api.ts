@@ -232,6 +232,12 @@ export declare class NativeDgnDb {
   public importSchema(schemaPathname: string): DbResult;
 
   /**
+   * Import the schema for the Functional domain. Also updates the dgn_Domain and dgn_Handler tables for the Functional domain handlers.
+   * @return Non-zero error status if the operation failed.
+   */
+  public importFunctionalSchema(): DbResult;
+
+  /**
    * Get an element's properties
    * @param opts Identifies the element
    * @returns In case of success, the result property of the returned object will be the element's properties.
