@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {},
   "scripts": {
-    "build": "tsc 1>&2",
+    "copy:rules": "cpx ./node_modules/tslint-consistent-codestyle/rules/**/* ./tslint-rules/tslint-consistent-codestyle/rules && cpx ./node_modules/tslint-consistent-codestyle/src/**/* ./tslint-rules/tslint-consistent-codestyle/src",
+    "build": "tsc 1>&2 && npm run copy:rules",
     "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
@@ -42,9 +43,6 @@
     "yargs": "^12.0.0",
     "obj-traverse": "^1.0.0"
   },
-  "bundledDependencies": [
-    "tslint-consistent-codestyle"
-  ],
   "bin": {
     "betools": "bin/betools.js"
   }
