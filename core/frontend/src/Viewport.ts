@@ -378,7 +378,7 @@ export class ViewFrustum {
   /** View delta (from ViewState, unexpanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new Matrix3d();
+  public readonly matrix3d = new Matrix3d();
   /** @hidden */
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
@@ -405,9 +405,9 @@ export class ViewFrustum {
 
   private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.matrix3d.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
   /** @hidden */
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.matrix3d.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
 
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
@@ -438,13 +438,13 @@ export class ViewFrustum {
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
   private alignWithRootZ() {
     const zUp = Vector3d.unitZ();
-    if (zUp.isAlmostEqual(this.rotMatrix.rowZ()))
+    if (zUp.isAlmostEqual(this.matrix3d.rowZ()))
       return;
-    const r = this.rotMatrix.transpose();
+    const r = this.matrix3d.transpose();
     r.setColumn(2, zUp);
     Matrix3d.createRigidFromMatrix3d(r, AxisOrder.ZXY, r);
-    r.transpose(this.rotMatrix);
-    this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
+    r.transpose(this.matrix3d);
+    this.view.setRotation(this.matrix3d); // Don't let viewState and viewport rotation be different.
   }
 
   private validateCamera() {
@@ -486,29 +486,29 @@ export class ViewFrustum {
       return;
 
     // convert viewed extents in world coordinates to min/max in view aligned coordinates
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.matrix3d);
     const extFrust = Frustum.fromRange(extents);
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
+    this.matrix3d.multiplyVectorInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+    this.matrix3d.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn)
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
+    this.matrix3d.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiplyVectorInPlace(origin);
+      this.matrix3d.multiplyVectorInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+      this.matrix3d.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
     }
@@ -527,13 +527,13 @@ export class ViewFrustum {
       return;
 
     const planeNormal = this._displayedPlane.getNormalRef();
-    const viewZ = this.rotMatrix.getRow(2);
+    const viewZ = this.matrix3d.getRow(2);
     const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
     if (onPlane.magnitude() > 1.0E-8) {
       const intersect = new Point3d();
       const frustum = new Frustum();
       let includeHorizon = false;
-      const worldToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOrigin, this.viewDelta).map as Map4d;
+      const worldToNpc = this.view.computeWorldToNpc(this.matrix3d, this.viewOrigin, this.viewDelta).map as Map4d;
       const minimumEyeDistance = 10.0;
       const horizonDistance = 10000;
       worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
@@ -589,7 +589,7 @@ export class ViewFrustum {
 
     const origin = this.view.getOrigin().clone();
     const delta = this.view.getExtents().clone();
-    this.rotMatrix.setFrom(this.view.getRotation());
+    this.matrix3d.setFrom(this.view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -660,7 +660,7 @@ export class ViewFrustum {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, origin, delta);
+    const newRootToNpc = this.view.computeWorldToNpc(this.matrix3d, origin, delta);
     if (newRootToNpc.map === undefined) { // invalid frustum
       this.invalidFrustum = true;
       return;
@@ -783,7 +783,7 @@ export class ViewFrustum {
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
-      const ueRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
+      const ueRootToNpc = this.view.computeWorldToNpc(this.matrix3d, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
       if (undefined === ueRootToNpc.map)
         return box; // invalid frustum
 
@@ -850,7 +850,7 @@ export abstract class Viewport {
   private _viewFrustum!: ViewFrustum;
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
-  public get rotMatrix(): Matrix3d { return this._viewFrustum.rotMatrix; }
+  public get matrix3d(): Matrix3d { return this._viewFrustum.matrix3d; }
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
@@ -1279,7 +1279,7 @@ export abstract class Viewport {
   public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
     const vf = this._viewFrustum;
 
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotMatrix);
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.matrix3d);
     const elemRange = Array.isArray(placements) ? placements : [placements];
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
 
@@ -1396,7 +1396,7 @@ export abstract class Viewport {
     if (this.view.is3d() && this.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
-      eyeVec = this._viewFrustum.rotMatrix.getRow(2).clone();
+      eyeVec = this._viewFrustum.matrix3d.getRow(2).clone();
 
     eyeVec.normalizeInPlace();
     LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);

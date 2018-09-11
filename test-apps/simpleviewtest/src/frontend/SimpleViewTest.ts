@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep } from "@bentley/geometry-core";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -328,7 +328,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === inverse)
     return;
 
-  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.rotMatrix);
+  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.matrix3d);
   const rotateTransform = Transform.createFixedPointAndMatrix(theViewport.view.getTargetPoint(), targetMatrix);
   const startFrustum = theViewport.getFrustum();
   const newFrustum = startFrustum.clone();
@@ -872,26 +872,27 @@ class IncidentMarker extends Marker {
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
   private static _amber = new ColorDef(ColorByName.amber);
-  private _color: string;
+  private static _sweep360 = AngleSweep.create360();
+  private _color: ColorDef;
 
   /** This makes the icon only show when the cursor is over an incident marker. */
-  public get wantImage() { return this._isHilited; }
+  // public get wantImage() { return this._isHilited; }
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
-  public static makeColor(severity: number): string {
+  public static makeColor(severity: number): ColorDef {
     return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
-      this._amber.lerp(ColorDef.red, (severity - 16) / 14.)).toHexString();
+      this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
-  /** draw a filled square with the incident color and a white outline */
-  public drawFunc(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.fillStyle = this._color;
-    ctx.rect(-11, -11, 20, 20);
-    ctx.fill();
-    ctx.strokeStyle = "white";
-    ctx.stroke();
-  }
+  // /** draw a filled square with the incident color and a white outline */
+  // public drawFunc(ctx: CanvasRenderingContext2D) {
+  //   ctx.beginPath();
+  //   ctx.fillStyle = this._color.toHexString();
+  //   ctx.rect(-11, -11, 20, 20);
+  //   ctx.fill();
+  //   ctx.strokeStyle = "white";
+  //   ctx.stroke();
+  // }
 
   /** Create a new IncidentMarker */
   constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
@@ -901,9 +902,20 @@ class IncidentMarker extends Marker {
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.labelFont = "italic 14px san-serif"; // use italic so incidents look different than Clusters
-    this.label = severity.toString(); // label with severity
+    // this.label = severity.toString(); // label with severity
     this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+  }
+
+  public onDecorate(context: DecorateContext) {
+    super.onDecorate(context);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.matrix3d.transpose(), .2, .2, IncidentMarker._sweep360);
+    builder.setSymbology(ColorDef.white, this._color, 1);
+    builder.addArc(ellipse, false, false);
+    builder.setBlankingFill(this._color);
+    builder.addArc(ellipse, true, true);
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -958,7 +970,7 @@ class IncidentClusterMarker extends Marker {
       title += "<br>...";
 
     this.title = title;
-    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity);
+    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     this.setImage(image);
   }
 }

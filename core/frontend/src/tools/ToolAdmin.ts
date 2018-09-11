@@ -863,7 +863,7 @@ export class ToolAdmin {
     if (vp.view.is3d() && vp.view.isCameraOn)
       viewZRoot = vp.view.camera.eye.vectorTo(pointActive);
     else
-      viewZRoot = vp.rotMatrix.getRow(2);
+      viewZRoot = vp.matrix3d.getRow(2);
 
     const auxOriginRoot = vp.getAuxCoordOrigin();
     const auxRMatrixRoot = vp.getAuxCoordRotation();

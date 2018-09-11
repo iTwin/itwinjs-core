@@ -207,13 +207,15 @@ export class Marker implements Overlay2dDecoration {
     return true;
   }
 
+  public onDecorate(context: DecorateContext) { context.addOverlay2dDecoration(this); }
+
   /** Add this Marker to the supplied DecorateContext, if it's visible
    * This method should be called from [[Decorator.decorate]].It will add this this Marker to the supplied DecorateContext.
    * @param context The DecorateContext for the Marker
    */
   public addDecoration(context: DecorateContext) {
     if (this.setPosition(context.viewport))
-      context.addOverlay2dDecoration(this);
+      this.onDecorate(context);
   }
 }
 
@@ -288,15 +290,15 @@ export abstract class MarkerSet<T extends Marker> {
     for (const entry of entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?
-          entry.markers.forEach((marker) => context.addOverlay2dDecoration(marker)); // no, just draw all of its Markers
+          entry.markers.forEach((marker) => marker.onDecorate(context)); // no, just draw all of its Markers
         } else {
           // yes, get and draw the Marker for this Cluster
           if (undefined === entry.clusterMarker) // have we already created this cluster marker?
             entry.clusterMarker = this.getClusterMarker(entry); // no, get it now.
-          context.addOverlay2dDecoration(entry.clusterMarker);
+          entry.clusterMarker.onDecorate(context);
         }
       } else {
-        context.addOverlay2dDecoration(entry); // entry is a non-overlapping Marker, draw it.
+        entry.onDecorate(context); // entry is a non-overlapping Marker, draw it.
       }
     }
   }
