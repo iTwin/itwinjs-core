@@ -1,4 +1,9 @@
-div.react-data-grid-wrapper {
+/*---------------------------------------------------------------------------------------------
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+ div.react-data-grid-wrapper {
   /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
@@ -162,7 +167,7 @@ div.react-data-grid-wrapper {
 }
 
 .cell-editor {
-  border: gray solid 2px;
+  border: $bwc-blue solid 2px;
   background: #F9F9F9 !important;
   box-sizing: border-box;
   height: 100%;
