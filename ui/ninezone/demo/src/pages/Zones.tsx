@@ -1656,6 +1656,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   const nineZone = NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
+                    openWidget: FooterWidget.None,
                   };
                 });
               }}

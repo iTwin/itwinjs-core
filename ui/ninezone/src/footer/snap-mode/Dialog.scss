@@ -9,25 +9,23 @@
   color: $bg-color;
 
   > .nz-content {
-    background-color: currentColor;
-    border-width: 0;
-    border-radius: 3px;
+    > div {
+      background-color: currentColor;
+      border-width: 0;
+      border-radius: 3px;
 
-    > .nz-title {
-      line-height: 40px;
-      font-size: 18px;
-      text-align: center;
-      color: $text-light;
+      > .nz-title {
+        line-height: 40px;
+        font-size: 18px;
+        text-align: center;
+        color: $text-light;
+      }
+
+      > .nz-snaps {
+        display: grid;
+        grid-gap: 15px;
+        padding: 0 0 15px 5px;
+      }
     }
-
-    > .nz-snaps {
-      display: grid;
-      grid-gap: 15px;
-      padding: 0 0 15px 5px;
-    }
-  }
-
-  &.nz-direction-top > .nz-content > .nz-triangle {
-    border-color: $bg-color transparent transparent transparent;
   }
 }
