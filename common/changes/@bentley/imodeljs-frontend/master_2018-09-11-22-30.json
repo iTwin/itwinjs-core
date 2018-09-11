@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TentativePoint.setCurrSnap needs to reset adjustedPoint from a pre-located SnapDetail.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

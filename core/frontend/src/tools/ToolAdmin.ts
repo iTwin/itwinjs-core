@@ -216,7 +216,7 @@ export class CurrentInputState {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
         from = snap.isHot ? CoordSource.ElemSnap : CoordSource.User;
-        uorPt.setFrom(snap.adjustedPoint); // NOTE: Updated by AdjustSnapPoint even when not hot
+        uorPt.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint()); // NOTE: adjustedPoint can be set by adjustSnapPoint even when not hot...
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
@@ -261,10 +261,8 @@ export class CurrentInputState {
     if (TentativeOrAccuSnap.getCurrentSnap(false)) {
       if (applyLocks)
         IModelApp.toolAdmin.adjustSnapPoint();
-
       return;
     }
-
     IModelApp.toolAdmin.adjustPoint(this._uorPoint, vp, true, applyLocks);
   }
 

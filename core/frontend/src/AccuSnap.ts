@@ -821,9 +821,9 @@ export class TentativeOrAccuSnap {
 
   public static getCurrentPoint(): Point3d {
     if (IModelApp.accuSnap.isHot) {
-      const pathP = IModelApp.accuSnap.getCurrSnapDetail();
-      if (pathP)
-        return pathP.adjustedPoint;
+      const snap = IModelApp.accuSnap.getCurrSnapDetail();
+      if (snap)
+        return snap.adjustedPoint;
     }
 
     return IModelApp.tentativePoint.getPoint();
