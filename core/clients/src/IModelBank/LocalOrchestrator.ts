@@ -9,7 +9,7 @@ import { DeploymentEnv } from "../Client";
 import { IModelBankClient } from "./IModelBankClient";
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
-import { assert, ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
 import { IModelBankFileSystemProject } from "./IModelBankFileSystemProject";
@@ -93,15 +93,10 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
     throw new Error(`iModel ${iModelId} not registered in this project.`);
   }
 
-  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, iModelId: string): IModelClient {
-    if (process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) {
-      assert(false);
-      return {} as IModelClient;
-    }
-
+  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, iModelId: string): Promise<IModelClient> {
     const running = this.runningBanks.get(iModelId);
     if (running !== undefined)
-      return running.client!;
+      return Promise.resolve(running.client);
 
     const props: NamedIModelAccessContextProps = this.queryContextPropsFor(iModelId);
 
@@ -127,7 +122,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
       fs.writeFileSync(thisBankLoggingConfigFile, "{}");
     }
 
-    const runWebServerJs = path.join(process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK, "lib", "runWebServer.js");
+    const runWebServerJs = path.join(process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK!, "lib", "runWebServer.js");
 
     const verboseArg = process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK_VERBOSE ?
       `--verbose=${process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK_VERBOSE}` : "";
@@ -153,7 +148,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
       throw err;
     });
 
-    return bankToRun.client!;
+    return Promise.resolve(bankToRun.client);
   }
 
   private killIModelBank(running: RunningBank): void {

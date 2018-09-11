@@ -15,6 +15,7 @@ import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelClient } from "../../IModelClient";
 
 function mockGetBriefcaseById(imodelId: string, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
@@ -49,6 +50,7 @@ function mockDeleteBriefcase(imodelId: string, briefcaseId: number) {
 describe("iModelHub BriefcaseHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
+  let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Briefcases test";
   let briefcaseId: number;
   let acquiredBriefcaseId: number;
@@ -58,20 +60,21 @@ describe("iModelHub BriefcaseHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
+    iModelClient = await utils.getClient(iModelId);
     if (!TestConfig.enableMocks) {
-      const briefcases = await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId);
+      const briefcases = await iModelClient.Briefcases().get(actx, accessToken, iModelId);
       let briefcasesCount = briefcases.length;
       if (briefcasesCount > 19) {
         // Ensure that tests can still acquire briefcases
         for (const briefcase of briefcases) {
-          await utils.getClient(iModelId).Briefcases().delete(actx, accessToken, iModelId, briefcase.briefcaseId!);
+          await iModelClient.Briefcases().delete(actx, accessToken, iModelId, briefcase.briefcaseId!);
         }
         briefcasesCount = 0;
       }
 
       // Ensure that at least one briefcase is available for querying
       if (briefcasesCount === 0) {
-        const briefcase = await utils.getClient(iModelId).Briefcases().create(actx, accessToken, iModelId);
+        const briefcase = await iModelClient.Briefcases().create(actx, accessToken, iModelId);
         briefcaseId = briefcase.briefcaseId!;
       } else {
         briefcaseId = briefcases[0].briefcaseId!;
@@ -90,19 +93,19 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   after(() => {
-    utils.getIModelProjectAbstraction().terminate();
+    utils.getCloudEnv().terminate();
   });
 
   it("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(iModelId, 3);
-    const briefcase = await utils.getClient(iModelId).Briefcases().create(actx, accessToken, iModelId);
+    const briefcase = await iModelClient.Briefcases().create(actx, accessToken, iModelId);
     chai.expect(briefcase.briefcaseId).to.be.greaterThan(1);
     acquiredBriefcaseId = briefcase.briefcaseId!;
   });
 
   it("should get all briefcases", async () => {
     utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
-    const briefcases = await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId);
+    const briefcases = await iModelClient.Briefcases().get(actx, accessToken, iModelId);
     chai.expect(briefcases.length).to.be.greaterThan(0);
 
     for (const briefcase of briefcases) {
@@ -112,13 +115,13 @@ describe("iModelHub BriefcaseHandler", () => {
 
   it("should delete a briefcase", async () => {
     utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2), utils.generateBriefcase(acquiredBriefcaseId));
-    const originalBriefcaseCount = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId)).length;
+    const originalBriefcaseCount = (await iModelClient.Briefcases().get(actx, accessToken, iModelId)).length;
 
     mockDeleteBriefcase(iModelId, acquiredBriefcaseId);
-    await utils.getClient(iModelId).Briefcases().delete(actx, accessToken, iModelId, acquiredBriefcaseId);
+    await iModelClient.Briefcases().delete(actx, accessToken, iModelId, acquiredBriefcaseId);
 
     utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2));
-    const briefcaseCount = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId)).length;
+    const briefcaseCount = (await iModelClient.Briefcases().get(actx, accessToken, iModelId)).length;
 
     chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
   });
@@ -126,7 +129,7 @@ describe("iModelHub BriefcaseHandler", () => {
   it("should fail getting an invalid briefcase", async () => {
     let error: any;
     try {
-      await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(-1));
+      await iModelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(-1));
     } catch (err) {
       error = err;
     }
@@ -137,7 +140,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   it("should get information on a briefcase by id", async () => {
     mockGetBriefcaseById(iModelId, utils.generateBriefcase(briefcaseId));
-    const briefcase: Briefcase = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId)))[0];
+    const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId)))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.downloadUrl).to.be.equal(undefined);
     chai.expect(briefcase.iModelId).to.be.equal(iModelId);
@@ -146,7 +149,7 @@ describe("iModelHub BriefcaseHandler", () => {
   it("should fail deleting an invalid briefcase", async () => {
     let error: any;
     try {
-      await utils.getClient(iModelId).Briefcases().delete(actx, accessToken, iModelId, -1);
+      await iModelClient.Briefcases().delete(actx, accessToken, iModelId, -1);
     } catch (err) {
       error = err;
     }
@@ -157,7 +160,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   it("should get the download URL for a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
-    const briefcase: Briefcase = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
+    const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.assert(briefcase.fileName);
     chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
@@ -167,7 +170,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   it("should download a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
-    const briefcase: Briefcase = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
+    const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
@@ -176,14 +179,14 @@ describe("iModelHub BriefcaseHandler", () => {
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
-    await utils.getClient(iModelId).Briefcases().download(actx, briefcase, downloadToPathname, progressTracker.track());
+    await iModelClient.Briefcases().download(actx, briefcase, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
   it("should download a Briefcase without buffered write", async () => {
     mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
-    const briefcase: Briefcase = (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
+    const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
@@ -206,7 +209,7 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
     let error;
     try {
-      (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId));
+      (await iModelClient.Briefcases().get(actx, accessToken, iModelId));
     } catch (err) {
       error = err;
     }
@@ -223,7 +226,7 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
     let error;
     try {
-      (await utils.getClient(iModelId).Briefcases().get(actx, accessToken, iModelId));
+      (await iModelClient.Briefcases().get(actx, accessToken, iModelId));
     } catch (err) {
       error = err;
     }
@@ -247,7 +250,7 @@ describe("iModelHub BriefcaseHandler", () => {
   it("should fail downloading briefcase with no file url", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await utils.getClient(iModelId).Briefcases().download(actx, new Briefcase(), utils.workDir);
+      await iModelClient.Briefcases().download(actx, new Briefcase(), utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
