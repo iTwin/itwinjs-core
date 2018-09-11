@@ -12,5 +12,5 @@ The below table lists all of them:
 |--------|------------------------------------------------------|----------------------------------------------------------------------------|
 | `this` | [ECInstance context](../ECExpressions.md#ecinstance) | ECInstance expression context of ECInstance that's currently being handled |
 
-Additionally, [User Setting symbols](../ECExpressions.md#user-settings) are
+Additionally, [User Setting symbols](../ECExpressions.md#symbols-in-global-context) are
 available as well.
