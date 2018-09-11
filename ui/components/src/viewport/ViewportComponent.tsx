@@ -78,7 +78,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
         this._vp.synchWithView(true);
       }
       const rotMatrix = args.rotMatrix;
-      if (this._vp.rotMatrix !== rotMatrix) {
+      if (this._vp.matrix3d !== rotMatrix) {
         const center = this._vp.view.getTargetPoint(); // Don't try to locate geometry using depth buffer...
         const inverse = rotMatrix.clone().inverse(); // rotation is from current nav cube state...
         if (undefined === inverse)
