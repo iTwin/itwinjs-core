@@ -4,14 +4,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "../../../src/footer/message-center/MessageCenter";
+import MessageCenter from "../../../src/footer/message-center/MessageCenter";
 
-describe("<Dialog />", () => {
+describe("<MessageCenter />", () => {
   it("should render", () => {
-    mount(<Dialog />);
+    mount(<MessageCenter />);
   });
 
   it("renders correctly", () => {
-    shallow(<Dialog />).should.matchSnapshot();
+    shallow(<MessageCenter />).should.matchSnapshot();
   });
 });

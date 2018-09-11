@@ -5,6 +5,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import withContainInViewport from "../../base/WithContainInViewport";
 import Popover from "../../popup/popover/Triangle";
 import Direction from "../../utilities/Direction";
 import CommonProps from "../../utilities/Props";
@@ -13,6 +14,9 @@ import TitleBar from "../message/content/dialog/TitleBar";
 import Title from "../message/content/dialog/Title";
 import Content from "./Content";
 import "./Dialog.scss";
+
+// tslint:disable-next-line:variable-name
+const DialogWithContainIn = withContainInViewport(Dialog);
 
 /** Properties of [[ToolAssistanceDialog]] component. */
 export interface ToolAssistanceDialogProps extends CommonProps {
@@ -34,7 +38,8 @@ export const ToolAssistanceDialog: React.StatelessComponent<ToolAssistanceDialog
       className={className}
       direction={Direction.Top}
       content={
-        <Dialog
+        <DialogWithContainIn
+          noVerticalContainment
           titleBar={
             <TitleBar
               title={
