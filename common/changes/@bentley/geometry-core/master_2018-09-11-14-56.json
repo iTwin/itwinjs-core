@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ray3d.intersectionWithPlane fix !number instead of checking undefined.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Brien.Bastings@Bentley.com"
+}
