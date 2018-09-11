@@ -10,7 +10,7 @@ import { HubUtility } from "./HubUtility";
 import { TestConfig } from "../TestConfig";
 import { AccessToken, ChangeSet, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 
-describe("BriefcaseManager", () => {
+describe.skip("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;

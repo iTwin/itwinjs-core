@@ -6,7 +6,6 @@ import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Brie
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelPermissionAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
 import { IModelBankFileSystemProjectOptions, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestConfig } from "../TestConfig";
@@ -330,14 +329,14 @@ export class HubUtility {
 
 }
 
-class ImsUserMgr implements IModelPermissionAbstraction {
+class ImsUserMgr {
   public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
     return await doImsLogin(userCredentials, env);
   }
 }
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-class TestIModelHubProject extends IModelProjectAbstraction {
+class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
@@ -349,7 +348,7 @@ class TestIModelHubProject extends IModelProjectAbstraction {
     const client = BriefcaseManager.connectClient;
     return client.getProject(actx, accessToken, query);
   }
-  public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: any): Promise<IModelRepository> {
     const client = this.iModelHubClient;
     return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
@@ -363,11 +362,11 @@ class TestIModelHubProject extends IModelProjectAbstraction {
   }
 }
 
-let projectAbstraction: IModelProjectAbstraction;
-let authorizationAbstraction: IModelPermissionAbstraction;
+let projectAbstraction: any;
+let authorizationAbstraction: any;
 const usingMocks = false;
 
-export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
+export function getIModelPermissionAbstraction(): any {
   if (authorizationAbstraction !== undefined)
     return authorizationAbstraction;
 
@@ -378,7 +377,7 @@ export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
   throw new Error("WIP");
 }
 
-export function getIModelProjectAbstraction(): IModelProjectAbstraction {
+export function getIModelProjectAbstraction(): any {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
