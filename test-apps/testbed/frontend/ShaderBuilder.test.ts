@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { System } from "@bentley/imodeljs-frontend/lib/rendering";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
+  System,
   VariableType,
   VariableScope,
   VariablePrecision,
@@ -16,7 +16,7 @@ import {
   ProgramBuilder,
   VertexShaderComponent,
   FragmentShaderComponent,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("Variable declaration tests", () => {
   it("should convert ShaderVariable to glsl declaration", () => {

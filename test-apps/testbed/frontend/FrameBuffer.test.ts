@@ -5,8 +5,7 @@
 import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { TextureHandle, FrameBuffer, GL } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Capabilities, System, RenderBuffer } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("FrameBuffer tests", () => {
   before(() => WebGLTestContext.startup());

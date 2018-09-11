@@ -21,13 +21,13 @@ import {
   MeshBuilder,
   Mesh,
   ToleranceRatio,
-  System,
   GraphicType,
   PrimitiveBuilder,
   StrokesPrimitiveList,
   StrokesPrimitivePointLists,
   Triangle,
 } from "@bentley/imodeljs-frontend/lib/rendering";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";

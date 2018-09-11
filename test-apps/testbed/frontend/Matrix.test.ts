@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 
 describe("Matrix3", () => {

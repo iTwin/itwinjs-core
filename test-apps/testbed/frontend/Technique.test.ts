@@ -5,6 +5,7 @@
 import { expect, assert } from "chai";
 import { Transform } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { ClippingType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   ProgramBuilder,
   VertexShaderComponent,
@@ -13,13 +14,12 @@ import {
   System,
   TechniqueId,
   TechniqueFlags,
-  ClippingType,
   FeatureMode,
   SingularTechnique,
   ViewportQuadGeometry,
   DrawParams,
   RenderPass,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
   const builder = new ProgramBuilder(false);

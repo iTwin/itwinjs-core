@@ -16,7 +16,8 @@ import {
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { FeatureSymbology, GraphicType, PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import * as ttjs from "tooltip.js";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
@@ -850,7 +851,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     faceCenters[5] = center.plus(faceNormals[5]);
 
     for (let iFace = 0; iFace < faceCenters.length; iFace++) {
-      const faceBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._controlIds[iFace]);
+      const faceBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._controlIds[iFace]);
       const ellipse = Arc3d.createScaledXYColumns(faceCenters[iFace], Matrix3d.createRigidHeadsUp(faceNormals[iFace]), radius, radius, AngleSweep.create360());
 
       faceBuilder.setSymbology(outlineColor, faceColors[iFace], 1);

@@ -4,5 +4,6 @@
 
 export * from "./tile/GltfTileIO";
 export * from "./tile/DgnTileIO";
+export * from "./tile/IModelTileIO";
 export * from "./tile/TileIO";
 export * from "./tile/TileTree";

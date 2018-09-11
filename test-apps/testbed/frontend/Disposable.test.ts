@@ -7,10 +7,8 @@ import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-f
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
-import {
-  MeshArgs, OnScreenTarget, GraphicType,
-  Target, Decorations, Batch, WorldDecorations, TextureHandle, GraphicList,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodeljs-frontend/lib/rendering";
+import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TileIO, DgnTileIO } from "@bentley/imodeljs-frontend/lib/tile";
@@ -188,7 +186,7 @@ describe("Disposal of WebGL Resources", () => {
     WebGLTestContext.shutdown();
   });
 
-  it.skip("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
+  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;
