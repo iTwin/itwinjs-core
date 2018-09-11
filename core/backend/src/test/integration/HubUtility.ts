@@ -6,8 +6,9 @@ import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Brie
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelServerOrchestrator } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
 import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
+import { IModelBankLocalOrchestrator } from "@bentley/imodeljs-clients/lib/IModelBank/LocalOrchestrator";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestConfig } from "../TestConfig";
 
@@ -331,7 +332,7 @@ export class HubUtility {
 }
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-export class TestIModelHubProject extends IModelProjectAbstraction {
+class TestIModelHubProject extends IModelProjectAbstraction {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
@@ -363,14 +364,25 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
   }
 }
 
+class TestIModelHubServerOrchestrator implements IModelServerOrchestrator {
+  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
+    return BriefcaseManager.imodelClient;
+  }
+}
+
 let projectAbstraction: IModelProjectAbstraction;
+let serverOrchestrator: IModelServerOrchestrator;
+const usingMocks = false;
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
-  if (process.env.IMODELJS_BACKEND_TEST_IMODEL_BANK === undefined)
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
     return projectAbstraction = new TestIModelHubProject();
+  }
+
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const options: IModelBankFileSystemProjectOptions = {
     rootDir: path.join(KnownTestLocations.outputDir, "imodel-bank"),
@@ -379,11 +391,24 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     deleteIfExists: true,
     createIfNotExist: true,
   };
+  projectAbstraction = new IModelBankFileSystemProject(options);
+  return projectAbstraction;
+}
+
+export function getServerOrchestrator(): IModelServerOrchestrator {
+  if (serverOrchestrator !== undefined)
+    return serverOrchestrator;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
+    return serverOrchestrator = new TestIModelHubServerOrchestrator();
+  }
+
   const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
   const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
   // tslint:disable-next-line:no-var-requires
   const serverConfig: IModelBankServerConfig = require(serverConfigFile);
   EnvMacroSubst.replaceInProperties(serverConfig, true);
-  projectAbstraction = new IModelBankFileSystemProject(options, serverConfig, loggingConfigFile);
-  return projectAbstraction;
+  const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
+  serverOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
+  return serverOrchestrator;
 }
