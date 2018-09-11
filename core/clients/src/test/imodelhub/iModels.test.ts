@@ -16,7 +16,7 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { IModelProjectAbstraction } from "../../IModelProjectAbstraction";
+import { IModelProjectClient } from "../../IModelCloudEnvironment";
 
 function mockGetIModelByName(projectId: string, name: string, imodelId?: string, initialized = true) {
   if (!TestConfig.enableMocks)
@@ -135,7 +135,7 @@ describe("iModelHub iModelHandler", () => {
   let iModelId: string;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
-  const imodelProject: IModelProjectAbstraction = utils.getIModelProjectAbstraction();
+  const imodelProject: IModelProjectClient = utils.getIModelProjectAbstraction();
   const alctx = new ActivityLoggingContext("");
 
   before(async () => {

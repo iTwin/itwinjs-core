@@ -7,7 +7,7 @@ import { IModelRepository, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
 import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelPermissionAbstraction } from "../IModelProjectAbstraction";
+import { IModelProjectClient, IModelProjectIModelCreateParams, IModelAuthorizationClient } from "../IModelCloudEnvironment";
 import { IModelHubError, IModelHubClientError } from "../imodelhub/Errors";
 import { WsgError } from "../WsgClient";
 import { Project } from "../ConnectClients";
@@ -71,7 +71,7 @@ export interface IModelBankFileSystemProjectOptions {
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
  */
-export class IModelBankPermissionDummy implements IModelPermissionAbstraction {
+export class IModelBankPermissionDummy implements IModelAuthorizationClient {
   public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
     if (!userProfile)
       userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
@@ -82,7 +82,7 @@ export class IModelBankPermissionDummy implements IModelPermissionAbstraction {
 }
 
 /** Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
-export class IModelBankFileSystemProject extends IModelProjectAbstraction {
+export class IModelBankFileSystemProject extends IModelProjectClient {
   public group: IModelBankAccessContextGroupProps;
   public fsAdmin: IModelBankFileSystemAdmin;
   public env: DeploymentEnv;
@@ -176,7 +176,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve(repos);
   }
 
-  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
     const existing = await this.queryIModels(alctx, _accessToken, _projectId, new IModelQuery().byName(params.name));
     alctx.enter();
     if (existing.length !== 0)
