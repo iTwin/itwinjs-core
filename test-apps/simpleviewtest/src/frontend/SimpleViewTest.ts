@@ -979,11 +979,15 @@ class IncidentMarkerDemo {
 
 // Starts Measure between points tool
 function startMeasurePoints(event: any) {
-  const menu = document.getElementById("snapModeList") as HTMLDivElement;
-  if (event.target === menu)
-    return;
-  IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+  const useMeasureTool = false;
+  if (useMeasureTool) {
+    const menu = document.getElementById("snapModeList") as HTMLDivElement;
+    if (event.target === menu)
+      return;
+    IModelApp.tools.run("Measure.Points", theViewport!);
+  } else {
+    ProjectExtentsDecoration.toggle();
+  }
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions

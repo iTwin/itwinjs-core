@@ -510,10 +510,7 @@ export class Branch extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch): void {
-    // NB: The branch transform et al will have already been pushed...
-    this.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(commands, batch));
-  }
+  public addHiliteCommands(commands: RenderCommands, batch: Batch): void { commands.addHiliteBranch(this, batch); }
 
   public assignUniformFeatureIndices(index: number): void {
     for (const entry of this.branch.entries) {
