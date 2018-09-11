@@ -17,6 +17,18 @@ import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core
 
 chai.should();
 
+function containsCode(codes: Code[], wantCode: Code) {
+  for (const code of codes) {
+    if (code.briefcaseId === wantCode.briefcaseId
+      && code.codeScope === wantCode.briefcaseId
+      && code.codeSpecId === wantCode.codeSpecId
+      && code.value === wantCode.value
+      && code.state === wantCode.state)
+      return true;
+  }
+  return false;
+}
+
 describe("iModelHub CodeHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
@@ -240,12 +252,8 @@ describe("iModelHub CodeHandler", () => {
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
     chai.expect(codes.length).to.be.equal(existingCodes.length);
-    for (let i = 0; i < codes.length; ++i) {
-      chai.expect(codes[i].briefcaseId).to.be.equal(existingCodes[i].briefcaseId);
-      chai.expect(codes[i].codeScope).to.be.equal(existingCodes[i].codeScope);
-      chai.expect(codes[i].codeSpecId).to.be.equal(existingCodes[i].codeSpecId);
-      chai.expect(codes[i].value).to.be.equal(existingCodes[i].value);
-      chai.expect(codes[i].state).to.be.equal(existingCodes[i].state);
+    for (const existingCode of existingCodes) {
+      chai.expect(containsCode(codes, existingCode));
     }
   });
 
