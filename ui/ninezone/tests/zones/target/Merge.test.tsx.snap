@@ -4,7 +4,9 @@ exports[`<Merge /> renders correctly 1`] = `
 <Target
   className="nz-zones-target-merge"
 >
-  <Component />
+  <Component
+    className="nz-arrow"
+  />
   <Component
     className="nz-mirrored"
   />
