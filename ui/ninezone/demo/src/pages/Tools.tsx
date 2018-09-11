@@ -96,6 +96,7 @@ export default class Tools extends React.Component<{}, State> {
         </HistoryIcon>
         <HistoryIcon
           isActive
+          isDisabled
         >
           <i className="icon icon-3d-render" />
         </HistoryIcon>
