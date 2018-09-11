@@ -21,9 +21,10 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
-import { IModelProjectAbstraction } from "../../IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelServerOrchestrator } from "../../IModelProjectAbstraction";
 import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig } from "../../IModelBank/IModelBankFileSystemProject";
-import { TestIModelHubProject } from "./IModelHubProject";
+import { TestIModelHubProject, TestIModelHubServerOrchestrator } from "./IModelHubProject";
+import { IModelBankLocalOrchestrator } from "../../IModelBank/LocalOrchestrator";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -102,7 +103,7 @@ export class IModelHubUrlMock {
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
 export function getClient(imodelId: string): IModelClient {
-  return projectAbstraction.getClientForIModel(actx, undefined, imodelId);
+  return getServerOrchestrator().getClientForIModel(actx, undefined, imodelId);
 }
 
 export function getDefaultClient() {
@@ -710,6 +711,7 @@ export class ProgressTracker {
 }
 
 let projectAbstraction: IModelProjectAbstraction;
+let serverOrchestrator: IModelServerOrchestrator;
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)
@@ -719,6 +721,8 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     return projectAbstraction = new TestIModelHubProject();
   }
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+
   const options: IModelBankFileSystemProjectOptions = {
     rootDir: workDir,
     name: TestConfig.projectName,
@@ -726,11 +730,24 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     deleteIfExists: true,
     createIfNotExist: true,
   };
+  projectAbstraction = new IModelBankFileSystemProject(options);
+  return projectAbstraction;
+}
+
+export function getServerOrchestrator(): IModelServerOrchestrator {
+  if (serverOrchestrator !== undefined)
+    return serverOrchestrator;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
+    return serverOrchestrator = new TestIModelHubServerOrchestrator();
+  }
+
   const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
   const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
   // tslint:disable-next-line:no-var-requires
   const serverConfig: IModelBankServerConfig = require(serverConfigFile);
   EnvMacroSubst.replaceInProperties(serverConfig, true);
-  projectAbstraction = new IModelBankFileSystemProject(options, serverConfig, loggingConfigFile);
-  return projectAbstraction;
+  const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
+  serverOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
+  return serverOrchestrator;
 }

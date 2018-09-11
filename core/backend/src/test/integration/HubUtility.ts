@@ -118,11 +118,9 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, projectId: string, iModelId: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, _projectId: string, iModelId: string): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
     if (changeSets.length === 0)
@@ -137,8 +135,6 @@ export class HubUtility {
     if (IModelJsFs.existsSync(downloadDir))
       HubUtility.deleteDirectoryRecursive(downloadDir);
     HubUtility.makeDirectoryRecursive(downloadDir);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const iModel: IModelRepository | undefined = await HubUtility.queryIModelById(accessToken, projectId, iModelId);
     if (!iModel)
@@ -181,8 +177,6 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
-
     await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
   }
 
@@ -203,7 +197,6 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
-      BriefcaseManager.setClientFromIModelTokenContext(projectId, iModel.wsgId);
       await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModel.wsgId);
     }
 
@@ -219,8 +212,6 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, iModelId);
     if (!briefcase) {
@@ -260,8 +251,6 @@ export class HubUtility {
   public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {

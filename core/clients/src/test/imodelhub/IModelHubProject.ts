@@ -5,7 +5,7 @@ import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, Deploym
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
 import { IModelRepository } from "../../imodelhub";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "../../IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelServerOrchestrator } from "../../IModelProjectAbstraction";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
@@ -34,6 +34,9 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
     const client = getDefaultClient();
     return client.IModels().get(alctx, accessToken, projectId, query);
   }
+}
+
+export class TestIModelHubServerOrchestrator implements IModelServerOrchestrator {
   public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
     return getDefaultClient();
   }
