@@ -374,7 +374,7 @@ export class Ray3d implements BeJSONFunctions {
     const uDotN = this.direction.dotProduct(plane.getNormalRef());
     const aDotN = vectorA.dotProduct(plane.getNormalRef());
     const division = Geometry.conditionalDivideFraction(-aDotN, uDotN);
-    if (!division)
+    if (undefined === division)
       return undefined;
 
     if (result) {

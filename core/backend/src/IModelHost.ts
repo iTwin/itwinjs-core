@@ -4,7 +4,7 @@
 /** @module IModelHost */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { DeploymentEnv } from "@bentley/imodeljs-clients";
+import { DeploymentEnv, IModelClient } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -15,6 +15,7 @@ import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
 import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { BriefcaseManager } from "./BriefcaseManager";
 
 /**
  * Configuration of imodeljs-backend.
@@ -38,6 +39,9 @@ export class IModelHostConfiguration {
 
   /** The directory where the app's assets are found */
   public appAssetsDir?: string;
+
+  /** The kind of iModel server to use. Defaults to iModelHubClient */
+  public imodelClient?: IModelClient;
 }
 
 /**
@@ -69,6 +73,9 @@ export class IModelHost {
       else
         NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
     }
+
+    if (configuration.imodelClient)
+      BriefcaseManager.imodelClient = configuration.imodelClient;
 
     IModelReadRpcImpl.register();
     IModelTileRpcImpl.register();

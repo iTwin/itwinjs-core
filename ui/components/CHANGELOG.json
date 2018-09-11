@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.124.0",
+      "tag": "@bentley/ui-components_v0.124.0",
+      "date": "Tue, 11 Sep 2018 13:52:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix DataTree sending drag&drop props down to Tree component even if these props weren't specified for DataTree"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.123.0",
       "tag": "@bentley/ui-components_v0.123.0",
       "date": "Wed, 05 Sep 2018 17:14:50 GMT",

@@ -78,7 +78,7 @@ describe("TableDataProvider", async () => {
 
   describe("getRow", () => {
 
-    it("returns first row", async () => {
+    it.skip("returns first row", async () => {
       provider.keys = new KeySet([instances.physicalModel]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
@@ -94,7 +94,7 @@ describe("TableDataProvider", async () => {
 
   describe("sorting", () => {
 
-    it("sorts instances ascending", async () => {
+    it.skip("sorts instances ascending", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Ascending); // sort by display label (column index = 0)
@@ -102,7 +102,7 @@ describe("TableDataProvider", async () => {
       expect(rows).to.matchSnapshot();
     });
 
-    it("sorts instances descending", async () => {
+    it.skip("sorts instances descending", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Descending); // sort by display label (column index = 0)
@@ -114,7 +114,7 @@ describe("TableDataProvider", async () => {
 
   describe("filtering", () => {
 
-    it("filters instances", async () => {
+    it.skip("filters instances", async () => {
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       const columns = await provider.getColumns();
       provider.filterExpression = `${columns[0].key} = "Physical Model-0-S"`;

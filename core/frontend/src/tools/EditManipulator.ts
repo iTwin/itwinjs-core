@@ -12,7 +12,7 @@ import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry } from "@bentley/geometry-core";
-import { Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 /**
  * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
@@ -160,7 +160,13 @@ export namespace EditManipulator {
   }
 
   export class HandleUtils {
-    public static getBoresite(origin: Point3d, vp: Viewport): Ray3d {
+    public static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Ray3d {
+      if (checkAccuDraw && IModelApp.accuDraw.isActive)
+        return Ray3d.create(origin, IModelApp.accuDraw.getRotation().getRow(2));
+
+      if (checkACS && vp.isContextRotationRequired)
+        return Ray3d.create(origin, vp.getAuxCoordRotation().getRow(2));
+
       const eyePoint = vp.worldToViewMap.transform1.columnZ();
       const direction = Vector3d.createFrom(eyePoint);
       const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
@@ -170,6 +176,34 @@ export namespace EditManipulator {
       }
       direction.scaleToLength(-1.0, direction);
       return Ray3d.create(origin, direction);
+    }
+
+    public static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
+      const plane = Plane3dByOriginAndUnitNormal.create(planePt, planeNormal);
+      if (undefined === plane)
+        return undefined;
+      const rayToEye = EditManipulator.HandleUtils.getBoresite(spacePt, vp, checkAccuDraw, checkACS);
+      const projectedPt = Point3d.createZero();
+      if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
+        return undefined;
+      return projectedPt;
+    }
+
+    public static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
+      const lineRay = Ray3d.create(linePt, lineDirection);
+      const rayToEye = EditManipulator.HandleUtils.getBoresite(spacePt, vp, checkAccuDraw, checkACS);
+      if (rayToEye.direction.isParallelTo(lineRay.direction))
+        return lineRay.projectPointToRay(spacePt);
+      const matrix = Matrix3d.createRigidFromColumns(lineRay.direction, rayToEye.direction, AxisOrder.XZY);
+      if (undefined === matrix)
+        return undefined;
+      const plane = Plane3dByOriginAndUnitNormal.create(linePt, matrix.columnZ());
+      if (undefined === plane)
+        return undefined;
+      const projectedPt = Point3d.createZero();
+      if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
+        return undefined;
+      return lineRay.projectPointToRay(projectedPt);
     }
 
     /** Get a transform to orient arrow shape to view direction. If arrow direction is almost perpendicular to view direction will return undefined. */

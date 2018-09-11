@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-backend",
-  "version": "0.123.0",
+  "version": "0.124.0",
   "description": "Backend of iModelJs Presentation library",
   "keywords": [
     "Bentley",
@@ -22,8 +22,8 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/backend",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/backend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
+    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
@@ -32,17 +32,17 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.123.0",
-    "@bentley/imodeljs-common": "0.123.0",
-    "@bentley/imodeljs-backend": "0.123.0",
-    "@bentley/presentation-common": "0.123.0"
+    "@bentley/bentleyjs-core": "0.124.0",
+    "@bentley/imodeljs-common": "0.124.0",
+    "@bentley/imodeljs-backend": "0.124.0",
+    "@bentley/presentation-common": "0.124.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.123.0",
-    "@bentley/bentleyjs-tools": "0.123.0",
-    "@bentley/imodeljs-common": "0.123.0",
-    "@bentley/imodeljs-backend": "0.123.0",
-    "@bentley/presentation-common": "0.123.0",
+    "@bentley/bentleyjs-core": "0.124.0",
+    "@bentley/bentleyjs-tools": "0.124.0",
+    "@bentley/imodeljs-common": "0.124.0",
+    "@bentley/imodeljs-backend": "0.124.0",
+    "@bentley/presentation-common": "0.124.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

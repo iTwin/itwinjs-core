@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.123.0",
+  "version": "0.124.0",
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
@@ -24,23 +24,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.123.0",
-    "@bentley/geometry-core": "0.123.0",
-    "@bentley/imodeljs-clients": "0.123.0",
-    "@bentley/imodeljs-common": "0.123.0",
-    "@bentley/imodeljs-i18n": "0.123.0"
+    "@bentley/bentleyjs-core": "0.124.0",
+    "@bentley/geometry-core": "0.124.0",
+    "@bentley/imodeljs-clients": "0.124.0",
+    "@bentley/imodeljs-common": "0.124.0",
+    "@bentley/imodeljs-i18n": "0.124.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.123.0",
-    "@bentley/bentleyjs-tools": "0.123.0",
-    "@bentley/geometry-core": "0.123.0",
-    "@bentley/imodeljs-clients": "0.123.0",
-    "@bentley/imodeljs-common": "0.123.0",
-    "@bentley/imodeljs-i18n": "0.123.0",
+    "@bentley/bentleyjs-core": "0.124.0",
+    "@bentley/bentleyjs-tools": "0.124.0",
+    "@bentley/geometry-core": "0.124.0",
+    "@bentley/imodeljs-clients": "0.124.0",
+    "@bentley/imodeljs-common": "0.124.0",
+    "@bentley/imodeljs-i18n": "0.124.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
