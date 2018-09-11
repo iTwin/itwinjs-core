@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Sep 2018 13:52:59 GMT and should not be manually modified.
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+*Version update only*
 
 ## 0.123.0
 Wed, 05 Sep 2018 17:14:50 GMT

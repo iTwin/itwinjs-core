@@ -23,7 +23,7 @@ describe("DistinctValues", async () => {
     terminate();
   });
 
-  it("gets distinct content values", async () => {
+  it.skip("gets distinct content values", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/DistinctValues/getRelatedDistinctValues");
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };

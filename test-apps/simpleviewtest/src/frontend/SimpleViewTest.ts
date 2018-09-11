@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep } from "@bentley/geometry-core";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -23,7 +23,6 @@ import { NonConnectProject } from "./NonConnectProject";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { SimpleViewState } from "./SimpleViewState";
 import { showError, showStatus } from "./Utils";
-import { Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 type Tooltip = ttjs.default;
 
@@ -328,7 +327,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === inverse)
     return;
 
-  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.rotMatrix);
+  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.matrix3d);
   const rotateTransform = Transform.createFixedPointAndMatrix(theViewport.view.getTargetPoint(), targetMatrix);
   const startFrustum = theViewport.getFrustum();
   const newFrustum = startFrustum.clone();
@@ -615,15 +614,13 @@ export class MeasurePointsTool extends PrimitiveTool {
 
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
-  protected _anchorPoint: Point3d;
   protected _ids: string[];
   protected _base: Point3d[];
   protected _axis: Vector3d[];
 
-  public constructor(manipulator: EditManipulator.HandleProvider, ev: BeButtonEvent, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
+  public constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
     super(manipulator);
     this._anchorIndex = ids.indexOf(hitId);
-    this._anchorPoint = ev.point;
     this._ids = ids;
     this._base = base;
     this._axis = axis;
@@ -634,26 +631,30 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.accuSnap.enableLocate(false);
     IModelApp.accuSnap.enableSnap(false);
-
-    const hints = new AccuDrawHintBuilder();
-    hints.setOrigin(this._base[this._anchorIndex]);
-    hints.setXAxis2(this._axis[this._anchorIndex]);
-    hints.sendHints();
-
+    IModelApp.accuDraw.deactivate();
     this.beginDynamics();
   }
 
-  protected accept(_ev: BeButtonEvent): boolean { return true; }
+  protected accept(ev: BeButtonEvent): boolean {
+    const extents = this.computeNewExtents(ev);
+    if (undefined === extents)
+      return true;
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    // NEEDSWORK: Update extents and low/high markers...
+    return true;
+  }
+
+  public computeNewExtents(ev: BeButtonEvent): Range3d | undefined {
     if (-1 === this._anchorIndex || undefined === ev.viewport)
-      return;
+      return undefined;
 
-    const ray = Ray3d.create(this._base[this._anchorIndex], this._axis[this._anchorIndex]);
-    const projectedPt1 = this._base[this._anchorIndex];
-    const projectedPt2 = ray.projectPointToRay(ev.point);
-    const offsetVec = Vector3d.createStartEnd(projectedPt1, projectedPt2);
+    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled (tool disables by default)...
+    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, this._base[this._anchorIndex], this._axis[this._anchorIndex], ev.viewport, true);
+    if (undefined === projectedPt)
+      return undefined;
 
+    const anchorPt = this._base[this._anchorIndex];
+    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
     let offset = offsetVec.normalizeWithLength(offsetVec).mag;
     if (offset < Geometry.smallMetricDistance)
       return;
@@ -670,6 +671,14 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
 
     const extents = Range3d.create();
     extents.extendArray(adjustedPts);
+
+    return extents;
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    const extents = this.computeNewExtents(ev);
+    if (undefined === extents)
+      return;
 
     const builder = context.createGraphicBuilder(GraphicType.Scene);
     builder.setSymbology(ev.viewport!.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
@@ -742,6 +751,9 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
           }
         } */
 
+    //    if (this.iModel.isReadonly)
+    //      return false;
+
     // Decide if resize controls should be presented.
     if (undefined === this._boxId)
       return false;
@@ -804,8 +816,8 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     super.clearControls();
   }
 
-  protected modifyControls(hit: HitDetail, ev: BeButtonEvent): boolean {
-    const manipTool = new ProjectExtentsResizeTool(this, ev, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
+  protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
+    const manipTool = new ProjectExtentsResizeTool(this, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
     return manipTool.run();
   }
 
@@ -872,26 +884,27 @@ class IncidentMarker extends Marker {
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
   private static _amber = new ColorDef(ColorByName.amber);
-  private _color: string;
+  private static _sweep360 = AngleSweep.create360();
+  private _color: ColorDef;
 
   /** This makes the icon only show when the cursor is over an incident marker. */
-  public get wantImage() { return this._isHilited; }
+  // public get wantImage() { return this._isHilited; }
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
-  public static makeColor(severity: number): string {
+  public static makeColor(severity: number): ColorDef {
     return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
-      this._amber.lerp(ColorDef.red, (severity - 16) / 14.)).toHexString();
+      this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
-  /** draw a filled square with the incident color and a white outline */
-  public drawFunc(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.fillStyle = this._color;
-    ctx.rect(-11, -11, 20, 20);
-    ctx.fill();
-    ctx.strokeStyle = "white";
-    ctx.stroke();
-  }
+  // /** draw a filled square with the incident color and a white outline */
+  // public drawFunc(ctx: CanvasRenderingContext2D) {
+  //   ctx.beginPath();
+  //   ctx.fillStyle = this._color.toHexString();
+  //   ctx.rect(-11, -11, 20, 20);
+  //   ctx.fill();
+  //   ctx.strokeStyle = "white";
+  //   ctx.stroke();
+  // }
 
   /** Create a new IncidentMarker */
   constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
@@ -901,9 +914,20 @@ class IncidentMarker extends Marker {
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.labelFont = "italic 14px san-serif"; // use italic so incidents look different than Clusters
-    this.label = severity.toString(); // label with severity
+    // this.label = severity.toString(); // label with severity
     this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+  }
+
+  public onDecorate(context: DecorateContext) {
+    super.onDecorate(context);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.matrix3d.transpose(), .2, .2, IncidentMarker._sweep360);
+    builder.setSymbology(ColorDef.white, this._color, 1);
+    builder.addArc(ellipse, false, false);
+    builder.setBlankingFill(this._color);
+    builder.addArc(ellipse, true, true);
+    context.addDecorationFromBuilder(builder);
   }
 }
 
@@ -958,7 +982,7 @@ class IncidentClusterMarker extends Marker {
       title += "<br>...";
 
     this.title = title;
-    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity);
+    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     this.setImage(image);
   }
 }
@@ -1019,12 +1043,14 @@ class IncidentMarkerDemo {
 }
 
 // Starts Measure between points tool
-function startMeasurePoints(event: any) {
-  const menu = document.getElementById("snapModeList") as HTMLDivElement;
-  if (event.target === menu)
-    return;
-  IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+function startMeasurePoints(_event: any) {
+  /*
+    const menu = document.getElementById("snapModeList") as HTMLDivElement;
+    if (event.target === menu)
+      return;
+    IModelApp.tools.run("Measure.Points", theViewport!);
+  */
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions

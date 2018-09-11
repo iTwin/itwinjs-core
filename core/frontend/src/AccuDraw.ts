@@ -544,7 +544,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.matrix3d : Matrix3d.createIdentity();
         rMatrix.getRow(whichVec, vecP);
         break;
 
@@ -562,7 +562,7 @@ export class AccuDraw {
   }
 
   private getBestViewedRotationFromXVector(rotation: ThreeAxes, vp: Viewport): void {
-    const viewZ = vp.rotMatrix.getRow(2);
+    const viewZ = vp.matrix3d.getRow(2);
     const vec1 = this.getStandardVector(2);
     const vec2 = this.getStandardVector(1);
     const vec3 = this.getStandardVector(0);
@@ -675,7 +675,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.matrix3d : Matrix3d.createIdentity();
         newRotation.fromMatrix3d(rMatrix);
         this.flags.lockedRotation = false;
         break;
@@ -1081,7 +1081,7 @@ export class AccuDraw {
       return true;
     }
 
-    const viewNormal = vp.rotMatrix.getRow(2);
+    const viewNormal = vp.matrix3d.getRow(2);
     const yVec = viewNormal.crossProduct(inVec);
 
     if (!yVec.normalizeInPlace()) {
@@ -1236,7 +1236,7 @@ export class AccuDraw {
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
     const rotation = out ? out : new Matrix3d();
-    const viewZ = vp.rotMatrix.rowZ();
+    const viewZ = vp.matrix3d.rowZ();
     const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
 
     if (undefined !== snapLoc) {
@@ -1254,7 +1254,7 @@ export class AccuDraw {
       let yVec = xVec.unitCrossProduct(zVec);
 
       if (undefined !== yVec) {
-        const viewX = vp.rotMatrix.rowX();
+        const viewX = vp.matrix3d.rowX();
         if (snap.primitive instanceof LineString3d) {
           if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
             const tVec = xVec;
@@ -1322,7 +1322,7 @@ export class AccuDraw {
     if (checkACS && useVp.isContextRotationRequired)
       return useVp.getAuxCoordRotation(rMatrix);
 
-    return useVp.rotMatrix;
+    return useVp.matrix3d;
   }
 
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
@@ -1494,7 +1494,7 @@ export class AccuDraw {
       }
 
       case RotationMode.View: {
-        baseRMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        baseRMatrix = vp ? vp.matrix3d : Matrix3d.createIdentity();
         break;
       }
 
@@ -2008,7 +2008,7 @@ export class AccuDraw {
     if (!vp || vp.isCameraOn)
       return;
 
-    const viewZRoot = vp.rotMatrix.getRow(2);
+    const viewZRoot = vp.matrix3d.getRow(2);
     if (!this.axes.z.isPerpendicularTo(viewZRoot))
       return;
 
@@ -2104,7 +2104,7 @@ export class AccuDraw {
         fromPtP = cameraPos;
         fromPtP.vectorTo(inPtP, projectionVector).normalizeInPlace();
       } else {
-        const rMatrix = vp.rotMatrix;
+        const rMatrix = vp.matrix3d;
         fromPtP = inPtP;
         rMatrix.getRow(2, projectionVector);
       }
@@ -2137,7 +2137,7 @@ export class AccuDraw {
       return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA);
     }
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.matrix3d.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
       return false;
@@ -2153,7 +2153,7 @@ export class AccuDraw {
     }
 
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, isSnap)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.matrix3d.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
     }

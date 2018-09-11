@@ -10,32 +10,36 @@ import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** Information needed to create an iModel */
-export interface IModelProjectAbstractionIModelCreateParams {
+/** Information needed by a project abstraction to create an iModel */
+export interface IModelProjectIModelCreateParams {
   name: string;
   description: string;
   seedFile: string;
   tracker?: (progress: ProgressInfo) => void;
 }
 
-/** Manages users, projects, and imodels and their servers. */
-export abstract class IModelProjectAbstraction {
+/** Manages projects and imodels. */
+export abstract class IModelProjectClient {
 
   public abstract isIModelHub: boolean;
 
   public abstract terminate(): void;
 
-  // User management
-  public abstract authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
-
-  // Project management
+  // Project queries
   public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
-  // Server deployment
-  public abstract getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
-
   // IModel management
-  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository>;
+  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository>;
   public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
   public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]>;
+}
+
+/** Interface implemented by a service that allows client apps to connect to an iModel server */
+export interface IModelOrchestrationClient {
+  getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
+}
+
+/** Interface implemented by a service that authorizes users. */
+export interface IModelAuthorizationClient {
+  authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 }

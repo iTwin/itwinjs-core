@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "SelectTool EditManipulator support.",
+      "comment": "Ray3d.intersectionWithPlane fix !number instead of checking undefined. Added project point to line or plane in view helper methods for tools.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

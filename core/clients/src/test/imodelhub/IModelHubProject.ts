@@ -5,24 +5,20 @@ import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, Deploym
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
 import { IModelRepository } from "../../imodelhub";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "../../IModelProjectAbstraction";
+import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-export class TestIModelHubProject extends IModelProjectAbstraction {
+export class TestIModelHubProject extends IModelProjectClient {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
-  public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-    const authToken = await TestConfig.login(userCredentials, env);
-    const client = getDefaultClient() as IModelHubClient;
-    return client.getAccessToken(alctx, authToken);
-  }
+
   public async queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project> {
     const client = await new ConnectClient(TestConfig.deploymentEnv);
     return client.getProject(alctx, accessToken, query);
   }
-  public async createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
     const client = getDefaultClient();
     return client.IModels().create(alctx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
@@ -34,7 +30,18 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
     const client = getDefaultClient();
     return client.IModels().get(alctx, accessToken, projectId, query);
   }
+}
+
+export class TestIModelHubOrchestrator implements IModelOrchestrationClient {
   public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
     return getDefaultClient();
+  }
+}
+
+export class TestIModelHubUserMgr implements IModelAuthorizationClient {
+  public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+    const authToken = await TestConfig.login(userCredentials, env);
+    const client = getDefaultClient() as IModelHubClient;
+    return client.getAccessToken(alctx, authToken);
   }
 }

@@ -70,7 +70,7 @@ export class AccuDrawShortcuts {
     acs.setOrigin(points[0]);
     switch (points.length) {
       case 1:
-        acs.setRotation(vp.rotMatrix);
+        acs.setRotation(vp.matrix3d);
         if (!isDynamics) {
           accudraw.published.origin.setFrom(points[0]);
           accudraw.published.flags = AccuDrawFlags.SetOrigin;
@@ -671,10 +671,10 @@ export class AccuDrawShortcuts {
       return;
 
     const newMatrix = accudraw.getRotation();
-    if (newMatrix.isExactEqual(vp.rotMatrix))
+    if (newMatrix.isExactEqual(vp.matrix3d))
       return;
 
-    const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.rotMatrix);
+    const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.matrix3d);
     const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
     const startFrustum = vp.getFrustum();
     const newFrustum = startFrustum.clone();

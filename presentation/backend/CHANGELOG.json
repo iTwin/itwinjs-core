@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "0.124.0",
+      "tag": "@bentley/presentation-backend_v0.124.0",
+      "date": "Tue, 11 Sep 2018 13:52:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "RPC API fixes for web use cases"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.123.0",
       "tag": "@bentley/presentation-backend_v0.123.0",
       "date": "Wed, 05 Sep 2018 17:14:50 GMT",

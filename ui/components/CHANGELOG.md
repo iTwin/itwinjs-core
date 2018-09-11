@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Sep 2018 13:52:59 GMT and should not be manually modified.
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- Fix DataTree sending drag&drop props down to Tree component even if these props weren't specified for DataTree
 
 ## 0.123.0
 Wed, 05 Sep 2018 17:14:50 GMT

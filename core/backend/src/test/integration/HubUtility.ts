@@ -6,8 +6,9 @@ import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Brie
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
+import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
 import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
+import { IModelBankLocalOrchestrator } from "@bentley/imodeljs-clients/lib/IModelBank/LocalOrchestrator";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestConfig } from "../TestConfig";
 
@@ -37,7 +38,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
 
   public static async login(user: UserCredentials, imsDeploymentEnv: DeploymentEnv = defaultEnv): Promise<AccessToken> {
-    return getIModelProjectAbstraction().authorizeUser(actx, undefined, user, imsDeploymentEnv);
+    return getIModelPermissionAbstraction().authorizeUser(actx, undefined, user, imsDeploymentEnv);
   }
 
   private static makeDirectoryRecursive(dirPath: string) {
@@ -118,11 +119,9 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, projectId: string, iModelId: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, _projectId: string, iModelId: string): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
     if (changeSets.length === 0)
@@ -137,8 +136,6 @@ export class HubUtility {
     if (IModelJsFs.existsSync(downloadDir))
       HubUtility.deleteDirectoryRecursive(downloadDir);
     HubUtility.makeDirectoryRecursive(downloadDir);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const iModel: IModelRepository | undefined = await HubUtility.queryIModelById(accessToken, projectId, iModelId);
     if (!iModel)
@@ -181,8 +178,6 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
-
     await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
   }
 
@@ -203,7 +198,6 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: IModelRepository | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
-      BriefcaseManager.setClientFromIModelTokenContext(projectId, iModel.wsgId);
       await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModel.wsgId);
     }
 
@@ -219,8 +213,6 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, iModelId);
     if (!briefcase) {
@@ -260,8 +252,6 @@ export class HubUtility {
   public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-
-    BriefcaseManager.setClientFromIModelTokenContext(projectId, iModelId);
 
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
@@ -341,8 +331,14 @@ export class HubUtility {
 
 }
 
+class ImsUserMgr implements IModelPermissionAbstraction {
+  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+    return await doImsLogin(userCredentials, env);
+  }
+}
+
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-export class TestIModelHubProject extends IModelProjectAbstraction {
+class TestIModelHubProject extends IModelProjectAbstraction {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
@@ -350,9 +346,6 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
     return BriefcaseManager.imodelClient as IModelHubClient;
   }
 
-  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-    return await doImsLogin(userCredentials, env);
-  }
   public async queryProject(_actx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project> {
     const client = BriefcaseManager.connectClient;
     return client.getProject(actx, accessToken, query);
@@ -374,14 +367,37 @@ export class TestIModelHubProject extends IModelProjectAbstraction {
   }
 }
 
+class TestIModelHubServerOrchestrator implements IModelOrchestratorAbstraction {
+  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
+    return BriefcaseManager.imodelClient;
+  }
+}
+
 let projectAbstraction: IModelProjectAbstraction;
+let serverOrchestrator: IModelOrchestratorAbstraction;
+let authorizationAbstraction: IModelPermissionAbstraction;
+const usingMocks = false;
+
+export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
+  if (authorizationAbstraction !== undefined)
+    return authorizationAbstraction;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
+    return authorizationAbstraction = new ImsUserMgr();
+  }
+
+  throw new Error("WIP");
+}
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
-  if (process.env.IMODELJS_BACKEND_TEST_IMODEL_BANK === undefined)
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
     return projectAbstraction = new TestIModelHubProject();
+  }
+
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const options: IModelBankFileSystemProjectOptions = {
     rootDir: path.join(KnownTestLocations.outputDir, "imodel-bank"),
@@ -390,11 +406,24 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     deleteIfExists: true,
     createIfNotExist: true,
   };
+  projectAbstraction = new IModelBankFileSystemProject(options);
+  return projectAbstraction;
+}
+
+export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
+  if (serverOrchestrator !== undefined)
+    return serverOrchestrator;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
+    return serverOrchestrator = new TestIModelHubServerOrchestrator();
+  }
+
   const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
   const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
   // tslint:disable-next-line:no-var-requires
   const serverConfig: IModelBankServerConfig = require(serverConfigFile);
   EnvMacroSubst.replaceInProperties(serverConfig, true);
-  projectAbstraction = new IModelBankFileSystemProject(options, serverConfig, loggingConfigFile);
-  return projectAbstraction;
+  const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
+  serverOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
+  return serverOrchestrator;
 }
