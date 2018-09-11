@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "SimpleViewTest - Moved incident marker and project extents under test tool menu.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

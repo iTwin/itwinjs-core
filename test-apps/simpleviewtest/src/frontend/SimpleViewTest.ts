@@ -305,6 +305,11 @@ function toggleStandardViewMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function toggleDebugToolsMenu(_event: any) {
+  const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
 function toggleRenderModeMenu(_event: any) {
   const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -1043,14 +1048,11 @@ class IncidentMarkerDemo {
 }
 
 // Starts Measure between points tool
-function startMeasurePoints(_event: any) {
-  /*
-    const menu = document.getElementById("snapModeList") as HTMLDivElement;
-    if (event.target === menu)
-      return;
-    IModelApp.tools.run("Measure.Points", theViewport!);
-  */
-  ProjectExtentsDecoration.toggle();
+function startMeasurePoints(event: any) {
+  const menu = document.getElementById("snapModeList") as HTMLDivElement;
+  if (event.target === menu)
+    return;
+  IModelApp.tools.run("Measure.Points", theViewport!);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1219,14 +1221,18 @@ function wireIconsToFunctions() {
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
   document.getElementById("startSelect")!.addEventListener("click", startSelect);
   document.getElementById("startMeasurePoints")!.addEventListener("click", startMeasurePoints);
-  document.getElementById("incidentMarkers")!.addEventListener("click", IncidentMarkerDemo.toggle);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
+  document.getElementById("debugTools")!.addEventListener("click", toggleDebugToolsMenu);
   document.getElementById("renderModeToggle")!.addEventListener("click", toggleRenderModeMenu);
   document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+
+  // debug tool handlers
+  document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
+  document.getElementById("projectExtents")!.addEventListener("click", () => ProjectExtentsDecoration.toggle());
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
