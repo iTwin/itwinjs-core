@@ -23,7 +23,6 @@ import { NonConnectProject } from "./NonConnectProject";
 import { ProjectAbstraction } from "./ProjectAbstraction";
 import { SimpleViewState } from "./SimpleViewState";
 import { showError, showStatus } from "./Utils";
-import { Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 
 type Tooltip = ttjs.default;
 
@@ -615,15 +614,13 @@ export class MeasurePointsTool extends PrimitiveTool {
 
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
-  protected _anchorPoint: Point3d;
   protected _ids: string[];
   protected _base: Point3d[];
   protected _axis: Vector3d[];
 
-  public constructor(manipulator: EditManipulator.HandleProvider, ev: BeButtonEvent, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
+  public constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
     super(manipulator);
     this._anchorIndex = ids.indexOf(hitId);
-    this._anchorPoint = ev.point;
     this._ids = ids;
     this._base = base;
     this._axis = axis;
@@ -634,26 +631,30 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.accuSnap.enableLocate(false);
     IModelApp.accuSnap.enableSnap(false);
-
-    const hints = new AccuDrawHintBuilder();
-    hints.setOrigin(this._base[this._anchorIndex]);
-    hints.setXAxis2(this._axis[this._anchorIndex]);
-    hints.sendHints();
-
+    IModelApp.accuDraw.deactivate();
     this.beginDynamics();
   }
 
-  protected accept(_ev: BeButtonEvent): boolean { return true; }
+  protected accept(ev: BeButtonEvent): boolean {
+    const extents = this.computeNewExtents(ev);
+    if (undefined === extents)
+      return true;
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    // NEEDSWORK: Update extents and low/high markers...
+    return true;
+  }
+
+  public computeNewExtents(ev: BeButtonEvent): Range3d | undefined {
     if (-1 === this._anchorIndex || undefined === ev.viewport)
-      return;
+      return undefined;
 
-    const ray = Ray3d.create(this._base[this._anchorIndex], this._axis[this._anchorIndex]);
-    const projectedPt1 = this._base[this._anchorIndex];
-    const projectedPt2 = ray.projectPointToRay(ev.point);
-    const offsetVec = Vector3d.createStartEnd(projectedPt1, projectedPt2);
+    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled (tool disables by default)...
+    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, this._base[this._anchorIndex], this._axis[this._anchorIndex], ev.viewport, true);
+    if (undefined === projectedPt)
+      return undefined;
 
+    const anchorPt = this._base[this._anchorIndex];
+    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
     let offset = offsetVec.normalizeWithLength(offsetVec).mag;
     if (offset < Geometry.smallMetricDistance)
       return;
@@ -670,6 +671,14 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
 
     const extents = Range3d.create();
     extents.extendArray(adjustedPts);
+
+    return extents;
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    const extents = this.computeNewExtents(ev);
+    if (undefined === extents)
+      return;
 
     const builder = context.createGraphicBuilder(GraphicType.Scene);
     builder.setSymbology(ev.viewport!.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
@@ -742,6 +751,9 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
           }
         } */
 
+    //    if (this.iModel.isReadonly)
+    //      return false;
+
     // Decide if resize controls should be presented.
     if (undefined === this._boxId)
       return false;
@@ -804,8 +816,8 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     super.clearControls();
   }
 
-  protected modifyControls(hit: HitDetail, ev: BeButtonEvent): boolean {
-    const manipTool = new ProjectExtentsResizeTool(this, ev, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
+  protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
+    const manipTool = new ProjectExtentsResizeTool(this, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
     return manipTool.run();
   }
 
@@ -1031,12 +1043,14 @@ class IncidentMarkerDemo {
 }
 
 // Starts Measure between points tool
-function startMeasurePoints(event: any) {
-  const menu = document.getElementById("snapModeList") as HTMLDivElement;
-  if (event.target === menu)
-    return;
-  IModelApp.tools.run("Measure.Points", theViewport!);
-  // ProjectExtentsDecoration.toggle();
+function startMeasurePoints(_event: any) {
+  /*
+    const menu = document.getElementById("snapModeList") as HTMLDivElement;
+    if (event.target === menu)
+      return;
+    IModelApp.tools.run("Measure.Points", theViewport!);
+  */
+  ProjectExtentsDecoration.toggle();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
