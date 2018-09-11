@@ -285,18 +285,19 @@
 .tooltip {
   background: rgb(255, 252, 216);
   color: black;
-  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  font-size: 0.9em;
+  font-family:  'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.8em;
   font-weight: normal;
+  line-height: 110%;
   text-decoration: none;
   text-align: left;
-  padding: 0.6em 0.75rem;
+  padding: 3px 3px;
   border-radius: 4px;
-  transition: opacity 0.4s;
+  transition: opacity 1.4s;
   white-space: nowrap;
   box-shadow: 0 0.5rem 1rem -0.5rem black;
   z-index: 1000;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .popper .popper__arrow,

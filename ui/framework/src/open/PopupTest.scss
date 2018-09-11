@@ -41,10 +41,13 @@
   width: 100%;
   justify-content: space-evenly;
 
+  > div {
+    position: relative;
+  }
+
   button {
     @extend .bwc-buttons-hollow;
     width: 110px;
-    position: relative;
   }
 }
 
@@ -65,9 +68,21 @@
   font-size: 14px;
   margin: 15px 0 25px 0;
 
-  label {
-    margin-right: 10px;
+  > div {
+    display: flex;
+    align-items: center;
+    margin: 0 15px;
+    justify-content: space-evenly;
+
+    > label {
+      margin-right: 5px;
+    }
   }
+}
+
+.popup-toggle {
+  width: 54px;
+  height: 28px
 }
 
 .popupcolors {
@@ -78,6 +93,7 @@
 .statusbarcolors {
   background: #3f4850;
   color: #3f4850;
+  border-color: #3f4850;
 }
 
 .popup-header {
@@ -99,9 +115,47 @@
   }
 }
 
+.popup-test-content {
+  padding: 15px 20px 15px 20px;
+  color: #777;
+  width: 120px;
 
-.hello {
-  white-space: nowrap;
-  margin: 65px 30px;
+  h4 {
+    white-space: nowrap;
+    margin: 0;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  div {
+    height: 1px;
+    width: 100%;
+    margin: 0 0 10px 0;
+    background: #ccc;
+  }
+
+  > ul {
+    font-size: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  > ul > li {
+    padding: 5px 5px;
+    color: inherit;
+
+    &:hover {
+      background: #eee;
+      cursor: pointer;
+    }
+  }
+}
+
+.statusbarcolors .popup-test-content {
+  color: $bwc-white;
+}
+
+.statusbarcolors .popup-test-content ul li:hover {
   color: #777;
 }

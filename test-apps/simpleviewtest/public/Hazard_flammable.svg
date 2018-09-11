@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg height="144.407" id="svg1887" inkscape:version="0.40" sodipodi:docbase="/mnt/donnees/09-Mes_images/Travaux/Travaux vectoriel/pictogrammes/s  cu SVG/Avertissement" sodipodi:docname="MatieresInflammables.svg" sodipodi:version="0.32" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <metadata>
+    <rdf:RDF xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <cc:Work rdf:about="">
+        <dc:title>advertising</dc:title>
+        <dc:description></dc:description>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li></rdf:li>
+            <rdf:li>caution</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>warning</rdf:li>
+            <rdf:li>signs_and_symbols</rdf:li>
+            <rdf:li>sign</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://www.openclipart.org">
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date></dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://web.resource.org/cc/PublicDomain"/>
+        <dc:language>en</dc:language>
+      </cc:Work>
+      <cc:License rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="svg1887" inkscape:cx="62.504797" inkscape:cy="57.762799" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1121" inkscape:window-width="1590" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="8.1626931" pagecolor="#ffffff"/>
+  <defs id="defs1888">
+    <marker id="ArrowEnd" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="0" refY="5" viewBox="0 0 10 10">
+      <path d="M 0 0 L 10 5 L 0 10 z" id="path1890"/>
+    </marker>
+    <marker id="ArrowStart" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="10" refY="5" viewBox="0 0 10 10">
+      <path d="M 10 0 L 0 5 L 10 10 z" id="path1892"/>
+    </marker>
+  </defs>
+  <g id="g1893">
+    <path d="M 12.473000,121.08200 C 11.578633,122.80064 10.454729,124.49000 10.454629,126.42300 L 10.442692,127.18412 C 10.442692,131.35612 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.84557,130.59814 145.84557,126.42614 L 145.83414,125.73379 C 145.86121,124.39635 144.84529,122.57163 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path1894" sodipodi:nodetypes="ccccccccccc" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
+    <path d="M 78.703 16.2915L 15.2797 128.128L 76.4667 128.128L 79.3188 128.128L 139.826 128.128L 79.5155 16.2915L 78.703 16.2915z" id="path1895" style="stroke:#000000; stroke-width:4.8516000000000004; stroke-linejoin:round; stroke-linecap:round; fill:#ffcc00"/>
+    <g id="g1896">
+      <path d="M 77.4997 53.0466C 80.6586 59.3645 84.1416 65.6014 86.0045 72.4863C 86.9765 70.5423 87.3815 68.2744 87.2195 65.8444C 89.8115 71.5143 91.2695 77.5892 92.6465 83.7451C 94.7524 82.1252 94.8334 79.4522 95.3194 77.1032C 97.1824 83.0972 98.3974 90.3871 97.2634 97.353C 99.2074 98.1629 99.5314 95.004 100.422 93.87C 100.584 99.1349 99.5314 104.805 94.9954 108.612C 91.2695 112.014 86.5716 113.229 81.7116 113.715C 81.8736 112.743 83.4126 111.933 84.4656 111.771C 88.5155 108.531 89.4065 103.995 89.8925 99.2969C 89.1635 98.406 88.1915 99.3779 87.5435 100.107C 87.5435 97.5149 89.3255 93.87 87.5435 91.1161C 86.8955 93.06 85.9236 94.923 84.4656 96.543C 84.0606 93.06 83.4936 89.0101 80.9826 86.0941L 77.0947 96.219C 75.2317 95.49 75.7177 92.655 73.9357 91.926C 72.7207 94.923 73.1257 99.1349 73.6117 102.375C 69.8048 100.188 70.4527 95.409 68.9138 91.926C 68.5088 94.923 66.4838 97.758 67.3748 100.836C 66.4838 100.836 65.3498 99.1349 64.6208 100.836C 65.0258 106.02 71.4247 108.612 71.9917 113.715C 66.6458 113.391 61.9479 110.151 59.1939 105.534C 56.6019 99.8639 57.5739 91.845 58.3839 85.6891L 60.3279 89.1721C 62.1098 86.3371 62.2719 82.1252 62.6769 78.3182L 62.6769 73.6203C 64.7018 74.5923 65.5118 76.7792 66.9698 78.3182C 69.8048 74.1063 71.3438 69.0033 70.0477 63.4954C 72.7207 62.9284 73.1257 71.7573 75.5557 66.2494L 77.0947 53.0466L 77.4997 53.0466z" id="path1897" style="stroke:none; fill:#000000"/>
+      <path d="M 78.2287 74.0253C 77.7426 72.1623 77.3376 69.4893 78.6337 67.7884C 79.1196 69.6513 79.5246 72.4863 78.2287 74.0253z" id="path1898" style="stroke:none; fill:#ffcc00"/>
+      <path d="M 92.6465 103.59C 92.4035 103.752 92.2415 104.076 91.8365 103.995L 93.3754 100.431C 94.1854 101.079 93.2944 102.699 92.6465 103.59z" id="path1899" style="stroke:none; fill:#ffcc00"/>
+      <path d="M 93.7804 115.877L 93.7804 117.603L 65.0258 117.603L 65.0258 115.983L 93.7804 115.877z" id="path1900" style="stroke:none; fill:#000000"/>
+    </g>
+  </g>
+</svg>

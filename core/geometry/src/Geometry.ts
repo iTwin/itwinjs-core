@@ -364,6 +364,8 @@ export class Geometry {
     return x;
   }
 
+  public static clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
+
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);

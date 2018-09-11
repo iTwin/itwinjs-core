@@ -2,7 +2,7 @@
 
 exports[`<Tab /> renders correctly 1`] = `
 <div
-  className="nz-widget-rectangular-tab-tab"
+  className="nz-widget-rectangular-tab-tab nz-left-anchor nz-mode-open"
   onClick={[Function]}
 />
 `;

@@ -96,7 +96,7 @@ export class SpriteLocation implements Overlay2dDecoration {
   private _viewport?: ScreenViewport;
   private _sprite?: Sprite;
   private _alpha?: number;
-  public readonly origin = new Point3d();
+  public readonly position = new Point3d();
   public get isActive(): boolean { return this._viewport !== undefined; }
 
   /**
@@ -113,7 +113,7 @@ export class SpriteLocation implements Overlay2dDecoration {
     if (!sprite.isLoaded)
       return;
 
-    viewport.worldToView(locationWorld, this.origin);
+    viewport.worldToView(locationWorld, this.position);
     this._sprite = sprite;
     this._alpha = alpha;
     this._viewport = viewport;

@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.124.0",
+      "tag": "@bentley/imodeljs-clients_v0.124.0",
+      "date": "Tue, 11 Sep 2018 13:52:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new client to the imodeljs-clients library for the Form Data Management Service. This change includes the client, the client's test, and necessary changes to the ECJsonTypeMap class to support adding properties directly to the relationshipInstance"
+          },
+          {
+            "comment": "Set UrlDiscoveryClient (BUDDI) to use the PROD version by default. This is the recommendation made by the service team. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.123.0",
+      "tag": "@bentley/imodeljs-clients_v0.123.0",
+      "date": "Wed, 05 Sep 2018 17:14:50 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.122.0",
       "tag": "@bentley/imodeljs-clients_v0.122.0",
       "date": "Tue, 28 Aug 2018 12:25:19 GMT",

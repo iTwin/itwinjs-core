@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 import { AccessToken, IModelClient } from "../../";
 import {
@@ -122,6 +122,7 @@ describe("iModelHub GlobalEventHandler", () => {
   let projectId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
+  const alctx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
     if (!TestConfig.enableMocks)
@@ -160,7 +161,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const id = Guid.createValue();
     mockCreateGlobalEventsSubscription(id, eventTypesList);
 
-    globalEventSubscription = await imodelHubClient.GlobalEvents().Subscriptions().create(serviceAccountAccessToken, id, eventTypesList);
+    globalEventSubscription = await imodelHubClient.GlobalEvents().Subscriptions().create(alctx, serviceAccountAccessToken, id, eventTypesList);
     chai.assert(globalEventSubscription);
     chai.assert(globalEventSubscription.eventTypes);
     chai.expect(globalEventSubscription.eventTypes!).to.be.deep.equal(eventTypesList);
@@ -168,7 +169,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
   it("should retrieve Global Event SAS token", async () => {
     mockGetGlobalEventSASToken();
-    globalEventSas = await imodelHubClient.GlobalEvents().getSASToken(serviceAccountAccessToken);
+    globalEventSas = await imodelHubClient.GlobalEvents().getSASToken(alctx, serviceAccountAccessToken);
   });
 
   it("should receive Global Event iModelCreatedEvent", async () => {
@@ -176,7 +177,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
   });
@@ -186,7 +187,7 @@ describe("iModelHub GlobalEventHandler", () => {
     mockUpdateGlobalEventSubscription(globalEventSubscription.wsgId, globalEventSubscription.subscriptionId!, newEventTypesList);
 
     globalEventSubscription.eventTypes = newEventTypesList;
-    globalEventSubscription = await imodelHubClient.GlobalEvents().Subscriptions().update(serviceAccountAccessToken, globalEventSubscription);
+    globalEventSubscription = await imodelHubClient.GlobalEvents().Subscriptions().update(alctx, serviceAccountAccessToken, globalEventSubscription);
     chai.assert(globalEventSubscription);
     chai.assert(globalEventSubscription.eventTypes);
     chai.expect(globalEventSubscription.eventTypes!).to.be.deep.equal(newEventTypesList);
@@ -201,7 +202,7 @@ describe("iModelHub GlobalEventHandler", () => {
     }
 
     let receivedEventsCount = 0;
-    const deleteListener = imodelHubClient.GlobalEvents().createListener(async () => {
+    const deleteListener = imodelHubClient.GlobalEvents().createListener(alctx, async () => {
       return await utils.login(TestUsers.serviceAccount1);
     }, globalEventSubscription.wsgId, (receivedEvent: IModelHubGlobalEvent) => {
       if (receivedEvent instanceof SoftiModelDeleteEvent)
@@ -226,10 +227,10 @@ describe("iModelHub GlobalEventHandler", () => {
 
     const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
     mockPeekLockGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
-    const lockedEvent = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId, undefined, GetEventOperationType.Peek);
+    const lockedEvent = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId, undefined, GetEventOperationType.Peek);
 
     mockDeleteLockedEvent(globalEventSubscription.wsgId);
-    const deleted = await lockedEvent!.delete();
+    const deleted = await lockedEvent!.delete(alctx);
     chai.expect(deleted);
   });
 
@@ -240,7 +241,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "SoftiModelDeleteEvent");
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(SoftiModelDeleteEvent);
   });
@@ -252,7 +253,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "HardiModelDeleteEvent");
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(HardiModelDeleteEvent);
   });
@@ -264,7 +265,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","BriefcaseId":2,"ChangeSetId":"369","ChangeSetIndex":"1"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "ChangeSetCreatedEvent");
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(ChangeSetCreatedEvent);
   });
@@ -276,13 +277,13 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","ChangeSetId":"369","VersionId":"159","VersionName":"357"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "NamedVersionCreatedEvent");
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(NamedVersionCreatedEvent);
   });
 
   it("should delete Global Event subscription by InstanceId", async () => {
     mockDeleteGlobalEventsSubscription(globalEventSubscription.wsgId);
-    await imodelHubClient.GlobalEvents().Subscriptions().delete(serviceAccountAccessToken, globalEventSubscription.wsgId);
+    await imodelHubClient.GlobalEvents().Subscriptions().delete(alctx, serviceAccountAccessToken, globalEventSubscription.wsgId);
   });
 });

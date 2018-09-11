@@ -4,30 +4,13 @@
 /** @module iModelBank */
 
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
-import { DefaultWsgRequestOptionsProvider } from "../WsgClient";
-import * as https from "https";
-import { RequestOptions } from "../Request";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelHubError } from "../imodelhub/Errors";
+import { assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { FileHandler } from "..";
-
-/**
- * Provides default options for iModelBank requests.
- */
-class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
-  public constructor(agent: https.Agent) {
-    super();
-    this._defaultOptions.errorCallback = IModelHubError.parse;
-    this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
-    this._defaultOptions.agent = agent;
-  }
-}
 
 /**
  * This class acts as the WsgClient for other iModelBank Handlers.
  */
 export class IModelBankHandler extends IModelBaseHandler {
-  private _defaultIModelBankOptionsProvider: DefaultIModelBankRequestOptionsProvider;
   private _baseUrl: string;
 
   /**
@@ -41,26 +24,11 @@ export class IModelBankHandler extends IModelBaseHandler {
     this._baseUrl = url;
   }
 
-  /**
-   * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
-   * Note that the options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
-   * @returns Promise resolves after the defaults are setup.
-   */
-  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
-    if (!this._defaultIModelBankOptionsProvider)
-      this._defaultIModelBankOptionsProvider = new DefaultIModelBankRequestOptionsProvider(this._agent);
-
-    return this._defaultIModelBankOptionsProvider.assignOptions(options);
-  }
-
-  public formatProjectIdForUrl(_projectId: string) { return ""; }
-
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected getDefaultUrl(): string { return this._baseUrl; }
 
-  public async getUrl(excludeApiVersion?: boolean): Promise<string> {
+  public async getUrl(_actx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return Promise.resolve(this._url!);
 

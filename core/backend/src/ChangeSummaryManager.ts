@@ -5,7 +5,7 @@
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
-import { Id64, using, assert, Logger, PerfLogger, DbResult } from "@bentley/bentleyjs-core";
+import { Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -131,7 +131,8 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
+  public static async extractChangeSummaries(actx: ActivityLoggingContext, accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
+    actx.enter();
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
@@ -142,9 +143,10 @@ export class ChangeSummaryManager {
 
     let startChangeSetId: string = "";
     if (options) {
-      if (options.startVersion)
-        startChangeSetId = await options.startVersion.evaluateChangeSet(ctx.accessToken, ctx.iModelId, BriefcaseManager.imodelClient);
-      else if (options.currentVersionOnly) {
+      if (options.startVersion) {
+        startChangeSetId = await options.startVersion.evaluateChangeSet(actx, ctx.accessToken, ctx.iModelId, BriefcaseManager.imodelClient);
+        actx.enter();
+      } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
       }
     }
@@ -154,7 +156,8 @@ export class ChangeSummaryManager {
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(ctx, startChangeSetId, endChangeSetId);
+    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(actx, ctx, startChangeSetId, endChangeSetId);
+    actx.enter();
     perfLogger.dispose();
     Logger.logTrace(loggingCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId, changeSets: changeSetInfos }));
 
@@ -191,7 +194,8 @@ export class ChangeSummaryManager {
         // iModel is at end changeset, so no need to reverse for it.
         if (i !== endChangeSetIx) {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-          await iModel.reverseChanges(ctx.accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
+          await iModel.reverseChanges(actx, accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
+          actx.enter();
           perfLogger.dispose();
           Logger.logTrace(loggingCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
         }
@@ -216,10 +220,15 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (foundUserEmail === undefined) {
-            const userInfo: UserInfo = (await BriefcaseManager.imodelClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
-            userEmail = userInfo.email;
-            // in the cache, add empty e-mail to mark that this user has already been looked up
-            userInfoCache.set(userId, !!userEmail ? userEmail : "");
+            const userInfos: UserInfo[] = await BriefcaseManager.imodelClient.Users().get(actx, ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId));
+            actx.enter();
+            assert(userInfos.length !== 0);
+            if (userInfos.length !== 0) {
+              const userInfo: UserInfo = userInfos[0];
+              userEmail = userInfo.email;
+              // in the cache, add empty e-mail to mark that this user has already been looked up
+              userInfoCache.set(userId, !!userEmail ? userEmail : "");
+            }
           } else
             userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
         }
@@ -237,7 +246,8 @@ export class ChangeSummaryManager {
       changesFile.dispose();
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      await iModel.reinstateChanges(ctx.accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
+      await iModel.reinstateChanges(actx, accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
+      actx.enter();
       perfLogger.dispose();
       Logger.logTrace(loggingCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId }));
 
@@ -246,7 +256,8 @@ export class ChangeSummaryManager {
     }
   }
 
-  private static async downloadChangeSets(ctx: ChangeSummaryExtractContext, startChangeSetId: string, endChangeSetId: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: string, endChangeSetId: string): Promise<ChangeSet[]> {
+    actx.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
     let beforeStartChangeSetId: string;
     if (startChangeSetId.length === 0)
@@ -255,16 +266,18 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, ctx.accessToken, ctx.iModelId, query);
+      actx.enter();
       if (changeSets.length === 0)
-        return Promise.reject(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
+        throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
 
       const changeSetInfo: ChangeSet = changeSets[0];
 
       beforeStartChangeSetId = !changeSetInfo.parentId ? "" : changeSetInfo.parentId;
     }
 
-    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(ctx.accessToken, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(actx, ctx.accessToken, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    actx.enter();
     assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     return changeSetInfos;

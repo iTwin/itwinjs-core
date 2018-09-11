@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -117,7 +117,8 @@ export class IModelConnection extends IModel {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelClient);
+    const actx = new ActivityLoggingContext(Guid.createValue());
+    const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, IModelApp.iModelClient);
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
     const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
     const connection = new IModelConnection(openResponse, openMode, accessToken);

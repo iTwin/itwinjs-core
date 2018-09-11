@@ -10,7 +10,7 @@ import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestUsers } from "../TestConfig";
 import { UserInfoQuery, UserInfo, UserProfile, IModelHubClientError, IModelClient } from "../..";
-import { IModelHubStatus } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 function mockGetUserInfo(iModelId: string, userInfo: UserInfo[], query?: string) {
   if (!TestConfig.enableMocks)
@@ -43,6 +43,7 @@ function generateUserInfo(userProfiles: UserProfile[]): UserInfo[] {
 describe("iModelHubClient UserInfoHandler", () => {
   const accessTokens: AccessToken[] = [];
   let iModelId: string;
+  const actx = new ActivityLoggingContext("");
 
   const imodelName = "imodeljs-clients UserInfo test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
@@ -72,7 +73,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     }
 
     const query = new UserInfoQuery().byId(accessTokens[0].getUserProfile()!.userId);
-    const userInfo = (await imodelHubClient.Users().get(accessTokens[0], iModelId, query));
+    const userInfo = (await imodelHubClient.Users().get(actx, accessTokens[0], iModelId, query));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(1);
     chai.expect(userInfo[0].id).to.be.equal(accessTokens[0].getUserProfile()!.userId);
@@ -89,7 +90,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     const query = new UserInfoQuery().byIds(
       [accessTokens[0].getUserProfile()!.userId,
       accessTokens[1].getUserProfile()!.userId]);
-    const userInfo = (await imodelHubClient.Users().get(accessTokens[0], iModelId, query));
+    const userInfo = (await imodelHubClient.Users().get(actx, accessTokens[0], iModelId, query));
     userInfo.sort((a: UserInfo, b: UserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(2);
@@ -103,7 +104,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   it("should fail to get users without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Users().get(accessTokens[0], iModelId, new UserInfoQuery().byIds([]));
+      await imodelHubClient.Users().get(actx, accessTokens[0], iModelId, new UserInfoQuery().byIds([]));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

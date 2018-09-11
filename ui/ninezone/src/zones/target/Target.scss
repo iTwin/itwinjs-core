@@ -2,11 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 @import "../../_geometry";
+@import "../../_prefix";
 
 .nz-zones-target-target {
   $size: 100px;
 
-  background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.6), rgba(#000, 0.3), rgba(#000, 0));
+  background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.6), rgba(#000, 0.4), rgba(#000, 0));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,9 +16,11 @@
   pointer-events: auto;
 
   @include oval($size);
+  @include nz-backface-visibility(hidden);
 
   &:hover {
     background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.8), rgba(#000, 0.4), rgba(#000, 0));
+
     @include oval($size * 1.1);
   }
 }

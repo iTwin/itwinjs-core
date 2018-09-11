@@ -5,7 +5,7 @@ import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BlueButton, HollowButton } from "@bentley/bwc/lib/index";
-import { Timer } from "@bentley/ui-core";
+import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
 import AppButton from "@src/toolbar/button/App";
@@ -67,21 +67,30 @@ import Size from "@src/utilities/Size";
 import ResizeHandle from "@src/widget/rectangular/ResizeHandle";
 import WidgetTab from "@src/widget/rectangular/tab/Draggable";
 import TabSeparator from "@src/widget/rectangular/tab/Separator";
-import StackedWidget, { Anchor } from "@src/widget/Stacked";
+import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
+import { TabMode } from "@src/widget/rectangular/tab/Tab";
+import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/Tools";
 import FooterZone from "@src/zones/Footer";
-import NineZone, { getDefaultProps as getDefaultNineZone } from "@src/zones/state/NineZone";
-import NineZoneStateManagement, { DropTarget } from "@src/zones/state/Management";
-import Widget from "@src/zones/state/Widget";
+import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
+import NineZoneManager from "@src/zones/state/Manager";
+import { WidgetProps } from "@src/zones/state/Widget";
+import { TargetType } from "@src/zones/state/Target";
+import { ZoneProps, DropTarget } from "@src/zones/state/Zone";
 import TargetContainer from "@src/zones/target/Container";
-import Merge from "@src/zones/target/Merge";
-import Unmerge from "@src/zones/target/Unmerge";
+import MergeTarget from "@src/zones/target/Merge";
+import BackTarget from "@src/zones/target/Back";
 import Zone from "@src/zones/Zone";
 import Zones from "@src/zones/Zones";
-import ThemeContext from "@src/theme/Context";
 import GhostOutline from "@src/zones/GhostOutline";
+import ThemeContext from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
+import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import "./Zones.scss";
+
+const adjustTooltipPosition = offsetAndContainInContainer();
+// tslint:disable-next-line:variable-name
+const TooltipWithTimeout = withTimeout(Tooltip);
 
 export interface State {
   tools: Tools;
@@ -90,15 +99,14 @@ export interface State {
   isNestedPopoverOpen: boolean;
   isTooltipVisible: boolean;
   visibleMessage: Message;
-  x: number;  // Last mouse X coordinate
-  y: number;  // Last mouse Y coordinate
+  mousePosition: PointProps;
   temporaryMessageX: number;
   temporaryMessageY: number;
   isTemporaryMessageVisible: boolean;
   toastMessageStage: ToastMessageStage;
   openWidget: FooterWidget;
   secondZoneContent: SecondZoneContent;
-  nineZone: NineZone;
+  nineZone: NineZoneProps;
   isOverflowItemOpen: boolean;
   currentTheme: Theme;
 }
@@ -175,10 +183,8 @@ const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup 
 
 export default class ZonesExample extends React.Component<{}, State> {
   private _temporaryMessageTimer = new Timer(2000);
-  private _nineZone = new NineZoneStateManagement();
   private _zones: React.RefObject<Zones>;
   private _app: React.RefObject<App>;
-  private _content: React.RefObject<Content>;
   private _footerMessages: React.RefObject<MessageCenterIndicator>;
   private _dialogContainer: HTMLDivElement;
 
@@ -189,17 +195,17 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._app = React.createRef();
     this._zones = React.createRef();
-    this._content = React.createRef();
     this._footerMessages = React.createRef();
 
     this._dialogContainer = document.createElement("div");
 
+    const nineZone = getDefaultNineZone();
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
       isTemporaryMessageVisible: false,
       isTooltipVisible: false,
-      nineZone: getDefaultNineZone(),
+      nineZone,
       activeTab: MessageCenterActiveTab.AllMessages,
       openWidget: FooterWidget.None,
       secondZoneContent: SecondZoneContent.None,
@@ -217,11 +223,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -245,7 +251,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "3d-cube",
+                      icon: "icon-3d-cube",
                       trayId: undefined,
                     },
                   },
@@ -269,11 +275,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -300,11 +306,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -329,7 +335,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "arc",
+                      icon: "icon-arc",
                       trayId: undefined,
                     },
                   },
@@ -355,11 +361,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -384,31 +390,31 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                     Test2123123: {
-                      icon: "align-justify",
+                      icon: "icon-text-align-text-align-justify",
                       trayId: undefined,
                     },
                     Test3: {
-                      icon: "align-left",
+                      icon: "icon-text-align-text-align-left",
                       trayId: "tray2",
                     },
                     Test4: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test5: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test6: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test7: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                   },
@@ -416,7 +422,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 1: {
                   items: {
                     Test5: {
-                      icon: "app-1",
+                      icon: "icon-app-1",
                       trayId: undefined,
                     },
                   },
@@ -424,7 +430,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 2: {
                   items: {
                     ":)": {
-                      icon: "app-2",
+                      icon: "icon-app-2",
                       trayId: undefined,
                     },
                   },
@@ -437,7 +443,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                   },
@@ -463,7 +469,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Validate: {
-                      icon: "validate",
+                      icon: "icon-validate",
                       trayId: undefined,
                     },
                   },
@@ -482,8 +488,10 @@ export default class ZonesExample extends React.Component<{}, State> {
         } as SimpleTool,
       },
       visibleMessage: Message.None,
-      x: 0,
-      y: 0,
+      mousePosition: {
+        x: 0,
+        y: 0,
+      },
       isOverflowItemOpen: false,
       currentTheme: PrimaryTheme,
     };
@@ -516,15 +524,18 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getZones() {
     return (
       <Zones ref={this._zones}>
-        <MouseTracker onCoordinatesChange={this._handleCoordinatesChange} />
-        <Tooltip
-          stepString="Start Point"
-          timeout={2000}
-          isVisible={this.state.isTooltipVisible}
-          onIsVisibleChange={this._handleTooltipIsVisibleChange}
-        >
-          <i className="icon icon-cursor" />
-        </Tooltip>
+        <MouseTracker onPositionChange={this._handlePositionChange} />
+        {this.state.isTooltipVisible && (
+          <TooltipWithTimeout
+            stepString="Start Point"
+            timeout={2000}
+            onTimeout={this._handleTooltipTimeout}
+            position={this.state.mousePosition}
+            adjustPosition={adjustTooltipPosition}
+          >
+            <i className="icon icon-cursor" />
+          </TooltipWithTimeout>
+        )}
         <TemporaryMessage
           style={{
             display: this.state.isTemporaryMessageVisible ? "block" : "none",
@@ -534,190 +545,13 @@ export default class ZonesExample extends React.Component<{}, State> {
         >
           Text element required.
         </TemporaryMessage>
-        <Zone bounds={this.state.nineZone.zones[1].bounds}>
-          <ToolsWidget
-            button={
-              <AppButton
-                icon={
-                  <i className="icon icon-home" />
-                }
-              />
-            }
-            horizontalToolbar={
-              <Toolbar
-                items={
-                  <>
-                    {this.getToolbarItem("angle")}
-                    {this.getToolbarItem("2d")}
-                  </>
-                }
-              />
-            }
-            verticalToolbar={
-              <Toolbar
-                expandsTo={Direction.Right}
-                items={
-                  <>
-                    {this.getToolbarItem("cube")}
-                    {this.getToolbarItem("attach")}
-                    {this.getToolbarItem("validate")}
-                  </>
-                }
-              />
-            }
-          />
-        </Zone>
-        <Zone bounds={this.state.nineZone.zones[2].bounds}>
-          {this.getToolSettingsWidget()}
-        </Zone>
+        {this.getZone(1)}
+        {this.getZone(2)}
         {this.getZone(3)}
         {this.getZone(4)}
         {this.getZone(6)}
         {this.getZone(7)}
-        <FooterZone
-          isInFooterMode={this.state.nineZone.isInFooterMode}
-          bounds={this.state.nineZone.zones[8].bounds}
-        >
-          <Footer
-            isInWidgetMode={!this.state.nineZone.isInFooterMode}
-            message={this.getFooterMessage()}
-            indicators={
-              <>
-                <ToolAssistanceIndicator
-                  dialog={
-                    this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
-                      <ToolAssistanceDialog
-                        title="Trim Multiple - Tool Assistance"
-                        items={
-                          <>
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor" />
-                              Identify piece to trim
-                            </ToolAssistanceItem>
-                            <ToolAssistanceSeparator label="Inputs" />
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor-click" />
-                              Clink on element
-                            </ToolAssistanceItem>
-                            <ToolAssistanceItem>
-                              <i className="icon  icon-check-out" />
-                              Drag across elements
-                            </ToolAssistanceItem>
-                            <ToolAssistanceSeparator />
-                            <ToolAssistanceItem>
-                              <input type="checkbox" />
-                              Show prompt @ cursor
-                            </ToolAssistanceItem>
-                          </>
-                        }
-                      />
-                  }
-                  icons={
-                    <>
-                      <i className="icon icon-cursor" />
-                      <i className="icon icon-add" />
-                    </>
-                  }
-                  isStepStringVisible={this.state.nineZone.isInFooterMode}
-                  onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
-                  stepString="Start Point"
-                />
-                <MessageCenterIndicator
-                  ref={this._footerMessages}
-                  label="Message(s):"
-                  isLabelVisible={this.state.nineZone.isInFooterMode}
-                  balloonLabel="9+"
-                  onClick={this._handleMessageIndicatorIsDialogOpenChange}
-                  dialog={
-                    this.state.openWidget !== FooterWidget.Messages ? undefined :
-                      <MessageCenter
-                        title="Messages"
-                        buttons={
-                          <>
-                            <MessageCenterButton>
-                              <i className={"icon icon-export"} />
-                            </MessageCenterButton>
-                            <MessageCenterButton onClick={() => {
-                              this.setState((prevState) => ({
-                                ...prevState,
-                                openWidget: FooterWidget.None,
-                              }));
-                            }}>
-                              <i className={"icon icon-close"} />
-                            </MessageCenterButton>
-                          </>
-                        }
-                        tabs={
-                          <>
-                            <MessageCenterTab
-                              isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                              onClick={this._handleOnAllMessagesTabClick}
-                            >
-                              All
-                          </MessageCenterTab>
-                            <MessageCenterTab
-                              isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                              onClick={this._handleOnProblemsTabClick}
-                            >
-                              Problems
-                          </MessageCenterTab>
-                          </>
-                        }
-                        messages={this.getMessagesCenterMessages()}
-                      />
-                  }
-                />
-                <SnapModeIndicator
-                  label="Snap Mode"
-                  isLabelVisible={this.state.nineZone.isInFooterMode}
-                  onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
-                  icon={
-                    <SnapModeIcon text="k" />
-                  }
-                  dialog={
-                    this.state.openWidget !== FooterWidget.SnapMode ? undefined :
-                      <SnapModeDialog
-                        title="Snap Mode"
-                        snaps={
-                          <>
-                            <SnapRow
-                              key="1"
-                              isActive
-                              label="Keypoint"
-                              icon={
-                                <SnapModeIcon isActive text="k" />
-                              }
-                            />
-                            <SnapRow
-                              key="2"
-                              label="Intersection"
-                              icon={
-                                <SnapModeIcon text="i" />
-                              }
-                            />
-                            <SnapRow
-                              key="3"
-                              label="Center"
-                              icon={
-                                <SnapModeIcon text="c" />
-                              }
-                            />
-                            <SnapRow
-                              key="4"
-                              label="Nearest"
-                              icon={
-                                <SnapModeIcon text="n" />
-                              }
-                            />
-                          </>
-                        }
-                      />
-                  }
-                />
-              </>
-            }
-          />
-        </FooterZone>
+        {this.getZone(8)}
         {this.getZone(9)}
       </Zones>
     );
@@ -730,7 +564,6 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getContent() {
     return (
       <Content
-        ref={this._content}
         onClick={this._handleContentClick}
       >
         <iframe
@@ -772,22 +605,10 @@ export default class ZonesExample extends React.Component<{}, State> {
     );
   }
 
-  private _handleCoordinatesChange = (x: number, y: number) => {
-    if (!this._content.current)
-      return;
-
-    const contentElement = ReactDOM.findDOMNode(this._content.current);
-    if (!(contentElement instanceof HTMLElement)) {
-      return;
-    }
-
-    const containerRect = contentElement.getBoundingClientRect();
-    this.setState(() => {
-      return {
-        x: x - containerRect.left,
-        y: y - containerRect.top,
-      };
-    });
+  private _handlePositionChange = (mousePosition: PointProps) => {
+    this.setState(() => ({
+      mousePosition,
+    }));
   }
 
   private _handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -798,16 +619,16 @@ export default class ZonesExample extends React.Component<{}, State> {
     this.setState((prevState) => {
       return {
         isTemporaryMessageVisible: true,
-        temporaryMessageX: prevState.x,
-        temporaryMessageY: prevState.y,
+        temporaryMessageX: prevState.mousePosition.x,
+        temporaryMessageY: prevState.mousePosition.y,
       };
     });
   }
 
-  private _handleTooltipIsVisibleChange = (isVisible: boolean) => {
+  private _handleTooltipTimeout = () => {
     this.setState(() => {
       return {
-        isTooltipVisible: isVisible,
+        isTooltipVisible: false,
       };
     });
   }
@@ -971,7 +792,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private layout() {
     this.setState((prevState) => {
       const element = ReactDOM.findDOMNode(this);
-      const nineZone = this._nineZone.onInitialLayout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
+      const nineZone = NineZoneManager.layout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
       return {
         nineZone,
       };
@@ -980,25 +801,34 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onTabClick(widgetId, tabIndex, prevState.nineZone);
+      const nineZone = NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
       return {
         nineZone,
       };
     });
   }
 
-  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
+  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onResize(zoneId, x, y, handle, prevState.nineZone);
+      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
       return {
         nineZone,
       };
     });
   }
 
-  private _handleDragBehaviorChanged = (widgetId: number, isDragging: boolean) => {
+  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onDragBehaviorChanged(widgetId, isDragging, prevState.nineZone);
+      const nineZone = NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone);
+      return {
+        nineZone,
+      };
+    });
+  }
+
+  private _handleWidgetTabDragEnd = () => {
+    this.setState((prevState) => {
+      const nineZone = NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone);
       return {
         nineZone,
       };
@@ -1007,20 +837,17 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private _handleWidgetTabDrag = (dragged: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = this._nineZone.onWidgetTabDrag(dragged, prevState.nineZone);
+      const nineZone = NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone);
       return {
         nineZone,
       };
     });
   }
 
-  private _handleTargetChanged = (widgetId: number, target: DropTarget, isTargeted: boolean) => {
+  private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean) => {
     this.setState((prevState) => {
-      let nineZone;
-      if (isTargeted)
-        nineZone = this._nineZone.onTargetChanged(widgetId, target, prevState.nineZone);
-      else
-        nineZone = this._nineZone.onTargetChanged(undefined, target, prevState.nineZone);
+      const nineZone = isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
+        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone);
 
       return {
         nineZone,
@@ -1074,7 +901,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 key={entry.key}
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
               >
-                <i className={`icon icon-${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
+                <i className={`icon ${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
               </HistoryIcon>
             );
           })
@@ -1229,7 +1056,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                     ref={itemKey}
                     label={itemKey}
                     icon={
-                      <i className={`icon icon-${item.icon}`} />
+                      <i className={`icon ${item.icon}`} />
                     }
                     onClick={() => this.setState((prevState) => {
                       const toolGroup = prevState.tools[toolKey] as ToolGroup;
@@ -1254,7 +1081,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   label={itemKey}
                   onClick={() => this.handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
                   icon={
-                    <i className={`icon icon-${item.icon}`} />
+                    <i className={`icon ${item.icon}`} />
                   }
                 />
               );
@@ -1544,57 +1371,55 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTarget(widgetId: number) {
-    const dropTarget = this._nineZone.getDropTarget(widgetId, this.state.nineZone);
-    switch (dropTarget) {
-      case DropTarget.Merge:
-        return (
-          <Merge
-            key={widgetId}
-            rows={3}
-            columns={3}
-            cells={this._nineZone.getMergeTargetCells(widgetId, this.state.nineZone)}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, dropTarget, isTargeted)}
-          />
-        );
-      case DropTarget.Unmerge:
-        return (
-          <Unmerge
-            key={widgetId}
-            rows={3}
-            columns={3}
-            cells={this._nineZone.getUnmergeTargetCells(widgetId, this.state.nineZone)}
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(widgetId, dropTarget, isTargeted)}
-          />
-        );
-      case DropTarget.None:
-      default:
-        return undefined;
-    }
-  }
-
-  private getTargets(zoneId: number) {
-    const zone = this._nineZone.getZone(zoneId, this.state.nineZone);
+  private getTarget(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    const dropTarget = zone.getDropTarget();
     return (
       <TargetContainer>
-        {
-          zone.widgets.map((w) => {
-            return this.getTarget(w.id);
-          })
-        }
+        {dropTarget === DropTarget.Merge ? (
+          <MergeTarget
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Merge, isTargeted)}
+          />
+        ) : undefined}
+        {dropTarget === DropTarget.Back ? (
+          <BackTarget
+            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Back, isTargeted)}
+            zoneIndex={zoneId}
+          />
+        ) : undefined}
       </TargetContainer>
     );
   }
 
-  private getWidgetTabs(widget: Widget, anchor: Anchor) {
+  private getTabHandleMode(zone: ZoneProps, widget: WidgetProps) {
+    const draggingWidget = this.state.nineZone.draggingWidget;
+    if (draggingWidget && draggingWidget.id === widget.id && draggingWidget.isUnmerge)
+      return VisibilityMode.Visible;
+
+    if (zone.widgets.length > 1)
+      return VisibilityMode.OnHover;
+
+    return VisibilityMode.Timeout;
+  }
+
+  private getWidgetTabs(zone: ZoneProps, widget: WidgetProps, isOpen: boolean, anchor: HorizontalAnchor) {
+    const draggingWidget = this.state.nineZone.draggingWidget;
+    const lastPosition = draggingWidget && draggingWidget.id === widget.id ?
+      draggingWidget.lastPosition : undefined;
+    const tabIndex = draggingWidget ? draggingWidget.tabIndex : -1;
+    const mode1 = !isOpen ? TabMode.Closed : widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
+    const mode2 = !isOpen ? TabMode.Closed : widget.tabIndex === 2 ? TabMode.Active : TabMode.Open;
+    const handleMode = this.getTabHandleMode(zone, widget);
     switch (widget.id) {
       case 3: {
         return ([
           <WidgetTab
             key="3_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
@@ -1603,36 +1428,46 @@ export default class ZonesExample extends React.Component<{}, State> {
         ]);
       }
       case 4: {
-        return ([
-          <WidgetTab
-            key="4_1"
-            isActive={widget.tabIndex === 1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
-            onDrag={this._handleWidgetTabDrag}
+        return (
+          <WidgetTabGroup
+            key="4"
             anchor={anchor}
+            handleMode={handleMode}
           >
-            <i className="icon icon-settings" />
-          </WidgetTab>,
-          <WidgetTab
-            key="4_2"
-            isActive={widget.tabIndex === 2}
-            onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-help" />
-          </WidgetTab>,
-        ]);
+            <WidgetTab
+              mode={mode1}
+              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              lastPosition={tabIndex === 1 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragEnd={this._handleWidgetTabDragEnd}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-settings" />
+            </WidgetTab>
+            <WidgetTab
+              mode={mode2}
+              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              lastPosition={tabIndex === 2 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragEnd={this._handleWidgetTabDragEnd}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-help" />
+            </WidgetTab>
+          </WidgetTabGroup >
+        );
       }
       case 6: {
         return ([
           <WidgetTab
             key="6_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
@@ -1644,9 +1479,11 @@ export default class ZonesExample extends React.Component<{}, State> {
         return ([
           <WidgetTab
             key="7_1"
-            isActive={widget.tabIndex === 1}
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
+            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
@@ -1654,29 +1491,56 @@ export default class ZonesExample extends React.Component<{}, State> {
           </WidgetTab>,
         ]);
       }
-      case 9: {
+      case 8: {
         return ([
           <WidgetTab
-            key="9_1"
-            isActive={widget.tabIndex === 1}
+            key="8_1"
+            mode={mode1}
             onClick={() => this._handleWidgetTabClick(widget.id, 1)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
+            lastPosition={tabIndex === 1 ? lastPosition : undefined}
+            onDragStart={(initialPosition, offset) => {
+              this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset);
+              this._handleWidgetTabDragEnd();
+            }}
+            onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
-            <i className="icon icon-settings" />
-          </WidgetTab>,
-          <WidgetTab
-            key="9_2"
-            isActive={widget.tabIndex === 2}
-            onClick={() => this._handleWidgetTabClick(widget.id, 2)}
-            onDragBehaviorChanged={(isDragging) => this._handleDragBehaviorChanged(widget.id, isDragging)}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-help" />
+            <i className="icon icon-records" />
           </WidgetTab>,
         ]);
+      }
+      case 9: {
+        return (
+          <WidgetTabGroup
+            key="9"
+            anchor={anchor}
+            handleMode={handleMode}
+          >
+            <WidgetTab
+              mode={mode1}
+              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              lastPosition={tabIndex === 1 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragEnd={this._handleWidgetTabDragEnd}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-settings" />
+            </WidgetTab>
+            <WidgetTab
+              mode={mode2}
+              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              lastPosition={tabIndex === 2 ? lastPosition : undefined}
+              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragEnd={this._handleWidgetTabDragEnd}
+              onDrag={this._handleWidgetTabDrag}
+              anchor={anchor}
+            >
+              <i className="icon icon-help" />
+            </WidgetTab>
+          </WidgetTabGroup>
+        );
       }
     }
     return undefined;
@@ -1789,9 +1653,10 @@ export default class ZonesExample extends React.Component<{}, State> {
             <BlueButton
               onClick={() => {
                 this.setState((prevState) => {
-                  const nineZone = this._nineZone.onChangeFooterMode(!prevState.nineZone.isInFooterMode, prevState.nineZone);
+                  const nineZone = NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
+                    openWidget: FooterWidget.None,
                   };
                 });
               }}
@@ -1800,6 +1665,9 @@ export default class ZonesExample extends React.Component<{}, State> {
             </BlueButton>
           </>
         );
+      }
+      case 8: {
+        return "Footer :)";
       }
       case 9: {
         switch (tabIndex) {
@@ -1870,14 +1738,14 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getTabs(zoneId: number, anchor: Anchor) {
+  private getTabs(zoneId: WidgetZoneIndex, isOpen: boolean, anchor: HorizontalAnchor) {
     let tabs: JSX.Element[] = [];
     let i = -1;
 
     const zone = this.state.nineZone.zones[zoneId];
     for (const widget of zone.widgets) {
       i++;
-      const widgetTabs = this.getWidgetTabs(widget, anchor);
+      const widgetTabs = this.getWidgetTabs(zone, widget, isOpen, anchor);
       if (!widgetTabs)
         continue;
 
@@ -1889,7 +1757,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     return tabs;
   }
 
-  private getZoneContent(zoneId: number) {
+  private getZoneContent(zoneId: WidgetZoneIndex) {
     const zone = this.state.nineZone.zones[zoneId];
     const activeWidget = zone.widgets.find((widget) => widget.tabIndex !== -1);
 
@@ -1899,51 +1767,104 @@ export default class ZonesExample extends React.Component<{}, State> {
     return undefined;
   }
 
-  private getWidget(zoneId: number) {
-    const zone = this._nineZone.getZone(zoneId, this.state.nineZone);
-    if (zone.widgets.length === 0)
+  private getWidget(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    if (zone.props.widgets.length === 0)
       return undefined;
 
-    const isOpen = zone.widgets.some((w) => w.tabIndex !== -1);
-    const anchor = NineZoneStateManagement.getZoneAnchor(zoneId);
+    const isOpen = zone.props.widgets.some((w) => w.tabIndex !== -1);
+    const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
     return (
       <StackedWidget
-        anchor={anchor}
+        horizontalAnchor={zone.horizontalAnchor}
+        verticalAnchor={zone.verticalAnchor}
         content={this.getZoneContent(zoneId)}
+        isDragged={isDragged}
         isOpen={isOpen}
         onResize={(x, y, handle) => {
           this._handleOnWidgetResize(zoneId, x, y, handle);
         }}
-        tabs={this.getTabs(zoneId, anchor)}
+        tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
       />
     );
   }
 
-  private getZone(zoneId: number) {
+  private getZone(zoneId: WidgetZoneIndex) {
     switch (zoneId) {
+      case 1:
+        return this.getZone1();
+      case 2:
+        return this.getZone2();
       case 3:
         return this.getZone3();
+      case 8:
+        return this.getStatusZone();
       default:
         return this.getFloatingZone(zoneId);
     }
   }
 
-  private getFloatingZone(zoneId: number) {
-    const outlineBounds = this._nineZone.getGhostOutlineBounds(zoneId, this.state.nineZone);
+  private getFloatingZone(zoneId: WidgetZoneIndex) {
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
-        <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
+        <Zone bounds={zone.props.floatingBounds || zone.props.bounds}>
           {this.getWidget(zoneId)}
         </Zone>
-        <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
-          {this.getTargets(zoneId)}
+        <Zone bounds={zone.props.bounds}>
+          {this.getTarget(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
-          <Zone bounds={outlineBounds}>
-            <GhostOutline />
-          </Zone>
+          <GhostOutline bounds={outlineBounds} />
         }
       </>
+    );
+  }
+
+  private getZone1() {
+    return (
+      <Zone bounds={this.state.nineZone.zones[1].bounds}>
+        <ToolsWidget
+          button={
+            <AppButton
+              icon={
+                <i className="icon icon-home" />
+              }
+            />
+          }
+          horizontalToolbar={
+            <Toolbar
+              items={
+                <>
+                  {this.getToolbarItem("angle")}
+                  {this.getToolbarItem("2d")}
+                </>
+              }
+            />
+          }
+          verticalToolbar={
+            <Toolbar
+              expandsTo={Direction.Right}
+              items={
+                <>
+                  {this.getToolbarItem("cube")}
+                  {this.getToolbarItem("attach")}
+                  {this.getToolbarItem("validate")}
+                </>
+              }
+            />
+          }
+        />
+      </Zone>
+    );
+  }
+
+  private getZone2() {
+    return (
+      <Zone bounds={this.state.nineZone.zones[2].bounds}>
+        {this.getToolSettingsWidget()}
+      </Zone>
     );
   }
 
@@ -1955,7 +1876,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     if (isRectangular)
       return this.getFloatingZone(zoneId);
 
-    const outlineBounds = this._nineZone.getGhostOutlineBounds(zoneId, this.state.nineZone);
+    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
         <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
@@ -2023,12 +1945,185 @@ export default class ZonesExample extends React.Component<{}, State> {
           />
         </Zone>
         <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
-          {this.getTargets(zoneId)}
+          {this.getTarget(zoneId)}
         </Zone>
         {!outlineBounds ? undefined :
-          <Zone bounds={outlineBounds}>
-            <GhostOutline />
+          <GhostOutline bounds={outlineBounds} />
+        }
+      </>
+    );
+  }
+
+  private getStatusZone() {
+    const statusZone = new NineZone(this.state.nineZone).getStatusZone();
+    const outlineBounds = statusZone.getGhostOutlineBounds();
+
+    if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
+      return (
+        <>
+          <FooterZone
+            isInFooterMode={statusZone.props.isInFooterMode}
+            bounds={statusZone.props.bounds}
+          >
+            <Footer
+              isInWidgetMode={!statusZone.props.isInFooterMode}
+              message={this.getFooterMessage()}
+              indicators={
+                <>
+                  <ToolAssistanceIndicator
+                    dialog={
+                      this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
+                        <ToolAssistanceDialog
+                          title="Trim Multiple - Tool Assistance"
+                          items={
+                            <>
+                              <ToolAssistanceItem>
+                                <i className="icon icon-cursor" />
+                                Identify piece to trim
+                            </ToolAssistanceItem>
+                              <ToolAssistanceSeparator label="Inputs" />
+                              <ToolAssistanceItem>
+                                <i className="icon icon-cursor-click" />
+                                Clink on element
+                            </ToolAssistanceItem>
+                              <ToolAssistanceItem>
+                                <i className="icon  icon-check-out" />
+                                Drag across elements
+                            </ToolAssistanceItem>
+                              <ToolAssistanceSeparator />
+                              <ToolAssistanceItem>
+                                <input type="checkbox" />
+                                Show prompt @ cursor
+                            </ToolAssistanceItem>
+                            </>
+                          }
+                        />
+                    }
+                    icons={
+                      <>
+                        <i className="icon icon-cursor" />
+                        <i className="icon icon-add" />
+                      </>
+                    }
+                    isStepStringVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
+                    stepString="Start Point"
+                  />
+                  <MessageCenterIndicator
+                    ref={this._footerMessages}
+                    label="Message(s):"
+                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    balloonLabel="9+"
+                    onClick={this._handleMessageIndicatorIsDialogOpenChange}
+                    dialog={
+                      this.state.openWidget !== FooterWidget.Messages ? undefined :
+                        <MessageCenter
+                          title="Messages"
+                          buttons={
+                            <>
+                              <MessageCenterButton>
+                                <i className={"icon icon-export"} />
+                              </MessageCenterButton>
+                              <MessageCenterButton onClick={() => {
+                                this.setState((prevState) => ({
+                                  ...prevState,
+                                  openWidget: FooterWidget.None,
+                                }));
+                              }}>
+                                <i className={"icon icon-close"} />
+                              </MessageCenterButton>
+                            </>
+                          }
+                          tabs={
+                            <>
+                              <MessageCenterTab
+                                isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
+                                onClick={this._handleOnAllMessagesTabClick}
+                              >
+                                All
+                          </MessageCenterTab>
+                              <MessageCenterTab
+                                isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
+                                onClick={this._handleOnProblemsTabClick}
+                              >
+                                Problems
+                          </MessageCenterTab>
+                            </>
+                          }
+                          messages={this.getMessagesCenterMessages()}
+                        />
+                    }
+                  />
+                  <SnapModeIndicator
+                    label="Snap Mode"
+                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
+                    icon={
+                      <SnapModeIcon text="k" />
+                    }
+                    dialog={
+                      this.state.openWidget !== FooterWidget.SnapMode ? undefined :
+                        <SnapModeDialog
+                          title="Snap Mode"
+                          snaps={
+                            <>
+                              <SnapRow
+                                key="1"
+                                isActive
+                                label="Keypoint"
+                                icon={
+                                  <SnapModeIcon isActive text="k" />
+                                }
+                              />
+                              <SnapRow
+                                key="2"
+                                label="Intersection"
+                                icon={
+                                  <SnapModeIcon text="i" />
+                                }
+                              />
+                              <SnapRow
+                                key="3"
+                                label="Center"
+                                icon={
+                                  <SnapModeIcon text="c" />
+                                }
+                              />
+                              <SnapRow
+                                key="4"
+                                label="Nearest"
+                                icon={
+                                  <SnapModeIcon text="n" />
+                                }
+                              />
+                            </>
+                          }
+                        />
+                    }
+                  />
+                </>
+              }
+            />
+          </FooterZone>
+          <Zone bounds={statusZone.props.bounds}>
+            {this.getTarget(statusZone.id)}
           </Zone>
+          {!outlineBounds ? undefined :
+            <GhostOutline bounds={outlineBounds} />
+          }
+        </>
+      );
+
+    return (
+      <>
+        <Zone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
+          {this.getWidget(statusZone.id)}
+        </Zone>
+        <Zone bounds={statusZone.props.bounds}>
+          {this.getTarget(statusZone.id)}
+        </Zone>
+        {!outlineBounds ? undefined :
+          <GhostOutline bounds={outlineBounds} />
         }
       </>
     );

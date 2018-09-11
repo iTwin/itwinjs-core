@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 
-import { Guid, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { Guid, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, Project,
@@ -21,9 +21,10 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
-import { IModelProjectAbstraction } from "../../IModelProjectAbstraction";
-import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig } from "../../IModelBank/IModelBankFileSystemProject";
-import { TestIModelHubProject } from "./IModelHubProject";
+import { IModelProjectAbstraction, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "../../IModelProjectAbstraction";
+import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankPermissionDummy } from "../../IModelBank/IModelBankFileSystemProject";
+import { TestIModelHubProject, TestIModelHubOrchestrator, TestIModelHubUserMgr } from "./IModelHubProject";
+import { IModelBankLocalOrchestrator } from "../../IModelBank/LocalOrchestrator";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -67,6 +68,8 @@ export class RequestBehaviorOptions {
   }
 }
 
+const actx = new ActivityLoggingContext("");
+
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let _imodelHubClient: IModelHubClient;
@@ -100,7 +103,7 @@ export class IModelHubUrlMock {
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
 export function getClient(imodelId: string): IModelClient {
-  return projectAbstraction.getClientForIModel(undefined, imodelId);
+  return getIModelOrchestrator().getClientForIModel(actx, undefined, imodelId);
 }
 
 export function getDefaultClient() {
@@ -155,7 +158,7 @@ export async function login(userCredentials?: UserCredentials): Promise<AccessTo
     return new MockAccessToken();
 
   userCredentials = userCredentials || TestUsers.regular;
-  return projectAbstraction.authorizeUser(undefined, userCredentials, TestConfig.deploymentEnv);
+  return getPermissionAbstraction().authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
 }
 
 export async function getProjectId(accessToken: AccessToken, projectName?: string): Promise<string> {
@@ -164,7 +167,7 @@ export async function getProjectId(accessToken: AccessToken, projectName?: strin
 
   projectName = projectName || TestConfig.projectName;
 
-  const project: Project = await projectAbstraction.queryProject(accessToken, {
+  const project: Project = await projectAbstraction.queryProject(actx, accessToken, {
     $select: "*",
     $filter: `Name+eq+'${projectName}'`,
   });
@@ -180,9 +183,9 @@ export async function deleteIModelByName(accessToken: AccessToken, projectId: st
   if (TestConfig.enableMocks)
     return;
 
-  const imodels = await projectAbstraction.queryIModels(accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await projectAbstraction.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
   for (const imodel of imodels) {
-    await projectAbstraction.deleteIModel(accessToken, projectId, imodel.wsgId);
+    await projectAbstraction.deleteIModel(actx, accessToken, projectId, imodel.wsgId);
   }
 }
 
@@ -192,7 +195,7 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
 
   const projectId = await getProjectId(accessToken);
 
-  const imodels = await projectAbstraction.queryIModels(accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await projectAbstraction.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].wsgId)
     return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
@@ -231,12 +234,12 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: string, 
   }
 
   const client = getClient(imodelId);
-  let briefcases = await client.Briefcases().get(accessToken, imodelId);
+  let briefcases = await client.Briefcases().get(actx, accessToken, imodelId);
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
-      await client.Briefcases().create(accessToken, imodelId);
+      await client.Briefcases().create(actx, accessToken, imodelId);
     }
-    briefcases = await client.Briefcases().get(accessToken, imodelId);
+    briefcases = await client.Briefcases().get(actx, accessToken, imodelId);
   }
   return briefcases;
 }
@@ -406,7 +409,7 @@ export async function getLastLockObjectId(accessToken: AccessToken, iModelId: st
     return "0x0";
 
   const client = getClient(iModelId);
-  const locks = await client.Locks().get(accessToken, iModelId);
+  const locks = await client.Locks().get(actx, accessToken, iModelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!, 16) > parseInt(lock2.objectId!, 16) ? -1 : 1));
 
@@ -594,17 +597,17 @@ export async function createIModel(accessToken: AccessToken, name: string, proje
 
   projectId = projectId || await getProjectId(accessToken, TestConfig.projectName);
 
-  const imodels = await projectAbstraction.queryIModels(accessToken, projectId, new IModelQuery().byName(name));
+  const imodels = await projectAbstraction.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await projectAbstraction.deleteIModel(accessToken, projectId, imodels[0].wsgId);
+      await projectAbstraction.deleteIModel(actx, accessToken, projectId, imodels[0].wsgId);
     } else {
       return;
     }
   }
 
-  return projectAbstraction.createIModel(accessToken, projectId, { name, description: "", seedFile: getMockSeedFilePath() });
+  return projectAbstraction.createIModel(actx, accessToken, projectId, { name, description: "", seedFile: getMockSeedFilePath() });
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -642,14 +645,14 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
 
   const client = getClient(imodelId);
 
-  const currentCount = (await client.ChangeSets().get(accessToken, imodelId)).length;
+  const currentCount = (await client.ChangeSets().get(actx, accessToken, imodelId)).length;
 
   const changeSets = getMockChangeSets(briefcase);
 
   const result: ChangeSet[] = [];
   for (let i = currentCount; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
-    const changeSet = await client.ChangeSets().create(accessToken, imodelId, changeSets[i], changeSetPath);
+    const changeSet = await client.ChangeSets().create(actx, accessToken, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
   return result;
@@ -670,7 +673,7 @@ export async function createLocks(accessToken: AccessToken, imodelId: string, br
       releasedWithChangeSet, releasedWithChangeSetIndex));
   }
 
-  await client.Locks().update(accessToken, imodelId, generatedLocks);
+  await client.Locks().update(actx, accessToken, imodelId, generatedLocks);
 }
 
 export async function createVersions(accessToken: AccessToken, imodelId: string, changesetIds: string[], versionNames: string[]) {
@@ -680,9 +683,9 @@ export async function createVersions(accessToken: AccessToken, imodelId: string,
   const client = getClient(imodelId);
   for (let i = 0; i < changesetIds.length; i++) {
     // check if changeset does not have version
-    const version = await client.Versions().get(accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    const version = await client.Versions().get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
     if (!version || version.length === 0) {
-      await client.Versions().create(accessToken, imodelId, changesetIds[i], versionNames[i]);
+      await client.Versions().create(actx, accessToken, imodelId, changesetIds[i], versionNames[i]);
     }
   }
 }
@@ -708,6 +711,19 @@ export class ProgressTracker {
 }
 
 let projectAbstraction: IModelProjectAbstraction;
+let orchestratorAbstraction: IModelOrchestratorAbstraction;
+let permissionAbstraction: IModelPermissionAbstraction;
+
+export function getPermissionAbstraction(): IModelPermissionAbstraction {
+  if (permissionAbstraction !== undefined)
+    return permissionAbstraction;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
+    return permissionAbstraction = new TestIModelHubUserMgr();
+  }
+
+  return permissionAbstraction = new IModelBankPermissionDummy();
+}
 
 export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   if (projectAbstraction !== undefined)
@@ -717,6 +733,8 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     return projectAbstraction = new TestIModelHubProject();
   }
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+
   const options: IModelBankFileSystemProjectOptions = {
     rootDir: workDir,
     name: TestConfig.projectName,
@@ -724,11 +742,24 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
     deleteIfExists: true,
     createIfNotExist: true,
   };
+  projectAbstraction = new IModelBankFileSystemProject(options);
+  return projectAbstraction;
+}
+
+export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
+  if (orchestratorAbstraction !== undefined)
+    return orchestratorAbstraction;
+
+  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
+    return orchestratorAbstraction = new TestIModelHubOrchestrator();
+  }
+
   const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
   const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
   // tslint:disable-next-line:no-var-requires
   const serverConfig: IModelBankServerConfig = require(serverConfigFile);
   EnvMacroSubst.replaceInProperties(serverConfig, true);
-  projectAbstraction = new IModelBankFileSystemProject(options, serverConfig, loggingConfigFile);
-  return projectAbstraction;
+  const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
+  orchestratorAbstraction = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
+  return orchestratorAbstraction;
 }

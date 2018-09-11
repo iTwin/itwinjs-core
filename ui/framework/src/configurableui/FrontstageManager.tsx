@@ -12,7 +12,7 @@ import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
-import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -119,8 +119,6 @@ export class FrontstageManager {
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  private static _nineZoneStateManagement: NineZoneStateManagement = new NineZoneStateManagement();
-
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
 
   public static get onModalFrontstageStackChangedEvent(): ModalFrontstageStackChangedEvent { return this._modalFrontstageStackChangedEvent; }
@@ -135,7 +133,7 @@ export class FrontstageManager {
 
   public static get onWidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
 
-  public static get NineZoneStateManagement(): NineZoneStateManagement { return this._nineZoneStateManagement; }
+  public static get NineZoneStateManager() { return NineZoneStateManager; }
 
   public static loadFrontstages(frontstagePropsList: FrontstageProps[]) {
     frontstagePropsList.map((frontstageProps, _index) => {

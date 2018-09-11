@@ -6,53 +6,40 @@
 
 .nz-widget-rectangular-tab-tab {
   $active-width: 36px;
-  $border-width: $nz-widget-border-width;
 
   box-sizing: border-box;
   width: $nz-tab-width;
   height: $nz-tab-height;
   background-color: $nz-tab-background-color;
-  border-color: $nz-widget-border-color;
-  border-top-left-radius: $nz-widget-border-radius;
-  border-bottom-left-radius: $nz-widget-border-radius;
-  border-top-width: $border-width;
-  border-left-width: $border-width;
-  border-bottom-width: $border-width;
-  border-right-width: 0;
-  border-style: solid;
+  border: {
+    color: $nz-widget-border-color;
+    width: $nz-widget-border-width;
+    radius: $nz-widget-border-radius;
+    style: solid;
+  };
   margin-left: auto;
   margin-right: 0;
   color: rgba($text-dark, 0.88);
   cursor: pointer;
   pointer-events: auto;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  &.nz-left-anchor {
-    margin-left: 0;
-    margin-right: unset;
-    border-left-width: 0;
-    border-right-width: $border-width;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: $nz-widget-border-radius;
-    border-bottom-right-radius: $nz-widget-border-radius;
-
-    &.nz-is-active {
-      &::before {
-        right: $nz-tab-strip-margin;
-        left: unset;
-      }
-    }
+  &:not(:first-child) {
+    margin-top: -1px;
   }
 
   > * {
-    filter: drop-shadow((-0.4px) 0.9px 0 #FFF);
+    filter: drop-shadow((-0.4px) 0.9px 0 $text-light);
   }
 
-  &.nz-is-active {
+  &.nz-mode-active {
     width: $active-width;
     background-color: $nz-widget-background-color;
     color: $primary-base;
+    margin-right: -$nz-widget-border-width;
 
     > * {
       filter: drop-shadow(0 1px 0 $text-light);
@@ -63,10 +50,42 @@
       display: block;
       position: absolute;
       background-color: $primary-base;
-      left: $nz-tab-strip-margin;
       top: $nz-tab-strip-margin;
       width: $nz-tab-strip-width;
-      height: $nz-tab-height - $nz-tab-strip-margin * 2 - $border-width * 2;
+      height: $nz-tab-height - $nz-tab-strip-margin * 2 - $nz-widget-border-width * 2;
+    }
+  }
+
+  &.nz-right-anchor {
+    &.nz-mode-active {
+      &::before {
+        left: $nz-tab-strip-margin;
+      }
+    }
+
+    &.nz-mode-active, &.nz-mode-open {
+      border-right-width: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &.nz-left-anchor {
+    margin-left: 0;
+    margin-right: unset;
+
+    &.nz-mode-active {
+      margin-left: -$nz-widget-border-width;
+
+      &::before {
+        right: $nz-tab-strip-margin;
+      }
+    }
+
+    &.nz-mode-active, &.nz-mode-open {
+      border-left-width: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
   }
 }

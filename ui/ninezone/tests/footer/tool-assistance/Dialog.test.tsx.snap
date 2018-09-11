@@ -4,8 +4,9 @@ exports[`<Dialog /> renders correctly 1`] = `
 <Component
   className="nz-footer-toolAssistance-dialog"
   content={
-    <Unknown
+    <WithContainInViewport
       content={<ToolAssistanceContent />}
+      noVerticalContainment={true}
       titleBar={
         <Unknown
           title={

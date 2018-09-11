@@ -417,7 +417,7 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
-  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
+  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { /* assert(false); */ }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;

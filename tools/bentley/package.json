@@ -1,12 +1,12 @@
 {
   "name": "@bentley/bentleyjs-tools",
-  "version": "0.122.0",
+  "version": "0.124.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "",
+    "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
     "test": ""
