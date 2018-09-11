@@ -113,7 +113,7 @@ export class ViewManager {
 
     this.inDynamicsMode = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
       cursorVp.changeDynamics(undefined);
 
@@ -230,7 +230,7 @@ export class ViewManager {
 
     this._invalidateScenes = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
 
     if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)

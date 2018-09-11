@@ -14,7 +14,7 @@ import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, ImageUtil, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage,
+  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType, PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as ttjs from "tooltip.js";
@@ -328,7 +328,7 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === inverse)
     return;
 
-  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.matrix3d);
+  const targetMatrix = inverse.multiplyMatrixMatrix(theViewport.rotation);
   const rotateTransform = Transform.createFixedPointAndMatrix(theViewport.view.getTargetPoint(), targetMatrix);
   const startFrustum = theViewport.getFrustum();
   const newFrustum = startFrustum.clone();
@@ -884,6 +884,17 @@ class IncidentMarker extends Marker {
       this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
+  public onMouseButton(ev: BeButtonEvent): boolean {
+    if (ev.button === BeButton.Data) {
+      if (ev.isDown) {
+        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information);
+      } else {
+        console.log("mouseup");
+      }
+    }
+    return true;
+  }
+
   // /** draw a filled square with the incident color and a white outline */
   // public drawFunc(ctx: CanvasRenderingContext2D) {
   //   ctx.beginPath();
@@ -902,7 +913,7 @@ class IncidentMarker extends Marker {
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.labelFont = "italic 14px san-serif"; // use italic so incidents look different than Clusters
-    // this.label = severity.toString(); // label with severity
+    // this.label = severity.toLocaleString(); // label with severity
     this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
   }
@@ -910,7 +921,7 @@ class IncidentMarker extends Marker {
   public onDecorate(context: DecorateContext) {
     super.onDecorate(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.matrix3d.transpose(), .2, .2, IncidentMarker._sweep360);
+    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
     builder.setSymbology(ColorDef.white, this._color, 1);
     builder.addArc(ellipse, false, false);
     builder.setBlankingFill(this._color);
@@ -922,7 +933,7 @@ class IncidentMarker extends Marker {
 /** A Marker used to show a cluster of incidents */
 class IncidentClusterMarker extends Marker {
   private _clusterColor: string;
-  public get wantImage() { return this._isHilited; }
+  // public get wantImage() { return this._isHilited; }
 
   // draw the cluster as a white circle with an outline color based on what's in the cluster
   public drawFunc(ctx: CanvasRenderingContext2D) {
@@ -977,9 +988,8 @@ class IncidentClusterMarker extends Marker {
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
-  private _warningSign = ImageUtil.fromUrl("Warning_sign.svg");
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, this._warningSign);
+    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.warningSign);
   }
 }
 
@@ -988,6 +998,7 @@ class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
  * with a random value between 1-30 for "severity", and one of 5 possible icons.
  */
 class IncidentMarkerDemo {
+  public static warningSign?: HTMLImageElement;
   private _incidents = new IncidentMarkerSet();
   private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
 
@@ -999,6 +1010,9 @@ class IncidentMarkerDemo {
       ImageUtil.fromUrl("Hazard_toxic.svg"),
       ImageUtil.fromUrl("Hazard_tripping.svg"),
     ];
+
+    if (undefined === IncidentMarkerDemo.warningSign)
+      ImageUtil.fromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();

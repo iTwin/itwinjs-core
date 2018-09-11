@@ -209,7 +209,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
       const scale = ACSDisplaySizes.ArrowTipWidth / 2;
       const center = Point3d.create();
-      const viewRMatrix = vp.matrix3d;
+      const viewRMatrix = vp.rotation;
 
       const xVec = viewRMatrix.getRow(0);
       const yVec = viewRMatrix.getRow(1);

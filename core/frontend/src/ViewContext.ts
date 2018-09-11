@@ -186,7 +186,7 @@ export class DecorateContext extends RenderContext {
     const xVec = rMatrix.rowX(),
       yVec = rMatrix.rowY(),
       zVec = rMatrix.rowZ(),
-      viewZ = vp.matrix3d.getRow(2);
+      viewZ = vp.rotation.getRow(2);
 
     if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
@@ -376,7 +376,7 @@ export class DecorateContext extends RenderContext {
       const camera = view.camera;
       const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
-      vp.matrix3d.rowZ(viewZ);
+      vp.rotation.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
       zCameraLimit = zCamera - camera.focusDist * sizeLimit;
     }
