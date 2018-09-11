@@ -148,6 +148,7 @@ export interface HistoryItem {
 export interface ToolGroupItem {
   icon: string;
   trayId: string | undefined;
+  isDisabled?: boolean;
 }
 
 export interface ToolGroupColumn {
@@ -353,6 +354,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                     Test2123123: {
                       icon: "icon-text-align-text-align-justify",
                       trayId: undefined,
+                      isDisabled: true,
                     },
                     Test3: {
                       icon: "icon-text-align-text-align-left",
@@ -364,7 +366,8 @@ export default class ZonesExample extends React.Component<{}, State> {
                     },
                     Test5: {
                       icon: "icon-text-align-text-align-right",
-                      trayId: undefined,
+                      trayId: "disabled",
+                      isDisabled: true,
                     },
                     Test6: {
                       icon: "icon-text-align-text-align-right",
@@ -1073,6 +1076,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                         },
                       };
                     })}
+                    isDisabled={item.isDisabled}
                   />
                 );
               return (
@@ -1084,6 +1088,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   icon={
                     <i className={`icon ${item.icon}`} />
                   }
+                  isDisabled={item.isDisabled}
                 />
               );
             })}

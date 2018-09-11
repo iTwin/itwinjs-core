@@ -34,12 +34,19 @@ export default class HistoryItem extends React.Component<HistoryItemProps> {
 
     return (
       <div
-        onClick={this.props.onClick}
+        onClick={this._handleClick}
         className={className}
         style={this.props.style}
       >
         {this.props.children}
       </div>
     );
+  }
+
+  private _handleClick = () => {
+    if (this.props.isDisabled)
+      return;
+
+    this.props.onClick && this.props.onClick();
   }
 }
