@@ -21,7 +21,7 @@ export const Merge: React.StatelessComponent<TargetProps> = (props: TargetProps)
       className={mergeClassName}
       {...props}
     >
-      <Arrow />
+      <Arrow className="nz-arrow" />
       <Arrow className="nz-mirrored" />
     </Target>
   );
