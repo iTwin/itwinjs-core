@@ -155,7 +155,7 @@ async function runBridgeFirstTime(accessToken: AccessToken, iModelId: string, pr
 }
 // __PUBLISH_EXTRACT_END__
 
-describe.only("Bridge", async () => {
+describe("Bridge", async () => {
 
   let accessToken: AccessToken;
   let testProjectId: string;
