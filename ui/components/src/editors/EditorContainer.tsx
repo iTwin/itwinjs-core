@@ -4,8 +4,8 @@
 /** @module PropertyEditors */
 
 import * as React from "react";
-import { TextEditor } from "./TextEditor";
 import { PropertyRecord } from "../properties/Record";
+import { PropertyEditor, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback */
 export interface PropertyUpdatedArgs {
@@ -18,6 +18,7 @@ export interface PropertyUpdatedArgs {
 /** [[EditorContainer]] React component properties */
 export interface EditorContainerProps {
   propertyRecord?: PropertyRecord;
+  title: string;
   onCommit: (commit: PropertyUpdatedArgs) => void;
   onCommitCancel: () => void;
 }
@@ -27,54 +28,43 @@ export interface EditorContainerProps {
  */
 export class EditorContainer extends React.Component<EditorContainerProps> {
 
-  private _editor: any;
-  private _changeCommitted = false;
-  private _changeCanceled = false;
+  private _editorRef: any;
+  private _propertyEditor: PropertyEditor | null = null;
 
   private getEditor(): any {
-    return this._editor;
+    return this._editorRef;
   }
 
   private createEditor(): React.ReactNode {
-    const editorRef = (c: any) => this._editor = c;
-    // let editorProps = {
-    //   ref: editorRef,
-    //   column: this.props.column,
-    //   value: this.getInitialValue(),
-    //   onCommit: this.commit,
-    //   onCommitCancel: this.commitCancel,
-    //   rowMetaData: this.getRowMetaData(),
-    //   rowData: this.props.rowData,
-    //   height: this.props.height,
-    //   onBlur: this.commit,
-    //   onOverrideKeyDown: this.onKeyDown
-    // };
+    const editorRef = (c: any) => this._editorRef = c;
 
-    // let CustomEditor = this.props.column.editor;
-    // // return custom column editor or SimpleEditor if none specified
-    // if (React.isValidElement(CustomEditor)) {
-    //   return React.cloneElement(CustomEditor, editorProps);
-    // }
-    // if (isFunction(CustomEditor)) {
-    //   return <CustomEditor ref={editorRef} {...editorProps} />;
-    // }
+    const editorProps = {
+      ref: editorRef,
+      onBlur: this._commit,
+      value: this.props.propertyRecord,
+    };
 
-    return <TextEditor ref={editorRef} onBlur={this._commit} value={this.props.propertyRecord} />;
-    // column={this.props.column} value={this.getInitialValue()} onBlur={this.commit} rowMetaData={this.getRowMetaData()} onKeyDown={() => { }} commit={() => { }}
+    if (this.props.propertyRecord) {
+      let editorNode: React.ReactNode;
+      const propDescription = this.props.propertyRecord.property;
+
+      if (propDescription.typename) {
+        const editorName = propDescription.editor !== undefined ? propDescription.editor.name : undefined;
+        this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
+        if (this._propertyEditor)
+          editorNode = this._propertyEditor.reactElement;
+      }
+
+      if (React.isValidElement(editorNode)) {
+        return React.cloneElement(editorNode, editorProps);
+      }
+    }
+
+    return null;
   }
 
   private _handleBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
-    // if (this.isBodyClicked(e)) {
-    //   this.commit(e);
-    // }
-
-    // if (!this.isBodyClicked(e)) {
-    //   // prevent null reference
-    //   if (this.isViewportClicked(e) || !this.isClickInsideEditor(e)) {
-    //     this.commit(e);
-    //   }
-    // }
   }
 
   private _handleClick = (e: React.MouseEvent) => {
@@ -128,11 +118,22 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
     return false;
   }
 
-  private isNewValueValid(value: string): boolean {
+  private async isNewValueValid(value: any): Promise<boolean> {
     if (isFunction(this.getEditor().validate)) {
       const isValid = this.getEditor().validate(value);
-      this.setState({ isInvalid: !isValid });
-      return isValid;
+      if (!isValid) {
+        this.setState({ isInvalid: !isValid });
+        return isValid;
+      }
+    }
+
+    if (this._propertyEditor && this.props.propertyRecord) {
+      const valueResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
+      if (valueResult.encounteredError) {
+        this.setState({ isInvalid: valueResult.encounteredError });
+        // TODO - display InputField
+        return !valueResult.encounteredError;
+      }
     }
 
     return true;
@@ -141,36 +142,36 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
   private _commit = (_args: { key: string }) => {
     const newValue = this.getEditor().getValue();
     if (this.isNewValueValid(newValue)) {
-      this._changeCommitted = true;
       this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue });
     }
   }
 
   private _commitCancel = () => {
-    this._changeCanceled = true;
     this.props.onCommitCancel();
   }
 
   public componentDidMount() {
-    // let inputNode = this.getInputNode();
-    // if (inputNode !== undefined) {
-    //   this.setTextInputFocus();
-    //   if (!this.getEditor().disableContainerStyles) {
-    //     inputNode.className += ' editor-main';
-    //     inputNode.style.height = this.props.height - 1 + 'px';
-    //   }
-    // }
+    const inputNode = this.getInputNode();
+    if (inputNode) {
+      inputNode.focus();
+    }
   }
 
-  public componentWillUnmount() {
-    if (!this._changeCommitted && !this._changeCanceled) {
-      // this._commit({ key: "Enter" });
-    }
+  private getInputNode(): HTMLInputElement | null {
+    if (isFunction(this.getEditor().getInputNode))
+      return this.getEditor().getInputNode();
+    return null;
   }
 
   public render() {
     return (
-      <div onBlur={this._handleBlur} onKeyDown={this._handleKeyDown} onContextMenu={this._handleRightClick} onClick={this._handleClick}>
+      <div
+        onBlur={this._handleBlur}
+        onKeyDown={this._handleKeyDown}
+        onClick={this._handleClick}
+        onContextMenu={this._handleRightClick}
+        title={this.props.title}
+      >
         {this.createEditor()}
       </div>
     );

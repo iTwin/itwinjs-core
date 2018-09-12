@@ -8,7 +8,7 @@ import classnames from "classnames";
 import { PropertyRecord } from "../properties/Record";
 
 export interface TextEditorProps {
-  onBlur: (event: any) => void;
+  onBlur?: (event: any) => void;
   value?: PropertyRecord;
 }
 
@@ -28,6 +28,10 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
     return this.state.inputValue;
   }
 
+  public getInputNode(): HTMLInputElement | null {
+    return this._input;
+  }
+
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({
       inputValue: e.target.value,
@@ -41,7 +45,15 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
   private async getInitialValue() {
     const propertyRecord = this.props.value;
     const initialValue = propertyRecord ? await propertyRecord.getDisplayValue() : "";
-    this.setState({ inputValue: initialValue });
+    this.setState(
+      () => ({ inputValue: initialValue }),
+      () => {
+        if (this._input) {
+          this._input.focus();
+          this._input.select();
+        }
+      },
+    );
   }
 
   public render() {
@@ -51,7 +63,6 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
       <input
         ref={(node) => this._input = node}
         type="text"
-        autoFocus
         onBlur={this.props.onBlur}
         className={className}
         defaultValue={this.state.inputValue}

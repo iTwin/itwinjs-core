@@ -9,6 +9,7 @@ import { PropertyDescription } from "../properties/Description";
 
 import * as React from "react";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
+import { TextEditor } from "./TextEditor";
 
 /** Each control that supports property editing must implement PropertyContainer.
  */
@@ -31,7 +32,7 @@ export abstract class PropertyEditor implements DataController {
 
   public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
 
-  public abstract get reactElement(): React.ReactElement<any> | undefined;
+  public abstract get reactElement(): React.ReactNode;
 
   public commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     if (this.customDataController)
@@ -114,21 +115,8 @@ export class PropertyEditorManager {
 
 export class BasicPropertyEditor extends PropertyEditor {
 
-  public performEditorLayout(_propertyPane: PropertyContainer, _description: PropertyDescription, _record: PropertyRecord): void {
-  }
-
-  public activate(): void {
-  }
-
-  public showEditor(): void {
-  }
-
-  public commitChanges(): Promise<AsyncValueProcessingResult> {
-    return Promise.resolve({ encounteredError: false });
-  }
-
-  public get reactElement(): React.ReactElement<any> | undefined {
-    return undefined;
+  public get reactElement(): React.ReactNode {
+    return <TextEditor />;
   }
 }
 

@@ -123,18 +123,6 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
   }
 
-  // private _handleRowUpdated = (args: RowUpdatedArgs): Promise<boolean> => {
-  //   const cellItem = args.cellItem;
-  //   let updated = false;
-
-  //   if (cellItem && cellItem.record) {
-  //     cellItem.record = cellItem.record.copyWithNewValue(args.newValue);
-  //     updated = true;
-  //   }
-
-  //   return Promise.resolve(updated);
-  // }
-
   private _handlePropertyUpdated = (args: PropertyUpdatedArgs): Promise<boolean> => {
     let updated = false;
 

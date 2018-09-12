@@ -145,6 +145,8 @@
   left:0px;
   background-color: #F9F9F9;
   user-select: none;
+  display: flex;
+  align-items: center;
 }
 
 .cell.is-selected {
