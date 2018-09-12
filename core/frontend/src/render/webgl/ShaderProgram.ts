@@ -12,7 +12,6 @@ import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch } from "./Graphic";
-import { debugPrint } from "././debugPrint";
 
 /** Flags which control some conditional branches in shader code */
 export const enum ShaderFlags {
@@ -179,7 +178,6 @@ export class ShaderProgram implements IDisposable {
     }
 
     const src = GL.ShaderType.Vertex === type ? this.vertSource : this.fragSource;
-    debugPrint(src);
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;

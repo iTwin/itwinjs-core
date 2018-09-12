@@ -91,7 +91,7 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animParams.x, u_animParams.y, u_animParams.z, u_qAnimOrigin, u_qAnimScale).xyz;
+const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animParams.x, u_animParams.y, u_qAnimOrigin, u_qAnimScale).xyz;
 ` + computePosition;
 
 function createCommon(animated: boolean): ProgramBuilder {
