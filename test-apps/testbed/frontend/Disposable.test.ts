@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
@@ -11,7 +11,7 @@ import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodel
 import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { TileIO, DgnTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { TileData } from "./TileIO.data";
 import { TestData } from "./TestData";
 
@@ -187,7 +187,7 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
-  it.skip("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
+  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;
@@ -208,7 +208,8 @@ describe("Disposal of WebGL Resources", () => {
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = new TileIO.StreamBuffer(TileData.triangles.buffer);
-    const reader = DgnTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
+    const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
+    expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.renderGraphic!;
     assert.isDefined(tileGraphic);

@@ -53,7 +53,7 @@ describe("TileIO", () => {
     if (imodel) await imodel.closeStandalone();
   });
 
-  it.skip("should read tile headers", () => {
+  it("should read tile headers", () => {
     const stream = new TileIO.StreamBuffer(rectangle);
     stream.reset();
     const header = new IModelTileIO.Header(stream);
@@ -61,7 +61,7 @@ describe("TileIO", () => {
     expect(header.format).to.equal(TileIO.Format.IModel);
     expect(header.version).to.equal(0);
     expect(header.flags).to.equal(IModelTileIO.Flags.None);
-    expect(header.length).to.equal(2392);
+    expect(header.length).to.equal(TileData.rectangle.length);
 
     // content range is relative to tileset origin at (0, 0, 0)
     const low = header.contentRange.low;
@@ -75,7 +75,7 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it.skip("should support canceling operation", async () => {
+  it("should support canceling operation", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
@@ -87,7 +87,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should read an iModel tile containing a single rectangle", async () => {
+  it("should read an iModel tile containing a single rectangle", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
@@ -134,7 +134,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
+  it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(triangles);
@@ -199,7 +199,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should read an iModel tile containing single open yellow line string", async () => {
+  it("should read an iModel tile containing single open yellow line string", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineString);
@@ -240,7 +240,7 @@ describe("TileIO", () => {
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(60);
+        expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
         expect(plGeom.lineWeight).to.equal(9);
@@ -248,7 +248,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should read an iModel tile containing multiple line strings", async () => {
+  it("should read an iModel tile containing multiple line strings", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(lineStrings);
@@ -293,7 +293,7 @@ describe("TileIO", () => {
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(60);
+        expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
         expect(plGeom.lineWeight).to.equal(9);
@@ -307,7 +307,7 @@ describe("TileIO", () => {
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(120);
+        expect(plGeom.numIndices).to.equal(228); // 120 pre-tesselation...
         expect(plGeom.lut.numVertices).to.equal(12);
         expect(plGeom.lineCode).to.equal(2);
         expect(plGeom.lineWeight).to.equal(9);
@@ -315,7 +315,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should read an iModel tile containing edges and silhouettes", async () => {
+  it("should read an iModel tile containing edges and silhouettes", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(cylinder);
@@ -325,7 +325,7 @@ describe("TileIO", () => {
       if (undefined !== reader) {
         const result = await reader.read();
         expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
-        expect(result.isLeaf).to.be.true;
+        expect(result.isLeaf).to.be.false; // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
         expect(result.contentRange).not.to.be.undefined;
 
         // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
@@ -362,7 +362,7 @@ describe("TileIO", () => {
     }
   });
 
-  it.skip("should obtain tiles from backend", async () => {
+  it("should obtain tiles from backend", async () => {
     // This data set contains 4 physical models: 0x1c (empty), 0x22, 0x23, and 0x24. The latter 3 collectively contain 4 spheres.
     const modelProps = await imodel.models.getProps("0x22");
     expect(modelProps.length).to.equal(1);
@@ -375,10 +375,6 @@ describe("TileIO", () => {
 
     const rootTile = tree.rootTile;
     expect(rootTile.contentId).to.equal("0/0/0/0/1");
-
-    expect(rootTile.contentRange).not.to.be.undefined;
-
-    expect(rootTile.isLeaf).to.be.false;
-    expect(rootTile.sizeMultiplier).not.to.be.undefined; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+    expect(rootTile.isLeaf).to.be.false; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
   });
 });
