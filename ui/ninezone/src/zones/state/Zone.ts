@@ -24,6 +24,7 @@ export interface ZoneProps {
   readonly floatingBounds?: RectangleProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
   readonly anchor?: HorizontalAnchor;
+  readonly allowsMerging: boolean;
 }
 
 export interface StatusZoneProps extends ZoneProps {
@@ -49,6 +50,7 @@ export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
     widgets: [
       getDefaultWidgetProps(id),
     ],
+    allowsMerging: true,
   };
 };
 
@@ -65,6 +67,7 @@ export const getDefaultStatusZoneProps = (): StatusZoneProps => {
     widgets: [
       getDefaultWidgetProps(8),
     ],
+    allowsMerging: true,
   };
 };
 
@@ -240,6 +243,9 @@ export class WidgetZone extends Zone {
   }
 
   public get isMergeable(): boolean {
+    if (!this.props.allowsMerging)
+      return false;
+
     switch (this.props.id) {
       case 4:
       case 6:
@@ -448,7 +454,7 @@ export class StatusZone extends WidgetZone {
   public get isMergeable(): boolean {
     if (this.props.isInFooterMode)
       return false;
-    return true;
+    return super.isMergeable;
   }
 }
 

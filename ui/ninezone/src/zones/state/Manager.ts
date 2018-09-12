@@ -374,6 +374,22 @@ export class StateManager {
       draggingWidget: undefined,
     };
   }
+
+  public setAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean, state: NineZoneProps): NineZoneProps {
+    if (state.zones[zoneId].allowsMerging === allowsMerging)
+      return state;
+
+    return {
+      ...state,
+      zones: {
+        ...state.zones,
+        [zoneId]: {
+          ...state.zones[zoneId],
+          allowsMerging: allowsMerging ? undefined : false,
+        },
+      },
+    };
+  }
 }
 
 // tslint:disable-next-line:variable-name
