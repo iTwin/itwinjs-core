@@ -109,6 +109,7 @@ export interface State {
   nineZone: NineZoneProps;
   isOverflowItemOpen: boolean;
   currentTheme: Theme;
+  showAllItems: boolean;
 }
 
 export enum MessageCenterActiveTab {
@@ -147,6 +148,7 @@ export interface HistoryItem {
 export interface ToolGroupItem {
   icon: string;
   trayId: string | undefined;
+  isDisabled?: boolean;
 }
 
 export interface ToolGroupColumn {
@@ -164,6 +166,7 @@ export interface Tools {
 
 export interface SimpleTool {
   icon: string;
+  isDisabled?: boolean;
 }
 
 export interface ToolGroup {
@@ -175,6 +178,7 @@ export interface ToolGroup {
   history: History<HistoryItem>;
   isExtended: boolean;
   isToolGroupOpen: boolean;
+  isDisabled?: boolean;
 }
 
 const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup => {
@@ -199,7 +203,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._dialogContainer = document.createElement("div");
 
-    const nineZone = getDefaultNineZone();
+    const nineZone = NineZoneManager.setAllowsMerging(4, false, getDefaultNineZone());
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
@@ -223,11 +227,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -242,57 +246,11 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-2d",
         } as ToolGroup,
         "angle": {
-          trayId: "3d",
-          backTrays: [],
-          trays: {
-            "3d": {
-              title: "3D Tools",
-              columns: {
-                0: {
-                  items: {
-                    Test1: {
-                      icon: "3d-cube",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Bottom,
-          history: [],
-          isExtended: false,
-          isToolGroupOpen: false,
           icon: "icon-angle",
-        } as ToolGroup,
+        } as SimpleTool,
         "attach": {
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    "3D#1": {
-                      icon: "3d",
-                      trayId: undefined,
-                    },
-                    "3D#2": {
-                      icon: "3d",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Right,
-          history: [],
           icon: "icon-attach",
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
+        } as SimpleTool,
         "browse": {
           icon: "icon-browse",
         } as SimpleTool,
@@ -306,11 +264,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -335,7 +293,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "arc",
+                      icon: "icon-arc",
                       trayId: undefined,
                     },
                   },
@@ -361,11 +319,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "3d",
+                      icon: "icon-3d",
                       trayId: undefined,
                     },
                   },
@@ -390,31 +348,33 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                     Test2123123: {
-                      icon: "align-justify",
+                      icon: "icon-text-align-text-align-justify",
                       trayId: undefined,
+                      isDisabled: true,
                     },
                     Test3: {
-                      icon: "align-left",
+                      icon: "icon-text-align-text-align-left",
                       trayId: "tray2",
                     },
                     Test4: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test5: {
-                      icon: "align-right",
-                      trayId: undefined,
+                      icon: "icon-text-align-text-align-right",
+                      trayId: "disabled",
+                      isDisabled: true,
                     },
                     Test6: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                     Test7: {
-                      icon: "align-right",
+                      icon: "icon-text-align-text-align-right",
                       trayId: undefined,
                     },
                   },
@@ -422,7 +382,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 1: {
                   items: {
                     Test5: {
-                      icon: "app-1",
+                      icon: "icon-app-1",
                       trayId: undefined,
                     },
                   },
@@ -430,7 +390,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 2: {
                   items: {
                     ":)": {
-                      icon: "app-2",
+                      icon: "icon-app-2",
                       trayId: undefined,
                     },
                   },
@@ -443,7 +403,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "align-center",
+                      icon: "icon-text-align-text-align-center",
                       trayId: undefined,
                     },
                   },
@@ -469,7 +429,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Validate: {
-                      icon: "validate",
+                      icon: "icon-validate",
                       trayId: undefined,
                     },
                   },
@@ -494,6 +454,7 @@ export default class ZonesExample extends React.Component<{}, State> {
       },
       isOverflowItemOpen: false,
       currentTheme: PrimaryTheme,
+      showAllItems: true,
     };
   }
 
@@ -863,6 +824,46 @@ export default class ZonesExample extends React.Component<{}, State> {
     this.changeTab(MessageCenterActiveTab.Problems);
   }
 
+  private _handleDisableItemsClick = () => {
+    this.setState((prevState) => {
+      return {
+        tools: {
+          ...prevState.tools,
+          cube: {
+            ...prevState.tools.cube,
+            isDisabled: !prevState.tools.cube.isDisabled,
+            isToolGroupOpen: false,
+          },
+          validate: {
+            ...prevState.tools.validate,
+            isDisabled: !prevState.tools.validate.isDisabled,
+            isToolGroupOpen: false,
+          },
+          channel: {
+            ...prevState.tools.channel,
+            isDisabled: !prevState.tools.channel.isDisabled,
+            isToolGroupOpen: false,
+          },
+          chat: {
+            ...prevState.tools.chat,
+            isDisabled: !prevState.tools.chat.isDisabled,
+            isToolGroupOpen: false,
+          },
+          browse: {
+            ...prevState.tools.browse,
+            isDisabled: !prevState.tools.browse.isDisabled,
+            isToolGroupOpen: false,
+          },
+          chat1: {
+            ...prevState.tools.chat1,
+            isDisabled: !prevState.tools.chat1.isDisabled,
+            isToolGroupOpen: false,
+          },
+        },
+      };
+    });
+  }
+
   private changeTab(newTab: MessageCenterActiveTab) {
     this.setState((prevState) => ({
       ...prevState,
@@ -901,7 +902,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 key={entry.key}
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
               >
-                <i className={`icon icon-${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
+                <i className={`icon ${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
               </HistoryIcon>
             );
           })
@@ -993,12 +994,14 @@ export default class ZonesExample extends React.Component<{}, State> {
           key={toolKey}
           onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended, toolKey)}
           panel={this.getToolGroup(toolKey)}
+          isDisabled={tool.isDisabled}
         >
           <ToolbarIcon
             icon={
               <i className={`icon ${tool.icon}`} />
             }
             onClick={() => this._handleOnExpandableItemClick(toolKey)}
+            isDisabled={tool.isDisabled}
           />
         </ExpandableItem>
       );
@@ -1010,6 +1013,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         icon={
           <i className={`icon ${tool.icon}`} />
         }
+        isDisabled={tool.isDisabled}
       />
     );
   }
@@ -1056,7 +1060,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                     ref={itemKey}
                     label={itemKey}
                     icon={
-                      <i className={`icon icon-${item.icon}`} />
+                      <i className={`icon ${item.icon}`} />
                     }
                     onClick={() => this.setState((prevState) => {
                       const toolGroup = prevState.tools[toolKey] as ToolGroup;
@@ -1072,6 +1076,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                         },
                       };
                     })}
+                    isDisabled={item.isDisabled}
                   />
                 );
               return (
@@ -1081,8 +1086,9 @@ export default class ZonesExample extends React.Component<{}, State> {
                   label={itemKey}
                   onClick={() => this.handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
                   icon={
-                    <i className={`icon icon-${item.icon}`} />
+                    <i className={`icon ${item.icon}`} />
                   }
+                  isDisabled={item.isDisabled}
                 />
               );
             })}
@@ -1656,6 +1662,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                   const nineZone = NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
                   return {
                     nineZone,
+                    openWidget: FooterWidget.None,
                   };
                 });
               }}
@@ -1836,8 +1843,14 @@ export default class ZonesExample extends React.Component<{}, State> {
             <Toolbar
               items={
                 <>
-                  {this.getToolbarItem("angle")}
-                  {this.getToolbarItem("2d")}
+                  {this.state.showAllItems && this.getToolbarItem("2d")}
+                  <ToolbarIcon
+                    key={"angle"}
+                    icon={
+                      <i className={`icon ${this.state.tools.angle.icon}`} />
+                    }
+                    onClick={() => this.setState((prevState) => ({ showAllItems: !prevState.showAllItems }))}
+                  />
                 </>
               }
             />
@@ -1847,9 +1860,15 @@ export default class ZonesExample extends React.Component<{}, State> {
               expandsTo={Direction.Right}
               items={
                 <>
-                  {this.getToolbarItem("cube")}
-                  {this.getToolbarItem("attach")}
-                  {this.getToolbarItem("validate")}
+                  {this.state.showAllItems && this.getToolbarItem("cube")}
+                  <ToolbarIcon
+                    key={"attach"}
+                    icon={
+                      <i className={`icon ${this.state.tools.attach.icon}`} />
+                    }
+                    onClick={this._handleDisableItemsClick}
+                  />
+                  {this.state.showAllItems && this.getToolbarItem("validate")}
                 </>
               }
             />
@@ -1887,37 +1906,37 @@ export default class ZonesExample extends React.Component<{}, State> {
               <Toolbar
                 items={
                   <>
-                    <OverflowItem
-                      key="0"
-                      onClick={() => this.setState((prevState) => ({
-                        ...prevState,
-                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                      }))}
-                      panel={
-                        !this.state.isOverflowItemOpen ? undefined :
-                          (
-                            <ToolGroupComponent
-                              title={"Overflow Button"}
-                              container={this._zones}
-                              columns={
-                                <GroupColumn>
-                                  <GroupTool
-                                    onClick={() => this.setState((prevState) => ({
-                                      ...prevState,
-                                      isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                                    }))}
-                                  >
-                                    Tool1
+                    {this.state.showAllItems &&
+                      <OverflowItem
+                        key="0"
+                        onClick={() => this.setState((prevState) => ({
+                          ...prevState,
+                          isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                        }))}
+                        panel={
+                          !this.state.isOverflowItemOpen ? undefined :
+                            (
+                              <ToolGroupComponent
+                                title={"Overflow Button"}
+                                container={this._zones}
+                                columns={
+                                  <GroupColumn>
+                                    <GroupTool
+                                      onClick={() => this.setState((prevState) => ({
+                                        ...prevState,
+                                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
+                                      }))}
+                                    >
+                                      Tool1
                                 </GroupTool>
-                                </GroupColumn>
-                              }
-                            />
-                          )
+                                  </GroupColumn>
+                                }
+                              />
+                            )
 
-                      }
-                    >
-
-                    </OverflowItem>
+                        }
+                      />
+                    }
                     {this.getToolbarItemWithToolSettings("chat")}
                   </>
                 }
@@ -1930,11 +1949,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 onScroll={this._handleOnScrollableToolbarScroll}
                 items={
                   <>
-                    {this.getToolbarItem("channel")}
+                    {this.state.showAllItems && this.getToolbarItem("channel")}
                     {this.getToolbarItem("chat")}
-                    {this.getToolbarItem("browse")}
+                    {this.state.showAllItems && this.getToolbarItem("browse")}
                     {this.getToolbarItem("clipboard")}
-                    {this.getToolbarItem("calendar")}
+                    {this.state.showAllItems && this.getToolbarItem("calendar")}
                     {this.getToolbarItem("chat1")}
                     {this.getToolbarItem("document")}
                   </>

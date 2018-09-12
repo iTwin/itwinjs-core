@@ -242,24 +242,9 @@ export abstract class PhysicalElement extends SpatialElement {
 }
 
 /**
- * An arbitrary portion of a larger Physical Element that will be broken down in more detail in a separate (sub) Physical Model.
- */
-export abstract class PhysicalPortion extends PhysicalElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
  * Identifies a *tracked* real world location but has no mass and cannot be *touched*.
  */
 export abstract class SpatialLocationElement extends SpatialElement {
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
- * A Spatial Location Portion represents an arbitrary portion of a larger Spatial Location Element that
- * will be broken down in more detail in a separate (sub) Spatial Location Model.
- */
-export abstract class SpatialLocationPortion extends SpatialLocationElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 

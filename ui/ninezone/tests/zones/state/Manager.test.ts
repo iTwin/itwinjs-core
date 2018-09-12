@@ -467,6 +467,22 @@ describe("StateManager", () => {
       state.zones[7].widgets[1].tabIndex.should.eq(10, "w8");
       state.zones[9].widgets[0].tabIndex.should.eq(3, "w9");
     });
+
+    it("should not modify state when zone does not allow merging", () => {
+      const props: NineZoneProps = {
+        ...TestProps.openedZone6,
+        zones: {
+          ...TestProps.openedZone6.zones,
+          6: {
+            ...TestProps.openedZone6.zones[6],
+            allowsMerging: false,
+          },
+        },
+      };
+      const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, props);
+
+      state.should.eq(props);
+    });
   });
 
   describe("handleTargetChanged", () => {
@@ -479,6 +495,21 @@ describe("StateManager", () => {
 
       expect(state.target).exist;
       state.target!.zoneId.should.eq(9);
+    });
+  });
+
+  describe("setAllowsMerging", () => {
+    it("should set allowsMerging", () => {
+      const state = DefaultStateManager.setAllowsMerging(9, false, TestProps.defaultProps);
+
+      state.zones[9].allowsMerging.should.false;
+    });
+
+    it("should not modify state when allowsMerging matches", () => {
+      const state = DefaultStateManager.setAllowsMerging(9, true, TestProps.defaultProps);
+
+      state.zones[9].allowsMerging.should.true;
+      state.should.eq(TestProps.defaultProps);
     });
   });
 });

@@ -13,5 +13,5 @@ The below table lists all of them:
 | `parent` | [ECInstance context](../ECExpressions.md#ecinstance) | The parent NavNode expression context.                                          |
 | `this`   | [ECInstance context](../ECExpressions.md#ecinstance) | ECInstance expression context of the ECInstance that's currently being handled. |
 
-Additionally, [User Settings symbols](../ECExpressions.md#user-settings)
+Additionally, [User Settings symbols](../ECExpressions.md#symbols-in-global-context)
  are available as well.

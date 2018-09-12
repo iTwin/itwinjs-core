@@ -17,7 +17,7 @@
     height: 100%;
   }
 
-  &:active {
+  &:active:not(.nz-is-disabled) {
     background: $primary-tone;
     color: rgba($text-light, 0.88);
     transition-duration: 150ms;
@@ -30,7 +30,7 @@
   }
 
   &.nz-is-active {
-    &:not(:active) {
+    &:not(:active):not(.nz-is-disabled) {
       transition-duration: 0s;
 
       &:after {

@@ -11,6 +11,8 @@ The backend:
 
 See [the app architecture overview](../../overview/App.md) for more on how backends fit into overall app architecture.
 
+All Promise-returning backend methods must [manage the LoggingActivityContext](./ManagingLoggingActivityContext.md).
+
 The backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
 ## Administration
@@ -44,5 +46,4 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 * [Reserve Codes](./ReserveCodes.md)
 
 ## Change Summary
-
 * [Change Summary Overview](../ChangeSummaries)

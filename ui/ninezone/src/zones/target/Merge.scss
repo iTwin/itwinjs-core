@@ -5,7 +5,11 @@
 @import "../../_geometry";
 
 .nz-zones-target-merge {
+  > .nz-arrow {
+    transform: translate3d( 0, 0, 1px);
+  }
+
   > .nz-mirrored {
-    transform: rotateZ(180deg);
+    transform: rotateZ(180deg) translate3d( 0, 0, 1px);
   }
 }

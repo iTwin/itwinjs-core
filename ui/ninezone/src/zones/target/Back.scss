@@ -11,7 +11,7 @@
   @mixin nz-arrow($zone, $rotation) {
     &.nz-zone-#{$zone} {
       > .nz-arrow {
-        transform: rotateZ($rotation * 1deg);
+        transform: rotateZ($rotation * 1deg) translate3d(0, 0, 1px);
       }
     }
   }

@@ -37,6 +37,7 @@ export default class BackstagePage extends React.Component<{}, State> {
           label="Item2"
           isActive={this.state.activeItem === 2}
           onClick={() => this._handleSetActiveItem(2)}
+          isDisabled
         />
         <Item
           label="Item3"

@@ -1,6 +1,18 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Sep 2018 13:35:50 GMT and should not be manually modified.
+
+## 0.125.0
+Wed, 12 Sep 2018 13:35:50 GMT
+
+### Updates
+
+- Ray3d.intersectionWithPlane fix !number instead of checking undefined.
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+*Version update only*
 
 ## 0.123.0
 Wed, 05 Sep 2018 17:14:50 GMT
