@@ -66,8 +66,7 @@ describe("TableDataProvider", async () => {
       expect(count).to.eq(2);
     });
 
-    // WIP: requires a fix made in native platform v32.0.0
-    it.skip("returns total number of instances when more than page size", async () => {
+    it("returns total number of instances when more than page size", async () => {
       const keys = await imodel.elements.queryProps({ from: "bis.PhysicalElement", limit: 20 });
       provider.keys = new KeySet(keys);
       const count = await provider.getRowsCount();
@@ -78,7 +77,7 @@ describe("TableDataProvider", async () => {
 
   describe("getRow", () => {
 
-    it.skip("returns first row", async () => {
+    it("returns first row", async () => {
       provider.keys = new KeySet([instances.physicalModel]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
@@ -94,19 +93,27 @@ describe("TableDataProvider", async () => {
 
   describe("sorting", () => {
 
-    it.skip("sorts instances ascending", async () => {
+    it("sorts instances ascending", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Ascending); // sort by display label (column index = 0)
       const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
+      // expected order:
+      // BisCore.DictionaryModel (dictionary model)
+      // DgnV8Bridge (repository model)
+      // Properties_60InstancesWithUrl2 (physical model)
       expect(rows).to.matchSnapshot();
     });
 
-    it.skip("sorts instances descending", async () => {
+    it("sorts instances descending", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Descending); // sort by display label (column index = 0)
       const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
+      // expected order:
+      // Properties_60InstancesWithUrl2 (physical model)
+      // DgnV8Bridge (repository model)
+      // BisCore.DictionaryModel (dictionary model)
       expect(rows).to.matchSnapshot();
     });
 
@@ -114,10 +121,10 @@ describe("TableDataProvider", async () => {
 
   describe("filtering", () => {
 
-    it.skip("filters instances", async () => {
+    it("filters instances", async () => {
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       const columns = await provider.getColumns();
-      provider.filterExpression = `${columns[0].key} = "Physical Model-0-S"`;
+      provider.filterExpression = `${columns[0].key} = "Properties_60InstancesWithUrl2"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
       const rowKey = instanceKeyFromJSON(JSON.parse(row!.key));

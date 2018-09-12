@@ -28,13 +28,13 @@ describe("PropertyDataProvider", async () => {
     terminate();
   });
 
-  it.skip("creates property data", async () => {
+  it("creates property data", async () => {
     provider.keys = new KeySet([physicalModelProps]);
     const properties = await provider.getData();
     expect(properties).to.matchSnapshot();
   });
 
-  it.skip("favorites properties", async () => {
+  it("favorites properties", async () => {
     (provider as any).isFieldFavorite = () => true;
     provider.keys = new KeySet([physicalModelProps]);
     const properties = await provider.getData();
