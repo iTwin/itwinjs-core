@@ -36,11 +36,11 @@
     align-items: center;
   }
 
-  &:hover {
+  &:hover:not(.nz-is-disabled) {
     background-color: $background-4;
   }
 
-  &.nz-is-active {
+  &.nz-is-active:not(.nz-is-disabled) {
     background-color: $background-4;
     position: relative;
 
@@ -57,7 +57,11 @@
     }
   }
 
-  &:active {
+  &:active:not(.nz-is-disabled) {
     background-color: rgba($background-4, 0.75);
+  }
+
+  &.nz-is-disabled {
+    color: rgba($text-light, 0.44);
   }
 }
