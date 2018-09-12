@@ -145,6 +145,9 @@ export class StateManager {
 
     const isUnmerge = zone.getWidgets().length > 1;
     const defaultZone = widget.defaultZone;
+    if (!defaultZone.props.allowsMerging)
+      return state;
+
     const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
     let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
     if (widget.isInHomeZone)
@@ -385,7 +388,7 @@ export class StateManager {
         ...state.zones,
         [zoneId]: {
           ...state.zones[zoneId],
-          allowsMerging: allowsMerging ? undefined : false,
+          allowsMerging,
         },
       },
     };
