@@ -7,6 +7,7 @@ From the same JavaScript codebase, it is possible to create:
   * [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
   * [Desktop Apps](#desktop-apps) that run on personal computers
   * [Mobile Apps](#mobile-apps) that run on tablets and phones
+* [Bridges](../overview/WriteABridge.md)
 
 ## Agents and Services
 

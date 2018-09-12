@@ -307,15 +307,18 @@ describe("iModel", () => {
     expect(tree.maxTilesToSkip).to.equal(1);
     expect(tree.rootTile).not.to.be.undefined;
 
+    // Empty model => identity transform
     const tf = Transform.fromJSON(tree.location);
     expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
+    expect(tf.origin.x).to.equal(0);
+    expect(tf.origin.y).to.equal(0);
+    expect(tf.origin.z).to.equal(0);
 
     expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
 
+    // Empty model => null range
     const range = Range3d.fromJSON(tree.rootTile.range);
-    expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
-    expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
+    expect(range.isNull).to.be.true;
 
     expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
     expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile

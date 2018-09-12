@@ -3,9 +3,11 @@
 exports[`<Tooltip /> renders correctly 1`] = `
 <div
   className="nz-popup-tooltip-tooltip"
->
-  <MouseTracker
-    onCoordinatesChange={[Function]}
-  />
-</div>
+  style={
+    Object {
+      "left": 0,
+      "top": 0,
+    }
+  }
+/>
 `;

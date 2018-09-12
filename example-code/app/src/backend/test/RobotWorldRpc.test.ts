@@ -25,10 +25,10 @@ function simulateBackendShutdown() {
 
 const bimName = "RobotWorldRpc.bim";
 
-function setUpTest() {
+async function setUpTest() {
   // Make a copy for the tests to work on
   let cc = IModelTestUtils.openIModel("empty.bim", { copyFilename: bimName, deleteFirst: true, openMode: OpenMode.ReadWrite });
-  RobotWorld.importSchema(actx, cc);
+  await RobotWorld.importSchema(actx, cc);
   cc.saveChanges();
   cc.closeStandalone();
   cc = IModelTestUtils.openIModelFromOut(bimName, { openMode: OpenMode.ReadWrite });
@@ -47,7 +47,7 @@ describe("RobotWorldRpc", () => {
     // Simulate the deployment of the backend server
     simulateBackendDeployment();
 
-    setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
+    await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
     NoRenderApp.startup();
 

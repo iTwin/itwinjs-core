@@ -153,7 +153,7 @@ export default class Toast extends React.Component<ToastProps> {
 
   private getBounds(el: HTMLElement) {
     const bounds = el.getBoundingClientRect();
-    return new Rectangle(bounds.left, bounds.top, bounds.right, bounds.bottom);
+    return Rectangle.create(bounds);
   }
 }
 

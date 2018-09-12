@@ -4,23 +4,20 @@
 /** @module RPC */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import {
-  RpcInterface, IModelToken,
-  RpcOperation, RpcRequest,
-} from "@bentley/imodeljs-common";
+import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
 import KeySet from "./KeySet";
 import { InstanceKey } from "./EC";
+import { Omit } from "./Utils";
 
 export interface RpcRequestOptions {
   clientId?: string;
   clientStateId?: string;
-  imodel: IModelToken;
 }
-export type HierarchyRpcRequestOptions = RpcRequestOptions & HierarchyRequestOptions<IModelToken>;
-export type ContentRpcRequestOptions = RpcRequestOptions & ContentRequestOptions<IModelToken>;
+export type HierarchyRpcRequestOptions = RpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
+export type ContentRpcRequestOptions = RpcRequestOptions & Omit<ContentRequestOptions<IModelToken>, "imodel">;
 export type RulesetVariableRpcRequestOptions = RpcRequestOptions & { rulesetId: string };
 export type ClientStateSyncRequestOptions = RpcRequestOptions & { state: { [id: string]: unknown } };
 
@@ -44,45 +41,27 @@ export default class PresentationRpcInterface extends RpcInterface {
     Id64,
   ]
 
-  public constructor() {
-    super();
-    RpcOperation.forEach(PresentationRpcInterface, (op) => {
-      // note: `op` may be undefined if the instance is being created not through
-      // the RpcRegistry, however this is not coverable because of the way RpcRegistry
-      // is implemented...
-      // istanbul ignore if
-      if (!op)
-        return;
-
-      // note: imodel tokens are nested inside the first parameter of each operation
-      op.policy.token = (request: RpcRequest) => {
-        const requestOptions: RpcRequestOptions = request.parameters[0];
-        return requestOptions.imodel;
-      };
-    });
-  }
-
   /** See [[PresentationManager.getRootNodes]] */
-  public getRootNodes(_options: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> { return this.forward.apply(this, arguments); }
+  public getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getRootNodesCount]] */
-  public getRootNodesCount(_options: HierarchyRpcRequestOptions): Promise<number> { return this.forward.apply(this, arguments); }
+  public getRootNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getChildren]] */
-  public getChildren(_options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): Promise<Node[]> { return this.forward.apply(this, arguments); }
+  public getChildren(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): Promise<Node[]> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getChildrenCount]] */
-  public getChildrenCount(_options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): Promise<number> { return this.forward.apply(this, arguments); }
+  public getChildrenCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getNodePaths]] */
-  public getNodePaths(_options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
+  public getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getFilteredNodePaths]] */
-  public getFilteredNodePaths(_options: HierarchyRpcRequestOptions, _filterText: string): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
+  public getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): Promise<NodePathElement[]> { return this.forward.apply(this, arguments); }
 
   /** See [[PresentationManager.getContentDescriptor]] */
-  public getContentDescriptor(_options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> { return this.forward.apply(this, arguments); }
+  public getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getContentSetSize]] */
-  public getContentSetSize(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<number> { return this.forward.apply(this, arguments); }
+  public getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getContent]] */
-  public getContent(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<Content> { return this.forward.apply(this, arguments); }
+  public getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<Content> { return this.forward.apply(this, arguments); }
   /** See [[PresentationManager.getDistinctValues]] */
-  public getDistinctValues(_options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
+  public getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]> { return this.forward.apply(this, arguments); }
 
-  public syncClientState(_options: ClientStateSyncRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
+  public syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): Promise<void> { return this.forward.apply(this, arguments); }
 }

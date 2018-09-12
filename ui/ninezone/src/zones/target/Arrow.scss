@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../../_geometry";
+
+.nz-zones-target-arrow {
+  color: $text-light;
+  display: flex;
+  align-items: center;
+
+  &:before {
+    content: "";
+    background-color: currentColor;
+    width: 20px;
+    height: 15px;
+  }
+
+  &:after {
+    content: "";
+    position: relative;
+    @include triangle-right(25px, 15px);
+  }
+}

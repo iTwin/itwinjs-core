@@ -84,6 +84,7 @@ export const enum MessageBoxValue {
 
 export interface ToolTipOptions {
   duration?: BeDuration;
+  placement?: string;
 }
 
 export class NotifyMessageDetails {
@@ -189,11 +190,17 @@ export class NotificationManager {
   /** Clear the ToolTip if it is current open. If not open, does nothing. */
   public clearToolTip(): void { }
 
+  public readonly toolTipLocation = new Point2d();
   /** Show a ToolTip window.
-   * @param _htmlElement The HTMLElement that that anchors the toolTip.
-   * @param _message The message to display inside the ToolTip
-   * @param _location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
-   * @param _options Options that supply additional information about how the ToolTip should function.
+   * @param htmlElement The HTMLElement that that anchors the toolTip.
+   * @param message The message to display inside the ToolTip
+   * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
+   * @param options Options that supply additional information about how the ToolTip should function.
    */
-  public showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+  public openToolTip(_htmlElement: HTMLElement, message: string, location?: XAndY, options?: ToolTipOptions): void {
+    this.toolTipLocation.setFrom(location);
+    this._showToolTip(_htmlElement, message, location, options);
+  }
+
+  protected _showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
 }

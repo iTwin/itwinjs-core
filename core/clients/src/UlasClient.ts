@@ -201,8 +201,9 @@ export class UlasClient extends Client {
    * @returns Resolves to the (delegation) access token.
    */
   public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
+    alctx.enter();
     const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(alctx, authorizationToken);
+    return await imsClient.getToken(alctx, authorizationToken);
   }
 
   /**
@@ -212,6 +213,7 @@ export class UlasClient extends Client {
    * @returns Response from the service.
    */
   public async logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
+    alctx.enter();
     const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
     return await this.logEntry(alctx, token, entryJson, false);
   }
@@ -223,6 +225,7 @@ export class UlasClient extends Client {
    * @returns Response from the service.
    */
   public async logFeature(alctx: ActivityLoggingContext, token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+    alctx.enter();
     if (entries.length === 0)
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
@@ -231,6 +234,7 @@ export class UlasClient extends Client {
   }
 
   private async logEntry(alctx: ActivityLoggingContext, token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
+    alctx.enter();
     let postUrl: string = (await this.getUrl(alctx));
     alctx.enter();
     if (isFeatureEntry)
@@ -284,10 +288,7 @@ class UlasLogEntryLogConverter {
     const pid: string = imsID;
 
     const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
-    const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
-
     const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
-    const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
 
     const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
     const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
@@ -310,7 +311,7 @@ class UlasLogEntryLogConverter {
 
     const uType: string = UlasLogEntryLogConverter.usageTypeToString(entry.usageType);
     return {
-      ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+      ultId, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
       evTimeZ, lVer, lSrc, country, uType,
     };
   }
@@ -333,10 +334,7 @@ class UlasLogEntryLogConverter {
       const pid: string = imsID;
 
       const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
-      const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
-
       const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
-      const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
 
       const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
       const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
@@ -383,7 +381,7 @@ class UlasLogEntryLogConverter {
       }
 
       json.push({
-        ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+        ultId, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
         evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
       });
     }
@@ -438,19 +436,6 @@ class UlasLogEntryLogConverter {
       preparedUserName = `${machineName.toLowerCase()}\\${preparedUserName}`;
 
     return preparedUserName;
-  }
-
-  private static computeHash(preparedName: string): string {
-    /* if (!preparedName || preparedName.length === 0)
-      return "";
-
-    const sha1 = require("sha.js").sha1;
-    let hash: string = preparedName;
-    for (let i = 0; i < 17; i++) {
-      hash = sha1.update(hash).digest("ascii");
-    }
-    return hash; */
-    return preparedName;
   }
 
   private static logPostingSourceToString(val: LogPostingSource): string {

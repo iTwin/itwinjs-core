@@ -23,7 +23,7 @@ import { IClientStateHolder } from "../lib/RpcRequestsHandler";
 describe("RpcRequestsHandler", () => {
 
   let clientId: string;
-  let defaultRpcOptions: RpcRequestOptions;
+  let defaultRpcOptions: RpcRequestOptions & { imodel: IModelToken };
   const token = new IModelToken();
 
   beforeEach(() => {
@@ -167,7 +167,6 @@ describe("RpcRequestsHandler", () => {
       const expectedSyncOptions: ClientStateSyncRequestOptions = {
         clientId,
         clientStateId: undefined,
-        imodel: token,
         state: {
           [holder1.key]: holder1.state,
           [holder2.key]: holder2.state,
@@ -175,7 +174,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup((x) => x.syncClientState(expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
+      rpcInterfaceMock.setup((x) => x.syncClientState(token, expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -192,13 +191,12 @@ describe("RpcRequestsHandler", () => {
       const expectedSyncOptions: ClientStateSyncRequestOptions = {
         clientId,
         clientStateId: handler.clientStateId,
-        imodel: token,
         state: {
           [holder.key]: holder.state,
         },
       };
 
-      rpcInterfaceMock.setup((x) => x.syncClientState(expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
+      rpcInterfaceMock.setup((x) => x.syncClientState(token, expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -223,7 +221,6 @@ describe("RpcRequestsHandler", () => {
       const expectedSyncOptions: ClientStateSyncRequestOptions = {
         clientId,
         clientStateId: undefined,
-        imodel: token,
         state: {
           [key]: {
             a: holder1.state!.a,
@@ -232,7 +229,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup((x) => x.syncClientState(expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
+      rpcInterfaceMock.setup((x) => x.syncClientState(token, expectedSyncOptions)).returns(() => Promise.resolve()).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -261,7 +258,7 @@ describe("RpcRequestsHandler", () => {
 
     });
 
-    describe("when request throws unkown exception", () => {
+    describe("when request throws unknown exception", () => {
 
       it("re-throws exception when request throws unknown exception", async () => {
         const func = async () => { throw new Error("test"); };
@@ -317,9 +314,9 @@ describe("RpcRequestsHandler", () => {
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      handler.request = <TResult, TOptions extends RpcRequestOptions, TArg extends any[]>(context: any, func: (options: TOptions, ...args: TArg) => Promise<TResult>, options: TOptions, ...args: TArg): Promise<TResult> => {
+      handler.request = <TResult, TOptions extends RpcRequestOptions, TArg extends any[]>(context: any, func: (token: IModelToken, options: TOptions, ...args: TArg) => Promise<TResult>, options: TOptions, ...args: TArg): Promise<TResult> => {
         expect(context).to.eq(rpcInterfaceMock.object);
-        return func.apply(context, [options, ...args]);
+        return func.apply(context, [token, options, ...args]);
       };
       rpcInterfaceMock.reset();
     });
@@ -335,7 +332,7 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const result = [createRandomECInstanceNode()];
-      rpcInterfaceMock.setup((x) => x.getRootNodes(rpcOptions)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getRootNodes(token, rpcOptions)).returns(async () => result).verifiable();
       expect(await handler.getRootNodes(options)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -347,7 +344,7 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const result = faker.random.number();
-      rpcInterfaceMock.setup((x) => x.getRootNodesCount(rpcOptions)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getRootNodesCount(token, rpcOptions)).returns(async () => result).verifiable();
       expect(await handler.getRootNodesCount(options)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -360,7 +357,7 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const result = [createRandomECInstanceNode()];
-      rpcInterfaceMock.setup((x) => x.getChildren(rpcOptions, parentKey)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getChildren(token, rpcOptions, parentKey)).returns(async () => result).verifiable();
       expect(await handler.getChildren(options, parentKey)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -373,7 +370,7 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const result = faker.random.number();
-      rpcInterfaceMock.setup((x) => x.getChildrenCount(rpcOptions, parentKey)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getChildrenCount(token, rpcOptions, parentKey)).returns(async () => result).verifiable();
       expect(await handler.getChildrenCount(options, parentKey)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -386,7 +383,7 @@ describe("RpcRequestsHandler", () => {
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const filter = faker.random.word();
       const result = [createRandomNodePathElement()];
-      rpcInterfaceMock.setup((x) => x.getFilteredNodePaths(rpcOptions, filter)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getFilteredNodePaths(token, rpcOptions, filter)).returns(async () => result).verifiable();
       expect(await handler.getFilteredNodePaths(options, filter)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -400,7 +397,7 @@ describe("RpcRequestsHandler", () => {
       const paths = [[createRandomECInstanceKey()]];
       const markedIndex = faker.random.number();
       const result = [createRandomNodePathElement()];
-      rpcInterfaceMock.setup((x) => x.getNodePaths(rpcOptions, paths, markedIndex)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getNodePaths(token, rpcOptions, paths, markedIndex)).returns(async () => result).verifiable();
       expect(await handler.getNodePaths(options, paths, markedIndex)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -415,7 +412,7 @@ describe("RpcRequestsHandler", () => {
       const keys = new KeySet();
       const selectionInfo: SelectionInfo = { providerName: faker.random.word() };
       const result = createRandomDescriptor();
-      rpcInterfaceMock.setup((x) => x.getContentDescriptor(rpcOptions, displayType, keys, selectionInfo)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getContentDescriptor(token, rpcOptions, displayType, keys, selectionInfo)).returns(async () => result).verifiable();
       expect(await handler.getContentDescriptor(options, displayType, keys, selectionInfo)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -429,7 +426,7 @@ describe("RpcRequestsHandler", () => {
       const descriptor = createRandomDescriptor();
       const keys = new KeySet();
       const result = faker.random.number();
-      rpcInterfaceMock.setup((x) => x.getContentSetSize(rpcOptions, descriptor, keys)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getContentSetSize(token, rpcOptions, descriptor, keys)).returns(async () => result).verifiable();
       expect(await handler.getContentSetSize(options, descriptor, keys)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -443,7 +440,7 @@ describe("RpcRequestsHandler", () => {
       const descriptor = createRandomDescriptor();
       const keys = new KeySet();
       const result = createRandomContent();
-      rpcInterfaceMock.setup((x) => x.getContent(rpcOptions, descriptor, keys)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getContent(token, rpcOptions, descriptor, keys)).returns(async () => result).verifiable();
       expect(await handler.getContent(options, descriptor, keys)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
@@ -459,7 +456,7 @@ describe("RpcRequestsHandler", () => {
       const fieldName = faker.random.word();
       const maxItems = faker.random.number();
       const result = [faker.random.word()];
-      rpcInterfaceMock.setup((x) => x.getDistinctValues(rpcOptions, descriptor, keys, fieldName, maxItems)).returns(async () => result).verifiable();
+      rpcInterfaceMock.setup((x) => x.getDistinctValues(token, rpcOptions, descriptor, keys, fieldName, maxItems)).returns(async () => result).verifiable();
       expect(await handler.getDistinctValues(options, descriptor, keys, fieldName, maxItems)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });

@@ -17,7 +17,7 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
-import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { RenderCommands } from "./DrawCommand";
 import { Material } from "./Material";
 import { Texture } from "./Texture";
 import {
@@ -112,7 +112,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: DrawCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
+  public addHiliteCommands(cmds: RenderCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
 
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);

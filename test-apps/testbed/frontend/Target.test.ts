@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
 

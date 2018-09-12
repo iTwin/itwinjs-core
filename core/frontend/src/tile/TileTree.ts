@@ -207,6 +207,14 @@ export class Tile implements IDisposable {
   }
 
   public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
+    const forcedDepth = this.root.debugForcedDepth;
+    if (undefined !== forcedDepth) {
+      if (this.depth === forcedDepth)
+        return Tile.Visibility.Visible;
+      else
+        return Tile.Visibility.TooCoarse;
+    }
+
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
     if (this.isEmpty || this.isRegionCulled(args))
@@ -404,6 +412,20 @@ export class Tile implements IDisposable {
 
     return this._childrenLoadStatus;
   }
+
+  public debugDump(): string {
+    let str = "  ".repeat(this.depth);
+    str += this.contentId;
+    if (undefined !== this._children) {
+      str += " " + this._children.length + "\n";
+      for (const child of this._children)
+        str += child.debugDump();
+    } else {
+      str += "\n";
+    }
+
+    return str;
+  }
 }
 
 export namespace Tile {
@@ -579,6 +601,8 @@ export class TileTree implements IDisposable {
     const purgeOlderThan = now.minus(this.expirationTime);
     return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVector);
   }
+
+  public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
 }
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
@@ -654,9 +678,9 @@ export abstract class TileLoader {
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
 }
 
-function bisectRange3d(range: Range3d, takeLow: boolean): void {
+function bisectRange3d(range: Range3d, takeUpper: boolean): void {
   const diag = range.diagonal();
-  const pt = takeLow ? range.high : range.low;
+  const pt = takeUpper ? range.high : range.low;
   if (diag.x > diag.y && diag.x > diag.z)
     pt.x = (range.low.x + range.high.x) / 2.0;
   else if (diag.y > diag.z)
@@ -665,9 +689,9 @@ function bisectRange3d(range: Range3d, takeLow: boolean): void {
     pt.z = (range.low.z + range.high.z) / 2.0;
 }
 
-function bisectRange2d(range: Range3d, takeLow: boolean): void {
+function bisectRange2d(range: Range3d, takeUpper: boolean): void {
   const diag = range.diagonal();
-  const pt = takeLow ? range.high : range.low;
+  const pt = takeUpper ? range.high : range.low;
   if (diag.x > diag.y)
     pt.x = (range.low.x + range.high.x) / 2.0;
   else
@@ -696,7 +720,7 @@ export class IModelTileLoader extends TileLoader {
       let contentId = parent.contentId;
       const lastSlashPos = contentId.lastIndexOf("/");
       assert(-1 !== lastSlashPos);
-      contentId = contentId.substring(0, lastSlashPos + 1) + sizeMultiplier;
+      contentId = contentId.substring(0, lastSlashPos + 1) + sizeMultiplier.toString(16);
       kids.push({
         contentId,
         range: parent.range,
@@ -713,11 +737,11 @@ export class IModelTileLoader extends TileLoader {
     const parentIdParts = parent.contentId.split("/");
     assert(5 === parentIdParts.length);
 
-    const pDepth = parseInt(parentIdParts[0], 10);
+    const pDepth = parseInt(parentIdParts[0], 16);
     assert(parent.depth === pDepth);
-    const pI = parseInt(parentIdParts[1], 10);
-    const pJ = parseInt(parentIdParts[2], 10);
-    const pK = parseInt(parentIdParts[3], 10);
+    const pI = parseInt(parentIdParts[1], 16);
+    const pJ = parseInt(parentIdParts[2], 16);
+    const pK = parseInt(parentIdParts[3], 16);
 
     const is2d = parent.root.is2d;
     const bisectRange = is2d ? bisectRange2d : bisectRange3d;
@@ -733,7 +757,7 @@ export class IModelTileLoader extends TileLoader {
           const cI = pI * 2 + i;
           const cJ = pJ * 2 + j;
           const cK = pK * 2 + k;
-          const childId = (parent.depth + 1) + "/" + cI + "/" + cJ + "/" + cK + "/1";
+          const childId = (parent.depth + 1).toString(16) + "/" + cI.toString(16) + "/" + cJ.toString(16) + "/" + cK.toString(16) + "/1";
 
           kids.push({ contentId: childId, range, maximumSize: 512 });
         }

@@ -14,6 +14,8 @@ import * as https from "https";
 export const loggingCategory = "imodeljs-clients.Request";
 export const loggingCategoryFullUrl = "imodeljs-clients.Url";
 
+export const requestIdHeaderName = "X-CorrelationId";
+
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -207,6 +209,9 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   if (options.headers) {
     sareq = sareq.set(options.headers);
   }
+
+  if (alctx.activityId !== "")
+    sareq.set(requestIdHeaderName, alctx.activityId);
 
   let queryStr: string = "";
   let fullUrl: string = "";
