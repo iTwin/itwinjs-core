@@ -982,6 +982,9 @@ export namespace Gradient {
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
+      if (undefined !== json.thematicSettings)
+        result.thematicSettings = json.thematicSettings;
+
       return result;
     }
 

@@ -99,10 +99,9 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
 const scratchColorDef = new ColorDef();
 
-/** Describes a auxilliary displacement channel */
-export interface AuxDisplacementProps {
+/** Describes a auxilliary channel */
+export interface AuxChannelProps {
   readonly index: number;
-  readonly numRgbaPerVertex: number;
   readonly name: string;
   readonly qOrigin: number[];
   readonly qScale: number[];
@@ -110,15 +109,13 @@ export interface AuxDisplacementProps {
 }
 export class AuxDisplacement {
   public readonly index: number;
-  public readonly numRgbaPerVertex: number;
   public readonly name: string;
   public readonly qOrigin: Float32Array;
   public readonly qScale: Float32Array;
   public readonly inputs: number[];
 
-  public constructor(props: AuxDisplacementProps) {
+  public constructor(props: AuxChannelProps) {
     this.index = props.index;
-    this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.name = props.name;
     this.qOrigin = new Float32Array(3);
     this.qScale = new Float32Array(3);
@@ -129,7 +126,21 @@ export class AuxDisplacement {
     this.inputs = props.inputs;
   }
 }
+export class AuxParam {
+  public readonly index: number;
+  public readonly name: string;
+  public readonly qOrigin: number;
+  public readonly qScale: number;
+  public readonly inputs: number[];
 
+  public constructor(props: AuxChannelProps) {
+    this.index = props.index;
+    this.name = props.name;
+    this.qOrigin = props.qOrigin[0];
+    this.qScale = props.qScale[0];
+    this.inputs = props.inputs;
+  }
+}
 /** Describes a VertexTable. */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
@@ -156,6 +167,8 @@ export interface VertexTableProps {
   readonly uvParams?: QParams2d;
   // The auxilliary displacements for animations.
   readonly auxDisplacements?: AuxDisplacement[];
+  // The auxilliary parameters for animations.
+  readonly auxParams?: AuxParam[];
 }
 
 /**
@@ -190,6 +203,8 @@ export class VertexTable implements VertexTableProps {
   public readonly uvParams?: QParams2d;
   // The auxilliary displacements for animations.
   public readonly auxDisplacements?: AuxDisplacement[];
+  // The auxilliary parameters for animations.
+  public readonly auxParams?: AuxParam[];
 
   /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
   public constructor(props: VertexTableProps) {
@@ -205,6 +220,7 @@ export class VertexTable implements VertexTableProps {
     this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.uvParams = props.uvParams;
     this.auxDisplacements = props.auxDisplacements;
+    this.auxParams = props.auxParams;
   }
 
   public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {

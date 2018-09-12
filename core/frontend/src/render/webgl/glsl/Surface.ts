@@ -91,7 +91,7 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animParams.x, u_animParams.y, u_qAnimOrigin, u_qAnimScale).xyz;
+const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animDispParams.x, u_animDispParams.y, u_qAnimDispOrigin, u_qAnimDispScale).xyz;
 ` + computePosition;
 
 function createCommon(animated: boolean): ProgramBuilder {
@@ -113,7 +113,7 @@ export function createSurfaceHiliter(): ProgramBuilder {
   const builder = createCommon(false);
 
   addSurfaceFlags(builder, true);
-  addTexture(builder);
+  addTexture(builder, false);
   addSurfaceHiliter(builder);
   return builder;
 }
@@ -205,7 +205,12 @@ const computeTexCoord = `
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
+const computeAnimatedTexCoord = `
+  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
+    return vec2(0.0);
 
+  return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
+`;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -255,22 +260,24 @@ function addNormal(builder: ProgramBuilder) {
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
 }
 
-function addTexture(builder: ProgramBuilder) {
+function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
-  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
-  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
-      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        const uvQParams = surfGeom.lut.uvQParams;
-        if (undefined !== uvQParams) {
-          uniform.setUniform4fv(uvQParams);
+  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
+  if (!animated) {
+    builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+        const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+        const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+        if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+          const uvQParams = surfGeom.lut.uvQParams;
+          if (undefined !== uvQParams) {
+            uniform.setUniform4fv(uvQParams);
+          }
         }
-      }
+      });
     });
-  });
+  }
 
   builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);
@@ -309,7 +316,7 @@ export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): Prog
     });
   });
 
-  addTexture(builder);
+  addTexture(builder, animated);
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {

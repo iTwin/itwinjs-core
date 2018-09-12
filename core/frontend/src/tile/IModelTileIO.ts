@@ -20,6 +20,7 @@ import {
   SilhouetteParams,
   EdgeParams,
   AuxDisplacement,
+  AuxParam,
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
@@ -432,7 +433,6 @@ export namespace IModelTileIO {
         for (const displacementJson of json.auxDisplacements) {
           auxDisplacements.push(new AuxDisplacement({
             index: displacementJson.index,
-            numRgbaPerVertex: displacementJson.numRgbaPerVertex,
             name: displacementJson.name,
             qOrigin: displacementJson.qOrigin,
             qScale: displacementJson.qScale,
@@ -440,7 +440,19 @@ export namespace IModelTileIO {
           }));
         }
       }
-
+      let auxParams: undefined | AuxParam[];
+      if (undefined !== json.auxParams) {
+        auxParams = [];
+        for (const paramJson of json.auxParams) {
+          auxParams.push(new AuxParam({
+            index: paramJson.index,
+            name: paramJson.name,
+            qOrigin: paramJson.qOrigin,
+            qScale: paramJson.qScale,
+            inputs: paramJson.inputs,
+          }));
+        }
+      }
       return new VertexTable({
         data: bytes,
         qparams,
@@ -454,6 +466,7 @@ export namespace IModelTileIO {
         numRgbaPerVertex: json.numRgbaPerVertex,
         uvParams,
         auxDisplacements,
+        auxParams,
       });
     }
 
