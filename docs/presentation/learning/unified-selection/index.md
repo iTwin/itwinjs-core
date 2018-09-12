@@ -10,7 +10,7 @@ The storage may contain:
 
 Different UI components may want to represent current selection
 differently - some may only want to show content for current selection while others may want act differently based on
-[selection level](./Terminology.md#selection-levels) used for the
+[selection level](./Terminology.md#selection-level) used for the
 last selection change event.
 
 See also:

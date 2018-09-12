@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Wed, 05 Sep 2018 17:14:50 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Sep 2018 13:35:50 GMT and should not be manually modified.
+
+## 0.125.0
+Wed, 12 Sep 2018 13:35:50 GMT
+
+### Updates
+
+- fixed typo in Codes test
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- Added new client to the imodeljs-clients library for the Form Data Management Service. This change includes the client, the client's test, and necessary changes to the ECJsonTypeMap class to support adding properties directly to the relationshipInstance
+- Set UrlDiscoveryClient (BUDDI) to use the PROD version by default. This is the recommendation made by the service team. 
 
 ## 0.123.0
 Wed, 05 Sep 2018 17:14:50 GMT

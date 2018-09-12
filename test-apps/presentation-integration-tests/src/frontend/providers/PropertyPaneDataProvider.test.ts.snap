@@ -10,11 +10,11 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Physical Model-0-S",
+  "label": "Properties_60InstancesWithUrl2",
   "records": Object {
     "Miscellaneous": Array [
       PropertyRecord {
-        "description": "Physical Model-0-S",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -23,8 +23,8 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Physical Model-0-S",
-          "value": "Physical Model-0-S",
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
           "valueFormat": 0,
         },
       },
@@ -63,11 +63,11 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Physical Model-0-S",
+  "label": "Properties_60InstancesWithUrl2",
   "records": Object {
     "Favorite": Array [
       PropertyRecord {
-        "description": "Physical Model-0-S",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -76,8 +76,8 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Physical Model-0-S",
-          "value": "Physical Model-0-S",
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
           "valueFormat": 0,
         },
       },
@@ -99,7 +99,7 @@ Object {
     ],
     "Miscellaneous": Array [
       PropertyRecord {
-        "description": "Physical Model-0-S",
+        "description": "Properties_60InstancesWithUrl2",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
@@ -108,8 +108,8 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Physical Model-0-S",
-          "value": "Physical Model-0-S",
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
           "valueFormat": 0,
         },
       },

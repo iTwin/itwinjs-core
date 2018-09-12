@@ -26,6 +26,7 @@ export * from "./TileProps";
 export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
+export * from "./domains/FunctionalElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";

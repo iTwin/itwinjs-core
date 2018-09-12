@@ -19,7 +19,7 @@ export const enum LocateAction {
 
 /**
  * Values to return from a locate filter.
- * @return Reject to indicate the element is unacceptable.
+ * Return `Reject` to indicate the element is unacceptable.
  */
 export const enum LocateFilterStatus {
   Accept = 0,

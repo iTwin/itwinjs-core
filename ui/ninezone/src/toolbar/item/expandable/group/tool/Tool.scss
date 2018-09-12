@@ -7,6 +7,7 @@
   $hovered-label-color: $primary-tint;
   $focused-label-color: $primary-tint;
   $active-label-color: $primary-tint;
+  $disabled-label-color: rgba($text-light, 0.44);
   $item-height: 32px;
   $item-border-width: 2px;
   $active-tool-stripe-height: 22px;
@@ -50,7 +51,7 @@
     }
   }
 
-  &:hover {
+  &:hover:not(.nz-is-disabled) {
     color: $hovered-label-color;
 
     @include body1;
@@ -60,7 +61,7 @@
     }
   }
 
-  &:active {
+  &:active:not(.nz-is-disabled) {
     background: $primary-tone;
     color: $pressed-label-color;
 
@@ -69,7 +70,7 @@
     }
   }
 
-  &.nz-is-focused {
+  &.nz-is-focused:not(.nz-is-disabled) {
     color: $focused-label-color;
     border-color: $primary-tint;
     border-width: $item-border-width;
@@ -82,7 +83,7 @@
     }
   }
 
-  &.nz-is-active {
+  &.nz-is-active:not(.nz-is-disabled) {
     color: $active-label-color;
 
     @include body1;
@@ -102,5 +103,9 @@
     > .nz-icon, .nz-label {
       filter: $no-shadow;
     }
+  }
+
+  &.nz-is-disabled {
+    color: $disabled-label-color;
   }
 }

@@ -7,7 +7,7 @@ import * as path from "path";
 
 import { Guid, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-import { AccessToken, WsgError, IModelQuery } from "../../";
+import { AccessToken, WsgError, IModelQuery, IModelClient } from "../../";
 import {
   IModelHubClient, IModelRepository, SeedFile, IModelHubError,
   IModelHubClientError,
@@ -16,7 +16,7 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { IModelProjectAbstraction } from "../../IModelProjectAbstraction";
+import { IModelProjectClient } from "../../IModelCloudEnvironment";
 
 function mockGetIModelByName(projectId: string, name: string, imodelId?: string, initialized = true) {
   if (!TestConfig.enableMocks)
@@ -133,9 +133,10 @@ describe("iModelHub iModelHandler", () => {
   let accessToken: AccessToken;
   let projectId: string;
   let iModelId: string;
+  let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
-  const imodelProject: IModelProjectAbstraction = utils.getIModelProjectAbstraction();
+  const imodelProject: IModelProjectClient = utils.getCloudEnv().project;
   const alctx = new ActivityLoggingContext("");
 
   before(async () => {
@@ -143,6 +144,7 @@ describe("iModelHub iModelHandler", () => {
     projectId = await utils.getProjectId(accessToken, undefined);
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
+    iModelClient = await utils.getClient(iModelId);
     await utils.deleteIModelByName(accessToken, projectId, createIModelName);
 
     if (!fs.existsSync(utils.workDir)) {
@@ -156,7 +158,7 @@ describe("iModelHub iModelHandler", () => {
 
   after(async () => {
     await utils.deleteIModelByName(accessToken, projectId, createIModelName);
-    utils.getIModelProjectAbstraction().terminate();
+    utils.getCloudEnv().terminate();
   });
 
   it("should get list of IModels", async () => {
@@ -309,7 +311,7 @@ describe("iModelHub iModelHandler", () => {
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
-    await utils.getClient(iModelId).IModels().download(alctx, accessToken, iModelId, downloadToPathname, progressTracker.track());
+    await iModelClient.IModels().download(alctx, accessToken, iModelId, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
@@ -328,7 +330,7 @@ describe("iModelHub iModelHandler", () => {
   });
 
   it("should fail creating an iModel with no file handler", async function (this: Mocha.ITestCallbackContext) {
-    if (!imodelProject.isIModelHub)
+    if (!utils.getCloudEnv().isIModelHub)
       this.skip();
 
     let error: IModelHubClientError | undefined;
@@ -346,7 +348,7 @@ describe("iModelHub iModelHandler", () => {
   it("should fail creating an iModel with no file", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await utils.getClient(iModelId).IModels().create(alctx, accessToken, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
+      await iModelClient.IModels().create(alctx, accessToken, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -358,7 +360,7 @@ describe("iModelHub iModelHandler", () => {
   it("should fail creating an iModel with directory path", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await utils.getClient(iModelId).IModels().create(alctx, accessToken, projectId, createIModelName, utils.workDir);
+      await iModelClient.IModels().create(alctx, accessToken, projectId, createIModelName, utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

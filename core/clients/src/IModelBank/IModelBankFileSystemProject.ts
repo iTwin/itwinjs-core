@@ -1,23 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as fsextra from "fs-extra";
-import * as path from "path";
-import * as child_process from "child_process";
-import { IModelBankAccessContextGroupProps, IModelFileSystemProps, IModelBankAccessContext, IModelFileSystemIModelProps, NamedIModelAccessContextProps } from "./IModelBankAccessContext";
+import { IModelBankAccessContextGroupProps, IModelFileSystemProps, NamedIModelAccessContextProps, makeIModelBankAccessContextGroupPropsFromFileSystem } from "./IModelBankAccessContext";
 import { AccessToken } from "../Token";
 import { IModelRepository, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
-import { Guid, IModelHubStatus, WSStatus, LoggerLevelsConfig, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams } from "../IModelProjectAbstraction";
+import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
+import { IModelProjectClient, IModelProjectIModelCreateParams, IModelAuthorizationClient } from "../IModelCloudEnvironment";
 import { IModelHubError, IModelHubClientError } from "../imodelhub/Errors";
-import { UrlFileHandler } from "../UrlFileHandler";
-import { IModelClient } from "../IModelClient";
 import { WsgError } from "../WsgClient";
-import { IModelAccessContext } from "../IModelAccessContext";
 import { Project } from "../ConnectClients";
+import { IModelBankFileSystemAdmin } from "./IModelBankFileSystemAdmin";
 
 function isQuoted(str: string): boolean {
   return str.startsWith("'");
@@ -74,127 +68,46 @@ export interface IModelBankFileSystemProjectOptions {
   createIfNotExist?: boolean;
 }
 
-interface RunningBank {
-  context: IModelAccessContext;
-  proc: child_process.ChildProcess;
+/** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
+ * be able to tolerate this dummy token.
+ */
+export class IModelBankPermissionDummy implements IModelAuthorizationClient {
+  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
+    if (!userProfile)
+      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
+    const foreignAccessTokenWrapper: any = {};
+    foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
+    return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
+  }
 }
 
-export class IModelBankFileSystemProject extends IModelProjectAbstraction {
+/** Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
+export class IModelBankFileSystemProject extends IModelProjectClient {
   public group: IModelBankAccessContextGroupProps;
-  public runningBanks: Map<string, RunningBank>;
   public fsAdmin: IModelBankFileSystemAdmin;
   public env: DeploymentEnv;
-  public serverConfig: IModelBankServerConfig;
-  public serverLoggingConfigFile: string | undefined;
-  public nextPort: number;
+  public readonly onDeleteIModel = new BeEvent<(iModelId: string) => void>();
+  public readonly onTerminate = new BeEvent<() => void>();
 
   public get isIModelHub(): boolean { return false; }
 
-  constructor(options: IModelBankFileSystemProjectOptions, serverConfig: IModelBankServerConfig, serverLoggingConfigFile: string | undefined) {
+  constructor(options: IModelBankFileSystemProjectOptions) {
     super();
-
     this.fsAdmin = new IModelBankFileSystemAdmin(options.rootDir);
     if (options.deleteIfExists)
       this.fsAdmin.deleteProject(options.name);
     if (options.createIfNotExist)
       this.fsAdmin.getOrCreateProject(options.name);
 
-    this.env = options.env;
-    this.serverConfig = serverConfig;
-    this.serverLoggingConfigFile = serverLoggingConfigFile;
-    this.nextPort = this.serverConfig.port;
-
     const imodelfs: IModelFileSystemProps = require(this.fsAdmin.getIModelFileSystemPropsFile(options.name));
-    this.group = IModelBankAccessContext.makeIModelBankAccessContextGroupPropsFromFileSystem(imodelfs);
-
+    this.group = makeIModelBankAccessContextGroupPropsFromFileSystem(imodelfs);
     for (const context of this.group.iModelBankProjectAccessContextGroup.contexts) {
       context.imodeljsCoreClientsIModelBankAccessContext.env = this.env;
     }
-
-    this.runningBanks = new Map<string, RunningBank>();
   }
 
   public terminate(): void {
-    for (const running of this.runningBanks.values())
-      this.killIModelBank(running);
-  }
-
-  /** Make sure a bank server is running for the specified iModel */
-  private queryContextPropsFor(iModelId: string): NamedIModelAccessContextProps {
-    for (const context of this.group.iModelBankProjectAccessContextGroup.contexts) {
-      if (context.imodeljsCoreClientsIModelBankAccessContext.iModelId === iModelId) {
-        return context;
-      }
-    }
-    throw new Error(`iModel ${iModelId} not registered in this project.`);
-  }
-
-  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, iModelId: string): IModelClient {
-    if (process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) {
-      assert(false);
-      return {} as IModelClient;
-    }
-
-    const running = this.runningBanks.get(iModelId);
-    if (running !== undefined)
-      return running.context.client!;
-
-    const props: NamedIModelAccessContextProps = this.queryContextPropsFor(iModelId);
-
-    // Assign a port to this bank
-    const port = this.nextPort++;
-    props.imodeljsCoreClientsIModelBankAccessContext.url = `${this.serverConfig.baseUrl}:${port}`;
-
-    // Prepare a client for this bank, pointing to the assigned url
-    const context = IModelBankAccessContext.fromJson(props, new UrlFileHandler())!;
-
-    //  Run the bank
-    const imodelDir = this.fsAdmin.getIModelDir(this.group.iModelBankProjectAccessContextGroup.name, iModelId);
-
-    const thisBankServerConfig: IModelBankServerConfig = Object.assign({}, this.serverConfig);
-    thisBankServerConfig.port = port;
-    EnvMacroSubst.replaceInProperties(thisBankServerConfig, true, undefined);   // replace ${IMODELJS_CLIENTS_TEST_IMODEL_BANK}
-
-    const thisBankServerConfigFile = path.join(imodelDir, "server.config.json");
-    fs.writeFileSync(thisBankServerConfigFile, JSON.stringify(thisBankServerConfig));
-
-    const thisBankLoggingConfigFile = this.serverLoggingConfigFile || path.join(imodelDir, "logging.config.json");
-    if (!fs.existsSync(thisBankLoggingConfigFile)) {
-      fs.writeFileSync(thisBankLoggingConfigFile, "{}");
-    }
-
-    const runWebServerJs = path.join(process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK, "lib", "runWebServer.js");
-
-    const verboseArg = process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK_VERBOSE ?
-      `--verbose=${process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK_VERBOSE}` : "";
-
-    const cmdargs = [
-      runWebServerJs,
-      verboseArg,
-      (imodelDir),
-      (thisBankServerConfigFile),
-      (thisBankLoggingConfigFile),
-    ];
-
-    const proc = child_process.spawn("node", cmdargs, { stdio: "inherit" });
-
-    this.runningBanks.set(iModelId, { context, proc });
-
-    proc.on("exit", () => {
-      this.runningBanks.delete(iModelId);
-    });
-
-    proc.on("error", (err: Error) => {
-      this.runningBanks.delete(iModelId);
-      throw err;
-    });
-
-    return context.client!;
-  }
-
-  private killIModelBank(running: RunningBank): void {
-    console.log(`killing ${running.context.toIModelTokenContextId()}`);
-    running.proc.kill();
+    this.onTerminate.raiseEvent();
   }
 
   private matchesProjectFilter(props: IModelBankAccessContextGroupProps, query: any | undefined): boolean {
@@ -213,8 +126,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
       return Promise.reject(`Project matching ${JSON.stringify(query)} not registered`);
 
     const name = this.group.iModelBankProjectAccessContextGroup.name;
-    // const id = this.group.iModelBankProjectAccessContextGroup.id;
-    const id = JSON.stringify(this.group);
+    const id = this.group.iModelBankProjectAccessContextGroup.id;
     return Promise.resolve({ wsgId: id, ecId: id, name });
   }
 
@@ -264,7 +176,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve(repos);
   }
 
-  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
     const existing = await this.queryIModels(alctx, _accessToken, _projectId, new IModelQuery().byName(params.name));
     alctx.enter();
     if (existing.length !== 0)
@@ -280,11 +192,7 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
   }
 
   public deleteIModel(_actx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, iModelId: string): Promise<void> {
-    const running: RunningBank | undefined = this.runningBanks.get(iModelId);
-    if (running !== undefined) {
-      this.killIModelBank(running);
-      this.runningBanks.delete(iModelId);
-    }
+    this.onDeleteIModel.raiseEvent(iModelId);
 
     this.group.iModelBankProjectAccessContextGroup.contexts =
       this.group.iModelBankProjectAccessContextGroup.contexts.filter(
@@ -295,117 +203,4 @@ export class IModelBankFileSystemProject extends IModelProjectAbstraction {
     return Promise.resolve();
   }
 
-  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
-    if (!userProfile)
-      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
-    const foreignAccessTokenWrapper: any = {};
-    foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
-    return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
-  }
-}
-
-class IModelBankFileSystemAdmin {
-  public rootDir: string;
-
-  constructor(workDir: string) {
-    this.rootDir = path.join(workDir, "bankfs");
-    fsextra.mkdirpSync(this.rootDir);
-  }
-
-  public getIModelFileSystemRootDir(name: string): string {
-    return path.join(this.rootDir, name);
-  }
-
-  public getIModelFileSystemPropsFile(name: string): string {
-    return path.join(this.getIModelFileSystemRootDir(name), "imodelfs.json");
-  }
-
-  public getIModelDir(projectName: string, iModelId: string): string {
-    return path.join(this.getIModelFileSystemRootDir(projectName), iModelId);
-  }
-
-  public getIModelPropsFileName(projectName: string, iModelId: string): string {
-    return path.join(this.getIModelDir(projectName, iModelId), "imodel.json");
-  }
-
-  public writeImodelFsFile(projectName: string, props: IModelFileSystemProps) {
-    fs.writeFileSync(this.getIModelFileSystemPropsFile(projectName), JSON.stringify(props));
-  }
-
-  public deleteProject(name: string) {
-    const fsdir = this.getIModelFileSystemRootDir(name);
-    if (fs.existsSync(fsdir))
-      fsextra.removeSync(fsdir);
-  }
-
-  public getOrCreateProject(name: string): IModelFileSystemProps {
-    const fsjsonfile = this.getIModelFileSystemPropsFile(name);
-    const fsdir = path.dirname(fsjsonfile);
-
-    if (!fs.existsSync(fsdir))
-      fsextra.mkdirpSync(fsdir);
-
-    if (!fs.existsSync(fsjsonfile)) {
-      const imodelFsProps: IModelFileSystemProps = {
-        name,
-        id: Guid.createValue(),
-        description: "",
-        iModels: [],
-      };
-      this.writeImodelFsFile(name, imodelFsProps);
-    }
-
-    return require(fsjsonfile) as IModelFileSystemProps;
-  }
-
-  public createIModel(name: string, description: string, seedFile: string, projectId: string): NamedIModelAccessContextProps {
-    const imodelfs = this.getOrCreateProject(projectId);
-    const id = Guid.createValue();
-
-    const imodelFileName = this.getIModelPropsFileName(projectId, id);
-
-    const imdir = path.dirname(imodelFileName);
-
-    if (fs.existsSync(imdir))
-      throw new IModelHubError(IModelHubStatus.iModelAlreadyExists);
-
-    if (!fs.existsSync(imdir))
-      fsextra.mkdirpSync(imdir);
-
-    const props: IModelFileSystemIModelProps = {
-      name,
-      description,
-      id,
-      seedFile,
-    };
-
-    fs.writeFileSync(imodelFileName, JSON.stringify(props));
-
-    imodelfs.iModels.push(props);
-    this.writeImodelFsFile(projectId, imodelfs);
-
-    return IModelBankAccessContext.makeNamedIModelAccessContextPropsFromFileSystem(props);
-  }
-
-  private indexOfIModel(imodelfs: IModelFileSystemProps, iModelId: string): number {
-    for (let i = 0; i !== imodelfs.iModels.length; ++i) {
-      if (imodelfs.iModels[i].id === iModelId) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  public deleteIModel(projectId: string, iModelId: string): void {
-    const imodelfs = this.getOrCreateProject(projectId);
-    const iFound = this.indexOfIModel(imodelfs, iModelId);
-    if (iFound === -1)
-      return;
-
-    const imdir = this.getIModelDir(projectId, iModelId);
-    fsextra.removeSync(imdir);
-
-    imodelfs.iModels = imodelfs.iModels.filter((_props: IModelFileSystemIModelProps, index: number) => index === iFound);
-    this.writeImodelFsFile(projectId, imodelfs);
-  }
 }

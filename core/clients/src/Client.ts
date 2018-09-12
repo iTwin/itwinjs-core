@@ -157,10 +157,11 @@ export class UrlDiscoveryClient extends Client {
   private static readonly _regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
 
   /**
-   * Creates an instance of UrlDiscoveryClient.
+   * Creates an instance of UrlDiscoveryClient. Note that clients should almost always
+   * use "PROD" deployment of the service, and that's setup as the default configuration.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
+  public constructor(public deploymentEnv: DeploymentEnv = "PROD") {
     super(deploymentEnv);
   }
 

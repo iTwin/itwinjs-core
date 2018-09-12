@@ -145,6 +145,9 @@ export class StateManager {
 
     const isUnmerge = zone.getWidgets().length > 1;
     const defaultZone = widget.defaultZone;
+    if (!defaultZone.props.allowsMerging)
+      return state;
+
     const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
     let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
     if (widget.isInHomeZone)
@@ -372,6 +375,22 @@ export class StateManager {
         },
       },
       draggingWidget: undefined,
+    };
+  }
+
+  public setAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean, state: NineZoneProps): NineZoneProps {
+    if (state.zones[zoneId].allowsMerging === allowsMerging)
+      return state;
+
+    return {
+      ...state,
+      zones: {
+        ...state.zones,
+        [zoneId]: {
+          ...state.zones[zoneId],
+          allowsMerging,
+        },
+      },
     };
   }
 }

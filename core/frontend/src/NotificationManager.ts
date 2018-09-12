@@ -193,7 +193,7 @@ export class NotificationManager {
   public readonly toolTipLocation = new Point2d();
   /** Show a ToolTip window.
    * @param htmlElement The HTMLElement that that anchors the toolTip.
-   * @param message The message to display inside the ToolTip
+   * @param message The message to display inside the ToolTip. May include HTML.
    * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param options Options that supply additional information about how the ToolTip should function.
    */

@@ -45,3 +45,22 @@
 - [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
 - [Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
 - [Relationship “Strengths”](./naming-guidelines/standard-relationship-strengths-names.md)
+
+&nbsp;
+
+### EC
+
+- [ECSchema](./ec/ec-schema.md)
+- [ECClass](./ec/ec-class.md)
+- [ECEntityClass](./ec/ec-entity-class.md)
+- [ECMixinClass](./ec/ec-mixin-class.md)
+- [ECStructClass](./ec/ec-struct-class.md)
+- [ECCustomAttributeClass](./ec/ec-custom-attribute-class.md)
+- [ECRelationshipClass](./ec/ec-relationship-class.md)
+- [ECProperty](./ec/ec-property.md)
+- [ECCustomAttributes](./ec/ec-custom-attributes.md)
+- [ECEnumeration](./ec/ec-enumeration.md)
+- [KindOfQuantity](./ec/kindofQuantity.md)
+- [PropertyCategory](./ec/property-category.md)
+- [PrimitiveTypes](./ec/primitive-types.md)
+- [CustomAttribute Container Types](./ec/customattribute-container-types.md)

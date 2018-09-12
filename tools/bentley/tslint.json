@@ -104,7 +104,7 @@
     "prefer-get": true
   },
   "rulesDirectory": [
-    "./node_modules/tslint-consistent-codestyle/rules",
-    "./src/tslint-rules"
+    "./tslint-rules/tslint-consistent-codestyle/rules",
+    "./tslint-rules"
   ]
 }

@@ -16,6 +16,8 @@ export interface ToolProps extends CommonProps {
   icon?: React.ReactNode;
   /** Describes if the item is active. */
   isActive?: boolean;
+  /** Describes if the item is disabled. */
+  isDisabled?: boolean;
   /** Describes if the item is focused. */
   isFocused?: boolean;
   /** Tool label. */
@@ -31,13 +33,14 @@ export default class Tool extends React.Component<ToolProps> {
       "nz-toolbar-item-expandable-group-tool-item",
       this.props.isActive && "nz-is-active",
       this.props.isFocused && "nz-is-focused",
+      this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
     return (
       <div
         className={itemClassName}
         style={this.props.style}
-        onClick={this.props.onClick}
+        onClick={this._handleClick}
       >
         <div className="nz-icon">
           {this.props.icon}
@@ -48,5 +51,12 @@ export default class Tool extends React.Component<ToolProps> {
         {this.props.children}
       </div>
     );
+  }
+
+  private _handleClick = () => {
+    if (this.props.isDisabled)
+      return;
+
+    this.props.onClick && this.props.onClick();
   }
 }

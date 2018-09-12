@@ -16,23 +16,20 @@ export interface ExpanderProps extends Omit<ToolProps, "isActive" | "children">,
 /** Expandable entry of tool group panel. Used in [[Column]] hosted in [[NestedGroup]] component. */
 export default class Expander extends React.Component<ExpanderProps> {
   public render() {
-    const { className, style, ...props } = this.props;
+    const { className, ...props } = this.props;
 
     const expanderClassName = classnames(
       "nz-toolbar-item-expandable-group-tool-expander",
-      this.props.className);
+      className);
 
     return (
-      <div
+      <Tool
         className={expanderClassName}
-        style={style}
-      >
-        <Tool {...props}>
-          <div className="nz-expansion-indicator">
-            >
-          </div>
-        </Tool>
-      </div>
+        {...props}>
+        <div className="nz-expansion-indicator">
+          >
+        </div>
+      </Tool>
     );
   }
 }

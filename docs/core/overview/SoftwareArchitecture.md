@@ -42,6 +42,8 @@ The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for in
 
 ![>](./next.png) [Write a Web agent](../learning/WriteAWebAgent.md)
 
+Also see [Logging and ActivityIds](./RpcInterface.md#logging-and-activityids)
+
 ## Desktop
 
 iModelJs desktop applications use the [Electron](https://electronjs.org/) Framework.
