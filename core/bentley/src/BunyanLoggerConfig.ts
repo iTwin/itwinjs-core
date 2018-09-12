@@ -22,7 +22,9 @@ export class BunyanLoggerConfig {
   // Generate metadata for a bunyan record. If nothing else, it must contain the message category.
   // Also make sure that Logger gets a change to add its required metadata.
   private static makeBunyanMetaData(category: string, getMetaData?: GetMetaDataFunction) {
-    const mdata = Logger.makeMetaData(getMetaData);
+    let mdata = Logger.makeMetaData(getMetaData);
+    if (!mdata)
+      mdata = {};
     if (!mdata.hasOwnProperty("loggerCategory"))      // (don't use the name "category". That could mean something (else) in the caller's metadata.)
       mdata.loggerCategory = category;
     return mdata;

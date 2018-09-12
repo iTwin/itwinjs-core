@@ -155,7 +155,7 @@ async function runBridgeFirstTime(accessToken: AccessToken, iModelId: string, pr
 }
 // __PUBLISH_EXTRACT_END__
 
-describe.only("Bridge", async () => {
+describe.skip("Bridge", async () => {
 
   let accessToken: AccessToken;
   let testProjectId: string;
@@ -169,6 +169,10 @@ describe.only("Bridge", async () => {
     testProjectId = (await queryProjectIdByName(activityContext, accessToken, "iModelJsTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(activityContext, accessToken, testProjectId, "BridgeTest", seedPathname);
+    IModelHost.shutdown();
+  });
+
+  afterEach(() => {
     IModelHost.shutdown();
   });
 
