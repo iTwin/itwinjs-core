@@ -124,7 +124,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const { animation, dragging, endRotMatrix } = this.state;
     const matrix = endRotMatrix;
-    const newMatrix = args.viewport.matrix3d;
+    const newMatrix = args.viewport.rotation;
 
     if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging)
       this.setState({ startRotMatrix: matrix, endRotMatrix: newMatrix, animation: 1 });

@@ -3,6 +3,7 @@
 exports[`<Tool /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item"
+  onClick={[Function]}
 >
   <div
     className="nz-icon"

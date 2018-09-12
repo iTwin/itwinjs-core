@@ -36,7 +36,7 @@ import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { BeButtonEvent } from "../tools/Tool";
+import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
@@ -119,10 +119,8 @@ export interface Overlay2dDecoration {
   onMouseEnter?(ev: BeButtonEvent): void;
   onMouseLeave?(): void;
   onMouseMove?(ev: BeButtonEvent): void;
-  onMouseDown?(ev: BeButtonEvent): void;
-  onMouseUp?(ev: BeButtonEvent): void;
-  onClick?(ev: BeButtonEvent): void;
-  onRightClick?(ev: BeButtonEvent): void;
+  onMouseButton?(ev: BeButtonEvent): boolean;
+  onWheel?(ev: BeWheelEvent): boolean;
   position: XAndY;
 }
 export type Overlay2dList = Overlay2dDecoration[];

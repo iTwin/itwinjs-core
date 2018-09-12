@@ -78,6 +78,8 @@ export class Marker implements Overlay2dDecoration {
       ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
 
+  public onMouseButton?(_ev: BeButtonEvent): boolean;
+
   /** Determine whether the point is within this Marker.  */
   public pick(pt: XAndY): boolean { return this.rect.containsPoint(pt); }
 

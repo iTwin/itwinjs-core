@@ -20,11 +20,6 @@ export interface IModelProjectIModelCreateParams {
 
 /** Manages projects and imodels. */
 export abstract class IModelProjectClient {
-
-  public abstract isIModelHub: boolean;
-
-  public abstract terminate(): void;
-
   // Project queries
   public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
@@ -36,10 +31,18 @@ export abstract class IModelProjectClient {
 
 /** Interface implemented by a service that allows client apps to connect to an iModel server */
 export interface IModelOrchestrationClient {
-  getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): IModelClient;
+  getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): Promise<IModelClient>;
 }
 
 /** Interface implemented by a service that authorizes users. */
 export interface IModelAuthorizationClient {
   authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
+}
+
+export interface IModelCloudEnvironment {
+  readonly isIModelHub: boolean;
+  readonly project: IModelProjectClient;
+  readonly orchestrator: IModelOrchestrationClient;
+  readonly authorization: IModelAuthorizationClient;
+  terminate(): void;
 }

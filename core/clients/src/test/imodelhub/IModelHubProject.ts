@@ -5,13 +5,12 @@ import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, Deploym
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
 import { IModelRepository } from "../../imodelhub";
-import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient } from "../../IModelCloudEnvironment";
+import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-export class TestIModelHubProject extends IModelProjectClient {
-  public get isIModelHub(): boolean { return true; }
+class TestIModelHubProject extends IModelProjectClient {
   public terminate(): void { }
 
   public async queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project> {
@@ -32,16 +31,24 @@ export class TestIModelHubProject extends IModelProjectClient {
   }
 }
 
-export class TestIModelHubOrchestrator implements IModelOrchestrationClient {
-  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
-    return getDefaultClient();
+class TestIModelHubOrchestrator implements IModelOrchestrationClient {
+  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): Promise<IModelClient> {
+    return Promise.resolve(getDefaultClient());
   }
 }
 
-export class TestIModelHubUserMgr implements IModelAuthorizationClient {
+class TestIModelHubUserMgr implements IModelAuthorizationClient {
   public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
     const authToken = await TestConfig.login(userCredentials, env);
     const client = getDefaultClient() as IModelHubClient;
     return client.getAccessToken(alctx, authToken);
   }
+}
+
+export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
+  public get isIModelHub(): boolean { return true; }
+  public readonly project = new TestIModelHubProject();
+  public readonly orchestrator = new TestIModelHubOrchestrator();
+  public readonly authorization = new TestIModelHubUserMgr();
+  public terminate(): void {}
 }

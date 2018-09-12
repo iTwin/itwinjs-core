@@ -1,14 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv, IModelClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
 import { IModelRepository, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelProjectAbstraction, IModelProjectAbstractionIModelCreateParams, IModelOrchestratorAbstraction, IModelPermissionAbstraction } from "@bentley/imodeljs-clients/lib/IModelProjectAbstraction";
-import { IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
-import { IModelBankLocalOrchestrator } from "@bentley/imodeljs-clients/lib/IModelBank/LocalOrchestrator";
+import { IModelBankFileSystemProjectOptions, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestConfig } from "../TestConfig";
 
@@ -331,14 +329,14 @@ export class HubUtility {
 
 }
 
-class ImsUserMgr implements IModelPermissionAbstraction {
+class ImsUserMgr {
   public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
     return await doImsLogin(userCredentials, env);
   }
 }
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
-class TestIModelHubProject extends IModelProjectAbstraction {
+class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
@@ -350,7 +348,7 @@ class TestIModelHubProject extends IModelProjectAbstraction {
     const client = BriefcaseManager.connectClient;
     return client.getProject(actx, accessToken, query);
   }
-  public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectAbstractionIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: any): Promise<IModelRepository> {
     const client = this.iModelHubClient;
     return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
@@ -362,23 +360,13 @@ class TestIModelHubProject extends IModelProjectAbstraction {
     const client = this.iModelHubClient;
     return client.IModels().get(actx, accessToken, projectId, query);
   }
-  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
-    return this.iModelHubClient;
-  }
 }
 
-class TestIModelHubServerOrchestrator implements IModelOrchestratorAbstraction {
-  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): IModelClient {
-    return BriefcaseManager.imodelClient;
-  }
-}
-
-let projectAbstraction: IModelProjectAbstraction;
-let serverOrchestrator: IModelOrchestratorAbstraction;
-let authorizationAbstraction: IModelPermissionAbstraction;
+let projectAbstraction: any;
+let authorizationAbstraction: any;
 const usingMocks = false;
 
-export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
+export function getIModelPermissionAbstraction(): any {
   if (authorizationAbstraction !== undefined)
     return authorizationAbstraction;
 
@@ -389,7 +377,7 @@ export function getIModelPermissionAbstraction(): IModelPermissionAbstraction {
   throw new Error("WIP");
 }
 
-export function getIModelProjectAbstraction(): IModelProjectAbstraction {
+export function getIModelProjectAbstraction(): any {
   if (projectAbstraction !== undefined)
     return projectAbstraction;
 
@@ -408,22 +396,4 @@ export function getIModelProjectAbstraction(): IModelProjectAbstraction {
   };
   projectAbstraction = new IModelBankFileSystemProject(options);
   return projectAbstraction;
-}
-
-export function getIModelOrchestrator(): IModelOrchestratorAbstraction {
-  if (serverOrchestrator !== undefined)
-    return serverOrchestrator;
-
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || usingMocks) {
-    return serverOrchestrator = new TestIModelHubServerOrchestrator();
-  }
-
-  const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
-  const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
-  // tslint:disable-next-line:no-var-requires
-  const serverConfig: IModelBankServerConfig = require(serverConfigFile);
-  EnvMacroSubst.replaceInProperties(serverConfig, true);
-  const proj = getIModelProjectAbstraction() as IModelBankFileSystemProject;
-  serverOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, proj);
-  return serverOrchestrator;
 }

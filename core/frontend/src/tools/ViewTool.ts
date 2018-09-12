@@ -874,10 +874,10 @@ class ViewRotate extends ViewingToolHandle {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.matrix3d.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotation.getRow(1);
 
       // Movement in screen y == rotation about screen X...
-      const yAxis = viewport.matrix3d.getRow(0);
+      const yAxis = viewport.rotation.getRow(0);
 
       const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.createIdentity();
       const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.createIdentity();
@@ -927,7 +927,7 @@ class ViewLook extends ViewingToolHandle {
 
     this._firstPtView.setFrom(ev.viewPoint);
     this._eyePoint.setFrom(view.getEyePoint());
-    this._rotation.setFrom(vp.matrix3d);
+    this._rotation.setFrom(vp.rotation);
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
@@ -1226,10 +1226,10 @@ class NavigateMotion {
     this.transform.setIdentity();
   }
 
-  public getViewUp(result?: Vector3d) { return this.viewport.matrix3d.getRow(1, result); }
+  public getViewUp(result?: Vector3d) { return this.viewport.rotation.getRow(1, result); }
 
   public getViewDirection(result?: Vector3d): Vector3d {
-    const forward = this.viewport.matrix3d.getRow(2, result);
+    const forward = this.viewport.rotation.getRow(2, result);
     forward.scale(-1, forward); // positive z is out of the screen, but we want direction into the screen
     return forward;
   }
@@ -1270,7 +1270,7 @@ class NavigateMotion {
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
     const vp = this.viewport;
     const view = vp.view as ViewState3d;
-    const viewRot = vp.matrix3d;
+    const viewRot = vp.rotation;
     const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
     const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
@@ -1337,7 +1337,7 @@ class NavigateMotion {
     const view = this.viewport.view;
     if (!view.is3d() || !view.isCameraOn)
       return;
-    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.matrix3d)!;
+    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.rotation)!;
     angles.pitch.setRadians(0); // reset pitch to zero
     Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toMatrix3d(), this.transform);
   }
@@ -1884,7 +1884,7 @@ export class WindowAreaTool extends ViewTool {
 
       vp.npcToWorldArray(corners);  // Put corners back in world at correct depth
       const viewPts: Point3d[] = [corners[0].clone(), corners[1].clone()];
-      vp.matrix3d.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
+      vp.rotation.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
 
       const range = Range3d.createArray(viewPts);
       delta = Vector3d.createStartEnd(range.low, range.high);
@@ -1897,7 +1897,7 @@ export class WindowAreaTool extends ViewTool {
       if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle, focusDist) !== ViewStatus.Success)
         return;
     } else {
-      vp.matrix3d.multiplyVectorArrayInPlace(corners);
+      vp.rotation.multiplyVectorArrayInPlace(corners);
 
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
@@ -1910,7 +1910,7 @@ export class WindowAreaTool extends ViewTool {
 
       vp.view.setExtents(delta);
 
-      const originVec = vp.matrix3d.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+      const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
       vp.view.setOrigin(Point3d.createFrom(originVec));
     }
 
@@ -2027,8 +2027,8 @@ export class DefaultViewTouchTool extends ViewManip {
     const xDelta = this._lastPtView.x - this._startPtView.x;
     const yDelta = this._lastPtView.y - this._startPtView.y;
 
-    const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.matrix3d.getRow(1);
-    const yAxis = vp.matrix3d.getRow(0);
+    const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotation.getRow(1);
+    const yAxis = vp.rotation.getRow(0);
     const xRMatrix = (0.0 !== xDelta) ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.identity;
     const yRMatrix = (0.0 !== yDelta) ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
