@@ -1,6 +1,23 @@
 # Change Log - @bentley/bentleyjs-tools
 
-This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Sep 2018 13:35:50 GMT and should not be manually modified.
+
+## 0.125.0
+Wed, 12 Sep 2018 13:35:50 GMT
+
+*Version update only*
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- Fix tslint.json to specify correct rules directory
+
+## 0.123.0
+Wed, 05 Sep 2018 17:14:50 GMT
+
+*Version update only*
 
 ## 0.122.0
 Tue, 28 Aug 2018 12:25:19 GMT

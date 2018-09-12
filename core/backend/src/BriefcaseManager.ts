@@ -6,11 +6,9 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository, IModelAccessContext,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
-import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
-import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -215,51 +213,19 @@ class BriefcaseCache {
 export class BriefcaseManager {
   private static _cache: BriefcaseCache = new BriefcaseCache();
   private static _isCacheInitialized?: boolean;
-  private static _defaultHubClient?: IModelHubClient;
   private static _imodelClient?: IModelClient;
-  private static _lastIModelClientContext: string | undefined; // Used to optimize IModelClient context-switching. See setClientFromIModelTokenContext
 
   /** IModel Server Client to be used for all briefcase operations */
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
-      if (!this._defaultHubClient) {
-        if (!IModelHost.configuration)
-          throw new Error("IModelHost.startup() should be called before any backend operations");
-        // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-        this._defaultHubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, new AzureFileHandler(false));
-      }
-      this._imodelClient = this._defaultHubClient!;
+      // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
+      this._imodelClient = new IModelHubClient(IModelHost.configuration ? IModelHost.configuration.hubDeploymentEnv : "PROD", new AzureFileHandler(false));
     }
     return this._imodelClient;
   }
 
-  /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
-  private static setClientFromAccessContext(context: IModelAccessContext | undefined) {
-    if (context !== undefined && context.client !== undefined) {
-      // This context requires a custom handler. Force a switch to a new IModelHubClient that is based on this handler.
-      this._imodelClient = context.client;
-    } else {
-      // This context requires the standard iModelHub handler. Force a switch to a new IModelHubClient that is based on iModelHub.
-      this._imodelClient = this._defaultHubClient!;
-    }
-  }
-
-  /** Make sure that BriefcaseManager is configured to access iModels in the specified context.
-   * For now, there are only two cases: the default iModelHub client or a specific iModelBank client.
-   * In the case of iModelHub, contextId will be a Connect project GUID. That means use _defaultHubClient.
-   * In the case of iModelBank, contextId will be a JSON-encoded object that contains the iModelBankClient parameters that should be used.
-   */
-  public static setClientFromIModelTokenContext(contextId: string | undefined, iModelId: string) {
-    if (this._lastIModelClientContext === contextId)
-      return;
-    this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, iModelId, new UrlFileHandler()) : undefined;
-    this.setClientFromAccessContext(iModelBankAccessContext);
-  }
-
-  /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
-  public static setClientForBriefcase(briefcase: BriefcaseEntry) {
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext, briefcase.iModelId);
+  public static set imodelClient(cli: IModelClient) {
+    this._imodelClient = cli;
   }
 
   private static _connectClient?: ConnectClient;
@@ -507,8 +473,6 @@ export class BriefcaseManager {
 
     actx.enter();
 
-    this.setClientFromIModelTokenContext(contextId, iModelId);
-
     assert(!!BriefcaseManager.imodelClient);
 
     let perfLogger = new PerfLogger("IModelDb.open, evaluating change set");
@@ -710,8 +674,6 @@ export class BriefcaseManager {
   private static async createBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
     actx.enter();
 
-    this.setClientFromIModelTokenContext(contextId, iModelId);
-
     const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
@@ -722,11 +684,7 @@ export class BriefcaseManager {
       /* FixedVersion, PullOnly => Create standalone briefcase */
       briefcase.pathname = BriefcaseManager.buildStandalonePathname(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
-      // tslint:disable-next-line:no-console
-      console.log("DOWNLOADING SEED FILE " + actx.activityId);
       await BriefcaseManager.downloadSeedFile(actx, accessToken, iModelId, briefcase.pathname);
-      // tslint:disable-next-line:no-console
-      console.log("DOWNLOADED SEED FILE " + actx.activityId);
       actx.enter();
       briefcase.changeSetId = "";
       briefcase.changeSetIndex = 0;
@@ -806,8 +764,6 @@ export class BriefcaseManager {
       return;
 
     actx.enter();
-
-    this.setClientForBriefcase(briefcase);
 
     try {
       await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -1091,7 +1047,6 @@ export class BriefcaseManager {
     actx.enter();
     assert(!!briefcase.nativeDb && briefcase.isOpen);
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
-    this.setClientForBriefcase(briefcase);
 
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
@@ -1263,7 +1218,6 @@ export class BriefcaseManager {
   /** Update codes for all pending ChangeSets */
   private static async updatePendingChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     actx.enter();
-    this.setClientForBriefcase(briefcase);
 
     let pendingChangeSets = BriefcaseManager.getPendingChangeSets(briefcase);
     if (pendingChangeSets.length === 0)

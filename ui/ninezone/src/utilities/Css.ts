@@ -4,6 +4,7 @@
 /** @module Utilities */
 
 import Rectangle, { RectangleProps } from "./Rectangle";
+import Point, { PointProps } from "./Point";
 
 /** CSS helpers. */
 export default class Css {
@@ -20,14 +21,23 @@ export default class Css {
 
 /** React.CSSProperties helpers. */
 export class CssProperties {
-  /** @returns CSS properties that describe rectangle (height, left, top, width). */
-  public static fromRectangle(rectangleProps: RectangleProps): React.CSSProperties {
-    const rectangle = Rectangle.create(rectangleProps);
+  /** @returns CSS properties that describe bounds (top, left, height, width). */
+  public static fromBounds(props: RectangleProps): React.CSSProperties {
+    const rectangle = Rectangle.create(props);
     return {
       height: rectangle.getHeight(),
       left: rectangle.left,
       top: rectangle.top,
       width: rectangle.getWidth(),
+    };
+  }
+
+  /** @returns CSS properties that describe position (top, left). */
+  public static fromPosition(props: PointProps): React.CSSProperties {
+    const point = Point.create(props);
+    return {
+      left: point.x,
+      top: point.y,
     };
   }
 }

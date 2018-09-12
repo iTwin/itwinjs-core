@@ -4,5 +4,10 @@
 .nz-footer-toolAssistance-dialog {
   min-width: $nz-footer-popover-min-width;
   min-height: 75px;
+  transform: translateX(-50%);
   color: $background-5;
+
+  &#{&} {
+    left: 50%;
+  }
 }

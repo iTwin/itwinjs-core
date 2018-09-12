@@ -6,7 +6,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
-import { ClassNameProps } from "../Props";
+import { CommonProps } from "../Props";
 import "./Toggle.scss";
 
 enum ButtonType {
@@ -14,7 +14,7 @@ enum ButtonType {
   Blue,
 }
 
-export interface ToggleProps extends ClassNameProps {
+export interface ToggleProps extends CommonProps {
   disabled?: boolean;
   isOn?: boolean;
   rounded?: boolean;

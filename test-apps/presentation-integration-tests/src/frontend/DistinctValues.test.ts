@@ -33,7 +33,10 @@ describe("DistinctValues", async () => {
       expect(descriptor).to.not.be.undefined;
       const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetId: ruleset.id }, descriptor!, keys,
         "SubCategory_DefinitionPartition_LinkPartition_PhysicalPartition_Model");
-      expect(distinctValues).to.be.deep.equal(["Definition Model-0-M", "Repository Model-0-1"]);
+      expect(distinctValues).to.be.deep.equal([
+        "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
+        "DgnV8Bridge",
+      ]);
     });
   });
 

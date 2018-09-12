@@ -209,7 +209,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
       const scale = ACSDisplaySizes.ArrowTipWidth / 2;
       const center = Point3d.create();
-      const viewRMatrix = vp.rotMatrix;
+      const viewRMatrix = vp.rotation;
 
       const xVec = viewRMatrix.getRow(0);
       const yVec = viewRMatrix.getRow(1);
@@ -229,16 +229,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     }
 
     const shapePts: Point3d[] = [];
-    /* ### TODO NEEDSWORK PolyfaceBuilder.emitFacets...
-        shapePts[0] = Point3d.create(ACSDisplaySizes.ArrowBaseStart, -ACSDisplaySizes.ArrowBaseWidth);
-        shapePts[1] = Point3d.create(ACSDisplaySizes.ArrowTipStart, -ACSDisplaySizes.ArrowBaseWidth);
-        shapePts[2] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, -ACSDisplaySizes.ArrowTipWidth);
-        shapePts[3] = Point3d.create(ACSDisplaySizes.ArrowTipEnd, 0.0);
-        shapePts[4] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, ACSDisplaySizes.ArrowTipWidth);
-        shapePts[5] = Point3d.create(ACSDisplaySizes.ArrowTipStart, ACSDisplaySizes.ArrowBaseWidth);
-        shapePts[6] = Point3d.create(ACSDisplaySizes.ArrowBaseStart, ACSDisplaySizes.ArrowBaseWidth);
-        shapePts[7] = shapePts[0].clone();
-    */
     shapePts[0] = Point3d.create(ACSDisplaySizes.ArrowTipEnd, 0.0);
     shapePts[1] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, ACSDisplaySizes.ArrowTipWidth);
     shapePts[2] = Point3d.create(ACSDisplaySizes.ArrowTipStart, ACSDisplaySizes.ArrowBaseWidth);
@@ -257,8 +247,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     builder.setBlankingFill(fillColor);
     builder.addShape(shapePts);
   }
-
-  private _pickableOverlay: boolean = false; // ###TODO Remove - testing only
 
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
   private createGraphicBuilder(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
@@ -282,7 +270,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._pickableOverlay ? "0xffffff0000000003" : undefined);
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
     const vp = context.viewport;
     this.addAxis(builder, 0, options, vp);
     this.addAxis(builder, 1, options, vp);

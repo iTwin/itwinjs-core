@@ -36,6 +36,7 @@ import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
@@ -114,7 +115,16 @@ export type GraphicList = RenderGraphic[];
 
 export interface Overlay2dDecoration {
   drawDecoration(ctx: CanvasRenderingContext2D): void;
-  origin: XAndY;
+  pick?(pt: XAndY): boolean;
+  onMouseEnter?(ev: BeButtonEvent): void;
+  onMouseLeave?(): void;
+  onMouseMove?(ev: BeButtonEvent): void;
+  onMouseButton?(ev: BeButtonEvent): boolean;
+  onWheel?(ev: BeWheelEvent): boolean;
+  position: XAndY;
+
+  /** @hidden */
+  frontmost?: boolean;
 }
 export type Overlay2dList = Overlay2dDecoration[];
 
@@ -238,6 +248,7 @@ export namespace Pixel {
  * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
+  public pickOverlayDecoration(_pt: XAndY): Overlay2dDecoration | undefined { return undefined; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }

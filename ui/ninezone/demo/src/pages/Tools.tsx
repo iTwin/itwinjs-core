@@ -92,7 +92,13 @@ export default class Tools extends React.Component<{}, State> {
         <HistoryIcon
           isActive
         >
-          <i className="icon icon-3d-cube" />
+          <i className="icon icon-3d-photo" />
+        </HistoryIcon>
+        <HistoryIcon
+          isActive
+          isDisabled
+        >
+          <i className="icon icon-3d-render" />
         </HistoryIcon>
       </>
     );
@@ -144,11 +150,26 @@ export default class Tools extends React.Component<{}, State> {
             items={historyItems}
           />
         }
+        isDisabled
       >
         <Icon
           icon={
             <i className="icon icon-3d-cube" />
           }
+          isDisabled
+        />
+      </Expandable>,
+      <Expandable
+        key={3}
+        isDisabled
+        isActive
+      >
+        <Icon
+          icon={
+            <i className="icon icon-3d-photo" />
+          }
+          isDisabled
+          isActive
         />
       </Expandable>,
       <Icon
@@ -156,12 +177,12 @@ export default class Tools extends React.Component<{}, State> {
           <i className="icon icon-angle" />
         }
         isActive
-        key={3} />,
+        key={4} />,
       <Icon
         icon={
           <i className="icon icon-apps-generic" />
         }
-        key={4} />,
+        key={5} />,
     ];
   }
 
@@ -171,19 +192,19 @@ export default class Tools extends React.Component<{}, State> {
         icon={
           <i className="icon icon-filter" />
         }
-        key={5}
+        key={6}
       />,
       <Icon
         icon={
           <i className="icon icon-find" />
         }
-        key={6}
+        key={7}
       />,
       <Icon
         icon={
           <i className="icon icon-flag" />
         }
-        key={7}
+        key={8}
       />,
       ...this.getToolbarIcons1(direction),
     ];

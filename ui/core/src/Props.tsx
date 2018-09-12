@@ -5,10 +5,8 @@
 
 import * as React from "react";
 
-/**
- * Common props used by components.
- */
-export default interface CommonProps extends ClassNameProps {
+/** Common props used by components. */
+export interface CommonProps extends ClassNameProps {
   style?: React.CSSProperties;
 }
 

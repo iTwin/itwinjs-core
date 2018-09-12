@@ -34,7 +34,7 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
   return { modelId, spatialCategoryId };
 }
 
-describe("IModelWriteTest", () => {
+describe.skip("IModelWriteTest", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;

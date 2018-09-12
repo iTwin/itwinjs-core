@@ -112,18 +112,25 @@ export class DisableNativeAssertions implements IDisposable {
 
 export class IModelTestUtils {
 
+  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
+  //   try {
+  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
+  //     BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, existingid);
+  //   } catch (_err) {
+  //   }
+  //   return BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, name, seedFile);
+  // }
+
   public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
     const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     for (const iModelInfo of testIModels) {
-      // TODO: must set BriefcaseManager's imodelClient to the right bank before calling the following function:
       iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      BriefcaseManager.setClientFromIModelTokenContext(testProjectId, iModelInfo.id);
       iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 

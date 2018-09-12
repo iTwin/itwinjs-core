@@ -25,6 +25,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
+import { ToolTipOptions } from "./NotificationManager";
 
 /** A function which customizes the appearance of Features within a Viewport. */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
@@ -123,6 +124,12 @@ export class ViewRect {
     }
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
+  public extend(other: ViewRect) {
+    if (this.left > other.left) this.left = other.left;
+    if (this.top > other.top) this.top = other.top;
+    if (this.right < other.right) this.right = other.right;
+    if (this.bottom < other.bottom) this.bottom = other.bottom;
+  }
 
   /** Inset this ViewRect by values in the x and y directions. Positive values make the ViewRect smaller, and negative values will make it larger.
    * @param deltaX The distance to inset the ViewRect in the x direction.
@@ -145,6 +152,15 @@ export class ViewRect {
    */
   public insetUniform(offset: number): void { this.inset(offset, offset); }
 
+  /** Scale this ViewRect about its center by the supplied scale factors. */
+  public scaleAboutCenter(xScale: number, yScale: number): void {
+    const w = this.width;
+    const h = this.height;
+    const xDelta = (w - (w * xScale)) * 0.5;
+    const yDelta = (h - (h * yScale)) * 0.5;
+    this.inset(xDelta, yDelta);
+  }
+
   /** Inset this ViewRect by a percentage of its current width.
    * @param percent The percentage of this ViewRect's width to inset in all directions.
    * @note The ViewRect will become smaller (or larger, if percent is negative) by `percent * width * 2` in each direction, since each side is moved by that distance.
@@ -161,32 +177,27 @@ export class ViewRect {
    */
   public containsPoint(point: XAndY): boolean { return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom; }
 
-  /** Return the rectangle that is the overlap (intersection) of this ViewRect and another ViewRect. */
-  public overlaps(other: ViewRect, overlap?: ViewRect): boolean {
+  /** Determine whether this ViewRect overlaps another. */
+  public overlaps(other: ViewRect): boolean { return this.left <= other.right && this.top <= other.bottom && this.right >= other.left && this.bottom >= other.top; }
+
+  /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.
+   * If the two ViewRects are equal, their value is the result. Otherwise, the result will always be smaller than either of them.
+   */
+  public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
     const maxOrgX = Math.max(this.left, other.left);
     const maxOrgY = Math.max(this.top, other.top);
     const minCrnX = Math.min(this.right, other.right);
     const minCrnY = Math.min(this.bottom, other.bottom);
 
     if (maxOrgX > minCrnX || maxOrgY > minCrnY)
-      return false;
+      return undefined;
 
-    if (undefined !== overlap) {
-      overlap.left = maxOrgX;
-      overlap.right = minCrnX;
-      overlap.top = maxOrgY;
-      overlap.bottom = minCrnY;
-    }
-
-    return true;
-  }
-
-  /** Return a ViewRect that is the overlap (intersection) of this ViewRect and another ViewRect.
-   * If the two ViewRects are equal, their value is the result. Otherwise, the result will always be smaller than either of them.
-   */
-  public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
     const result = undefined !== out ? out : new ViewRect();
-    return this.overlaps(other, result) ? result : undefined;
+    result.left = maxOrgX;
+    result.right = minCrnX;
+    result.top = maxOrgY;
+    result.bottom = minCrnY;
+    return result;
   }
 }
 
@@ -367,7 +378,7 @@ export class ViewFrustum {
   /** View delta (from ViewState, unexpanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new Matrix3d();
+  public readonly rotation = new Matrix3d();
   /** @hidden */
   public readonly worldToViewMap = Map4d.createIdentity();
   /** @hidden */
@@ -394,9 +405,9 @@ export class ViewFrustum {
 
   private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   /** @hidden */
-  public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
+  public toView(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
   /** @hidden */
-  public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
+  public fromView(from: XYZ, to?: XYZ) { this.rotation.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
 
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
@@ -427,13 +438,13 @@ export class ViewFrustum {
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
   private alignWithRootZ() {
     const zUp = Vector3d.unitZ();
-    if (zUp.isAlmostEqual(this.rotMatrix.rowZ()))
+    if (zUp.isAlmostEqual(this.rotation.rowZ()))
       return;
-    const r = this.rotMatrix.transpose();
+    const r = this.rotation.transpose();
     r.setColumn(2, zUp);
     Matrix3d.createRigidFromMatrix3d(r, AxisOrder.ZXY, r);
-    r.transpose(this.rotMatrix);
-    this.view.setRotation(this.rotMatrix); // Don't let viewState and viewport rotation be different.
+    r.transpose(this.rotation);
+    this.view.setRotation(this.rotation); // Don't let viewState and viewport rotation be different.
   }
 
   private validateCamera() {
@@ -475,29 +486,29 @@ export class ViewFrustum {
       return;
 
     // convert viewed extents in world coordinates to min/max in view aligned coordinates
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotation);
     const extFrust = Frustum.fromRange(extents);
     extFrust.multiply(viewTransform);
     extents = extFrust.toRange();
 
-    this.rotMatrix.multiplyVectorInPlace(origin);       // put origin in view coordinates
+    this.rotation.multiplyVectorInPlace(origin);       // put origin in view coordinates
     origin.z = extents.low.z;           // set origin to back of viewed extents
     delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
-    this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+    this.rotation.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn)
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
     const eyeOrg = view.camera.getEyePoint().minus(origin);
-    this.rotMatrix.multiplyVectorInPlace(eyeOrg);
+    this.rotation.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
-      this.rotMatrix.multiplyVectorInPlace(origin);
+      this.rotation.multiplyVectorInPlace(origin);
       origin.z -= (2.0 - eyeOrg.z);
-      this.rotMatrix.multiplyTransposeVectorInPlace(origin);
+      this.rotation.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
     }
@@ -516,13 +527,13 @@ export class ViewFrustum {
       return;
 
     const planeNormal = this._displayedPlane.getNormalRef();
-    const viewZ = this.rotMatrix.getRow(2);
+    const viewZ = this.rotation.getRow(2);
     const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
     if (onPlane.magnitude() > 1.0E-8) {
       const intersect = new Point3d();
       const frustum = new Frustum();
       let includeHorizon = false;
-      const worldToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOrigin, this.viewDelta).map as Map4d;
+      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta).map as Map4d;
       const minimumEyeDistance = 10.0;
       const horizonDistance = 10000;
       worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
@@ -578,7 +589,7 @@ export class ViewFrustum {
 
     const origin = this.view.getOrigin().clone();
     const delta = this.view.getExtents().clone();
-    this.rotMatrix.setFrom(this.view.getRotation());
+    this.rotation.setFrom(this.view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -649,7 +660,7 @@ export class ViewFrustum {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, origin, delta);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta);
     if (newRootToNpc.map === undefined) { // invalid frustum
       this.invalidFrustum = true;
       return;
@@ -772,7 +783,7 @@ export class ViewFrustum {
     // of the root-based maps.)
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
-      const ueRootToNpc = this.view.computeWorldToNpc(this.rotMatrix, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
+      const ueRootToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
       if (undefined === ueRootToNpc.map)
         return box; // invalid frustum
 
@@ -839,7 +850,7 @@ export abstract class Viewport {
   private _viewFrustum!: ViewFrustum;
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
-  public get rotMatrix(): Matrix3d { return this._viewFrustum.rotMatrix; }
+  public get rotation(): Matrix3d { return this._viewFrustum.rotation; }
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
@@ -1268,7 +1279,7 @@ export abstract class Viewport {
   public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
     const vf = this._viewFrustum;
 
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotMatrix);
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotation);
     const elemRange = Array.isArray(placements) ? placements : [placements];
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
 
@@ -1385,7 +1396,7 @@ export abstract class Viewport {
     if (this.view.is3d() && this.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
-      eyeVec = this._viewFrustum.rotMatrix.getRow(2).clone();
+      eyeVec = this._viewFrustum.rotation.getRow(2).clone();
 
     eyeVec.normalizeInPlace();
     LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
@@ -1490,29 +1501,35 @@ export abstract class Viewport {
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
-  private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-    const white = ColorDef.white.clone();
-    const black = ColorDef.black.clone();
+  private drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
+    const colorDefToString = (color: ColorDef, transparency: number) => {
+      const colors = color.colors;
+      const alpha = (255 - transparency) / 255;
+      return "rgba(" + (colors.r | 0) + "," + (colors.g | 0) + "," + (colors.b | 0) + "," + alpha + ")";
+    };
 
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+    const fillStyle = colorDefToString(ColorDef.white, 115);
+    const strokeStyle = colorDefToString(ColorDef.white, 20);
+    const outerStrokeStyle = colorDefToString(ColorDef.black, 100);
 
-    white.setTransparency(165);
-    builder.setSymbology(white, white, 1);
-    builder.addArc2d(ellipse, true, true, 0.0);
+    const radius = (aperture * 0.5) + 0.5;
+    const position = this.worldToView(pt);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = strokeStyle;
+      ctx.fillStyle = fillStyle;
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
 
-    black.setTransparency(100);
-    builder.setSymbology(black, black, 1);
-    builder.addArc2d(ellipse2, false, false, 0.0);
+      ctx.beginPath();
+      ctx.strokeStyle = outerStrokeStyle;
+      ctx.lineWidth = 1;
+      ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
+      ctx.stroke();
+    };
 
-    white.setTransparency(20);
-    builder.setSymbology(white, white, 1);
-    builder.addArc2d(ellipse, false, false, 0.0);
-
-    context.addDecorationFromBuilder(builder);
+    context.addOverlay2dDecoration({ position, drawDecoration, frontmost: true });
   }
 
   /** @hidden */
@@ -1521,14 +1538,17 @@ export abstract class Viewport {
       Viewport.drawLocateHitDetail(context, aperture, hit);
 
     if (isLocateCircleOn)
-      Viewport.drawLocateCircle(context, aperture, pt);
+        this.drawLocateCircle(context, aperture, pt);
+  }
+
+  private get _wantInvertBlackAndWhite(): boolean {
+    const bgColor = this.view.backgroundColor.colors;
+    return ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
   }
 
   /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
-    const bgColor = this.view.backgroundColor.colors;
-    const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
-    return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
+    return this._wantInvertBlackAndWhite ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
 
   private processFlash(): boolean {
@@ -1764,6 +1784,10 @@ export class ScreenViewport extends Viewport {
     this.setCursor();
   }
 
+  public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
+    IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
+  }
+
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
@@ -1783,6 +1807,8 @@ export class ScreenViewport extends Viewport {
     result.setFrom(picker.getHit(0)!.getPoint());
     return result;
   }
+
+  public pickOverlayDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }

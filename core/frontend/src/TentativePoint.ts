@@ -70,9 +70,8 @@ export class TentativePoint {
   public getTPSnapMode(): SnapMode { return (SnapMode.Intersection === this.activeSnapMode()) ? SnapMode.Nearest : this.activeSnapMode(); }
   public activeSnapMode(): SnapMode { return this.candidateSnapMode; }
   public setCurrSnap(newSnap?: SnapDetail): void {
-    if (newSnap) {
-      newSnap.heat = SnapHeat.InRange;
-    }
+    if (newSnap)
+      newSnap.setSnapPoint(newSnap.snapPoint, SnapHeat.InRange); // Reset adjustedPoint from pre-located snap and set SnapHeat...
     this.currSnap = newSnap;
   }
 

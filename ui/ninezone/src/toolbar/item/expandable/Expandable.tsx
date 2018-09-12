@@ -15,6 +15,8 @@ export interface ExpandableItemProps extends CommonProps {
   history?: React.ReactNode;
   /** Describes if item is active. */
   isActive?: boolean;
+  /** Describes if item is disabled. */
+  isDisabled?: boolean;
   /** Function called when history tray should be extended or shrank. */
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
   /** Actual panel. I.e. [[Group]], [[NestedGroup]], [[Panel]] */
@@ -46,6 +48,7 @@ export default class ExpandableItem extends React.Component<ExpandableItemProps>
     const className = classnames(
       "nz-toolbar-item-expandable-expandable",
       this.props.isActive && "nz-is-active",
+      this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
     const panelPortal = ReactDOM.createPortal(this.props.panel, this._panel);

@@ -776,7 +776,7 @@ export abstract class ViewState extends ElementState {
         const centerWorld = Point3d.create(0.5, 0.5, 0.5);
         vp.npcToWorld(centerWorld, centerWorld);
 
-        rMatrix.setFrom(vp.rotMatrix);
+        rMatrix.setFrom(vp.rotation);
         rMatrix.multiplyXYZtoXYZ(origin, origin);
         origin.z = centerWorld.z;
         rMatrix.multiplyTransposeVectorInPlace(origin);
@@ -1398,7 +1398,7 @@ export abstract class ViewState3d extends ViewState {
     const elevation = this.getGroundElevation();
 
     if (undefined !== vp) {
-      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
       const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
       // first determine whether the ground plane is displayed in the view

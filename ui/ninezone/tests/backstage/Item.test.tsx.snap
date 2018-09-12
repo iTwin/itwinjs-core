@@ -3,6 +3,7 @@
 exports[`<Item /> renders correctly 1`] = `
 <div
   className="nz-backstage-item"
+  onClick={[Function]}
 >
   <div
     className="nz-icon"
@@ -16,6 +17,7 @@ exports[`<Item /> renders correctly 1`] = `
 exports[`<Item /> should apply style 1`] = `
 <div
   className="nz-backstage-item"
+  onClick={[Function]}
   style={
     Object {
       "backgroundColor": "red",
@@ -34,6 +36,7 @@ exports[`<Item /> should apply style 1`] = `
 exports[`<Item /> should set is-active class 1`] = `
 <div
   className="nz-backstage-item nz-is-active"
+  onClick={[Function]}
 >
   <div
     className="nz-icon"

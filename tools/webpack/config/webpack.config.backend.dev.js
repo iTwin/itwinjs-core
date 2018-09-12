@@ -25,11 +25,15 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
+  externals: {
+    // This is needed to install electron devtools extensions.
+    "7zip": "7zip",
+  },
   output: {
     // Add /* filename */ comments to generated require()s in the output.
     pathinfo: true,
   },
-  plugins: [    
+  plugins: [
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
     // If you require a missing module and then `npm install` it, you still have

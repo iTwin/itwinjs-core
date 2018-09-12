@@ -57,7 +57,7 @@ export class ViewRotationCube {
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
-    this.rMatrix.setFrom(viewport.rotMatrix);
+    this.rMatrix.setFrom(viewport.rotation);
     this.viewRotationChangeEvent.emit({ viewport, animationTime });
   }
 }

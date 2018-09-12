@@ -173,7 +173,12 @@ export class DecorateContext extends RenderContext {
   public addOverlay2dDecoration(decoration: Overlay2dDecoration) {
     if (undefined === this._decorations.overlay2d)
       this._decorations.overlay2d = [];
-    this._decorations.overlay2d.push(decoration);
+
+    const overlays = this._decorations.overlay2d;
+    if (0 === overlays.length || true === decoration.frontmost || true !== overlays[overlays.length - 1].frontmost)
+      overlays.push(decoration);
+    else
+      overlays.unshift(decoration);
   }
 
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
@@ -186,7 +191,7 @@ export class DecorateContext extends RenderContext {
     const xVec = rMatrix.rowX(),
       yVec = rMatrix.rowY(),
       zVec = rMatrix.rowZ(),
-      viewZ = vp.rotMatrix.getRow(2);
+      viewZ = vp.rotation.getRow(2);
 
     if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
@@ -376,7 +381,7 @@ export class DecorateContext extends RenderContext {
       const camera = view.camera;
       const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
-      vp.rotMatrix.rowZ(viewZ);
+      vp.rotation.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
       zCameraLimit = zCamera - camera.focusDist * sizeLimit;
     }

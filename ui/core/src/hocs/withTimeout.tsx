@@ -6,10 +6,8 @@
 import * as React from "react";
 import Timer from "../utils/Timer";
 
-/** Props for withTimeout React higher-order component */
+/** Props for withTimeout HOC. */
 export interface WithTimeoutProps {
-  /** Indicates whether to start the timeout */
-  startTimeout?: boolean;
   /** Timeout duration in milliseconds */
   timeout: number;
   /** Callback function for timeout */
@@ -22,45 +20,33 @@ export const withTimeout = <ComponentProps extends {}>(
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithTimeout extends React.Component<ComponentProps & WithTimeoutProps> {
-    public timer: Timer | undefined = undefined;
+    public timer: Timer = new Timer(0);
 
     public componentDidMount(): void {
-      this.timer = new Timer(this.props.timeout);
       this.timer.setOnExecute(() => this.props.onTimeout && this.props.onTimeout());
+      this.startTimer(this.props.timeout);
+    }
 
-      this.startTimeout();
+    public componentDidUpdate(_prevProps: Readonly<ComponentProps & WithTimeoutProps>): void {
+      this.startTimer(this.props.timeout);
     }
 
     public componentWillUnmount(): void {
-      if (!this.timer)
-        return;
       this.timer.stop();
     }
 
-    public componentWillReceiveProps(_nextProps: Readonly<WithTimeoutProps>): void {
-      if (!this.timer)
-        return;
-      this.timer.delay = this.props.timeout;
-      this.startTimeout();
-    }
-
     public render() {
-      const { startTimeout, timeout, onTimeout, ...props } = this.props as WithTimeoutProps;
+      const { timeout, onTimeout, ...props } = this.props as WithTimeoutProps;
       return (
-        <div>
-          <Component {...props} {...this.state} />
-        </div>
+        <Component {...props} {...this.state} />
       );
     }
 
-    public startTimeout() {
-      if (!this.timer)
-        return;
-      if (!this.props.startTimeout)
-        return;
+    public startTimer(timeout: number) {
       if (this.timer.isRunning)
         return;
 
+      this.timer.delay = timeout;
       this.timer.start();
     }
   };
