@@ -46,6 +46,8 @@ export abstract class Primitive extends Graphic {
 
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
 
+  public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
+
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
   public addHiliteCommands(commands: RenderCommands, batch: Batch): void {

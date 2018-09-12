@@ -14,7 +14,7 @@ import {
 } from "../ShaderBuilder";
 import { FeatureMode } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
-import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
+import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix, addAnimation } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
@@ -86,29 +86,31 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 }
 
 const computePosition = `
-  // ###TODO if (u_animParams.z > 0.0)
-  // ###TODO   rawPos.xyz += computeAnimatedDisplacement(u_animValue * u_animParams.z).xyz;
   vec4 pos = u_mv * rawPos;
   v_pos = pos.xyz;
   return u_proj * pos;
 `;
 
-function createCommon(): ProgramBuilder {
+const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animParams.x, u_animParams.y, u_animParams.z, u_qAnimOrigin, u_qAnimScale).xyz;
+` + computePosition;
+
+function createCommon(animated: boolean): ProgramBuilder {
   const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
-  // ###TODO Animation.AddCommon(vert);
+  if (animated)
+    addAnimation(vert);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
   builder.addVarying("v_pos", VariableType.Vec3);
-  vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  vert.set(VertexShaderComponent.ComputePosition, animated ? computeAnimatedPosition : computePosition);
 
   return builder;
 }
 
 export function createSurfaceHiliter(): ProgramBuilder {
-  const builder = createCommon();
+  const builder = createCommon(false);
 
   addSurfaceFlags(builder, true);
   addTexture(builder);
@@ -198,13 +200,8 @@ const applyBackgroundColor = `
 const computeTexCoord = `
   if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
     return vec2(0.0);
-
-  // ###TODO if (u_animParams.w > 0.0)
-  // ###TODO   return computeAnimatedTextureParam(u_animValue * u_animParams.w);
-
   vec2 tc = g_vertexBaseCoords;
-  tc.x += 3.0 * g_vert_stepX;
-  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += 3.0 * g_vert_stepX;  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
@@ -293,8 +290,8 @@ function addTexture(builder: ProgramBuilder) {
   });
 }
 
-export function createSurfaceBuilder(feat: FeatureMode): ProgramBuilder {
-  const builder = createCommon();
+export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): ProgramBuilder {
+  const builder = createCommon(animated);
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);

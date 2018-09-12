@@ -25,7 +25,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
-
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
  * The order of the indices specifies the order in which vertices are drawn.
@@ -100,6 +99,37 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
 const scratchColorDef = new ColorDef();
 
+/** Describes a auxilliary displacement channel */
+export interface AuxDisplacementProps {
+  readonly index: number;
+  readonly numRgbaPerVertex: number;
+  readonly name: string;
+  readonly qOrigin: number[];
+  readonly qScale: number[];
+  readonly inputs: number[];
+}
+export class AuxDisplacement {
+  public readonly index: number;
+  public readonly numRgbaPerVertex: number;
+  public readonly name: string;
+  public readonly qOrigin: Float32Array;
+  public readonly qScale: Float32Array;
+  public readonly inputs: number[];
+
+  public constructor(props: AuxDisplacementProps) {
+    this.index = props.index;
+    this.numRgbaPerVertex = props.numRgbaPerVertex;
+    this.name = props.name;
+    this.qOrigin = new Float32Array(3);
+    this.qScale = new Float32Array(3);
+    for (let i = 0; i < 3; i++) {
+      this.qOrigin[i] = props.qOrigin[i];
+      this.qScale[i] = props.qScale[i];
+    }
+    this.inputs = props.inputs;
+  }
+}
+
 /** Describes a VertexTable. */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
@@ -124,6 +154,8 @@ export interface VertexTableProps {
   readonly numRgbaPerVertex: number;
   /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
   readonly uvParams?: QParams2d;
+  // The auxilliary displacements for animations.
+  readonly auxDisplacements?: AuxDisplacement[];
 }
 
 /**
@@ -156,6 +188,8 @@ export class VertexTable implements VertexTableProps {
   public readonly numRgbaPerVertex: number;
   /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
   public readonly uvParams?: QParams2d;
+  // The auxilliary displacements for animations.
+  public readonly auxDisplacements?: AuxDisplacement[];
 
   /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
   public constructor(props: VertexTableProps) {
@@ -170,6 +204,7 @@ export class VertexTable implements VertexTableProps {
     this.numVertices = props.numVertices;
     this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.uvParams = props.uvParams;
+    this.auxDisplacements = props.auxDisplacements;
   }
 
   public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
@@ -448,11 +483,11 @@ class PolylineTesselator {
 }
 
 export const enum SurfaceType {
-    Unlit,
-    Lit,
-    Textured,
-    TexturedLit,
-    Classifier,
+  Unlit,
+  Lit,
+  Textured,
+  TexturedLit,
+  Classifier,
 }
 
 export function isValidSurfaceType(value: number): boolean {

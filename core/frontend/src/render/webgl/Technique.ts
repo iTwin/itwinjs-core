@@ -169,28 +169,31 @@ export abstract class VariedTechnique implements Technique {
 class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
-  private static readonly _kFeature = 2;
+  private static readonly _kAnimated = 2;
+  private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(SurfaceTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(2) + numHiliteVariants));
+    super((numFeatureVariants(4) + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
     this.addHiliteShader(gl, createSurfaceHiliter);
-    for (const featureMode of featureModes) {
-      flags.reset(featureMode);
-      const builder = createSurfaceBuilder(featureMode);
-      addMonochrome(builder.frag);
-      addMaterial(builder.frag);
+    for (let iAnimate = 0; iAnimate < 2; iAnimate++) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode);
+        flags.isAnimated = iAnimate !== 0;
+        const builder = createSurfaceBuilder(featureMode, flags.isAnimated);
+        addMonochrome(builder.frag);
+        addMaterial(builder.frag);
 
-      addSurfaceDiscardByAlpha(builder.frag);
-      this.addShader(builder, flags, gl);
+        addSurfaceDiscardByAlpha(builder.frag);
+        this.addShader(builder, flags, gl);
 
-      builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-      this.addTranslucentShader(builder, flags, gl);
+        builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+        this.addTranslucentShader(builder, flags, gl);
+      }
     }
   }
-
   protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
@@ -201,6 +204,9 @@ class SurfaceTechnique extends VariedTechnique {
 
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kFeature * flags.featureMode;
+    if (flags.isAnimated)
+      index += SurfaceTechnique._kAnimated;
+
     return index;
   }
 }
@@ -415,7 +421,7 @@ export class Techniques implements IDisposable {
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
-          flags.init(target, renderPass);
+          flags.init(target, renderPass, command.hasAnimation);
           const tech = this.getTechnique(techniqueId);
           const program = tech.getShader(flags);
           if (executor.setProgram(program)) {
