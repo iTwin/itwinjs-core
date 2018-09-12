@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { XYAndZ, Point2d, Point3d } from "@bentley/geometry-core";
-import { ScreenViewport } from "./Viewport";
-import { DecorateContext } from "./ViewContext";
 import { Logger } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
 import { ImageUtil } from "./ImageUtil";
-import { Overlay2dDecoration } from "./render/System";
+import { IModelConnection } from "./IModelConnection";
+import { CanvasDecoration } from "./render/System";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -25,7 +25,6 @@ import { Overlay2dDecoration } from "./render/System";
  * (an x,y point) and a Sprite to draw at that point. A Sprite
  * can be used many times by many SpriteLocations and a single SpriteLocation can
  * change both position and which Sprite is shown at that position over time.
- *
  */
 export class Sprite {
   /** The image for this Sprite. If undefined, the Spite is not valid. */
@@ -88,20 +87,23 @@ export class IconSprites {
 
 /**
  * A Sprite location. Sprites generally move around on the screen and this object holds the current location
- * and current Sprite within a Viewport. SpriteLocations can be either inactive (not visible) or active.
+ * and current Sprite within a ScreenViewport. SpriteLocations can be either inactive (not visible) or active.
  *
- * A SpriteLocation can also specify that a Sprite should be drawn partially transparent
+ * A SpriteLocation can also specify that a Sprite should be drawn partially transparent.
  */
-export class SpriteLocation implements Overlay2dDecoration {
+export class SpriteLocation implements CanvasDecoration {
   private _viewport?: ScreenViewport;
   private _sprite?: Sprite;
   private _alpha?: number;
+  /** The current position of this sprite in view coordinates.
+   * @see [[CanvasDecoration.position]]
+   */
   public readonly position = new Point3d();
   public get isActive(): boolean { return this._viewport !== undefined; }
 
   /**
-   * Activate this SpriteLocation to show a Sprite at a location in a single Viewport.
-   * This call does not display the Sprite in the Viewport. Rather, subsequent calls to
+   * Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
+   * This call does not display the Sprite. Rather, subsequent calls to
    * [[decorate]] from  will show the Sprite.
    * This SpriteLocation remains active until [[deactivate]] is called.
    * @param sprite  The Sprite to draw at this SpriteLocation
@@ -128,17 +130,20 @@ export class SpriteLocation implements Overlay2dDecoration {
     this._viewport = undefined;
   }
 
+  /** Draw this sprite onto the supplied canvas.
+   * @see [[CanvasDecoration.drawDecoration]]
+   */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    const sprite = this._sprite!;
     if (undefined !== this._alpha)
       ctx.globalAlpha = this._alpha;
 
+    const sprite = this._sprite!;
     ctx.drawImage(sprite.image!, -sprite.offset.x, -sprite.offset.y);
   }
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */
   public decorate(context: DecorateContext) {
     if (context.viewport === this._viewport)
-      context.addOverlay2dDecoration(this);
+      context.addCanvasDecoration(this);
   }
 }

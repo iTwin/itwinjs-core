@@ -18,7 +18,7 @@ import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeCursor, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
-import { Overlay2dDecoration } from "../render/System";
+import { CanvasDecoration } from "../render/System";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -298,7 +298,7 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
   public readonly toolState = new ToolState();
-  private _overlayDecoration?: Overlay2dDecoration;
+  private _overlayDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
   public cursorView?: ScreenViewport;
@@ -779,7 +779,7 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
-  private setOverlayDecoration(vp: ScreenViewport, dec?: Overlay2dDecoration, ev?: BeButtonEvent) {
+  private setOverlayDecoration(vp: ScreenViewport, dec?: CanvasDecoration, ev?: BeButtonEvent) {
     if (dec === this._overlayDecoration)
       return;
 
