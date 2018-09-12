@@ -23,11 +23,13 @@ initializeBackend();
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
 const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
+const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
+
 let winRef: any;
 
 function createWindow() {
 
-  const win = new electron.BrowserWindow({
+  const windowOptions = {
     width: 1280,
     height: 800,
     webPreferences: {
@@ -35,7 +37,15 @@ function createWindow() {
       experimentalFeatures: true, // Needed for CSS Grid support
     },
     autoHideMenuBar: true,
-  });
+    show: !maximizeWindow,
+  };
+
+  const win = new electron.BrowserWindow(windowOptions);
+  if (maximizeWindow) {
+    win.maximize(); // maximize before showing to avoid resize event on startup
+    win.show();
+  }
+
   winRef = win;
   if (autoOpenDevTools)
     winRef.toggleDevTools();
