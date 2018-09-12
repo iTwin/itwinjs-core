@@ -1501,29 +1501,35 @@ export abstract class Viewport {
   }
 
   /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
-  private static drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-    const white = ColorDef.white.clone();
-    const black = ColorDef.black.clone();
+  private drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
+    const colorDefToString = (color: ColorDef, transparency: number) => {
+      const colors = color.colors;
+      const alpha = (255 - transparency) / 255;
+      return "rgba(" + (colors.r | 0) + "," + (colors.g | 0) + "," + (colors.b | 0) + "," + alpha + ")";
+    };
 
-    const radius = (aperture / 2.0) + .5;
-    const center = context.viewport.worldToView(pt);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius + 1, radius + 1);
+    const fillStyle = colorDefToString(ColorDef.white, 115);
+    const strokeStyle = colorDefToString(ColorDef.white, 20);
+    const outerStrokeStyle = colorDefToString(ColorDef.black, 100);
 
-    white.setTransparency(165);
-    builder.setSymbology(white, white, 1);
-    builder.addArc2d(ellipse, true, true, 0.0);
+    const radius = (aperture * 0.5) + 0.5;
+    const position = this.worldToView(pt);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = strokeStyle;
+      ctx.fillStyle = fillStyle;
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
 
-    black.setTransparency(100);
-    builder.setSymbology(black, black, 1);
-    builder.addArc2d(ellipse2, false, false, 0.0);
+      ctx.beginPath();
+      ctx.strokeStyle = outerStrokeStyle;
+      ctx.lineWidth = 1;
+      ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
+      ctx.stroke();
+    };
 
-    white.setTransparency(20);
-    builder.setSymbology(white, white, 1);
-    builder.addArc2d(ellipse, false, false, 0.0);
-
-    context.addDecorationFromBuilder(builder);
+    context.addOverlay2dDecoration({ position, drawDecoration, frontmost: true });
   }
 
   /** @hidden */
@@ -1532,14 +1538,17 @@ export abstract class Viewport {
       Viewport.drawLocateHitDetail(context, aperture, hit);
 
     if (isLocateCircleOn)
-      Viewport.drawLocateCircle(context, aperture, pt);
+        this.drawLocateCircle(context, aperture, pt);
+  }
+
+  private get _wantInvertBlackAndWhite(): boolean {
+    const bgColor = this.view.backgroundColor.colors;
+    return ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
   }
 
   /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
-    const bgColor = this.view.backgroundColor.colors;
-    const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
-    return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
+    return this._wantInvertBlackAndWhite ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
 
   private processFlash(): boolean {

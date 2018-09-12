@@ -122,6 +122,9 @@ export interface Overlay2dDecoration {
   onMouseButton?(ev: BeButtonEvent): boolean;
   onWheel?(ev: BeWheelEvent): boolean;
   position: XAndY;
+
+  /** @hidden */
+  frontmost?: boolean;
 }
 export type Overlay2dList = Overlay2dDecoration[];
 
