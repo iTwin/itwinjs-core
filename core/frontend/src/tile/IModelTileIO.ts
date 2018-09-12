@@ -19,7 +19,8 @@ import {
   SegmentEdgeParams,
   SilhouetteParams,
   EdgeParams,
-  } from "../render/primitives/VertexTable";
+  AuxDisplacement,
+} from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic } from "../render/System";
@@ -425,6 +426,20 @@ export namespace IModelTileIO {
         const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
         uvParams = QParams2d.fromRange(uvRange);
       }
+      let auxDisplacements: undefined | AuxDisplacement[];
+      if (undefined !== json.auxDisplacements) {
+        auxDisplacements = [];
+        for (const displacementJson of json.auxDisplacements) {
+          auxDisplacements.push(new AuxDisplacement({
+            index: displacementJson.index,
+            numRgbaPerVertex: displacementJson.numRgbaPerVertex,
+            name: displacementJson.name,
+            qOrigin: displacementJson.qOrigin,
+            qScale: displacementJson.qScale,
+            inputs: displacementJson.inputs,
+          }));
+        }
+      }
 
       return new VertexTable({
         data: bytes,
@@ -438,6 +453,7 @@ export namespace IModelTileIO {
         numVertices: json.count,
         numRgbaPerVertex: json.numRgbaPerVertex,
         uvParams,
+        auxDisplacements,
       });
     }
 

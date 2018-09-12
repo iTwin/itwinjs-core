@@ -41,6 +41,8 @@ export abstract class CachedGeometry implements IDisposable {
   public get isLitSurface(): boolean { return false; }
   // Returns true if this is an unlit surface with baked-in lighting (e.g. 3mx, scalable mesh reality models)
   public get hasBakedLighting(): boolean { return false; }
+  // Returns true if this primititive constains auxilliary animation data.
+  public get hasAnimation(): boolean { return false; }
 
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
@@ -113,6 +115,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
+  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements; }
 
   protected constructor() { super(); }
 }

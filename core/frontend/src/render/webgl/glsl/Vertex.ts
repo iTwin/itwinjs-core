@@ -43,6 +43,26 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 }
 `;
 
+const computeAnimationFrameDisplacement = `
+vec4 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale) {
+  vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex * 2.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
+  return unquantizePosition(qpos, origin, scale);
+}`;
+
+const computeAnimationDisplacement = `
+vec4 computeAnimationDisplacement(float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
+vec4 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
+if (fraction > 0.0) {
+  vec4 displacement1 = computeAnimationFrameDisplacement(frameIndex1, origin, scale);
+  displacement += fraction * (displacement1 - displacement);
+  }
+return displacement;
+}`;
+
 const scratchMVPMatrix = new Matrix4();
 
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
@@ -77,6 +97,46 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
       const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
       if (undefined !== rotMat)
         uniform.setMatrix3(rotMat);
+    });
+  });
+}
+const scratchAnimationParams = new Float32Array(3);
+export function addAnimation(vert: VertexShaderBuilder): void {
+  vert.addFunction(computeAnimationFrameDisplacement);
+  vert.addFunction(computeAnimationDisplacement);
+
+  vert.addUniform("u_animParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_animParams", (uniform, params) => {
+      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+      if (lutGeom.lut.auxDisplacements !== undefined) {
+        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
+        // TBD... from fraction within animation compute frame and frameFraction;
+        const frame0Index = 0;
+        const frameFraction = 0.5;
+        const frameSize = lutGeom.lut.numVertices * auxDisplacement.numRgbaPerVertex;
+        scratchAnimationParams[0] = auxDisplacement.index + frame0Index * frameSize;
+        scratchAnimationParams[1] = scratchAnimationParams[0] + frameSize;
+        scratchAnimationParams[2] = frameFraction;
+      }
+      uniform.setUniform3fv(scratchAnimationParams);
+    });
+  });
+  vert.addUniform("u_qAnimScale", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_qAnimScale", (uniform, params) => {
+      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+      if (lutGeom.lut.auxDisplacements !== undefined) {
+        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
+        uniform.setUniform3fv(auxDisplacement.qScale);
+      }
+    });
+  });
+  vert.addUniform("u_qAnimOrigin", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_qAnimOrigin", (uniform, params) => {
+      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+      if (lutGeom.lut.auxDisplacements !== undefined) {
+        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
+        uniform.setUniform3fv(auxDisplacement.qOrigin);
+      }
     });
   });
 }
@@ -151,15 +211,15 @@ export namespace GLSLVertex {
   // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
   // Also place it outside NDC range (for GL_POINTS)
   const discardVertex = `
-    {
-    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    return;
-    }
+{
+  gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  return;
+}
 `;
 
-  export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition)) ` + discardVertex;
-  export const discard = `  if (checkForDiscard()) ` + discardVertex;
-  export const lateDiscard = `  if (checkForLateDiscard()) ` + discardVertex;
+  export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
+  export const discard = `  if (checkForDiscard())` + discardVertex;
+  export const lateDiscard = `  if (checkForLateDiscard())` + discardVertex;
 
   export const computeLineWeight = "\nfloat ComputeLineWeight() { return u_lineWeight; }\n";
   export const computeLineCode = "\nfloat ComputeLineCode() { return u_lineCode; }\n";
