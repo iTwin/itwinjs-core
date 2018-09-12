@@ -2,6 +2,18 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.125.0",
+      "tag": "@bentley/geometry-core_v0.125.0",
+      "date": "Wed, 12 Sep 2018 13:35:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ray3d.intersectionWithPlane fix !number instead of checking undefined."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.124.0",
       "tag": "@bentley/geometry-core_v0.124.0",
       "date": "Tue, 11 Sep 2018 13:52:59 GMT",

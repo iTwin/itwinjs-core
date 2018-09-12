@@ -43,7 +43,7 @@ describe("iModelHub CodeHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await iModelClient;
+    iModelClient = await utils.getClient(iModelId);
     const briefcases = await utils.getBriefcases(accessToken, iModelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
     briefcaseId2 = briefcases[1].briefcaseId!;

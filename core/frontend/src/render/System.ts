@@ -147,6 +147,8 @@ export interface CanvasDecoration {
    */
   onMouseButton?(ev: BeButtonEvent): boolean;
   onWheel?(ev: BeWheelEvent): boolean;
+  /** @hidden */
+  frontmost?: boolean;
 }
 export type CanvasDecorationList = CanvasDecoration[];
 

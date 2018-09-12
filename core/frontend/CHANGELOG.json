@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.125.0",
+      "tag": "@bentley/imodeljs-frontend_v0.125.0",
+      "date": "Wed, 12 Sep 2018 13:35:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ray3d.intersectionWithPlane fix !number instead of checking undefined. Added project point to line or plane in view helper methods for tools."
+          },
+          {
+            "comment": "SimpleViewTest - Moved incident marker and project extents under test tool menu."
+          },
+          {
+            "comment": "TentativePoint.setCurrSnap needs to reset adjustedPoint from a pre-located SnapDetail."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.124.0",
       "tag": "@bentley/imodeljs-frontend_v0.124.0",
       "date": "Tue, 11 Sep 2018 13:52:59 GMT",
