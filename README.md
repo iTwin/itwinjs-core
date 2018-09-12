@@ -70,6 +70,7 @@ Configure npm and log in to the Bentley npm registry with the following commands
 
 ```cmd
 npm config set @bentley:registry https://npm.bentley.com/npm/npm/
+npm login --scope=@bentley
 ```
 
 ## Build Instructions
