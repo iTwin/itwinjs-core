@@ -185,4 +185,26 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("ArcBsplineMapped", () => {
+    const ck = new Checker();
+    for (const map of createSamplePerspectiveMaps()) {
+      const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
+      const z = 0.1;    // raise the arc a little so various view directions produce different intersections.
+      const g0 = Arc3d.create(Point3d.create(0, 0, z), Vector3d.create(2, 0, 0), Vector3d.create(0, 2, 1));
+
+      for (const order of [2, 3, 4]) {
+        const bspline1 = BSplineCurve3d.createUniformKnots(
+          [Point3d.create(-1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 3, 0), Point3d.create(4, 3, 0)], order)!;
+
+        const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, g0, false, bspline1, false);
+        testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
+
+        const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline1, false, g0, false);
+        testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
+      }
+
+    }
+    ck.checkpoint("CurveCurve.LineStringBsplineMapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

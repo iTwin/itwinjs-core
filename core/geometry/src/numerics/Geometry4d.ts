@@ -195,8 +195,8 @@ export class Point4d implements BeJSONFunctions {
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
    */
-  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0): Point4d {
-    return new Point4d(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3]);
+  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
+    return Point4d.create (data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
   }
 
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
@@ -672,6 +672,24 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w,
       this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w);
   }
+  /** multiply matrix times column vectors [x,y,z,w] where [x,y,z,w] appear in blocks in an array.
+   * replace the xyzw in the block
+   */
+  public multiplyBlockedFloat64ArrayInPlace(data: Float64Array) {
+    const n = data.length;
+    let x, y, z, w;
+    for (let i = 0; i + 3 < n; i += 4) {
+      x = data[i];
+      y = data[i + 1];
+      z = data[i + 2];
+      w = data[i + 3];
+      data[i] = this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w;
+      data[i + 1] = this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w;
+      data[i + 2] = this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w;
+      data[i + 3] = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
+    }
+  }
+
   /** multiply matrix times XYAndZ  and w. return as Point4d  (And the returned value is NOT normalized down to unit w) */
   public multiplyPoint3d(pt: XYAndZ, w: number, result?: Point4d): Point4d {
     return this.multiplyXYZW(pt.x, pt.y, pt.z, w, result);
