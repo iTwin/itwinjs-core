@@ -5,23 +5,25 @@
   $fill-color: rgba($background-5, 0.88);
   $pressed-fill-color: $primary-tone;
 
-  background: $fill-color;
+  background-color: $fill-color;
   width: $desktop-item-width;
   height: $desktop-item-height;
   cursor: pointer;
   position: relative;
 
   &:active {
-    background: $pressed-fill-color;
+    &:not(.nz-is-disabled) {
+      background-color: $pressed-fill-color;
+    }
   }
 
   &.nz-is-active {
-    &:not(:active) {
+    &:not(:active):not(.nz-is-disabled) {
       &:before {
         content: '';
         display: block;
         position: absolute;
-        background-color: $active-icon-color;
+        background-color: $active-item-bg-color;
         left: 3px;
         top: ($desktop-item-height - $desktop-tool-stripe-height) / 2;
         border-radius: 2px;

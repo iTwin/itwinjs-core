@@ -16,6 +16,8 @@ export interface BackstageItemProps extends CommonProps {
   icon?: React.ReactChild;
   /** Describes if the items is active. */
   isActive?: boolean;
+  /** Describes if the items is disabled. */
+  isDisabled?: boolean;
   /** Item label. */
   label?: string;
   /** Function called when item is clicked. */
@@ -28,13 +30,14 @@ export default class BackstageItem extends React.Component<BackstageItemProps> {
     const className = classnames(
       "nz-backstage-item",
       this.props.isActive && "nz-is-active",
+      this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
     return (
       <div
         className={className}
         style={this.props.style}
-        onClick={this.props.onClick}
+        onClick={this._handleClick}
       >
         <div className="nz-icon">
           {this.props.icon}
@@ -44,5 +47,12 @@ export default class BackstageItem extends React.Component<BackstageItemProps> {
         </div>
       </div>
     );
+  }
+
+  private _handleClick = () => {
+    if (this.props.isDisabled)
+      return;
+
+    this.props.onClick && this.props.onClick();
   }
 }

@@ -3,6 +3,7 @@
 exports[`<Item /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-item"
+  onClick={[Function]}
 >
   <div
     className="nz-gradient"

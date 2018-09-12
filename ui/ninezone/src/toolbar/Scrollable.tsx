@@ -53,6 +53,13 @@ export default class Scrollable extends React.Component<ScrollableProps, Scrolla
     return true;
   }
 
+  public componentDidUpdate(prevProps: Readonly<ScrollableProps>): void {
+    const prevCount = Toolbar.getItemCount(prevProps);
+    const count = Toolbar.getItemCount(this.props);
+    if (prevCount !== count)
+      this.setState(() => ({ scrollOffset: 0 }));
+  }
+
   private getVisibleItemCount() {
     if (!Scrollable.isWithDefaultProps(this.props))
       throw new TypeError();

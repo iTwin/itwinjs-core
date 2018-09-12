@@ -6,9 +6,6 @@
   $desktop-icon-height: $desktop-icon-width;
   $desktop-icon-left-margin: ($desktop-item-width - $desktop-icon-width) / 2; //to center icon
   $desktop-icon-top-margin: ($desktop-item-height - $desktop-icon-height) / 2; //to center icon
-  $icon-color: rgba($text-light, 0.88);
-  $hovered-icon-color: $primary-tint;
-  $pressed-icon-color: rgba($text-light, 0.88);
   $icon-shadow: drop-shadow(0 1px 0 $text-dark);
   $no-shadow: drop-shadow(0 0 0 transparent);
 
@@ -37,7 +34,7 @@
     transition-duration: 150ms;
   }
 
-  &:active > * {
+  &:active:not(.nz-is-disabled) > * {
     color: $pressed-icon-color;
     filter: $no-shadow;
 
@@ -47,7 +44,7 @@
   }
 
   &.nz-is-active {
-    &:not(:active) {
+    &:not(:active):not(.nz-is-disabled) {
       > * {
         color: $active-icon-color;
         filter: $no-shadow;
@@ -63,7 +60,6 @@
   }
 
   &.nz-is-disabled > * {
-    color: $icon-color;
-    opacity: .22;
+    color: $disabled-icon-color;
   }
 }

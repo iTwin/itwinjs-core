@@ -14,16 +14,15 @@ import "./Icon.scss";
  */
 export class Icon extends React.Component<HistoryItemProps> {
   public render() {
-    const className = classnames(
+    const { className, ...props } = this.props;
+    const itemClassName = classnames(
       "nz-toolbar-item-expandable-history-icon",
-      this.props.className);
+      className);
 
     return (
       <Item
-        className={className}
-        style={this.props.style}
-        isActive={this.props.isActive}
-        onClick={this.props.onClick}
+        className={itemClassName}
+        {...props}
       >
         {this.props.children}
       </Item>
