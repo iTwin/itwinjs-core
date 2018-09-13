@@ -421,6 +421,8 @@ export class ColorDef {
     return ColorDef.from(c.r, c.g, c.b, c.t, result);
   }
 
+  public invert(): ColorDef { const colors = this.colors; return ColorDef.from(255 - colors.r, 255 - colors.g, 255 - colors.b); }
+
   /** Create a ColorDef from hue, saturation, lightness values */
   public static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef {
     const torgb = (p1: number, q1: number, t: number) => {

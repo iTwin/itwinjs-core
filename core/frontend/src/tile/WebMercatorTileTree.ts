@@ -642,17 +642,18 @@ export class BackgroundMapState {
     if (!this._provider)
       return;
 
-    const decorationDiv = context.decorationDiv;
     const copyrightImage = this._provider.getCopyrightImage(this);
     if (copyrightImage) {
-      decorationDiv.appendChild(copyrightImage);
-      const style = copyrightImage.style;
-      style.position = "absolute";
-      style.left = "0";
-      style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
+      const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
+      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+        ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
+      };
+      context.addCanvasDecoration({ position, drawDecoration });
     }
+
     const copyrightMessage = this._provider.getCopyrightMessage(this, context.screenViewport);
     if (copyrightMessage) {
+      const decorationDiv = context.decorationDiv;
       decorationDiv.appendChild(copyrightMessage);
       const boundingRect = copyrightMessage.getBoundingClientRect();
       const style = copyrightMessage.style;

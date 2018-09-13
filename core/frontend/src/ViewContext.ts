@@ -170,15 +170,15 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  public addOverlay2dDecoration(decoration: CanvasDecoration) {
+  public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
     if (undefined === this._decorations.canvasDecorations)
       this._decorations.canvasDecorations = [];
 
-    const overlays = this._decorations.canvasDecorations;
-    if (0 === overlays.length || true === decoration.frontmost || true !== overlays[overlays.length - 1].frontmost)
-      overlays.push(decoration);
+    const list = this._decorations.canvasDecorations;
+    if (0 === list.length || true === atFront)
+      list.push(decoration);
     else
-      overlays.unshift(decoration);
+      list.unshift(decoration);
   }
 
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }

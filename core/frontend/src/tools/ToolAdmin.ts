@@ -675,9 +675,10 @@ export class ToolAdmin {
 
   /** Called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
-    // Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
+    if (this.cursorView === vp)
+      this.cursorView = undefined;
   }
 
   private async onMouseEnter(vp: ScreenViewport) { this.cursorView = vp; }
@@ -1267,18 +1268,18 @@ export class ToolAdmin {
         this._primitiveTool.decorateSuspended(context);
     }
 
-    const viewport = context.viewport;
-    if (this.cursorView !== viewport)
+    if (this.cursorView !== context.viewport)
       return;
 
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
+    const viewport = this.cursorView;
     const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse; }
+  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._overlayDecoration === undefined; }
 
   /** @hidden */
   public beginDynamics(): void {
