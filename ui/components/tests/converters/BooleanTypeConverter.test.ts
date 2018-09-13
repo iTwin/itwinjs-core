@@ -67,4 +67,12 @@ describe("BooleanTypeConverter", () => {
 
   });
 
+  describe("isBooleanType", () => {
+
+    it("returns true", () => {
+      expect(converter.isBooleanType).to.be.true;
+    });
+
+  });
+
 });

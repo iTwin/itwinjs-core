@@ -72,7 +72,8 @@ export class PropertyEditorManager {
       fullEditorName += ":" + editorName;
 
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName)) {
-      throw Error("PropertyEditorManager.RegisterEditor error: type '" + fullEditorName + "' already registered to '" + (typeof PropertyEditorManager._editors[fullEditorName]).toString() + "'");
+      const nameOfEditor = PropertyEditorManager._editors[fullEditorName].name;
+      throw Error("PropertyEditorManager.registerEditor error: type '" + fullEditorName + "' already registered to '" + nameOfEditor + "'");
     }
     PropertyEditorManager._editors[fullEditorName] = editor;
   }
