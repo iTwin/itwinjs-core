@@ -99,7 +99,7 @@ function createCommon(animated: boolean): ProgramBuilder {
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert);
+    addAnimation(vert, true);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);

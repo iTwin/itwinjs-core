@@ -261,33 +261,37 @@ class PolylineTechnique extends VariedTechnique {
 class EdgeTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
-  private static readonly _kFeature = 2;
+  private static readonly _kAnimated = 2;
+  private static readonly _kFeature = 4;
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
-    super(numFeatureVariants(2));
+    super(numFeatureVariants(4));
     this._isSilhouette = isSilhouette;
 
     const flags = scratchTechniqueFlags;
-    for (const featureMode of featureModes) {
-      flags.reset(featureMode);
-      const builder = createEdgeBuilder(isSilhouette);
-      addMonochrome(builder.frag);
+    for (let iAnimate = 0; iAnimate < 2; iAnimate++) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode);
+        flags.isAnimated = iAnimate !== 0;
+        const builder = createEdgeBuilder(isSilhouette, flags.isAnimated);
+        addMonochrome(builder.frag);
 
-      // The translucent shaders do not need the element IDs.
-      const builderTrans = createEdgeBuilder(isSilhouette);
-      addMonochrome(builderTrans.frag);
-      if (FeatureMode.Overrides === featureMode) {
-        addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
-        addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
-        this.addTranslucentShader(builderTrans, flags, gl);
-      } else {
-        this.addTranslucentShader(builderTrans, flags, gl);
-        addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        // The translucent shaders do not need the element IDs.
+        const builderTrans = createEdgeBuilder(isSilhouette, flags.isAnimated);
+        addMonochrome(builderTrans.frag);
+        if (FeatureMode.Overrides === featureMode) {
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
+          this.addTranslucentShader(builderTrans, flags, gl);
+        } else {
+          this.addTranslucentShader(builderTrans, flags, gl);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        }
+        this.addElementId(builder, featureMode);
+        flags.reset(featureMode);
+        this.addShader(builder, flags, gl);
       }
-      this.addElementId(builder, featureMode);
-      flags.reset(featureMode);
-      this.addShader(builder, flags, gl);
     }
   }
 
@@ -296,6 +300,9 @@ class EdgeTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
     index += EdgeTechnique._kFeature * flags.featureMode;
+    if (flags.isAnimated)
+      index += EdgeTechnique._kAnimated;
+
     return index;
   }
 }

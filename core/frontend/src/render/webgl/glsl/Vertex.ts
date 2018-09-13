@@ -135,7 +135,7 @@ function computeInputLocation(inputs: number[], fraction: number): AnimationLoca
   }
   return location;
 }
-export function addAnimation(vert: VertexShaderBuilder): void {
+export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean): void {
   if (undefined === testStopWatch)
     testStopWatch = new StopWatch("Animation", true);
 
@@ -179,23 +179,25 @@ export function addAnimation(vert: VertexShaderBuilder): void {
       }
     });
   });
-  vert.addUniform("u_qAnimScalarParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const animationFraction = (testStopWatch.currentSeconds % testAnimationDuration) / testAnimationDuration;
-      scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = 0.0;
-      if (lutGeom.lut.auxParams !== undefined) {
-        const auxParam = lutGeom.lut.auxParams[0];  // TBD - allow channel selection.
-        const paramLocation = computeInputLocation(auxParam.inputs, animationFraction);
+  if (includeTexture) {
+    vert.addUniform("u_qAnimScalarParams", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
+        const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+        const animationFraction = (testStopWatch.currentSeconds % testAnimationDuration) / testAnimationDuration;
+        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = 0.0;
+        if (lutGeom.lut.auxParams !== undefined) {
+          const auxParam = lutGeom.lut.auxParams[0];  // TBD - allow channel selection.
+          const paramLocation = computeInputLocation(auxParam.inputs, animationFraction);
 
-        scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * lutGeom.lut.numVertices;
-        scratchAnimScalarParams[1] = paramLocation.fraction;
-        scratchAnimScalarParams[2] = auxParam.qOrigin;
-        scratchAnimScalarParams[3] = auxParam.qScale;
-      }
-      uniform.setUniform4fv(scratchAnimScalarParams);
+          scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * lutGeom.lut.numVertices;
+          scratchAnimScalarParams[1] = paramLocation.fraction;
+          scratchAnimScalarParams[2] = auxParam.qOrigin;
+          scratchAnimScalarParams[3] = auxParam.qScale;
+        }
+        uniform.setUniform4fv(scratchAnimScalarParams);
+      });
     });
-  });
+  }
 }
 
 const scratchLutParams = new Float32Array(4);
