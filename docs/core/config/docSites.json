@@ -29,9 +29,9 @@
     "sponsoredByLogo": "landing-page/assets/assets_bentley.svg",
     "favicon": "overview/imodeljs.ico",
     "docSiteOrder": [
+      "landing-page",
       "overview",
       "getting-started",
-      "landing-page",
       "learning",
       "bis",
       "reference"
