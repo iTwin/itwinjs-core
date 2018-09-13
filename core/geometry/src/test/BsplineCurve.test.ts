@@ -5,7 +5,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "../PointVector";
-import { Geometry, Angle } from "../Geometry";
+import { Geometry, Angle, AngleSweep } from "../Geometry";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
@@ -22,6 +22,16 @@ function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undef
     g.tryTranslateInPlace(dx, dy, 0);
     allGeometry.push(g);
   }
+}
+function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number): Point3d[] {
+  const points = [];
+  for (let f = 0.0; f <= 1.00001; f += 1.0 / numStep) {
+    const radians = sweep.fractionToRadians(f);
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    points.push(Point3d.create(a * c, b * s, 0.0));
+  }
+  return points;
 }
 /* tslint:disable:no-console */
 describe("BsplineCurve", () => {
@@ -164,8 +174,8 @@ describe("BsplineCurve", () => {
     const allGeometry: GeometryQuery[] = [];
     for (const factor of [0.5, 1, 3]) {
       const transform = Transform.createScaleAboutPoint(Point3d.create(0, 0, 0), factor);
-      const allPoints: Point3d[] = [
-        Point3d.create(0, 0, 0),
+      for (const allPoints of [
+        [Point3d.create(0, 0, 0),
         Point3d.create(0, 10, 0),
         Point3d.create(10, 10, 0),
         Point3d.create(10, 0, 0),
@@ -173,29 +183,31 @@ describe("BsplineCurve", () => {
         Point3d.create(20, 10, 0),
         Point3d.create(25, 5, 0),
         Point3d.create(30, 5, 0),
-        Point3d.create(35, 10, 0)];
-      transform.multiplyPoint3dArrayInPlace(allPoints);
-      for (let degree = 1; degree < 6; degree++) {
-        const bcurve = BSplineCurve3d.createUniformKnots(allPoints, degree + 1)!;
-        let cp: CurvePrimitive | undefined;
-        for (let spanIndex = 0; ; spanIndex++) {
-          cp = bcurve.getSaturagedBezierSpan3d(spanIndex, cp);
-          if (!cp) break;
-          const bezier = cp as BezierCurve3d;
-          const poles = bezier.copyPointsAsLineString();
-          translateAndPush(allGeometry, poles, xShift, yShift);
-          let shiftCount = 2;
-          for (const degrees of [24, 12, 6]) {
-            const options = StrokeOptions.createForCurves();
-            options.angleTol = Angle.createDegrees(degrees);
-            const strokes = LineString3d.create();
-            bezier.emitStrokes(strokes, options);
-            translateAndPush(allGeometry, strokes, xShift, (shiftCount++) * yShift);
+        Point3d.create(35, 10, 0)],
+        ellipsePoints(35, 20, AngleSweep.createStartEndDegrees(-45, 110), 9)]) {
+        transform.multiplyPoint3dArrayInPlace(allPoints);
+        for (let degree = 1; degree < 6; degree++) {
+          const bcurve = BSplineCurve3d.createUniformKnots(allPoints, degree + 1)!;
+          let cp: CurvePrimitive | undefined;
+          for (let spanIndex = 0; ; spanIndex++) {
+            cp = bcurve.getSaturagedBezierSpan3d(spanIndex, cp);
+            if (!cp) break;
+            const bezier = cp as BezierCurve3d;
+            const poles = bezier.copyPointsAsLineString();
+            translateAndPush(allGeometry, poles, xShift, yShift);
+            let shiftCount = 2;
+            for (const degrees of [24, 12, 6]) {
+              const options = StrokeOptions.createForCurves();
+              options.angleTol = Angle.createDegrees(degrees);
+              const strokes = LineString3d.create();
+              bezier.emitStrokes(strokes, options);
+              translateAndPush(allGeometry, strokes, xShift, (shiftCount++) * yShift);
+            }
+            translateAndPush(allGeometry, bezier.clone(), xShift, (shiftCount++) * yShift);
           }
-          translateAndPush(allGeometry, bezier.clone(), xShift, (shiftCount++) * yShift);
+          translateAndPush(allGeometry, bcurve, xShift, 0);
+          xShift += xStep;
         }
-        translateAndPush(allGeometry, bcurve, xShift, 0);
-        xShift += xStep;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BezierCurve3d", "BsplineSaturation");
