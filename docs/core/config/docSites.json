@@ -27,7 +27,7 @@
     "home": "landing-page",
     "logo": "landing-page/assets/assets_imodeljs-logo.svg",
     "sponsoredByLogo": "landing-page/assets/assets_bentley.svg",
-    "favicon": "landing-page/assets/imodeljs.ico",
+    "favicon": "overview/imodeljs.ico",
     "docSiteOrder": [
       "overview",
       "getting-started",
