@@ -387,10 +387,10 @@ function toggleAnimationMenu(_event: any) {
 function updateAnimation() {
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
   animationSlider.value = (parseInt(animationSlider.value) + 1).toString();
+  theViewport!.sync.invalidateScene();
   if ("100" === animationSlider.value) {
     animationSlider.value = "0";
     clearInterval(animationIntervalId);
-    theViewport!.continuousRendering = false;
     isAnimating = false;
   }
 }
@@ -402,7 +402,6 @@ function startAnimation(_event: any) {
   if (isAnimating)
     return; // cannot animate while animating
   animationIntervalId = setInterval(updateAnimation, 100);
-  theViewport!.continuousRendering = true;
   isAnimating = true;
 }
 
@@ -415,7 +414,6 @@ function stopAnimation(_event: any) {
   clearInterval(animationIntervalId);
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
   animationSlider.value = "0";
-  theViewport!.continuousRendering = false;
   isAnimating = false;
 }
 
