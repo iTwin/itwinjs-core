@@ -113,20 +113,46 @@ export abstract class RenderClipVolume implements IDisposable {
 
 export type GraphicList = RenderGraphic[];
 
-export interface Overlay2dDecoration {
+/** A Decoration that is drawn onto the 2d canvas on top of a ScreenViewport. CanvasDecorations may be pickable by implementing [[pick]]. */
+export interface CanvasDecoration {
+  [propName: string]: any;
+
+  /**
+   * Method to draw this decoration into the supplied CanvasRenderingContext2D. This method is called every time a frame is rendered.
+   * @param ctx The CanvasRenderingContext2D for the [[ScreenViewport]] being rendered.
+   * @note Before this this function is called, the state of the CanvasRenderingContext2D is [saved](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save),
+   * and it is [restored](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore) when this method returns. Therefore,
+   * it is *not* necessary for implementers to save/restore themselves.
+   */
   drawDecoration(ctx: CanvasRenderingContext2D): void;
+  /**
+   * Optional view coordinates position of this overlay decoration. If present, [ctx.translate](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate) is called
+   * with this point before [[drawDecoration]] is called.
+   */
+  position?: XAndY;
+  /** Optional method to provide feedback when mouse events occur on this decoration.
+   * @param pt The position of the mouse in the ScreenViewport
+   * @return true if the mouse is inside this decoration.
+   * @note If this method is not present, no mouse events are directed to this decoration.
+   */
   pick?(pt: XAndY): boolean;
+  /** Optional method to be called whenever this decorator is picked and the mouse first enters this decoration. */
   onMouseEnter?(ev: BeButtonEvent): void;
+  /** Optional method to be called whenever when the mouse leaves this decoration. */
   onMouseLeave?(): void;
+  /** Optional method to be called whenever when the mouse moves inside this decoration. */
   onMouseMove?(ev: BeButtonEvent): void;
+  /**
+   * Optional method to be called whenever this decorator is picked and a mouse button is pressed or released inside this decoration.
+   * @return true if the event was handled by this decoration and should *not* be forwarded to the active tool.
+   * @note This method is called for both mouse up and down events. If it returns `true` for a down event, it should also return `true` for the
+   * corresponding up event.
+   */
   onMouseButton?(ev: BeButtonEvent): boolean;
   onWheel?(ev: BeWheelEvent): boolean;
-  position: XAndY;
-
-  /** @hidden */
-  frontmost?: boolean;
 }
-export type Overlay2dList = Overlay2dDecoration[];
+
+export type CanvasDecorationList = CanvasDecoration[];
 
 /**
  * Various of lists of RenderGraphics that are "decorated" into the RenderTarget, in addition to the Scene.
@@ -138,7 +164,7 @@ export class Decorations implements IDisposable {
   private _world?: GraphicList;        // drawn with zbuffer, with default lighting, smooth shading
   private _worldOverlay?: GraphicList; // drawn in overlay mode, world units
   private _viewOverlay?: GraphicList;  // drawn in overlay mode, view units
-  public overlay2d?: Overlay2dList;
+  public canvasDecorations?: CanvasDecorationList;
 
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
   public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
@@ -248,7 +274,7 @@ export namespace Pixel {
  * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
-  public pickOverlayDecoration(_pt: XAndY): Overlay2dDecoration | undefined { return undefined; }
+  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }

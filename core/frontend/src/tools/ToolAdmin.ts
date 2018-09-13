@@ -18,7 +18,7 @@ import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeCursor, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
-import { Overlay2dDecoration } from "../render/System";
+import { CanvasDecoration } from "../render/System";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -298,7 +298,7 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
   public readonly toolState = new ToolState();
-  private _overlayDecoration?: Overlay2dDecoration;
+  private _overlayDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
   public cursorView?: ScreenViewport;
@@ -675,9 +675,10 @@ export class ToolAdmin {
 
   /** Called when a viewport is closed */
   public onViewportClosed(vp: Viewport): void {
-    // Closing the viewport may also delete the QueryModel so we have to prevent AccuSnap from trying to use it.
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
+    if (this.cursorView === vp)
+      this.cursorView = undefined;
   }
 
   private async onMouseEnter(vp: ScreenViewport) { this.cursorView = vp; }
@@ -779,7 +780,7 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
-  private setOverlayDecoration(vp: ScreenViewport, dec?: Overlay2dDecoration, ev?: BeButtonEvent) {
+  private setOverlayDecoration(vp: ScreenViewport, dec?: CanvasDecoration, ev?: BeButtonEvent) {
     if (dec === this._overlayDecoration)
       return;
 
@@ -1267,18 +1268,18 @@ export class ToolAdmin {
         this._primitiveTool.decorateSuspended(context);
     }
 
-    const viewport = context.viewport;
-    if (this.cursorView !== viewport)
+    if (this.cursorView !== context.viewport)
       return;
 
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
+    const viewport = this.cursorView;
     const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse; }
+  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._overlayDecoration === undefined; }
 
   /** @hidden */
   public beginDynamics(): void {

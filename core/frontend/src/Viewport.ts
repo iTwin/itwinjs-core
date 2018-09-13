@@ -1461,86 +1461,6 @@ export abstract class Viewport {
     return worldPts[0].distance(worldPts[1]);
   }
 
-  /** Show the surface normal for geometry under the cursor when snapping. */
-  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    if (!context.viewport.view.is3d())
-      return; // Not valuable feedback in 2d...
-
-    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
-      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
-    const colorFill = color.clone();
-
-    color.setTransparency(100);
-    colorFill.setTransparency(200);
-    builder.setSymbology(color, colorFill, 1);
-
-    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
-    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
-    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
-
-    builder.addArc(ellipse, true, true);
-    builder.addArc(ellipse, false, false);
-
-    const length = (0.6 * radius);
-    const normal = Vector3d.create();
-
-    ellipse.vector0.normalize(normal);
-    const pt1 = hit.snapPoint.plusScaled(normal, length);
-    const pt2 = hit.snapPoint.plusScaled(normal, -length);
-    builder.addLineString([pt1, pt2]);
-
-    ellipse.vector90.normalize(normal);
-    const pt3 = hit.snapPoint.plusScaled(normal, length);
-    const pt4 = hit.snapPoint.plusScaled(normal, -length);
-    builder.addLineString([pt3, pt4]);
-
-    context.addDecorationFromBuilder(builder);
-  }
-
-  /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
-  private drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const colorDefToString = (color: ColorDef, transparency: number) => {
-      const colors = color.colors;
-      const alpha = (255 - transparency) / 255;
-      return "rgba(" + (colors.r | 0) + "," + (colors.g | 0) + "," + (colors.b | 0) + "," + alpha + ")";
-    };
-
-    const fillStyle = colorDefToString(ColorDef.white, 115);
-    const strokeStyle = colorDefToString(ColorDef.white, 20);
-    const outerStrokeStyle = colorDefToString(ColorDef.black, 100);
-
-    const radius = (aperture * 0.5) + 0.5;
-    const position = this.worldToView(pt);
-    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-      ctx.beginPath();
-      ctx.strokeStyle = strokeStyle;
-      ctx.fillStyle = fillStyle;
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = outerStrokeStyle;
-      ctx.lineWidth = 1;
-      ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
-      ctx.stroke();
-    };
-
-    context.addOverlay2dDecoration({ position, drawDecoration, frontmost: true });
-  }
-
-  /** @hidden */
-  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
-    if (hit)
-      Viewport.drawLocateHitDetail(context, aperture, hit);
-
-    if (isLocateCircleOn)
-        this.drawLocateCircle(context, aperture, pt);
-  }
-
   private get _wantInvertBlackAndWhite(): boolean {
     const bgColor = this.view.backgroundColor.colors;
     return ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
@@ -1768,6 +1688,7 @@ export class ScreenViewport extends Viewport {
     const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
 
     addChild(canvas, parentZ + 10);
+    this.target.updateViewRect();
 
     this.decorationDiv = document.createElement("div");
     this.decorationDiv.className = "overlay-decorators";
@@ -1922,6 +1843,72 @@ export class ScreenViewport extends Viewport {
   public resetUndo() {
     this.clearViewUndo();
     this.saveViewUndo();  // Set up new baseline state
+  }
+
+  /** Show the surface normal for geometry under the cursor when snapping. */
+  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
+    if (!context.viewport.view.is3d())
+      return; // Not valuable feedback in 2d...
+
+    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
+      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    const color = context.viewport.hilite.color.invert(); // Invert hilite color for good contrast
+    const colorFill = color.clone();
+
+    color.setTransparency(100);
+    colorFill.setTransparency(200);
+    builder.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
+    builder.addArc(ellipse, true, true);
+    builder.addArc(ellipse, false, false);
+
+    const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
+    ellipse.vector0.normalize(normal);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
+    builder.addLineString([pt1, pt2]);
+
+    ellipse.vector90.normalize(normal);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    builder.addLineString([pt3, pt4]);
+
+    context.addDecorationFromBuilder(builder);
+  }
+
+  /** @hidden */
+  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
+    if (hit)
+      ScreenViewport.drawLocateHitDetail(context, aperture, hit);
+
+    if (isLocateCircleOn) {
+      // draw a filled and outlined circle to represent the size of the location tolerance in the current view.
+      const radius = (aperture * 0.5) + 0.5;
+      const position = this.worldToView(pt);
+      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(255,255,255,.4)";
+        ctx.fillStyle = "rgba(255,255,255,.2)";
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(0,0,0,.8)";
+        ctx.lineWidth = 1;
+        ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
+        ctx.stroke();
+      };
+      context.addCanvasDecoration({ position, drawDecoration }, true);
+    }
   }
 }
 

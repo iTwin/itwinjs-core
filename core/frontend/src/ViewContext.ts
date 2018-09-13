@@ -9,7 +9,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList, Overlay2dDecoration } from "./render/System";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList, CanvasDecoration } from "./render/System";
 import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
@@ -170,15 +170,15 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  public addOverlay2dDecoration(decoration: Overlay2dDecoration) {
-    if (undefined === this._decorations.overlay2d)
-      this._decorations.overlay2d = [];
+  public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
+    if (undefined === this._decorations.canvasDecorations)
+      this._decorations.canvasDecorations = [];
 
-    const overlays = this._decorations.overlay2d;
-    if (0 === overlays.length || true === decoration.frontmost || true !== overlays[overlays.length - 1].frontmost)
-      overlays.push(decoration);
+    const list = this._decorations.canvasDecorations;
+    if (0 === list.length || true === atFront)
+      list.push(decoration);
     else
-      overlays.unshift(decoration);
+      list.unshift(decoration);
   }
 
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
