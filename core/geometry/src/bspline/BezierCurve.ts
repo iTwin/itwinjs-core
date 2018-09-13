@@ -739,7 +739,7 @@ export class BezierCurve3d extends BezierCurveBase {
         dx0 = dx1; dy0 = dy1; dz0 = dz1;
       }
       const d = this.degree;
-      const factor = d * (d - 1) * Math.sqrt (d - 1); // heuristic
+      const factor = d * (d - 1); // usual factor applied to derivatives.
       const sweepRadians = (sumLength / factor) * kMax;  // sweep for a circle circumference at highest curvature.
       numPerSpan = StrokeOptions.applyAngleTol(options, 1, sweepRadians, 0.2);
     }

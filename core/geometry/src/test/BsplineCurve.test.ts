@@ -5,7 +5,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "../PointVector";
-import { Geometry } from "../Geometry";
+import { Geometry, Angle } from "../Geometry";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
@@ -15,6 +15,7 @@ import { GeometryQuery, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../Transform";
+import { StrokeOptions } from "../curve/StrokeOptions";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -171,9 +172,10 @@ describe("BsplineCurve", () => {
         Point3d.create(20, 0, 0),
         Point3d.create(20, 10, 0),
         Point3d.create(25, 5, 0),
-        Point3d.create(30, 5, 0)];
+        Point3d.create(30, 5, 0),
+        Point3d.create(35, 10, 0)];
       transform.multiplyPoint3dArrayInPlace(allPoints);
-      for (let degree = 1; degree < 5; degree++) {
+      for (let degree = 1; degree < 6; degree++) {
         const bcurve = BSplineCurve3d.createUniformKnots(allPoints, degree + 1)!;
         let cp: CurvePrimitive | undefined;
         for (let spanIndex = 0; ; spanIndex++) {
@@ -182,10 +184,15 @@ describe("BsplineCurve", () => {
           const bezier = cp as BezierCurve3d;
           const poles = bezier.copyPointsAsLineString();
           translateAndPush(allGeometry, poles, xShift, yShift);
-          const strokes = LineString3d.create();
-          bezier.emitStrokes(strokes);
-          translateAndPush(allGeometry, strokes, xShift, 2 * yShift);
-          translateAndPush(allGeometry, bezier.clone(), xShift, 3 * yShift);
+          let shiftCount = 2;
+          for (const degrees of [24, 12, 6]) {
+            const options = StrokeOptions.createForCurves();
+            options.angleTol = Angle.createDegrees(degrees);
+            const strokes = LineString3d.create();
+            bezier.emitStrokes(strokes, options);
+            translateAndPush(allGeometry, strokes, xShift, (shiftCount++) * yShift);
+          }
+          translateAndPush(allGeometry, bezier.clone(), xShift, (shiftCount++) * yShift);
         }
         translateAndPush(allGeometry, bcurve, xShift, 0);
         xShift += xStep;
