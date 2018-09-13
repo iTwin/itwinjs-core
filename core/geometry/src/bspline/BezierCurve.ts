@@ -21,6 +21,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../PointHelpers";
 import { BezierCoffs, Bezier } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
+import { BSplineCurve3d } from "./BSplineCurve";
 /**
  * Implements a multidimensional bezier curve of fixed order.
  */
@@ -504,7 +505,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     }
   }
   public dispatchToGeometryHandler(_handler: GeometryHandler): any {
-    // return _handler.handleBSplineCurve3d(this);
+    // NEEDS WORK
   }
   /**
    * Form dot products of each pole with given coefficients. Return as entries in products array.
@@ -713,8 +714,35 @@ export class BezierCurve3d extends BezierCurveBase {
     handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
   }
 
-  public emitStrokes(dest: LineString3d, _options?: StrokeOptions): void {
-    const numPerSpan = Math.min(15, 1 + 3 * this.degree); // NEEDS WORK -- apply stroke options to get better count !!!
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
+    let numPerSpan = 1;
+    const order = this.order;
+    if (order >= 3) {
+      const data = this._polygon.packedData;
+      let dx0 = data[3] - data[0];
+      let dy0 = data[4] - data[1];
+      let dz0 = data[5] - data[2];
+      let dx1, dy1, dz1;    // first differences of leading edge
+      let ex, ey, ez; // second differences.
+
+      let kMax = 0.0;
+      let sumLength = Geometry.hypotenuseXYZ(dx0, dy0, dy0);
+      const n = data.length;
+      for (let i = 6; i + 2 < n; i++) {
+        dx1 = data[i] - data[i - 3];
+        dy1 = data[i + 1] - data[i - 2];
+        dz1 = data[i + 2] - data[i - 1];
+        ex = dx1 - dx0; ey = dy1 - dy0; ez = dz1 - dz0;
+        kMax = Math.max(kMax, Geometry.curvatureMagnitude(dx0, dy0, dz0, ex, ey, ez),
+          Geometry.curvatureMagnitude(dx1, dy1, dz1, ex, ey, ez));
+        sumLength += Geometry.hypotenuseXYZ(dx1, dy1, dz1);
+        dx0 = dx1; dy0 = dy1; dz0 = dz1;
+      }
+      const d = this.degree;
+      const factor = d * (d - 1) * Math.sqrt (d - 1); // heuristic
+      const sweepRadians = (sumLength / factor) * kMax;  // sweep for a circle circumference at highest curvature.
+      numPerSpan = StrokeOptions.applyAngleTol(options, 1, sweepRadians, 0.2);
+    }
     const fractionStep = 1.0 / numPerSpan;
     for (let i = 0; i <= numPerSpan; i++) {
       const fraction = i * fractionStep;
@@ -735,7 +763,20 @@ export class BezierCurve3d extends BezierCurveBase {
       }
     }
   }
-  public dispatchToGeometryHandler(_handler: GeometryHandler): any {
-    // return _handler.handleBSplineCurve3d(this);
+  /**
+   * convert to bspline curve and dispatch to handler
+   * @param handler handelr to receive strongly typed geometry
+   */
+  public dispatchToGeometryHandler(handler: GeometryHandler): any {
+
+    const poles3d: Point3d[] = [];
+    const order = this.order;
+    for (let i = 0; i < order; i++) {
+      poles3d.push(this.getPole(i)!);
+    }
+    const bspline = BSplineCurve3d.createUniformKnots(poles3d, this.order);
+    if (bspline)
+      return bspline.dispatchToGeometryHandler(handler);
+    return undefined;
   }
 }

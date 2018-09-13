@@ -185,7 +185,7 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("ArcBsplineMapped", () => {
+  it("ArcBsplineMapped", () => {
     const ck = new Checker();
     for (const map of createSamplePerspectiveMaps()) {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.

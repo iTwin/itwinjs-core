@@ -284,7 +284,7 @@ class ExerciseCurve {
 }
 
 describe("CurvePrimitive.Evaluations", () => {
-  it.only("Create and exercise curves", () => {
+  it("Create and exercise curves", () => {
     const ck = new Checker();
     ExerciseCurve.RunTest(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");

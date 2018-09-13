@@ -311,6 +311,37 @@ export class Geometry {
       + uy * (vz * wx - vx * wz)
       + uz * (vx * wy - vy * wx);
   }
+
+    /**
+   * @returns Returns curvature magnitude from a first and second derivative vector.
+   * @param ux  first derivative x component
+   * @param uy first derivative y component
+   * @param uz first derivative z component
+   * @param vx second derivative x component
+   * @param vy second derivative y component
+   * @param vz second derivative z component
+   */
+  public static curvatureMagnitude (
+    ux: number, uy: number, uz: number,
+    vx: number, vy: number, vz: number): number {
+    let q = uy * vz - uz * vy;
+    let sum = q * q;
+    q = uz * vx - ux * vz;
+    sum += q * q;
+    q = ux * vy - uy * vx;
+    sum += q * q;
+    const a = Math.sqrt (ux * ux + uy * uy + uz * uz);
+    const b = Math.sqrt (sum);
+    // (sum and a are both nonnegative)
+    const aaa = a * a * a;
+    // radius of curvature = aaa / b;
+    // curvature = b/aaa
+    const tol = Geometry.smallAngleRadians;
+    if (aaa > tol * b)
+      return b / aaa;
+    return 0; // hm.. maybe should be infinte?
+  }
+
   /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
    *
    */
