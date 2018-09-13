@@ -235,19 +235,28 @@
     content: "\eb0a";
 }
 .bim-icon-measure-tool:before {
-      content: "\e9b4"
+      content: "\e9b4";
 }
 .bim-icon-undo:before {
-      content: "\e982"
+      content: "\e982";
 }
 .bim-icon-redo:before {
-      content: "\e983"
+      content: "\e983";
 }
 .bim-icon-model:before {
-      content: "\e90b"
+      content: "\e90b";
 }
 .bim-icon-model:categories {
-      content: "\e901"
+      content: "\e901";
+}
+.bim-icon-animation:before {
+      content: "\e931";
+}
+.bim-icon-play:before {
+      content: "\ea32";
+}
+.bim-icon-stop:before {
+      content: "\ea34";
 }
 
 .toolMenu {
@@ -409,8 +418,11 @@
   width: 100px;
 }
 
-#standardRotationMenu .simpleicon {
+#standardRotationMenu .simpleicon, #animationMenu .simpleicon {
   float:left;
+}
+#animationSlider {
+  display:block;
 }
 #renderModeToggle {
   width: 100%;
