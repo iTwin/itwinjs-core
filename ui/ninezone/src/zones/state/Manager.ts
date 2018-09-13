@@ -59,7 +59,7 @@ export class StateManager {
 
   public layout(size: SizeProps, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
-    model.root.setSize(size);
+    model.root.size = size;
 
     const newState: NineZoneProps = {
       ...model.props,

@@ -9,6 +9,7 @@ import { WidgetZone } from "../Zone";
 import NineZone from "../NineZone";
 import Layout from "./Layout";
 import Root from "./Root";
+import { HorizontalAnchor } from "../../../widget/Stacked";
 
 export class NineZoneRoot extends Root {
   public constructor(public readonly nineZone: NineZone) {
@@ -17,8 +18,8 @@ export class NineZoneRoot extends Root {
 }
 
 export class WidgetZoneLayout extends Layout {
-  public constructor(public readonly zone: WidgetZone) {
-    super(zone.props.bounds);
+  public constructor(public readonly zone: WidgetZone, public readonly root: NineZoneRoot) {
+    super(zone.props.bounds, root);
   }
 
   private get _columnStartFraction() {
@@ -50,122 +51,94 @@ export class WidgetZoneLayout extends Layout {
 
     return new Rectangle(left, top, right, bottom);
   }
+
+  public get anchor(): HorizontalAnchor {
+    return this.zone.horizontalAnchor;
+  }
 }
 
 export class Layout1 extends WidgetZoneLayout {
-  protected get _topZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _bottomZone() {
+  public get bottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
   }
 
-  protected get _leftZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _rightZone() {
+  public get rightZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
   }
 }
 
 export class Layout2 extends WidgetZoneLayout {
-  protected get _topZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _bottomZone() {
+  public get bottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
-  protected get _leftZone() {
+  public get leftZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(1).getLayout();
   }
 
-  protected get _rightZone() {
+  public get rightZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 }
 
 export class Layout3 extends WidgetZoneLayout {
-  protected get _topZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _bottomZone() {
+  public get bottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
-  protected get _leftZone() {
+  public get leftZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
   }
 
-  protected get _rightZone() {
-    return this.zone.nineZone.root;
-  }
-
   public get minWidth() {
-    return Root.FREE_FORM_DEFAULT_MIN_WIDTH;
+    return Layout.FREE_FORM_DEFAULT_MIN_WIDTH;
   }
 
   public get minHeight() {
-    return Root.FREE_FORM_DEFAULT_MIN_HEIGHT;
+    return Layout.FREE_FORM_DEFAULT_MIN_HEIGHT;
   }
 }
 
 export class Layout4 extends WidgetZoneLayout {
-  protected get _topZone() {
+  public get topZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 
-  protected get _bottomZone() {
+  public get bottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
-  protected get _leftZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _rightZone() {
+  public get rightZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 }
 
 export class Layout6 extends WidgetZoneLayout {
-  protected get _topZone() {
+  public get topZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
   }
 
-  protected get _bottomZone() {
+  public get bottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
   }
 
-  protected get _leftZone() {
+  public get leftZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
-  }
-
-  protected get _rightZone() {
-    return this.zone.nineZone.root;
   }
 }
 
 export class Layout7 extends WidgetZoneLayout {
-  protected get _topZone() {
+  public get topZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
   }
 
-  protected get _bottomZone() {
+  public get bottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
-    return this.zone.nineZone.root;
+    return undefined;
   }
 
-  protected get _leftZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _rightZone() {
+  public get rightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
     return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
@@ -173,23 +146,19 @@ export class Layout7 extends WidgetZoneLayout {
 }
 
 export class Layout8 extends WidgetZoneLayout {
-  protected get _topZone() {
+  public get topZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
-  protected get _bottomZone() {
-    return this.zone.nineZone.root;
-  }
-
-  protected get _leftZone() {
+  public get leftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root;
+      return undefined;
     return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
   }
 
-  protected get _rightZone() {
+  public get rightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root;
+      return undefined;
     return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
   }
 
@@ -203,23 +172,19 @@ export class Layout8 extends WidgetZoneLayout {
 }
 
 export class Layout9 extends WidgetZoneLayout {
-  protected get _topZone() {
+  public get topZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
   }
 
-  protected get _bottomZone() {
+  public get bottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
-    return this.zone.nineZone.root;
+    return undefined;
   }
 
-  protected get _leftZone() {
+  public get leftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
     return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
-  }
-
-  protected get _rightZone() {
-    return this.zone.nineZone.root;
   }
 }

@@ -8,7 +8,7 @@ import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 import Cell from "../../utilities/Cell";
 import Layout from "./layout/Layout";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
-import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
+import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9, NineZoneRoot } from "./layout/Layouts";
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
@@ -93,24 +93,24 @@ export namespace ZoneIdToWidget {
 }
 
 export class LayoutFactory {
-  public create(zone: WidgetZone): Layout {
+  public create(zone: WidgetZone, root: NineZoneRoot): Layout {
     switch (zone.props.id) {
       case 1:
-        return new Layout1(zone);
+        return new Layout1(zone, root);
       case 2:
-        return new Layout2(zone);
+        return new Layout2(zone, root);
       case 3:
-        return new Layout3(zone);
+        return new Layout3(zone, root);
       case 4:
-        return new Layout4(zone);
+        return new Layout4(zone, root);
       case 6:
-        return new Layout6(zone);
+        return new Layout6(zone, root);
       case 7:
-        return new Layout7(zone);
+        return new Layout7(zone, root);
       case 8:
-        return new Layout8(zone);
+        return new Layout8(zone, root);
       case 9:
-        return new Layout9(zone);
+        return new Layout9(zone, root);
     }
     throw new RangeError();
   }
@@ -180,7 +180,7 @@ export class WidgetZone extends Zone {
 
   public getLayout(): Layout {
     if (!this._layout)
-      this._layout = new LayoutFactory().create(this);
+      this._layout = new LayoutFactory().create(this, this.nineZone.root);
     return this._layout;
   }
 

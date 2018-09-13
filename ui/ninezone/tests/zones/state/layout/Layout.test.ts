@@ -3,94 +3,54 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-
-import Rectangle from "../../../../src/utilities/Rectangle";
+import * as TypeMoq from "typemoq";
+import Rectangle, { RectangleProps } from "../../../../src/utilities/Rectangle";
 import Layout from "../../../../src/zones/state/layout/Layout";
-
-class RootLayoutMock extends Layout {
-  public set bounds(bounds: Rectangle) {
-    this.setBounds(bounds);
-  }
-
-  public get bounds() {
-    return super.bounds;
-  }
-
-  protected get _topZone() {
-    return this;
-  }
-
-  protected get _bottomZone() {
-    return this;
-  }
-
-  protected get _leftZone() {
-    return this;
-  }
-
-  protected get _rightZone() {
-    return this;
-  }
-
-  public get isRoot() {
-    return false;
-  }
-
-  public tryGrowTop(_px: number): number {
-    return 0;
-  }
-
-  public tryShrinkTop(_px: number): number {
-    return 0;
-  }
-
-  public tryGrowBottom(_px: number): number {
-    return 0;
-  }
-
-  public tryShrinkBottom(_px: number): number {
-    return 0;
-  }
-
-  public tryGrowRight(_px: number): number {
-    return 0;
-  }
-
-  public tryShrinkRight(_px: number): number {
-    return 0;
-  }
-
-  public tryGrowLeft(_px: number): number {
-    return 0;
-  }
-
-  public tryShrinkLeft(_px: number): number {
-    return 0;
-  }
-}
+import Root from "../../../../src/zones/state/layout/Root";
+import Size from "../../../../src/utilities/Size";
 
 class LayoutMock extends Layout {
-  public topZone = new RootLayoutMock(new Rectangle());
-  public bottomZone = new RootLayoutMock(new Rectangle());
-  public leftZone = new RootLayoutMock(new Rectangle());
-  public rightZone = new RootLayoutMock(new Rectangle());
+  private _topZone: LayoutMock | undefined;
+  private _bottomZone: LayoutMock | undefined;
+  private _leftZone: LayoutMock | undefined;
+  private _rightZone: LayoutMock | undefined;
   private _minHeight: number | undefined = undefined;
   private _minWidth: number | undefined = undefined;
 
-  protected get _topZone() {
-    return this.topZone;
+  public constructor(bounds: RectangleProps = new Rectangle(), root = new Root(new Size(), true)) {
+    super(bounds, root);
   }
 
-  protected get _bottomZone() {
-    return this.bottomZone;
+  public get topZone() {
+    return this._topZone;
   }
 
-  protected get _leftZone() {
-    return this.leftZone;
+  public set topZone(z: LayoutMock | undefined) {
+    this._topZone = z;
   }
 
-  protected get _rightZone() {
-    return this.rightZone;
+  public get bottomZone() {
+    return this._bottomZone;
+  }
+
+  public set bottomZone(z: LayoutMock | undefined) {
+    this._bottomZone = z;
+  }
+
+  public get leftZone() {
+    return this._leftZone;
+  }
+
+  public set leftZone(z: LayoutMock | undefined) {
+    this._leftZone = z;
+  }
+
+  public get rightZone() {
+    return this._rightZone;
+  }
+
+  public set rightZone(z: LayoutMock | undefined) {
+    this._rightZone = z;
   }
 
   public set bounds(bounds: Rectangle) {
@@ -119,6 +79,12 @@ class LayoutMock extends Layout {
 }
 
 describe("Layout", () => {
+  const root = TypeMoq.Mock.ofType<Root>();
+
+  beforeEach(() => {
+    root.reset();
+  });
+
   describe("#get minWidth()", () => {
     it("should return 296", () => {
       const sut = new LayoutMock(new Rectangle());
@@ -148,18 +114,21 @@ describe("Layout", () => {
     });
 
     it("should be contained by top zone", () => {
-      const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-      sut.topZone.bounds = new Rectangle(100, 100, 300, 150);
-      sut.tryGrowTop(100);
+      const topZone = TypeMoq.Mock.ofType<Layout>();
+      topZone.setup((x) => x.bounds).returns(() => new Rectangle(100, 100, 300, 150));
+      topZone.setup((x) => x.tryShrinkBottom(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(100, 200, 200, 400), root.object));
+      sut.callBase = true;
+      sut.setup((x) => x.topZone).returns(() => topZone.object);
 
-      sut.bounds.top.should.eq(150);
-      sut.bounds.bottom.should.eq(400);
+      sut.object.tryGrowTop(100).should.eq(50);
+      sut.object.bounds.top.should.eq(150);
+      sut.object.bounds.bottom.should.eq(400);
     });
 
     it("should try to shrink bottom of top zone", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-      sut.topZone.bounds = new Rectangle(100, 100, 300, 150);
-
+      sut.topZone = new LayoutMock(new Rectangle(100, 100, 300, 150));
       const spy = sinon.spy();
       sut.topZone.tryShrinkBottom = spy;
 
@@ -170,8 +139,7 @@ describe("Layout", () => {
 
     it("should fill shrunk top zone", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-      sut.topZone.bounds = new Rectangle(100, 100, 300, 150);
-
+      sut.topZone = new LayoutMock(new Rectangle(100, 100, 300, 150));
       sut.topZone.tryShrinkBottom = () => 25;
       sut.tryGrowTop(100);
 
@@ -205,7 +173,7 @@ describe("Layout", () => {
 
     it("should try to shrink top of bottom zone", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-
+      sut.bottomZone = new LayoutMock(new Rectangle());
       const spy = sinon.spy();
       sut.bottomZone.tryShrinkTop = spy;
 
@@ -216,6 +184,7 @@ describe("Layout", () => {
 
     it("should move by bottom zone shrunk amount", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
+      sut.bottomZone = new LayoutMock(new Rectangle());
       sut.bottomZone.tryShrinkTop = () => 25;
       sut.tryShrinkTop(100);
 
@@ -225,7 +194,7 @@ describe("Layout", () => {
 
     it("should shrunk then move", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-      sut.bottomZone.bounds = new Rectangle(100, 425, 200, 500);
+      sut.bottomZone = new LayoutMock(new Rectangle(100, 425, 200, 500));
       sut.minHeight = 100;
       sut.bottomZone.tryShrinkTop = () => 0;
 
@@ -245,7 +214,7 @@ describe("Layout", () => {
 
     it("should grow bottom", () => {
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
-      sut.bottomZone.bounds = new Rectangle(0, 500, 10, 650);
+      sut.bottomZone = new LayoutMock(new Rectangle(0, 500, 10, 650));
       const grown = sut.tryGrowBottom(100);
 
       grown.should.eq(100);
@@ -255,7 +224,7 @@ describe("Layout", () => {
 
     it("should not grow beyond bottom zone", () => {
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
-      sut.bottomZone.bounds = new Rectangle(0, 200, 10, 250);
+      sut.bottomZone = new LayoutMock(new Rectangle(0, 200, 10, 250));
       const grown = sut.tryGrowBottom(100);
 
       grown.should.eq(50);
@@ -266,7 +235,7 @@ describe("Layout", () => {
     it("should try to shrink top of bottom zone when trying to grow beyond bottom zone", () => {
       let shrinkBottomZoneBy = 0;
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
-      sut.bottomZone.bounds = new Rectangle(0, 225, 10, 250);
+      sut.bottomZone = new LayoutMock(new Rectangle(0, 225, 10, 250));
       sut.bottomZone.tryShrinkTop = (px) => {
         shrinkBottomZoneBy = px;
         return 0;
@@ -278,7 +247,7 @@ describe("Layout", () => {
 
     it("should grow bottom by amount of bottom zone shrunk", () => {
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
-      sut.bottomZone.bounds = new Rectangle(0, 225, 10, 250);
+      sut.bottomZone = new LayoutMock(new Rectangle(0, 225, 10, 250));
       sut.bottomZone.tryShrinkTop = (px) => {
         return px;
       };
@@ -315,7 +284,7 @@ describe("Layout", () => {
 
     it("should try to shrink bottom of top zone", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
-
+      sut.topZone = new LayoutMock(new Rectangle());
       const spy = sinon.spy();
       sut.topZone.tryShrinkBottom = spy;
 
@@ -326,7 +295,7 @@ describe("Layout", () => {
 
     it("should move by top zone shrunk amount", () => {
       const sut = new LayoutMock(new Rectangle(0, 150, 10, 200));
-      sut.topZone.bounds = new Rectangle(0, 100, 10, 150);
+      sut.topZone = new LayoutMock(new Rectangle(0, 100, 10, 150));
       sut.topZone.tryShrinkBottom = () => 25;
       sut.tryShrinkBottom(100);
 
@@ -335,12 +304,16 @@ describe("Layout", () => {
     });
 
     it("should move beside top zone", () => {
-      const sut = new LayoutMock(new Rectangle(0, 170, 10, 200));
-      sut.topZone.bounds = new Rectangle(0, 100, 10, 150);
-      sut.tryShrinkBottom(100);
+      const topZone = TypeMoq.Mock.ofType<Layout>();
+      topZone.setup((x) => x.bounds).returns(() => new Rectangle(0, 100, 10, 150));
+      topZone.setup((x) => x.tryShrinkBottom(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(0, 170, 10, 200), root.object));
+      sut.callBase = true;
+      sut.setup((x) => x.topZone).returns(() => topZone.object);
 
-      sut.bounds.top.should.eq(150);
-      sut.bounds.bottom.should.eq(180);
+      sut.object.tryShrinkBottom(100).should.eq(20);
+      sut.object.bounds.top.should.eq(150);
+      sut.object.bounds.bottom.should.eq(180);
     });
   });
 
@@ -360,19 +333,22 @@ describe("Layout", () => {
     });
 
     it("should not grow beyond left zone", () => {
-      const sut = new LayoutMock(new Rectangle(300, 0, 400, 10));
-      sut.leftZone.bounds = new Rectangle(100, 0, 250, 10);
-      const grown = sut.tryGrowLeft(100);
+      const leftZone = TypeMoq.Mock.ofType<Layout>();
+      leftZone.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 250, 10));
+      leftZone.setup((x) => x.tryShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(300, 0, 400, 10), root.object));
+      sut.setup((x) => x.leftZone).returns(() => leftZone.object);
+      sut.callBase = true;
 
-      grown.should.eq(50);
-      sut.bounds.left.should.eq(250);
-      sut.bounds.right.should.eq(400);
+      sut.object.tryGrowLeft(100).should.eq(50);
+      sut.object.bounds.left.should.eq(250);
+      sut.object.bounds.right.should.eq(400);
     });
 
     it("should try to shrink right of left zone when trying to grow beyond left zone", () => {
       let shrinkLeftZoneBy = 0;
       const sut = new LayoutMock(new Rectangle(325, 0, 600, 10));
-      sut.leftZone.bounds = new Rectangle(100, 0, 300, 10);
+      sut.leftZone = new LayoutMock(new Rectangle(100, 0, 300, 10));
       sut.leftZone.tryShrinkRight = (px) => {
         shrinkLeftZoneBy = px;
         return 0;
@@ -384,13 +360,26 @@ describe("Layout", () => {
 
     it("should grow left by amount of left zone shrunk", () => {
       const sut = new LayoutMock(new Rectangle(600, 0, 900, 10));
-      sut.leftZone.bounds = new Rectangle(100, 0, 500, 10);
+      sut.leftZone = new LayoutMock(new Rectangle(100, 0, 500, 10));
       sut.leftZone.tryShrinkRight = (px) => px;
       const grown = sut.tryGrowLeft(150);
 
       grown.should.eq(150);
       sut.bounds.left.should.eq(450);
       sut.bounds.right.should.eq(900);
+    });
+
+    it("should not grow above original size", () => {
+      const leftZone = TypeMoq.Mock.ofType<Layout>();
+      leftZone.setup((x) => x.tryShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      leftZone.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 200, 0));
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(200, 10, 300, 20), root.object));
+      sut.callBase = true;
+      sut.setup((x) => x.leftZone).returns(() => leftZone.object);
+
+      sut.object.tryGrowLeft(10).should.eq(0);
+      sut.object.bounds.left.should.eq(200);
+      sut.object.bounds.right.should.eq(300);
     });
   });
 
@@ -421,6 +410,7 @@ describe("Layout", () => {
       let shrunkBy = 0;
       const sut = new LayoutMock(new Rectangle(0, 0, 200, 10));
       sut.minWidth = 100;
+      sut.rightZone = new LayoutMock(new Rectangle());
       sut.rightZone.tryShrinkLeft = (px: number) => {
         shrunkBy = px;
         return 0;
@@ -432,6 +422,7 @@ describe("Layout", () => {
 
     it("should move right by shrunk amount", () => {
       const sut = new LayoutMock(new Rectangle(600, 0, 800, 10));
+      sut.rightZone = new LayoutMock(new Rectangle());
       sut.rightZone.tryShrinkLeft = () => 25;
       sut.tryShrinkLeft(100);
 
@@ -441,7 +432,7 @@ describe("Layout", () => {
 
     it("should move beside right zone", () => {
       const sut = new LayoutMock(new Rectangle(300, 0, 400, 10));
-      sut.rightZone.bounds = new Rectangle(500, 0, 600, 10);
+      sut.rightZone = new LayoutMock(new Rectangle(500, 0, 600, 10));
       sut.tryShrinkLeft(1000);
 
       sut.bounds.left.should.eq(400);
@@ -457,7 +448,7 @@ describe("Layout", () => {
 
     it("should grow right", () => {
       const sut = new LayoutMock(new Rectangle(300, 0, 400, 10));
-      sut.rightZone.bounds = new Rectangle(600, 0, 800, 10);
+      sut.rightZone = new LayoutMock(new Rectangle(600, 0, 800, 10));
       const grown = sut.tryGrowRight(100);
 
       grown.should.eq(100);
@@ -467,7 +458,7 @@ describe("Layout", () => {
 
     it("should not grow beyond right zone", () => {
       const sut = new LayoutMock(new Rectangle(300, 0, 400, 10));
-      sut.rightZone.bounds = new Rectangle(450, 0, 550, 10);
+      sut.rightZone = new LayoutMock(new Rectangle(450, 0, 550, 10));
       const grown = sut.tryGrowRight(100);
 
       grown.should.eq(50);
@@ -478,7 +469,7 @@ describe("Layout", () => {
     it("should try to shrink left of right zone when trying to grow beyond right zone", () => {
       let shrinkRightZoneBy = 0;
       const sut = new LayoutMock(new Rectangle(100, 0, 225, 10));
-      sut.rightZone.bounds = new Rectangle(250, 0, 400, 10);
+      sut.rightZone = new LayoutMock(new Rectangle(250, 0, 400, 10));
       sut.rightZone.tryShrinkLeft = (px) => {
         shrinkRightZoneBy = px;
         return 0;
@@ -490,7 +481,7 @@ describe("Layout", () => {
 
     it("should grow right by amount of right zone shrunk", () => {
       const sut = new LayoutMock(new Rectangle(100, 0, 200, 10));
-      sut.rightZone.bounds = new Rectangle(200, 0, 300, 10);
+      sut.rightZone = new LayoutMock(new Rectangle(200, 0, 300, 10));
       sut.rightZone.tryShrinkLeft = () => 45;
 
       const grown = sut.tryGrowRight(150);
@@ -528,6 +519,7 @@ describe("Layout", () => {
       let shrunkBy = 0;
       const sut = new LayoutMock(new Rectangle(0, 0, 200, 10));
       sut.minWidth = 100;
+      sut.leftZone = new LayoutMock(new Rectangle());
       sut.leftZone.tryShrinkRight = (px: number) => {
         shrunkBy = px;
         return 0;
@@ -539,7 +531,7 @@ describe("Layout", () => {
 
     it("should move left by shrunk amount", () => {
       const sut = new LayoutMock(new Rectangle(600, 0, 800, 10));
-      sut.leftZone.bounds = new Rectangle(100, 0, 600, 10);
+      sut.leftZone = new LayoutMock(new Rectangle(100, 0, 600, 10));
       sut.leftZone.tryShrinkRight = () => 25;
       sut.tryShrinkRight(100);
 
@@ -548,12 +540,16 @@ describe("Layout", () => {
     });
 
     it("should move beside left zone", () => {
-      const sut = new LayoutMock(new Rectangle(300, 0, 400, 10));
-      sut.leftZone.bounds = new Rectangle(100, 0, 200, 10);
-      sut.tryShrinkRight(1000);
+      const leftZone = TypeMoq.Mock.ofType<Layout>();
+      leftZone.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 200, 10));
+      leftZone.setup((x) => x.tryShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(300, 0, 400, 10), root.object));
+      sut.callBase = true;
+      sut.setup((x) => x.leftZone).returns(() => leftZone.object);
 
-      sut.bounds.left.should.eq(200);
-      sut.bounds.right.should.eq(300);
+      sut.object.tryShrinkRight(1000).should.eq(100);
+      sut.object.bounds.left.should.eq(200);
+      sut.object.bounds.right.should.eq(300);
     });
   });
 });
