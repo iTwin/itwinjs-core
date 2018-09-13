@@ -2,6 +2,18 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.126.0",
+      "tag": "@bentley/bentleyjs-core_v0.126.0",
+      "date": "Wed, 12 Sep 2018 19:12:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed crash in Bunyan logging"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.125.0",
       "tag": "@bentley/bentleyjs-core_v0.125.0",
       "date": "Wed, 12 Sep 2018 13:35:50 GMT",

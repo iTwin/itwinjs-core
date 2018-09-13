@@ -905,8 +905,6 @@ class IncidentMarker extends Marker {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
         IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information);
-      } else {
-        console.log("mouseup");
       }
     }
     return true;

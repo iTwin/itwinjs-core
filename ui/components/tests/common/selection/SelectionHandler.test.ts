@@ -344,6 +344,7 @@ describe("DragAction", () => {
   }
   const createItemHandler = (item: Item, isSelected?: boolean): SingleSelectionHandler<Item> => {
     return {
+      preselect: () => { },
       select: () => { },
       deselect: () => { },
       isSelected: () => isSelected ? true : false,

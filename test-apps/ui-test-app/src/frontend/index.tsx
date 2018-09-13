@@ -11,7 +11,7 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelTileRpcInterface,
   ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap} from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 
