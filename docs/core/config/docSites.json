@@ -25,13 +25,13 @@
   },
   "metadata": {
     "home": "landing-page",
-    "logo": "landing-page/assets/assets_imodeljs-logo.svg",
-    "sponsoredByLogo": "landing-page/assets/assets_bentley.svg",
+    "logo": "landing-page/assets/assets_imodeljs-logo.png",
+    "sponsoredByLogo": "landing-page/assets/assets_bentley.png",
     "favicon": "overview/imodeljs.ico",
     "docSiteOrder": [
+      "landing-page",
       "overview",
       "getting-started",
-      "landing-page",
       "learning",
       "bis",
       "reference"
