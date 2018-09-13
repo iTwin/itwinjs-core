@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 12 Sep 2018 19:12:10 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Sep 2018 17:07:11 GMT and should not be manually modified.
+
+## 0.127.0
+Thu, 13 Sep 2018 17:07:11 GMT
+
+### Updates
+
+- added ColorDef.invert
 
 ## 0.126.0
 Wed, 12 Sep 2018 19:12:10 GMT

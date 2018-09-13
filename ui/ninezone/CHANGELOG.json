@@ -2,6 +2,12 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.127.0",
+      "tag": "@bentley/ui-ninezone_v0.127.0",
+      "date": "Thu, 13 Sep 2018 17:07:12 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.126.0",
       "tag": "@bentley/ui-ninezone_v0.126.0",
       "date": "Wed, 12 Sep 2018 19:12:11 GMT",
