@@ -1,31 +1,37 @@
 {
-  "overview": {
+  "landing-page": {
     "docSiteId": 1,
+    "displayName": ""
+  },
+  "overview": {
+    "docSiteId": 2,
     "displayName": "Overview"
   },
   "getting-started": {
-    "docSiteId": 2,
+    "docSiteId": 3,
     "displayName": "Getting Started"
   },
   "reference": {
-    "docSiteId": 3,
+    "docSiteId": 4,
     "displayName": "API Reference"
   },
   "bis": {
-    "docSiteId": 4,
+    "docSiteId": 5,
     "displayName": "Base Infrastructure Schema"
   },
   "learning": {
-    "docSiteId": 5,
+    "docSiteId": 6,
     "displayName": "Learning"
   },
   "metadata": {
-    "home": "overview",
-    "logo": "overview/imodeljs.ico",
-    "favicon": "overview/imodeljs.ico",
+    "home": "landing-page",
+    "logo": "landing-page/assets/assets_imodeljs-logo.svg",
+    "sponsoredByLogo": "landing-page/assets/assets_bentley.svg",
+    "favicon": "landing-page/assets/imodeljs.ico",
     "docSiteOrder": [
-      "getting-started",
       "overview",
+      "getting-started",
+      "landing-page",
       "learning",
       "bis",
       "reference"
