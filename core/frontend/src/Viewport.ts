@@ -356,6 +356,18 @@ export class DecorationAnimator implements ViewportAnimator {
   }
 }
 
+/** Options that control how operations that change a view work. */
+export interface ViewChangeOptions {
+  /** Whether to save the result of this change into the view undo stack. Default is yes. */
+  saveInUndo?: boolean;
+  /** Whether the change should be animated or not. Default is yes. */
+  animateFrustumChange?: boolean;
+  /** Amount of time for animation. Default = `ToolSettings.animationTime` */
+  animationTime?: BeDuration;
+  /** The percentage of the view to leave blank around the edges. */
+  marginPercent?: MarginPercent;
+}
+
 /**
  * A ViewFrustum holds information about a frustum used by a Viewport.
  */
@@ -1086,11 +1098,7 @@ export abstract class Viewport {
     return this.doSetupFromView(this.view);
   }
 
-  /**
-   * Check whether the ViewState of this Viewport has changed since the last call to this function.
-   * If so, save a *copy* of the **previous** state in the view undo stack for future View Undo.
-   */
-  /** Call [[setupFromView]] on this Viewport and save previous state in view undo stack */
+  /** Call [[setupFromView]] on this Viewport and optionally  save previous state in view undo stack */
   public synchWithView(_saveInUndo: boolean): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
@@ -1183,33 +1191,39 @@ export abstract class Viewport {
   /** Get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
+  private finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
+    options = options === undefined ? {} : options;
+    this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
+    if (options.animateFrustumChange === undefined || options.animateFrustumChange)
+      this.animateFrustumChange(startFrust, this.getFrustum(), options.animationTime);
+  }
+
   /**
    * Scroll the view by a given number of pixels.
    * @param screenDist distance to scroll, in pixels
    */
-  public scroll(screenDist: Point2d): ViewStatus {
+  public scroll(screenDist: Point2d, options?: ViewChangeOptions) {
     const view = this.view;
     if (!view)
-      return ViewStatus.InvalidViewport;
+      return;
 
+    const startFrust = this.getFrustum().clone();
     if (view.is3d() && view.isCameraOn) {
       const offset = new Vector3d(screenDist.x, screenDist.y, 0.0);
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(offset);
       this.viewToWorldArray(frust.points);
-
       view.setupFromFrustum(frust);
       view.centerEyePoint();
-      return this.setupFromView();
+    } else {
+      const pts = [new Point3d(), new Point3d(screenDist.x, screenDist.y, 0)];
+      this.viewToWorldArray(pts);
+      const dist = pts[1].minus(pts[0]);
+      const newOrg = view.getOrigin().plus(dist);
+      view.setOrigin(newOrg);
     }
 
-    const pts = [new Point3d(), new Point3d(screenDist.x, screenDist.y, 0)];
-    this.viewToWorldArray(pts);
-    const dist = pts[1].minus(pts[0]);
-    const newOrg = view.getOrigin().plus(dist);
-    view.setOrigin(newOrg);
-
-    return this.setupFromView();
+    this.finishViewChange(startFrust, options);
   }
 
   /**
@@ -1217,11 +1231,12 @@ export abstract class Viewport {
    * on the focal plane.
    * Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
-  public zoom(newCenter: Point3d | undefined, factor: number): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): void {
     const view = this.view;
     if (!view)
-      return ViewStatus.InvalidViewport;
+      return;
 
+    const startFrust = this.getFrustum().clone();
     if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
@@ -1238,45 +1253,44 @@ export abstract class Viewport {
       this.npcToWorldArray(frust.points);
       view.setupFromFrustum(frust);
       view.centerEyePoint();
-      return this.setupFromView();
+    } else {
+      // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
+      // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
+      const delta = view.getExtents().clone();
+      delta.x *= factor;
+      delta.y *= factor;
+
+      // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
+      const validSize = view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== validSize)
+        return;
+
+      const center = newCenter ? newCenter.clone() : view.getCenter().clone();
+
+      if (!view.allow3dManipulations())
+        center.z = 0.0;
+
+      const newOrg = view.getOrigin().clone();
+      this.toView(newOrg);
+      this.toView(center);
+
+      view.setExtents(delta);
+
+      newOrg.x = center.x - delta.x / 2.0;
+      newOrg.y = center.y - delta.y / 2.0;
+      this.fromView(newOrg);
+      view.setOrigin(newOrg);
     }
 
-    // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
-    // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
-    const delta = view.getExtents().clone();
-    delta.x *= factor;
-    delta.y *= factor;
-
-    // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-    const validSize = view.validateViewDelta(delta, true);
-    if (ViewStatus.Success !== validSize)
-      return validSize;
-
-    const center = newCenter ? newCenter.clone() : view.getCenter().clone();
-
-    if (!view.allow3dManipulations())
-      center.z = 0.0;
-
-    const newOrg = view.getOrigin().clone();
-    this.toView(newOrg);
-    this.toView(center);
-
-    view.setExtents(delta);
-
-    newOrg.x = center.x - delta.x / 2.0;
-    newOrg.y = center.y - delta.y / 2.0;
-    this.fromView(newOrg);
-    view.setOrigin(newOrg);
-    return this.setupFromView();
+    this.finishViewChange(startFrust, options);
   }
 
   /**
    * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
    * @param props element placements. Will zoom to the union of the placements.
-   * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @param options options that control how the change works
    */
-  public zoomToPlacementProps(placementProps: PlacementProps[], margin?: MarginPercent) {
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions) {
     if (placementProps.length === 0)
       return;
 
@@ -1291,17 +1305,16 @@ export abstract class Viewport {
       viewRange.extendArray(frust.points, viewTransform);
     }
 
-    this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, margin);
-    this.setupFromView();
+    this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    this.finishViewChange(this.getFrustum().clone(), options);
   }
 
   /**
    * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
    * @param props element props. Will zoom to the union of the placements.
-   * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @param options options that control how the change works
    */
-  public zoomToElementProps(elementProps: ElementProps[], margin?: MarginPercent) {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions) {
     if (elementProps.length === 0)
       return;
     const placementProps: PlacementProps[] = [];
@@ -1309,29 +1322,31 @@ export abstract class Viewport {
       if (props.placement !== undefined)
         placementProps.push(props.placement);
     }
-    return this.zoomToPlacementProps(placementProps, margin);
+    return this.zoomToPlacementProps(placementProps, options);
   }
 
   /**
    * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
-   * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @param options options that control how the change works
    */
-  public async zoomToElements(ids: Id64Arg, margin?: MarginPercent) {
-    return this.zoomToElementProps(await this.iModel.elements.getProps(ids), margin);
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions) {
+    return this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
   }
 
   /**
    * Zoom the view to a volume of space, in world coordinates.
    * @param volume The low and high corners, in world coordinates.
    * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @param saveInUndo save the new view state in the view undo buffer.
+   * @note Updates ViewState and re-synchs Viewport.
    */
-  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
+  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
+    options = options === undefined ? {} : options;
     const range = Range3d.fromJSON(volume);
-    this.view.lookAtVolume(range, this.viewRect.aspect, margin);
-    this.setupFromView();
+    const startFrust = this.getFrustum().clone();
+    this.view.lookAtVolume(range, this.viewRect.aspect, options.marginPercent);
+    this.finishViewChange(startFrust, options);
   }
 
   /**

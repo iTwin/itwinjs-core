@@ -1500,7 +1500,8 @@ export class WheelEventProcessor {
 
       trans.multiplyPoint3d(viewCenter, viewCenter);
       vp.npcToWorld(viewCenter, viewCenter);
-      status = vp.zoom(viewCenter, zoomRatio);
+      vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
+      status = ViewStatus.Success;
     }
 
     // if we scrolled out, we may have invalidated the current AccuSnap path
