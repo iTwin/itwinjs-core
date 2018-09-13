@@ -158,7 +158,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
   }
 
   private getInputNode(): HTMLInputElement | null {
-    if (isFunction(this.getEditor().getInputNode))
+    if (this.getEditor() && isFunction(this.getEditor().getInputNode))
       return this.getEditor().getInputNode();
     return null;
   }

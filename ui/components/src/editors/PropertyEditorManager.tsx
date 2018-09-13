@@ -73,7 +73,6 @@ export class PropertyEditorManager {
 
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName)) {
       throw Error("PropertyEditorManager.RegisterEditor error: type '" + fullEditorName + "' already registered to '" + (typeof PropertyEditorManager._editors[fullEditorName]).toString() + "'");
-      return;
     }
     PropertyEditorManager._editors[fullEditorName] = editor;
   }
@@ -81,7 +80,6 @@ export class PropertyEditorManager {
   public static registerDataController(controllerName: string, controller: typeof DataControllerBase): void {
     if (PropertyEditorManager._dataControllers.hasOwnProperty(controllerName)) {
       throw Error("PropertyEditorManager.RegisterDataController error: type '" + controllerName + "' already registered to '" + (typeof PropertyEditorManager._dataControllers[controllerName]).toString() + "'");
-      return;
     }
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
@@ -95,7 +93,7 @@ export class PropertyEditorManager {
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName))
       editor = new PropertyEditorManager._editors[fullEditorName]();
     else if (PropertyEditorManager._editors.hasOwnProperty(editType))
-      editor = PropertyEditorManager._editors[editType]();
+      editor = new PropertyEditorManager._editors[editType]();
     else
       editor = new BasicPropertyEditor();
 
