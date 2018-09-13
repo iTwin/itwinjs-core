@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Capabilities, RenderType, DepthType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Capabilities, RenderType, DepthType } from "@bentley/imodeljs-frontend/lib/webgl";
 // import { WebGLTestContext } from "./WebGLTestContext";
 
 describe("System WebGL Capabilities", () => {

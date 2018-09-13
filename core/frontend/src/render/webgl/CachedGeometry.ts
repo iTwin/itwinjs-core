@@ -4,6 +4,7 @@
 /** @module WebGL */
 
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -40,6 +41,8 @@ export abstract class CachedGeometry implements IDisposable {
   public get isLitSurface(): boolean { return false; }
   // Returns true if this is an unlit surface with baked-in lighting (e.g. 3mx, scalable mesh reality models)
   public get hasBakedLighting(): boolean { return false; }
+  // Returns true if this primititive constains auxilliary animation data.
+  public get hasAnimation(): boolean { return false; }
 
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
@@ -105,13 +108,14 @@ export abstract class CachedGeometry implements IDisposable {
 // Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
 export abstract class LUTGeometry extends CachedGeometry {
   // The texture containing the vertex data.
-  public abstract get lut(): VertexLUT.Data;
+  public abstract get lut(): VertexLUT;
 
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
+  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements; }
 
   protected constructor() { super(); }
 }
@@ -585,11 +589,20 @@ export class PolylineBuffers implements IDisposable {
   public nextIndicesAndParams: BufferHandle;
   public distances: BufferHandle;
 
-  public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
     this.distances = distances;
+  }
+
+  public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
+    const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
+    const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
+    const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
+    const dist = BufferHandle.createArrayBuffer(polyline.distances);
+
+    return undefined !== indices && undefined !== prev && undefined !== next && undefined !== dist ? new PolylineBuffers(indices, prev, next, dist) : undefined;
   }
 
   public dispose() {

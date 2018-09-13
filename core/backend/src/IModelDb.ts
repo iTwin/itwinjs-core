@@ -28,7 +28,6 @@ import {
   FilePropertyProps,
   IModelToken,
   TileTreeProps,
-  TileProps,
   IModelNotFoundResponse,
   EcefLocation,
   SnapRequestProps,
@@ -1334,31 +1333,37 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public getTileTreeJson(id: string): any {
+    public requestTileTreeProps(actx: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTileTree(id);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + id);
-
-      return result!;
+      return new Promise<TileTreeProps>((resolve, reject) => {
+        actx.enter();
+        this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + id));
+          else
+            resolve(ret.result! as TileTreeProps);
+        });
+      });
     }
 
     /** @hidden */
-    public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
-
-    /** @hidden */
-    public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
+    public requestTileContent(actx: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTiles(treeId, tileIds);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + treeId);
-
-      assert(Array.isArray(result));
-      return result! as TileProps[];
+      return new Promise<Uint8Array>((resolve, reject) => {
+        actx.enter();
+        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+          else
+            resolve(ret.result!);
+        });
+      });
     }
   }
 }

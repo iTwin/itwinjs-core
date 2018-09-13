@@ -3,16 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QParams3d, QPoint3dList, PolylineFlags, PolylineData, RenderMode } from "@bentley/imodeljs-common";
-import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
+import { PolylineParams } from "../primitives/VertexTable";
 import { Primitive } from "./Primitive";
-import { wantJointTriangles } from "./Graphic";
 import { Target } from "./Target";
 import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
-import { AttributeHandle, BufferHandle } from "./Handle";
+import { AttributeHandle } from "./Handle";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { LineCode } from "./EdgeOverrides";
 import { VertexLUT } from "./VertexLUT";
@@ -22,229 +20,44 @@ import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
 
-export class PolylineInfo {
+export class PolylineGeometry extends LUTGeometry {
   public vertexParams: QParams3d;
-  public features: FeaturesInfo | undefined;
+  public features?: FeaturesInfo;
   public lineWeight: number;
   public lineCode: number;
-  public flags: PolylineFlags;
-
-  public constructor(args: PolylineArgs) {
-    this.vertexParams = args.pointParams;
-    this.features = FeaturesInfo.create(args.features);
-    this.lineWeight = args.width;
-    this.lineCode = LineCode.valueFromLinePixels(args.linePixels);
-    this.flags = args.flags.clone();
-  }
-
-  public get isPlanar(): boolean { return this.flags.isPlanar; }
-  public get isAnyEdge(): boolean { return this.flags.isAnyEdge; }
-  public get isNormalEdge(): boolean { return this.flags.isNormalEdge; }
-  public get isOutlineEdge(): boolean { return this.flags.isOutlineEdge; }
-  public get renderOrder(): RenderOrder {
-    if (this.isAnyEdge)
-      return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
-    else
-      return this.isPlanar ? RenderOrder.PlanarLinear : RenderOrder.Linear;
-  }
-}
-
-export declare const enum TesselatedPolylineParam {
-  kNone = 0,
-  kSquare = 1 * 3,
-  kMiter = 2 * 3,
-  kMiterInsideOnly = 3 * 3,
-  kJointBase = 4 * 3,
-  kNegatePerp = 8 * 3,
-  kNegateAlong = 16 * 3,
-  kNoneAdjWt = 32 * 3,
-}
-
-export class TesselatedPolyline {
-  public vertIndex: Uint8Array;
-  public prevIndex: Uint8Array;
-  public nextIndexAndParam: Uint8Array;
-  public distance: Float32Array;
-  public constructor(vertIndex: Uint8Array, prevIndex: Uint8Array, nextIndexAndParam: Uint8Array, distance: Float32Array) {
-    this.vertIndex = vertIndex;
-    this.prevIndex = prevIndex;
-    this.nextIndexAndParam = nextIndexAndParam;
-    this.distance = distance;
-  }
-  public get numIndices(): number { return this.distance.length; }
-}
-
-class PolylineTesselatorVertex {
-  public isSegmentStart: boolean;
-  public isPolylineStartOrEnd: boolean;
-  public vertexIndex: number;
-  public prevIndex: number;
-  public nextIndex: number;
-  public distance: number;
-
-  public constructor(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number, distance: number) {
-    this.isSegmentStart = isSegmentStart;
-    this.isPolylineStartOrEnd = isPolylineStartOrEnd;
-    this.vertexIndex = vertexIndex;
-    this.prevIndex = prevIndex;
-    this.nextIndex = nextIndex;
-    this.distance = distance;
-    this.prevIndex = prevIndex;
-    this.prevIndex = prevIndex;
-  }
-
-  public computeParam(negatePerp: boolean, adjacentToJoint: boolean = false, joint: boolean = false, noDisplacement: boolean = false): number {
-    if (joint)
-      return TesselatedPolylineParam.kJointBase;
-
-    let param: TesselatedPolylineParam = TesselatedPolylineParam.kNone;
-    if (noDisplacement)
-      param = TesselatedPolylineParam.kNoneAdjWt; // prevent getting tossed before width adjustment
-    else if (adjacentToJoint)
-      param = TesselatedPolylineParam.kMiterInsideOnly;
-    else
-      param = this.isPolylineStartOrEnd ? TesselatedPolylineParam.kSquare : TesselatedPolylineParam.kMiter;
-
-    let adjust = 0;
-    if (negatePerp)
-      adjust = TesselatedPolylineParam.kNegatePerp;
-    if (!this.isSegmentStart)
-      adjust += TesselatedPolylineParam.kNegateAlong;
-
-    return param + adjust;
-  }
-}
-
-export class PolylineTesselator {
-  private _polylines: PolylineData[];
-  private _points: QPoint3dList;
-  private _doJoints: boolean;
-  private _numIndices = 0;
-  private _vertIndex: number[] = [];
-  private _prevIndex: number[] = [];
-  private _nextIndex: number[] = [];
-  private _nextParam: number[] = [];
-  private _distance: number[] = [];
-  private _position: Point3d[] = [];
-
-  private constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
-    this._polylines = polylines;
-    this._points = points;
-    this._doJoints = doJointTriangles;
-  }
-
-  public static fromPolyline(args: PolylineArgs): PolylineTesselator {
-    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, args.flags.is2d));
-  }
-
-  public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
-    if (undefined !== args.edges.polylines.lines && undefined !== args.points)
-      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, args.is2d));
-    return undefined;
-  }
-
-  public tesselate(): TesselatedPolyline {
-    for (const p of this._points.list)
-      this._position.push(p.unquantize(this._points.params));
-    this._tesselate();
-    const vertIndex = VertexLUT.convertIndicesToTriplets(this._vertIndex);
-    const prevIndex = VertexLUT.convertIndicesToTriplets(this._prevIndex);
-    const nextIndexAndParam = new Uint8Array(this._numIndices * 4);
-    for (let i = 0; i < this._numIndices; i++) {
-      const index = this._nextIndex[i];
-      const j = i * 4;
-      nextIndexAndParam[j + 0] = index & 0x000000ff;
-      nextIndexAndParam[j + 1] = (index & 0x0000ff00) >> 8;
-      nextIndexAndParam[j + 2] = (index & 0x00ff0000) >> 16;
-      nextIndexAndParam[j + 3] = this._nextParam[i] & 0x000000ff;
-    }
-    const distance = new Float32Array(this._numIndices);
-    for (let i = 0; i < this._numIndices; ++i)
-      distance[i] = this._distance[i];
-    return new TesselatedPolyline(vertIndex, prevIndex, nextIndexAndParam, distance);
-  }
-
-  private _tesselate() {
-    for (const line of this._polylines) {
-      if (line.numIndices < 2)
-        continue;
-      let cumulativeDist = line.startDistance;
-      const last = line.numIndices - 1;
-      const isClosed: boolean = line.vertIndices[0] === line.vertIndices[last];
-      for (let i = 0; i < last; ++i) {
-        const idx0 = line.vertIndices[i];
-        const idx1 = line.vertIndices[i + 1];
-        const pos0 = this._position[idx0];
-        const pos1 = this._position[idx1];
-        const dist = pos0.distance(pos1);
-        const isStart: boolean = (0 === i);
-        const isEnd: boolean = (last - 1 === i);
-        const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
-        const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
-        const v0 = new PolylineTesselatorVertex(true, isStart && !isClosed, idx0, prevIdx0, idx1, cumulativeDist);
-        const v1 = new PolylineTesselatorVertex(false, isEnd && !isClosed, idx1, nextIdx1, idx0, cumulativeDist += dist);
-        const maxJointDot = -0.7;
-        const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
-        const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
-        if (jointAt0 || jointAt1) {
-          this._addVertex(v0, v0.computeParam(true, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
-        } else {
-          this._addVertex(v0, v0.computeParam(true));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v1, v1.computeParam(true));
-        }
-      }
-    }
-  }
-
-  private _dotProduct(v: PolylineTesselatorVertex): number {
-    const pos: Point3d = this._position[v.vertexIndex];
-    const prevDir: Vector3d = Vector3d.createStartEnd(this._position[v.prevIndex], pos);
-    const nextDir: Vector3d = Vector3d.createStartEnd(this._position[v.nextIndex], pos);
-    return prevDir.dotProduct(nextDir);
-  }
-
-  private _addVertex(vertex: PolylineTesselatorVertex, param: number): void {
-    this._vertIndex[this._numIndices] = vertex.vertexIndex;
-    this._prevIndex[this._numIndices] = vertex.prevIndex;
-    this._nextIndex[this._numIndices] = vertex.nextIndex;
-    this._nextParam[this._numIndices] = param;
-    this._distance[this._numIndices] = vertex.distance;
-    this._numIndices++;
-  }
-}
-
-export class PolylineGeometry extends LUTGeometry {
-  public polyline: PolylineInfo;
-  public lut: VertexLUT.Data;
+  public type: PolylineTypeFlags;
+  private _isPlanar: boolean;
+  public lut: VertexLUT;
   public numIndices: number;
   private _buffers: PolylineBuffers;
 
-  private constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
+  private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams) {
     super();
-    this.polyline = info;
+    this.vertexParams = params.vertices.qparams;
+    this.features = FeaturesInfo.createFromVertexTable(params.vertices);
+    this.lineWeight = params.weight;
+    this.lineCode = LineCode.valueFromLinePixels(params.linePixels);
+    this.type = params.type;
+    this._isPlanar = params.isPlanar;
     this.lut = lut;
-    this.numIndices = numIndices;
+    this.numIndices = params.polyline.indices.length;
     this._buffers = buffers;
   }
 
   public dispose() {
     dispose(this.lut);
     dispose(this._buffers);
+  }
+
+  public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
+  public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
+  public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
+
+  public get renderOrder(): RenderOrder {
+    if (this.isAnyEdge)
+      return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
+    else
+      return this.isPlanar ? RenderOrder.PlanarLinear : RenderOrder.Linear;
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
@@ -266,7 +79,7 @@ export class PolylineGeometry extends LUTGeometry {
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (RenderPass.None !== pass && this.polyline.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
+      if (RenderPass.None !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
         pass = RenderPass.None;
       return pass;
     }
@@ -275,19 +88,18 @@ export class PolylineGeometry extends LUTGeometry {
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
-  public get renderOrder(): RenderOrder { return this.polyline.renderOrder; }
-  public get isPlanar(): boolean { return this.polyline.isPlanar; }
-  public get isEdge(): boolean { return this.polyline.isAnyEdge; }
+  public get isPlanar(): boolean { return this._isPlanar; }
+  public get isEdge(): boolean { return this.isAnyEdge; }
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.polyline.features; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
 
   protected _getLineWeight(params: ShaderProgramParams): number {
-    return this.isEdge ? params.target.getEdgeWeight(params, this.polyline.lineWeight) : this.polyline.lineWeight;
+    return this.isEdge ? params.target.getEdgeWeight(params, this.lineWeight) : this.lineWeight;
   }
   protected _getLineCode(params: ShaderProgramParams): number {
-    return this.isEdge ? params.target.getEdgeLineCode(params, this.polyline.lineCode) : this.polyline.lineCode;
+    return this.isEdge ? params.target.getEdgeLineCode(params, this.lineCode) : this.lineCode;
   }
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
@@ -301,32 +113,27 @@ export class PolylineGeometry extends LUTGeometry {
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 
-  public static create(args: PolylineArgs): PolylineGeometry | undefined {
-    const lutParams: VertexLUT.Params = new VertexLUT.Params(new VertexLUT.SimpleBuilder(args), args.colors);
-    const info = new PolylineInfo(args);
-    const lut = lutParams.toData(info.vertexParams);
-    if (undefined !== lut) {
-      const tess: PolylineTesselator = PolylineTesselator.fromPolyline(args);
-      const tp: TesselatedPolyline = tess.tesselate();
-      const vBuff = BufferHandle.createArrayBuffer(tp.vertIndex);
-      const pBuff = BufferHandle.createArrayBuffer(tp.prevIndex);
-      const npBuff = BufferHandle.createArrayBuffer(tp.nextIndexAndParam);
-      const dBuff = BufferHandle.createArrayBuffer(tp.distance);
-      if (undefined !== vBuff && undefined !== pBuff && undefined !== npBuff && undefined !== dBuff) {
-        const pb: PolylineBuffers = new PolylineBuffers(vBuff, pBuff, npBuff, dBuff);
-        return new PolylineGeometry(pb, tp.distance.length, lut, info);
-      }
-    }
-    return undefined;
+  public static create(params: PolylineParams): PolylineGeometry | undefined {
+    const lut = VertexLUT.createFromVertexTable(params.vertices);
+    if (undefined === lut)
+      return undefined;
+
+    const buffers = PolylineBuffers.create(params.polyline);
+    if (undefined === buffers)
+      return undefined;
+
+    return new PolylineGeometry(lut, buffers, params);
   }
 }
 
 export class PolylinePrimitive extends Primitive {
   private constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
-  public static create(args: PolylineArgs): PolylinePrimitive | undefined {
-    const geom = PolylineGeometry.create(args);
+
+  public static create(params: PolylineParams): PolylinePrimitive | undefined {
+    const geom = PolylineGeometry.create(params);
     return undefined !== geom ? new PolylinePrimitive(geom) : undefined;
   }
+
   public get renderOrder(): RenderOrder { return (this.cachedGeometry as PolylineGeometry).renderOrder; }
   public get isPlanar(): boolean { return (this.cachedGeometry as PolylineGeometry).isPlanar; }
   public get isEdge(): boolean { return (this.cachedGeometry as PolylineGeometry).isEdge; }

@@ -686,6 +686,7 @@ export class ToolAdmin {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
     this.setOverlayDecoration(vp);
+    vp.invalidateDecorations(); // stop drawing locate circle...
   }
 
   /** @hidden */

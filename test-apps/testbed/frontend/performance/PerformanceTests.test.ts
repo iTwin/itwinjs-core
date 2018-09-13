@@ -6,7 +6,7 @@ import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { PerformanceWriterClient } from "./PerformanceWriterClient";
 import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/webgl";
 import { IModelApi } from "./IModelApi"; // @ts-ignore
 import { ProjectApi } from "./ProjectApi"; // @ts-ignore
 import { CONSTANTS } from "../../common/Testbed";

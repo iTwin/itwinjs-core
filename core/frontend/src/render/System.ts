@@ -32,6 +32,7 @@ import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PointStringParams, MeshParams, PolylineParams } from "./primitives/VertexTable";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
@@ -332,6 +333,8 @@ export abstract class RenderSystem implements IDisposable {
 
   public abstract dispose(): void;
 
+  public get maxTextureSize(): number { return 0; }
+
   /** Create a render target which will render to the supplied canvas element. */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
@@ -351,10 +354,30 @@ export abstract class RenderSystem implements IDisposable {
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
   /** Create a triangle mesh primitive */
-  public createTriMesh(_args: MeshArgs): RenderGraphic | undefined { return undefined; }
+  public createTriMesh(args: MeshArgs): RenderGraphic | undefined {
+    const params = MeshParams.create(args);
+    return this.createMesh(params);
+  }
 
   /** Create an indexed polyline primitive */
-  public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
+  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
+    if (args.flags.isDisjoint) {
+      const pointStringParams = PointStringParams.create(args);
+      return undefined !== pointStringParams ? this.createPointString(pointStringParams) : undefined;
+    } else {
+      const polylineParams = PolylineParams.create(args);
+      return undefined !== polylineParams ? this.createPolyline(polylineParams) : undefined;
+    }
+  }
+
+  /** Create a mesh primitive */
+  public createMesh(_params: MeshParams): RenderGraphic | undefined { return undefined; }
+
+  /** Create a polyline primitive */
+  public createPolyline(_params: PolylineParams): RenderGraphic | undefined { return undefined; }
+
+  /** Create a point string primitive */
+  public createPointString(_params: PointStringParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a point cloud primitive */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }

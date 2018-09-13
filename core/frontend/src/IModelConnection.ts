@@ -9,7 +9,7 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
+  TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -589,7 +589,7 @@ export namespace IModelConnection {
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
-    public async getTileProps(ids: TileId[]): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids); }
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
   }
 }

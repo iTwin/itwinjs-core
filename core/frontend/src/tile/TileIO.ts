@@ -25,8 +25,9 @@ export namespace TileIO {
     Unknown = 0,
     B3dm = 0x6d643362, // "b3dm"
     Gltf = 0x46546c67, // "glTF"
-    IModel = 0x546e6764, // "dgnT"
+    Dgn = 0x546e6764, // "dgnT"
     Pnts = 0x73746e70,  // "pnts"
+    IModel = 0x6c644d69, // "iMdl"
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
@@ -36,6 +37,7 @@ export namespace TileIO {
       case Format.B3dm:
       case Format.Gltf:
       case Format.IModel:
+      case Format.Dgn:
       case Format.Pnts:
         return true;
       default:
