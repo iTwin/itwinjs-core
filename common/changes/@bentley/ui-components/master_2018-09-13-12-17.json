@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial Table cell editing implementation",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}
