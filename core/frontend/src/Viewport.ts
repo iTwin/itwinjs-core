@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -18,7 +18,7 @@ import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -1271,27 +1271,55 @@ export abstract class Viewport {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
-   * @param placements element placement(s). Will zoom to the union of the placements.
+   * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
+   * @param props element placements. Will zoom to the union of the placements.
    * @param margin the amount of white space to leave around elements
    * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
-  public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
-    const vf = this._viewFrustum;
+  public zoomToPlacementProps(placementProps: PlacementProps[], margin?: MarginPercent) {
+    if (placementProps.length === 0)
+      return;
 
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotation);
-    const elemRange = Array.isArray(placements) ? placements : [placements];
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotation);
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
 
+    const frust = new Frustum();
     const viewRange = new Range3d();
-    for (const elRange of elemRange) {
-      const placement = hasAngle(elRange) ? Placement2d.fromJSON(elRange) : Placement3d.fromJSON(elRange);
-      const frust = Frustum.fromRange(placement.bbox);
+    for (const props of placementProps) {
+      const placement = hasAngle(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+      placement.getWorldCorners(frust);
       viewRange.extendArray(frust.points, viewTransform);
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, margin);
     this.setupFromView();
+  }
+
+  /**
+   * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
+   * @param props element props. Will zoom to the union of the placements.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public zoomToElementProps(elementProps: ElementProps[], margin?: MarginPercent) {
+    if (elementProps.length === 0)
+      return;
+    const placementProps: PlacementProps[] = [];
+    for (const props of elementProps) {
+      if (props.placement !== undefined)
+        placementProps.push(props.placement);
+    }
+    return this.zoomToPlacementProps(placementProps, margin);
+  }
+
+  /**
+   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
+   * @param ids the element id(s) to include. Will zoom to the union of the placements.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public async zoomToElements(ids: Id64Arg, margin?: MarginPercent) {
+    return this.zoomToElementProps(await this.iModel.elements.getProps(ids), margin);
   }
 
   /**
@@ -1461,86 +1489,6 @@ export abstract class Viewport {
     return worldPts[0].distance(worldPts[1]);
   }
 
-  /** Show the surface normal for geometry under the cursor when snapping. */
-  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
-    if (!context.viewport.view.is3d())
-      return; // Not valuable feedback in 2d...
-
-    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
-      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const color = ColorDef.from(255 - context.viewport.hilite.color.colors.r, 255 - context.viewport.hilite.color.colors.g, 255 - context.viewport.hilite.color.colors.b); // Invert hilite color for good contrast...
-    const colorFill = color.clone();
-
-    color.setTransparency(100);
-    colorFill.setTransparency(200);
-    builder.setSymbology(color, colorFill, 1);
-
-    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
-    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
-    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
-
-    builder.addArc(ellipse, true, true);
-    builder.addArc(ellipse, false, false);
-
-    const length = (0.6 * radius);
-    const normal = Vector3d.create();
-
-    ellipse.vector0.normalize(normal);
-    const pt1 = hit.snapPoint.plusScaled(normal, length);
-    const pt2 = hit.snapPoint.plusScaled(normal, -length);
-    builder.addLineString([pt1, pt2]);
-
-    ellipse.vector90.normalize(normal);
-    const pt3 = hit.snapPoint.plusScaled(normal, length);
-    const pt4 = hit.snapPoint.plusScaled(normal, -length);
-    builder.addLineString([pt3, pt4]);
-
-    context.addDecorationFromBuilder(builder);
-  }
-
-  /** draw a filled and outlined circle to represent the size of the location tolerance in the current view. */
-  private drawLocateCircle(context: DecorateContext, aperture: number, pt: Point3d): void {
-    const colorDefToString = (color: ColorDef, transparency: number) => {
-      const colors = color.colors;
-      const alpha = (255 - transparency) / 255;
-      return "rgba(" + (colors.r | 0) + "," + (colors.g | 0) + "," + (colors.b | 0) + "," + alpha + ")";
-    };
-
-    const fillStyle = colorDefToString(ColorDef.white, 115);
-    const strokeStyle = colorDefToString(ColorDef.white, 20);
-    const outerStrokeStyle = colorDefToString(ColorDef.black, 100);
-
-    const radius = (aperture * 0.5) + 0.5;
-    const position = this.worldToView(pt);
-    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-      ctx.beginPath();
-      ctx.strokeStyle = strokeStyle;
-      ctx.fillStyle = fillStyle;
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = outerStrokeStyle;
-      ctx.lineWidth = 1;
-      ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
-      ctx.stroke();
-    };
-
-    context.addOverlay2dDecoration({ position, drawDecoration, frontmost: true });
-  }
-
-  /** @hidden */
-  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
-    if (hit)
-      Viewport.drawLocateHitDetail(context, aperture, hit);
-
-    if (isLocateCircleOn)
-        this.drawLocateCircle(context, aperture, pt);
-  }
-
   private get _wantInvertBlackAndWhite(): boolean {
     const bgColor = this.view.backgroundColor.colors;
     return ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
@@ -1624,6 +1572,7 @@ export abstract class Viewport {
     if (!sync.isValidScene) {
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
+      view.createClassification(context);
       view.createTerrain(context);
       context.requests.requestMissing();
       target.changeScene(context.graphics);
@@ -1768,6 +1717,7 @@ export class ScreenViewport extends Viewport {
     const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
 
     addChild(canvas, parentZ + 10);
+    this.target.updateViewRect();
 
     this.decorationDiv = document.createElement("div");
     this.decorationDiv.className = "overlay-decorators";
@@ -1922,6 +1872,72 @@ export class ScreenViewport extends Viewport {
   public resetUndo() {
     this.clearViewUndo();
     this.saveViewUndo();  // Set up new baseline state
+  }
+
+  /** Show the surface normal for geometry under the cursor when snapping. */
+  private static drawLocateHitDetail(context: DecorateContext, aperture: number, hit: HitDetail): void {
+    if (!context.viewport.view.is3d())
+      return; // Not valuable feedback in 2d...
+
+    if (!(hit instanceof SnapDetail) || !hit.normal || hit.isPointAdjusted)
+      return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    const color = context.viewport.hilite.color.invert(); // Invert hilite color for good contrast
+    const colorFill = color.clone();
+
+    color.setTransparency(100);
+    colorFill.setTransparency(200);
+    builder.setSymbology(color, colorFill, 1);
+
+    const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
+    const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+
+    builder.addArc(ellipse, true, true);
+    builder.addArc(ellipse, false, false);
+
+    const length = (0.6 * radius);
+    const normal = Vector3d.create();
+
+    ellipse.vector0.normalize(normal);
+    const pt1 = hit.snapPoint.plusScaled(normal, length);
+    const pt2 = hit.snapPoint.plusScaled(normal, -length);
+    builder.addLineString([pt1, pt2]);
+
+    ellipse.vector90.normalize(normal);
+    const pt3 = hit.snapPoint.plusScaled(normal, length);
+    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    builder.addLineString([pt3, pt4]);
+
+    context.addDecorationFromBuilder(builder);
+  }
+
+  /** @hidden */
+  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
+    if (hit)
+      ScreenViewport.drawLocateHitDetail(context, aperture, hit);
+
+    if (isLocateCircleOn) {
+      // draw a filled and outlined circle to represent the size of the location tolerance in the current view.
+      const radius = (aperture * 0.5) + 0.5;
+      const position = this.worldToView(pt);
+      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(255,255,255,.4)";
+        ctx.fillStyle = "rgba(255,255,255,.2)";
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(0,0,0,.8)";
+        ctx.lineWidth = 1;
+        ctx.arc(0, 0, radius + 1, 0, 2 * Math.PI);
+        ctx.stroke();
+      };
+      context.addCanvasDecoration({ position, drawDecoration }, true);
+    }
   }
 }
 

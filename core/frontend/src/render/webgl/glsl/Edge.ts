@@ -9,7 +9,7 @@ import {
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, GLSLVertex } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex } from "./Vertex";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { addColor } from "./Color";
@@ -59,10 +59,6 @@ const checkForSilhouetteDiscard = `
 
 const computePosition = `
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
-
-  // ###TODO if (u_animParams.z > 0.0)
-  // ###TODO   rawPos.xyz += computeAnimatedDisplacement(u_animValue * u_animParams.z).xyz;
-
   vec4  pos = u_mvp * rawPos;
   vec4  other = g_otherPos;
   vec3  modelDir = other.xyz - pos.xyz;
@@ -102,11 +98,10 @@ const computePosition = `
 
   return pos;
 `;
-
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
-function createBase(isSilhouette: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
+  const builder = new ProgramBuilder(true, isAnimated);
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -129,6 +124,9 @@ function createBase(isSilhouette: boolean): ProgramBuilder {
 
   addViewport(vert);
   addModelViewMatrix(vert);
+
+  if (isAnimated)
+    addAnimation(vert, false);
 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
@@ -162,8 +160,8 @@ function createBase(isSilhouette: boolean): ProgramBuilder {
   return builder;
 }
 
-export function createEdgeBuilder(isSilhouette: boolean): ProgramBuilder {
-  const builder = createBase(isSilhouette);
+export function createEdgeBuilder(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
+  const builder = createBase(isSilhouette, isAnimated);
   addShaderFlags(builder);
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);

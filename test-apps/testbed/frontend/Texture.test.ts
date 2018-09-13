@@ -5,7 +5,7 @@
 import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp, ImageUtil } from "@bentley/imodeljs-frontend";
-import { TextureHandle, GL } from "@bentley/imodeljs-frontend/lib/rendering";
+import { TextureHandle, GL } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in

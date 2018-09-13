@@ -92,7 +92,7 @@ export abstract class DrawCommand {
   public get featureIndexType(): FeatureIndexType { return undefined !== this.primitive ? this.primitive.featureIndexType : FeatureIndexType.Empty; }
   public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
-  public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
+  public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; } public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
 
   public isPushCommand(branch?: Branch) {
@@ -373,6 +373,28 @@ export class RenderCommands {
     return this._commands[idx];
   }
 
+  public addHiliteBranch(branch: Branch, batch: Batch): void {
+    this.pushAndPopBranchForPass(RenderPass.Hilite, branch, () => {
+      branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, batch));
+    });
+  }
+
+  private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
+    assert(RenderPass.None !== pass);
+
+    this._stack.pushBranch(branch);
+    const cmds = this.getCommands(pass);
+    cmds.push(DrawCommand.createForBranch(branch, PushOrPop.Push));
+
+    func();
+
+    this._stack.pop();
+    if (cmds[cmds.length - 1].isPushCommand(branch))
+      cmds.pop();
+    else
+      cmds.push(DrawCommand.createForBranch(branch, PushOrPop.Pop));
+  }
+
   public pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
 
@@ -532,8 +554,7 @@ export class RenderCommands {
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
     if (anyHilited) {
-      const hiliteCommands = this.getCommands(RenderPass.Hilite);
-      (batch.graphic as Graphic).addHiliteCommands(hiliteCommands, batch);
+      (batch.graphic as Graphic).addHiliteCommands(this, batch);
     }
 
     this._opaqueOverrides = this._translucentOverrides = false;

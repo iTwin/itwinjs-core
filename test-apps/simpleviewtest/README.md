@@ -71,6 +71,10 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
   * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
 * SVT_STANDALONE_VIEWNAME
   * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
+* SVT_MAXIMIZE_WINDOW
+  * If defined, maximize the electron window on startup
+* SVT_NO_DEVTOOLS
+  * If defined, do not open the electron dev tools on startup
 
 
 ## Running/Building on iOS <a name="build_ios"></a>

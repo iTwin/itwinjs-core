@@ -8,7 +8,6 @@
   display: none;
   position: fixed;
   z-index: 590;
-  padding-top: 100px;
   left: 0px;
   top: 0px;
   width: 100%;
@@ -23,22 +22,28 @@
     height: 0;
   }
   > .dialog-container {
-    margin: 100px auto;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    &.top-left { top: 0; left: 0; }
+    &.top { top: 0; left: 0; right:0 }
+    &.top-right { top: 0; right:0 }
+    &.left { top: 0; bottom: 0; left: 0; }
+    &.center { top: 0; bottom: 0; left: 0; right: 0; }
+    &.right { top: 0; bottom: 0; right: 0; }
+    &.bottom-left { bottom: 0; left: 0; }
+    &.bottom { bottom: 0; left: 0; right: 0; }
+    &.bottom-right { bottom: 0; right: 0; }
 
-    width: 50%;
+    margin: auto;
+
+    width: 60%;
     height: fit-content;
 
     display: flex;
     flex-direction: column;
 
-    > .dialog-area {
+    .dialog-area {
       display: flex;
-      height: inherit;
+      flex-grow: 1;
       flex-direction: column;
       border: 1px solid $bwc-gray-3;
       border-radius: $bwc-border-radius;
@@ -46,16 +51,19 @@
       padding: 0;
       > .dialog-head {
         flex-shrink: 0;
+        align-items: center;
         background-color: $bwc-blue;
         color: $bwc-blue-highlight;
         display: flex;
-        padding: $bwc-unbordered-padding;
+        padding: 6px;
+        /* padding: $bwc-unbordered-padding; */
         &.dialog-movable {
           cursor: move;
         }
         > .dialog-title {
           flex: 1 1;
           @include bwc-text-title;
+          font-size: 20px;
           margin: 0;
         }
         > .dialog-close {
@@ -84,6 +92,8 @@
           justify-content: flex-end;
           > * {
             min-width: 80px;
+            padding-top: 2px;
+            padding-bottom: 2px;
             &:not(:first-child) {
               margin-left: $bwc-inputs-margin;
             }

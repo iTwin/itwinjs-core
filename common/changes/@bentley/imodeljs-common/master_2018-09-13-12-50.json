@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added ColorDef.invert",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "keith.bentley@bentley.com"
+}

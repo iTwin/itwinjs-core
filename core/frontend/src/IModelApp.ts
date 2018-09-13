@@ -3,25 +3,24 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { DeploymentEnv, IModelHubClient, IModelClient } from "@bentley/imodeljs-clients";
-import { ViewManager } from "./ViewManager";
-import { ToolAdmin } from "./tools/ToolAdmin";
-import { SettingsAdmin, ConnectSettingsClient } from "@bentley/imodeljs-clients";
+import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { ConnectSettingsClient, DeploymentEnv, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
-import { TentativePoint } from "./TentativePoint";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { ToolRegistry } from "./tools/Tool";
-import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";
-import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
-import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { System } from "./render/webgl/System";
+import { TentativePoint } from "./TentativePoint";
+import { ToolRegistry } from "./tools/Tool";
+import { ToolAdmin } from "./tools/ToolAdmin";
+import { ViewManager } from "./ViewManager";
 
+import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
-import * as idleTool from "./tools/IdleTool";
 
 /**
  * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
@@ -100,15 +99,9 @@ export class IModelApp {
 
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
-    // make sure the applicationId is set to something.
-    if (!IModelApp.applicationId) {
-      IModelApp.applicationId = "IModelJsApp";
-    }
-    if (!IModelApp.settingsAdmin) {
-      IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
-    }
-
     // the startup function may have already allocated any of these members, so first test whether they're present
+    if (!IModelApp.applicationId) IModelApp.applicationId = "IModelJsApp";
+    if (!IModelApp.settingsAdmin) IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
   Geometry,
@@ -11,12 +11,11 @@ import {
   StrokesPrimitivePointLists,
   StrokesPrimitivePointList,
   PrimitiveBuilder,
-  System,
   GraphicType,
   GeometryAccumulator,
   DisplayParams,
-  Branch,
 } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
@@ -51,7 +50,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -111,7 +110,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     // const pointA = new Point3d(-100, 0, 0);
     // const pointB = new Point3d(0, 100, 0);
@@ -147,7 +146,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -173,7 +172,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -199,7 +198,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -258,7 +257,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -317,7 +316,7 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point2d(-100, 0);
     const pointB = new Point2d(0, 100);
@@ -376,8 +375,8 @@ describe("PrimitiveBuilder tests", () => {
     }
 
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
-    const accum = new GeometryAccumulator(imodel, System.instance);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
+    const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.setLineColor(ColorDef.white);

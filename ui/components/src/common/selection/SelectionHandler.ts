@@ -12,6 +12,11 @@ export declare type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolea
  */
 export interface SingleSelectionHandler<TItem> {
   /**
+   * Callback for before an item is selected.
+   */
+  preselect: () => void;
+
+  /**
    * Selects the item.
    */
   select: () => void;
@@ -235,6 +240,8 @@ export class SelectionHandler<Item> {
       }
 
       if (!shiftSelected) {
+        itemHandler.preselect();
+
         if (hasFlag(this.selectionMode, SelectionModeFlags.SelectionLimitOne)
           && !(hasFlag(this.selectionMode, SelectionModeFlags.ToggleEnabled) && itemHandler.isSelected())) {
           componentHandler.deselectAll();

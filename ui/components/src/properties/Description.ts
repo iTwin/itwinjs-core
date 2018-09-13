@@ -39,4 +39,7 @@ export interface PropertyDescription {
   typename: string;
   enum?: EnumerationChoicesInfo;
   editor?: PropertyEditorInfo;
+
+  /** Get the custom DataController by this name and register it with the property editor */
+  dataController?: string;
 }

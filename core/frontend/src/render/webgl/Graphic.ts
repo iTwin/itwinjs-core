@@ -8,7 +8,7 @@ import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from 
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, GraphicList } from "../System";
-import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams, LUTDimension } from "./FeatureDimensions";
@@ -408,16 +408,10 @@ function createPickTable(features: FeatureTable): PickTable {
     return { nonUniform: createNonUniformPickTable(features) };
 }
 
-export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
-  // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-  const jointWidthThreshold = 5;
-  return is2d || lineWeight > jointWidthThreshold;
-}
-
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
-  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { /* assert(false); */ }
+  public addHiliteCommands(_commands: RenderCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
@@ -515,6 +509,9 @@ export class Branch extends Graphic {
   public dispose() { this.branch.dispose(); }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
+
+  public addHiliteCommands(commands: RenderCommands, batch: Batch): void { commands.addHiliteBranch(this, batch); }
+
   public assignUniformFeatureIndices(index: number): void {
     for (const entry of this.branch.entries) {
       (entry as Graphic).assignUniformFeatureIndices(index);
@@ -548,7 +545,7 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+  public addHiliteCommands(commands: RenderCommands, batch: Batch): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, batch);
     }

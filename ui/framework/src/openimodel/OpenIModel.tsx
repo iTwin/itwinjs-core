@@ -56,7 +56,7 @@ class OpenIModelComponent extends React.Component<OpenIModelProps> {
       return (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignInPage />;
+          <SignInPage />
         </React.Fragment>
       );
     } else

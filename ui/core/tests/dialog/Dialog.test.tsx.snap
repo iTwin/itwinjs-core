@@ -2,10 +2,11 @@
 
 exports[`Dialog <Dialog /> renders correctly 1`] = `
 <div
+  alignment="center"
   className="dialog dialog-open"
 >
   <div
-    className="dialog-container"
+    className="dialog-container center"
     style={
       Object {
         "height": "",

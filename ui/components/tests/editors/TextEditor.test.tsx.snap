@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TextEditor /> renders correctly 1`] = `
+<input
+  className="cell cell-editor"
+  defaultValue=""
+  onChange={[Function]}
+  type="text"
+/>
+`;

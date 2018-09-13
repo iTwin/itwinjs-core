@@ -9,7 +9,7 @@ import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
-import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
+import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
 /** The state of a Model */
@@ -55,19 +55,21 @@ export class ModelState extends EntityState implements ModelProps {
 
 /** The state of a geometric model */
 export abstract class GeometricModelState extends ModelState {
-  protected _tileTree?: TileTree;
-  protected _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  protected _tileTreeState: TileTreeState = new TileTreeState(this);
+  protected _classifierTileTreeState: TileTreeState = new TileTreeState(this);
 
   public abstract get is3d(): boolean;
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
-  public get tileTree(): TileTree | undefined { return this._tileTree; }
+  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   /** @hidden */
-  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
-  public set loadStatus(status: TileTree.LoadStatus) { this._loadStatus = status; }
+  public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
+  /** @hidden */
+  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }
-
+  /** @hidden */
   public getOrLoadTileTree(): TileTree | undefined {
     if (undefined === this.tileTree)
       this.loadTileTree();
@@ -76,33 +78,34 @@ export abstract class GeometricModelState extends ModelState {
   }
 
   /** @hidden */
-  public loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
-      return this._loadStatus;
+  public loadTileTree(asClassifier: boolean = false, classifierExpansion?: number): TileTree.LoadStatus {
+    const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
+    if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
+      return tileTreeState.loadStatus;
 
-    this._loadStatus = TileTree.LoadStatus.Loading;
+    tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
 
-    if (this.jsonProperties.tilesetUrl !== undefined) {
-      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this);
-      return this._loadStatus;
+    if (!asClassifier && this.jsonProperties.tilesetUrl !== undefined) {
+      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
+      return tileTreeState.loadStatus;
     }
+    return this.loadIModelTileTree(tileTreeState, asClassifier, classifierExpansion);
+  }
 
-    const ids = Id64.toIdSet(this.id);
-    this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-      this.setTileTree(result[0], new IModelTileLoader(this.iModel, Id64.fromJSON(result[0].id)));
+  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean, classifierExpansion?: number): TileTree.LoadStatus {
+    const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id.value) : this.id.value;
+
+    this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
+      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier));
       IModelApp.viewManager.onNewTilesReady();
-    }).catch((_err) => this._loadStatus = TileTree.LoadStatus.NotFound);
+    }).catch((_err) => {
+      this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
+    });
 
-    return this._loadStatus;
+    return tileTreeState.loadStatus;
   }
-
-  public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this.iModel, this.is3d, loader));
-    this._loadStatus = TileTree.LoadStatus.Loaded;
-  }
-
   public onIModelConnectionClose() {
-    dispose(this._tileTree);  // we do not track if we are disposed... catch this at the tiletree level
+    dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tiletree level
     super.onIModelConnectionClose();
   }
 }

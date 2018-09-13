@@ -14,9 +14,11 @@ import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetMo
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
 import { HitDetail } from "./HitDetail";
 
-/** Interface for drawing "decorations" into, or on top of, the active views. */
+/** Interface for drawing "decorations" into, or on top of, the active views.
+ * Decorators generate Decorations.
+ */
 export interface Decorator {
-  /** Implement this method to draw decorations into the supplied DecorateContext */
+  /** Implement this method to add Decorations into the supplied DecorateContext. */
   decorate(context: DecorateContext): void;
 
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator. Optional.
@@ -39,6 +41,7 @@ export interface Decorator {
   onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
 }
 
+/** Argument for [[ViewManager.onSelectedViewportChanged]] */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
   previous?: ScreenViewport;
@@ -92,13 +95,15 @@ export class ViewManager {
    */
   public readonly onSelectedViewportChanged = new BeUiEvent<SelectedViewportChangedArgs>();
 
-  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
+  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a new view. */
   public readonly onViewOpen = new BeUiEvent<ScreenViewport>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
   public readonly onViewClose = new BeUiEvent<ScreenViewport>();
 
-  /** Called after a view is suspended. This can happen when the application is minimized. */
+  /** Called after a view is suspended. This happens when the application is minimized or, on a tablet, when the application
+   * is moved to the background.
+   */
   public readonly onViewSuspend = new BeUiEvent<ScreenViewport>();
 
   /**
@@ -123,8 +128,9 @@ export class ViewManager {
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  public doesHostHaveFocus(): boolean { return document.hasFocus(); }
+  public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
 
+  /** Set the selected view to undefined. */
   public clearSelectedView(): void {
     const previousVp = this.selectedView;
     this._selectedView = undefined;

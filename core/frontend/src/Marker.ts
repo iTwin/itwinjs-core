@@ -4,7 +4,7 @@
 import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d } from "@bentley/geometry-core";
 import { ImageUtil } from "./ImageUtil";
 import { DecorateContext } from "./ViewContext";
-import { Overlay2dDecoration } from "./render/System";
+import { CanvasDecoration } from "./render/System";
 import { ViewRect, Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -16,10 +16,10 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 /**
- * A Marker is an [[Overlay2dDecoration]], drawn on the screen based on a fixed location in world space.
+ * A Marker is an [[CanvasDecoration]], whose position follows a fixed location in world space.
  *
  */
-export class Marker implements Overlay2dDecoration {
+export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
   protected _scaleFactorRange?: Range1d;
 
@@ -209,7 +209,7 @@ export class Marker implements Overlay2dDecoration {
     return true;
   }
 
-  public onDecorate(context: DecorateContext) { context.addOverlay2dDecoration(this); }
+  public onDecorate(context: DecorateContext) { context.addCanvasDecoration(this); }
 
   /** Add this Marker to the supplied DecorateContext, if it's visible
    * This method should be called from [[Decorator.decorate]].It will add this this Marker to the supplied DecorateContext.

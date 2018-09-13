@@ -4,8 +4,8 @@
 /** @module Tile */
 
 import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
-import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests, MissingNodes } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
@@ -94,7 +94,7 @@ class QuadId {
 }
 class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
-  public id: Id64Props = "";
+  public id: string = "";
   /** Metadata describing the tree's root Tile. */
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
@@ -107,30 +107,18 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   }
 }
 class WebMercatorTileProps implements TileProps {
-  public id: TileId;
-  public parentId?: string;
-  public range: Range3dProps;
-  public contentRange?: Range3dProps;
-  public maximumSize: number;
-
-  public childIds: string[];
-  public hasContents: boolean = true;
-  public geometry?: any;
+  public readonly contentId: string;
+  public readonly range: Range3dProps;
+  public readonly contentRange?: Range3dProps;
+  public readonly maximumSize: number;
+  public readonly sizeMultiplier: number = 1.0;
+  public readonly isLeaf: boolean = false;
 
   constructor(thisId: string, mercatorToDb: Transform) {
-    this.id = new TileId(new Id64(), thisId);
+    this.contentId = thisId;
     const quadId = new QuadId(thisId);
     this.range = quadId.getRange(mercatorToDb);
-    this.childIds = [];
-    const level = quadId.level + 1;
-    const column = quadId.column * 2;
-    const row = quadId.row * 2;
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
-    for (let i = 0; i < 2; ++i) {
-      for (let j = 0; j < 2; ++j) {
-        this.childIds.push(level + "_" + (column + i) + "_" + (row + j));
-      }
-    }
   }
 }
 class WebMercatorTileLoader extends TileLoader {
@@ -158,9 +146,19 @@ class WebMercatorTileLoader extends TileLoader {
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    const quadId = new QuadId(parent.contentId);
+    const level = quadId.level + 1;
+    const column = quadId.column * 2;
+    const row = quadId.row * 2;
+
     const props: WebMercatorTileProps[] = [];
-    for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        const childId = level + "_" + (column + i) + "_" + (row + j);
+        props.push(new WebMercatorTileProps(childId, this.mercatorToDb));
+      }
+    }
 
     return props;
   }
@@ -178,7 +176,7 @@ class WebMercatorTileLoader extends TileLoader {
       if (missingTile.isNotLoaded) {
         missingTile.setIsQueued();
 
-        const quadId = new QuadId(missingTile.id);
+        const quadId = new QuadId(missingTile.contentId);
         const corners = quadId.getCorners(this.mercatorToDb);
         const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
         if (undefined === imageSource) {
@@ -301,7 +299,7 @@ class BingAttribution {
   constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
 
   public matchesTile(tile: Tile): boolean {
-    const quadId = new QuadId(tile.id);
+    const quadId = new QuadId(tile.contentId);
     for (const coverage of this._coverages) {
       if (coverage.overlaps(quadId))
         return true;
@@ -642,17 +640,18 @@ export class BackgroundMapState {
     if (!this._provider)
       return;
 
-    const decorationDiv = context.decorationDiv;
     const copyrightImage = this._provider.getCopyrightImage(this);
     if (copyrightImage) {
-      decorationDiv.appendChild(copyrightImage);
-      const style = copyrightImage.style;
-      style.position = "absolute";
-      style.left = "0";
-      style.top = (decorationDiv.clientHeight - copyrightImage.height) + "px";
+      const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
+      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+        ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
+      };
+      context.addCanvasDecoration({ position, drawDecoration });
     }
+
     const copyrightMessage = this._provider.getCopyrightMessage(this, context.screenViewport);
     if (copyrightMessage) {
+      const decorationDiv = context.decorationDiv;
       decorationDiv.appendChild(copyrightMessage);
       const boundingRect = copyrightMessage.getBoundingClientRect();
       const style = copyrightMessage.style;

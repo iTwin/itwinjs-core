@@ -10,8 +10,9 @@ import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
+import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
@@ -404,6 +405,8 @@ export class System extends RenderSystem {
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get techniques() { return this._techniques!; }
 
+  public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
+
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
     if (undefined !== this._drawBuffersExtension)
@@ -452,17 +455,16 @@ export class System extends RenderSystem {
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
-  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
-    if (args.flags.isDisjoint)
-      return PointStringPrimitive.create(args);
-    else
-      return PolylinePrimitive.create(args);
-  }
-  public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
+
+  public createMesh(params: MeshParams): RenderGraphic | undefined { return MeshGraphic.create(params); }
+  public createPolyline(params: PolylineParams): RenderGraphic | undefined { return PolylinePrimitive.create(params); }
+  public createPointString(params: PointStringParams): RenderGraphic | undefined { return PointStringPrimitive.create(params); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
+
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
       const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
