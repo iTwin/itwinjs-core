@@ -386,7 +386,7 @@ function toggleAnimationMenu(_event: any) {
 
 function updateAnimation() {
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
-  animationSlider.value = (parseInt(animationSlider.value) + 1).toString();
+  animationSlider.value = (parseInt(animationSlider.value, undefined) + 1).toString();
   theViewport!.sync.invalidateScene();
   if ("100" === animationSlider.value) {
     animationSlider.value = "0";
