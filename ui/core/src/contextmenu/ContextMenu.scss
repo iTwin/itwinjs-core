@@ -3,6 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
 
+.context-menu-global {
+  position: fixed;
+  width: 0px;
+  height: 0px;
+  z-index: 9999;
+}
+
 .context-menu {
   &:hover {
     color: $bwc-text-color;
@@ -16,12 +23,25 @@
 
   .context-menu-container {
     position: fixed;
-    overflow: hidden;
 
     &.opened {
       visibility: inherit;
       transform-origin: top;
       transform: scaleY(1);
+    }
+
+    &.center {transform: translate(-50%, -50%); }
+    &.right {transform: translate(0%, -50%); }
+    &.left {transform: translate(-100%, -50%); }
+    &.top {
+      transform: translate(-50%, -100%);
+      &.right {transform: translate(0%, -100%); }
+      &.left {transform: translate(-100%, -100%); }
+    }
+    &.bottom {
+      transform: translate(-50%, 0%);
+      &.right {transform: translate(0%, 0%); }
+      &.left {transform: translate(-100%, 0%); }
     }
 
     transition: transform .3s;
@@ -80,16 +100,50 @@
         background-color: $bwc-blue;
       }
     }
-
-    .context-submenu .context-submenu-container .context-submenu-arrow {
-      flex-shrink: 0;
-      flex-grow: 0;
-      margin-left: $bwc-unbordered-padding;
-      width: $bwc-icons-small;
-      height: $bwc-line-height;
-      font-size: $bwc-icons-small / 2;
-      line-height: $bwc-line-height;
-      text-align: center;
+    .context-submenu {
+      display: flex;
+      &.top {
+        flex-direction: column;
+        align-items: center;
+      }
+      &.left {
+        flex-direction: row-reverse;
+        align-items: center;
+      }
+      &.right {
+        flex-direction: row;
+        align-items: center;
+      }
+      &.center {
+        flex-direction: column;
+        align-items: center;
+      }
+      &.top.left {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      &.top.right {
+        flex-direction: row;
+        align-items: flex-end;
+      }
+      &.bottom.left {
+        flex-direction: row-reverse;
+        align-items: flex-start;
+      }
+      &.bottom.right {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .context-submenu-container .context-submenu-arrow {
+        flex-shrink: 0;
+        flex-grow: 0;
+        margin-left: $bwc-unbordered-padding;
+        width: $bwc-icons-small;
+        height: $bwc-line-height;
+        font-size: $bwc-icons-small / 2;
+        line-height: $bwc-line-height;
+        text-align: center;
+      }
     }
   }
 

@@ -162,10 +162,10 @@ export namespace EditManipulator {
   export class HandleUtils {
     public static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Ray3d {
       if (checkAccuDraw && IModelApp.accuDraw.isActive)
-        return Ray3d.create(origin, IModelApp.accuDraw.getRotation().getRow(2));
+        return Ray3d.create(origin, IModelApp.accuDraw.getRotation().getRow(2).negate());
 
       if (checkACS && vp.isContextRotationRequired)
-        return Ray3d.create(origin, vp.getAuxCoordRotation().getRow(2));
+        return Ray3d.create(origin, vp.getAuxCoordRotation().getRow(2).negate());
 
       const eyePoint = vp.worldToViewMap.transform1.columnZ();
       const direction = Vector3d.createFrom(eyePoint);
