@@ -96,7 +96,7 @@ function createCommon(animated: boolean): ProgramBuilder {
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true);
+    addAnimation(vert, true, true);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -187,6 +187,13 @@ const computeNormal = `
   return normalize(u_nmx * octDecodeNormal(normal));
 `;
 
+const computeAnimatedNormal = `
+  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
+    return vec3(0.0);
+
+  return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
+`;
+
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
     baseColor.rgb = u_bgColor.rgb;
@@ -250,11 +257,11 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
   });
 }
 
-function addNormal(builder: ProgramBuilder) {
+function addNormal(builder: ProgramBuilder, animated: boolean) {
   addNormalMatrix(builder.vert);
 
   builder.vert.addFunction(octDecodeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
@@ -301,7 +308,7 @@ export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): Prog
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
-  addNormal(builder);
+  addNormal(builder, animated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);

@@ -20,6 +20,7 @@ import {
   SilhouetteParams,
   EdgeParams,
   AuxDisplacement,
+  AuxNormal,
   AuxParam,
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
@@ -440,6 +441,17 @@ export namespace IModelTileIO {
           }));
         }
       }
+      let auxNormals: undefined | AuxNormal[];
+      if (undefined !== json.auxNormals) {
+        auxNormals = [];
+        for (const normalJson of json.auxNormals) {
+          auxNormals.push(new AuxNormal({
+            index: normalJson.index,
+            name: normalJson.name,
+            inputs: normalJson.inputs,
+          }));
+        }
+      }
       let auxParams: undefined | AuxParam[];
       if (undefined !== json.auxParams) {
         auxParams = [];
@@ -466,6 +478,7 @@ export namespace IModelTileIO {
         numRgbaPerVertex: json.numRgbaPerVertex,
         uvParams,
         auxDisplacements,
+        auxNormals,
         auxParams,
       });
     }
