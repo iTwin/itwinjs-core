@@ -1402,7 +1402,7 @@ export class BriefcaseManager {
         case IModelHubStatus.AnotherUserPushing:
         case IModelHubStatus.PullIsRequired:
         case IModelHubStatus.DatabaseTemporarilyLocked:
-        case IModelHubStatus.iModelHubOperationFailed:
+        case IModelHubStatus.OperationFailed:
           return true;
       }
     }

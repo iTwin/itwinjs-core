@@ -2,6 +2,7 @@
 
 exports[`MessageBox <MessageBox /> renders correctly 1`] = `
 <Dialog
+  alignment="center"
   buttonCluster={
     Array [
       Object {
