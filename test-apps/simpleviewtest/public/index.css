@@ -249,6 +249,15 @@
 .bim-icon-model:categories {
       content: "\e901"
 }
+.bim-icon-animation:before {
+      content: "\e931"
+}
+.bim-icon-play:before {
+      content: "\ea32"
+}
+.bim-icon-stop:before {
+      content: "\ea34"
+}
 
 .toolMenu {
   position:absolute;

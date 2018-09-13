@@ -57,6 +57,8 @@ const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
+let animationIntervalId: NodeJS.Timer;
+let isAnimating: boolean = false;
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
   if (undefined === overrideColor)
@@ -377,6 +379,46 @@ function toggleSnapModeMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function toggleAnimationMenu(_event: any) {
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+function updateAnimation() {
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+  animationSlider.value = (parseInt(animationSlider.value) + 1).toString();
+  if ("100" === animationSlider.value) {
+    animationSlider.value = "0";
+    clearInterval(animationIntervalId);
+    theViewport!.continuousRendering = false;
+    isAnimating = false;
+  }
+}
+
+function startAnimation(_event: any) {
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none"; // keep dialog open
+
+  if (isAnimating)
+    return; // cannot animate while animating
+  animationIntervalId = setInterval(updateAnimation, 100);
+  theViewport!.continuousRendering = true;
+  isAnimating = true;
+}
+
+function stopAnimation(_event: any) {
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none"; // keep dialog open
+
+  if (!isAnimating)
+    return; // already not animating!
+  clearInterval(animationIntervalId);
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+  animationSlider.value = "0";
+  theViewport!.continuousRendering = false;
+  isAnimating = false;
+}
+
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   if (undefined === theViewport)
     return;
@@ -522,6 +564,7 @@ async function openView(state: SimpleViewState) {
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
   IModelApp.viewManager.addViewport(theViewport);
+  // ###TODO: cancel animating! ??
 }
 
 async function _changeView(view: ViewState) {
@@ -1303,6 +1346,9 @@ function wireIconsToFunctions() {
   document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+  document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
+  document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
+  document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
 
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
