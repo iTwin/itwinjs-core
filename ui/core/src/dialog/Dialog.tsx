@@ -30,6 +30,13 @@ export enum ButtonStyle {
   Blue = "bwc-buttons-blue",
 }
 
+/** Enum for dialog alignment */
+export enum DialogAlignment {
+    TopLeft = "top-left", Top = "top", TopRight = "top-right",
+    Left = "left", Center = "center", Right = "right",
+    BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
+}
+
 /** interface for a given button in a button cluster */
 export interface ButtonCluster {
   /** type of button */
@@ -39,12 +46,14 @@ export interface ButtonCluster {
   /** Which bwc button style to decorate button width */
   buttonStyle?: ButtonStyle;
 }
-
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 /** Property interface for Dialog */
-export interface DialogProps {
+export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
   /** whether to show dialog or not */
   opened: boolean;
-  /** Title to show in titlebar of dialog  */
+  /** Default alignment of dialog. Default: DialogAlignment.Center */
+  alignment?: DialogAlignment;
+  /** Title to show in titlebar of dialog */
   title?: string | JSX.Element;
   /** Footer to show at bottom of dialog. Note: will override buttonCluster */
   footer?: string | JSX.Element;
@@ -58,6 +67,10 @@ export interface DialogProps {
   minWidth?: number;
   /** minimum height that the dialog may be resized to. Default: 400 */
   minHeight?: number;
+  /** maximum width that the dialog may be resized to. */
+  maxWidth?: number;
+  /** maximum height that the dialog may be resized to. */
+  maxHeight?: number;
   /** initial width of dialog.
    * Displayed in px if value is a number, otherwise displayed in specified CSS unit.
    * Default: "50%"
@@ -68,8 +81,6 @@ export interface DialogProps {
    * Default: ""
    */
   height?: string | number;
-  /** Custom CSS Style for dialog content area */
-  style?: React.CSSProperties;
   /** Custom CSS Style for overlay */
   backgroundStyle?: React.CSSProperties;
   /** Custom CSS Style for title */
@@ -103,6 +114,7 @@ export interface DialogState {
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerElement: HTMLElement | null = null;
   public static defaultProps: Partial<DialogProps> = {
+    alignment: DialogAlignment.Center,
     minWidth: 400,
     minHeight: 400,
     width: "50%",
@@ -124,6 +136,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   };
 
   public render(): JSX.Element {
+    const { opened, title, footer, buttonCluster, onClose, onEscape, minWidth, minHeight, width, height, backgroundStyle, titleStyle, footerStyle, modal, resizable, movable, className, ...props } = this.props;
+
     const containerStyle: React.CSSProperties = {
       margin: "",
       left: "",
@@ -145,7 +159,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     const buttons: JSX.Element[] = [];
     if (this.props.buttonCluster) {
       this.props.buttonCluster.forEach((button: ButtonCluster, index: number) => {
-
         let buttonText = "";
         let buttonClass = classnames("dialog-button", button.type ? `dialog-button-${button.type}` : "");
 
@@ -181,10 +194,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       });
     }
 
-    const footer = this.props.footer || (<div className={"dialog-buttons"}>{buttons}</div>);
+    const footerElement = footer || (<div className={"dialog-buttons"}>{buttons}</div>);
 
     return (
-      <div className={classnames(
+      <div {...props} className={classnames(
         "dialog",
         {
           "dialog-open": this.props.opened,
@@ -192,11 +205,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         },
       )} style={this.props.backgroundStyle}>
         <div
-          className={"dialog-container"}
-          ref={(el) => { this._containerElement = el; }}
+          className={classnames("dialog-container", this.props.alignment)}
           style={containerStyle}
         >
-          <div className={"dialog-area"}>
+          <div className={"dialog-area"} ref={(el) => { this._containerElement = el; }}>
             <div className={classnames(
               "dialog-head",
               { "dialog-movable": this.props.movable })}
@@ -211,7 +223,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
               {this.props.children}
             </div>
             <div className={"dialog-footer"} style={this.props.footerStyle}>
-              {footer}
+              {footerElement}
             </div>
           </div>
           <div
@@ -307,35 +319,40 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   }
 
   private _handleMouseMove = (event: any): void => {
-    if (this.state) {
-      let { x, y, width, height } = this.state;
-      if (this.props.resizable) {
-        if (this.state.rightResizing) {
-          const centerX = event.clientX;
-          width = Math.max(this.props.movable ? (centerX - this.state.x) : ((centerX - window.innerWidth / 2) * 2), this.props.minWidth || 400);
-        }
-        if (this.state.downResizing) {
-          const centerY = event.clientY;
-          height = Math.max(centerY - (this.props.movable ? this.state.y : 100), this.props.minHeight || 400);
-        }
+    const { minWidth, maxWidth, minHeight, maxHeight, movable } = this.props;
+    let { x, y, width, height } = this.state;
+    if (this.props.resizable) {
+      if (this.state.rightResizing) {
+        const centerX = event.clientX;
+        width = movable ? (centerX - x) : ((centerX - window.innerWidth / 2) * 2);
+        width = Math.max(width, minWidth!);
+        if (maxWidth !== undefined)
+          width = Math.min(width, maxWidth);
+      }
+      if (this.state.downResizing) {
+        const centerY = event.clientY;
+        height = movable ? (centerY - y) : ((centerY - window.innerHeight / 2) * 2);
+        height = Math.max(height, minHeight!);
+        if (maxHeight !== undefined)
+          height = Math.min(height, maxHeight);
+      }
 
-      }
-      if (this.props.movable && this.state.moving) {
-        x = event.clientX - this.state.grabOffsetX;
-        y = event.clientY - this.state.grabOffsetY;
-      }
-      this.setState((_prevState) => ({ x, y, width, height }));
     }
+    if (movable && this.state.moving) {
+      x = event.clientX - this.state.grabOffsetX;
+      y = event.clientY - this.state.grabOffsetY;
+    }
+    this.setState({ x, y, width, height });
   }
 
   private _handleMouseUp = (_event: any): void => {
-    this.setState((_prevState) => ({
+    this.setState({
       rightResizing: false,
       downResizing: false,
       moving: false,
       grabOffsetX: 0,
       grabOffsetY: 0,
-    }));
+    });
   }
 }
 

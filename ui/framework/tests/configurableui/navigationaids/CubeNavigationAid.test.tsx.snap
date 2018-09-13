@@ -100,6 +100,16 @@ exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
 </div>
 `;
 
+exports[`CubeNavigationAid <FaceCell /> should render correctly 1`] = `
+<div
+  className="face-cell"
+  onMouseDown={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+/>
+`;
+
 exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
 <div
   className="nav-cube-face"

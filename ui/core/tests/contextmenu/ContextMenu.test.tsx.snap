@@ -7,13 +7,7 @@ exports[`<ContextMenu /> renders correctly 1`] = `
   onKeyUp={[Function]}
 >
   <div
-    className="context-menu-container opened"
-    style={
-      Object {
-        "left": 0,
-        "top": 0,
-      }
-    }
+    className="context-menu-container opened right bottom"
     tabIndex={0}
   />
 </div>
