@@ -10,10 +10,12 @@ import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
 import Widget from "./Widget";
-import { WidgetZone, StatusZone, StatusZoneProps } from "./Zone";
+import { WidgetZone, StatusZone, StatusZoneProps, ZoneProps } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
 export class StateManager {
+  private _lastStackId = 1;
+
   public handleTabClick(widgetId: number, tabIndex: number, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
 
@@ -22,7 +24,7 @@ export class StateManager {
 
     const isClosing = tabIndex === widget.props.tabIndex;
 
-    if (isClosing && zone.isFloating)
+    if (isClosing && zone.isFloating())
       return { ...model.props };
 
     // Close all widgets
@@ -152,7 +154,7 @@ export class StateManager {
     const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
     let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
     if (widget.isInHomeZone)
-      floatingBounds = defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds;
+      floatingBounds = defaultZone.props.floating ? defaultZone.props.floating.bounds : defaultZone.props.bounds;
 
     const keepSomeZonesMerged = zone.getWidgets().length > unmergeBounds.length;
     return {
@@ -195,7 +197,12 @@ export class StateManager {
 
           acc[id] = {
             ...model.props.zones[id],
-            ...defaultZone.id === id ? { floatingBounds } : {},
+            ...defaultZone.id === id ? {
+              floating: {
+                bounds: floatingBounds,
+                stackId: this._lastStackId++,
+              },
+            } : {},
             ...unsetAnchor ? { anchor: undefined } : {},
             bounds: mergedZone.bounds,
             widgets,
@@ -242,10 +249,10 @@ export class StateManager {
       return { ...model.props };
 
     const draggingZone = draggingWidget.defaultZone;
-    if (!draggingZone.props.floatingBounds)
+    if (!draggingZone.props.floating)
       return { ...model.props };
 
-    const newBounds = Rectangle.create(draggingZone.props.floatingBounds).offset(dragged);
+    const newBounds = Rectangle.create(draggingZone.props.floating.bounds).offset(dragged);
     const lastPosition = Point.create(draggingWidget.props.lastPosition).offset(dragged);
     const newState: NineZoneProps = {
       ...model.props,
@@ -253,8 +260,11 @@ export class StateManager {
         ...model.props.zones,
         [draggingZone.props.id]: {
           ...model.props.zones[draggingZone.props.id],
-          floatingBounds: newBounds,
-        },
+          floating: {
+            ...model.props.zones[draggingZone.props.id].floating,
+            bounds: newBounds,
+          },
+        } as ZoneProps,
       },
       draggingWidget: {
         ...draggingWidget.props,
@@ -325,7 +335,7 @@ export class StateManager {
         zonesToUpdate[zone.props.id] = {
           ...model.props.zones[zone.props.id],
           bounds,
-          floatingBounds: undefined,
+          floating: undefined,
           widgets: [
             ...widgets.map((w) => {
               if (w.equals(draggingWidget.widget))
@@ -343,7 +353,7 @@ export class StateManager {
       else
         zonesToUpdate[zone.props.id] = {
           ...model.props.zones[zone.props.id],
-          floatingBounds: undefined, // dragging zone is merged and should not float anymore
+          floating: undefined, // dragging zone is merged and should not float anymore
           widgets: [], // dragging zone is merged and should contain no widgets
         };
 
@@ -371,7 +381,7 @@ export class StateManager {
         ...model.props.zones,
         [draggingZone.id]: {
           ...model.props.zones[draggingZone.id],
-          floatingBounds: undefined,
+          floating: undefined,
           anchor: undefined,
         },
       },

@@ -484,6 +484,22 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getZones() {
+    const zones = Object.keys(this.state.nineZone.zones)
+      .map((key) => Number(key) as WidgetZoneIndex)
+      .sort((id1, id2) => {
+        const z1 = this.state.nineZone.zones[id1];
+        const z2 = this.state.nineZone.zones[id2];
+        if (!z1.floating && !z2.floating)
+          return z1.id - z2.id;
+
+        if (!z1.floating)
+          return -1;
+
+        if (!z2.floating)
+          return 1;
+
+        return z1.floating.stackId - z2.floating.stackId;
+      });
     return (
       <Zones ref={this._zones}>
         <MouseTracker onPositionChange={this._handlePositionChange} />
@@ -507,14 +523,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         >
           Text element required.
         </TemporaryMessage>
-        {this.getZone(1)}
-        {this.getZone(2)}
-        {this.getZone(3)}
-        {this.getZone(4)}
-        {this.getZone(6)}
-        {this.getZone(7)}
-        {this.getZone(8)}
-        {this.getZone(9)}
+        {zones.map((z) => this.getZone(z))}
       </Zones>
     );
   }
@@ -1816,7 +1825,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
-        <Zone bounds={zone.props.floatingBounds || zone.props.bounds}>
+        <Zone bounds={zone.props.floating ? zone.props.floating.bounds : zone.props.bounds}>
           {this.getWidget(zoneId)}
         </Zone>
         <Zone bounds={zone.props.bounds}>
@@ -1899,7 +1908,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <>
-        <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
+        <Zone bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}>
           <ToolsWidget
             isNavigation
             preserveSpace
@@ -2136,7 +2145,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     return (
       <>
-        <Zone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
+        <Zone bounds={statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds}>
           {this.getWidget(statusZone.id)}
         </Zone>
         <Zone bounds={statusZone.props.bounds}>

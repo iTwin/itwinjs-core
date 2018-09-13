@@ -89,7 +89,7 @@ describe("StateManager", () => {
       };
       const state = DefaultStateManager.handleWidgetTabDragEnd(props);
 
-      expect(state.zones[6].floatingBounds).undefined;
+      expect(state.zones[6].floating).undefined;
     });
 
     it("should merge all vertical zones between dragging zone and target zone", () => {
@@ -197,11 +197,14 @@ describe("StateManager", () => {
           ...TestProps.defaultProps.zones,
           9: {
             ...TestProps.defaultProps.zones[9],
-            floatingBounds: {
-              bottom: 10,
-              left: 99,
-              right: 999,
-              top: 0,
+            floating: {
+              bounds: {
+                bottom: 10,
+                left: 99,
+                right: 999,
+                top: 0,
+              },
+              stackId: 1,
             },
           },
         },
@@ -211,7 +214,7 @@ describe("StateManager", () => {
         },
       };
       const state = DefaultStateManager.handleWidgetTabDragEnd(props);
-      expect(state.zones[9].floatingBounds).undefined;
+      expect(state.zones[9].floating).undefined;
     });
   });
 
@@ -219,11 +222,11 @@ describe("StateManager", () => {
     it("should set floating bounds", () => {
       const state = DefaultStateManager.handleWidgetTabDragStart(6, 1, { x: 0, y: 0 }, { x: 0, y: 0 }, TestProps.openedZone6);
 
-      expect(state.zones[6].floatingBounds).exist;
-      state.zones[6].floatingBounds!.left.should.eq(10);
-      state.zones[6].floatingBounds!.top.should.eq(20);
-      state.zones[6].floatingBounds!.right.should.eq(99);
-      state.zones[6].floatingBounds!.bottom.should.eq(54);
+      expect(state.zones[6].floating).exist;
+      state.zones[6].floating!.bounds.left.should.eq(10);
+      state.zones[6].floating!.bounds.top.should.eq(20);
+      state.zones[6].floating!.bounds.right.should.eq(99);
+      state.zones[6].floating!.bounds.bottom.should.eq(54);
     });
 
     it("should unmerge merged zone", () => {
@@ -243,18 +246,18 @@ describe("StateManager", () => {
       bounds6.left.should.eq(10, "bounds6.left");
       bounds6.right.should.eq(99, "bounds6.right");
       bounds6.bottom.should.eq(65, "bounds6.bottom");
-      expect(state.zones[6].floatingBounds, "floatingBounds6").undefined;
+      expect(state.zones[6].floating, "floatingBounds6").undefined;
 
       const bounds9 = state.zones[9].bounds;
       bounds9.top.should.eq(65, "bounds9.top");
       bounds9.left.should.eq(10, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
-      state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
-      state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
-      state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
-      state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
+      expect(state.zones[9].floating, "floatingBounds9").exist;
+      state.zones[9].floating!.bounds.top.should.eq(20, "floatingBounds9.top");
+      state.zones[9].floating!.bounds.left.should.eq(10, "floatingBounds9.left");
+      state.zones[9].floating!.bounds.right.should.eq(99, "floatingBounds9.right");
+      state.zones[9].floating!.bounds.bottom.should.eq(110, "floatingBounds9.bottom");
     });
 
     it("should set bounds when unmerging switched widgets", () => {
@@ -265,18 +268,18 @@ describe("StateManager", () => {
       bounds9.left.should.eq(10, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").undefined;
+      expect(state.zones[9].floating, "floatingBounds9").undefined;
 
       const bounds6 = state.zones[6].bounds;
       bounds6.top.should.eq(54, "bounds6.top");
       bounds6.left.should.eq(10, "bounds6.left");
       bounds6.right.should.eq(99, "bounds6.right");
       bounds6.bottom.should.eq(82, "bounds6.bottom");
-      expect(state.zones[6].floatingBounds, "floatingBounds6").exist;
-      state.zones[6].floatingBounds!.top.should.eq(54, "floatingBounds6.top");
-      state.zones[6].floatingBounds!.left.should.eq(10, "floatingBounds6.left");
-      state.zones[6].floatingBounds!.right.should.eq(99, "floatingBounds6.right");
-      state.zones[6].floatingBounds!.bottom.should.eq(110, "floatingBounds6.bottom");
+      expect(state.zones[6].floating, "floatingBounds6").exist;
+      state.zones[6].floating!.bounds.top.should.eq(54, "floatingBounds6.top");
+      state.zones[6].floating!.bounds.left.should.eq(10, "floatingBounds6.left");
+      state.zones[6].floating!.bounds.right.should.eq(99, "floatingBounds6.right");
+      state.zones[6].floating!.bounds.bottom.should.eq(110, "floatingBounds6.bottom");
     });
 
     it("should set bounds when unmerging horizontally merged zones", () => {
@@ -287,18 +290,18 @@ describe("StateManager", () => {
       bounds8.left.should.eq(10, "bounds8.left");
       bounds8.right.should.eq(54.5, "bounds8.right");
       bounds8.bottom.should.eq(110, "bounds8.bottom");
-      expect(state.zones[8].floatingBounds, "floatingBounds8").undefined;
+      expect(state.zones[8].floating, "floatingBounds8").undefined;
 
       const bounds9 = state.zones[9].bounds;
       bounds9.top.should.eq(20, "bounds9.top");
       bounds9.left.should.eq(54.5, "bounds9.left");
       bounds9.right.should.eq(99, "bounds9.right");
       bounds9.bottom.should.eq(110, "bounds9.bottom");
-      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
-      state.zones[9].floatingBounds!.top.should.eq(20, "floatingBounds9.top");
-      state.zones[9].floatingBounds!.left.should.eq(10, "floatingBounds9.left");
-      state.zones[9].floatingBounds!.right.should.eq(99, "floatingBounds9.right");
-      state.zones[9].floatingBounds!.bottom.should.eq(110, "floatingBounds9.bottom");
+      expect(state.zones[9].floating, "floatingBounds9").exist;
+      state.zones[9].floating!.bounds.top.should.eq(20, "floatingBounds9.top");
+      state.zones[9].floating!.bounds.left.should.eq(10, "floatingBounds9.left");
+      state.zones[9].floating!.bounds.right.should.eq(99, "floatingBounds9.right");
+      state.zones[9].floating!.bounds.bottom.should.eq(110, "floatingBounds9.bottom");
     });
 
     it("should set dragging widget when unmerging", () => {
@@ -370,18 +373,18 @@ describe("StateManager", () => {
       state.zones[7].bounds.left.should.eq(20, "bounds7.left");
       state.zones[7].bounds.right.should.eq(60, "bounds7.right");
       state.zones[7].bounds.bottom.should.eq(100, "bounds7.bottom");
-      expect(state.zones[7].floatingBounds, "floatingBounds7").undefined;
+      expect(state.zones[7].floating, "floatingBounds7").undefined;
 
       state.zones[9].bounds.top.should.eq(10, "bounds9.top");
       state.zones[9].bounds.left.should.eq(60, "bounds9.left");
       state.zones[9].bounds.right.should.eq(80, "bounds9.right");
       state.zones[9].bounds.bottom.should.eq(100, "bounds9.bottom");
 
-      expect(state.zones[9].floatingBounds, "floatingBounds9").exist;
-      state.zones[9].floatingBounds!.top.should.eq(10, "floatingBounds9.top");
-      state.zones[9].floatingBounds!.left.should.eq(20, "floatingBounds9.left");
-      state.zones[9].floatingBounds!.right.should.eq(80, "floatingBounds9.right");
-      state.zones[9].floatingBounds!.bottom.should.eq(100, "floatingBounds9.bottom");
+      expect(state.zones[9].floating, "floatingBounds9").exist;
+      state.zones[9].floating!.bounds.top.should.eq(10, "floatingBounds9.top");
+      state.zones[9].floating!.bounds.left.should.eq(20, "floatingBounds9.left");
+      state.zones[9].floating!.bounds.right.should.eq(80, "floatingBounds9.right");
+      state.zones[9].floating!.bounds.bottom.should.eq(100, "floatingBounds9.bottom");
     });
 
     it("should unmerge 3 widgets to 2 zones", () => {

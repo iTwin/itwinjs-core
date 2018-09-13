@@ -22,10 +22,19 @@ export enum DropTarget {
 export interface ZoneProps {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
-  readonly floatingBounds?: RectangleProps;
+  readonly floating?: FloatingProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
   readonly anchor?: HorizontalAnchor;
   readonly allowsMerging: boolean;
+}
+
+export interface FloatingZoneProps extends ZoneProps {
+  readonly floating: FloatingProps;
+}
+
+export interface FloatingProps {
+  readonly bounds: RectangleProps;
+  readonly stackId: number;
 }
 
 export interface StatusZoneProps extends ZoneProps {
@@ -198,8 +207,8 @@ export class WidgetZone extends Zone {
     return this._isWidgetOpen;
   }
 
-  public get isFloating() {
-    if (this.props.floatingBounds)
+  public isFloating(): this is { props: FloatingZoneProps } {
+    if (this.props.floating)
       return true;
     return false;
   }
