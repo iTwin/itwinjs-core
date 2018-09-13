@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -18,7 +18,7 @@ import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -1271,27 +1271,55 @@ export abstract class Viewport {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
-   * @param placements element placement(s). Will zoom to the union of the placements.
+   * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
+   * @param props element placements. Will zoom to the union of the placements.
    * @param margin the amount of white space to leave around elements
    * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
-  public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
-    const vf = this._viewFrustum;
+  public zoomToPlacementProps(placementProps: PlacementProps[], margin?: MarginPercent) {
+    if (placementProps.length === 0)
+      return;
 
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), vf.rotation);
-    const elemRange = Array.isArray(placements) ? placements : [placements];
+    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotation);
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
 
+    const frust = new Frustum();
     const viewRange = new Range3d();
-    for (const elRange of elemRange) {
-      const placement = hasAngle(elRange) ? Placement2d.fromJSON(elRange) : Placement3d.fromJSON(elRange);
-      const frust = Frustum.fromRange(placement.bbox);
+    for (const props of placementProps) {
+      const placement = hasAngle(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+      placement.getWorldCorners(frust);
       viewRange.extendArray(frust.points, viewTransform);
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, margin);
     this.setupFromView();
+  }
+
+  /**
+   * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
+   * @param props element props. Will zoom to the union of the placements.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public zoomToElementProps(elementProps: ElementProps[], margin?: MarginPercent) {
+    if (elementProps.length === 0)
+      return;
+    const placementProps: PlacementProps[] = [];
+    for (const props of elementProps) {
+      if (props.placement !== undefined)
+        placementProps.push(props.placement);
+    }
+    return this.zoomToPlacementProps(placementProps, margin);
+  }
+
+  /**
+   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
+   * @param ids the element id(s) to include. Will zoom to the union of the placements.
+   * @param margin the amount of white space to leave around elements
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   */
+  public async zoomToElements(ids: Id64Arg, margin?: MarginPercent) {
+    return this.zoomToElementProps(await this.iModel.elements.getProps(ids), margin);
   }
 
   /**
