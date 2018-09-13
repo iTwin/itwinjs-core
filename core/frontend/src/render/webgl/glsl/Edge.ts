@@ -98,13 +98,10 @@ const computePosition = `
 
   return pos;
 `;
-
-const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animDispParams.x, u_animDispParams.y, u_qAnimDispOrigin, u_qAnimDispScale).xyz;
-` + computePosition;
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
 function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+  const builder = new ProgramBuilder(true, isAnimated);
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -120,7 +117,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation
   addProjectionMatrix(vert);
   addLineCode(builder, lineCodeArgs);
-  vert.set(VertexShaderComponent.ComputePosition, isAnimated ? computeAnimatedPosition : computePosition);
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
   vert.addFunction(GLSLVertex.computeLineWeight);
   builder.addVarying("v_lnInfo", VariableType.Vec4);
   vert.addFunction(adjustWidth);

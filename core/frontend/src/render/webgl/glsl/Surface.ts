@@ -91,11 +91,8 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-const computeAnimatedPosition = `rawPos.xyz += computeAnimationDisplacement(u_animDispParams.x, u_animDispParams.y, u_qAnimDispOrigin, u_qAnimDispScale).xyz;
-` + computePosition;
-
 function createCommon(animated: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+  const builder = new ProgramBuilder(true, animated);
   const vert = builder.vert;
 
   if (animated)
@@ -104,7 +101,7 @@ function createCommon(animated: boolean): ProgramBuilder {
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
   builder.addVarying("v_pos", VariableType.Vec3);
-  vert.set(VertexShaderComponent.ComputePosition, animated ? computeAnimatedPosition : computePosition);
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   return builder;
 }

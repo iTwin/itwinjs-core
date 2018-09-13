@@ -45,20 +45,20 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 `;
 
 const computeAnimationFrameDisplacement = `
-vec4 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale) {
+vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale) {
   vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex * 2.0, u_vertParams.xy, g_vert_center, 1.0);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  return unquantizePosition(qpos, origin, scale);
+  return unquantizePosition(qpos, origin, scale).xyz;
 }`;
 
 const computeAnimationDisplacement = `
-vec4 computeAnimationDisplacement(float frameIndex0, float fraction, vec3 origin, vec3 scale) {
-vec4 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
+vec3 computeAnimationDisplacement(float frameIndex0, float fraction, vec3 origin, vec3 scale) {
+vec3 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
 if (fraction > 0.0) {
-  vec4 displacement1 = computeAnimationFrameDisplacement(frameIndex0 + u_vertParams.w * 2.0, origin, scale);
+  vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex0 + u_vertParams.w * 2.0, origin, scale);
   displacement += fraction * (displacement1 - displacement);
   }
 return displacement;
