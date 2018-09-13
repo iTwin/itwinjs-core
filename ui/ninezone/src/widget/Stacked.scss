@@ -15,30 +15,126 @@
 
   $border-width: $nz-widget-border-width;
 
-  &.nz-is-dragged {
-    @include nz-z-index(dragged-widget);
+  > .nz-tabs-column {
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: min-content minmax($nz-tab-height * 1.5, auto);
+
+    > .nz-tabs-grip-container {
+      position: relative;
+      grid-row: 2;
+      grid-column: 1;
+
+      > .nz-tabs-grip {
+        position: absolute;
+        height: 100%;
+      }
+    }
+
+    > .nz-tabs {
+      grid-row: 1;
+      grid-column: 1;
+    }
+  }
+
+  > .nz-top-grip {
+    width: 100%;
+    position: absolute;
+    top: -($resize-grip-size - $border-width) / 2;
+  }
+
+  > .nz-content-area {
+    grid-row: 1;
+    border-style: solid;
+    border-width: $border-width;
+    border-color: $nz-widget-border-color;
+    background-color: $nz-widget-background-color;
+    position: relative;
+    border-bottom-left-radius: $nz-widget-border-radius;
+    border-bottom-right-radius: $nz-widget-border-radius;
+    pointer-events: auto;
+    display: grid;
+
+    > .nz-bottom-grip {
+      width: 100%;
+      position: absolute;
+      bottom: -($resize-grip-size - $border-width);
+    }
+
+    > .nz-content-grip {
+      display: none;
+      height: 100%;
+      position: absolute;
+      top: 0;
+    }
+
+    > .nz-settings {
+      position: absolute;
+      right: -$border-width;
+      top: -$border-width;
+    }
+
+    > .nz-content {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
   }
 
   &.nz-left-anchor {
     grid-template-columns: 1fr auto;
 
     > .nz-tabs-column {
-      grid-row: 1;
       grid-column: 2;
+
+      > .nz-tabs-grip-container {
+        > .nz-tabs-grip {
+          left: -($resize-grip-size + $border-width) / 2;
+        }
+      }
     }
 
     > .nz-content-area {
-      grid-row: 1;
       grid-column: 1;
-      border-top-right-radius: unset;
       border-top-left-radius: $nz-widget-border-radius;
 
       > .nz-settings {
         left: -$border-width;
-        border-top-right-radius: unset;
         border-top-left-radius: $nz-widget-border-radius;
       }
+
+      > .nz-content-grip {
+        left: -($resize-grip-size - $border-width);
+      }
     }
+  }
+
+  &.nz-right-anchor {
+    > .nz-tabs-column {
+      grid-column: 1;
+
+      > .nz-tabs-grip-container {
+        > .nz-tabs-grip {
+          right: -($resize-grip-size + $border-width) / 2;
+        }
+      }
+    }
+
+    > .nz-content-area {
+      grid-column: 2;
+      border-top-right-radius: $nz-widget-border-radius;
+
+      > .nz-settings {
+        border-top-right-radius: $nz-widget-border-radius;
+      }
+
+      > .nz-content-grip {
+        right: -($resize-grip-size - $border-width);
+      }
+    }
+  }
+
+  &.nz-is-dragged {
+    @include nz-z-index(dragged-widget);
   }
 
   &.nz-is-closed {
@@ -61,8 +157,8 @@
     > .nz-tabs-column {
       grid-template-rows: 1fr 0;
 
-      > .nz-left-grip-container {
-        > .nz-left-grip {
+      > .nz-tabs-grip-container {
+        > .nz-tabs-grip {
           display: none;
         }
       }
@@ -78,76 +174,6 @@
 
     > .nz-content-area {
       display: none;
-    }
-  }
-
-  > .nz-tabs-column {
-    grid-row: 1;
-    grid-column: 1;
-    display: grid;
-    grid-template-rows: min-content minmax($nz-tab-height * 1.5, auto);
-
-    > .nz-left-grip-container {
-      position: relative;
-      grid-row: 2;
-      grid-column: 1;
-
-      > .nz-left-grip {
-        position: absolute;
-        right: -($resize-grip-size + $border-width) / 2;
-        height: 100%;
-      }
-    }
-
-    > .nz-tabs {
-      grid-row: 1;
-      grid-column: 1;
-    }
-  }
-
-  > .nz-top-grip {
-    width: 100%;
-    position: absolute;
-    top: -($resize-grip-size - $border-width) / 2;
-  }
-
-  > .nz-content-area {
-    grid-row: 1;
-    grid-column: 2;
-    border-style: solid;
-    border-width: $border-width;
-    border-color: $nz-widget-border-color;
-    background-color: $nz-widget-background-color;
-    position: relative;
-    border-top-right-radius: $nz-widget-border-radius;
-    border-bottom-left-radius: $nz-widget-border-radius;
-    border-bottom-right-radius: $nz-widget-border-radius;
-    pointer-events: auto;
-    display: grid;
-
-    > .nz-bottom-grip {
-      width: 100%;
-      position: absolute;
-      bottom: -($resize-grip-size - $border-width);
-    }
-
-    > .nz-right-grip {
-      height: 100%;
-      position: absolute;
-      top: 0;
-      right: -($resize-grip-size - $border-width);
-    }
-
-    > .nz-settings {
-      position: absolute;
-      right: -$border-width;
-      top: -$border-width;
-      border-top-right-radius: $nz-widget-border-radius;
-    }
-
-    > .nz-content {
-      padding-left: 10px;
-      padding-right: 10px;
     }
   }
 }

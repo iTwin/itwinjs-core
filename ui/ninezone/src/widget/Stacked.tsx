@@ -84,54 +84,70 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
  * @note Should be placed in [[Zone]] component.
  */
 // tslint:disable-next-line:variable-name
-export const Stacked: React.StatelessComponent<StackedProps> = (props: StackedProps) => {
-  const horizontalAnchor = props.horizontalAnchor === undefined ? HorizontalAnchor.Right : props.horizontalAnchor;
-  const className = classnames(
-    "nz-widget-stacked",
-    HorizontalAnchorHelpers.getCssClassName(horizontalAnchor),
-    VerticalAnchorHelpers.getCssClassName(props.verticalAnchor === undefined ? VerticalAnchor.Middle : props.verticalAnchor),
-    !props.isOpen && "nz-is-closed",
-    props.isDragged && "nz-is-dragged",
-    props.className);
+export class Stacked extends React.PureComponent<StackedProps> {
+  private _handleTabsGripResize = (x: number) => {
+    const horizontalAnchor = this.props.horizontalAnchor === undefined ? HorizontalAnchor.Right : this.props.horizontalAnchor;
+    switch (horizontalAnchor) {
+      case HorizontalAnchor.Left: {
+        this.props.onResize && this.props.onResize(x, 0, Edge.Right);
+        break;
+      }
+      case HorizontalAnchor.Right: {
+        this.props.onResize && this.props.onResize(x, 0, Edge.Left);
+        break;
+      }
+    }
+  }
 
-  return (
-    <div className={className} style={props.style}>
-      <div className="nz-content-area">
-        <Content
-          className="nz-content"
-          anchor={horizontalAnchor}
-          content={props.content}
-        />
-        <ResizeGrip
-          className="nz-bottom-grip"
-          direction={ResizeDirection.NorthSouth}
-          onResize={(_x, y) => { props.onResize && props.onResize(0, y, Edge.Bottom); }}
-        />
-        <ResizeGrip
-          className="nz-right-grip"
-          direction={ResizeDirection.EastWest}
-          onResize={(x) => { props.onResize && props.onResize(x, 0, Edge.Right); }}
-        />
-      </div>
-      <div className="nz-tabs-column">
-        <div className="nz-tabs">
-          {props.tabs}
-        </div>
-        <div className="nz-left-grip-container">
+  public render() {
+    const horizontalAnchor = this.props.horizontalAnchor === undefined ? HorizontalAnchor.Right : this.props.horizontalAnchor;
+    const className = classnames(
+      "nz-widget-stacked",
+      HorizontalAnchorHelpers.getCssClassName(horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor === undefined ? VerticalAnchor.Middle : this.props.verticalAnchor),
+      !this.props.isOpen && "nz-is-closed",
+      this.props.isDragged && "nz-is-dragged",
+      this.props.className);
+
+    return (
+      <div className={className} style={this.props.style}>
+        <div className="nz-content-area">
+          <Content
+            className="nz-content"
+            anchor={horizontalAnchor}
+            content={this.props.content}
+          />
           <ResizeGrip
-            className="nz-left-grip"
+            className="nz-bottom-grip"
+            direction={ResizeDirection.NorthSouth}
+            onResize={(_x, y) => { this.props.onResize && this.props.onResize(0, y, Edge.Bottom); }}
+          />
+          <ResizeGrip
+            className="nz-content-grip"
             direction={ResizeDirection.EastWest}
-            onResize={(x) => { props.onResize && props.onResize(x, 0, Edge.Left); }}
+            onResize={(x) => { this.props.onResize && this.props.onResize(x, 0, Edge.Right); }}
           />
         </div>
+        <div className="nz-tabs-column">
+          <div className="nz-tabs">
+            {this.props.tabs}
+          </div>
+          <div className="nz-tabs-grip-container">
+            <ResizeGrip
+              className="nz-tabs-grip"
+              direction={ResizeDirection.EastWest}
+              onResize={this._handleTabsGripResize}
+            />
+          </div>
+        </div>
+        <ResizeGrip
+          className="nz-top-grip"
+          direction={ResizeDirection.NorthSouth}
+          onResize={(_x, y) => { this.props.onResize && this.props.onResize(0, y, Edge.Top); }}
+        />
       </div>
-      <ResizeGrip
-        className="nz-top-grip"
-        direction={ResizeDirection.NorthSouth}
-        onResize={(_x, y) => { props.onResize && props.onResize(0, y, Edge.Top); }}
-      />
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default Stacked;
