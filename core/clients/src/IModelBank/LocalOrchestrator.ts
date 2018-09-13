@@ -9,7 +9,7 @@ import { DeploymentEnv } from "../Client";
 import { IModelBankClient } from "./IModelBankClient";
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
-import { ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, EnvMacroSubst, assert } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
 import { IModelBankFileSystemProject } from "./IModelBankFileSystemProject";
@@ -109,6 +109,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
 
     //  Run the bank
     const imodelDir = this.proj.fsAdmin.getIModelDir(this.proj.group.iModelBankProjectAccessContextGroup.name, iModelId);
+    assert(fs.existsSync(imodelDir));
 
     const thisBankServerConfig: IModelBankServerConfig = Object.assign({}, this.serverConfig);
     thisBankServerConfig.port = port;

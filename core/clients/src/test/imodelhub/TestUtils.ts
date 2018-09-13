@@ -741,8 +741,8 @@ export function getCloudEnv() {
   EnvMacroSubst.replaceInProperties(serverConfig, true);
   const localOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, bankFsProject);
 
-  return {
-    isIModelHub: () => false,
+  return cloudEnv = {
+    isIModelHub: false,
     project: bankFsProject,
     authorization: new IModelBankPermissionDummy(),
     orchestrator: localOrchestrator,

@@ -7,5 +7,10 @@
     "connectUserName": "Regular.IModelJsTestUser@mailinator.com",
     "connectPassword": "Regular@iMJs",
     "deploymentEnv": "QA"
+  },
+  "backofficeServicesConfig": {
+    "serviceIdentityUserName": "Regular.IModelJsTestUser@mailinator.com",
+    "serviceIdentityPassword": "Regular@iMJs",
+    "deploymentEnv": "QA"
   }
 }
