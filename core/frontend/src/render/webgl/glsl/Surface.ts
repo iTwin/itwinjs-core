@@ -96,7 +96,7 @@ function createCommon(animated: boolean): ProgramBuilder {
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true, true);
+    addAnimation(vert, true, false /* animated normal WIP... true */);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -261,7 +261,7 @@ function addNormal(builder: ProgramBuilder, animated: boolean) {
   addNormalMatrix(builder.vert);
 
   builder.vert.addFunction(octDecodeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", false && animated ? computeAnimatedNormal : computeNormal);
 }
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
