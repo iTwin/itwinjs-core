@@ -749,7 +749,6 @@ export class ToolAdmin {
 
       if (InputSource.Mouse === current.inputSource && this.cursorView) {
         await IModelApp.accuSnap.onNoMotion(ev);
-        // Application.accuDraw.onNoMotion(ev);
       }
     }
 
@@ -760,8 +759,6 @@ export class ToolAdmin {
         IModelApp.accuSnap.onMotionStopped(ev);
       }
     }
-
-    this.updateDynamics(ev);
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {

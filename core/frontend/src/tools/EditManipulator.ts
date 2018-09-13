@@ -152,10 +152,13 @@ export namespace EditManipulator {
       if (ev.isDown && !ev.isDragging)
         return EventHandled.No; // Select controls on up event or down event only after drag started...
 
-      if (this.modifyControls(hit, ev))
-        return EventHandled.Yes; // Handle modification. Install InputCollector to modify using hold+drag, release or click+click.
+      if (!this.modifyControls(hit, ev))
+        return EventHandled.No;
 
-      return EventHandled.No;
+      // In case InputCollector was installed for handle modification, don't wait for motion to show dynamic frame adjusted for AccuDraw hints...
+      IModelApp.accuDraw.refreshDecorationsAndDynamics();
+
+      return EventHandled.Yes;
     }
   }
 
