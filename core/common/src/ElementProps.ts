@@ -70,6 +70,8 @@ export interface Placement2dProps {
   bbox?: LowAndHighXY;
 }
 
+export type PlacementProps = Placement2dProps | Placement3dProps;
+
 /** Properties that define a [GeometricElement3d]($backend) */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
