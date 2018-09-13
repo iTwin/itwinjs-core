@@ -396,9 +396,6 @@ function updateAnimation() {
 }
 
 function startAnimation(_event: any) {
-  const menu = document.getElementById("animationMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none"; // keep dialog open
-
   if (isAnimating)
     return; // cannot animate while animating
   animationIntervalId = setInterval(updateAnimation, 100);
@@ -406,15 +403,17 @@ function startAnimation(_event: any) {
 }
 
 function stopAnimation(_event: any) {
-  const menu = document.getElementById("animationMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none"; // keep dialog open
-
   if (!isAnimating)
     return; // already not animating!
   clearInterval(animationIntervalId);
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
   animationSlider.value = "0";
   isAnimating = false;
+}
+
+function processAnimationMenuEvent(_event: any) { // keep animation menu open even when it is clicked
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
@@ -562,7 +561,7 @@ async function openView(state: SimpleViewState) {
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
   IModelApp.viewManager.addViewport(theViewport);
-  // ###TODO: cancel animating! ??
+  stopAnimation([]);
 }
 
 async function _changeView(view: ViewState) {
@@ -1347,6 +1346,7 @@ function wireIconsToFunctions() {
   document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
   document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
   document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
+  document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
 
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
