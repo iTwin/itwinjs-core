@@ -66,7 +66,7 @@ export abstract class IModelClient {
   }
 
   /**
-   * Get the handler for [[Code]]s.
+   * Get the handler for [Code]($common)s.
    */
   public Codes(): CodeHandler {
     return new CodeHandler(this._handler);

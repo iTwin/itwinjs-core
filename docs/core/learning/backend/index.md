@@ -11,7 +11,7 @@ The backend:
 
 See [the app architecture overview](../../overview/App.md) for more on how backends fit into overall app architecture.
 
-All Promise-returning backend methods must [manage the LoggingActivityContext](./ManagingLoggingActivityContext.md).
+All Promise-returning backend methods must [manage the ActivityLoggingContext](./ManagingActivityLoggingContext.md).
 
 The backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
@@ -30,8 +30,6 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 ## Loading and Creating Elements, Aspects, and Models
 * [Access Elements](./AccessElements.md)
 * [Create Elements](./CreateElements.md)
-* [Access Aspects](./AccessAspects.md)
-* [Create Aspects](./CreateAspects.md)
 * [Access Models](./AccessModels.md)
 * [Create Models](./CreateModels.md)
 

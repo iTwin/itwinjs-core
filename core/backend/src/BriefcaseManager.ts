@@ -5,7 +5,7 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ChangesType, Briefcase, Code, IModelHubError,
+  ChangesType, Briefcase, WsgCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
@@ -1249,24 +1249,24 @@ export class BriefcaseManager {
   }
 
   /** Parse Code array from json */
-  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): Code[] {
+  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): WsgCode[] {
     return JSON.parse(json, (key: any, value: any) => {
       if (key === "state") {
         return (value as number);
       }
       // If the key is a number, it is an array member.
       if (!Number.isNaN(Number.parseInt(key, 10))) {
-        const code = new Code();
+        const code = new WsgCode();
         Object.assign(code, value);
         code.briefcaseId = briefcase.briefcaseId;
         return code;
       }
       return value;
-    }) as Code[];
+    }) as WsgCode[];
   }
 
   /** Extracts codes from current ChangeSet */
-  private static extractCodes(briefcase: BriefcaseEntry): Code[] {
+  private static extractCodes(briefcase: BriefcaseEntry): WsgCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
       throw new IModelError(res.error.status);
@@ -1274,7 +1274,7 @@ export class BriefcaseManager {
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): Code[] {
+  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): WsgCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);

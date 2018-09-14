@@ -61,7 +61,6 @@
 - [Authentication]($clients:Authentication)
 - [Base Clients]($clients:BaseClients)
 - [Connect Services]($clients:ConnectServices)
-- [iModel Bank]($clients:iModelBank)
 - [iModel Hub]($clients:iModelHub)
 - [iModel Hub Events]($clients:iModelHubEvents)
 - [iModel Hub Global Events]($clients:iModelHubGlobalEvents)
