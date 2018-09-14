@@ -13,10 +13,9 @@ import {
   MessageBoxIconType,
   MessageBoxValue,
 } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
-import { MessageSeverity } from "@bentley/ui-core";
-import { ModalDialogManager } from "./ModalDialogManager";
+import { UiEvent, MessageSeverity } from "@bentley/ui-core";
 import UiFramework from "../UiFramework";
+import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
 
 class MessageBoxCallbacks {
@@ -45,6 +44,13 @@ export interface ActivityMessageEventArgs {
   restored?: boolean;
 }
 
+/** Input Field Message Event Args class.
+ */
+export interface InputFieldMessageEventArgs {
+  target: Element;
+  messageText: string;
+}
+
 /** Message Added Event class.
  */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
@@ -56,6 +62,14 @@ export class ActivityMessageAddedEvent extends UiEvent<ActivityMessageEventArgs>
 /** Activity Message Canceled Event class.
  */
 export class ActivityMessageCanceledEvent extends UiEvent<{}> { }
+
+/** Input Field Message Added Event class
+ */
+export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventArgs> { }
+
+/** Input Field Message Removed Event class.
+ */
+export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
 /**
  * Keeps track of the current activity message, and updates whenever
@@ -93,10 +107,17 @@ export class MessageManager {
   private static _ActivityMessageCanceledEvent: ActivityMessageCanceledEvent = new ActivityMessageCanceledEvent();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
 
+  private static _InputFieldMessageAddedEvent: InputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
+  private static _InputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
+
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.ouptputMessage(). */
   public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
+
   public static get onActivityMessageAddedEvent(): ActivityMessageAddedEvent { return this._ActivityMessageAddedEvent; }
   public static get onActivityMessageCanceledEvent(): ActivityMessageCanceledEvent { return this._ActivityMessageCanceledEvent; }
+
+  public static get onInputFieldMessageAddedEvent(): InputFieldMessageAddedEvent { return this._InputFieldMessageAddedEvent; }
+  public static get onInputFieldMessageRemovedEvent(): InputFieldMessageRemovedEvent { return this._InputFieldMessageRemovedEvent; }
 
   /** List of messages as [[NotifyMessageDetails]]. */
   public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
@@ -176,6 +197,26 @@ export class MessageManager {
       this._OngoingActivityMessage.Details.onActivityCompleted();
     else
       this._OngoingActivityMessage.Details.onActivityCancelled();
+  }
+
+  /**
+   * Displays an input field message near target element.
+   * @param target  The currently focused or recently focused element to place the
+   *                input field message near.
+   * @param messageText   Text to display in the message.
+   */
+  public static displayInputFieldMessage(target: Element, messageText: string) {
+    this.onInputFieldMessageAddedEvent.emit({
+      target,
+      messageText,
+    });
+  }
+
+  /**
+   * Hides the currently displayed input field message.
+   */
+  public static hideInputFieldMessage() {
+    this.onInputFieldMessageRemovedEvent.emit({});
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
