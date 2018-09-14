@@ -15,7 +15,7 @@ import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
 
 /**
- * Properties used to configure [[PresentationManager]].
+ * Properties used to configure [[PresentationManager]]
  */
 export interface Props {
   /**
@@ -30,7 +30,7 @@ export interface Props {
 
 /**
  * Frontend Presentation manager which basically just forwards all calls to
- * the backend implementation.
+ * the backend implementation
  */
 export default class PresentationManager implements IPresentationManager<IModelConnection>, IDisposable {
 

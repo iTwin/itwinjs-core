@@ -35,6 +35,7 @@ export interface PopupProps extends CommonProps {
 
 interface PopupState {
   isShown: boolean;
+  position: Position;
 }
 
 /** Popup component */
@@ -42,12 +43,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _ref: HTMLElement | undefined;
   private _targetRef: HTMLElement | null = null; // target element owning the popup
   private _hoverTimer = new Timer(300);
-  // private _boundingRect?: ClientRect | DOMRect;
 
   constructor(props: PopupProps, context?: any) {
     super(props, context);
 
-    this.state = { isShown: this.props.isShown };
+    this.state = { isShown: this.props.isShown, position: this.props.position };
   }
 
   public static defaultProps: Partial<PopupProps> = {
@@ -68,8 +68,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this._targetRef.onmouseleave = this._onMouseLeave;
     }
 
-    // this._boundingRect = this._ref!.getBoundingClientRect();
-    // alert("popup rect componentDidMount" + popupRect.top + " " + popupRect.bottom + " " + popupRect.height);
+    this._hoverTimer.delay = this.props.showTime;
   }
 
   public componentDidUpdate(previousProps: PopupProps) {
@@ -77,7 +76,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
 
     this._hoverTimer.delay = this.props.showTime;
-    // alert ("componentdidupdate " + this.props.isShown + " " + previousProps.isShown + " " + this.state.isShown + " " + previousState.isShown);
+
     if (this.props.isShown) {
       this._onShow();
     } else {
@@ -86,17 +85,15 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   public componentWillUnmount() {
+    this._hoverTimer.stop();
     document.body.removeEventListener("click", this._onBodyClick, false);
     document.body.addEventListener("keydown", this._onEsc, false);
-
-    this._hoverTimer.stop();
   }
 
   private _onMouseEnter = () => {
     if (!this.props.showOnHover)
       return;
 
-    // alert ("on mouse enter");
     this._hoverTimer.setOnExecute(() => { this._onShow(); });
     this._hoverTimer.start();
   }
@@ -105,7 +102,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (!this.props.showOnHover)
       return;
 
-    // alert("on mouse leave");
     this._hoverTimer.stop();
     this._onClose();
   }
@@ -143,12 +139,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    // alert ("onShow called");
-
     document.body.addEventListener("click", this._onBodyClick, false);
     document.body.addEventListener("keydown", this._onEsc, false);
 
-    this.setState((_prevState) => ({ isShown: true }), () => {
+    const newPosition = this.withinViewport();
+    this.setState((_prevState) => ({ position: newPosition, isShown: true }), () => {
       if (this.props.onOpen)
         this.props.onOpen();
     });
@@ -160,10 +155,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
 
     document.body.removeEventListener("click", this._onBodyClick, false);
+    document.body.removeEventListener("keydown", this._onEsc, false);
 
-    // alert ("onClose called");
-
-    this.setState((_prevState) => ({ isShown: false }), () => {
+    this.setState((_prevState) => ({ isShown: false, position: this.props.position }), () => {
       if (this.props.onClose)
         this.props.onClose();
     });
@@ -196,53 +190,76 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
   }
 
-  /* TODO: WORK IN PROGRESS */
-
-  /*
-$.fn.isOnScreen = function(){
-
-    var win = $(window);
-
-    var viewport = {
-        top : win.scrollTop(),
-        left : win.scrollLeft()
-    };
-    viewport.right = viewport.left + win.width();
-    viewport.bottom = viewport.top + win.height();
-
-    var bounds = this.offset();
-    bounds.right = bounds.left + this.outerWidth();
-    bounds.bottom = bounds.top + this.outerHeight();
-
-    return (!(viewport.right < bounds.left || viewport.left > bounds.right || viewport.bottom < bounds.top || viewport.top > bounds.bottom));
-
-};
-
   private withinViewport(): Position {
-    if (this._boundingRect) {
-      const rect = this._boundingRect;
+    const node = ReactDOM.findDOMNode(this) as Element;
+    if (node && this._targetRef) {
+      const viewportRect = new DOMRect(window.scrollX, window.scrollY, window.scrollX + window.innerWidth, window.scrollY + window.innerHeight);
+      const targetRect = this._targetRef!.getBoundingClientRect();
+      const popupRect = node.getBoundingClientRect();
+      const containerStyle = window.getComputedStyle(this._targetRef!);
+      const offset = (this.props.showArrow) ? 12 : 4;
+
       switch (this.props.position) {
         case Position.BottomRight: {
-          if (rect.bottom > window.innerHeight) {
+          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
             return Position.TopRight;
-          } else if ((rect.right - rect.width) < window.screenLeft) {
+          }
+          break;
+        }
+
+        case Position.TopRight: {
+          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
+            return Position.BottomRight;
+          }
+          break;
+        }
+
+        case Position.TopLeft: {
+          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
             return Position.BottomLeft;
           }
           break;
         }
-        case Position.TopRight: {
-          if (rect.top < window.screenTop) {
-            return Position.BottomRight;
-          } else if ((rect.right - rect.width) < window.innerWidth) {
+
+        case Position.BottomLeft: {
+          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
             return Position.TopLeft;
           }
           break;
         }
-        case Position.TopLeft: {
-          if ((rect.left + rect.height) > window.screenTop) {
-            return Position.TopRight;
-          } else if ((rect.left + rect.height) > window.screenTop) {
-            return Position.TopRight;
+
+        case Position.Bottom: {
+          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
+            return Position.Top;
+          }
+          break;
+        }
+
+        case Position.Top: {
+          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
+            return Position.Bottom;
+          }
+          break;
+        }
+
+        case Position.Left: {
+          const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
+          if ((targetRect.left - popupRect.width - leftMargin - offset) < viewportRect.left) {
+            return Position.Right;
+          }
+          break;
+        }
+
+        case Position.Right: {
+          const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
+          if ((targetRect.right + popupRect.width + rightMargin + offset) > viewportRect.right) {
+            return Position.Left;
           }
           break;
         }
@@ -251,14 +268,11 @@ $.fn.isOnScreen = function(){
 
     return this.props.position;
   }
- */
 
   public render(): JSX.Element {
-    // const position = this.withinViewport();
-    const position = this.props.position;
     const className = classnames(
       "popup",
-      this.getPositionClassName(position),
+      this.getPositionClassName(this.state.position),
       this.props.showShadow && "popup-shadow",
       this.state.isShown && "visible",
       this.props.showArrow && "arrow",

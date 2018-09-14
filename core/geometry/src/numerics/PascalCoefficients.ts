@@ -67,4 +67,25 @@ export class PascalCoefficients {
     }
     return result;
   }
+
+  /** Return an array with derivatives of Bezier weighted pascal coefficients
+   * @param row row index in the pascal triangle.  (`row+1` entries)
+   * @param u parameter value
+   * @param result optional destination array.
+   * @note if the destination array is undefined or too small, a new Float64Array is allocated.
+   * @note if the destination array is larger than needed, its leading `row+1` values are filled,
+   *     and the array is returned.
+   */
+  public static getBezierBasisDerivatives(order: number, u: number, result?: Float64Array): Float64Array {
+    result = this.getBezierBasisValues(order - 1, u, result);
+    // derivative is df/du = (order-1 ) * sum ( q[i+1] - q[i])   summed on 0 <= i < order - 1.\
+    // evaluate lower order basis, overwrite in place from right to left
+    const f = order - 1;
+    result[order - 1] = f * result[order - 2];
+    for (let k = order - 2; k > 0; k--) {
+      result[k] = f * (result[k - 1] - result[k]);
+    }
+    result[0] = - f * result[0];
+    return result;
+  }
 }

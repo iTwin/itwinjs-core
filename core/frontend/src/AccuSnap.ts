@@ -13,9 +13,10 @@ import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Decorator } from "./ViewManager";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
-export class AccuSnap {
+export class AccuSnap implements Decorator {
   /** Currently active hit */
   public currHit?: HitDetail;
   /** Current list of hits. */
@@ -42,9 +43,12 @@ export class AccuSnap {
   private _motionStopTime = 0;
   /** Location of cursor when we last checked for motion */
   private readonly _lastCursorPos = new Point2d();
+  /** @hidden */
   public readonly toolState = new AccuSnap.ToolState();
+  /** @hidden */
   protected _settings = new AccuSnap.Settings();
 
+  /** @hidden */
   public onInitialized() { }
   private get _searchDistance(): number { return this.isLocateEnabled ? 1.0 : this._settings.searchDistance; }
   private get _hotDistanceInches(): number { return IModelApp.locateManager.apertureInches * this._settings.hotDistanceFactor; }
@@ -61,18 +65,16 @@ export class AccuSnap {
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
+  /** Determine whether there is a current hit that is *hot*. */
   public get isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot; }
 
   /** @hidden */
-  public destroy(): void {
-    this.currHit = undefined;
-    this.aSnapHits = undefined;
-  }
+  public destroy(): void { this.currHit = undefined; this.aSnapHits = undefined; }
   private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
   /**
-   * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, candidateSnapMode holds
+   * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, this method  returns
    * the SnapMode that was chosen.
    */
   public get snapMode(): SnapMode { return this._candidateSnapMode; }
@@ -91,7 +93,7 @@ export class AccuSnap {
     return snaps;
   }
 
-  /** Can be used by a subclass of AccuSnap to implement a SnapMode override that applies only to the next point.
+  /** Can be implemented by a subclass of AccuSnap to implement a SnapMode override that applies only to the next point.
    * This method will be called whenever a new tool is installed and on a button event.
    */
   public synchSnapMode(): void { }
@@ -181,14 +183,14 @@ export class AccuSnap {
   }
 
   public async showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): Promise<void> {
-    if (IModelApp.viewManager.doesHostHaveFocus()) {
+    if (IModelApp.viewManager.doesHostHaveFocus) {
       const msg = await IModelApp.toolAdmin.getToolTip(hit);
       this.showLocateMessage(viewPt, vp, msg);
     }
   }
 
   private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: string) {
-    if (IModelApp.viewManager.doesHostHaveFocus())
+    if (IModelApp.viewManager.doesHostHaveFocus)
       vp.openToolTip(msg, viewPt);
   }
 
@@ -329,7 +331,7 @@ export class AccuSnap {
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
-    this.errorIcon.activate(errorSprite, vp, pt, 0);
+    this.errorIcon.activate(errorSprite, vp, pt);
   }
 
   private clearSprites() {
@@ -350,7 +352,6 @@ export class AccuSnap {
   private unFlashViews() {
     this.needFlash.clear();
     this.areFlashed.forEach((vp) => {
-      // eventHandlers.CallAllHandlers(UnFlashCaller(vp.get()));
       vp.setFlashed(undefined, 0.0);
     });
     this.areFlashed.clear();

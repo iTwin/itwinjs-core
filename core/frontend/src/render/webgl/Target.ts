@@ -5,7 +5,7 @@
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, Overlay2dDecoration } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -1050,20 +1050,21 @@ export class OnScreenTarget extends Target {
   }
 
   protected drawOverlayDecorations(): void {
-    if (undefined !== this._decorations && undefined !== this._decorations.overlay2d) {
+    if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
       const ctx = this._canvas.getContext("2d")!;
-      for (const overlay of this._decorations.overlay2d) {
+      for (const overlay of this._decorations.canvasDecorations) {
         ctx.save();
-        ctx.translate(overlay.position.x, overlay.position.y);
+        if (overlay.position)
+          ctx.translate(overlay.position.x, overlay.position.y);
         overlay.drawDecoration(ctx);
         ctx.restore();
       }
     }
   }
 
-  public pickOverlayDecoration(pt: XAndY): Overlay2dDecoration | undefined {
-    let overlays: Overlay2dDecoration[] | undefined;
-    if (undefined === this._decorations || undefined === (overlays = this._decorations.overlay2d))
+  public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
+    let overlays: CanvasDecoration[] | undefined;
+    if (undefined === this._decorations || undefined === (overlays = this._decorations.canvasDecorations))
       return undefined;
 
     // loop over array backwards, because later entries are drawn on top.
@@ -1090,7 +1091,7 @@ export class OffScreenTarget extends Target {
   public get viewRect(): ViewRect { return this.renderRect; }
 
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
     if (this.renderRect.equals(rect))

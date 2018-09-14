@@ -18,6 +18,7 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { KnotVector } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../PointHelpers";
+import { BezierCurve3d, BezierCurve3dH } from "./BezierCurve";
 /** Bspline knots and poles for 1d-to-Nd. */
 class BSpline1dNd {
   public knots: KnotVector;
@@ -359,6 +360,41 @@ export class BSplineCurve3d extends CurvePrimitive {
     }
     return true;
   }
+  /**
+   * Return a CurvePrimitive (which is a BezierCurve3d) for a specified span of this curve.
+   * @param spanIndex
+   * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
+   */
+  public getSaturagedBezierSpan3d(spanIndex: number, result?: CurvePrimitive): CurvePrimitive | undefined {
+    if (spanIndex < 0 || spanIndex >= this.numSpan)
+      return undefined;
+
+    const order = this.order;
+    if (result === undefined || !(result instanceof BezierCurve3d) || result.order !== order)
+      result = BezierCurve3d.createOrder(order);
+    const bezier = result as BezierCurve3d;
+    bezier.loadSpanPoles(this._bcurve.coffs, spanIndex);
+    bezier.saturateInPlace(this._bcurve.knots, spanIndex);
+    return result;
+  }
+  /**
+   * Return a CurvePrimitive (which is a BezierCurve3dH) for a specified span of this curve.
+   * @param spanIndex
+   * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
+   */
+  public getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurve3dH): BezierCurve3dH | undefined {
+    if (spanIndex < 0 || spanIndex >= this.numSpan)
+      return undefined;
+
+    const order = this.order;
+    if (result === undefined || !(result instanceof BezierCurve3d) || result.order !== order)
+      result = BezierCurve3dH.createOrder(order);
+    const bezier = result as BezierCurve3dH;
+    bezier.loadSpan3dPolesWithWeight(this._bcurve.coffs, spanIndex, 1.0);
+    bezier.saturateInPlace(this._bcurve.knots, spanIndex);
+    return result;
+  }
+
   /**
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */

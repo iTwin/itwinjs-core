@@ -20,8 +20,6 @@ import RulesetManager from "./RulesetManager";
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
- *
- * @hidden
  */
 export interface Props {
   /**
@@ -48,8 +46,6 @@ export interface Props {
 /**
  * Backend Presentation manager which pulls the presentation data from
  * an iModel using native platform.
- *
- * @hidden
  */
 export default class PresentationManager implements IPresentationManager<IModelDb> {
 

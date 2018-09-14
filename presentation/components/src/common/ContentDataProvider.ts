@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @module Core */
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

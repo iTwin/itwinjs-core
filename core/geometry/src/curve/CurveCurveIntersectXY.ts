@@ -19,6 +19,8 @@ import { Transform, Matrix3d } from "../Transform";
 import { Arc3d } from "./Arc3d";
 import { GrowableFloat64Array } from "../GrowableArray";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BezierCurve3dH } from "../bspline/BezierCurve";
+import { Bezier } from "../numerics/BezierPolynomials";
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -386,6 +388,75 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     else
       this.dispatchArcArc_thisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
   }
+  // Caller accesses data from two arcs.
+  // Selects the best conditioned arc (in xy parts) as "circle after inversion"
+  // Solves the arc-arc equations
+  private dispatchArcBsplineCurve3d(
+    cpA: Arc3d,
+    extendA: boolean,
+    cpB: BSplineCurve3d,
+    extendB: boolean,
+    reversed: boolean,
+  ) {
+    // Arc: X = C + cU + sV
+    // implicitize the arc as viewed.  This "3d" matrix is homogeneous "XYW" not "xyz"
+    let matrixA: Matrix3d;
+    if (this._worldToLocalPerspective) {
+      const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w);
+    } else {
+      const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, 0, dataA.vector90, 0, dataA.center, 1);
+    }
+    // The worldToLocal has moved the arc vectors into screen space.
+    // matrixA captures the xyw parts (ignoring z)
+    // for any point in world space,
+    // THIS CODE ONLY WORKS FOR
+    const matrixAinverse = matrixA.inverse();
+    if (matrixAinverse) {
+      const orderF = cpB.order; // order of the beziers for simple coordinates
+      const orderG = 2 * orderF - 1;  // order of the (single) bezier for squared coordinates.
+      const coffF = new Float64Array(orderF);
+      const univariateBezierG = new Bezier(orderG);
+      const axx = matrixAinverse.at(0, 0); const axy = matrixAinverse.at(0, 1); const axz = 0.0; const axw = matrixAinverse.at(0, 2);
+      const ayx = matrixAinverse.at(1, 0); const ayy = matrixAinverse.at(1, 1); const ayz = 0.0; const ayw = matrixAinverse.at(1, 2);
+      const awx = matrixAinverse.at(2, 0); const awy = matrixAinverse.at(2, 1); const awz = 0.0; const aww = matrixAinverse.at(2, 2);
+
+      if (matrixAinverse) {
+        let bezier: BezierCurve3dH | undefined;
+        for (let spanIndex = 0; ; spanIndex++) {
+          bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
+          if (!bezier) break;
+          if (this._worldToLocalPerspective)
+            bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
+          else if (this._worldToLocalAffine)
+            bezier.tryTransformInPlace(this._worldToLocalAffine);
+          univariateBezierG.zero();
+          bezier.poleProductsXYZW(coffF, axx, axy, axz, axw);
+          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+          bezier.poleProductsXYZW(coffF, ayx, ayy, ayz, ayw);
+          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+          bezier.poleProductsXYZW(coffF, awx, awy, awz, aww);
+          univariateBezierG.addSquaredSquaredBezier(coffF, -1.0);
+          const roots = univariateBezierG.roots(0.0, true);
+          if (roots) {
+            for (const root of roots) {
+              const fractionB = bezier.fractionToParentFraction(root);
+              // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
+              const bcurvePoint4d = bezier.fractionToPoint4d(root);
+              const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
+              const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
+              const arcFraction = cpA.sweep.radiansToSignedPeriodicFraction(Math.atan2(s, c));
+              if (this.acceptFraction(extendA, arcFraction, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
+                this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1,
+                  fractionB, cpB, 0, 1, reversed);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   /**
    * Apply the projection transform (if any) to (xyz, w)
    * @param xyz xyz parts of input point.
@@ -452,6 +523,27 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private static _workPointAA1 = Point3d.create();
   private static _workPointBB0 = Point3d.create();
   private static _workPointBB1 = Point3d.create();
+
+  public dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any {
+    const numA = lsA.numPoints();
+    if (numA > 1) {
+      const dfA = 1.0 / (numA - 1);
+      let fA0;
+      let fA1;
+      fA0 = 0.0;
+      const pointA0 = CurveCurveIntersectXY._workPointA0;
+      const pointA1 = CurveCurveIntersectXY._workPointA1;
+      lsA.pointAt(0, pointA0);
+      for (let iA = 1; iA < numA; iA++ , pointA0.setFrom(pointA1), fA0 = fA1) {
+        lsA.pointAt(iA, pointA1);
+        fA1 = iA * dfA;
+        this.dispatchSegmentBsplineCurve(
+          lsA, iA === 1 && extendA, pointA0, fA0, pointA1, fA1, (iA + 1) === numA && extendA,
+          curveB, extendB, reversed);
+      }
+    }
+    return undefined;
+  }
 
   public computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
     const pointA0 = lsA.point0Ref;
@@ -569,6 +661,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeSegmentLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     } else if (this._geometryB instanceof Arc3d) {
       this.computeArcLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchLineStringBSplineCurve(lsA, this._extendA, this._geometryB, this._extendB, false);
     }
     return undefined;
   }
@@ -582,6 +676,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchArcBsplineCurve3d(arc0, this._extendA, this._geometryB, this._extendB, false);
     }
     return undefined;
   }
@@ -592,13 +688,12 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
         this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
         curve, this._extendA, true);
     } else if (this._geometryB instanceof LineString3d) {
-      // this.computeArcLineString(arc0, this._extendA, this._geometryB, this._extendB, false);
+      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
     } else if (this._geometryB instanceof Arc3d) {
-      // this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
+      this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
     }
     return undefined;
   }
-
 }
 export class CurveCurve {
   /**

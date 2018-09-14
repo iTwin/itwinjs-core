@@ -1,6 +1,18 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Wed, 12 Sep 2018 13:35:50 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Sep 2018 17:07:11 GMT and should not be manually modified.
+
+## 0.127.0
+Thu, 13 Sep 2018 17:07:11 GMT
+
+*Version update only*
+
+## 0.126.0
+Wed, 12 Sep 2018 19:12:10 GMT
+
+### Updates
+
+- Fixed crash in Bunyan logging
 
 ## 0.125.0
 Wed, 12 Sep 2018 13:35:50 GMT

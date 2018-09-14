@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 import StyleHelper from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
@@ -10,6 +10,7 @@ import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { PageOptions as UiPageOptions } from "@bentley/ui-components/lib/common/PageOptions";
 
+/** @hidden */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): TreeNodeItem[] => {
   const list = new Array<TreeNodeItem>();
   for (const node of nodes)
@@ -17,6 +18,7 @@ export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parent
   return list;
 };
 
+/** @hidden */
 export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): TreeNodeItem => {
   const item: TreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
@@ -36,6 +38,7 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Tre
   return item;
 };
 
+/** @hidden */
 export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): PresentationPageOptions | undefined => {
   if (pageOptions)
     return { ...pageOptions };

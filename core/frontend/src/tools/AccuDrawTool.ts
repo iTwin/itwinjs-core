@@ -53,7 +53,6 @@ export class AccuDrawShortcuts {
     accudraw.flags.lockedRotation = false;
 
     accudraw.updateRotation();
-    accudraw.refreshDecorationsAndDynamics();
 
     // Always want index line to display for x-Axis...changing rotation clears this...so it flashes...
     accudraw.indexed |= LockedStates.X_BM;
@@ -318,7 +317,7 @@ export class AccuDrawShortcuts {
       // If AccuSnap is active use adjusted snap point, otherwise use last data point...
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (undefined !== snap) {
-        accudraw.published.origin.setFrom(snap.adjustedPoint);
+        accudraw.published.origin.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
         accudraw.flags.haveValidOrigin = true;
       } else {
         const ev = new BeButtonEvent();
@@ -831,6 +830,7 @@ export class AccuDrawShortcuts {
       (CompassMode.Polar !== accudraw.compassMode && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))) {
       if (AccuDrawShortcuts.rotateAxesByPoint(true, aboutCurrentZ)) {
         AccuDrawShortcuts.itemFieldUnlockAll();
+        accudraw.refreshDecorationsAndDynamics();
         return;
       }
     }

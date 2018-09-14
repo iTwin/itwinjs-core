@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import IPresentationDataProvider from "../common/IPresentationDataProvider";
@@ -18,7 +18,6 @@ export default interface IPresentationTreeDataProvider extends TreeDataProvider,
 
   /**
    * Returns filtered node paths.
-   * @param filter Filter.
    */
-  getFilteredNodePaths(filter: string): Promise<ReadonlyArray<Readonly<NodePathElement>>>;
+  getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
 }
