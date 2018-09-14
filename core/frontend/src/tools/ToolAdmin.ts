@@ -787,7 +787,7 @@ export class ToolAdmin {
     this._canvasDecoration = dec;
     if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
 
-    vp.canvas.style.cursor = dec ? (dec.cursor ? dec.cursor : "pointer") : IModelApp.viewManager.cursor;
+    vp.canvas.style.cursor = dec ? (dec.decorationCursor ? dec.decorationCursor : "pointer") : IModelApp.viewManager.cursor;
     vp.invalidateDecorations();
   }
 
