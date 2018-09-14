@@ -871,7 +871,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
       this._markers.push(marker);
     };
 
-    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.getCenter());
+    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.center);
     createBoundsMarker("low", this._extents.low);
     createBoundsMarker("high", this._extents.high);
   }
@@ -883,8 +883,6 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined !== selectedId)
       this.iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
   }
-
-  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this.iModel.iModelToken, elementIds); }
 
   protected async createControls(): Promise<boolean> {
     /* // TESTING ELEMENT QUERY
@@ -904,33 +902,36 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._boxId)
       return false;
 
+    const iModel = this.iModel;
+
     // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._boxId)) {
+    if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
       showControls = true;
-      if (this.iModel.selectionSet.size > 1) {
-        this.iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+      if (iModel.selectionSet.size > 1) {
+        iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
       }
     }
 
     if (!showControls)
       return false;
 
-    this._extents = this.iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
+    this._extents = iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
 
+    const transientIds = iModel.transientIds;
     if (0 === this._controlIds.length) {
-      this._controlIds[0] = this.iModel.transientIds.next.value;
-      this._controlIds[1] = this.iModel.transientIds.next.value;
-      this._controlIds[2] = this.iModel.transientIds.next.value;
-      this._controlIds[3] = this.iModel.transientIds.next.value;
-      this._controlIds[4] = this.iModel.transientIds.next.value;
-      this._controlIds[5] = this.iModel.transientIds.next.value;
+      this._controlIds[0] = transientIds.next.value;
+      this._controlIds[1] = transientIds.next.value;
+      this._controlIds[2] = transientIds.next.value;
+      this._controlIds[3] = transientIds.next.value;
+      this._controlIds[4] = transientIds.next.value;
+      this._controlIds[5] = transientIds.next.value;
     }
 
     const xOffset = 0.5 * this._extents.xLength();
     const yOffset = 0.5 * this._extents.yLength();
     const zOffset = 0.5 * this._extents.zLength();
-    const center = this._extents.getCenter();
+    const center = this._extents.center;
 
     this._controlAxis[0] = Vector3d.unitX();
     this._controlAxis[1] = Vector3d.unitX(-1.0);

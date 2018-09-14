@@ -130,8 +130,7 @@ class WebMercatorTileLoader extends TileLoader {
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
-    const projectExtents = _iModel.projectExtents;
-    const projectCenter = projectExtents.getCenter();
+    const projectCenter = _iModel.projectExtents.center;
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 

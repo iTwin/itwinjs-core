@@ -1295,22 +1295,20 @@ export abstract class Viewport {
 
   /**
    * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
-   * @param props element placements. Will zoom to the union of the placements.
-   * @param options options that control how the change works
+   * @param props array of PlacementProps. Will zoom to the union of the placements.
+   * @param options options that control how the view change works
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions) {
     if (placementProps.length === 0)
       return;
 
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotation);
+    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (const props of placementProps) {
       const placement = hasAngle(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
-      placement.getWorldCorners(frust);
-      viewRange.extendArray(frust.points, viewTransform);
+      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
@@ -1320,7 +1318,7 @@ export abstract class Viewport {
   /**
    * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
    * @param props element props. Will zoom to the union of the placements.
-   * @param options options that control how the change works
+   * @param options options that control how the view change works
    */
   public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions) {
     if (elementProps.length === 0)
@@ -1330,31 +1328,26 @@ export abstract class Viewport {
       if (props.placement !== undefined)
         placementProps.push(props.placement);
     }
-    return this.zoomToPlacementProps(placementProps, options);
+    this.zoomToPlacementProps(placementProps, options);
   }
 
   /**
    * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
-   * @param options options that control how the change works
+   * @param options options that control how the view change works
    */
-  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions) {
-    return this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions): Promise<void> {
+    this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
   }
 
   /**
-   * Zoom the view to a volume of space, in world coordinates.
+   * Zoom the view to a volume of space in world coordinates.
    * @param volume The low and high corners, in world coordinates.
-   * @param margin the amount of white space to leave around elements
-   * @param saveInUndo save the new view state in the view undo buffer.
-   * @note Updates ViewState and re-synchs Viewport.
+   * @param options options that control how the view change works
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
-    options = options === undefined ? {} : options;
-    const range = Range3d.fromJSON(volume);
-    const startFrust = this.getFrustum().clone();
-    this.view.lookAtVolume(range, this.viewRect.aspect, options.marginPercent);
-    this.finishViewChange(startFrust, options);
+    this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    this.finishViewChange(this.getFrustum().clone(), options);
   }
 
   /**
