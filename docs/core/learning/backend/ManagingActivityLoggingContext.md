@@ -3,7 +3,7 @@
 Asynchronous backend methods must cooperate to propagate a request's [ActivityId](../../overview/RpcInterface.md#logging-and-activityids) into logging messages. The current ActivityId is held by the [ActivityLoggingContext]($bentleyjs-core) class. The following rules must be followed by async methods to manage this class:
 
 ## Promise-returning functions
-Every `Promise`-returning method *must*:
+Every `Promise`-returning functions *must*:
 * Take an argument of type [ActivityLoggingContext]($bentleyjs-core).
 * Pass the input ActivityLoggingContext object to each Promise-returning method that it calls.
 * Call the [ActivityLoggingContext.enter]($bentleyjs-core) method on the input ActivityLoggingContext object:
@@ -16,7 +16,9 @@ A Promise-returning function must *not* call ActivityLoggingContext.current.
 
 Note that a Promise-returning method is any method that returns a Promise, whether or not it is declared with the `async` keyword.
 
-There is one exception to the above rule. An [RpcInterface implementation method](../RpcInterface.md#server-implementation) does not take a ActivityLoggingContext object as an argument. Instead, it must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). An RcpInterface implementation method must follow all of the other the rules listed above. Other kinds of async functions must not call ActivityLoggingContext.current.
+## RpcInterface implementation methods
+
+There is one exception to the above rule for Promise-returning functions. An [RpcInterface implementation method](../RpcInterface.md#server-implementation) does not take a ActivityLoggingContext object as an argument. Instead, it must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). An RcpInterface implementation method must follow all of the other rules listed above.
 
 ## Callbacks to asynchronous functions
 Examples of asynchronous functions that invoke callbacks are:
