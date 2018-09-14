@@ -4,11 +4,12 @@
 import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
 import { AccessToken, IModelRepository, Project } from "@bentley/imodeljs-clients";
-import { assert, StopWatch } from "@bentley/bentleyjs-core";
+import { StopWatch } from "@bentley/bentleyjs-core";
 import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
+import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -406,11 +407,6 @@ async function loadIModel(testConfig: DefaultConfigs) {
   const iModCon = activeViewState.iModelConnection;
   if (iModCon && testConfig.displayStyle) {
     const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
-
-    // for (const prop of displayStyleProps) {
-    //   debugPrint("code: " + prop.code);
-    //   debugPrint("value: " + prop.code!.value);
-    // }
     if (displayStyleProps.length >= 1)
       theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
   }
@@ -508,6 +504,10 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
     // Create DefaultTestConfigs
     const testConfig = new DefaultConfigs(testData, modConfigs, true);
 
+    // Ensure imodel file exists
+    if (!fs.existsSync(testConfig.iModelFile!))
+      break;
+
     if (testData.testType === "image")
       await outputSavedView(testConfig);
     else
@@ -527,6 +527,7 @@ describe("Performance Tests (#WebGLPerformance)", () => {
       testModel(configs, modelData).then((_result) => {
         done();
       }).catch((error) => {
+        assert(false, "Exception in testModel: " + error.toString());
         debugPrint("Exception in testModel: " + error.toString());
       });
     });
