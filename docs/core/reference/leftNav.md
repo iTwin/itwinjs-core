@@ -36,7 +36,6 @@
 - [Selection Set]($frontend:SelectionSet)
 - [Rendering]($frontend:Rendering)
 - [Tile]($frontend:Tile)
-- [WebGL]($frontend:WebGL)
 - [All]($frontend:All)
 
 ---
