@@ -16,19 +16,6 @@ export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
 export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
-export enum BeCursor {
-  Default = "default",
-  CrossHair = "crosshair",
-  OpenHand = "grab",
-  ClosedHand = "grabbing",
-  Rotate = "move",
-  Arrow = "default",
-  NotAllowed = "not-allowed",
-  Text = "text",
-  Busy = "wait",
-  Dynamics = "move",
-}
-
 /** The *source* that generated an event. */
 export const enum InputSource {
   /** Source not defined */

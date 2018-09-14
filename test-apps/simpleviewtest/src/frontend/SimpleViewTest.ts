@@ -985,14 +985,15 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected clearControls(): void {
-    if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
-      for (const controlId of this._controlIds) {
-        if (!this.iModel.selectionSet.has(controlId))
-          continue;
-        this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
-        break;
-      }
-    }
+    this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+    // if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
+    //   this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+    //   for (const controlId of this._controlIds) {
+    //     if (!this.iModel.selectionSet.has(controlId))
+    //       continue;
+    //     break;
+    //   }
+    // }
     super.clearControls();
   }
 
@@ -1381,6 +1382,11 @@ function addRenderModeHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
 }
 
+function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool menu
+  const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1431,6 +1437,7 @@ function wireIconsToFunctions() {
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
   document.getElementById("projectExtents")!.addEventListener("click", () => ProjectExtentsDecoration.toggle());
+  document.getElementById("debugToolsMenu")!.addEventListener("click", () => { keepOpenDebugToolsMenu(); });
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));

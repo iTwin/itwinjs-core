@@ -1,11 +1,14 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "0.127.0",
+  "version": "0.128.0",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json .nyc_output",
@@ -26,8 +29,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.127.0",
-    "@bentley/bentleyjs-tools": "0.127.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -45,7 +48,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.127.0"
+    "@bentley/bentleyjs-core": "0.128.0"
   },
   "nyc": {
     "include": [

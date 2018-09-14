@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
+    "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
     "build": "",
