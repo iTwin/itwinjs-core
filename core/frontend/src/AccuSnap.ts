@@ -331,7 +331,7 @@ export class AccuSnap implements Decorator {
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
-    this.errorIcon.activate(errorSprite, vp, pt, 0);
+    this.errorIcon.activate(errorSprite, vp, pt);
   }
 
   private clearSprites() {
@@ -352,7 +352,6 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     this.areFlashed.forEach((vp) => {
-      // eventHandlers.CallAllHandlers(UnFlashCaller(vp.get()));
       vp.setFlashed(undefined, 0.0);
     });
     this.areFlashed.clear();

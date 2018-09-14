@@ -6,6 +6,7 @@ import * as url from "url";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -18,6 +19,11 @@ const electron = require("electron");
 
 // Start the backend
 initializeBackend();
+
+// Set up logging (by default, no logging is enabled)
+const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
+const logLevel = undefined !== logLevelEnv ? Logger.ParseLogLevel(logLevelEnv) : LogLevel.None;
+Logger.setLevelDefault(logLevel);
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------

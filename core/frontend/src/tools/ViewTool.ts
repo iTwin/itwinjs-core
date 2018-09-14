@@ -1074,7 +1074,7 @@ class ViewScroll extends ViewingToolHandle {
       viewport.setupViewFromFrustum(frustum);
     } else {
       const iDist = Point2d.create(Math.floor(dist.x * scrollFactor), Math.floor(dist.y * scrollFactor));
-      viewport.scroll(iDist);
+      viewport.scroll(iDist, { saveInUndo: false, animateFrustumChange: false });
     }
 
     return true;
@@ -2001,7 +2001,7 @@ export class DefaultViewTouchTool extends ViewManip {
   private handle2dPan(_ev: BeTouchEvent): void {
     const vp = this.viewport!;
     const screenDist = Point2d.create(this._startPtView.x - this._lastPtView.x, this._startPtView.y - this._lastPtView.y);
-    vp.scroll(screenDist);
+    vp.scroll(screenDist, { saveInUndo: false, animateFrustumChange: false });
   }
 
   private handle2dRotateZoom(ev: BeTouchEvent): void {
@@ -2080,7 +2080,7 @@ export class DefaultViewTouchTool extends ViewManip {
     offset.multiplyTransformTransform(transform, transform);
     transform.multiplyPoint3d(viewCenter, viewCenter);
     vp.npcToWorld(viewCenter, viewCenter);
-    vp.zoom(viewCenter, zoomRatio);
+    vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
   }
 
   private handleEvent(ev: BeTouchEvent): void {

@@ -197,6 +197,9 @@
       "request": "launch",
       "name": "SimpleViewTest Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",

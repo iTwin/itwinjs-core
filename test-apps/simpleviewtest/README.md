@@ -75,6 +75,8 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
   * If defined, maximize the electron window on startup
 * SVT_NO_DEVTOOLS
   * If defined, do not open the electron dev tools on startup
+* SVT_LOG_LEVEL
+  * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which SimpleViewTest was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
 
 
 ## Running/Building on iOS <a name="build_ios"></a>

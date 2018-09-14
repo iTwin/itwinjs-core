@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d, LowAndHighXYZ, LowAndHighXY,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
@@ -815,7 +815,7 @@ export abstract class ViewState extends ElementState {
   }
   /**
    * Change the volume that this view displays, keeping its current rotation.
-   * @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
+   * @param volume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
    * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
    * result in a much larger volume than worldVolume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
@@ -824,8 +824,8 @@ export abstract class ViewState extends ElementState {
    * of space shown in the view.) If undefined, no additional white space is added.
    * @note for 2d views, only the X and Y values of volume are used.
    */
-  public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
-    const rangeBox = volume.corners();
+  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent) {
+    const rangeBox = Frustum.fromRange(volume).points;
     this.getRotation().multiplyVectorArrayInPlace(rangeBox);
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
   }

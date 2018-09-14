@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tree */
+
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement, NodeKey } from "@bentley/presentation-common";
 import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "@bentley/ui-components/lib/tree/SimpleTreeDataProvider";
@@ -65,7 +67,7 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
     return this._filteredDataProvider.getChildNodesCount(parentNode);
   }
 
-  public async getFilteredNodePaths(filter: string): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
+  public async getFilteredNodePaths(filter: string): Promise<NodePathElement[]> {
     return this._parentDataProvider.getFilteredNodePaths(filter);
   }
 

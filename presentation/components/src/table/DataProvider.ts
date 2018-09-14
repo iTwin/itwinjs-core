@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @module Table */
 
 import * as _ from "lodash";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";

@@ -57,8 +57,6 @@ const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
-let animationIntervalId: NodeJS.Timer;
-let isAnimating: boolean = false;
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
   if (undefined === overrideColor)
@@ -384,31 +382,110 @@ function toggleAnimationMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function updateAnimation() {
+let isAnimating: boolean = false;
+let isAnimationPaused: boolean = false;
+let animationStartTime: number = 0;
+let animationPauseTime: number = 0;
+let animationEndTime: number = 0;
+
+function setAnimationStateMessage(msg: string) {
+  const animationState = document.getElementById("animationState") as HTMLDivElement;
+  animationState.innerHTML = msg;
+}
+
+function enableAnimationUI(enabled: boolean = true) {
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  animationDuration.disabled = !enabled;
+  animationLoop.disabled = !enabled;
+}
+
+function isAnimationLooping(): boolean {
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  return animationLoop.checked;
+}
+
+function processAnimationSliderAdjustment(_event: any) {
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
-  animationSlider.value = (parseInt(animationSlider.value, undefined) + 1).toString();
-  theViewport!.sync.invalidateScene();
-  if ("100" === animationSlider.value) {
-    animationSlider.value = "0";
-    clearInterval(animationIntervalId);
-    isAnimating = false;
+
+  if (animationSlider.value === "0") {
+    stopAnimation([]);
+    return;
   }
+
+  if (!isAnimating)
+    startAnimation([]);
+  if (!isAnimationPaused)
+    pauseAnimation([]);
+
+  const sliderValue = parseInt(animationSlider.value, undefined);
+  const animationFraction = sliderValue / 1000.0;
+  animationPauseTime = animationStartTime + (animationEndTime - animationStartTime) * animationFraction;
+  theViewport!.animationFraction = animationFraction;
+}
+
+function updateAnimation() {
+  if (isAnimationPaused) {
+    window.requestAnimationFrame(updateAnimation);
+    return;
+  }
+
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+  const animationCurTime = (new Date()).getTime();
+  theViewport!.animationFraction = (animationCurTime - animationStartTime) / (animationEndTime - animationStartTime);
+  animationSlider.value = (theViewport!.animationFraction * 1000).toString();
+  const userHitStop = !isAnimating;
+  if (animationCurTime >= animationEndTime || !isAnimating) { // stop the animation!
+    enableAnimationUI();
+    animationSlider.value = "0";
+    theViewport!.animationFraction = 0;
+    isAnimating = false;
+    setAnimationStateMessage("Stopped.");
+  } else { // continue the animation - request the next frame
+    window.requestAnimationFrame(updateAnimation);
+  }
+  if (!userHitStop && isAnimationLooping()) // only loop if user did not hit stop (naturally finished animation)
+    startAnimation([]);
 }
 
 function startAnimation(_event: any) {
+  if (isAnimationPaused) { // resume animation
+    const animationPauseOffset = (new Date()).getTime() - animationPauseTime; // how long were we paused?
+    animationStartTime += animationPauseOffset;
+    animationEndTime += animationPauseOffset;
+    setAnimationStateMessage("Playing.");
+    isAnimationPaused = false;
+    return;
+  }
+
   if (isAnimating)
     return; // cannot animate while animating
-  animationIntervalId = setInterval(updateAnimation, 100);
+
+  setAnimationStateMessage("Playing.");
+
+  theViewport!.animationFraction = 0;
+  animationStartTime = (new Date()).getTime();
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  animationEndTime = animationStartTime + parseFloat(animationDuration.value) * 1000;
+  enableAnimationUI(false);
   isAnimating = true;
+  isAnimationPaused = false;
+  window.requestAnimationFrame(updateAnimation);
+}
+
+function pauseAnimation(_event: any) {
+  if (isAnimationPaused || !isAnimating)
+    return;
+  animationPauseTime = (new Date()).getTime();
+  isAnimationPaused = true;
+  setAnimationStateMessage("Paused.");
 }
 
 function stopAnimation(_event: any) {
   if (!isAnimating)
     return; // already not animating!
-  clearInterval(animationIntervalId);
-  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
-  animationSlider.value = "0";
   isAnimating = false;
+  isAnimationPaused = false;
 }
 
 function processAnimationMenuEvent(_event: any) { // keep animation menu open even when it is clicked
@@ -561,10 +638,10 @@ async function openView(state: SimpleViewState) {
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
   IModelApp.viewManager.addViewport(theViewport);
-  stopAnimation([]);
 }
 
 async function _changeView(view: ViewState) {
+  stopAnimation([]); // cease any previous animation
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
@@ -827,7 +904,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
       this._markers.push(marker);
     };
 
-    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.getCenter());
+    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.center);
     createBoundsMarker("low", this._extents.low);
     createBoundsMarker("high", this._extents.high);
   }
@@ -839,8 +916,6 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined !== selectedId)
       this.iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
   }
-
-  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this.iModel.iModelToken, elementIds); }
 
   protected async createControls(): Promise<boolean> {
     /* // TESTING ELEMENT QUERY
@@ -860,33 +935,36 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._boxId)
       return false;
 
+    const iModel = this.iModel;
+
     // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._boxId)) {
+    if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
       showControls = true;
-      if (this.iModel.selectionSet.size > 1) {
-        this.iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+      if (iModel.selectionSet.size > 1) {
+        iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
       }
     }
 
     if (!showControls)
       return false;
 
-    this._extents = this.iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
+    this._extents = iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
 
+    const transientIds = iModel.transientIds;
     if (0 === this._controlIds.length) {
-      this._controlIds[0] = this.iModel.transientIds.next.value;
-      this._controlIds[1] = this.iModel.transientIds.next.value;
-      this._controlIds[2] = this.iModel.transientIds.next.value;
-      this._controlIds[3] = this.iModel.transientIds.next.value;
-      this._controlIds[4] = this.iModel.transientIds.next.value;
-      this._controlIds[5] = this.iModel.transientIds.next.value;
+      this._controlIds[0] = transientIds.next.value;
+      this._controlIds[1] = transientIds.next.value;
+      this._controlIds[2] = transientIds.next.value;
+      this._controlIds[3] = transientIds.next.value;
+      this._controlIds[4] = transientIds.next.value;
+      this._controlIds[5] = transientIds.next.value;
     }
 
     const xOffset = 0.5 * this._extents.xLength();
     const yOffset = 0.5 * this._extents.yLength();
     const zOffset = 0.5 * this._extents.zLength();
-    const center = this._extents.getCenter();
+    const center = this._extents.center;
 
     this._controlAxis[0] = Vector3d.unitX();
     this._controlAxis[1] = Vector3d.unitX(-1.0);
@@ -1345,8 +1423,10 @@ function wireIconsToFunctions() {
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
   document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
   document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
+  document.getElementById("animationPause")!.addEventListener("click", pauseAnimation);
   document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
   document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
+  document.getElementById("animationSlider")!.addEventListener("input", processAnimationSliderAdjustment);
 
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
