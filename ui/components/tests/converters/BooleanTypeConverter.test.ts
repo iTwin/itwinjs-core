@@ -11,7 +11,11 @@ describe("BooleanTypeConverter", () => {
     await TestUtils.initializeUiComponents();
   });
 
-  const converter = new BooleanTypeConverter();
+  let converter: BooleanTypeConverter;
+
+  beforeEach(() => {
+    converter = new BooleanTypeConverter();
+  });
 
   describe("convertToString", () => {
 

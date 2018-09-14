@@ -47,6 +47,7 @@ describe("<EditorContainer />", () => {
     const handleCommitCancel = () => { };
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={handleCommitCancel} />);
     const inputNode = wrapper.find("input");
+
     expect(inputNode).to.not.be.null;
     if (inputNode) {
       inputNode.simulate("blur");
@@ -61,6 +62,7 @@ describe("<EditorContainer />", () => {
       inputNode.simulate("keyDown", { key: "Tab" });
     }
 
+    wrapper.unmount();
   });
 
 });
