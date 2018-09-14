@@ -37,26 +37,30 @@ export class SyncFlags {
   private _renderPlan = false;
   private _controller = false;
   private _rotatePoint = false;
+  private _animationFraction = false;
   private _redrawPending = false;
   public get isValidDecorations(): boolean { return this._decorations; }
   public get isValidScene(): boolean { return this._scene; }
   public get isValidController(): boolean { return this._controller; }
   public get isValidRenderPlan(): boolean { return this._renderPlan; }
   public get isValidRotatePoint(): boolean { return this._rotatePoint; }
+  public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void { this._decorations = false; }
   public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); }
   public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
   public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
   public invalidateRotatePoint(): void { this._rotatePoint = false; }
+  public invalidateAnimationFraction(): void { this._animationFraction = false; }
   public invalidateRedrawPending(): void { this._redrawPending = false; }
   public setValidDecorations(): void { this._decorations = true; }
   public setValidScene(): void { this._scene = true; }
   public setValidController(): void { this._controller = true; }
   public setValidRenderPlan(): void { this._renderPlan = true; }
   public setValidRotatePoint(): void { this._rotatePoint = true; }
+  public setValidAnimationFraction(): void { this._animationFraction = true; }
   public setRedrawPending(): void { this._redrawPending = true; }
-  public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._redrawPending = other._redrawPending; }
+  public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._animationFraction = other._animationFraction; this._redrawPending = other._redrawPending; }
 }
 
 /** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
@@ -842,6 +846,7 @@ export abstract class Viewport {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
+  private _animationFraction: number = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
   /** Time the current flash started */
@@ -866,6 +871,9 @@ export abstract class Viewport {
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; this.sync.invalidateAnimationFraction(); }
 
   protected readonly _viewRange: ViewRect = new ViewRect();
 
@@ -1608,6 +1616,12 @@ export abstract class Viewport {
       this.addDecorations(decorations);
       target.changeDecorations(decorations);
       isRedrawNeeded = true;
+    }
+
+    if (!sync.isValidAnimationFraction) {
+      target.animationFraction = this.animationFraction;
+      isRedrawNeeded = true;
+      sync.setValidAnimationFraction();
     }
 
     if (this.processFlash()) {

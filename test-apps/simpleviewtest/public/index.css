@@ -255,6 +255,9 @@
 .bim-icon-play:before {
       content: "\ea32";
 }
+.bim-icon-pause:before {
+      content: "\ea33";
+}
 .bim-icon-stop:before {
       content: "\ea34";
 }
@@ -422,7 +425,11 @@
   float:left;
 }
 #animationSlider {
+  width:250px;
   display:block;
+}
+#animationState {
+  text-align:right;
 }
 #renderModeToggle {
   width: 100%;

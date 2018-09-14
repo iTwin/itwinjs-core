@@ -940,6 +940,7 @@ export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private readonly _prevViewRect = new ViewRect();
+  private _animationFraction: number = 0;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -951,6 +952,9 @@ export class OnScreenTarget extends Target {
     this._blitGeom = dispose(this._blitGeom);
     super.dispose();
   }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
     this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
@@ -1084,9 +1088,14 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
+  private _animationFraction: number = 0;
+
   public constructor(rect: ViewRect) {
     super(rect);
   }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect { return this.renderRect; }
 

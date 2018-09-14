@@ -57,8 +57,6 @@ const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
-let animationIntervalId: NodeJS.Timer;
-let isAnimating: boolean = false;
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
   if (undefined === overrideColor)
@@ -384,31 +382,77 @@ function toggleAnimationMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+let isAnimating: boolean = false;
+let isAnimationPaused: boolean = false;
+let animationStartTime: number = 0;
+let animationPauseTime: number = 0;
+let animationEndTime: number = 0;
+
+function setAnimationStateMessage(msg: string) {
+  const animationState = document.getElementById("animationState") as HTMLDivElement;
+  animationState.innerHTML = msg;
+}
+
 function updateAnimation() {
+  if (isAnimationPaused) {
+    window.requestAnimationFrame(updateAnimation);
+    return;
+  }
+
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
-  animationSlider.value = (parseInt(animationSlider.value, undefined) + 1).toString();
-  theViewport!.sync.invalidateScene();
-  if ("100" === animationSlider.value) {
+  const animationCurTime = (new Date()).getTime();
+  theViewport!.animationFraction = (animationCurTime - animationStartTime) / (animationEndTime - animationStartTime);
+  animationSlider.value = (theViewport!.animationFraction * 1000).toString();
+  if (animationCurTime >= animationEndTime || !isAnimating) { // stop the animation!
+    const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+    animationDuration.disabled = false;
     animationSlider.value = "0";
-    clearInterval(animationIntervalId);
+    theViewport!.animationFraction = 0;
     isAnimating = false;
+    setAnimationStateMessage("Stopped.");
+  } else { // continue the animation - request the next frame
+    window.requestAnimationFrame(updateAnimation);
   }
 }
 
 function startAnimation(_event: any) {
+  if (isAnimationPaused) { // resume animation
+    isAnimationPaused = false;
+    const animationPauseOffset = (new Date()).getTime() - animationPauseTime; // how long were we paused?
+    animationStartTime += animationPauseOffset;
+    animationEndTime += animationPauseOffset;
+    setAnimationStateMessage("Playing.");
+    return;
+  }
+
   if (isAnimating)
     return; // cannot animate while animating
-  animationIntervalId = setInterval(updateAnimation, 100);
+
+  setAnimationStateMessage("Playing.");
+
+  theViewport!.animationFraction = 0;
+  animationStartTime = (new Date()).getTime();
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  animationEndTime = animationStartTime + parseFloat(animationDuration.value) * 1000;
+  animationDuration.disabled = true;
   isAnimating = true;
+  isAnimationPaused = false;
+  window.requestAnimationFrame(updateAnimation);
+}
+
+function pauseAnimation(_event: any) {
+  if (isAnimationPaused || !isAnimating)
+    return;
+  animationPauseTime = (new Date()).getTime();
+  isAnimationPaused = true;
+  setAnimationStateMessage("Paused.");
 }
 
 function stopAnimation(_event: any) {
   if (!isAnimating)
     return; // already not animating!
-  clearInterval(animationIntervalId);
-  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
-  animationSlider.value = "0";
   isAnimating = false;
+  isAnimationPaused = false;
 }
 
 function processAnimationMenuEvent(_event: any) { // keep animation menu open even when it is clicked
@@ -561,10 +605,10 @@ async function openView(state: SimpleViewState) {
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
   IModelApp.viewManager.addViewport(theViewport);
-  stopAnimation([]);
 }
 
 async function _changeView(view: ViewState) {
+  stopAnimation([]); // cease any previous animation
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
@@ -1345,6 +1389,7 @@ function wireIconsToFunctions() {
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
   document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
   document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
+  document.getElementById("animationPause")!.addEventListener("click", pauseAnimation);
   document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
   document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
 

@@ -291,6 +291,9 @@ export abstract class RenderTarget implements IDisposable {
   public abstract get viewRect(): ViewRect;
   public abstract get wantInvertBlackBackground(): boolean;
 
+  public abstract get animationFraction(): number;
+  public abstract set animationFraction(fraction: number);
+
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public abstract dispose(): void;
