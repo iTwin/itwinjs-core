@@ -40,7 +40,7 @@ export const Popup: React.StatelessComponent<PopoverProps> = (props) => {
       <DivWithOnOutsideClick className={className} onOutsideClick={() => { props.onClose && props.onClose(); }}>
         {props.children}
       </DivWithOnOutsideClick>
-      <div className={overlayClassName}/>
+      <div className={overlayClassName} />
     </div>
   );
 };
