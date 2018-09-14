@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PropertyGrid renders correctly 1`] = `
+exports[`PropertyGrid renders correctly horizontally 1`] = `
 <div
   className="PropertyGridWrapper"
 >
@@ -10,7 +10,7 @@ exports[`PropertyGrid renders correctly 1`] = `
 </div>
 `;
 
-exports[`PropertyGrid renders correctly 2`] = `
+exports[`PropertyGrid renders correctly vertically 1`] = `
 <div
   className="PropertyGridWrapper"
 >

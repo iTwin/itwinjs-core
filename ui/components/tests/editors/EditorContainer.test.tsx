@@ -61,8 +61,6 @@ describe("<EditorContainer />", () => {
 
       inputNode.simulate("keyDown", { key: "Tab" });
     }
-
-    wrapper.unmount();
   });
 
 });

@@ -78,15 +78,23 @@ describe("PropertyGrid", () => {
     }
   }
 
-  it("should render", () => {
+  it("should render horizontally", () => {
     const dataProvider = new SamplePropertyDataProvider();
     mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+  });
+
+  it("should render vertically", () => {
+    const dataProvider = new SamplePropertyDataProvider();
     mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />);
   });
 
-  it("renders correctly", () => {
+  it("renders correctly horizontally", () => {
     const dataProvider = new SamplePropertyDataProvider();
     shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />).should.matchSnapshot();
+  });
+
+  it("renders correctly vertically", () => {
+    const dataProvider = new SamplePropertyDataProvider();
     shallow(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />).should.matchSnapshot();
   });
 
@@ -115,7 +123,6 @@ describe("PropertyGrid", () => {
         expect(categoryBlock.prop("isExpanded")).to.be.true;
       }
 
-      wrapper.unmount();
       done();
     }, 0);
   });
@@ -145,7 +152,6 @@ describe("PropertyGrid", () => {
         expect(categoryBlock.prop("isExpanded")).to.be.true;
       }
 
-      wrapper.unmount();
       done();
     }, 0);
   });
