@@ -184,6 +184,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
             />
           </div>
         </div>
+        <div className="nz-height-expander" />
         <ResizeGrip
           className="nz-top-grip"
           direction={ResizeDirection.NorthSouth}
