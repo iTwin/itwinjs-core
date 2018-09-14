@@ -27,14 +27,14 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
 
-  public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
+  public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
   public constructor(system: RenderSystem, type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String, accumulatorTf: Transform = Transform.identity) {
     super(placement, type, viewport, pickableId);
     this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTf);
   }
 
-  protected _finish(): RenderGraphic {
+  public finish(): RenderGraphic {
     const graphic = this.finishGraphic(this.accum);
     this.accum.clear();
     return graphic;

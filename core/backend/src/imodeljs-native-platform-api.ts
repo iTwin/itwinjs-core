@@ -1040,6 +1040,7 @@ export declare class NativeECSchemaXmlContext {
   public readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
 }
 
+/** @hidden */
 export declare class SnapRequest {
   constructor();
   public doSnap(db: NativeDgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;

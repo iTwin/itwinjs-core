@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.127.0",
+  "version": "0.128.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -23,7 +23,10 @@
     "perftest": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "BIM",
@@ -34,21 +37,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.127.0",
-    "@bentley/geometry-core": "0.127.0",
-    "@bentley/imodeljs-clients": "0.127.0",
-    "@bentley/imodeljs-common": "0.127.0"
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/geometry-core": "0.128.0",
+    "@bentley/imodeljs-clients": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.127.0",
-    "@bentley/bentleyjs-tools": "0.127.0",
-    "@bentley/geometry-core": "0.127.0",
-    "@bentley/imodeljs-clients": "0.127.0",
-    "@bentley/imodeljs-common": "0.127.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/geometry-core": "0.128.0",
+    "@bentley/imodeljs-clients": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
@@ -71,7 +74,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~0.50.0",
+    "@bentley/imodeljs-native-platform-api": "~0.51.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

@@ -126,7 +126,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   addModelViewMatrix(vert);
 
   if (isAnimated)
-    addAnimation(vert, false);
+    addAnimation(vert, false, false);
 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {

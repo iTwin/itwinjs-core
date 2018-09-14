@@ -77,4 +77,4 @@ Briefly, here is how it works:
 * Log Browsers
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
-See [managing the ActivityLoggingContext](../learning/backend/ManagingLoggingActivityContext.md) for details.
+See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLoggingContext.md) for details.

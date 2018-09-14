@@ -6,7 +6,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
-import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, IModelRepository, WsgCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
 
 import * as TypeMoq from "typemoq";
 
@@ -273,7 +273,7 @@ describe.skip("IModelWriteTest", () => {
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
     const otherBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, adminAccessToken, rwIModelId!);
-    const hubCode = new HubCode();
+    const hubCode = new WsgCode();
     hubCode.value = code.value;
     hubCode.codeSpecId = code.spec.toString();
     hubCode.codeScope = code.scope;

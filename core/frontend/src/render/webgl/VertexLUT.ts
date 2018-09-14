@@ -8,7 +8,7 @@ import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { ColorInfo } from "./ColorInfo";
 import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
-import { VertexTable, AuxDisplacement, AuxParam } from "../primitives/VertexTable";
+import { VertexTable, AuxDisplacement, AuxNormal, AuxParam } from "../primitives/VertexTable";
 
 /** Represents the finished lookup table ready for submittal to GPU. */
 export class VertexLUT implements IDisposable {
@@ -20,6 +20,7 @@ export class VertexLUT implements IDisposable {
   public readonly qScale: Float32Array;   // Scale of quantized positions
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
   public readonly auxDisplacements?: AuxDisplacement[];  // Auxilliary displacements.
+  public readonly auxNormals?: AuxNormal[];  // Auxilliary displacements.
   public readonly auxParams?: AuxParam[];  // Auxilliary displacements.
 
   public static createFromVertexTable(vt: VertexTable): VertexLUT | undefined {
@@ -36,6 +37,7 @@ export class VertexLUT implements IDisposable {
     this.qScale = qscale3dToArray(qparams.scale);
     this.auxDisplacements = table.auxDisplacements;
     this.auxParams = table.auxParams;
+    this.auxNormals = table.auxNormals;
     if (undefined !== uvParams) {
       this.uvQParams = qparams2dToArray(uvParams);
     }
