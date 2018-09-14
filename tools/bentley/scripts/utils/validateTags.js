@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 const FS = require('fs-extra');
-const validTags = ["see", "throws", "note", "param", "deprecated", "module"];
+const validTags = ["see", "note", "throws", "param", "deprecated", "module", "type", "minimum", "minlength", "pattern", "beta", "wip", "experimental"];
 
 function validateTags(path) {
     let tags = parseFile(path);

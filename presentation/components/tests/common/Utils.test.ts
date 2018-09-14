@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
-import * as utils from "@src/common/Utils";
+import * as utils from "../../lib/common/Utils";
 
 class TestComponent extends React.Component {
   // public static name?: string;

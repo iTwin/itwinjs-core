@@ -39,12 +39,18 @@
   }
 
   &.nz-is-active {
-    &:not(:active) {
+    &:not(:active):not(.nz-is-disabled) {
       > .nz-triangle {
         filter: $no-shadow;
 
         @include triangle-bottom-right-color($active-icon-color);
       }
+    }
+  }
+
+  &.nz-is-disabled {
+    > .nz-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
     }
   }
 }

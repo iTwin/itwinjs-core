@@ -41,19 +41,18 @@ export namespace B3dmTileIO {
 
   /** Deserializes an B3DM tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, iModel, modelId, is3d, system, isCanceled);
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled) {
+      super(props, iModel, modelId, is3d, system, false, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
-      const isLeaf = true;    // TBD...
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
@@ -63,9 +62,9 @@ export namespace B3dmTileIO {
 
       await this.loadTextures();
       if (this._isCanceled)
-        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf });
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf: this._isLeaf });
 
-      return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, false, true, featureTable, this._range));
+      return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, false, true, featureTable, this._range));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
       const feature = new Feature(this._modelId);

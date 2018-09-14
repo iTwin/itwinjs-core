@@ -99,8 +99,9 @@ export default class DataTree extends React.Component<DataTreeProps> {
     };
 
     // By default, dragProps will be empty
-    const dragProps: DragSourceProps = {};
+    let dragProps: DragSourceProps | undefined;
     if (this.props.dragProps) {
+      dragProps = {};
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
       dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
         if (args.dataObject && typeof args.dataObject === "object") {
@@ -150,8 +151,9 @@ export default class DataTree extends React.Component<DataTreeProps> {
         return "";
       };
     }
-    const dropProps: DropTargetProps = {};
+    let dropProps: DropTargetProps | undefined;
     if (this.props.dropProps) {
+      dropProps = {};
       const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
       dropProps.onDropTargetOver = (args: DropTargetArguments) => {
         if (args.dropLocation && typeof args.dropLocation === "object" && onDropTargetOver) {

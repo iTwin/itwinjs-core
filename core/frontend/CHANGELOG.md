@@ -1,6 +1,45 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 28 Aug 2018 12:25:19 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Sep 2018 17:07:11 GMT and should not be manually modified.
+
+## 0.127.0
+Thu, 13 Sep 2018 17:07:11 GMT
+
+### Updates
+
+- rename overlay2dDecoration to canvasDecoration
+- added methods to zoom to elements by ids, props, or placements.
+
+## 0.126.0
+Wed, 12 Sep 2018 19:12:10 GMT
+
+*Version update only*
+
+## 0.125.0
+Wed, 12 Sep 2018 13:35:50 GMT
+
+### Updates
+
+- Ray3d.intersectionWithPlane fix !number instead of checking undefined. Added project point to line or plane in view helper methods for tools.
+- SimpleViewTest - Moved incident marker and project extents under test tool menu.
+- TentativePoint.setCurrSnap needs to reset adjustedPoint from a pre-located SnapDetail.
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- SelectTool EditManipulator support.
+- Added EditManipulator arrow controls.
+
+## 0.123.0
+Wed, 05 Sep 2018 17:14:50 GMT
+
+### Updates
+
+- AccuDraw nearest snap intersection should use single segment of linestring. Support nearest snap with locked distance
+- PBI#30301: Add ability to reuse briefcases when opening a new IModelConnection/IModelDb. <br/> Opening a new ReadWrite IModelConnection at the frontend would try and reuse any existing briefcase that was previously opened by the same user. Opening a new Exclusive IModelDb at the backend can be configured to reuse or create/acquire a new briefcase. <br/> PBI#30302: Add method to purge the briefcase manager cache. <br/> When backend instances are brought down it's important that any briefcases they acquired from the Hub be properly disposed of. The iModelHub imposes an artificial limit of 20 briefcases per user, and acquiring more briefcases will cause an error.Added a new BriefcaseManager.purgeCache() method to help with this - the method closes any open briefcases, deletes the registered briefcase id from the Hub, and deletes the physical cache folder containing the Dbs. Note that the accessToken passed in to the method must match the accessToken used to acquire any briefcases that are to be deleted - so this only works in the limited environment where the entire cache was hydrated for the same user.
+- AccuDraw shortcuts. Make it easier to use AccuDraw and dynamics with an InputCollector.
 
 ## 0.122.0
 Tue, 28 Aug 2018 12:25:19 GMT

@@ -10,7 +10,7 @@ import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { BeButtonEvent, CoordSource, BeButton } from "./tools/Tool";
+import { BeButtonEvent, CoordSource, BeButton, InputCollector } from "./tools/Tool";
 import { SnapMode, SnapDetail, SnapHeat } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -55,7 +55,6 @@ export const enum RotationMode {
   View = 4,
   ACS = 5,
   Context = 6,
-  Restore = 7,
 }
 
 export const enum LockedStates {
@@ -105,13 +104,13 @@ enum Constants {
 }
 
 export class AccudrawData {
-  public flags = 0;      // AccuDrawFlags
-  public readonly origin = new Point3d();     // used if ACCUDRAW_SetOrigin
-  public readonly delta = new Point3d();      // if ACCUDRAW_Lock_X, etc.
-  public readonly rMatrix = new Matrix3d();    // if ACCUDRAW_SetRMatrix/ACCUDRAW_Set3dMatrix
-  public readonly vector = new Vector3d();     // if ACCUDRAW_SetXAxis, etc.
-  public distance = 0;   // if ACCUDRAW_SetDistance
-  public angle = 0;      // if ACCUDRAW_SetAngle
+  public flags = 0; // AccuDrawFlags
+  public readonly origin = new Point3d(); // used if ACCUDRAW_SetOrigin
+  public readonly delta = new Point3d(); // if ACCUDRAW_Lock_X, etc.
+  public readonly rMatrix = new Matrix3d(); // if ACCUDRAW_SetRMatrix/ACCUDRAW_Set3dMatrix
+  public readonly vector = new Vector3d(); // if ACCUDRAW_SetXAxis, etc.
+  public distance = 0; // if ACCUDRAW_SetDistance
+  public angle = 0; // if ACCUDRAW_SetAngle
   public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
 }
 
@@ -127,8 +126,8 @@ export class Flags {
   public contextRotMode = 0;
   public baseRotation = RotationMode.View;
   public baseMode = 0;
-  public pointIsOnPlane = false;         // whether rawPointOnPlane is on compass plane
-  public softAngleLock = false;          // don't remember what this was about...
+  public pointIsOnPlane = false; // whether rawPointOnPlane is on compass plane
+  public softAngleLock = false;
   public bearingFixToPlane2D = false;
   public inDataPoint = false;
   public ignoreDataButton = false;
@@ -142,7 +141,6 @@ export class RoundOff {
 
 export class SavedState {
   public state = CurrentState.NotEnabled;
-  public view?: ScreenViewport;
   public mode = CompassMode.Polar;
   public rotationMode = RotationMode.View;
   public readonly axes = new ThreeAxes();
@@ -150,20 +148,8 @@ export class SavedState {
   public auxRotationPlane = 0;
   public contextRotMode = 0;
   public fixedOrg = false;
-  public ignoreDataButton = false; // Allow data point that terminates an input collector to be ignored...
-  public init(): void { this.state = CurrentState.NotEnabled; this.view = undefined; this.mode = CompassMode.Polar; this.rotationMode = RotationMode.View; }
-  public setFrom(other: SavedState) {
-    this.state = other.state;
-    this.view = other.view;
-    this.mode = other.mode;
-    this.rotationMode = other.rotationMode;
-    this.axes.setFrom(other.axes);
-    this.origin.setFrom(other.origin);
-    this.auxRotationPlane = other.auxRotationPlane;
-    this.contextRotMode = other.contextRotMode;
-    this.fixedOrg = other.fixedOrg;
-    this.ignoreDataButton = other.ignoreDataButton;
-  }
+  public ignoreDataButton = true; // By default the data point that terminates a view tool or input collector should be ignored...
+  public ignoreFlags: AccuDrawFlags = 0;
 }
 
 class SavedCoords {
@@ -217,7 +203,8 @@ export class AccuDraw {
   public readonly flags = new Flags(); // current state flags
   private readonly _fieldLocked: boolean[] = []; // locked state of fields
   private readonly _keyinStatus: KeyinStatus[] = []; // state of input field
-  public readonly savedState = new SavedState(); // Restore point for shortcuts/tools...
+  public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
+  public readonly savedStateInputCollector = new SavedState(); // Restore point for shortcuts/tools...
   private readonly _savedCoords = new SavedCoords(); // History of previous angles/distances...
   public readonly baseAxes = new ThreeAxes(); // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
   public readonly lastAxes = new ThreeAxes(); // Last result from UpdateRotation, replaces cM.rMatrix...
@@ -278,15 +265,14 @@ export class AccuDraw {
   public grabInputFocus() { }
 
   public activate(): void {
-    // Upgrade state to inactive so OnBeginDynamics knows it is ok to move to active...
+    // Upgrade state to inactive so upgradeToActiveState knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
       this.currentState = CurrentState.Inactive;
-
-    this.onBeginDynamics();
+    this.upgradeToActiveState();
   }
 
   public deactivate() {
-    this.onEndDynamics();
+    this.downgradeInactiveState();
     // Don't allow compass to come back until user re-enables it...
     if (CurrentState.Inactive === this.currentState)
       this.currentState = CurrentState.Deactivated;
@@ -424,8 +410,7 @@ export class AccuDraw {
       const lastPt = this.point.clone();
       this.fixPoint(pointActive, vp);
       pointChanged = !lastPt.isExactEqual(this.point);
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
       handled = true;
     } else {
       this.currentView = vp; // Keep view up to date...
@@ -557,7 +542,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         rMatrix.getRow(whichVec, vecP);
         break;
 
@@ -575,7 +560,7 @@ export class AccuDraw {
   }
 
   private getBestViewedRotationFromXVector(rotation: ThreeAxes, vp: Viewport): void {
-    const viewZ = vp.rotMatrix.getRow(2);
+    const viewZ = vp.rotation.getRow(2);
     const vec1 = this.getStandardVector(2);
     const vec2 = this.getStandardVector(1);
     const vec3 = this.getStandardVector(0);
@@ -661,12 +646,6 @@ export class AccuDraw {
     const vp = this.currentView;
     const useACS = vp ? vp.isContextRotationRequired : false;
 
-    if (this.rotationMode === RotationMode.Restore) {
-      newRotation = this.savedState.axes.clone();
-      this.flags.contextRotMode = this.savedState.contextRotMode;
-      this.rotationMode = RotationMode.Context;
-    }
-
     switch (this.rotationMode) {
       case RotationMode.Top:
         // Get standard rotation relative to ACS when ACS context lock is enabled...
@@ -694,7 +673,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         newRotation.fromMatrix3d(rMatrix);
         this.flags.lockedRotation = false;
         break;
@@ -1100,7 +1079,7 @@ export class AccuDraw {
       return true;
     }
 
-    const viewNormal = vp.rotMatrix.getRow(2);
+    const viewNormal = vp.rotation.getRow(2);
     const yVec = viewNormal.crossProduct(inVec);
 
     if (!yVec.normalizeInPlace()) {
@@ -1255,7 +1234,7 @@ export class AccuDraw {
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
     const rotation = out ? out : new Matrix3d();
-    const viewZ = vp.rotMatrix.rowZ();
+    const viewZ = vp.rotation.rowZ();
     const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
 
     if (undefined !== snapLoc) {
@@ -1273,7 +1252,7 @@ export class AccuDraw {
       let yVec = xVec.unitCrossProduct(zVec);
 
       if (undefined !== yVec) {
-        const viewX = vp.rotMatrix.rowX();
+        const viewX = vp.rotation.rowX();
         if (snap.primitive instanceof LineString3d) {
           if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
             const tVec = xVec;
@@ -1341,7 +1320,7 @@ export class AccuDraw {
     if (checkACS && useVp.isContextRotationRequired)
       return useVp.getAuxCoordRotation(rMatrix);
 
-    return useVp.rotMatrix;
+    return useVp.rotation;
   }
 
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
@@ -1513,7 +1492,7 @@ export class AccuDraw {
       }
 
       case RotationMode.View: {
-        baseRMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        baseRMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         break;
       }
 
@@ -1645,13 +1624,11 @@ export class AccuDraw {
 
     this.onEventCommon();
 
-    // Save current primitive command AccuDraw state...
     const tool = IModelApp.toolAdmin.activeTool;
     if (tool && !(tool instanceof ViewTool))
-      this.saveState(false);
+      this.saveState(this.savedStateViewTool); // Save AccuDraw state of tool being suspended...
 
-    // Setup viewing tool defaults, disabled, etc.
-    this.currentState = CurrentState.Deactivated;
+    this.currentState = CurrentState.Deactivated; // Default to disabled for view tools.
     return false;
   }
 
@@ -1660,47 +1637,69 @@ export class AccuDraw {
       return false;
 
     this.onEventCommon();
-    // NOTE: If a data button terminates a view command...exit is called between pre-data and data point event and needs to be ignored...
-    this.savedState.ignoreDataButton = true;
-    this.saveState(true); // Restore previous AccuDraw state...
+    this.restoreState(this.savedStateViewTool); // Restore AccuDraw state of suspended tool...
     return false;
   }
 
-  public saveState(restore: boolean, stateBuffer?: SavedState): void {
-    if (!stateBuffer)
-      stateBuffer = this.savedState;
+  public onInputCollectorInstall(): boolean {
+    if (!this.isEnabled)
+      return false;
 
-    if (restore) {
-      this.currentState = stateBuffer.state;
-      this.currentView = stateBuffer.view;
+    this.onEventCommon();
 
-      this.flags.auxRotationPlane = stateBuffer.auxRotationPlane;
-      this.flags.contextRotMode = stateBuffer.contextRotMode;
-      this.flags.fixedOrg = stateBuffer.fixedOrg;
+    const tool = IModelApp.toolAdmin.activeTool;
+    if (tool && !(tool instanceof InputCollector))
+      this.saveState(this.savedStateInputCollector); // Save AccuDraw state of tool being suspended...
 
-      this.axes.setFrom(stateBuffer.axes);
-      this.origin.setFrom(stateBuffer.origin);
-      this.planePt.setFrom(stateBuffer.origin);
+    this.currentState = CurrentState.Inactive; // Default to inactive for input collectors.
+    return false;
+  }
 
-      this.setCompassMode(stateBuffer.mode);
-      this.setRotationMode(stateBuffer.rotationMode);
-      this.updateRotation();
+  public onInputCollectorExit(): boolean {
+    if (!this.isEnabled)
+      return false;
 
-      if (stateBuffer.ignoreDataButton)
-        this.flags.ignoreDataButton = (this.flags.inDataPoint ? true : false);
-      return;
-    }
+    this.onEventCommon();
+    this.restoreState(this.savedStateInputCollector); // Restore AccuDraw state of suspended tool...
+    return false;
+  }
 
+  public saveState(stateBuffer: SavedState): void {
     stateBuffer.state = this.currentState;
-    stateBuffer.view = this.currentView;
+    stateBuffer.mode = this.compassMode;
+    stateBuffer.rotationMode = this.rotationMode;
+    stateBuffer.axes.setFrom(this.axes);
+    stateBuffer.origin.setFrom(this.origin);
     stateBuffer.auxRotationPlane = this.flags.auxRotationPlane;
     stateBuffer.contextRotMode = this.flags.contextRotMode;
     stateBuffer.fixedOrg = this.flags.fixedOrg;
-    stateBuffer.ignoreDataButton = false;
-    stateBuffer.axes.setFrom(this.axes);
-    stateBuffer.origin.setFrom(this.origin);
-    stateBuffer.mode = this.compassMode;
-    stateBuffer.rotationMode = this.rotationMode;
+    stateBuffer.ignoreDataButton = true;
+    stateBuffer.ignoreFlags = 0;
+  }
+
+  public restoreState(stateBuffer: SavedState): void {
+    if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.Disable)) {
+      this.currentState = stateBuffer.state;
+    }
+
+    if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.SetOrigin)) {
+      this.origin.setFrom(stateBuffer.origin);
+      this.planePt.setFrom(stateBuffer.origin);
+    }
+
+    if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.SetRMatrix)) {
+      this.axes.setFrom(stateBuffer.axes);
+      this.setRotationMode(stateBuffer.rotationMode);
+      this.flags.auxRotationPlane = stateBuffer.auxRotationPlane;
+      this.flags.contextRotMode = stateBuffer.contextRotMode;
+    }
+
+    this.flags.fixedOrg = stateBuffer.fixedOrg;
+    this.setCompassMode(stateBuffer.mode);
+    this.updateRotation();
+
+    if (stateBuffer.ignoreDataButton)
+      this.flags.ignoreDataButton = (this.flags.inDataPoint ? true : false);
   }
 
   private getCompassPlanePoint(point: Point3d, vp: Viewport): boolean {
@@ -2007,7 +2006,7 @@ export class AccuDraw {
     if (!vp || vp.isCameraOn)
       return;
 
-    const viewZRoot = vp.rotMatrix.getRow(2);
+    const viewZRoot = vp.rotation.getRow(2);
     if (!this.axes.z.isPerpendicularTo(viewZRoot))
       return;
 
@@ -2103,7 +2102,7 @@ export class AccuDraw {
         fromPtP = cameraPos;
         fromPtP.vectorTo(inPtP, projectionVector).normalizeInPlace();
       } else {
-        const rMatrix = vp.rotMatrix;
+        const rMatrix = vp.rotation;
         fromPtP = inPtP;
         rMatrix.getRow(2, projectionVector);
       }
@@ -2136,7 +2135,7 @@ export class AccuDraw {
       return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA);
     }
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.rotation.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
       return false;
@@ -2152,7 +2151,7 @@ export class AccuDraw {
     }
 
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, isSnap)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.rotation.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
     }
@@ -2589,10 +2588,7 @@ export class AccuDraw {
     if (this.isInactive || this.isDeactivated) {
       this.point.setFrom(pointActive);
       this.currentView = vp;
-
-      if (this.published.flags)
-        this.processHints();
-
+      this.processHints();
       return;
     }
     if (this.isActive) {
@@ -2623,7 +2619,12 @@ export class AccuDraw {
     }
   }
 
+  /** @hidden */
   public refreshDecorationsAndDynamics(): void {
+    // Immediately process hints and show dynamics using adjusted point when not called from button down...
+    if (!this.flags.inDataPoint)
+      this.processHints();
+
     // Make sure AccuDraw updates its decorations...
     if (undefined !== this.currentView)
       this.currentView.invalidateDecorations();
@@ -2632,7 +2633,8 @@ export class AccuDraw {
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
-  public onBeginDynamics(): boolean {
+  /** @hidden */
+  public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
 
@@ -2679,7 +2681,8 @@ export class AccuDraw {
     return false;
   }
 
-  public onEndDynamics(): boolean {
+  /** @hidden */
+  public downgradeInactiveState(): boolean {
     if (!this.isEnabled)
       return false;
     this.onEventCommon();
@@ -2689,6 +2692,9 @@ export class AccuDraw {
     this.currentState = CurrentState.Inactive;
     return false;
   }
+
+  public onBeginDynamics(): boolean { return this.upgradeToActiveState(); }
+  public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
@@ -2733,9 +2739,7 @@ export class AccuDraw {
       }
 
       this.saveLockedCoords();
-
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
 
       if (this.currentState >= CurrentState.Inactive)
         this.updateRotation();
@@ -2812,7 +2816,7 @@ export class AccuDraw {
     vector0.scaleToLength(radius, vector0);
     vector90.scaleToLength(radius, vector90);
     const cpArc = Arc3d.create(center, vector0, vector90);
-    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance contraint with apparent intersection in XY.
+    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance constraint with apparent intersection in XY.
   }
 
   public onSnap(snap: SnapDetail): boolean {
@@ -2875,14 +2879,14 @@ export class AccuDraw {
     this.flags.indexLocked = false;
     this.flags.bearingFixToPlane2D = false;
 
-    this.savedState.init();
-
     this.setRotationMode(RotationMode.View);
     this.updateRotation();
+
+    this.saveState(this.savedStateViewTool);
+    this.saveState(this.savedStateInputCollector);
   }
 
   private doProcessHints(): void {
-
     if (!this.floatingOrigin) {
       if (this.published.flags & AccuDrawFlags.SetOrigin)
         this.unlockAllFields();
@@ -2952,11 +2956,6 @@ export class AccuDraw {
     } else if (this.isInactive || (this.published.flags & AccuDrawFlags.OrientDefault)) {
       this.setRotationMode(this.flags.baseRotation);
       this.updateRotation();
-    }
-
-    if (this.published.flags & (AccuDrawFlags.SetRMatrix | AccuDrawFlags.SetXAxis | AccuDrawFlags.SetXAxis2 | AccuDrawFlags.SetNormal | AccuDrawFlags.OrientACS)) {
-      this.savedState.axes.setFrom(this.axes);
-      this.savedState.contextRotMode = this.flags.contextRotMode;
     }
 
     // Lock Items

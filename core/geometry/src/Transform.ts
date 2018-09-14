@@ -800,6 +800,13 @@ export class Matrix3d implements BeJSONFunctions {
   /** @returns Return the dot product of the vector parameter with the Z row. */
   public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
 
+  /** @returns Return the dot product of the x,y,z with the X row. */
+  public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
+  /** @returns Return the dot product of the x,y,z with the Y row. */
+  public dotRowYXYZ(x: number, y: number, z: number): number { return x * this.coffs[3] + y * this.coffs[4] + z * this.coffs[5]; }
+  /** @returns Return the dot product of the x,y,z with the Z row. */
+  public dotRowZXYZ(x: number, y: number, z: number): number { return x * this.coffs[6] + y * this.coffs[7] + z * this.coffs[8]; }
+
   /** @returns Return the (vector) cross product of the Z column with the vector parameter. */
   public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
     return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
@@ -1240,6 +1247,47 @@ export class Matrix3d implements BeJSONFunctions {
       w,
       result);
   }
+  /**
+   * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
+   * Multiply times point with coordinates `[x,y,z,w]`
+   * @param origin translation part (xyz in column 3)
+   * @param matrix matrix part (leading 3x3)
+   * @param x x part of multiplied point
+   * @param y y part of multiplied point
+   * @param z z part of multiplied point
+   * @param w w part of multiplied point
+   * @param result optional result.
+   */
+  public static XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
+    if (!result)
+      result = new Float64Array(4);
+    result[0] = w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
+    result[1] = w * origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
+    result[2] = w * origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
+    result[3] = w;
+    return result;
+  }
+
+  /**
+   * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
+   * Multiply times point with coordinates `[x,y,z,w]`
+   * @param origin translation part (xyz in column 3)
+   * @param matrix matrix part (leading 3x3)
+   * @param x x part of multiplied point
+   * @param y y part of multiplied point
+   * @param z z part of multiplied point
+   * @param w w part of multiplied point
+   * @param result optional result.
+   */
+  public static XYZPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array): Float64Array {
+    if (!result)
+      result = new Float64Array(3);
+    result[0] = origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
+    result[1] = origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
+    result[2] = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
+    return result;
+  }
+
   public multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     const x = vector.x;
@@ -2159,6 +2207,27 @@ export class Transform implements BeJSONFunctions {
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     return Matrix3d.XYZPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
+  /** Transform the input homogeneous point.  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
+    return Matrix3d.XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, w, result);
+  }
+
+  /** Transform the input homogeneous point.  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
+    return Matrix3d.XYZPlusMatrixTimesCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, result);
+  }
+  /** Multiply the tranposed transform (as 4x4 with 0001 row) by Point4d given as xyzw..  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
+    const coffs = this._matrix.coffs;
+    const origin = this._origin;
+    return Point4d.create(
+      x * coffs[0] + y * coffs[3] + z * coffs[6],
+      x * coffs[1] + y * coffs[4] + z * coffs[7],
+      x * coffs[2] + y * coffs[5] + z * coffs[8],
+      x * origin.x + y * origin.y + z * origin.z + w,
+      result);
+  }
+
   /** for each point:  replace point by Transform*point */
   public multiplyPoint3dArrayInPlace(points: Point3d[]) {
     let point;

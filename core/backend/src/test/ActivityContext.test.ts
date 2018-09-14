@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/*
 import { assert, expect } from "chai";
-import { IModelActivityContext, IModelHost } from "../IModelHost";
+import { RpcInvocationContext, IModelHost } from "../IModelHost";
 
 describe("ActivityContext", async () => {
   it("should track entry/exit", async () => {
@@ -12,15 +13,15 @@ describe("ActivityContext", async () => {
     }
 
     async function requestEntryPoint(activityId: string): Promise<number> {
-      // An RPC impl function (the request entry point on the backend) will call IModelActivityContext.createForCurrentRpcRequest
+      // An RPC impl function (the request entry point on the backend) will call RpcInvocationContext.createForCurrentRpcRequest
       // instead of taking an activityId string and creating a new context.
 
-      const activityContext = new IModelActivityContext(activityId).enter();
+      const activityContext = new ActivityLoggingContext(activityId).assert();
 
       const x = supplyX();
       activityContext.suspend();
       const y = await computeY(activityContext);
-      activityContext.resume();
+      activityContext.enter();
 
       const sum = x + y;
       activityContext.exit();
@@ -33,7 +34,7 @@ describe("ActivityContext", async () => {
       return value;
     }
 
-    async function computeY(activityContext: IModelActivityContext): Promise<number> {
+    async function computeY(activityContext: ActivityLoggingContext): Promise<number> {
       activityContext.enter();
       const value = makeRandomY();
       activityContext.exit();
@@ -56,54 +57,55 @@ describe("ActivityContext", async () => {
   });
 
   it("should report current context to IModelHost", async () => {
-    const ctx = new IModelActivityContext("");
-    ctx.enter();
+    const ctx = new ActivityLoggingContext("");
+    ctx.assert();
     assert.strictEqual(IModelHost.currentActivityContext, ctx);
     ctx.suspend();
     assert.isUndefined(IModelHost.currentActivityContext);
-    ctx.resume();
+    ctx.assert();
     assert.strictEqual(IModelHost.currentActivityContext, ctx);
     ctx.exit();
     assert.isUndefined(IModelHost.currentActivityContext);
   });
 
   it("should detect unbalanced usage", async () => {
-    let ctx: IModelActivityContext;
+    let ctx: ActivityLoggingContext;
 
     // ---------------------------------------
-    ctx = new IModelActivityContext("");
+    ctx = new ActivityLoggingContext("");
 
     // missing ctx.enter();
     try { ctx.exit(); assert(false); } catch (err) { assert(true); }
     // ---------------------------------------
 
     // ---------------------------------------
-    ctx = new IModelActivityContext("");
+    ctx = new ActivityLoggingContext("");
 
-    ctx.enter();
+    ctx.assert();
     // missing ctx.suspend();
-    try { ctx.resume(); assert(false); } catch (err) { assert(true); }
+    try { ctx.assert(); assert(false); } catch (err) { assert(true); }
     // ctx.exit();
     // ---------------------------------------
 
     // ---------------------------------------
-    ctx = new IModelActivityContext("");
+    ctx = new ActivityLoggingContext("");
 
-    ctx.enter();
+    ctx.assert();
     ctx.suspend();
     // missing ctx.resume();
     try { ctx.exit(); assert(false); } catch (err) { assert(true); }
     // ---------------------------------------
 
     // ---------------------------------------
-    ctx = new IModelActivityContext("");
+    ctx = new ActivityLoggingContext("");
 
-    ctx.enter();
+    ctx.assert();
     ctx.suspend();
-    ctx.resume();
+    ctx.assert();
     // missing ctx.exit();
 
-    try { ctx.enter(); assert(false); } catch (err) { assert(true); }
+    try { ctx.assert(); assert(false); } catch (err) { assert(true); }
     // ---------------------------------------
   });
 });
+*/

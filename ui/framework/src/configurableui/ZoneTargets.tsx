@@ -5,19 +5,20 @@
 
 import * as React from "react";
 
-import { ZoneTargetProvider } from "./FrontstageZone";
 import { TargetChangeHandler } from "./FrontstageComposer";
 
 import ZoneTargetsContainer from "@bentley/ui-ninezone/lib/zones/target/Container";
-import { DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Management";
 import MergeTarget from "@bentley/ui-ninezone/lib/zones/target/Merge";
-import UnmergeTarget from "@bentley/ui-ninezone/lib/zones/target/Unmerge";
+import BackTarget from "@bentley/ui-ninezone/lib/zones/target/Back";
+import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import { DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
 
 /** Props for the ZoneTargets.
  */
 export interface ZoneTargetsProps {
-  zoneId: number;
-  targetProvider: ZoneTargetProvider;
+  zoneId: WidgetZoneIndex;
+  dropTarget: DropTarget;
   targetChangeHandler: TargetChangeHandler;
 }
 
@@ -27,35 +28,24 @@ export default class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {
     return (
       <ZoneTargetsContainer>
-        {this._getTargets()}
+        {this.getTarget()}
       </ZoneTargetsContainer>
     );
   }
 
-  private _getTargets = () => {
-    return this.props.targetProvider.getDropTargets(this.props.zoneId).map((dropTarget) => this.getTarget(dropTarget.widgetId, dropTarget.target));
-  }
-
-  private getTarget(widgetId: number, dropTarget: DropTarget) {
-    switch (dropTarget) {
+  private getTarget() {
+    switch (this.props.dropTarget) {
       case DropTarget.Merge:
         return (
           <MergeTarget
-            key={widgetId}
-            rows={3}
-            columns={3}
-            cells={this.props.targetProvider.getMergeTargetCells(widgetId)}
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(widgetId, dropTarget, isTargeted)}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Merge, isTargeted)}
           />
         );
-      case DropTarget.Unmerge:
+      case DropTarget.Back:
         return (
-          <UnmergeTarget
-            key={widgetId}
-            rows={3}
-            columns={3}
-            cells={this.props.targetProvider.getUnmergeTargetCells(widgetId)}
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(widgetId, dropTarget, isTargeted)}
+          <BackTarget
+            zoneIndex={this.props.zoneId}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Back, isTargeted)}
           />
         );
       case DropTarget.None:

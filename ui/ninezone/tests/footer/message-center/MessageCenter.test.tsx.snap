@@ -1,16 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Dialog /> renders correctly 1`] = `
+exports[`<MessageCenter /> renders correctly 1`] = `
 <Component
   className="nz-footer-messageCenter-messageCenter"
   content={
-    <Unknown
+    <WithContainInViewport
       content={
         <Unknown
           messages={undefined}
           tabs={undefined}
         />
       }
+      noVerticalContainment={true}
       titleBar={
         <Unknown
           buttons={undefined}

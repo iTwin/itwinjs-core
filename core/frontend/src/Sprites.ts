@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @module Views */
 
-import { XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
-import { ScreenViewport } from "./Viewport";
-import { DecorateContext } from "./ViewContext";
 import { Logger } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
 import { ImageUtil } from "./ImageUtil";
+import { IModelConnection } from "./IModelConnection";
+import { CanvasDecoration } from "./render/System";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 /**
  * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
@@ -18,29 +19,22 @@ import { ImageUtil } from "./ImageUtil";
  * There are two classes in the Sprites subsystem: Sprite (a Sprite image) and SpriteLocation.
  * Sprite are the images that define the way a type of sprite looks and are generally
  * loaded one time and saved for the rest of a session. A SpriteLocation defines the current
- * position of a single Sprite in a Viewport. The same Sprite may be displayed at multiple locations.
+ * position of a single Sprite in a Viewport.
  *
  * A SpriteLocation can be either active or inactive. It becomes active by specifying a location
- * (an x,y point) and a Sprite Definition to draw at that point. It should be obvious that a single Sprite
- * Definition can be used many times by many Sprite Locations and that a single Sprite Location can
- * change both position and which Sprite Definition is shown at that position over time.
- *
- * Sprites can be of varying sizes and color depths and can have both opaque and transparent pixels.
- *
- * Element Manipulator handles and the AccuSnap indicators are examples of Sprites.
- * @note It is also possible to draw a Sprite onto a Viewport directly
- * without ever using a SpritLocation. SpriteLocations are merely provided as a convenience.
+ * (an x,y point) and a Sprite to draw at that point. A Sprite
+ * can be used many times by many SpriteLocations and a single SpriteLocation can
+ * change both position and which Sprite is shown at that position over time.
  */
 export class Sprite {
   /** The image for this Sprite. If undefined, the Spite is not valid. */
   public image?: HTMLImageElement;
-
-  public get size(): Point2d {
-    if (!this.image)
-      return new Point2d(10, 10);
-
-    return new Point2d(this.image.naturalWidth, this.image.naturalHeight);
-  }
+  /** The size of this Sprite. If not loaded, value is not meaningful. */
+  public readonly size = new Point2d();
+  /** The offset to the middle of this Sprite. If not loaded, value is not meaningful. */
+  public get offset(): Point2d { return new Point2d(Math.round(this.size.x) / 2, Math.round(this.size.y / 2)); }
+  /** Whether this sprite has be successfully loaded. */
+  public get isLoaded(): boolean { return undefined !== this.image; }
 
   /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
    * @param filePath The file path of the PNG file holding the sprite (relative to the assets directory.)
@@ -54,11 +48,18 @@ export class Sprite {
     });
   }
 
+  private onLoaded(image: HTMLImageElement) { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }
+
   /** Initialize this Sprite from an ImageSource.
    * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the image from the ImageSource asynchronously.
    */
-  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => this.image = image); }
+  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => this.onLoaded(image)); }
+
+  /** Initialize this Sprite from a URL
+   * @param url The url of an image to load for this Sprite.
+   */
+  public fromUrl(url: string): void { ImageUtil.fromUrl(url).then((image) => this.onLoaded(image)); }
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
@@ -85,74 +86,64 @@ export class IconSprites {
 }
 
 /**
- * A Sprite Location. Sprites generally move around on the screen and this object holds the current location
- * and current Sprite for an image of a sprite within a Viewport. SpriteLocations can be either
- * inactive (not visible) or active.
+ * A Sprite location. Sprites generally move around on the screen and this object holds the current location
+ * and current Sprite within a ScreenViewport. SpriteLocations can be either inactive (not visible) or active.
  *
- * A SpriteLocation can also specify that a Sprite should be drawn partially transparent so that
- * you can "see through" the Sprite.
+ * A SpriteLocation can also specify that a Sprite should be drawn partially transparent.
  */
-export class SpriteLocation {
+export class SpriteLocation implements CanvasDecoration {
   private _viewport?: ScreenViewport;
-  private _div?: HTMLDivElement;
   private _sprite?: Sprite;
-
+  private _alpha?: number;
+  /** The current position of this sprite in view coordinates.
+   * @see [[CanvasDecoration.position]]
+   */
+  public readonly position = new Point3d();
   public get isActive(): boolean { return this._viewport !== undefined; }
 
-  private setSprite(sprite: Sprite) {
-    if (!sprite.image)
-      return;
-    this._sprite = sprite;
-
-    if (!this._div)
-      this._div = document.createElement("div");
-    else
-      ScreenViewport.removeAllChildren(this._div);
-
-    this._div.appendChild(sprite.image!);
-  }
-
-  private setLocation(location: XAndY) {
-    if (this._sprite) {
-      const size = this._sprite.size;
-      this._div!.style.position = "absolute";
-      this._div!.style.left = (location.x - (size.x / 2)) + "px";
-      this._div!.style.top = (location.y - (size.y / 2)) + "px";
-    }
-  }
-
-  /** Change the location of this SpriteLocation from a point in *world* coordinates. */
-  private setLocationWorld(location: XYAndZ) { this.setLocation(this._viewport!.worldToView(location)); }
-
   /**
-   * Activate this SpriteLocation to show a Sprite at a location in a Viewport.
-   * This call does not display the Sprite in the Viewport. Rather, subsequent calls to
+   * Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
+   * This call does not display the Sprite. Rather, subsequent calls to
    * [[decorate]] from  will show the Sprite.
    * This SpriteLocation remains active until [[deactivate]] is called.
    * @param sprite  The Sprite to draw at this SpriteLocation
    * @param viewport The Viewport onto which the Sprite is drawn
-   * @param location The position, in world coordinates
-   * @param transparency The transparency to draw the Sprite (0=opaque, 255=invisible)
+   * @param locationWorld The position, in world coordinates
+   * @param alpha Optional alpha for the Sprite. Must be a number between 0 (fully transparent) and 1 (fully opaque).
    */
-  public activate(sprite: Sprite, viewport: ScreenViewport, location: XYAndZ, _transparency: number): void {
-    viewport.invalidateDecorations();
+  public activate(sprite: Sprite, viewport: ScreenViewport, locationWorld: XYAndZ, alpha?: number): void {
+    if (!sprite.isLoaded)
+      return;
+
+    viewport.worldToView(locationWorld, this.position);
+    this._sprite = sprite;
+    this._alpha = alpha;
     this._viewport = viewport;
-    this.setSprite(sprite);
-    this.setLocationWorld(location);
+    viewport.invalidateDecorations();
   }
 
-  /** Turn this SpriteLocation off so it will no longer show in its Viewport. */
+  /** Turn this SpriteLocation off so it will no longer show. */
   public deactivate() {
     if (!this.isActive)
       return;
-
     this._viewport!.invalidateDecorations();
     this._viewport = undefined;
   }
 
-  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to the context at the current location. */
+  /** Draw this sprite onto the supplied canvas.
+   * @see [[CanvasDecoration.drawDecoration]]
+   */
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    if (undefined !== this._alpha)
+      ctx.globalAlpha = this._alpha;
+
+    const sprite = this._sprite!;
+    ctx.drawImage(sprite.image!, -sprite.offset.x, -sprite.offset.y);
+  }
+
+  /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */
   public decorate(context: DecorateContext) {
-    if (context.viewport === this._viewport && this._div !== undefined)
-      context.addHTMLDecoration(this._div);
+    if (context.viewport === this._viewport)
+      context.addCanvasDecoration(this);
   }
 }

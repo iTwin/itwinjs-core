@@ -4,7 +4,7 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { FloatRgb, FloatRgba, FloatPreMulRgba, Rgba } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FloatRgb, FloatRgba, FloatPreMulRgba, Rgba } from "@bentley/imodeljs-frontend/lib/webgl";
 
 interface Rgb {
   red: number;

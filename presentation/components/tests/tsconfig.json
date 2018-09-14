@@ -5,25 +5,15 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "outDir": "../lib",
-    "baseUrl": "../node_modules/",
-    "paths": {
-      "@src/*": [
-        "../src/*"
-      ],
-      "@common/*": [
-        "@bentley/presentation-common/lib/*",
-        "@bentley/presentation-common/*"
-      ],
-      "@helpers/*": [
-        "../../common/tests/_helpers/*",
-        "../../frontend/tests/_helpers/*",
-        "../../components/tests/_helpers/*"
-      ]
-    },
     "jsx": "react"
   },
   "include": [
     "./**/*.ts",
     "./**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../lib"
+    }
   ]
 }

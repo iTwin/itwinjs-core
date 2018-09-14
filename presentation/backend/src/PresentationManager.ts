@@ -9,8 +9,8 @@ import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  IRulesetVariablesManager, IRulesetManager,
   RequestOptions, Paged, KeySet, InstanceKey,
+  IPresentationManager, IRulesetManager, IRulesetVariablesManager,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -20,8 +20,6 @@ import RulesetManager from "./RulesetManager";
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
- *
- * @hidden
  */
 export interface Props {
   /**
@@ -48,10 +46,8 @@ export interface Props {
 /**
  * Backend Presentation manager which pulls the presentation data from
  * an iModel using native platform.
- *
- * @hidden
  */
-export default class PresentationManager {
+export default class PresentationManager implements IPresentationManager<IModelDb> {
 
   private _props: Props;
   private _nativePlatform?: NativePlatformDefinition;

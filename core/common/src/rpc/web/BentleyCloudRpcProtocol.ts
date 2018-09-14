@@ -9,8 +9,13 @@ import { SerializedRpcOperation } from "../core/RpcProtocol";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcRequest } from "../core/RpcRequest";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, assert } from "@bentley/bentleyjs-core";
+
+enum AppMode {
+  MilestoneReview = "1",
+  WorkGroupEdit = "2",
+}
 
 /** An http protocol for Bentley cloud RPC interface deployments. */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
@@ -35,27 +40,36 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     let appMode: string;
     let contextId: string;
     let iModelId: string;
-    let changeSetId: string;
+    let routeChangeSetId: string | undefined;
+    /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
+     * latest version and not some specific changeSet. Also, for the first version (before any changeSets), the changeSetId in the route is arbitrarily
+     * set to "0" instead of an empty string, since the latter is more un-intuitive for a route. However, in all other use cases, including the changeSetId
+     * held by the IModelToken itself, the changeSetId of "" (i.e., empty string) signifies the first version - this is more intuitive and retains
+     * compatibility with the majority of use cases. */
 
     if (request === undefined) {
       appMode = "{modeId}";
       contextId = "{contextId}";
       iModelId = "{iModelId}";
-      changeSetId = "{changeSetId}";
+      routeChangeSetId = "{changeSetId}";
     } else {
       const token = operation.policy.token(request);
-      if (!token || !token.contextId || !token.iModelId) {
+      if (!token || !token.contextId || !token.iModelId)
         throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, "imodeljs-frontend.BentleyCloudRpcProtocol");
-      }
 
-      appMode = "1"; // WIP: need to determine appMode from iModelToken - hard-coded to 1 which means "milestone review" for now...
       contextId = encodeURIComponent(token.contextId);
       iModelId = encodeURIComponent(token.iModelId);
-      changeSetId = token.changeSetId ? encodeURIComponent(token.changeSetId) : "0"; // if changeSetId not provided, use 0 to indicate initial iModel state (before any changeSets)
+
+      if (token.openMode === OpenMode.Readonly) {
+        appMode = AppMode.MilestoneReview;
+        assert(!!token.changeSetId, "ChangeSetId needs to be setup in IModelToken before open");
+        routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
+      } else {
+        appMode = AppMode.WorkGroupEdit;
+      }
     }
 
-    // WIP: if appMode === 2 (WorkGroupEdit) then changeset should not be included
-    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}/changeset/${changeSetId}/${operationId}`;
+    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? "/changeset/" + routeChangeSetId : ""}/${operationId}`;
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */

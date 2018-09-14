@@ -179,15 +179,27 @@ export class Point4d implements BeJSONFunctions {
   }
   public static createZero(): Point4d { return new Point4d(0, 0, 0, 0); }
   /**
+   * Create plane coefficients for the plane containing pointA, pointB, and 0010.
+   * @param pointA first point
+   * @param pointB second point
+   */
+  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d) {
+    return Point4d.create(
+      pointA.y * pointB.w - pointA.w * pointB.y,
+      pointA.w * pointB.x - pointA.x * pointB.w,
+      0.0,
+      pointA.x * pointB.y - pointA.y * pointB.x);
+  }
+  /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
    */
-  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0): Point4d {
-    return new Point4d(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3]);
+  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
+    return Point4d.create (data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
   }
 
-  public static createFromPointAndWeight(xyz: XYZ, w: number): Point4d {
+  public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
 
@@ -264,6 +276,20 @@ export class Point4d implements BeJSONFunctions {
   }
   public dotProductXYZW(x: number, y: number, z: number, w: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w;
+  }
+  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  public altitude(point: Point3d): number {
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
+  }
+
+  /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocity(vector: Vector3d): number {
+    return this.xyzw[0] * vector.x + this.xyzw[1] * vector.y + this.xyzw[2] * vector.z;
+  }
+
+  /** dotProduct with (x,y,z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocityXYZ(x: number, y: number, z: number): number {
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z;
   }
 
   /** unit X vector */
@@ -646,6 +672,24 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w,
       this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w);
   }
+  /** multiply matrix times column vectors [x,y,z,w] where [x,y,z,w] appear in blocks in an array.
+   * replace the xyzw in the block
+   */
+  public multiplyBlockedFloat64ArrayInPlace(data: Float64Array) {
+    const n = data.length;
+    let x, y, z, w;
+    for (let i = 0; i + 3 < n; i += 4) {
+      x = data[i];
+      y = data[i + 1];
+      z = data[i + 2];
+      w = data[i + 3];
+      data[i] = this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w;
+      data[i + 1] = this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w;
+      data[i + 2] = this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w;
+      data[i + 3] = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
+    }
+  }
+
   /** multiply matrix times XYAndZ  and w. return as Point4d  (And the returned value is NOT normalized down to unit w) */
   public multiplyPoint3d(pt: XYAndZ, w: number, result?: Point4d): Point4d {
     return this.multiplyXYZW(pt.x, pt.y, pt.z, w, result);

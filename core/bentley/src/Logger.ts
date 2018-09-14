@@ -5,6 +5,7 @@
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
+import { ActivityLoggingContext } from "./ActivityLoggingContext";
 
 /** Defines the *signature* for a log function. */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
@@ -44,6 +45,7 @@ export class Logger {
   private static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
+  private static _logExceptionCallstacks = false;
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
@@ -58,10 +60,47 @@ export class Logger {
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
     // tslint:disable:no-console
-    Logger.initialize((category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Error   |" + category + "| " + message + (getMetaData ? " " + JSON.stringify(getMetaData()) : "")),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Warning |" + category + "| " + message + (getMetaData ? " " + JSON.stringify(getMetaData()) : "")),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Info    |" + category + "| " + message + (getMetaData ? " " + JSON.stringify(getMetaData()) : "")),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Trace   |" + category + "| " + message + (getMetaData ? " " + JSON.stringify(getMetaData()) : "")));
+    Logger.initialize(
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Error   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Warning |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Info    |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
+      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log("Trace   |" + category + "| " + message + Logger.formatMetaData(getMetaData)),
+    );
+  }
+
+  /** Add the currently registered activityId, if any, to the specified metadata. */
+  public static addActivityId(mdata: any) {
+    if ((ActivityLoggingContext.current === undefined) || mdata.hasOwnProperty("ActivityId"))
+      return;
+    const activityId = ActivityLoggingContext.current.activityId;
+    if (activityId !== "")
+      mdata.ActivityId = activityId;
+  }
+
+  /** Should the callstack be included when an exception is logged?  */
+  public static set logExceptionCallstacks(b: boolean) {
+    Logger._logExceptionCallstacks = b;
+  }
+
+  /** Should the callstack be included when an exception is logged?  */
+  public static get logExceptionCallstacks(): boolean {
+    return Logger._logExceptionCallstacks;
+  }
+
+  /** Compose the metadata for a log message.  */
+  public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
+    if (!getMetaData && (ActivityLoggingContext.current === undefined))
+      return;
+    const mdata: any = getMetaData ? getMetaData() : {};
+    Logger.addActivityId(mdata);
+    return mdata;
+  }
+
+  /** Format the metadata for a log message.  */
+  private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
+    if (!getMetaData && (ActivityLoggingContext.current === undefined))
+      return "";
+    return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
@@ -173,6 +212,30 @@ export class Logger {
   public static logError(category: string, message: string, metaData?: GetMetaDataFunction): void {
     if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
       Logger._logError(category, message, metaData);
+  }
+
+  private static getExceptionMessage(err: Error): string {
+    let msg = err.toString();
+    if (Logger.logExceptionCallstacks && err.stack)
+      msg += "\n" + err.stack;
+    return msg;
+  }
+
+  /** Log the specified exception. The special "ExceptionType" property will be added as metadata,
+   * in addition to any other metadata that may be supplied by the caller, unless the
+   * metadata supplied by the caller already includes this property.
+   * @param category  The category of the message.
+   * @param err  The exception object.
+   * @param log The logger output function to use - defaults to Logger.logError
+   * @param metaData  Optional data for the message
+   */
+  public static logException(category: string, err: Error, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
+    log(category, Logger.getExceptionMessage(err), () => {
+      const mdata = metaData ? metaData() : {};
+      if (!mdata.hasOwnProperty("ExceptionType"))
+        mdata.ExceptionType = err.constructor.name;
+      return mdata;
+    });
   }
 
   /** Log the specified message to the **warning** stream.

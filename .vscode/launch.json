@@ -197,6 +197,9 @@
       "request": "launch",
       "name": "SimpleViewTest Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
@@ -230,6 +233,24 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[UI] Tests: 9zone",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/ninezone",
       "env": {
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },

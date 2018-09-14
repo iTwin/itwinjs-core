@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -140,10 +140,10 @@ export class PerformanceMetrics {
 }
 
 export abstract class Target extends RenderTarget {
+  protected _decorations?: Decorations;
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
-  private _decorations?: Decorations;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -573,8 +573,11 @@ export abstract class Target extends RenderTarget {
     }
 
     this.paintScene(sceneMilSecElapsed);
+    this.drawOverlayDecorations();
     assert(System.instance.frameBufferStack.isEmpty);
   }
+
+  protected drawOverlayDecorations(): void { }
 
   public queueReset(): void {
     this.reset();
@@ -620,7 +623,7 @@ export abstract class Target extends RenderTarget {
   }
   public get edgeColor(): ColorInfo {
     assert(this.isEdgeColorOverridden);
-    return new ColorInfo(this._visibleEdgeOverrides.color!);
+    return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
   private _doDebugPaint: boolean = false;
@@ -932,11 +935,12 @@ export abstract class Target extends RenderTarget {
   protected abstract _endPaint(): void;
 }
 
-/** A Target which renders to a canvas on the screen */
+/** A Target that renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private _prevViewRect: ViewRect = new ViewRect();
+  private readonly _prevViewRect = new ViewRect();
+  private _animationFraction: number = 0;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -948,6 +952,9 @@ export class OnScreenTarget extends Target {
     this._blitGeom = dispose(this._blitGeom);
     super.dispose();
   }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
     this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
@@ -1000,7 +1007,7 @@ export class OnScreenTarget extends Target {
       // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
       this._canvas.width = viewRect.width;
       this._canvas.height = viewRect.height;
-      this._prevViewRect = new ViewRect(0, 0, viewRect.width, viewRect.height);
+      this._prevViewRect.setFrom(viewRect);
       return true;
     }
     return false;
@@ -1045,6 +1052,34 @@ export class OnScreenTarget extends Target {
     onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
+
+  protected drawOverlayDecorations(): void {
+    if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
+      const ctx = this._canvas.getContext("2d")!;
+      for (const overlay of this._decorations.canvasDecorations) {
+        ctx.save();
+        if (overlay.position)
+          ctx.translate(overlay.position.x, overlay.position.y);
+        overlay.drawDecoration(ctx);
+        ctx.restore();
+      }
+    }
+  }
+
+  public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
+    let overlays: CanvasDecoration[] | undefined;
+    if (undefined === this._decorations || undefined === (overlays = this._decorations.canvasDecorations))
+      return undefined;
+
+    // loop over array backwards, because later entries are drawn on top.
+    for (let i = overlays.length - 1; i >= 0; --i) {
+      const overlay = overlays[i];
+      if (undefined !== overlay.pick && overlay.pick(pt))
+        return overlay;
+    }
+    return undefined;
+  }
+
   public onResized(): void {
     this._dcAssigned = false;
     dispose(this._fbo);
@@ -1053,20 +1088,25 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
+  private _animationFraction: number = 0;
+
   public constructor(rect: ViewRect) {
     super(rect);
   }
 
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+
   public get viewRect(): ViewRect { return this.renderRect; }
 
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
     if (this.renderRect.equals(rect))
       return;
 
-    this.renderRect.copyFrom(rect);
+    this.renderRect.setFrom(rect);
     if (temporary) {
       // Temporarily adjust view rect in order to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures

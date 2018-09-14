@@ -1,0 +1,10 @@
+{
+    "defaultLevel": "Info",
+    "categoryLevels": [{
+        "category": "BeSQLite",
+        "logLevel": "Error"
+    }, {
+        "category": "iModelBank",
+        "logLevel": "Trace"
+    }]
+}

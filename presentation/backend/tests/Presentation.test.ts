@@ -8,10 +8,10 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
-import Presentation from "@src/Presentation";
-import PresentationManager from "@src/PresentationManager";
+import Presentation from "../lib/Presentation";
+import PresentationManager from "../lib/PresentationManager";
 import "./IModelHostSetup";
-import TemporaryStorage from "@src/TemporaryStorage";
+import TemporaryStorage from "../lib/TemporaryStorage";
 
 describe("Presentation", () => {
 

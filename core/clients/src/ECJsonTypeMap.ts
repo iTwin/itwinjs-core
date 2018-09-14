@@ -391,7 +391,7 @@ export class ECJsonTypeMap {
 
   /** Create an untyped instance from a typed instance */
   public static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined {
-    const lowCaseApplicationKey = applicationKey.toLowerCase();
+    const lowCaseApplicationKey = applicationKey.toLowerCase(); // e.g., wsg
     const typedConstructor = Object.getPrototypeOf(typedInstance).constructor;
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!mappedClassEntry)
@@ -429,44 +429,82 @@ export class ECJsonTypeMap {
 
         const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId"
         let untypedInstanceCursor: any = untypedInstance;
+
+        // iterate through each part of the propertyAccessString that was separated by dots
         ecNameParts.forEach((ecNamePart, index) => {
+
+          // if the name part has brackets, we want to extract the value inside the brackets and outside into a single array
+          // e.g., relationshipInstances[HasThumbnail] --> [relationshipInstances, HasThumbnail]
+          // e.g., property --> [property]
           const ecNameSubParts: string[] | null = ecNamePart.match(/[^\[\]]+/g);
+          // we only want to continue if the ecNameSubParts array has 1 or 2 values
           if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 2)
             return;
 
+          // the access string is the current property of the class
           const accessString: string = ecNameSubParts[0];
+          // only the last part of the propertyAccessString will be bound to the typedValue
           const isLastPart: boolean = index >= ecNameParts.length - 1;
 
+          // if we have just 1 value in the ecNameSubParts array...
           if (ecNameSubParts.length !== 2) {
-            if (!untypedInstanceCursor[accessString])
+            // if the current cursor of the ec class object has no value for the access string
+            if (undefined === untypedInstanceCursor[accessString]) {
+              // we need to bind it the typedValue or initialize an empty object
               untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+            }
+            // advance the cursor to the newly defined value set by the accessString
             untypedInstanceCursor = untypedInstanceCursor[accessString];
             return;
           }
 
+          // if we have 2 values in the ecNameSubParts array...
+          // the second value we can assume to be the expected class name of the ec object corresponding to the current position of the cursor
           const expectedclassName: string = ecNameSubParts[1];
 
+          // if the accessString is relationshipInstances we know we have some like: "relationshipInstances[className]"
           if (accessString === "relationshipInstances") {
+            // initially relationshipInstances will be undefined, but it will always be an array, so we need to initialize it as one
             if (!untypedInstanceCursor[accessString])
               untypedInstanceCursor[accessString] = [];
 
+            // determine if the relationshipInstance has an associated relatedInstance
+            const hasNextEcPart = /\[.*\]/.test(ecNameParts[index + 1]);
+
+            // split the related instance into an array with its class name
+            // e.g., relatedInstance[className] --> [relatedInstance, className]
+            // e.g., property --> [property]
             const nextEcNameSubParts: string[] | null = ecNameParts[index + 1].match(/[^\[\]]+/g);
-            if (!nextEcNameSubParts || nextEcNameSubParts.length !== 2)
+            // we only want to continue if the nextEcNameSubParts array has 1 or 2 values
+            if (!nextEcNameSubParts || nextEcNameSubParts.length === 0 || nextEcNameSubParts.length > 2)
               return;
 
-            const relatedInstanceAccessString: any = nextEcNameSubParts[0];
-            const expectedRelatedInstanceClass: any = nextEcNameSubParts[1];
+            // if there is a next ec part, then grab the first value, which ostensibly would always be "relatedInstance"
+            const relatedInstanceAccessString: any = hasNextEcPart ? nextEcNameSubParts[0] : undefined;
+            // if there is a next ec part, then grab the second value, which corresponds to the relatedInstance's expected class name
+            const expectedRelatedInstanceClass: any = hasNextEcPart ? nextEcNameSubParts[1] : undefined;
 
+            // determine the current index of the relationshipInstance that matches the expected class name
+            // given there may be multiple relationship instances, but we assume there is a unique combination
+            // between the class of the relationship instance and its relatedInstance (if the related instance is provided)
+            // e.g., given: relationshipInstances[classA].relatedInstance[classB] , classA and classB together are unique among all relationship instances
             let relationshipCount: number = 0;
+            // while the index points to a defined relationship instance, check if classA and classB (from above example) match the expected classes
+            // the exception is if the relationship instance doesnt have a relatedInstance (possibly because the typedValue is the entire instance)
+            // in that case we only care about the matching the relationship instance class name
             while (untypedInstanceCursor[accessString][relationshipCount]
               && (untypedInstanceCursor[accessString][relationshipCount][className] !== expectedclassName
-                || untypedInstanceCursor[accessString][relationshipCount][relatedInstanceAccessString][className] !== expectedRelatedInstanceClass)) {
+                || (hasNextEcPart && untypedInstanceCursor[accessString][relationshipCount][relatedInstanceAccessString] && untypedInstanceCursor[accessString][relationshipCount][relatedInstanceAccessString][className] !== expectedRelatedInstanceClass))) {
               relationshipCount++;
             }
 
+            // if this is the first round, no relationship instances will be defined yet, so we need to initialize it
             if (!untypedInstanceCursor[accessString][relationshipCount]) {
+              // Note: the only way this would be the last part is if the entire relationship instance is the typed value
               untypedInstanceCursor[accessString][relationshipCount] = isLastPart ? typedValue : {};
             }
+
+            // advance the cursor to the newly defined value set by the accessString
             untypedInstanceCursor = untypedInstanceCursor[accessString][relationshipCount];
           } else {
             if (accessString !== "relatedInstance" || !untypedInstanceCursor[accessString]
@@ -476,7 +514,8 @@ export class ECJsonTypeMap {
             untypedInstanceCursor = untypedInstanceCursor[accessString];
           }
 
-          untypedInstanceCursor[className] = expectedclassName;
+          if (undefined === untypedInstanceCursor[className])
+            untypedInstanceCursor[className] = expectedclassName;
         });
       });
     });

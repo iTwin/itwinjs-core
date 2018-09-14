@@ -9,9 +9,10 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList } from "./render/System";
+import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList, CanvasDecoration } from "./render/System";
 import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 
 const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
 
@@ -28,9 +29,7 @@ export class ViewContext {
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
-  public getPixelSizeAtPoint(inPoint?: Point3d): number {
-    return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint);
-  }
+  public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
 }
 
 export class NullContext extends ViewContext {
@@ -38,9 +37,7 @@ export class NullContext extends ViewContext {
 
 export class RenderContext extends ViewContext {
   constructor(vp: Viewport) { super(vp); }
-
   public get target(): RenderTarget { return this.viewport.target; }
-
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
 }
@@ -55,15 +52,16 @@ export class DynamicsContext extends RenderContext {
   }
 
   /** @hidden */
-  public changeDynamics(): void {
-    this.viewport!.changeDynamics(this._dynamics);
-  }
+  public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
 }
 
 export class DecorateContext extends RenderContext {
-  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) { super(vp); }
-
-  public get screenViewport() { return this.viewport as ScreenViewport; }
+  public decorationDiv: HTMLDivElement;
+  public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
+  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
+    super(vp);
+    this.decorationDiv = vp.decorationDiv;
+  }
 
   /** @hidden  */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
@@ -172,9 +170,18 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  public addHTMLDecoration(decoration: HTMLElement) {
-    this.screenViewport.decorationDiv.appendChild(decoration);
+  public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
+    if (undefined === this._decorations.canvasDecorations)
+      this._decorations.canvasDecorations = [];
+
+    const list = this._decorations.canvasDecorations;
+    if (0 === list.length || true === atFront)
+      list.push(decoration);
+    else
+      list.unshift(decoration);
   }
+
+  public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
   /** @private */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
@@ -184,7 +191,7 @@ export class DecorateContext extends RenderContext {
     const xVec = rMatrix.rowX(),
       yVec = rMatrix.rowY(),
       zVec = rMatrix.rowZ(),
-      viewZ = vp.rotMatrix.getRow(2);
+      viewZ = vp.rotation.getRow(2);
 
     if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
@@ -374,7 +381,7 @@ export class DecorateContext extends RenderContext {
       const camera = view.camera;
       const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
 
-      vp.rotMatrix.rowZ(viewZ);
+      vp.rotation.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
       zCameraLimit = zCamera - camera.focusDist * sizeLimit;
     }
@@ -444,15 +451,14 @@ export class DecorateContext extends RenderContext {
 
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
-  public readonly backgroundMap: RenderGraphic[] = [];
+  public readonly backgroundGraphics: RenderGraphic[] = [];
   public readonly requests: TileRequests;
-  public backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined = undefined;
+  public backgroundMap?: BackgroundMapState;
 
   public constructor(vp: Viewport, requests: TileRequests) {
     super(vp);
     this.requests = requests;
   }
 
-  public setBackgroundMapPlane(plane: Plane3dByOriginAndUnitNormal): void { this.backgroundMapPlane = plane; }
-  public outputGraphic(graphic: RenderGraphic): void { undefined !== this.backgroundMapPlane ? this.backgroundMap.push(graphic) : this.graphics.push(graphic); }
+  public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
 }

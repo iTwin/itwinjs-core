@@ -4,4 +4,10 @@ $desktop-item-height: 40px;
 $desktop-tool-stripe-height: 30px;
 $desktop-tool-stripe-width: 2px;
 
+$icon-color: rgba($text-light, 0.88);
+$hovered-icon-color: $primary-tint;
+$pressed-icon-color: rgba($text-light, 0.88);
 $active-icon-color: $primary-tint;
+$disabled-icon-color: rgba($text-light, 0.44);
+
+$active-item-bg-color: $active-icon-color;

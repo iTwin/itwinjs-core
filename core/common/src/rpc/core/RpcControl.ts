@@ -290,7 +290,7 @@ export class RpcControlChannel {
     }
 
     this._clientActive = true;
-    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none"));
+    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none", undefined));
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = () => client.describeEndpoints();
   }

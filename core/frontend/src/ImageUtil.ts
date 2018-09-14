@@ -26,13 +26,15 @@ export class ImageUtil {
    * @returns a Promise which resolves to an HTMLImageElement containing the uncompressed bitmap image in RGBA format.
    */
   public static async extractImage(source: ImageSource): Promise<HTMLImageElement> {
+    const blob = new Blob([source.data], { type: this.getImageSourceMimeType(source.format) });
+    return this.fromUrl(URL.createObjectURL(blob));
+  }
+
+  public static async fromUrl(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
       const image = new Image();
       image.onload = () => resolve(image);
       image.onerror = reject;
-
-      const blob = new Blob([source.data], { type: this.getImageSourceMimeType(source.format) });
-      const url = URL.createObjectURL(blob);
       image.src = url;
     });
   }

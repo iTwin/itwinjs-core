@@ -1,12 +1,13 @@
 {
   "name": "@bentley/bentleyjs-tools",
-  "version": "0.122.0",
+  "version": "0.127.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {},
   "scripts": {
-    "build": "tsc 1>&2",
-    "clean": "",
+    "copy:rules": "cpx ./node_modules/tslint-consistent-codestyle/rules/**/* ./tslint-rules/tslint-consistent-codestyle/rules && cpx ./node_modules/tslint-consistent-codestyle/src/**/* ./tslint-rules/tslint-consistent-codestyle/src",
+    "build": "tsc 1>&2 && npm run copy:rules",
+    "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
     "test": ""
@@ -33,7 +34,7 @@
     "nyc": "^13.0.1",
     "recursive-readdir": "^2.2.2",
     "rimraf": "^2.6.2",
-    "ts-node": "^6.0.3",
+    "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
     "tslint-consistent-codestyle": "^1.11.0",
@@ -42,9 +43,6 @@
     "yargs": "^12.0.0",
     "obj-traverse": "^1.0.0"
   },
-  "bundledDependencies": [
-    "tslint-consistent-codestyle"
-  ],
   "bin": {
     "betools": "bin/betools.js"
   }

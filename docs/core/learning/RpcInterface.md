@@ -66,6 +66,8 @@ The impl must override each method in the interface definition class. Each overr
 
 Each impl method must return the operation's result as a Promise.
 
+The impl method must obtain the LoggingActivityContext by calling [RpcInvocation.current.context]($common). It must then follow the [rules of managing the LoggingActivityContext](./backend/ManagingLoggingActivityContext.md).
+
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
 A best practice is that an impl should be a thin layer on top of normal classes in the server. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferrably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).

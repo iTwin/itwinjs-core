@@ -40,6 +40,7 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentPr
       top: "0px",
       height: "100%",
       zIndex: 0,
+      overflow: "hidden",
     };
     return (
       <div className="App" style={{ height: "100%" }} >

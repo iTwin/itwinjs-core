@@ -17,7 +17,6 @@
     "install-imodeljs-addon": "installImodelJsNative",
     "predocs": "echo NOTE: use 'rush docs' instead",
     "docs": " ",
-    "buildDocSite": "cd tools/bemetalsmith && npm run buildDocSite",
     "test": "npm run test-no-gui && npm run test:frontend",
     "test-no-gui": "npm run test:bentley && npm run test:geometry && npm run test:clients && npm run test:backend && npm run test:example-code-snippets && npm run test:example-code-app && npm run test:ecschema-metadata",
     "test:integration": "npm run test:clients:integration && npm run test:backend:integration && npm run test:frontend:integration && npm run test:example-code-snippets && npm run test:example-code-app",

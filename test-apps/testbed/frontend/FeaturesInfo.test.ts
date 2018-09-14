@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { FeatureIndex, FeatureIndexType } from "@bentley/imodeljs-common";
-import { FeaturesInfo } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FeaturesInfo } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("FeaturesInfo", () => {
   it("should create, store and retrieve from FeaturesInfo", () => {

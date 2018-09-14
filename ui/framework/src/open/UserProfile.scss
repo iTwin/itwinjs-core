@@ -47,13 +47,6 @@
 
 .user-profile .dropdown-menu {
   display: block;
-  position: absolute;
-  top: 100%;
-  margin-top: 4px;
-  z-index: 10;
-  float: left;
-  right: 0;
-  left: auto;
   min-width: 160px;
   padding: .5em 0;
   font-size: $bwc-font-size;
@@ -111,4 +104,3 @@
     background-color: $separator-background;
   }
 }
-

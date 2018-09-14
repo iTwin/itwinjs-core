@@ -29,7 +29,7 @@ export const Zone: React.StatelessComponent<ZoneProps> = (props: ZoneProps) => {
     props.className);
 
   const style: React.CSSProperties = {
-    ...CssProperties.fromRectangle(props.bounds),
+    ...CssProperties.fromBounds(props.bounds),
     ...props.style,
   };
 

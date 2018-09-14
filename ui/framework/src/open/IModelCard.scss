@@ -177,17 +177,6 @@
 }
 
 .imodel-card .options-dropdown {
-  display: block;
-  position: absolute;
-  top: 100%;
-  z-index: 100;
-  float: left;
-  right: 0;
-  left: auto;
-  margin-top: 4px;
-}
-
-.imodel-card .options-dropdown ul {
   margin: 0;
   padding: .5em 0;
   font-size: $bwc-font-size;

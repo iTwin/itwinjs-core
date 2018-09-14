@@ -61,6 +61,7 @@ Each package will have its own **node_modules** directory which will contain sym
 ### Linux
 
 You must install the following on a Linux computer before attempting to run imodeljs-backend:
+
 * libc++abi1
 
 ## (Bentley Developers only) Authentication
@@ -69,6 +70,7 @@ Configure npm and log in to the Bentley npm registry with the following commands
 
 ```cmd
 npm config set @bentley:registry https://npm.bentley.com/npm/npm/
+npm login --scope=@bentley
 ```
 
 ## Build Instructions
@@ -102,7 +104,6 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 9. In order to keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
 10. Push changes
 
-
 If using the command line, steps 5 through 9 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
 > Note: The CI build will break if changes are pushed without running `rush change`. The fix will be to run `rush change` (as above) and push those changes as a separate commit.
 
@@ -128,6 +129,7 @@ Use these instructions to update dependencies and devDependencies on external pa
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
 
 ## Build and run local documentation site
+
 1. Install bemetalsmith-cli globally: `npm install -g @bentley/bemetalsmith-cli`
 2. `buildDocSite core` or `buildDocSite ui`
 

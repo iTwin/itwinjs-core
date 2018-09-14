@@ -1,6 +1,6 @@
+--require ../../presentation/scripts/copy-test-setup.js
 --require ts-node/register
---require tsconfig-paths/register
 --require source-map-support/register
 --check-leaks
 --no-timeouts
---file src/index.test.ts
+--file lib/test/setup.js

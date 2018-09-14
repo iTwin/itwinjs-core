@@ -8,6 +8,8 @@ import {
   Table, ColumnDescription, RowItem, TableDataProvider,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode, PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription,
 } from "@bentley/ui-components";
+// import { RowUpdatedArgs } from "@bentley/ui-components/lib/table/component/Table";
+import { PropertyUpdatedArgs } from "@bentley/ui-components/lib/editors/EditorContainer";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -35,6 +37,7 @@ const createPropertyRecord = (value: string, column: ColumnDescription) => {
     name: column.key,
     displayLabel: column.label,
   };
+  column.propertyDescription = pd;
   return new PropertyRecord(v, pd);
 };
 
@@ -62,6 +65,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         label: "More Data",
         sortable: true,
         resizable: false,
+        editable: true,
       },
     ];
 
@@ -119,6 +123,17 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
   }
 
+  private _handlePropertyUpdated = (args: PropertyUpdatedArgs): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
+      updated = true;
+    }
+
+    return Promise.resolve(updated);
+  }
+
   public render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%" }}>
@@ -135,7 +150,13 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
           </select>
         </div>
         <div style={{ width: "100%", height: "90%" }}>
-          <Table dataProvider={this.state.dataProvider} tableSelectionTarget={this.state.tableSelectionTarget} selectionMode={this.state.selectionMode} />
+          <Table
+            dataProvider={this.state.dataProvider}
+            tableSelectionTarget={this.state.tableSelectionTarget}
+            selectionMode={this.state.selectionMode}
+            // onRowUpdated={this._handleRowUpdated}
+            onPropertyUpdated={this._handlePropertyUpdated}
+          />
         </div>
       </div>
     );
