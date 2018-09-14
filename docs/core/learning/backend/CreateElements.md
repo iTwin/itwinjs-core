@@ -23,7 +23,7 @@ where:
 [[include:GeometryStreamBuilder.example-code]]
 ```
 
-See [GeometryStreamBuilder]($geometry)
+See [GeometryStreamBuilder]($common)
 
 ## SpatialCategory
 

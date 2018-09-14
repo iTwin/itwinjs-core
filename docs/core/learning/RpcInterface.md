@@ -66,7 +66,7 @@ The impl must override each method in the interface definition class. Each overr
 
 Each impl method must return the operation's result as a Promise.
 
-The impl method must obtain the LoggingActivityContext by calling [LoggingActivityContext.current]($bentleyjs). It must then follow the [rules of managing the LoggingActivityContext](./backend/ManagingLoggingActivityContext.md).
+The impl method must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). It must then follow the [rules of managing the ActivityLoggingContext](./backend/ManagingActivityLoggingContext.md).
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
