@@ -704,4 +704,34 @@ describe("Map4d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("ProjectiveLineClosestPointXY", () => {
+    const ck = new bsiChecker.Checker();
+    let badFraction: number | undefined;
+    for (const wA0 of [1, 1.1, 1.3]) {
+      for (const wA1 of [1, 0.4, 1.5]) {  // remark wA1=2 creates anomalies with spacepoint 2,4,2,anyW?
+        for (const wSpace of [1, 0.9]) {
+          const hA0 = Point4d.create(0, 0, 0, wA0);
+          const hA1 = Point4d.create(3, 1, 0, wA1);
+          const spacePoint = Point4d.create(2, 4, 2, wSpace);
+          const fraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
+          if (ck.testTrue(fraction !== undefined, "Expect real fraction from closet point step") && fraction !== undefined) {
+            const linePoint = hA0.interpolate(fraction, hA1);
+            const lineVector = hA1.crossWeightedMinus(hA0);
+            const spaceVector = linePoint.crossWeightedMinus(spacePoint);
+            ck.testPerpendicular(lineVector, spaceVector);
+          } else {
+            // recompute for debug ...
+            console.log ("Error case");
+            console.log ("A0", hA0);
+            console.log ("A1", hA1);
+            console.log ("spacePoint", spacePoint);
+            badFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
+          }
+        }
+      }
+    }
+    ck.testTrue(badFraction === undefined);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

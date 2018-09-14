@@ -3,19 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
-import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { SurfaceType, SurfaceParams, VertexIndices } from "../primitives/VertexTable";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
-import { VertexLUT } from "./VertexLUT";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { Target } from "./Target";
 import { ColorInfo } from "./ColorInfo";
-import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Material } from "./Material";
 
@@ -27,9 +25,8 @@ function wantLighting(vf: ViewFlags) {
 export class SurfaceGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
 
-  public static create(mesh: MeshData, indices: number[]): SurfaceGeometry | undefined {
-    const indexBytes = VertexLUT.convertIndicesToTriplets(indices);
-    const indexBuffer = BufferHandle.createArrayBuffer(indexBytes);
+  public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
+    const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
     return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
   }
 
@@ -41,6 +38,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
+  public get isClassifier() { return SurfaceType.Classifier === this.surfaceType; }
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
@@ -74,12 +72,14 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return new ColorInfo(FloatPreMulRgba.fromColorDef(target.bgColor));
+      return ColorInfo.createFromColorDef(target.bgColor);
     else
       return this.colorInfo;
   }
 
   public getRenderPass(target: Target): RenderPass {
+    if (this.isClassifier)
+      return RenderPass.StencilVolume;
     const mat = this.isLit ? this._mesh.material : undefined;
     const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
@@ -202,13 +202,8 @@ export class SurfaceGeometry extends MeshGeometry {
 }
 
 export class SurfacePrimitive extends MeshPrimitive {
-  public static create(args: MeshArgs, mesh: MeshGraphic): SurfacePrimitive | undefined {
-    if (undefined === args.vertIndices) {
-      assert(false);
-      return undefined;
-    }
-
-    const geom = SurfaceGeometry.create(mesh.meshData, args.vertIndices);
+  public static create(params: SurfaceParams, mesh: MeshGraphic): SurfacePrimitive | undefined {
+    const geom = SurfaceGeometry.create(mesh.meshData, params.indices);
     return undefined !== geom ? new SurfacePrimitive(geom, mesh) : undefined;
   }
 

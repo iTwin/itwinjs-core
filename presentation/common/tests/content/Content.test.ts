@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJson } from "@helpers/random";
-import { Content } from "@src/content";
-import { ContentJSON } from "@src/content/Content";
+import { createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON } from "../_helpers/random";
+import { Content } from "../../lib/content";
+import { ContentJSON } from "../../lib/content/Content";
 
 describe("Content", () => {
 
@@ -14,7 +14,7 @@ describe("Content", () => {
     let testContentJSON!: ContentJSON;
     beforeEach(() => {
       testContentJSON = {
-        descriptor: createRandomDescriptorJson(),
+        descriptor: createRandomDescriptorJSON(),
         contentSet: [{
           classInfo: createRandomECClassInfoJSON(),
           primaryKeys: [createRandomECInstanceKeyJSON()],

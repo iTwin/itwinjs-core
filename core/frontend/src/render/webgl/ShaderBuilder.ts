@@ -463,9 +463,6 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
-  // (Optional) Compute the clip distance to send to the fragment shader.
-  // void calcClipDist(vec4 rawPos)
-  CalcClipDist,
   // (Optional) Add the element id to the vertex shader.
   // void computeElementId()
   AddComputeElementId,
@@ -486,7 +483,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
-  public constructor(positionFromLUT: boolean) {
+  public constructor(positionFromLUT: boolean, private _isAnimated: boolean) {
     super(VertexShaderComponent.COUNT);
     addPosition(this, positionFromLUT);
   }
@@ -519,6 +516,8 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+    if (this._isAnimated)
+      main.addline("  rawPosition.xyz += computeAnimationDisplacement(u_animParams.x, u_animParams.y, u_qAnimDispOrigin, u_qAnimDispScale);");
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
@@ -536,12 +535,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(GLSLVertex.discard);
-    }
-
-    const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
-    if (undefined !== calcClipDist) {
-      prelude.addFunction("void calcClipDist(vec4 rawPos)", calcClipDist);
-      main.addline("  calcClipDist(rawPosition);");
     }
 
     const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
@@ -804,8 +797,8 @@ export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
 
-  public constructor(positionFromLUT: boolean) {
-    this.vert = new VertexShaderBuilder(positionFromLUT);
+  public constructor(positionFromLUT: boolean, isAnimated: boolean = false) {
+    this.vert = new VertexShaderBuilder(positionFromLUT, isAnimated);
     this.frag = new FragmentShaderBuilder();
   }
 

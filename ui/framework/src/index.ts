@@ -13,6 +13,8 @@ export * from "./clientservices/LoginServices";
 export * from "./clientservices/ProjectServices";
 export * from "./clientservices/IModelServices";
 export * from "./configurableui";
+export * from "./feedback/ValidationTextbox";
+export * from "./messages/InputField";
 export * from "./pickers/ViewList";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/CategorySelector";

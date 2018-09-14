@@ -24,6 +24,7 @@ export * from "./FuzzySearch";
 export * from "./HitDetail";
 export * from "./IModelConnection";
 export * from "./ImageUtil";
+export * from "./Marker";
 export * from "./ModelSelectorState";
 export * from "./ModelState";
 export * from "./NotificationManager";

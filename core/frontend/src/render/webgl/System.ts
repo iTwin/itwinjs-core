@@ -10,8 +10,9 @@ import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
+import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
@@ -33,6 +34,10 @@ import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeom
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
+
+function debugPrint(_str: string): void {
+  // console.log(_str); // tslint:disable-line:no-console
+}
 
 export const enum ContextState {
   Uninitialized,
@@ -148,6 +153,8 @@ export class Capabilities {
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
+    this.debugPrint(gl); // uses debugPrint at top of file; uncomment console.log in there to activate this.
+
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
     return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
@@ -185,6 +192,54 @@ export class Capabilities {
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
   private get _hasRequiredTextureUnits(): boolean {
     return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
+  }
+
+  private debugPrint(gl: WebGLRenderingContext) {
+    debugPrint("GLES Capabilities Information:");
+    debugPrint("     hasRequiredFeatures : " + this._hasRequiredFeatures);
+    debugPrint(" hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
+    debugPrint("              GL_VERSION : " + gl.getParameter(gl.VERSION));
+    debugPrint("               GL_VENDOR : " + gl.getParameter(gl.VENDOR));
+    debugPrint("             GL_RENDERER : " + gl.getParameter(gl.RENDERER));
+    debugPrint("          maxTextureSize : " + this.maxTextureSize);
+    debugPrint("     maxColorAttachments : " + this.maxColorAttachments);
+    debugPrint("          maxDrawBuffers : " + this.maxDrawBuffers);
+    debugPrint("     maxFragTextureUnits : " + this.maxFragTextureUnits);
+    debugPrint("     maxVertTextureUnits : " + this.maxVertTextureUnits);
+    debugPrint("     nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
+    debugPrint("             drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
+    debugPrint("       32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
+    debugPrint("            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
+    debugPrint("        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
+    debugPrint("        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
+
+    switch (this.maxRenderType) {
+      case RenderType.TextureUnsignedByte:
+        debugPrint("           maxRenderType : TextureUnsigedByte");
+        break;
+      case RenderType.TextureHalfFloat:
+        debugPrint("           maxRenderType : TextureHalfFloat");
+        break;
+      case RenderType.TextureFloat:
+        debugPrint("           maxRenderType : TextureFloat");
+        break;
+      default:
+        debugPrint("           maxRenderType : Unknown");
+    }
+
+    switch (this.maxDepthType) {
+      case DepthType.RenderBufferUnsignedShort16:
+        debugPrint("            maxDepthType : RenderBufferUnsignedShort16");
+        break;
+      case DepthType.TextureUnsignedInt24Stencil8:
+        debugPrint("            maxDepthType : TextureUnsignedInt24Stencil8");
+        break;
+      case DepthType.TextureUnsignedInt32:
+        debugPrint("            maxDepthType : TextureUnsignedInt32");
+        break;
+      default:
+        debugPrint("            maxDepthType : Unknown");
+    }
   }
 }
 
@@ -312,7 +367,8 @@ export class IdMap implements IDisposable {
     if (!textureHandle)
       return undefined;
 
-    const texture = new Texture(Texture.Params.defaults, textureHandle);
+    const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
+    const texture = new Texture(params, textureHandle);
     this.addGradient(grad, texture);
     return texture;
   }
@@ -333,6 +389,7 @@ export class IdMap implements IDisposable {
 }
 
 export class System extends RenderSystem {
+  public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
@@ -346,8 +403,11 @@ export class System extends RenderSystem {
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
+  public get isValid(): boolean { return this.canvas !== undefined; }
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get techniques() { return this._techniques!; }
+
+  public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
@@ -397,17 +457,16 @@ export class System extends RenderSystem {
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
-  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
-    if (args.flags.isDisjoint)
-      return PointStringPrimitive.create(args);
-    else
-      return PolylinePrimitive.create(args);
-  }
-  public createTriMesh(args: MeshArgs) { return MeshGraphic.create(args); }
+
+  public createMesh(params: MeshParams): RenderGraphic | undefined { return MeshGraphic.create(params); }
+  public createPolyline(params: PolylineParams): RenderGraphic | undefined { return PolylinePrimitive.create(params); }
+  public createPointString(params: PointStringParams): RenderGraphic | undefined { return PointStringPrimitive.create(params); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
+
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
   public createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
       const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
@@ -521,7 +580,8 @@ export class System extends RenderSystem {
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
-    super(canvas);
+    super();
+    this.canvas = canvas;
     this.context = context;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
@@ -582,7 +642,7 @@ export class System extends RenderSystem {
       } else {
         // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
-        const triangulatedPolygon = Triangulator.earcutFromPoints(polygon);
+        const triangulatedPolygon = Triangulator.earcutSingleLoop(polygon);
         Triangulator.cleanupTriangulation(triangulatedPolygon);
 
         triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {

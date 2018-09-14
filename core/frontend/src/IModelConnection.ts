@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
+  TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -112,16 +112,14 @@ export class IModelConnection extends IModel {
     this._openAccessToken = accessToken;
   }
 
-  /** Open an IModelConnection to an iModel */
+  /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
   public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
-    let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelClient);
-    if (!changeSetId)
-      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
+    const actx = new ActivityLoggingContext(Guid.createValue());
+    const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, IModelApp.iModelClient);
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
     const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
     const connection = new IModelConnection(openResponse, openMode, accessToken);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
@@ -591,7 +589,7 @@ export namespace IModelConnection {
   export class Tiles {
     private _iModel: IModelConnection;
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
-    public async getTileProps(ids: TileId[]): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids); }
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
   }
 }

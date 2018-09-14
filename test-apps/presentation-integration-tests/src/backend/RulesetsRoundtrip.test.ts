@@ -2,38 +2,30 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { initialize, terminate } from "../IntegrationTests";
+import { createRandomRuleset } from "@bentley/presentation-common/tests/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
-import RulesetSchema from "@bentley/presentation-common/Ruleset.schema.json";
 import { Ruleset, PropertyGroupingValue, Rule, RuleTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import RulesetManager from "@bentley/presentation-backend/lib/RulesetManager";
-
-before(() => {
-  initialize();
-  jsf.option({
-    optionalsProbability: 0.8,
-    maxItems: 5,
-    maxLength: 20,
-  });
-});
-
-after(() => {
-  terminate();
-});
 
 describe("Rulesets roundtrip", () => {
 
   let nativePlatform: NativePlatformDefinition;
   let rulesets: RulesetManager;
+
   before(() => {
+    initialize();
+
     const TNativePlatform = createDefaultNativePlatform(); // tslint:disable-line: variable-name naming-convention
     nativePlatform = new TNativePlatform();
+
     rulesets = new RulesetManager(() => nativePlatform);
   });
+
   after(() => {
     nativePlatform.dispose();
+    terminate();
   });
 
   const rulesOrder = [
@@ -54,23 +46,7 @@ describe("Rulesets roundtrip", () => {
   const hasIndexSignature = (o: any): o is { [key: string]: string } => {
     return typeof o === "object";
   };
-  const fixEmptyStrings = <T extends { [key: string]: any }>(obj: T) => {
-    if (Array.isArray(obj) || hasIndexSignature(obj)) {
-      for (const key in obj) {
-        if (!obj.hasOwnProperty(key))
-          continue;
-        const value: any = obj[key];
-        if (typeof value === "object" || Array.isArray(value)) {
-          fixEmptyStrings(value);
-        } else if (typeof value === "string") {
-          obj[key] = value.trim();
-          if (obj[key] === "")
-            obj[key] = "was empty string";
-        }
-      }
-    }
-  };
-  const tweakRuleset = <T extends {[key: string]: any} | any[]>(src: T, out: T) => {
+  const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, out: T) => {
     try {
       if (Array.isArray(src) && Array.isArray(out)) {
         src.forEach((e: any, i: number) => {
@@ -126,8 +102,7 @@ describe("Rulesets roundtrip", () => {
 
   for (let i = 0; i < 10; ++i) {
     it(`ruleset stays the same after roundtrip to/from native platform ${i + 1}`, async () => {
-      const sourceRuleset: Ruleset = await jsf.resolve(RulesetSchema);
-      fixEmptyStrings(sourceRuleset);
+      const sourceRuleset: Ruleset = await createRandomRuleset();
       try {
         await using(await rulesets.add(sourceRuleset), async () => {
           const afterRoundtripRuleset = await getRoundtripRuleset(sourceRuleset);

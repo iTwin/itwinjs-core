@@ -5,8 +5,16 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Face } from "@bentley/ui-core";
-import { Point3d } from "@bentley/geometry-core";
-import { CubeNavigationAid, NavCubeFace, FaceCell, HitBoxX, HitBoxY, HitBoxZ, CubeHover } from "../../../src/index";
+import { Vector3d } from "@bentley/geometry-core";
+import {
+  CubeNavigationAid,
+  NavCubeFace,
+  FaceCell,
+  HitBoxX,
+  HitBoxY,
+  HitBoxZ,
+  CubeHover ,
+} from "../../../src/index";
 import TestUtils from "../../TestUtils";
 
 describe("CubeNavigationAid", () => {
@@ -51,12 +59,12 @@ describe("CubeNavigationAid", () => {
   });
   describe("<FaceCell />", () => {
     it("should render", () => {
-      mount(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} position={Point3d.create(1, 1, 1)} face={Face.None} />);
+      mount(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} vector={Vector3d.create(1, 1, 1)} face={Face.None} />);
     });
     const cellClick = sinon.spy();
     const cellHover = sinon.spy();
-    const pos = Point3d.create(1, 1, 1);
-    const wrapper = shallow(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} position={pos} face={Face.None} />);
+    const pos = Vector3d.create(1, 1, 1);
+    const wrapper = shallow(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={cellHover} hoverMap={{}} vector={pos} face={Face.None} />);
     it("should render correctly", () => {
       wrapper.should.matchSnapshot();
     });

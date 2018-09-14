@@ -2,9 +2,9 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Viewport } from "./Viewport";
-import { BeCursor } from "./tools/Tool";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { ScreenViewport } from "./Viewport";
+import { EventHandled, BeButtonEvent } from "./tools/Tool";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { IModelApp } from "./IModelApp";
@@ -14,9 +14,11 @@ import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetMo
 import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
 import { HitDetail } from "./HitDetail";
 
-/** Interface for drawing "decorations" into, or on top of, the active views. */
+/** Interface for drawing "decorations" into, or on top of, the active views.
+ * Decorators generate Decorations.
+ */
 export interface Decorator {
-  /** Implement this method to draw decorations into the supplied DecorateContext */
+  /** Implement this method to add Decorations into the supplied DecorateContext. */
   decorate(context: DecorateContext): void;
 
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator. Optional.
@@ -25,11 +27,24 @@ export interface Decorator {
    */
   testDecorationHit?(id: string): boolean;
 
-  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator.
+  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator. Optional.
    * @param hit The HitDetail about the decoration that was picked.
    * @returns A promise with the string with the tooltip message. May contain HTML.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<string>;
+
+  /** If the [[testDecorationHit] returned true, implement this method to handle a button event for this Decorator. Optional.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @param ev The BeButtonEvent that identified this decoration.
+   * @returns Yes if event completely handled by decoration and event should not be processed by the calling tool.
+   */
+  onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+}
+
+/** Argument for [[ViewManager.onSelectedViewportChanged]] */
+export interface SelectedViewportChangedArgs {
+  current?: ScreenViewport;
+  previous?: ScreenViewport;
 }
 
 /**
@@ -40,13 +55,14 @@ export interface Decorator {
  */
 export class ViewManager {
   public inDynamicsMode = false;
-  public cursor?: BeCursor;
-  private readonly _viewports: Viewport[] = [];
-  private _selectedView?: Viewport;
+  public cursor = "default";
+  private readonly _viewports: ScreenViewport[] = [];
+  public readonly decorators: Decorator[] = [];
+  private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
-  private readonly _decorators: Decorator[] = [];
 
+  /** @hidden */
   public onInitialized() {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
@@ -63,35 +79,38 @@ export class ViewManager {
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
+    this.cursor = "default";
   }
 
+  /** @hidden */
   public onShutDown() {
     this._viewports.length = 0;
-    this._decorators.length = 0;
+    this.decorators.length = 0;
     this._selectedView = undefined;
-    this.cursor = undefined;
   }
 
   /** Called after the selected view changes.
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new BeEvent<(previous: Viewport | undefined, current: Viewport | undefined) => void>();
+  public readonly onSelectedViewportChanged = new BeUiEvent<SelectedViewportChangedArgs>();
 
-  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
-  public readonly onViewOpen = new BeEvent<(vp: Viewport) => void>();
+  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a new view. */
+  public readonly onViewOpen = new BeUiEvent<ScreenViewport>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
-  public readonly onViewClose = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewClose = new BeUiEvent<ScreenViewport>();
 
-  /** Called after a view is suspended. This can happen when the application is minimized. */
-  public readonly onViewSuspend = new BeEvent<(vp: Viewport) => void>();
+  /** Called after a view is suspended. This happens when the application is minimized or, on a tablet, when the application
+   * is moved to the background.
+   */
+  public readonly onViewSuspend = new BeUiEvent<ScreenViewport>();
 
   /**
    * Called after a suspended view is resumed. This can happen when a minimized application is restored
    * or, on a tablet, when the application is moved to the foreground.
    */
-  public readonly onViewResume = new BeEvent<(vp: Viewport) => void>();
+  public readonly onViewResume = new BeUiEvent<ScreenViewport>();
 
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
@@ -99,7 +118,7 @@ export class ViewManager {
 
     this.inDynamicsMode = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
       cursorVp.changeDynamics(undefined);
 
@@ -109,15 +128,16 @@ export class ViewManager {
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  public doesHostHaveFocus(): boolean { return document.hasFocus(); }
+  public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
 
+  /** Set the selected view to undefined. */
   public clearSelectedView(): void {
     const previousVp = this.selectedView;
     this._selectedView = undefined;
     this.notifySelectedViewportChanged(previousVp, undefined);
   }
 
-  public setSelectedView(vp: Viewport | undefined): BentleyStatus {
+  public setSelectedView(vp: ScreenViewport | undefined): BentleyStatus {
     if (undefined === vp)
       vp = this.getFirstOpenView();
 
@@ -139,16 +159,16 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  public notifySelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
+  public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
-    this.onSelectedViewportChanged.raiseEvent(previous, current);
+    this.onSelectedViewportChanged.emit({ previous, current });
   }
 
   /** The "selected view" is the default for certain operations.  */
-  public get selectedView(): Viewport | undefined { return this._selectedView; }
+  public get selectedView(): ScreenViewport | undefined { return this._selectedView; }
 
   /** Get the first opened view. */
-  public getFirstOpenView(): Viewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
+  public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
@@ -156,19 +176,19 @@ export class ViewManager {
    * @note raises onViewOpen event with newVp.
    * @note Does nothing if newVp is already present in the list.
    */
-  public addViewport(newVp: Viewport): void {
-    for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
+  public addViewport(newVp: ScreenViewport): void {
+    if (this._viewports.includes(newVp)) // make sure its not already added
+      return;
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
-    // See DgnClientFxViewport::Initialize()
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length)
       IModelApp.toolAdmin.startEventLoop();
 
-    this.onViewOpen.raiseEvent(newVp);
+    this.onViewOpen.emit(newVp);
   }
 
   /**
@@ -177,23 +197,16 @@ export class ViewManager {
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
    * @note raises onViewClose event with vp.
    */
-  public dropViewport(vp: Viewport): BentleyStatus {
-    this.onViewClose.raiseEvent(vp);
+  public dropViewport(vp: ScreenViewport): BentleyStatus {
+    const index = this._viewports.indexOf(vp);
+    if (index === -1)
+      return BentleyStatus.ERROR;
+
+    this.onViewClose.emit(vp);
     IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
-    let didDrop = false;
-    const vpList = this._viewports;
-    for (let i = 0; i < vpList.length; ++i) {
-      if (vpList[i] === vp) {
-        vp.setEventController(undefined);
-        vpList.splice(i, 1);
-        didDrop = true;
-        break;
-      }
-    }
-
-    if (!didDrop)
-      return BentleyStatus.ERROR;
+    vp.setEventController(undefined);
+    this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
@@ -201,19 +214,12 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  public forEachViewport(func: (vp: Viewport) => void) { this._viewports.forEach((vp) => func(vp)); }
+  public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
-  public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
-  public onSelectionSetChanged(_iModel: IModelConnection) {
-    this._viewports.forEach((vp) => vp.view.setSelectionSetDirty());
-    // for (auto & vp : m_viewports)
-    // if (& vp -> GetViewController().GetDgnDb() == & db)
-    //   vp -> GetViewControllerR().SetSelectionSetDirty();
-  }
-
-  public invalidateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
-
-  public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
+  public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
@@ -229,7 +235,7 @@ export class ViewManager {
 
     this._invalidateScenes = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
 
     if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)
@@ -244,10 +250,10 @@ export class ViewManager {
    * @see [[dropDecorator]]
    */
   public addDecorator(decorator: Decorator): () => void {
-    if (this._decorators.includes(decorator))
+    if (this.decorators.includes(decorator))
       throw new Error("decorator already registered");
 
-    this._decorators.push(decorator);
+    this.decorators.push(decorator);
     this.invalidateDecorationsAllViews();
     return () => { this.dropDecorator(decorator); };
   }
@@ -258,28 +264,38 @@ export class ViewManager {
    *
    */
   public dropDecorator(decorator: Decorator) {
-    const index = this._decorators.indexOf(decorator);
+    const index = this.decorators.indexOf(decorator);
     if (index >= 0)
-      this._decorators.splice(index, 1);
+      this.decorators.splice(index, 1);
     this.invalidateDecorationsAllViews();
   }
 
-  /** @hidden */
+  /** Get the tooltip for a pickable decoration.
+   *  @hidden
+   */
   public async getDecorationToolTip(hit: HitDetail): Promise<string> {
-    for (const decorator of this._decorators) {
+    for (const decorator of this.decorators) {
       if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
         return decorator.getDecorationToolTip(hit);
     }
-    return " ";
+    return "";
   }
 
-  /** @hidden */
-  public callDecorators(context: DecorateContext) {
-    context.viewport.decorate(context);
-    this._decorators.forEach((decorator) => decorator.decorate(context));
+  /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
+   *  @hidden
+   */
+  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.onDecorationButtonEvent && decorator.testDecorationHit(hit.sourceId))
+        return decorator.onDecorationButtonEvent(hit, ev);
+    }
+    return EventHandled.No;
   }
 
-  public setViewCursor(cursor: BeCursor | undefined): void {
+  /** Change the cursor shown in all Viewports.
+   * @param cursor The new cursor to display. If undefined, the default cursor is used.
+   */
+  public setViewCursor(cursor: string = "default") {
     if (cursor === this.cursor)
       return;
 

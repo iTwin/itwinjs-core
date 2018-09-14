@@ -6,6 +6,7 @@ import * as React from "react";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { StatusBarWidgetControl, IStatusBar, StatusBarFieldId } from "@bentley/ui-framework";
+import { ActivityCenterField } from "@bentley/ui-framework";
 import { MessageCenterField, SnapModeField } from "@bentley/ui-framework";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
@@ -19,6 +20,7 @@ class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     return (
       <>
         <ToolAssistanceField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+        <ActivityCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
         <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
         <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
       </>

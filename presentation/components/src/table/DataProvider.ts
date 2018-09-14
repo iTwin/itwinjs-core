@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @module Table */
 
 import * as _ from "lodash";
 import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
@@ -184,11 +184,9 @@ const createColumns = (descriptor: Readonly<content.Descriptor> | undefined): Co
 };
 
 const createColumn = (field: Readonly<content.Field>): ColumnDescription => {
-  const propertyDescription = ContentBuilder.createPropertyDescription(field);
   return {
     key: field.name,
     label: field.label,
-    propertyDescription,
     sortable: true,
     editable: !field.isReadonly,
     filterable: (field.type.valueFormat === content.PropertyValueFormat.Primitive),
@@ -204,18 +202,13 @@ const createRows = (c: Readonly<content.Content> | undefined): RowItem[] => {
 const createRow = (descriptor: Readonly<content.Descriptor>, item: Readonly<content.Item>): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
-    throw new PresentationError(PresentationStatus.InvalidArgument, "content");
+    throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
-  const row: RowItem = {
-    key: item.primaryKeys[0],
-    cells: new Array<CellItem>(),
-  };
-  descriptor.fields.forEach((field) => {
-    const cell: CellItem = {
+  return {
+    key: JSON.stringify(item.primaryKeys[0]),
+    cells: descriptor.fields.map((field): CellItem => ({
       key: field.name,
       record: ContentBuilder.createPropertyRecord(field, item),
-    };
-    row.cells.push(cell);
-  });
-  return row;
+    })),
+  };
 };

@@ -7,6 +7,8 @@ import {
   FeatureIndexType,
   FeatureIndex,
 } from "@bentley/imodeljs-common";
+import { VertexTable } from "../primitives/VertexTable";
+import { assert } from "@bentley/bentleyjs-core";
 
 export class FeaturesInfo {
   public readonly uniform?: number;
@@ -18,7 +20,18 @@ export class FeaturesInfo {
       default: return FeaturesInfo._nonUniform;
     }
   }
+
   public static createUniform(id: number): FeaturesInfo { return new FeaturesInfo(id); }
+
+  public static createFromVertexTable(vt: VertexTable): FeaturesInfo | undefined {
+    switch (vt.featureIndexType) {
+      case FeatureIndexType.Empty: return undefined;
+      case FeatureIndexType.NonUniform: return FeaturesInfo._nonUniform;
+      default:
+        assert(undefined !== vt.uniformFeatureID);
+        return new FeaturesInfo(vt.uniformFeatureID!);
+    }
+  }
 
   public get type(): FeatureIndexType { return undefined !== this.uniform ? FeatureIndexType.Uniform : FeatureIndexType.NonUniform; }
   public get isUniform() { return FeatureIndexType.Uniform === this.type; }

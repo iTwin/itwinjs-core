@@ -5,7 +5,7 @@
 
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { Viewport } from "./Viewport";
+import { ScreenViewport } from "./Viewport";
 import { BeButtonEvent, BeButton } from "./tools/Tool";
 import { SnapMode, HitList, SnapDetail, SnapHeat, HitDetail, HitSource, HitDetailType } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
@@ -25,7 +25,7 @@ export class TentativePoint {
   public readonly rawPoint = new Point3d();     // world coordinates
   public readonly point = new Point3d();        // world coords (adjusted for locks)
   public readonly viewPt = new Point3d();       // view coordinate system
-  public viewport?: Viewport;
+  public viewport?: ScreenViewport;
 
   public onInitialized() { }
   public setHitList(list?: HitList<HitDetail>) { this.tpHits = list; }
@@ -70,9 +70,8 @@ export class TentativePoint {
   public getTPSnapMode(): SnapMode { return (SnapMode.Intersection === this.activeSnapMode()) ? SnapMode.Nearest : this.activeSnapMode(); }
   public activeSnapMode(): SnapMode { return this.candidateSnapMode; }
   public setCurrSnap(newSnap?: SnapDetail): void {
-    if (newSnap) {
-      newSnap.heat = SnapHeat.InRange;
-    }
+    if (newSnap)
+      newSnap.setSnapPoint(newSnap.snapPoint, SnapHeat.InRange); // Reset adjustedPoint from pre-located snap and set SnapHeat...
     this.currSnap = newSnap;
   }
 

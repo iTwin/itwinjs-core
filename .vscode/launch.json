@@ -197,6 +197,9 @@
       "request": "launch",
       "name": "SimpleViewTest Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
@@ -244,6 +247,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: 9zone",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/ninezone",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[Presentation] Tests: Common",
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
@@ -255,8 +276,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -274,8 +293,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -293,8 +310,6 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.ts"
       ]
     },
@@ -316,8 +331,6 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "--file",
-        "tests/index.test.ts",
         "tests/**/*.{ts,tsx}"
       ]
     },
@@ -351,7 +364,24 @@
         "webpack:///*": "*",
         "webpack:///packages/*": "${webRoot}/*",
       }
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run ConnectSettings Tests (Online)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test/",
+        "--debug",
+        "--recursive",
+        "--grep",
+        "Setting",
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
   ],
   "compounds": [
     {

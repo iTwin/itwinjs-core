@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -10,18 +11,19 @@ import {
   Node, NodeKey, NodePathElement,
   Content, Descriptor, SelectionInfo,
   PresentationError, PresentationStatus,
-  Paged, RequestOptions, InstanceKey, KeySet, Ruleset,
+  Paged, RequestOptions, InstanceKey, KeySet,
+  IRulesetManager, IRulesetVariablesManager,
+  Omit,
 } from "@bentley/presentation-common";
 import {
+  RpcRequestOptions,
   HierarchyRpcRequestOptions,
   ContentRpcRequestOptions,
-  RulesetRpcRequestOptions,
-  RulesetVariableRpcRequestOptions,
+  ClientStateSyncRequestOptions,
 } from "@bentley/presentation-common/lib/PresentationRpcInterface";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
 import Presentation from "./Presentation";
+import PresentationManager from "./PresentationManager";
 import RulesetVariablesManager from "./RulesetVariablesManager";
-import IBackendPresentationManager from "./IBackendPresentationManager";
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -32,14 +34,23 @@ import IBackendPresentationManager from "./IBackendPresentationManager";
  * ``` ts
  * [[include:Backend.Initialization.RpcInterface]]
  * ```
+ *
+ * @hidden
  */
 export default class PresentationRpcImpl extends PresentationRpcInterface {
 
+  private _clientStateIds: Map<string, string>; // clientId: clientStateId
+
+  public constructor(_id?: string) {
+    super();
+    this._clientStateIds = new Map();
+  }
+
   /**
-   * Get the [[IBackendPresentationManager]] used by this RPC impl.
+   * Get the [[PresentationManager]] used by this RPC impl.
    */
-  public getManager(): IBackendPresentationManager {
-    return Presentation.manager;
+  public getManager(clientId?: string): PresentationManager {
+    return Presentation.getManager(clientId);
   }
 
   private getIModel(token: IModelToken): IModelDb {
@@ -49,83 +60,130 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private toIModelDbOptions<TOptions extends RequestOptions<IModelToken>>(options: TOptions) {
-    return Object.assign({}, options, {
-      imodel: this.getIModel(options.imodel),
+  private toIModelDbOptions<TOptions extends (RpcRequestOptions & Omit<RequestOptions<IModelToken>, "imodel">)>(token: IModelToken, options: TOptions) {
+    const { clientId, knownBackendIds, ...requestOptions } = options as any;
+    return Object.assign({}, requestOptions, {
+      imodel: this.getIModel(token),
     });
   }
 
-  public async getRootNodes(requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getRootNodes(this.toIModelDbOptions(requestOptions));
+  private verifyRequest(request: RpcRequestOptions) {
+    if (!request.clientStateId) {
+      // client has no state of its own
+      return;
+    }
+
+    const clientId = request.clientId || "";
+    const storedClientStateId = this._clientStateIds.get(clientId);
+    if (!storedClientStateId || storedClientStateId !== request.clientStateId) {
+      // client state needs to be synced
+      throw new PresentationError(PresentationStatus.BackendOutOfSync);
+    }
   }
 
-  public async getRootNodesCount(requestOptions: HierarchyRpcRequestOptions): Promise<number> {
-    return await this.getManager().getRootNodesCount(this.toIModelDbOptions(requestOptions));
+  public async getRootNodes(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return [...await this.getManager(requestOptions.clientId).getRootNodes(this.toIModelDbOptions(token, requestOptions))];
   }
 
-  public async getChildren(requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getChildren(this.toIModelDbOptions(requestOptions), parentKey);
+  public async getRootNodesCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getRootNodesCount(this.toIModelDbOptions(token, requestOptions));
   }
 
-  public async getChildrenCount(requestOptions: HierarchyRpcRequestOptions, parentKey: Readonly<NodeKey>): Promise<number> {
-    return await this.getManager().getChildrenCount(this.toIModelDbOptions(requestOptions), parentKey);
+  public async getChildren(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return [...await this.getManager(requestOptions.clientId).getChildren(this.toIModelDbOptions(token, requestOptions), parentKey)];
   }
 
-  public async getNodePaths(requestOptions: HierarchyRpcRequestOptions, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return await this.getManager().getNodePaths(this.toIModelDbOptions(requestOptions), paths, markedIndex);
+  public async getChildrenCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, parentKey: Readonly<NodeKey>): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getChildrenCount(this.toIModelDbOptions(token, requestOptions), parentKey);
   }
 
-  public async getFilteredNodePaths(requestOptions: HierarchyRpcRequestOptions, filterText: string): Promise<NodePathElement[]> {
-    return await this.getManager().getFilteredNodePaths(this.toIModelDbOptions(requestOptions), filterText);
+  public async getNodePaths(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getNodePaths(this.toIModelDbOptions(token, requestOptions), paths, markedIndex);
   }
 
-  public async getContentDescriptor(requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
-    const descriptor = await this.getManager().getContentDescriptor(this.toIModelDbOptions(requestOptions), displayType, keys, selection);
+  public async getFilteredNodePaths(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, filterText: string): Promise<NodePathElement[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getFilteredNodePaths(this.toIModelDbOptions(token, requestOptions), filterText);
+  }
+
+  public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(this.toIModelDbOptions(token, requestOptions), displayType, keys, selection);
     if (descriptor)
       descriptor.resetParentship();
     return descriptor;
   }
 
-  public async getContentSetSize(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return await this.getManager().getContentSetSize(this.toIModelDbOptions(requestOptions), descriptor, keys);
+  public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getContentSetSize(this.toIModelDbOptions(token, requestOptions), descriptor, keys);
   }
 
-  public async getContent(requestOptions: Paged<ContentRpcRequestOptions>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const content: Content = await this.getManager().getContent(this.toIModelDbOptions(requestOptions), descriptor, keys);
+  public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    const content: Content = await this.getManager(requestOptions.clientId).getContent(this.toIModelDbOptions(token, requestOptions), descriptor, keys);
     content.descriptor.resetParentship();
     return content;
   }
 
-  public async getDistinctValues(requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return await this.getManager().getDistinctValues(this.toIModelDbOptions(requestOptions), descriptor, keys, fieldName, maximumValueCount);
+  public async getDistinctValues(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    this.verifyRequest(requestOptions);
+    return await this.getManager(requestOptions.clientId).getDistinctValues(this.toIModelDbOptions(token, requestOptions), descriptor, keys, fieldName, maximumValueCount);
   }
 
-  public async getRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string): Promise<[Ruleset, string] | undefined> {
-    const ruleset = await this.getManager().rulesets(requestOptions.clientId).get(rulesetId);
-    if (ruleset)
-      return [ruleset.toJSON(), ruleset.hash];
-    return undefined;
+  public async syncClientState(_token: IModelToken, options: ClientStateSyncRequestOptions): Promise<void> {
+    const actx = ActivityLoggingContext.current!; actx.enter();
+    if (!options.clientStateId)
+      throw new PresentationError(PresentationStatus.InvalidArgument, "clientStateId must be set when syncing with client state");
+
+    if (options.state.hasOwnProperty(IRulesetManager.STATE_ID)) {
+      const rulesetsState = options.state[IRulesetManager.STATE_ID];
+      if (!Array.isArray(rulesetsState))
+        throw new PresentationError(PresentationStatus.InvalidArgument, "rulesets in client state should be an array");
+      await this.syncClientRulesetsState(options.clientId, rulesetsState);
+    }
+
+    if (options.state.hasOwnProperty(IRulesetVariablesManager.STATE_ID)) {
+      const varsState = options.state[IRulesetVariablesManager.STATE_ID];
+      if (typeof varsState !== "object")
+        throw new PresentationError(PresentationStatus.InvalidArgument, "ruleset variables in client state should be an array");
+      await this.syncClientRulesetVariablesState(options.clientId, varsState as IRulesetVariablesManager.State);
+    }
+
+    this._clientStateIds.set(options.clientId || "", options.clientStateId);
   }
 
-  public async addRuleset(requestOptions: RulesetRpcRequestOptions, ruleset: Ruleset): Promise<string> {
-    return (await this.getManager().rulesets(requestOptions.clientId).add(ruleset)).hash;
+  private async syncClientRulesetsState(clientId: string | undefined, rulesets: IRulesetManager.State): Promise<void> {
+    const manager = this.getManager(clientId).rulesets();
+    await manager.clear();
+    await Promise.all(rulesets.map((r) => manager.add(r)));
   }
 
-  public async removeRuleset(requestOptions: RulesetRpcRequestOptions, rulesetId: string, hash: string): Promise<boolean> {
-    return await this.getManager().rulesets(requestOptions.clientId).remove([rulesetId, hash]);
-  }
+  private async syncClientRulesetVariablesState(clientId: string | undefined, vars: IRulesetVariablesManager.State): Promise<void> {
+    for (const rulesetId in vars) {
+      // istanbul ignore if
+      if (!vars.hasOwnProperty(rulesetId))
+        continue;
 
-  public async clearRulesets(requestOptions: RulesetRpcRequestOptions): Promise<void> {
-    return await this.getManager().rulesets(requestOptions.clientId).clear();
-  }
-
-  public async setRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes, value: VariableValueJSON): Promise<void> {
-    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
-    return await vars.setValue(requestOptions.variableId, type, value);
-  }
-
-  public async getRulesetVariableValue(requestOptions: RulesetVariableRpcRequestOptions, type: VariableValueTypes): Promise<VariableValueJSON> {
-    const vars = this.getManager().vars(requestOptions.rulesetId, requestOptions.clientId) as RulesetVariablesManager;
-    return await vars.getValue(requestOptions.variableId, type);
+      const manager = this.getManager(clientId).vars(rulesetId) as RulesetVariablesManager;
+      const values = vars[rulesetId];
+      // todo: need to somehow clear client state before setting new values
+      await Promise.all(values.map((v) => manager.setValue(v[0], v[1], v[2])));
+    }
   }
 }

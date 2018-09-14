@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import Content from "../../../src/widget/rectangular/Content";
+import { HorizontalAnchor } from "../../../src/widget/Stacked";
 
 describe("<Content />", () => {
   it("should render", () => {
-    mount(<Content />);
+    mount(<Content anchor={HorizontalAnchor.Right} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Content />).should.matchSnapshot();
+    shallow(<Content anchor={HorizontalAnchor.Right} />).should.matchSnapshot();
   });
 });

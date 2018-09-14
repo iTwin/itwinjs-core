@@ -4,34 +4,36 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
-import { createRandomId } from "@helpers/random";
-import { Id64, using } from "@bentley/bentleyjs-core";
+import { createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Ruleset, IRulesetVariablesManager } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
 
 describe("Ruleset Variables", async () => {
 
   let variables: IRulesetVariablesManager;
   const ruleset: Ruleset = require("../../test-rulesets/RulesetVariables/default");
 
+  before(() => {
+    initialize();
+  });
+
+  after(() => {
+    terminate();
+  });
+
   beforeEach(() => {
     variables = Presentation.presentation.vars(ruleset.id);
   });
 
+  /* note: at this moment backend variable values can't be accessed from frontend
   it("get variable value added through ruleset", async () => {
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const actualValue = await variables.getString(ruleset.vars![0].vars![0].id);
       expect(actualValue).to.be.equal(ruleset.vars![0].vars![0].defaultValue);
     });
   });
+  */
 
   it("adds and modifies string variable", async () => {
     const value = faker.random.word();

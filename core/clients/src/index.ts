@@ -19,7 +19,8 @@ export * from "./TilesGeneratorClient";
 export * from "./IModelWebNavigatorClient";
 export * from "./RealityDataServicesClient";
 export * from "./TileDataAccessClient";
+export * from "./SettingsAdmin";
+export * from "./SettingsClient";
 
-// NOTE: Classes with backend-specific dependencies (like "fs") must be kept out of the "barrel" to avoid unacceptable webpack trickery on the frontend.
 // NOTE: Do not export UrlFileHandler - "fs" dependency
 // NOTE: Do not export IModelBank - UrlFileHandler dependency

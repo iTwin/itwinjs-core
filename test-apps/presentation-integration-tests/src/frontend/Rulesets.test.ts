@@ -8,27 +8,21 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Ruleset, RootNodeRule, CustomNodeSpecification } from "@bentley/presentation-common";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("Rulesets", async () => {
 
   let imodel: IModelConnection;
   let ruleset: Ruleset;
 
   before(async () => {
-    const testIModelName: string = "assets/datasets/1K.bim";
+    initialize();
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     ruleset = require("../../test-rulesets/Rulesets/default");
   });
 
   after(async () => {
     await imodel.closeStandalone();
+    terminate();
   });
 
   it("creates ruleset from json and gets root node using it", async () => {
@@ -52,12 +46,12 @@ describe("Rulesets", async () => {
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.false;
   });
 
-  it("overwrites ruleset", async () => {
+  it("doesn't overwrite ruleset", async () => {
     const otherRuleset: Ruleset = require("../../test-rulesets/Rulesets/other");
     otherRuleset.id = ruleset.id;
     const registeredRuleset1 = await Presentation.presentation.rulesets().add(ruleset);
     const registeredRuleset2 = await Presentation.presentation.rulesets().add(otherRuleset);
-    expect(await Presentation.presentation.rulesets().remove(registeredRuleset1)).to.be.false;
+    expect(await Presentation.presentation.rulesets().remove(registeredRuleset1)).to.be.true;
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset2)).to.be.true;
   });
 

@@ -6,11 +6,15 @@
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger, BentleyError, HttpStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import { Logger, BentleyError, HttpStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 
 import * as https from "https";
-const loggingCategory = "imodeljs-clients.Request";
+
+export const loggingCategory = "imodeljs-clients.Request";
+export const loggingCategoryFullUrl = "imodeljs-clients.Url";
+
+export const requestIdHeaderName = "X-CorrelationId";
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
@@ -18,7 +22,9 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   // sendImmediately deprecated, user -> userName
 }
 
-/** Options to query the REST API */
+/** Typical option to query REST API. Note that services may not quite support these fields,
+ * and the interface is only provided as a hint.
+ */
 export interface RequestQueryOptions {
   /**
    * Select string used by the query (use the mapped EC property names, and not TypeScript property names)
@@ -32,7 +38,7 @@ export interface RequestQueryOptions {
    */
   $filter?: string;
 
-  /** Sets the limit on the number of entries to be returnd by the query */
+  /** Sets the limit on the number of entries to be returned by the query */
   $top?: number;
 
   /** Sets the number of entries to be skipped */
@@ -61,7 +67,7 @@ export interface RequestOptions {
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
   auth?: RequestBasicCredentials;
   body?: any;
-  qs?: any;
+  qs?: any | RequestQueryOptions;
   proxy?: RequestProxyConfig;
   responseType?: string;
   timeout?: number; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
@@ -195,7 +201,8 @@ export class ResponseError extends BentleyError {
  * @throws ResponseError if the request fails due to network issues, or if the
  * returned status is *outside* the range of 200-299 (inclusive)
  */
-export async function request(url: string, options: RequestOptions): Promise<Response> {
+export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
+  alctx.enter();
   const proxyUrl = Config.devCorsProxyServer ? Config.devCorsProxyServer + url : url;
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, options.retryCallback);
 
@@ -203,12 +210,21 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     sareq = sareq.set(options.headers);
   }
 
+  if (alctx.activityId !== "")
+    sareq.set(requestIdHeaderName, alctx.activityId);
+
   let queryStr: string = "";
-  if (options.qs) {
+  let fullUrl: string = "";
+  if (options.qs && Object.keys(options.qs).length > 0) {
     const stringifyOptions: IStringifyOptions = { delimiter: "&", encode: false };
     queryStr = stringify(options.qs, stringifyOptions);
     sareq = sareq.query(queryStr);
+    fullUrl = url + "?" + queryStr;
+  } else {
+    fullUrl = url;
   }
+
+  Logger.logInfo(loggingCategoryFullUrl, fullUrl);
 
   if (options.auth) {
     sareq = sareq.auth(options.auth.user, options.auth.password);
@@ -326,7 +342,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)
   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
-  * superagent, but my plan is to switch to JavaScript's fetch library.
+  * superagent, but may eventually switch to JavaScript's fetch library.
   */
   return sareq
     .then((response: sarequest.Response) => {
@@ -347,12 +363,12 @@ export async function request(url: string, options: RequestOptions): Promise<Res
  * fetch array buffer from HTTP request
  * @param url server URL to address the request
  */
-export async function getArrayBuffer(url: string): Promise<any> {
+export async function getArrayBuffer(alctx: ActivityLoggingContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "arraybuffer",
   };
-  const data = await request(url, options);
+  const data = await request(alctx, url, options);
   return data.body;
 }
 
@@ -360,11 +376,11 @@ export async function getArrayBuffer(url: string): Promise<any> {
  * fetch json from HTTP request
  * @param url server URL to address the request
  */
-export async function getJson(url: string): Promise<any> {
+export async function getJson(alctx: ActivityLoggingContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "json",
   };
-  const data = await request(url, options);
+  const data = await request(alctx, url, options);
   return data.body;
 }

@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
 import { AccessToken, IModelRepository, Project } from "@bentley/imodeljs-clients";
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
@@ -16,7 +16,7 @@ import * as path from "path";
 // Full path of the json file; will use the default json file instead if this file cannot be found
 const jsonFilePath = "";
 
-const wantConsoleOutput: boolean = false;
+const wantConsoleOutput: boolean = true;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
     console.log(msg); // tslint:disable-line
@@ -173,9 +173,9 @@ function getViewFlagsString(): string {
 }
 
 function createWindow() {
-  const canv = document.createElement("canvas");
-  canv.id = "imodelview";
-  document.body.appendChild(canv);
+  const div = document.createElement("div");
+  div.id = "imodelview";
+  document.body.appendChild(div);
 }
 
 async function waitForTilesToLoad(modelLocation?: string) {
@@ -354,7 +354,7 @@ class SimpleViewState {
   constructor() { }
 }
 
-let theViewport: Viewport | undefined;
+let theViewport: ScreenViewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
 let curTileLoadingTime = 0;
 
@@ -366,13 +366,19 @@ async function _changeView(view: ViewState) {
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState, viewSize: ViewSize) {
   // find the canvas.
-  const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlCanvas!.width = viewSize.width;
-  htmlCanvas!.height = viewSize.height;
-  document.body.appendChild(htmlCanvas!);
+  const div: HTMLDivElement = document.getElementById("imodelview") as HTMLDivElement;
+  // htmlCanvas!.width = viewSize.width;
+  // htmlCanvas!.height = viewSize.height;
+  // document.body.appendChild(htmlCanvas!);
 
-  if (htmlCanvas) {
-    theViewport = new Viewport(htmlCanvas, state.viewState!);
+  if (div) {
+    // theViewport = new Viewport(htmlCanvas, state.viewState!);
+    theViewport = ScreenViewport.create(div, state.viewState!);
+    debugPrint("theViewport: " + theViewport);
+    const canvas = theViewport.canvas; // document.getElementById("canvas") as HTMLCanvasElement;
+    debugPrint("canvas: " + canvas);
+    canvas.width = viewSize.width;
+    canvas.height = viewSize.height;
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { RenderOrder, isPlanar, isSurface } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderOrder, isPlanar, isSurface } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("RenderFlags", () => {
   it("isPlanar should return true if given RenderOrder is greater than or equal to PlanarBit", () => {

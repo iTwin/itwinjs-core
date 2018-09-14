@@ -3,49 +3,76 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import {
-  PresentationRpcInterface,
-  IRulesetManager, RegisteredRuleset, Ruleset,
-} from "@bentley/presentation-common";
-import { RulesetRpcRequestOptions } from "@bentley/presentation-common/lib/PresentationRpcInterface";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { IRulesetManager, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
+import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
 
 /** @hidden */
-export default class RulesetManager implements IRulesetManager {
+export default class RulesetManager implements IRulesetManager, IClientStateHolder<IRulesetManager.State> {
 
-  private _clientId: string;
+  private _clientRulesets = new Map<string, RegisteredRuleset[]>();
+  public key = IRulesetManager.STATE_ID;
+  public onStateChanged = new BeEvent<() => void>();
 
-  public constructor(clientId: string) {
-    this._clientId = clientId;
-  }
-
-  private createRequestOptions(): RulesetRpcRequestOptions {
-    return {
-      clientId: this._clientId,
-    };
+  public get state(): IRulesetManager.State {
+    const rulesets: IRulesetManager.State = [];
+    this._clientRulesets.forEach((m) => {
+      m.forEach((r) => rulesets.push(r.toJSON()));
+    });
+    return rulesets;
   }
 
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
-    const tuple = await PresentationRpcInterface.getClient().getRuleset(this.createRequestOptions(), id);
-    if (tuple) {
-      const [ruleset, hash] = tuple;
-      return new RegisteredRuleset(this, ruleset, hash);
-    }
-    return undefined;
+    const m = this._clientRulesets.get(id);
+    if (!m)
+      return undefined;
+    return m[0];
   }
 
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    const hash = await PresentationRpcInterface.getClient().addRuleset(this.createRequestOptions(), ruleset);
-    return new RegisteredRuleset(this, ruleset, hash);
+    const registered = new RegisteredRuleset(this, ruleset, Guid.createValue());
+    if (!this._clientRulesets.has(ruleset.id))
+      this._clientRulesets.set(ruleset.id, []);
+    this._clientRulesets.get(ruleset.id)!.push(registered);
+    this.onStateChanged.raiseEvent();
+    return registered;
   }
 
   public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
-    if (Array.isArray(ruleset))
-      return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset[0], ruleset[1]);
-    return await PresentationRpcInterface.getClient().removeRuleset(this.createRequestOptions(), ruleset.id, ruleset.hash);
+    let rulesetId, uniqueIdentifier: string;
+    if (Array.isArray(ruleset)) {
+      rulesetId = ruleset[0];
+      uniqueIdentifier = ruleset[1];
+    } else {
+      rulesetId = ruleset.id;
+      uniqueIdentifier = ruleset.uniqueIdentifier;
+    }
+
+    const m = this._clientRulesets.get(rulesetId);
+    if (!m)
+      return false;
+
+    let didRemove = false;
+    for (let i = 0; i < m.length; ++i) {
+      if (m[i].uniqueIdentifier === uniqueIdentifier) {
+        m.splice(i, 1);
+        didRemove = true;
+        break;
+      }
+    }
+
+    if (didRemove)
+      this.onStateChanged.raiseEvent();
+
+    return didRemove;
   }
 
   public async clear(): Promise<void> {
-    return await PresentationRpcInterface.getClient().clearRulesets(this.createRequestOptions());
+    if (0 === this._clientRulesets.size)
+      return;
+
+    this._clientRulesets.clear();
+    this.onStateChanged.raiseEvent();
   }
 
 }

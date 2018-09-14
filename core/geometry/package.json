@@ -1,13 +1,16 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.119.0",
+  "version": "0.128.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.119.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
@@ -18,7 +21,7 @@
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
     "source-map-support": "^0.5.6",
-    "ts-node": "^6.0.3",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
@@ -26,7 +29,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",

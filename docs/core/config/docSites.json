@@ -1,31 +1,37 @@
 {
-  "overview": {
+  "landing-page": {
     "docSiteId": 1,
+    "displayName": ""
+  },
+  "overview": {
+    "docSiteId": 2,
     "displayName": "Overview"
   },
   "getting-started": {
-    "docSiteId": 2,
+    "docSiteId": 3,
     "displayName": "Getting Started"
   },
   "reference": {
-    "docSiteId": 3,
+    "docSiteId": 4,
     "displayName": "API Reference"
   },
   "bis": {
-    "docSiteId": 4,
+    "docSiteId": 5,
     "displayName": "Base Infrastructure Schema"
   },
   "learning": {
-    "docSiteId": 5,
+    "docSiteId": 6,
     "displayName": "Learning"
   },
   "metadata": {
-    "home": "overview",
-    "logo": "overview/imodeljs.ico",
+    "home": "landing-page",
+    "logo": "landing-page/assets/assets_imodeljs-logo.png",
+    "sponsoredByLogo": "landing-page/assets/assets_bentley.png",
     "favicon": "overview/imodeljs.ico",
     "docSiteOrder": [
-      "getting-started",
+      "landing-page",
       "overview",
+      "getting-started",
       "learning",
       "bis",
       "reference"
@@ -56,7 +62,7 @@
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
     },
-    "editDocsBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECTech/_git/imodeljs-core?path=%2Fdocs%2Fcore%2F",
-    "editSrcBaseURL": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECTech/_git/imodeljs-core?path=%2Fcore%2F"
+    "editDocsBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fdocs%2Fcore%2F",
+    "editSrcBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fcore%2F"
   }
 }

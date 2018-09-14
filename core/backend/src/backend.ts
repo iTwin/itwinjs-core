@@ -26,12 +26,14 @@ export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCore";
+export * from "./domains/Functional";
+export * from "./domains/FunctionalElements";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
- * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels. - see [learning about backends]($docs/learning/backend/index.md).
+ * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels.
  */
 /**
  * @docs-group-description IModelHost
@@ -84,6 +86,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
+ */
+/**
+ * @docs-group-description SQLite
+ * Classes for working with SQLite.
  */
 /**
  * @docs-group-description Portability

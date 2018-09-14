@@ -25,9 +25,15 @@ export class PropertyRecord {
     this.property = property;
   }
 
+  /** Gets the display value for this PropertyRecord */
   public async getDisplayValue(): Promise<string> {
     if (this.value.valueFormat === PropertyValueFormat.Primitive)
       return this.value.displayValue;
     return TypeConverterManager.getConverter(this.property.typename).convertPropertyToString(this.property, this.value);
+  }
+
+  /** Creates a copy of this PropertyRecord with a new value */
+  public copyWithNewValue(newValue: PropertyValue): PropertyRecord {
+    return new PropertyRecord(newValue, this.property);
   }
 }

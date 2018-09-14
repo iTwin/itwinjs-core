@@ -12,7 +12,7 @@ import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
-import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -119,23 +119,21 @@ export class FrontstageManager {
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  private static _nineZoneStateManagement: NineZoneStateManagement = new NineZoneStateManagement();
+  public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
 
-  public static get FrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
+  public static get onModalFrontstageStackChangedEvent(): ModalFrontstageStackChangedEvent { return this._modalFrontstageStackChangedEvent; }
 
-  public static get ModalFrontstageStackChangedEvent(): ModalFrontstageStackChangedEvent { return this._modalFrontstageStackChangedEvent; }
+  public static get onToolActivatedEvent(): ToolActivatedEvent { return this._toolActivatedEvent; }
 
-  public static get ToolActivatedEvent(): ToolActivatedEvent { return this._toolActivatedEvent; }
+  public static get onContentLayoutActivatedEvent(): ContentLayoutActivatedEvent { return this._contentLayoutActivatedEvent; }
 
-  public static get ContentLayoutActivatedEvent(): ContentLayoutActivatedEvent { return this._contentLayoutActivatedEvent; }
+  public static get onContentControlActivatedEvent(): ContentControlActivatedEvent { return this._contentControlActivatedEvent; }
 
-  public static get ContentControlActivatedEvent(): ContentControlActivatedEvent { return this._contentControlActivatedEvent; }
+  public static get onNavigationAidActivatedEvent(): NavigationAidActivatedEvent { return this._navigationAidActivatedEvent; }
 
-  public static get NavigationAidActivatedEvent(): NavigationAidActivatedEvent { return this._navigationAidActivatedEvent; }
+  public static get onWidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
 
-  public static get WidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
-
-  public static get NineZoneStateManagement(): NineZoneStateManagement { return this._nineZoneStateManagement; }
+  public static get NineZoneStateManager() { return NineZoneStateManager; }
 
   public static loadFrontstages(frontstagePropsList: FrontstageProps[]) {
     frontstagePropsList.map((frontstageProps, _index) => {
@@ -177,7 +175,7 @@ export class FrontstageManager {
     if (frontstageDef) {
       this._activeFrontstageDef = frontstageDef;
       frontstageDef.onActivated();
-      this.FrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
+      this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
     }
   }
 
@@ -225,7 +223,7 @@ export class FrontstageManager {
   }
 
   private static emitModalFrontstageStackChangedEvent(): void {
-    this.ModalFrontstageStackChangedEvent.emit({ modalFrontstageStackDepth: this.modalFrontstageStackDepth });
+    this.onModalFrontstageStackChangedEvent.emit({ modalFrontstageStackDepth: this.modalFrontstageStackDepth });
   }
 
   public static updateModalFrontstage(): void {
@@ -244,6 +242,6 @@ export class FrontstageManager {
   }
 
   public static setActiveNavigationAid(navigationAidId: string) {
-    this.NavigationAidActivatedEvent.emit({ navigationAidId });
+    this.onNavigationAidActivatedEvent.emit({ navigationAidId });
   }
 }

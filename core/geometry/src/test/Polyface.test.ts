@@ -21,6 +21,8 @@ import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { StrokeOptions } from "../geometry-core";
 import { prettyPrint } from "./testFunctions";
+import { Arc3d } from "../curve/Arc3d";
+import { AngleSweep } from "../Geometry";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden
@@ -585,23 +587,28 @@ it("facets for ACS", () => {
 
 it("facets from sweep contour with holes", () => {
   const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const arc = Arc3d.createCircularStartMiddleEnd(
+    Point3d.create(3, 3, 0),
+    Point3d.create(4, 3, 0),
+    Point3d.create(4, 4, 0)) as Arc3d;
+  arc.sweep = (AngleSweep.createStartEndDegrees(0, 360));
   const region = ParityRegion.create(
     Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), 5, 5)),
-    Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)));
-  const sweepContour = SweepContour.createForLinearSweep(region);
+    Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)),
+    Loop.create(arc));
+  allGeometry.push(region);
 
+  const sweepContour = SweepContour.createForLinearSweep(region);
   const options = new StrokeOptions();
   options.needParams = false;
   options.needParams = false;
   const builder = PolyfaceBuilder.create(options);
-
   sweepContour!.emitFacets(builder, false);
   const polyface = builder.claimPolyface(true);
-  //    The real test -- when triangulator is ready . . .if (!ck.testExactNumber(8, polyface.facetCount, "Triangle count in retangle with rectangle hole")) {
-  if (true) {
-    const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-    console.log(prettyPrint(jsPolyface));
-  }
+  polyface.tryTranslateInPlace(0, 10, 0);
+  allGeometry.push(polyface);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ParityRegion");
   expect(ck.getNumErrors()).equals(0);
 
 });

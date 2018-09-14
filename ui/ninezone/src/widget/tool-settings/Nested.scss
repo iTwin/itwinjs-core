@@ -5,7 +5,7 @@
     display: grid;
     align-items: center;
     justify-items: center;
-    grid-auto-columns: auto 1fr;
+    grid-template-columns: auto 1fr;
     grid-column-gap: 5px;
     margin-bottom: 5px;
 

@@ -4,11 +4,11 @@
 import { AccessToken, ResponseError, AuthenticationError, IModelClient } from "../../";
 
 import {
-  Briefcase, Code, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
+  Briefcase, WsgCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
 } from "../../";
 
 import * as utils from "./TestUtils";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbackContext) {
   let accessToken: AccessToken;
@@ -17,6 +17,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
   const imodelHubClient: IModelClient = utils.getDefaultClient();
+  const alctx = new ActivityLoggingContext("");
 
   async function setup(recreate = false) {
     accessToken = await utils.login();
@@ -38,7 +39,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
     let j = statingCount;
     Logger.logTrace("performance", `Creating codes from ${statingCount}`);
     const codes = Array(count).fill(0).map(() => {
-      const code = new Code();
+      const code = new WsgCode();
       code.briefcaseId = briefcase.briefcaseId;
       code.changeState = "new";
       code.codeScope = codeScope;
@@ -47,7 +48,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
       code.value = `${j++}`;
       return code;
     });
-    await imodelHubClient.Codes().update(accessToken, iModelId, codes, { codesPerRequest: perRequest });
+    await imodelHubClient.Codes().update(alctx, accessToken, iModelId, codes, { codesPerRequest: perRequest });
   }
 
   it.skip("Reserve codes", async () => {
@@ -78,7 +79,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
 
   async function ensureCodesCount(count: number, briefcase: Briefcase, codeScope: string, query = new CodeQuery()) {
     try {
-      const currentCount = (await imodelHubClient.Codes().get(accessToken, iModelId, query)).length;
+      const currentCount = (await imodelHubClient.Codes().get(alctx, accessToken, iModelId, query)).length;
       await reserveCodes(currentCount, count - currentCount, 50000, briefcase, codeScope);
     } catch (err) {
       if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
@@ -99,12 +100,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Codes().get(accessToken, iModelId);
+          await imodelHubClient.Codes().get(alctx, accessToken, iModelId);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Codes().get(accessToken, iModelId, new CodeQuery());
+            await imodelHubClient.Codes().get(alctx, accessToken, iModelId, new CodeQuery());
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -123,12 +124,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Codes().get(accessToken, iModelId, query);
+          await imodelHubClient.Codes().get(alctx, accessToken, iModelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Codes().get(accessToken, iModelId, query);
+            await imodelHubClient.Codes().get(alctx, accessToken, iModelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -141,7 +142,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
     const sizes: number[] = [3000, 4000, 5000, 6000, 7000, 8000];
     const runCount = 25;
     await ensureCodesCount(10000, briefcase1, "RetrieveCodesByIds");
-    const codes = await imodelHubClient.Codes().get(accessToken, iModelId);
+    const codes = await imodelHubClient.Codes().get(alctx, accessToken, iModelId);
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -149,12 +150,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         const query = new CodeQuery().byCodes(codes.slice(0, size));
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Codes().get(accessToken, iModelId, query);
+          await imodelHubClient.Codes().get(alctx, accessToken, iModelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Codes().get(accessToken, iModelId, query);
+            await imodelHubClient.Codes().get(alctx, accessToken, iModelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -178,14 +179,14 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
       j++;
       return lock;
     });
-    await imodelHubClient.Locks().update(accessToken, iModelId, locks, { locksPerRequest: perRequest });
+    await imodelHubClient.Locks().update(alctx, accessToken, iModelId, locks, { locksPerRequest: perRequest });
   }
 
   it.skip("Acquire locks", async () => {
     await setup(true);
     const sizes: number[] = [10000, 20000, 30000, 40000, 50000, 70000, 80000, 90000, 100000];
     const runCount = 25;
-    let startingCount = (await imodelHubClient.Locks().get(accessToken, iModelId)).length;
+    let startingCount = (await imodelHubClient.Locks().get(alctx, accessToken, iModelId)).length;
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -208,7 +209,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
 
   async function ensureLocksCount(startingCount: number, count: number, briefcase: Briefcase, query = new LockQuery()) {
     try {
-      const currentCount = (await imodelHubClient.Locks().get(accessToken, iModelId, query)).length;
+      const currentCount = (await imodelHubClient.Locks().get(alctx, accessToken, iModelId, query)).length;
       await acquireLocks(startingCount + currentCount, count - currentCount, 1000, briefcase);
     } catch (err) {
       if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
@@ -229,12 +230,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Locks().get(accessToken, iModelId);
+          await imodelHubClient.Locks().get(alctx, accessToken, iModelId);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Locks().get(accessToken, iModelId);
+            await imodelHubClient.Locks().get(alctx, accessToken, iModelId);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -253,12 +254,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Locks().get(accessToken, iModelId, query);
+          await imodelHubClient.Locks().get(alctx, accessToken, iModelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Locks().get(accessToken, iModelId, query);
+            await imodelHubClient.Locks().get(alctx, accessToken, iModelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -272,7 +273,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
     const runCount = 25;
     const briefcaseQuery = new LockQuery().byBriefcaseId(briefcase1.briefcaseId!);
     await ensureLocksCount(0, 1000000, briefcase1, briefcaseQuery);
-    const locks = await imodelHubClient.Locks().get(accessToken, iModelId, briefcaseQuery);
+    const locks = await imodelHubClient.Locks().get(alctx, accessToken, iModelId, briefcaseQuery);
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -280,12 +281,12 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
         const query = new LockQuery().byLocks(locks.slice(0, size));
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.Locks().get(accessToken, iModelId, query);
+          await imodelHubClient.Locks().get(alctx, accessToken, iModelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
             accessToken = await utils.login();
             startTime = Date.now();
-            await imodelHubClient.Locks().get(accessToken, iModelId, query);
+            await imodelHubClient.Locks().get(alctx, accessToken, iModelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);

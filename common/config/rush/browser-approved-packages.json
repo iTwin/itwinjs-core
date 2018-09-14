@@ -1,5 +1,6 @@
 // DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
       "name": "@bentley/bentleyjs-core",
@@ -187,7 +188,7 @@
     },
     {
       "name": "json-schema-faker",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "license-webpack-plugin",
@@ -204,6 +205,10 @@
     {
       "name": "mini-css-extract-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "mocha-multi-reporters",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mocha-tldr-reporter",
@@ -246,6 +251,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "raf",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
@@ -266,8 +275,16 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "react-highlight-words",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-redux",
@@ -295,7 +312,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "superagent",

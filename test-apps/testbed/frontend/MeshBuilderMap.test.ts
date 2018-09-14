@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Arc3d, LineString3d, Loop, Transform } from "@bentley/geometry-core";
 import * as path from "path";
 import {
@@ -13,12 +13,12 @@ import {
   Geometry,
   Mesh,
   ToleranceRatio,
-  System,
   GraphicType,
   PrimitiveBuilder,
   StrokesPrimitiveList,
   MeshBuilderMap,
 } from "@bentley/imodeljs-frontend/lib/rendering";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
@@ -34,10 +34,10 @@ describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -69,7 +69,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -124,7 +124,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -182,7 +182,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -339,7 +339,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -385,7 +385,7 @@ describe("MeshBuilderMap Tests", () => {
       return;
     }
 
-    const viewport = new Viewport(canvas, spatialView);
+    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);

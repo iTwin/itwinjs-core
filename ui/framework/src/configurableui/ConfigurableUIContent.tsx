@@ -11,7 +11,7 @@ import { FrontstageComposer } from "./FrontstageComposer";
 import { ElementTooltip } from "./ElementTooltip";
 
 /** Props for [[ConfigurableUIContent]] */
-export interface ConfigurableUIProps {
+export interface ConfigurableUIContentProps {
   placeholder: string;
   appBackstage?: React.ReactNode;
 }
@@ -26,9 +26,9 @@ const mapDispatch = {
 };
 
 /** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUi */
-class ConfigurableUIContentClass extends React.Component<ConfigurableUIProps> {
+class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentProps> {
 
-  public constructor(props: ConfigurableUIProps) {
+  public constructor(props: ConfigurableUIContentProps) {
     super(props);
   }
 
@@ -40,6 +40,7 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIProps> {
       top: "0px",
       height: "100%",
       zIndex: 0,
+      overflow: "hidden",
     };
     return (
       <div className="App" style={{ height: "100%" }} >

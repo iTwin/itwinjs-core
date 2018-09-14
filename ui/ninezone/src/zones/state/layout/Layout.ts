@@ -6,17 +6,17 @@
 import Rectangle, { Edge, RectangleProps } from "../../../utilities/Rectangle";
 import ResizeHandle from "../../../widget/rectangular/ResizeHandle";
 
-export interface LayoutProps {
-  readonly bounds: RectangleProps;
-}
-
-export default class Layout implements LayoutProps {
+export default class Layout {
   public static readonly RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
   public static readonly RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
   public static readonly FREE_FORM_DEFAULT_MIN_WIDTH = 96;
   public static readonly FREE_FORM_DEFAULT_MIN_HEIGHT = 88;
 
-  protected _bounds = new Rectangle();
+  private _bounds: Rectangle;
+
+  public constructor(bounds: RectangleProps) {
+    this._bounds = Rectangle.create(bounds);
+  }
 
   public get minWidth(): number {
     return Layout.RECTANGULAR_DEFAULT_MIN_WIDTH;
@@ -32,6 +32,10 @@ export default class Layout implements LayoutProps {
 
   public get isRoot() {
     return false;
+  }
+
+  protected setBounds(bounds: Rectangle) {
+    this._bounds = bounds;
   }
 
   protected get _topZone(): Layout {
@@ -141,7 +145,6 @@ export default class Layout implements LayoutProps {
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
 
     const moveTop = Math.max(0, Math.min(px - shrinkSelfBy, this.bounds.top - this._topZone.bounds.bottom));
-
     const shrinkTopBy = Math.max(0, px - shrinkSelfBy - moveTop);
     const topShrunkBy = this._topZone.tryShrinkBottom(shrinkTopBy);
 

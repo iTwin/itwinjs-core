@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Curve */
-import { AxisOrder, Geometry } from "../Geometry";
+import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Point3d, Vector3d } from "../PointVector";
@@ -296,7 +296,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
     // 2nd derivative not distinct -- do arbitrary headsup ...
-    const perpVector = Matrix3d.createRigidHeadsUpFavorXYPlane(plane.vectorU, plane.vectorV);
+    const perpVector = Matrix3d.createPerpendicularVectorFavorXYPlane(plane.vectorU, plane.vectorV);
     axes = Matrix3d.createRigidFromColumns(plane.vectorU, perpVector, AxisOrder.XYZ);
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
@@ -369,7 +369,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param result Array to receive intersections
    * @returns Return the number of CurveLocationDetail's added to the result array.
    */
-  public appendPlaneIntersectionPoints(plane: Plane3dByOriginAndUnitNormal, result: CurveLocationDetail[]): number {
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const strokeHandler = new AppendPlaneIntersectionStrokeHandler(plane, result);
     const n0 = result.length;
     this.emitStrokableParts(strokeHandler);
@@ -406,7 +406,7 @@ abstract class NewtonRotRStrokeHandler extends NewtonEvaluatorRtoR {
 
 class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
-  private _plane: Plane3dByOriginAndUnitNormal;
+  private _plane: PlaneAltitudeEvaluator;
   private _intersections: CurveLocationDetail[];
   private _fractionA: number = 0;
   private _functionA: number = 0;
@@ -418,6 +418,7 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
   // scratch vars for use within methods.
   private _ray: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
+
   // Return the first defined curve among: this.parentCurvePrimitive, this.curve;
   public effectiveCurve(): CurvePrimitive | undefined {
     if (this._parentCurvePrimitive)
@@ -426,7 +427,7 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
   }
   public get getDerivativeB() { return this._derivativeB; }    // <--- DerivativeB is not currently used anywhere. Provided getter to suppress tslint error
 
-  public constructor(plane: Plane3dByOriginAndUnitNormal, intersections: CurveLocationDetail[]) {
+  public constructor(plane: PlaneAltitudeEvaluator, intersections: CurveLocationDetail[]) {
     super();
     this._plane = plane;
     this._intersections = intersections;
@@ -492,11 +493,16 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
     this.currentF = this._plane.altitude(curve.fractionToPoint(fraction));
     return true;
   }
+  /**
+   * * ASSUME both the "A" and "B"  evaluations (fraction, function, and derivative) are known.
+   * * If function value changed sign between, interpolate an approximate root and improve it with
+   *     the newton solver.
+   */
   private searchInterval() {
     if (this._functionA * this._functionB > 0) return;
     if (this._functionA === 0) this.announceSolutionFraction(this._fractionA);
     if (this._functionB === 0) this.announceSolutionFraction(this._fractionB);
-    if (this._functionA * this._functionB > 0) {
+    if (this._functionA * this._functionB < 0) {
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
         this._newtonSolver.setX(fraction);
@@ -505,11 +511,22 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
       }
     }
   }
+  /** Evaluate and save _functionB, _derivativeB, and _fractionB. */
   private evaluateB(xyz: Point3d, fraction: number, tangent: Vector3d) {
     this._functionB = this._plane.altitude(xyz);
     this._derivativeB = this._plane.velocity(tangent);
     this._fractionB = fraction;
   }
+  /**
+   * Announce point and tangent for evaluations.
+   * * The function evaluation is saved as the "B" function point.
+   * * The function point count is incremented
+   * * If function point count is greater than 1, the current interval is searched.
+   * * The just-evaluated point ("B") is saved as the "old" ("A") evaluation point.
+   * @param xyz
+   * @param fraction
+   * @param tangent
+   */
   public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.evaluateB(xyz, fraction, tangent);
     if (this._numThisCurve++ > 0) this.searchInterval();

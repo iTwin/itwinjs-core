@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<EditorContainer /> renders correctly 1`] = `
+<div
+  onBlur={[Function]}
+  onClick={[Function]}
+  onContextMenu={[Function]}
+  onKeyDown={[Function]}
+  title="abc"
+/>
+`;

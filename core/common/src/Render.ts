@@ -198,6 +198,7 @@ export class PolylineEdgeArgs {
 export abstract class RenderTexture implements IDisposable {
   public readonly key: string | undefined;
   public readonly type: RenderTexture.Type;
+  public readonly isOwned: boolean;
 
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
   public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
@@ -206,6 +207,7 @@ export abstract class RenderTexture implements IDisposable {
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;
     this.type = params.type;
+    this.isOwned = params.isOwned;
   }
 
   public abstract dispose(): void;
@@ -222,11 +224,13 @@ export namespace RenderTexture {
 
   export class Params {
     public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
-    public readonly type: Type = Type.Normal;
+    public readonly type: Type;
+    public readonly isOwned: boolean; // For unnamed textures, true if another object owns the texture. If true, the owner is responsible for disposing of the texture; otherwise the texture will be disposed along with the RenderGraphic with which it is associated.
 
-    public constructor(key?: string, type: Type = Type.Normal) {
+    public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
       this.key = key;
       this.type = type;
+      this.isOwned = isOwned;
     }
 
     public get isTileSection(): boolean { return Type.TileSection === this.type; }
@@ -978,6 +982,9 @@ export namespace Gradient {
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
+      if (undefined !== json.thematicSettings)
+        result.thematicSettings = json.thematicSettings;
+
       return result;
     }
 

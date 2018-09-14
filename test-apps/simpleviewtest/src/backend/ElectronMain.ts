@@ -6,6 +6,7 @@ import * as url from "url";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -19,15 +20,22 @@ const electron = require("electron");
 // Start the backend
 initializeBackend();
 
+// Set up logging (by default, no logging is enabled)
+const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
+const logLevel = undefined !== logLevelEnv ? Logger.ParseLogLevel(logLevelEnv) : LogLevel.None;
+Logger.setLevelDefault(logLevel);
+
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
 const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
+const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
+
 let winRef: any;
 
 function createWindow() {
 
-  const win = new electron.BrowserWindow({
+  const windowOptions = {
     width: 1280,
     height: 800,
     webPreferences: {
@@ -35,7 +43,15 @@ function createWindow() {
       experimentalFeatures: true, // Needed for CSS Grid support
     },
     autoHideMenuBar: true,
-  });
+    show: !maximizeWindow,
+  };
+
+  const win = new electron.BrowserWindow(windowOptions);
+  if (maximizeWindow) {
+    win.maximize(); // maximize before showing to avoid resize event on startup
+    win.show();
+  }
+
   winRef = win;
   if (autoOpenDevTools)
     winRef.toggleDevTools();

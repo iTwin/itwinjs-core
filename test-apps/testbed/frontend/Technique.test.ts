@@ -5,6 +5,7 @@
 import { expect, assert } from "chai";
 import { Transform } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { ClippingType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   ProgramBuilder,
   VertexShaderComponent,
@@ -13,13 +14,12 @@ import {
   System,
   TechniqueId,
   TechniqueFlags,
-  ClippingType,
   FeatureMode,
   SingularTechnique,
   ViewportQuadGeometry,
   DrawParams,
   RenderPass,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
   const builder = new ProgramBuilder(false);
@@ -81,7 +81,7 @@ describe("Technique tests", () => {
 
   // Clipping planes add an extra varying vec4 which was causing surface shaders to exceed max varying vectors (capped at min guaranteed by spec, primarily because iOS).
   // Verify this no longer occurs.
-  it.skip("should successfully compile surface shader with clipping planes", () => {
+  it("should successfully compile surface shader with clipping planes", () => {
     if (!WebGLTestContext.isInitialized)
       return;
 

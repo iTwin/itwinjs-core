@@ -2,6 +2,141 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.128.0",
+      "tag": "@bentley/imodeljs-frontend_v0.128.0",
+      "date": "Fri, 14 Sep 2018 17:08:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Should not call updateDynamics from onTimerEvent. Fix AccuDraw hint/dynamic interaction."
+          },
+          {
+            "comment": "Fix AccuSnap error sprite display."
+          },
+          {
+            "comment": "added ViewChangeOptions for zoom/scroll methods of Viewport"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.127.0",
+      "tag": "@bentley/imodeljs-frontend_v0.127.0",
+      "date": "Thu, 13 Sep 2018 17:07:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rename overlay2dDecoration to canvasDecoration"
+          },
+          {
+            "comment": "added methods to zoom to elements by ids, props, or placements."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.126.0",
+      "tag": "@bentley/imodeljs-frontend_v0.126.0",
+      "date": "Wed, 12 Sep 2018 19:12:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.125.0",
+      "tag": "@bentley/imodeljs-frontend_v0.125.0",
+      "date": "Wed, 12 Sep 2018 13:35:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ray3d.intersectionWithPlane fix !number instead of checking undefined. Added project point to line or plane in view helper methods for tools."
+          },
+          {
+            "comment": "SimpleViewTest - Moved incident marker and project extents under test tool menu."
+          },
+          {
+            "comment": "TentativePoint.setCurrSnap needs to reset adjustedPoint from a pre-located SnapDetail."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.124.0",
+      "tag": "@bentley/imodeljs-frontend_v0.124.0",
+      "date": "Tue, 11 Sep 2018 13:52:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "SelectTool EditManipulator support."
+          },
+          {
+            "comment": "Added EditManipulator arrow controls."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.123.0",
+      "tag": "@bentley/imodeljs-frontend_v0.123.0",
+      "date": "Wed, 05 Sep 2018 17:14:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw nearest snap intersection should use single segment of linestring. Support nearest snap with locked distance"
+          },
+          {
+            "comment": "PBI#30301: Add ability to reuse briefcases when opening a new IModelConnection/IModelDb. <br/> Opening a new ReadWrite IModelConnection at the frontend would try and reuse any existing briefcase that was previously opened by the same user. Opening a new Exclusive IModelDb at the backend can be configured to reuse or create/acquire a new briefcase. <br/> PBI#30302: Add method to purge the briefcase manager cache. <br/> When backend instances are brought down it's important that any briefcases they acquired from the Hub be properly disposed of. The iModelHub imposes an artificial limit of 20 briefcases per user, and acquiring more briefcases will cause an error.Added a new BriefcaseManager.purgeCache() method to help with this - the method closes any open briefcases, deletes the registered briefcase id from the Hub, and deletes the physical cache folder containing the Dbs. Note that the accessToken passed in to the method must match the accessToken used to acquire any briefcases that are to be deleted - so this only works in the limited environment where the entire cache was hydrated for the same user."
+          },
+          {
+            "comment": "AccuDraw shortcuts. Make it easier to use AccuDraw and dynamics with an InputCollector."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.122.0",
+      "tag": "@bentley/imodeljs-frontend_v0.122.0",
+      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix clipping shader compilation errors on iOS."
+          },
+          {
+            "comment": "AccuDraw compute intersection with nearest snap. AccuDraw smart rotation."
+          },
+          {
+            "comment": "Fix FPS and Render Time shown in the SimpleViewTest app."
+          },
+          {
+            "comment": "added ScreenViewport. You must now call ScreenViewport.create to create viewports"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.121.0",
+      "tag": "@bentley/imodeljs-frontend_v0.121.0",
+      "date": "Fri, 24 Aug 2018 12:49:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Constructor for Viewport now takes an HTML div as the argument, creates the canvas, and adds it to the div. Bing logo now drawn when Bing background maps are drawn."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.120.0",
+      "tag": "@bentley/imodeljs-frontend_v0.120.0",
+      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rework deocorator api. Eliminated Decoration and DecorationList. New interface for Decorators that are added/dropped from ViewManager."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.119.0",
       "tag": "@bentley/imodeljs-frontend_v0.119.0",
       "date": "Thu, 23 Aug 2018 15:25:49 GMT",

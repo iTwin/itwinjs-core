@@ -1,0 +1,32 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+/** @module Zone */
+
+import NineZone, { WidgetZoneIndex } from "./NineZone";
+
+export enum TargetType {
+  Merge,
+  Back,
+}
+
+export interface TargetProps {
+  readonly zoneId: WidgetZoneIndex;
+  readonly type: TargetType;
+}
+
+export default class Target {
+  public constructor(
+    public readonly nineZone: NineZone,
+    public readonly props: TargetProps,
+  ) {
+  }
+
+  public get zone() {
+    return this.nineZone.getWidgetZone(this.props.zoneId);
+  }
+
+  public get type() {
+    return this.props.type;
+  }
+}

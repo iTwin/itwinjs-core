@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -83,7 +83,7 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
    * Returns filtered node paths.
    * @param filter Filter.
    */
-  public getFilteredNodePaths = async (filter: string): Promise<ReadonlyArray<Readonly<NodePathElement>>> => {
+  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
     return Presentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
   }
 

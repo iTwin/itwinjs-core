@@ -11,7 +11,6 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 import { ProjectDialog } from "./ProjectDialog";
-// import { SwitchControl } from "./SwitchControl";
 import { ViewSelector } from "./ViewSelector";
 import { SearchBox, Toggle } from "@bentley/ui-core";
 

@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { createRandomDescriptorJson, createRandomDescriptor } from "@helpers/random";
-import { Descriptor, Field } from "@src/content";
-import { DescriptorJSON } from "@src/content/Descriptor";
+import { createRandomDescriptorJSON, createRandomDescriptor } from "../_helpers/random";
+import { Descriptor, Field } from "../../lib/content";
+import { DescriptorJSON } from "../../lib/content/Descriptor";
 
 describe("Descriptor", () => {
 
@@ -13,7 +13,7 @@ describe("Descriptor", () => {
 
     let testDescriptorJSON!: DescriptorJSON;
     beforeEach(() => {
-      testDescriptorJSON = createRandomDescriptorJson();
+      testDescriptorJSON = createRandomDescriptorJSON();
     });
 
     it("creates valid Descriptor from valid JSON", () => {

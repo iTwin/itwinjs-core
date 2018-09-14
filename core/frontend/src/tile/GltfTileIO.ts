@@ -31,8 +31,8 @@ export namespace GltfTileIO {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
     contentRange?: ElementAlignedBox3d;
-    geometry?: TileIO.GeometryCollection;
     renderGraphic?: RenderGraphic;
+    sizeMultiplier?: number;
   }
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
@@ -213,7 +213,7 @@ export namespace GltfTileIO {
         const extensions = JsonUtils.asObject(sceneValue.extensions);
         const samplers = JsonUtils.asObject(sceneValue.samplers);
 
-        if (undefined === materialValues || undefined === meshes || undefined === accessors || undefined === bufferViews)
+        if (undefined === meshes)
           return undefined;
 
         return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);
@@ -246,6 +246,7 @@ export namespace GltfTileIO {
     protected readonly _system: RenderSystem;
     protected readonly _returnToCenter: number[] | undefined;
     protected readonly _yAxisUp: boolean;
+    protected readonly _asClassifier: boolean;
     private readonly _canceled?: IsCanceled;
 
     public async abstract read(): Promise<ReaderResult>;
@@ -253,9 +254,9 @@ export namespace GltfTileIO {
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     protected get _hasBakedLighting(): boolean { return false; }
 
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       if (this._isCanceled)
-        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
+        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
@@ -288,8 +289,8 @@ export namespace GltfTileIO {
       return {
         readStatus,
         isLeaf,
+        sizeMultiplier,
         contentRange,
-        geometry,
         renderGraphic,
       };
     }
@@ -335,7 +336,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
@@ -355,6 +356,7 @@ export namespace GltfTileIO {
       this._modelId = modelId;
       this._is3d = is3d;
       this._system = system;
+      this._asClassifier = asClassifier;
       this._canceled = isCanceled;
     }
 
@@ -396,6 +398,7 @@ export namespace GltfTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const hasBakedLighting = this._hasBakedLighting;
+      const asClassifier = this._asClassifier;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -404,6 +407,7 @@ export namespace GltfTileIO {
         is2d: !this._is3d,
         isPlanar,
         hasBakedLighting,
+        asClassifier,
       });
 
       if (!this.readVertices(mesh.points, primitive))

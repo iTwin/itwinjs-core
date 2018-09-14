@@ -7,7 +7,7 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry } from "./Geometry";
-import { Point2d, Vector2d, Point3d, Vector3d, XYZ, XYAndZ } from "./PointVector";
+import { Point2d, Vector2d, Point3d, Vector3d, XYZ, XYAndZ, XAndY } from "./PointVector";
 import { Transform } from "./Transform";
 
 import { Point4d, Matrix4d } from "./numerics/Geometry4d";
@@ -128,8 +128,22 @@ export class Point2dArray {
   public static clonePoint2dArray(data: Point2d[]): Point2d[] {
     return data.map((p: Point2d) => p.clone());
   }
+  public static lengthWithoutWraparound(data: XAndY[]): number {
+    let n = data.length;
+    if (n < 2)
+      return n;
+    const x0 = data[0].x;
+    const y0 = data[0].y;
+    while (n > 1) {
+      if (!Geometry.isSameCoordinate(data[n - 1].x, x0) || !Geometry.isSameCoordinate(data[n - 1].y, y0))
+        return n;
+      n--;
+    }
+    return n;
+  }
 
 }
+
 export class Vector3dArray {
   public static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean {
     if (dataA && dataB) {
@@ -892,6 +906,9 @@ export class PolygonOps {
 }
 /**
  * Helper object to access members of a Point3d[] in geometric calculations.
+ * * The collection holds only a reference to the actual array.
+ * * The actual array may be replaced by the user as needed.
+ * * When replaced, there is no cached data to be updated.
 */
 export class Point3dArrayCarrier extends IndexedXYZCollection {
   public data: Point3d[];

@@ -1,16 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
-import {
-  MeshArgs, OnScreenTarget, GraphicType,
-  Target, Decorations, Batch, WorldDecorations, TextureHandle, GraphicList,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodeljs-frontend/lib/rendering";
+import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
@@ -20,7 +18,7 @@ import { TestData } from "./TestData";
 /* tslint:disable:no-console */
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-let canvas: HTMLCanvasElement;
+let viewDiv: HTMLDivElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
@@ -116,10 +114,10 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("div") as HTMLDivElement;
+    assert(null !== viewDiv);
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -170,10 +168,10 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    assert(null !== canvas);
-    canvas!.width = canvas!.height = 1000;
-    document.body.appendChild(canvas!);
+    viewDiv = document.createElement("viewDiv") as HTMLDivElement;
+    viewDiv!.style.width = viewDiv!.style.height = "1000px";
+    assert(null !== viewDiv);
+    document.body.appendChild(viewDiv!);
 
     WebGLTestContext.startup();
 
@@ -188,6 +186,7 @@ describe("Disposal of WebGL Resources", () => {
     WebGLTestContext.shutdown();
   });
 
+  // ###TODO: Update TileIO.data.ts for new tile format...
   it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
@@ -210,6 +209,7 @@ describe("Disposal of WebGL Resources", () => {
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
     const stream = new TileIO.StreamBuffer(TileData.triangles.buffer);
     const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
+    expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.renderGraphic!;
     assert.isDefined(tileGraphic);
@@ -244,7 +244,7 @@ describe("Disposal of WebGL Resources", () => {
     const viewState = await imodel1.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
 
-    const viewport = new Viewport(canvas, viewState);
+    const viewport = ScreenViewport.create(viewDiv, viewState);
     await viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
     viewport.renderFrame(); // force a frame to be rendered

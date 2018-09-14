@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface } from "@bentley/geometry-core";
-import { assert, Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface, XAndY } from "@bentley/geometry-core";
+import { Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -32,10 +32,12 @@ import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PointStringParams, MeshParams, PolylineParams } from "./primitives/VertexTable";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
@@ -90,15 +92,18 @@ export class RenderPlan {
   }
 }
 
-/** A renderer-specific object that can be placed into a display list. Must have a `dispose` method. */
+/** Abstract representation of an object which can be rendered by a RenderSystem */
 export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
 
-/** A type of clip volume being used for clipping. */
+/** Describes the type of a RenderClipVolume. */
 export const enum ClippingType {
+  /** No clip volume. */
   None,
+  /** A 2d mask which excludes geometry obscured by the mask. */
   Mask,
+  /** A 3d set of convex clipping planes which excludes geometry outside of the planes. */
   Planes,
 }
 
@@ -110,7 +115,51 @@ export abstract class RenderClipVolume implements IDisposable {
   public abstract dispose(): void;
 }
 
+/** An array of RenderGraphics */
 export type GraphicList = RenderGraphic[];
+
+/** A Decoration that is drawn onto the 2d canvas on top of a ScreenViewport. CanvasDecorations may be pickable by implementing [[pick]]. */
+export interface CanvasDecoration {
+  /**
+   * Method to draw this decoration into the supplied CanvasRenderingContext2D. This method is called every time a frame is rendered.
+   * @param ctx The CanvasRenderingContext2D for the [[ScreenViewport]] being rendered.
+   * @note Before this this function is called, the state of the CanvasRenderingContext2D is [saved](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save),
+   * and it is [restored](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore) when this method returns. Therefore,
+   * it is *not* necessary for implementers to save/restore themselves.
+   */
+  drawDecoration(ctx: CanvasRenderingContext2D): void;
+  /**
+   * Optional view coordinates position of this overlay decoration. If present, [ctx.translate](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate) is called
+   * with this point before [[drawDecoration]] is called.
+   */
+  position?: XAndY;
+  /** Optional method to provide feedback when mouse events occur on this decoration.
+   * @param pt The position of the mouse in the ScreenViewport
+   * @return true if the mouse is inside this decoration.
+   * @note If this method is not present, no mouse events are directed to this decoration.
+   */
+  pick?(pt: XAndY): boolean;
+  /** Optional method to be called whenever this decorator is picked and the mouse first enters this decoration. */
+  onMouseEnter?(ev: BeButtonEvent): void;
+  /** Optional method to be called whenever when the mouse leaves this decoration. */
+  onMouseLeave?(): void;
+  /** Optional method to be called whenever when the mouse moves inside this decoration. */
+  onMouseMove?(ev: BeButtonEvent): void;
+  /**
+   * Optional method to be called whenever this decorator is picked and a mouse button is pressed or released inside this decoration.
+   * @return true if the event was handled by this decoration and should *not* be forwarded to the active tool.
+   * @note This method is called for both mouse up and down events. If it returns `true` for a down event, it should also return `true` for the
+   * corresponding up event.
+   */
+  onMouseButton?(ev: BeButtonEvent): boolean;
+  onWheel?(ev: BeWheelEvent): boolean;
+
+  /** Cursor to use when mouse is inside decoration. Default is "pointer". */
+  decorationCursor?: string;
+}
+
+/** An array of CanvasDecorations */
+export type CanvasDecorationList = CanvasDecoration[];
 
 /**
  * Various of lists of RenderGraphics that are "decorated" into the RenderTarget, in addition to the Scene.
@@ -122,6 +171,7 @@ export class Decorations implements IDisposable {
   private _world?: GraphicList;        // drawn with zbuffer, with default lighting, smooth shading
   private _worldOverlay?: GraphicList; // drawn in overlay mode, world units
   private _viewOverlay?: GraphicList;  // drawn in overlay mode, view units
+  public canvasDecorations?: CanvasDecorationList;
 
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
   public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
@@ -146,10 +196,18 @@ export class Decorations implements IDisposable {
   }
 }
 
+/**
+ * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
+ * and a transform, view flag overrides, symbology overrides, and clip volume which are to be applied when rendering them.
+ * Branches can be nested to build an arbitrarily-complex scene graph.
+ */
 export class GraphicBranch implements IDisposable {
+  /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
+  /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
   public readonly ownsEntries: boolean;
   private _viewFlagOverrides = new ViewFlag.Overrides();
+  /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
 
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
@@ -231,6 +289,7 @@ export namespace Pixel {
  * Every Viewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
+  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
   public static get frustumDepth2d(): number { return 1.0; } // one meter
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
@@ -245,6 +304,9 @@ export abstract class RenderTarget implements IDisposable {
   public abstract get cameraFrustumNearScaleLimit(): number;
   public abstract get viewRect(): ViewRect;
   public abstract get wantInvertBlackBackground(): boolean;
+
+  public abstract get animationFraction(): number;
+  public abstract set animationFraction(fraction: number);
 
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
@@ -267,31 +329,30 @@ export abstract class RenderTarget implements IDisposable {
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
+/** Describes a texture loaded from an HTMLImageElement */
 export interface TextureImage {
+  /** The HTMLImageElement containing the texture's image data */
   image: HTMLImageElement | undefined;
+  /** The format of the texture's image data */
   format: ImageSourceFormat | undefined;
 }
 
 /**
- * A RenderSystem is the renderer-specific factory for creating RenderGraphics, RenderTexture, and RenderMaterials.
+ * A RenderSystem is the renderer-specific factory for creating rendering-related resources like RenderGraphics, RenderTexture, and RenderMaterials.
  */
 export abstract class RenderSystem implements IDisposable {
-  protected _nowPainting?: RenderTarget;
-  public readonly canvas: HTMLCanvasElement;
-  public get isPainting(): boolean { return !!this._nowPainting; }
-  public checkPainting(target?: RenderTarget): boolean { return target === this._nowPainting; }
-  public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
-  public nowPainting() { this._nowPainting = undefined; }
+  /** @hidden */
+  public abstract get isValid(): boolean;
 
-  public get isValid(): boolean { return this.canvas !== undefined; }
-  public constructor(canvas: HTMLCanvasElement) { this.canvas = canvas; }
-
+  /** @hidden */
   public abstract dispose(): void;
 
-  /** Create a render target which will render to the supplied canvas element. */
-  public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+  /** @hidden */
+  public get maxTextureSize(): number { return 0; }
 
-  /** Create an offscreen render target. */
+  /** @hidden */
+  public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+  /** @hidden */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created Material by key. Returns null if no such material exists. */
@@ -303,28 +364,40 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
-  // /** Create a Viewlet from parameters */
-  // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
+  /** @hidden */
+  public createTriMesh(args: MeshArgs): RenderGraphic | undefined {
+    const params = MeshParams.create(args);
+    return this.createMesh(params);
+  }
 
-  /** Create a triangle mesh primitive */
-  public createTriMesh(_args: MeshArgs): RenderGraphic | undefined { return undefined; }
+  /** @hidden */
+  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
+    if (args.flags.isDisjoint) {
+      const pointStringParams = PointStringParams.create(args);
+      return undefined !== pointStringParams ? this.createPointString(pointStringParams) : undefined;
+    } else {
+      const polylineParams = PolylineParams.create(args);
+      return undefined !== polylineParams ? this.createPolyline(polylineParams) : undefined;
+    }
+  }
 
-  /** Create an indexed polyline primitive */
-  public createIndexedPolylines(_args: PolylineArgs): RenderGraphic | undefined { return undefined; }
-
-  /** Create a point cloud primitive */
+  /** @hidden */
+  public createMesh(_params: MeshParams): RenderGraphic | undefined { return undefined; }
+  /** @hidden */
+  public createPolyline(_params: PolylineParams): RenderGraphic | undefined { return undefined; }
+  /** @hidden */
+  public createPointString(_params: PointStringParams): RenderGraphic | undefined { return undefined; }
+  /** @hidden */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-
-  /** Create polygons on a range for a sheet tile. */
+  /** @hidden */
   public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
-
-  /** Create a sheet tile primitive from polyfaces. */
+  /** @hidden */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
 
   /** Attempt to create a clipping volume for the given iModel using a clip vector. */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
 
-  /** Create a tile primitive */
+  /** @hidden */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
 
@@ -357,9 +430,6 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
   public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
 
-  // /** Return the maximum number of Features allowed within a Batch. */
-  // public abstract getMaxFeaturesPerBatch(): number;
-
   /** Create a RenderGraphic consisting of batched Features. */
   public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
@@ -380,8 +450,8 @@ export abstract class RenderSystem implements IDisposable {
     return texture;
   }
 
+  /** Load a texture image given the ID of a texture element */
   public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
-    // ###TODO: We need a way in our callbacks to determine if the iModel has been closed...
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
@@ -416,8 +486,6 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new Texture from a cube of HTML images. Typically the images were extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  // /** Create a Light from Light.Parameters */
-  // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
-
+  /** @hidden */
   public onInitialized(): void { }
 }

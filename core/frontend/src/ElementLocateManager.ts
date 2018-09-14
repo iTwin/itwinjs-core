@@ -5,7 +5,7 @@
 
 import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
 import { Point3d, Point2d } from "@bentley/geometry-core";
-import { Viewport, ViewRect } from "./Viewport";
+import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
@@ -19,18 +19,11 @@ export const enum LocateAction {
 
 /**
  * Values to return from a locate filter.
- *
- * @note It would be rare and extreme for a locate filter to ever return Accept.
- *
- * Usually, filters will return Reject to indicate the element is unacceptable, or Neutral to
- * indicate that the element is acceptable <i>as far as this filter is concerned.</i> By returning Accept, a
- * single filter can cause the element to be accepted, *without calling other filters* that might otherwise reject the element.
- * Indicates the reason an element was rejected by a filter.
+ * Return `Reject` to indicate the element is unacceptable.
  */
 export const enum LocateFilterStatus {
-  Reject = 0,
-  Neutral = 1,
-  Accept = 2,
+  Accept = 0,
+  Reject = 1,
 }
 
 export const enum SnapStatus {
@@ -135,7 +128,7 @@ export class ElementPicker {
   /** Generate a list of elements that are close to a given point.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -190,7 +183,7 @@ export class ElementPicker {
     return this.hitList!.length;
   }
 
-  public testHit(hit: HitDetail, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
+  public testHit(hit: HitDetail, vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
     if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return false;
 
@@ -233,22 +226,22 @@ export class ElementLocateManager {
     return preLocated;
   }
 
-  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): boolean {
+  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): LocateFilterStatus {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
-    if (!hit.isElementHit && !this.options.allowDecorations) {
+    if (!this.options.allowDecorations && !hit.isElementHit) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
-      return true;
+      return LocateFilterStatus.Reject;
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
     if (!(tool && tool instanceof PrimitiveTool))
-      return false;
+      return LocateFilterStatus.Accept;
 
-    const retVal = !tool.onPostLocate(hit, out);
-    if (retVal)
+    const status = tool.filterHit(hit, out);
+    if (LocateFilterStatus.Reject === status)
       out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
 
-    return retVal;
+    return status;
   }
 
   public initLocateOptions() { this.options.init(); }
@@ -259,7 +252,7 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
+  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
     if (!vp)
       return;
 
@@ -269,7 +262,7 @@ export class ElementLocateManager {
 
       // if we're snapped to something, that path has the highest priority and becomes the active hit.
       if (hit) {
-        if (!filterHits || !this.filterHit(hit, LocateAction.Identify, response))
+        if (!filterHits || LocateFilterStatus.Accept === this.filterHit(hit, LocateAction.Identify, response))
           return hit;
 
         response = new LocateResponse(); // we have the reason and explanation we want.
@@ -284,7 +277,7 @@ export class ElementLocateManager {
 
     let newHit: HitDetail | undefined;
     while (undefined !== (newHit = this.getNextHit())) {
-      if (!filterHits || !this.filterHit(newHit, LocateAction.Identify, response))
+      if (!filterHits || LocateFilterStatus.Accept === this.filterHit(newHit, LocateAction.Identify, response))
         return newHit;
       response = new LocateResponse(); // we have the reason and explanation we want.
     }
@@ -292,7 +285,7 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: Viewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
+  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 

@@ -16,7 +16,7 @@
   grid-gap: 12px;
   grid-auto-flow: column;
   align-items: center;
-  grid-auto-columns: minmax(0, auto) 1fr;
+  grid-template-columns: minmax(0, auto) 1fr;
   line-height: 16px;
   color: $text-dark;
 }

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import "@helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 import { expect, spy } from "chai";
-import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
+import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/tests/_helpers/random";
+import { PromiseContainer } from "@bentley/presentation-common/tests/_helpers/Promises";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataChangeEvent } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -12,10 +14,8 @@ import { PresentationError, ValuesDictionary } from "@bentley/presentation-commo
 import * as content from "@bentley/presentation-common/lib/content";
 import { Presentation } from "@bentley/presentation-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import PresentationTableDataProvider from "@src/table/DataProvider";
-import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
-import { createRandomDescriptor, createRandomECInstanceKey } from "@helpers/random";
-import { PromiseContainer } from "@helpers/Promises";
+import PresentationTableDataProvider from "../../lib/table/DataProvider";
+import { CacheInvalidationProps } from "../../lib/common/ContentDataProvider";
 
 /**
  * This is just a helper class to provide public access to

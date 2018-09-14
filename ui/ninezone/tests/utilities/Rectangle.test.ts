@@ -172,7 +172,7 @@ describe("Rectangle", () => {
       right: 4,
       bottom: 6,
     };
-    sut.containsRectangle(other).should.true;
+    sut.contains(other).should.true;
   });
 
   it("should return false if rectangle does not contain other rectangle", () => {
@@ -183,7 +183,7 @@ describe("Rectangle", () => {
       right: 4,
       bottom: 8,
     };
-    sut.containsRectangle(other).should.false;
+    sut.contains(other).should.false;
   });
 
   it("should get top left point", () => {

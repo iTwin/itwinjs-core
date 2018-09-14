@@ -1,0 +1,16 @@
+{
+  "baseUrl": "https://localhost",
+  "port": 3002,
+  "keyFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.key",
+  "certFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.crt",
+  "usageServiceConfig": {
+    "connectUserName": "Regular.IModelJsTestUser@mailinator.com",
+    "connectPassword": "Regular@iMJs",
+    "deploymentEnv": "QA"
+  },
+  "backofficeServicesConfig": {
+    "serviceIdentityUserName": "Regular.IModelJsTestUser@mailinator.com",
+    "serviceIdentityPassword": "Regular@iMJs",
+    "deploymentEnv": "QA"
+  }
+}

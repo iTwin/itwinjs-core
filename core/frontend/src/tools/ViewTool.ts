@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
-import { Viewport, CoordSystem, DepthRangeNpc, ViewRect } from "../Viewport";
+import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
+import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
@@ -79,7 +79,7 @@ export abstract class ViewingToolHandle {
   public noMotion(_ev: BeButtonEvent): boolean { return false; }
   public motion(_ev: BeButtonEvent): boolean { return false; }
   public checkOneShot(): boolean { return true; }
-  public getHandleCursor(): BeCursor { return BeCursor.Default; }
+  public getHandleCursor(): string { return "default"; }
   public abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
   public abstract firstPoint(ev: BeButtonEvent): boolean;
   public abstract testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean;
@@ -199,7 +199,7 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport. */
 export abstract class ViewManip extends ViewTool {
-  public viewport?: Viewport = undefined;
+  public viewport?: ScreenViewport = undefined;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public readonly targetCenterWorld = new Point3d();
@@ -212,7 +212,7 @@ export abstract class ViewManip extends ViewTool {
   protected _forcedHandle = ViewHandleType.None;
   public readonly lastFrustum = new Frustum();
 
-  constructor(viewport: Viewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
+  constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
     super();
     this.viewHandles = new ViewHandleArray(this);
     this.changeViewport(viewport);
@@ -523,7 +523,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   protected static _useViewAlignedVolume: boolean = false;
-  public static fitView(viewport: Viewport, doAnimate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum();
@@ -585,7 +585,7 @@ export abstract class ViewManip extends ViewTool {
     return true;
   }
 
-  public changeViewport(vp: Viewport | undefined): void {
+  public changeViewport(vp: ScreenViewport | undefined): void {
     // If viewport isn't really changing do nothing...
     if (vp === this.viewport)
       return;
@@ -723,7 +723,7 @@ class ViewPan extends ViewingToolHandle {
   private _anchorPt: Point3d = new Point3d();
   private _lastPtNpc: Point3d = new Point3d();
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.inHandleModify ? BeCursor.ClosedHand : BeCursor.OpenHand; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? "grabbing" : "grab"; }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
     const vp = ev.viewport!;
@@ -798,7 +798,7 @@ class ViewRotate extends ViewingToolHandle {
   private _frustum = new Frustum();
   private _activeFrustum = new Frustum();
   public get handleType() { return ViewHandleType.Rotate; }
-  public getHandleCursor() { return BeCursor.Rotate; }
+  public getHandleCursor() { return "move"; }
 
   public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
@@ -874,10 +874,10 @@ class ViewRotate extends ViewingToolHandle {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotMatrix.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotation.getRow(1);
 
       // Movement in screen y == rotation about screen X...
-      const yAxis = viewport.rotMatrix.getRow(0);
+      const yAxis = viewport.rotation.getRow(0);
 
       const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.createIdentity();
       const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.createIdentity();
@@ -910,7 +910,7 @@ class ViewLook extends ViewingToolHandle {
   private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor(): string { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -927,7 +927,7 @@ class ViewLook extends ViewingToolHandle {
 
     this._firstPtView.setFrom(ev.viewPoint);
     this._eyePoint.setFrom(view.getEyePoint());
-    this._rotation.setFrom(vp.rotMatrix);
+    this._rotation.setFrom(vp.rotation);
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
@@ -978,7 +978,7 @@ class ViewScroll extends ViewingToolHandle {
   private _anchorPtView = new Point3d();
   private _lastPtView = new Point3d();
   public get handleType() { return ViewHandleType.Scroll; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor(): string { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1006,12 +1006,12 @@ class ViewScroll extends ViewingToolHandle {
     builder.setSymbology(black, black, 1);
     builder.addArc(ellipse, false, false);
 
-    const dvec = Vector2d.createStartEnd(points[0], points[1]);
-    if (dvec.magnitude() > 0.1) {
+    const vec = Vector2d.createStartEnd(points[0], points[1]);
+    if (vec.magnitude() > 0.1) {
       const slashPts = [new Point2d(), new Point2d()];
-      dvec.normalize(dvec);
-      points[0].plusScaled(dvec, radius, slashPts[0]);
-      points[0].plusScaled(dvec, -radius, slashPts[1]);
+      vec.normalize(vec);
+      points[0].plusScaled(vec, radius, slashPts[0]);
+      points[0].plusScaled(vec, -radius, slashPts[1]);
       builder.setSymbology(black, black, 2);
       builder.addLineString2d(slashPts, 0.0);
     }
@@ -1074,7 +1074,7 @@ class ViewScroll extends ViewingToolHandle {
       viewport.setupViewFromFrustum(frustum);
     } else {
       const iDist = Point2d.create(Math.floor(dist.x * scrollFactor), Math.floor(dist.y * scrollFactor));
-      viewport.scroll(iDist);
+      viewport.scroll(iDist, { saveInUndo: false, animateFrustumChange: false });
     }
 
     return true;
@@ -1088,7 +1088,7 @@ class ViewZoom extends ViewingToolHandle {
   private _lastPtView = new Point3d();
   private _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor() { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1226,10 +1226,10 @@ class NavigateMotion {
     this.transform.setIdentity();
   }
 
-  public getViewUp(result?: Vector3d) { return this.viewport.rotMatrix.getRow(1, result); }
+  public getViewUp(result?: Vector3d) { return this.viewport.rotation.getRow(1, result); }
 
   public getViewDirection(result?: Vector3d): Vector3d {
-    const forward = this.viewport.rotMatrix.getRow(2, result);
+    const forward = this.viewport.rotation.getRow(2, result);
     forward.scale(-1, forward); // positive z is out of the screen, but we want direction into the screen
     return forward;
   }
@@ -1270,7 +1270,7 @@ class NavigateMotion {
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
     const vp = this.viewport;
     const view = vp.view as ViewState3d;
-    const viewRot = vp.rotMatrix;
+    const viewRot = vp.rotation;
     const invViewRot = viewRot.inverse()!;
     const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(pitchRate * this.deltaTime));
     const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
@@ -1337,7 +1337,7 @@ class NavigateMotion {
     const view = this.viewport.view;
     if (!view.is3d() || !view.isCameraOn)
       return;
-    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.rotMatrix)!;
+    const angles = YawPitchRollAngles.createFromMatrix3d(this.viewport.rotation)!;
     angles.pitch.setRadians(0); // reset pitch to zero
     Transform.createFixedPointAndMatrix(view.getEyePoint(), angles.toMatrix3d(), this.transform);
   }
@@ -1431,10 +1431,9 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return state.isControlDown ? NavigateMode.Look : NavigateMode.Travel;
   }
 
-  private static _scratchForward = new Vector3d();
   public doNavigate(ev: BeButtonEvent): boolean {
     const currentTime = Date.now();
-    const forward = ViewNavigate._scratchForward;
+    const forward = new Vector3d();
     const orientationEvent = this.tryOrientationEvent(forward, ev);
     const orientationResult = orientationEvent.result;
     const elapsedTime = this.getElapsedTime(currentTime);
@@ -1529,7 +1528,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return true;
   }
 
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor() { return "crosshair"; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
@@ -1628,7 +1627,7 @@ class ViewFly extends ViewNavigate {
 /** The tool that performs a Pan view operation */
 export class PanViewTool extends ViewManip {
   public static toolId = "View.Pan";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
 }
@@ -1636,7 +1635,7 @@ export class PanViewTool extends ViewManip {
 /** tool that performs a Rotate view operation */
 export class RotateViewTool extends ViewManip {
   public static toolId = "View.Rotate";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
 }
@@ -1644,7 +1643,7 @@ export class RotateViewTool extends ViewManip {
 /** tool that performs the look operation */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
 }
@@ -1652,7 +1651,7 @@ export class LookViewTool extends ViewManip {
 /** tool that performs the scroll operation */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
 }
@@ -1660,7 +1659,7 @@ export class ScrollViewTool extends ViewManip {
 /** tool that performs the zoom operation */
 export class ZoomViewTool extends ViewManip {
   public static toolId = "View.Zoom";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
 }
@@ -1668,7 +1667,7 @@ export class ZoomViewTool extends ViewManip {
 /** tool that performs the walk operation */
 export class WalkViewTool extends ViewManip {
   public static toolId = "View.Walk";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
 }
@@ -1676,7 +1675,7 @@ export class WalkViewTool extends ViewManip {
 /** tool that performs the fly operation */
 export class FlyViewTool extends ViewManip {
   public static toolId = "View.Fly";
-  constructor(vp: Viewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
 }
@@ -1684,10 +1683,10 @@ export class FlyViewTool extends ViewManip {
 /** The tool that performs a fit view */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
-  public viewport: Viewport;
+  public viewport: ScreenViewport;
   public oneShot: boolean;
   public doAnimate: boolean;
-  constructor(viewport: Viewport, oneShot: boolean, doAnimate = true) {
+  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate = true) {
     super();
     this.viewport = viewport;
     this.oneShot = oneShot;
@@ -1707,7 +1706,7 @@ export class FitViewTool extends ViewTool {
       this.doFit(this.viewport, this.oneShot, this.doAnimate);
   }
 
-  public doFit(viewport: Viewport, oneShot: boolean, doAnimate = true): boolean {
+  public doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
     ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
@@ -1885,7 +1884,7 @@ export class WindowAreaTool extends ViewTool {
 
       vp.npcToWorldArray(corners);  // Put corners back in world at correct depth
       const viewPts: Point3d[] = [corners[0].clone(), corners[1].clone()];
-      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
+      vp.rotation.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
 
       const range = Range3d.createArray(viewPts);
       delta = Vector3d.createStartEnd(range.low, range.high);
@@ -1898,7 +1897,7 @@ export class WindowAreaTool extends ViewTool {
       if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle, focusDist) !== ViewStatus.Success)
         return;
     } else {
-      vp.rotMatrix.multiplyVectorArrayInPlace(corners);
+      vp.rotation.multiplyVectorArrayInPlace(corners);
 
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
@@ -1911,7 +1910,7 @@ export class WindowAreaTool extends ViewTool {
 
       vp.view.setExtents(delta);
 
-      const originVec = vp.rotMatrix.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+      const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
       vp.view.setOrigin(Point3d.createFrom(originVec));
     }
 
@@ -2002,7 +2001,7 @@ export class DefaultViewTouchTool extends ViewManip {
   private handle2dPan(_ev: BeTouchEvent): void {
     const vp = this.viewport!;
     const screenDist = Point2d.create(this._startPtView.x - this._lastPtView.x, this._startPtView.y - this._lastPtView.y);
-    vp.scroll(screenDist);
+    vp.scroll(screenDist, { saveInUndo: false, animateFrustumChange: false });
   }
 
   private handle2dRotateZoom(ev: BeTouchEvent): void {
@@ -2028,8 +2027,8 @@ export class DefaultViewTouchTool extends ViewManip {
     const xDelta = this._lastPtView.x - this._startPtView.x;
     const yDelta = this._lastPtView.y - this._startPtView.y;
 
-    const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotMatrix.getRow(1);
-    const yAxis = vp.rotMatrix.getRow(0);
+    const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotation.getRow(1);
+    const yAxis = vp.rotation.getRow(0);
     const xRMatrix = (0.0 !== xDelta) ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.identity;
     const yRMatrix = (0.0 !== yDelta) ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.identity;
     const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
@@ -2081,7 +2080,7 @@ export class DefaultViewTouchTool extends ViewManip {
     offset.multiplyTransformTransform(transform, transform);
     transform.multiplyPoint3d(viewCenter, viewCenter);
     vp.npcToWorld(viewCenter, viewCenter);
-    vp.zoom(viewCenter, zoomRatio);
+    vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
   }
 
   private handleEvent(ev: BeTouchEvent): void {
@@ -2131,9 +2130,9 @@ export class DefaultViewTouchTool extends ViewManip {
 /** tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required. */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
-  private _viewport: Viewport;
+  private _viewport: ScreenViewport;
 
-  constructor(vp: Viewport) { super(); this._viewport = vp; }
+  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
     this._viewport.doUndo(ToolSettings.animationTime);
@@ -2144,9 +2143,9 @@ export class ViewUndoTool extends ViewTool {
 /** tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required. */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
-  private _viewport: Viewport;
+  private _viewport: ScreenViewport;
 
-  constructor(vp: Viewport) { super(); this._viewport = vp; }
+  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
     this._viewport.doRedo(ToolSettings.animationTime);

@@ -6,3 +6,4 @@
 export * from "./DragDropDef";
 export * from "./withDragSource";
 export * from "./withDropTarget";
+export * from "./BeDragDropContext";

@@ -9,14 +9,14 @@ import { Cube, Face } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import * as classnames from "classnames";
-import { Geometry, Angle, AxisIndex, Matrix3d, Point3d, Point2d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, YawPitchRollAngles, Vector3d } from "@bentley/geometry-core";
 
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
-import { ViewportManager, ViewRotationChangeEventArgs } from "@bentley/ui-components";
+import { ViewRotationChangeEventArgs, ViewRotationCube } from "@bentley/ui-components";
 
-/** NavigationAid that displays an interactive rotation cube that synchonizes with the rotation of the iModel Viewport */
+/** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport */
 export class CubeNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -48,13 +48,13 @@ export interface RotationMap {
   right: Face;
 }
 
-export const faceLocations: { [key: number]: Point3d } = {
-  [Face.Right]: Point3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
-  [Face.Left]: Point3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
-  [Face.Top]: Point3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Top),
-  [Face.Bottom]: Point3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Bottom),
-  [Face.Front]: Point3d.create(HitBoxX.None, HitBoxY.Front, HitBoxZ.None),
-  [Face.Back]: Point3d.create(HitBoxX.None, HitBoxY.Back, HitBoxZ.None),
+export const faceLocations: { [key: number]: Vector3d } = {
+  [Face.Right]: Vector3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
+  [Face.Left]: Vector3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
+  [Face.Top]: Vector3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Top),
+  [Face.Bottom]: Vector3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Bottom),
+  [Face.Front]: Vector3d.create(HitBoxX.None, HitBoxY.Front, HitBoxZ.None),
+  [Face.Back]: Vector3d.create(HitBoxX.None, HitBoxY.Back, HitBoxZ.None),
 };
 
 // data relating Up/Down/Left/Right directions relative to every surface
@@ -90,7 +90,6 @@ export enum CubeHover {
 }
 
 export interface CubeNavigationState {
-  currentFace: Face;
   dragging: boolean;
   startRotMatrix: Matrix3d;
   endRotMatrix: Matrix3d;
@@ -104,7 +103,6 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   private _start: Point2d = Point2d.createZero();
   private _then: number = 0;
   public readonly state: Readonly<CubeNavigationState> = {
-    currentFace: Face.Front,
     dragging: false,
     startRotMatrix: Matrix3d.createIdentity(),
     endRotMatrix: Matrix3d.createIdentity(),
@@ -114,27 +112,22 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   };
 
   public componentDidMount() {
-    ViewportManager.ViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.viewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
   }
 
   public componentWillUnmount() {
-    ViewportManager.ViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.viewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
 
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const { animation, dragging, endRotMatrix } = this.state;
     const matrix = endRotMatrix;
-    const newMatrix = args.rotMatrix;
+    const newMatrix = args.viewport.rotation;
 
-    if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging) {
-      this.setState({
-        startRotMatrix: matrix, endRotMatrix: newMatrix,
-        animation: 1,
-        currentFace: Face.None,
-      });
-    }
+    if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging)
+      this.setState({ startRotMatrix: matrix, endRotMatrix: newMatrix, animation: 1 });
   }
 
   private _animate = (timestamp: number) => {
@@ -145,7 +138,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animation += delta / this.state.animationTime;
     if (animation > 1) {
       animation = 1;
-      ViewportManager.setCubeMatrix3d(this.state.endRotMatrix, -1);
+      ViewRotationCube.setCubeMatrix(this.state.endRotMatrix, -1);
     } else
       requestAnimationFrame(this._animate);
     this.setState({ animation });
@@ -155,9 +148,20 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     return -(Math.cos(t * Math.PI) - 1) / 2;
   }
 
+  private static _isMatrixFace = (matrix: Matrix3d): boolean => {
+    let sum = 0;
+    for (const coff of matrix.coffs) {
+      if (Geometry.isAlmostEqualNumber(Math.abs(coff), 1))
+        sum++;
+    }
+    // Assuming matrix is a proper rotation matrix:
+    // if matrix viewing a face, there will be a total of 3 values either almost -1, or almost 1.
+    return sum === 3;
+  }
+
   public render(): React.ReactNode {
-    const { animation, currentFace, startRotMatrix, endRotMatrix } = this.state;
-    const visible = currentFace !== Face.None && animation >= 1;
+    const { animation, startRotMatrix, endRotMatrix } = this.state;
+    const visible = CubeNavigationAid._isMatrixFace(endRotMatrix) && animation >= 1.0;
     let rotMatrix = endRotMatrix;
     if (animation < 1.0) {
       if (!rotMatrix.isAlmostEqual(startRotMatrix)) {
@@ -173,7 +177,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
                 const newMatrix = newDiff.multiplyMatrixMatrix(startRotMatrix);
                 if (newMatrix) {
                   rotMatrix = newMatrix;
-                  ViewportManager.setCubeMatrix3d(rotMatrix, 0);
+                  ViewRotationCube.setCubeMatrix(rotMatrix, 0);
                 }
               }
             }
@@ -182,7 +186,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       }
     }
 
-    const labels: {[key: number]: string} = {
+    const labels: { [key: number]: string } = {
       [Face.Right]: UiFramework.i18n.translate("UiFramework:cube.right"),
       [Face.Left]: UiFramework.i18n.translate("UiFramework:cube.left"),
       [Face.Back]: UiFramework.i18n.translate("UiFramework:cube.back"),
@@ -191,7 +195,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       [Face.Bottom]: UiFramework.i18n.translate("UiFramework:cube.bottom"),
     };
 
-    const faces: {[key: string]: React.ReactNode} = {};
+    const faces: { [key: string]: React.ReactNode } = {};
     for (const key in labels) {
       if (labels.hasOwnProperty(key)) {
         const f = parseInt(key, 10) as Face;
@@ -202,7 +206,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
             label={label}
             hoverMap={this.state.hoverMap}
             onFaceCellClick={this._handleFaceCellClick}
-            onFaceCellHoverChange={this._handleCellHoverChange}/>
+            onFaceCellHoverChange={this._handleCellHoverChange} />
         );
       }
     }
@@ -212,7 +216,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
         onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube
-            className={classnames("nav-cube", {dragging: this.state.dragging})}
+            className={classnames("nav-cube", { dragging: this.state.dragging })}
             rotMatrix={rotMatrix}
             faces={faces} />
         </div>
@@ -224,70 +228,31 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     );
   }
 
-  private _handleCellHoverChange = (pos: Point3d, state: CubeHover) => {
+  private _handleCellHoverChange = (vect: Vector3d, state: CubeHover) => {
     const hoverMap = this.state.hoverMap;
-    hoverMap[pos.x + "|" + pos.y + "|" + pos.z] = state;
+    hoverMap[vect.x + "|" + vect.y + "|" + vect.z] = state;
     this.setState({ hoverMap });
   }
 
   private _onArrowClick = (arrow: Pointer) => {
-    const { currentFace, endRotMatrix } = this.state;
-    let r = 0;
-    const m = Matrix3d.createRigidFromMatrix3d(endRotMatrix);
-    if (m) {
-      const rot = YawPitchRollAngles.createFromMatrix3d(m);
-      if (rot) {
-        if (currentFace === Face.Top || currentFace === Face.Bottom) {
-          r = rot.yaw.radians;
-        }
-      }
-    }
-    r = Math.round(Angle.adjustRadiansMinusPiPlusPi(r) * 2 / Math.PI); // regularize to 90deg = 1 etc.
-    const direction = rotateRouteByIndex(routes[currentFace], r);
-    let faceTo: Face = Face.None;
-
-    // map different directions to particular rotation orientations
+    const localRotationAxis = Vector3d.create(0, 0, 0);
     switch (arrow) {
       case Pointer.Up:
-        faceTo = direction.up;
+        localRotationAxis.x = -1.0;
         break;
       case Pointer.Down:
-        faceTo = direction.down;
+        localRotationAxis.x = 1.0;
         break;
       case Pointer.Left:
-        faceTo = direction.left;
+        localRotationAxis.y = -1.0;
         break;
-      case Pointer.Right:
-        faceTo = direction.right;
+      default:
+        localRotationAxis.y = 1.0;
         break;
     }
-    if (faceTo !== Face.None) {
-      // map different directions to particular rotation orientations
-      const pos = faceLocations[faceTo];
-      let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
-      if (rotMatrix) {
-        const startRotMatrix = endRotMatrix.clone();
-        if (faceTo === Face.Top || faceTo === Face.Bottom) {
-          const m2 = Matrix3d.createRigidFromMatrix3d(endRotMatrix);
-          if (m2) {
-            const rot = YawPitchRollAngles.createFromMatrix3d(m2);
-            if (rot) {
-              let r2 = 0;
-              if (faceTo === Face.Top) {
-                r2 = rot.yaw.radians;
-              } else {
-                r2 = -rot.yaw.radians;
-              }
-              r2 = Math.round(Angle.adjustRadiansMinusPiPlusPi(r2) * 2 / Math.PI) * Math.PI / 2; // round to quarter turn intervals
-              const rotate = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(r2));
-              if (rotate)
-                rotMatrix = rotate.multiplyMatrixMatrix(rotMatrix);
-            }
-          }
-        }
-        this._animateRotation(startRotMatrix, rotMatrix, 320, faceTo);
-      }
-    }
+    const localRotation = Matrix3d.createRotationAroundVector(localRotationAxis, Angle.createDegrees(-90))!;
+    const newRotation = localRotation.multiplyMatrixMatrix(this.state.endRotMatrix);
+    this._animateRotation(this.state.endRotMatrix, newRotation, this.state.animationTime);
   }
 
   private _handleBoxClick = (event: any) => {
@@ -330,11 +295,13 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     window.removeEventListener("mouseup", this._onMouseStopDrag);
   }
 
-  private _handleFaceCellClick = (pos: Point3d, face: Face = Face.None) => {
-    const { currentFace, endRotMatrix } = this.state;
+  private _handleFaceCellClick = (pos: Vector3d, face: Face = Face.None) => {
+    const { endRotMatrix } = this.state;
     let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
     if (rotMatrix) {
-      if (currentFace !== face && (face === Face.Top || face === Face.Bottom)) {
+      const currentZ = rotMatrix.rowZ();
+
+      if (!CubeNavigationAid._isMatrixFace(endRotMatrix) && (currentZ.isAlmostEqualXYZ(0, 0, 1) || currentZ.isAlmostEqualXYZ(0, 0, -1))) {
         const m = Matrix3d.createRigidFromMatrix3d(this.state.endRotMatrix);
         if (m) {
           const rot = YawPitchRollAngles.createFromMatrix3d(m);
@@ -352,30 +319,28 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
           }
         }
       }
-      this._animateRotation(endRotMatrix, rotMatrix, 320, face);
+      this._animateRotation(endRotMatrix, rotMatrix, 320);
     }
     window.removeEventListener("mousemove", this._onMouseDrag);
   }
 
-  private _animateRotation = (startRotMatrix: Matrix3d, endRotMatrix: Matrix3d, animationTime: number, currentFace: Face = Face.None) => {
+  private _animateRotation = (startRotMatrix: Matrix3d, endRotMatrix: Matrix3d, animationTime: number) => {
     // set animation variables, let css transitions animate it.
-    ViewportManager.setCubeMatrix3d(startRotMatrix, 0);
+    ViewRotationCube.setCubeMatrix(startRotMatrix, 0);
     this._then = Date.now();
     requestAnimationFrame(this._animate);
     this.setState({
       startRotMatrix, endRotMatrix,
       animation: 0, animationTime,
-      currentFace, // only set visible when currentFace is an actual face
     });
   }
-  private _setRotation = (endRotMatrix: Matrix3d, startRotMatrix?: Matrix3d, currentFace: Face = Face.None) => {
-    ViewportManager.setCubeMatrix3d(endRotMatrix, 0);
+  private _setRotation = (endRotMatrix: Matrix3d, startRotMatrix?: Matrix3d) => {
+    ViewRotationCube.setCubeMatrix(endRotMatrix, 0);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRotMatrix: startRotMatrix || endRotMatrix,
       endRotMatrix,
       animation: 1,
-      currentFace, // only set visible when currentFace is an actual face
     });
   }
 }
@@ -384,8 +349,8 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
   face: Face;
   label: string;
   hoverMap: { [key: string]: CubeHover };
-  onFaceCellClick: (position: Point3d, face?: Face) => void;
-  onFaceCellHoverChange: (position: Point3d, state: CubeHover) => void;
+  onFaceCellClick: (vector: Vector3d, face?: Face) => void;
+  onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
 export class NavCubeFace extends React.Component<NavCubeFaceProps> {
@@ -403,7 +368,7 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
                     onFaceCellHoverChange={onFaceCellHoverChange}
                     onFaceCellClick={onFaceCellClick}
                     hoverMap={hoverMap}
-                    position={NavCubeFace.faceCellToPos(face, x, y)}
+                    vector={NavCubeFace.faceCellToPos(face, x, y)}
                     face={(x === 0 && y === 0 && face) || Face.None}
                     center={x === 0}>
                     {x === 0 && y === 0 &&
@@ -418,18 +383,16 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
     );
   }
   public static faceCellToPos = (face: Face, x: number, y: number) => {
-    const facePos = faceLocations[face];
+    const faceVect = faceLocations[face];
     const route = routes[face];
 
     const faceX = x < 0 ? route.left : x > 0 ? route.right : Face.None;
-    const xPoint = faceX !== Face.None ? faceLocations[faceX] : Point3d.createZero();
+    const xVect = faceX !== Face.None ? faceLocations[faceX] : Vector3d.createZero();
 
     const faceY = y < 0 ? route.up : y > 0 ? route.down : Face.None;
-    const yPoint = faceY !== Face.None ? faceLocations[faceY] : Point3d.createZero();
+    const yVect = faceY !== Face.None ? faceLocations[faceY] : Vector3d.createZero();
 
-    const position = facePos.plus(xPoint).plus(yPoint);
-    // const newFace = faceX === Face.None && faceY === Face.None ? this.props.face : Face.None;
-    return position;
+    return faceVect.plus(xVect).plus(yVect);
   }
 }
 
@@ -446,18 +409,18 @@ class FaceRow extends React.Component<FaceRowProps> {
 
 export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
-  onFaceCellClick: (position: Point3d, face?: Face) => void;
-  onFaceCellHoverChange: (position: Point3d, state: CubeHover) => void;
+  onFaceCellClick: (vector: Vector3d, face?: Face) => void;
+  onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
   hoverMap: { [key: string]: CubeHover };
-  position: Point3d;
+  vector: Vector3d;
   face?: Face;
 }
 
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {
-    const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, position, ...props } = this.props;
-    const { x, y, z } = position;
+    const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, vector, ...props } = this.props;
+    const { x, y, z } = vector;
     const hover = hoverMap[x + "|" + y + "|" + z] === CubeHover.Hover;
     const active = hoverMap[x + "|" + y + "|" + z] === CubeHover.Active;
     return <div
@@ -469,26 +432,26 @@ export class FaceCell extends React.Component<FaceCellProps> {
       {...props}>{children}</div>;
   }
   private _handleMouseOver = () => {
-    const { position } = this.props;
-    this.props.onFaceCellHoverChange(position, CubeHover.Hover);
+    const { vector } = this.props;
+    this.props.onFaceCellHoverChange(vector, CubeHover.Hover);
   }
   private _handleMouseOut = () => {
-    const { position } = this.props;
-    this.props.onFaceCellHoverChange(position, CubeHover.None);
+    const { vector } = this.props;
+    this.props.onFaceCellHoverChange(vector, CubeHover.None);
   }
   private _handleMouseDown = (event: React.MouseEvent) => {
-    const { position } = this.props;
+    const { vector } = this.props;
     const { clientX, clientY } = event;
     this._startMouse = Point2d.create(clientX, clientY);
-    this.props.onFaceCellHoverChange(position, CubeHover.Active);
+    this.props.onFaceCellHoverChange(vector, CubeHover.Active);
   }
   private _handleMouseUp = (event: React.MouseEvent) => {
-    const { position, face } = this.props;
+    const { vector, face } = this.props;
     const { clientX, clientY } = event;
-    this.props.onFaceCellHoverChange(position, CubeHover.None);
+    this.props.onFaceCellHoverChange(vector, CubeHover.None);
     const mouse = Point2d.create(clientX, clientY);
     if (this._startMouse && this._startMouse.isAlmostEqual(mouse))
-      this.props.onFaceCellClick(position, face);
+      this.props.onFaceCellClick(vector, face);
   }
 }
 

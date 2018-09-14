@@ -19,7 +19,7 @@ import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
 import { GLSLVertex, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
-import { GLSLCommon } from "./Common";
+import { GLSLCommon, addEyeSpace } from "./Common";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { LUTDimension, FeatureDimension, computeFeatureDimension } from "../FeatureDimensions";
@@ -326,6 +326,12 @@ const checkVertexHiliteDiscard = "return 0.0 == v_feature_hilited;";
 
 // The result is a mask in which each highlighted pixel is white, all other pixels are black.
 const computeHiliteColor = "return vec4(ceil(v_feature_hilited));";
+const computeSurfaceHiliteColor = `
+if (ceil(v_feature_hilited) >= 1.0 && isSurfaceBitSet(kSurfaceBit_HasTexture))
+  return vec4(TEXTURE(s_texture, v_texCoord).a > 0.15 ? 1.0 : 0.0);
+else
+  return vec4(ceil(v_feature_hilited));
+`;
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
@@ -340,6 +346,11 @@ const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
   1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
   value.b * 256.0);
 `;
+
+export function addSurfaceHiliter(builder: ProgramBuilder, wantWeight: boolean = false, alwaysUniform: boolean = false): void {
+  addHiliter(builder, wantWeight, alwaysUniform);
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeSurfaceHiliteColor);
+}
 
 export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false, alwaysUniform: boolean = false): void {
   let opts = FeatureSymbologyOptions.HasOverrides;
@@ -388,8 +399,6 @@ vec2 readDepthAndOrder(vec2 tc) {
 }
 `;
 
-export const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition).xyz;";
-
 const checkForEarlySurfaceDiscard = `
   if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
     return false;
@@ -415,7 +424,7 @@ const checkForEarlySurfaceDiscardWithElemID = `
   vec3 eyeDir;
   float dtWidthFactor;
   if (u_frustum.z == kFrustumType_Perspective) {
-    eyeDir = normalize(-v_eyeSpace);
+    eyeDir = normalize(-v_eyeSpace.xyz);
     dtWidthFactor = -v_eyeSpace.z * u_pixelWidthFactor;
   } else {
     eyeDir = vec3(0.0, 0.0, 1.0);
@@ -631,7 +640,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.addFunction(GLSLFragment.computeLinearDepth);
     frag.addFunction(GLSLDecode.depthRgb);
     frag.addFunction(readDepthAndOrder);
-    builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+    addEyeSpace(builder);
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
   } else {
     addFeatureIndex(vert);
@@ -647,7 +656,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.addFunction(readDepthAndOrder);
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithElemID);
 
-    builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+    addEyeSpace(builder);
     builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = ComputeLineWeight();");
     addElementId(builder);
   }

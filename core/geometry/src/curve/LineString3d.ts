@@ -4,7 +4,7 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions, Angle } from "../Geometry";
+import { Geometry, BeJSONFunctions, Angle, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform, Matrix3d } from "../Transform";
@@ -33,7 +33,7 @@ function accumulateGoodUnitPerpendicular(
   const n = points.length;
   if (stepDirection > 0) {
     for (let i = baseIndex; i + 1 < n; i++) {
-      points.vectorIndexIndex(i + 1, i, workVector);
+      points.vectorIndexIndex(i, i + 1, workVector);
       vectorA.crossProduct(workVector, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
@@ -45,7 +45,7 @@ function accumulateGoodUnitPerpendicular(
       baseIndex = n - 2;
     for (let i = baseIndex; i >= 0; i--) {
       points.vectorIndexIndex(i, i + 1, workVector);
-      vectorA.crossProduct(workVector, workVector);
+      workVector.crossProduct(vectorA, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
         return true;
@@ -182,7 +182,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       radians = (i0 + 2 * i) * radiansStep;
       c = Angle.cleanupTrigValue(Math.cos(radians));
       s = Angle.cleanupTrigValue(Math.sin(radians));
-      ls.addPointXYZ(center.x + radius * c, center.y * radius * s, center.z);
+      ls.addPointXYZ(center.x + radius * c, center.y + radius * s, center.z);
     }
     ls.addClosurePoint();
     return ls;
@@ -347,11 +347,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     // tricky stuff to handle colinear points.   But if vectorA is zero it is still a mess . ..
     const normal = Vector3d.create();
     const workVector = Vector3d.create();
-    // try forming normal using both forward and reverse stepping.
-    // if at an end segment, only one will succeed.
-    // if interior, both produce candidates, both can succeed and will be weighted.
-    accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, localFraction, normal, workVector);
-    accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, (1.0 - localFraction), normal, workVector);
+    if (baseIndex === 0) {  // only look forward
+      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, 1.0, normal, workVector);
+    } else if (baseIndex + 2 >= n) { // only look back
+      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, 1.0, normal, workVector);
+    } else {
+      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, (1.0 - localFraction), normal, workVector);
+      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, (localFraction), normal, workVector);
+    }
     const matrix = Matrix3d.createRigidFromColumns(normal, vectorA, AxisOrder.ZXY);
     if (matrix)
       return Transform.createOriginAndMatrix(origin, matrix, result);
@@ -453,7 +456,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *  Intersections within segments are recorded as CurveIntervalRole.isolated
    *   Intersections at isolated "on" vertex are recoded as CurveIntervalRole.isolatedAtVertex.
    */
-  public appendPlaneIntersectionPoints(plane: Plane3dByOriginAndUnitNormal, result: CurveLocationDetail[]): number {
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     if (this._points.length < 1) return 0;
     const initialLength = result.length;
     const n = this._points.length;

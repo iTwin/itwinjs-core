@@ -32,7 +32,7 @@ export class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     this.setState({ isSelected: !this.state.isSelected },
       () => {
         if (this.props.onClick)
-          this.props.onClick ();
+          this.props.onClick();
       },
     );
   }
@@ -44,13 +44,13 @@ export class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     let lastIndex: number;
     if ((name.length > 30) && (-1 !== (lastIndex = name.lastIndexOf("\\"))))
       name = name.substring(lastIndex + 1);
-    const cardClassName = classnames ("view-card", this.state.isSelected && "isActive");
+    const cardClassName = classnames("view-card", this.state.isSelected && "isActive");
     return (
       <div className={cardClassName} onClick={this._onClicked}>
-          <div className="view-card-content">
-            <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />
-            <div className="view-card-name">{name}</div>
-          </div>
+        <div className="view-card-content">
+          <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />
+          <div className="view-card-name">{name}</div>
+        </div>
       </div>
     );
   }
@@ -116,10 +116,10 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
     try {
       viewProps = await this._iModelConnection.views.queryProps(viewQueryParams);
       this.setState({ views: viewProps, waitingForViews: false });
-      for (const viewProp of viewProps) {
-        // tslint:disable-next-line:no-console
-        console.log(viewProp);
-      }
+      // for (const viewProp of viewProps) {
+      //   // tslint:disable-next-line:no-console
+      //   console.log(viewProp);
+      // }
     } catch (e) {
       // tslint:disable-next-line:no-console
       console.log("error getting views", e);

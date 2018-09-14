@@ -1,6 +1,57 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 23 Aug 2018 15:25:49 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+
+## 0.128.0
+Fri, 14 Sep 2018 17:08:05 GMT
+
+*Version update only*
+
+## 0.127.0
+Thu, 13 Sep 2018 17:07:11 GMT
+
+*Version update only*
+
+## 0.126.0
+Wed, 12 Sep 2018 19:12:10 GMT
+
+*Version update only*
+
+## 0.125.0
+Wed, 12 Sep 2018 13:35:50 GMT
+
+*Version update only*
+
+## 0.124.0
+Tue, 11 Sep 2018 13:52:59 GMT
+
+### Updates
+
+- Add initial support for the Functional domain.
+- Remove PhysicalPortion and SpatialLocationPortion since those classes are deprecated in BisCore.
+
+## 0.123.0
+Wed, 05 Sep 2018 17:14:50 GMT
+
+### Updates
+
+- PBI#30301: Add ability to reuse briefcases when opening a new IModelConnection/IModelDb. <br/> Opening a new ReadWrite IModelConnection at the frontend would try and reuse any existing briefcase that was previously opened by the same user. Opening a new Exclusive IModelDb at the backend can be configured to reuse or create/acquire a new briefcase. <br/> PBI#30302: Add method to purge the briefcase manager cache. <br/> When backend instances are brought down it's important that any briefcases they acquired from the Hub be properly disposed of. The iModelHub imposes an artificial limit of 20 briefcases per user, and acquiring more briefcases will cause an error.Added a new BriefcaseManager.purgeCache() method to help with this - the method closes any open briefcases, deletes the registered briefcase id from the Hub, and deletes the physical cache folder containing the Dbs. Note that the accessToken passed in to the method must match the accessToken used to acquire any briefcases that are to be deleted - so this only works in the limited environment where the entire cache was hydrated for the same user.
+- Product Backlog Item 30601: Fix the HTTP path (Route) for ReadWrite workflows to not include changeSetId. The Db would always be at the latest change set id for ReadWrite workflows.  So it doesn't make sense to include that in the route and keep changing it as we make PullMergeAndPush calls from the backend. 
+
+## 0.122.0
+Tue, 28 Aug 2018 12:25:19 GMT
+
+*Version update only*
+
+## 0.121.0
+Fri, 24 Aug 2018 12:49:09 GMT
+
+*Version update only*
+
+## 0.120.0
+Thu, 23 Aug 2018 20:51:32 GMT
+
+*Version update only*
 
 ## 0.119.0
 Thu, 23 Aug 2018 15:25:49 GMT

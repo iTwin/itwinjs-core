@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/mixins";
 
- .unselectable {
+.unselectable {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -11,22 +11,27 @@
   user-select: none;
 }
 
-.Clickable {
-  pointer-events: auto;
-}
-
 // Workarounds for ui-ninezone Widget scrollbar issues
 .nz-content-area {
   overflow-x: hidden;
   overflow-y: hidden;
   height: 100%;
+
   > .nz-content > div {
     height: 100%;
+
     > div {
       height: 100%;
     }
   }
 }
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .dragdrop-layer {
   cursor: grabbing;
   position: fixed;
@@ -36,4 +41,10 @@
   top: 0;
   height: 100%;
   width: 100%;
+}
+
+.element-tooltip {
+  width: max-content;
+  font-size: $bwc-font-size;
+  pointer-events: none;
 }

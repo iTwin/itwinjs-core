@@ -2,19 +2,9 @@
   "extends": "./node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
   "compilerOptions": {
     "skipLibCheck": true,
-    "outDir": "./lib",
-    "baseUrl": "./node_modules",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "paths": {
-      "@common/*": [
-        "@bentley/presentation-common/lib/*"
-      ],
-      "@helpers/*": [
-        "../../../presentation/common/tests/_helpers/*",
-        "../../../presentation/frontend/tests/_helpers/*"
-      ]
-    }
+    "outDir": "./lib"
   },
   "include": [
     "src/**/*.ts"
@@ -22,5 +12,19 @@
   "exclude": [
     "lib",
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../presentation/common"
+    },
+    {
+      "path": "../../presentation/backend"
+    },
+    {
+      "path": "../../presentation/frontend"
+    },
+    {
+      "path": "../../presentation/components"
+    }
   ]
 }

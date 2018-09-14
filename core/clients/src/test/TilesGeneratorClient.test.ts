@@ -9,6 +9,7 @@ import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -36,13 +37,14 @@ describe("TilesGeneratorClient", () => {
   let projectId: string;
   let iModelId: string;
   let versionId: string;
+  const actx = new ActivityLoggingContext("");
 
   before(async () => {
     if (TestConfig.enableMocks)
       return;
 
     const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(authToken);
+    accessToken = await connectClient.getAccessToken(actx, authToken);
 
     const { project, iModel, version } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, "Hackathon", "Demo - ChangeSets", "First stage");
 
@@ -56,24 +58,24 @@ describe("TilesGeneratorClient", () => {
     chai.expect(versionId);
 
     // Update access token to that for TilesGeneratorClient
-    accessToken = await tilesGeneratorClient.getAccessToken(authToken);
+    accessToken = await tilesGeneratorClient.getAccessToken(actx, authToken);
   });
 
   it("should setup its URLs", async () => {
     TilesGeneratorUrlMock.mockGetUrl("DEV");
-    let url: string = await new TilesGeneratorClient("DEV").getUrl(true);
+    let url: string = await new TilesGeneratorClient("DEV").getUrl(actx, true);
     chai.expect(url).equals("https://dev-3dtilesgenerator.bentley.com");
 
     TilesGeneratorUrlMock.mockGetUrl("QA");
-    url = await new TilesGeneratorClient("QA").getUrl(true);
+    url = await new TilesGeneratorClient("QA").getUrl(actx, true);
     chai.expect(url).equals("https://qa-3dtilesgenerator.bentley.com");
 
     TilesGeneratorUrlMock.mockGetUrl("PROD");
-    url = await new TilesGeneratorClient("PROD").getUrl(true);
+    url = await new TilesGeneratorClient("PROD").getUrl(actx, true);
     chai.expect(url).equals("https://3dtilesgenerator.bentley.com");
 
     TilesGeneratorUrlMock.mockGetUrl("PERF");
-    url = await new TilesGeneratorClient("PERF").getUrl(true);
+    url = await new TilesGeneratorClient("PERF").getUrl(actx, true);
     chai.expect(url).equals("https://perf-3dtilesgenerator.bentley.com");
   });
 
@@ -88,7 +90,7 @@ describe("TilesGeneratorClient", () => {
       $filter: `$id+eq+'${instanceId}'`,
     };
 
-    const job: Job = await tilesGeneratorClient.getJob(accessToken, queryOptions);
+    const job: Job = await tilesGeneratorClient.getJob(actx, accessToken, queryOptions);
     // console.log(JSON.stringify(job));
 
     chai.assert(job);
@@ -104,7 +106,7 @@ describe("TilesGeneratorClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const url: string = await tilesGeneratorClient.buildWebNavigatorUrl(accessToken, projectId, iModelId, versionId);
+    const url: string = await tilesGeneratorClient.buildWebNavigatorUrl(actx, accessToken, projectId, iModelId, versionId);
     chai.expect(url).equals("https://qa-connect-imodelweb.bentley.com/?id=8ee4458a-53e2-46c3-af7c-e2a1cd5b08d1&projectId=52d1633d-88a1-404d-a060-98d70f777db4&dataId=6541fcb4-d1fa-4c58-8385-d73c9459d6d6");
     // https://qa-connect-imodelweb.bentley.com/?id=<tilesId>&projectId=<projectId>&dataId=<dataId>
   });

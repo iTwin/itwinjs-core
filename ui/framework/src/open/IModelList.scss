@@ -9,14 +9,14 @@
 }
 
  /* content header */
-.cards-content .header {
+.cards-content > .header {
   display: flex;
   align-items: center;
   height: 60px;
   margin: 0 2em;
   border-bottom: 1px solid #eee;
 
-  .title {
+  > .title {
     font-size: 1.75em;
     font-weight: 500;
     color: #6d6e77;

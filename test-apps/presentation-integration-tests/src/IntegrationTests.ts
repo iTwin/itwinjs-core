@@ -4,13 +4,16 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
-import "@helpers/MockFrontendEnvironment";
+import * as rimraf from "rimraf";
+import "@bentley/presentation-frontend/tests/_helpers/MockFrontendEnvironment";
 // common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
-import TestRpcManager from "@helpers/TestRpcManager";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { LoggingNamespaces } from "@bentley/presentation-common";
+import TestRpcManager from "@bentley/presentation-common/tests/_helpers/TestRpcManager";
 // backend includes
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Presentation as PresentationBackend, Presentation } from "@bentley/presentation-backend";
+import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
+import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 // frontend includes
 import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
@@ -60,6 +63,14 @@ export const initialize = () => {
   if (isInitialized)
     return;
 
+  // clean up temp directory to make sure we start from scratch
+  rimraf.sync(path.join(KnownLocations.tmpdir, "ecpresentation"));
+
+  // init logging (enable on demand while debugging)
+  Logger.initializeToConsole();
+  Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.None);
+  Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
+
   // init backend
   IModelHost.startup();
   PresentationBackend.initialize({
@@ -84,11 +95,11 @@ export const terminate = () => {
     return;
 
   // terminate backend
-  Presentation.terminate();
+  PresentationBackend.terminate();
   IModelHost.shutdown();
 
   // terminate frontend
-  Presentation.terminate();
+  PresentationFrontend.terminate();
   NoRenderApp.shutdown();
 
   isInitialized = false;

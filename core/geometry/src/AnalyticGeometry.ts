@@ -142,7 +142,12 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
+  public velocityXYZ(x: number, y: number, z: number): number { return this._normal.dotProductXYZ(x, y, z); }
+  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+   * for a point moving at speed one along the spaceVector.
+   */
   public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }
+
   /** @returns the altitude of a point given as separate x,y,z components. */
   public altitudeXYZ(x: number, y: number, z: number): number {
     return this._normal.dotProductStartEndXYZ(this._origin, x, y, z);
@@ -201,6 +206,27 @@ export class Ray3d implements BeJSONFunctions {
       return result;
     }
     return new Ray3d(origin.clone(), direction.clone());
+  }
+  /**
+   * Given a homogeneous point and its derivative components, construct a Ray3d with cartesian coordinates and derivatives.
+   * @param weightedPoint `[x,y,z,w]` parts of weighted point.
+   * @param weightedDerivative `[x,y,z,w]` derivatives
+   * @param result
+   */
+  public static createWeightedDerivative(weightedPoint: Float64Array, weightedDerivative: Float64Array, result?: Ray3d): Ray3d | undefined {
+    const w = weightedPoint[3];
+    const dw = weightedDerivative[3];
+    const x = weightedPoint[0];
+    const y = weightedPoint[1];
+    const z = weightedPoint[2];
+    const dx = weightedDerivative[0] * w - weightedPoint[0] * dw;
+    const dy = weightedDerivative[1] * w - weightedPoint[1] * dw;
+    const dz = weightedDerivative[2] * w - weightedPoint[2] * dw;
+    if (Geometry.isSmallMetricDistance(w))
+      return undefined;
+    const divW = 1.0 / w;
+    const divWW = divW * divW;
+    return Ray3d.createXYZUVW(x * divW, y * divW, z * divW, dx * divWW, dy * divWW, dz * divWW, result);
   }
   /** Create from coordinates of the origin and direction. */
   public static createXYZUVW(
@@ -369,7 +395,7 @@ export class Ray3d implements BeJSONFunctions {
     const uDotN = this.direction.dotProduct(plane.getNormalRef());
     const aDotN = vectorA.dotProduct(plane.getNormalRef());
     const division = Geometry.conditionalDivideFraction(-aDotN, uDotN);
-    if (!division)
+    if (undefined === division)
       return undefined;
 
     if (result) {

@@ -8,7 +8,7 @@ import { TestConfig, TestUsers } from "./TestConfig";
 
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
-import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Guid, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 export class UlasClientUrlMock {
   private static readonly _urlDescriptor: UrlDescriptor = {
@@ -31,6 +31,7 @@ describe("UlasClient", () => {
 
   let accessToken: AccessToken;
   const ulasClient = new UlasClient("QA");
+  const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
@@ -38,24 +39,24 @@ describe("UlasClient", () => {
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login(TestUsers.super);
-    accessToken = await ulasClient.getAccessToken(authToken);
+    accessToken = await ulasClient.getAccessToken(actx, authToken);
   });
 
   it("should set up its URLs", async () => {
     UlasClientUrlMock.mockGetUrl("DEV");
-    let url: string = await new UlasClient("DEV").getUrl();
+    let url: string = await new UlasClient("DEV").getUrl(actx);
     chai.expect(url).equals("https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
 
     UlasClientUrlMock.mockGetUrl("QA");
-    url = await new UlasClient("QA").getUrl();
+    url = await new UlasClient("QA").getUrl(actx);
     chai.expect(url).equals("https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
 
     UlasClientUrlMock.mockGetUrl("PROD");
-    url = await new UlasClient("PROD").getUrl();
+    url = await new UlasClient("PROD").getUrl(actx);
     chai.expect(url).equals("https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
 
     UlasClientUrlMock.mockGetUrl("PERF");
-    url = await new UlasClient("PERF").getUrl();
+    url = await new UlasClient("PERF").getUrl(actx);
     chai.expect(url).equals("https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
   });
 
@@ -67,7 +68,25 @@ describe("UlasClient", () => {
     entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
     entry.logPostingSource = LogPostingSource.RealTime;
     entry.usageType = UsageType.Beta;
-    const resp: LogPostingResponse = await ulasClient.logUsage(accessToken, entry);
+    const resp: LogPostingResponse = await ulasClient.logUsage(actx, accessToken, entry);
+    chai.assert(resp);
+    chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(resp.message, "Accepted");
+    chai.assert.isAtLeast(resp.time, 0);
+  });
+
+  it("Post usage log without host hash", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    const entry = new UsageLogEntry(43);
+    entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
+    // set host name and user name, but do not provide a hash
+    entry.hostName = "mymachine";
+    entry.hostUserName = "johnny";
+    entry.logPostingSource = LogPostingSource.RealTime;
+    entry.usageType = UsageType.Beta;
+    const resp: LogPostingResponse = await ulasClient.logUsage(actx, accessToken, entry);
     chai.assert(resp);
     chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(resp.message, "Accepted");
@@ -84,7 +103,27 @@ describe("UlasClient", () => {
     entry.logPostingSource = LogPostingSource.RealTime;
     entry.usageType = UsageType.Beta;
     entry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "imodelsize", value: 596622 });
-    const resp: LogPostingResponse = await ulasClient.logFeature(accessToken, entry);
+    const resp: LogPostingResponse = await ulasClient.logFeature(actx, accessToken, entry);
+    chai.assert(resp);
+    chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
+    chai.assert.equal(resp.message, "Accepted");
+    chai.assert.isAtLeast(resp.time, 0);
+  });
+
+  it("Post feature log without host hash", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    const myFeatureId = new Guid(true);
+    const entry = new FeatureLogEntry(myFeatureId, 43);
+    entry.productVersion = { major: 3, minor: 4, sub1: 99 };
+    // set host name and user name, but do not provide a hash
+    entry.hostName = "mymachine";
+    entry.hostUserName = "johnny";
+    entry.logPostingSource = LogPostingSource.RealTime;
+    entry.usageType = UsageType.Beta;
+    entry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "imodelsize", value: 596622 });
+    const resp: LogPostingResponse = await ulasClient.logFeature(actx, accessToken, entry);
     chai.assert(resp);
     chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(resp.message, "Accepted");
@@ -107,7 +146,7 @@ describe("UlasClient", () => {
     entry2.logPostingSource = LogPostingSource.RealTime;
     entry2.usageType = UsageType.Beta;
     entry2.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "imodelsize", value: 400 });
-    const resp: LogPostingResponse = await ulasClient.logFeature(accessToken, entry1, entry2);
+    const resp: LogPostingResponse = await ulasClient.logFeature(actx, accessToken, entry1, entry2);
     chai.assert(resp);
     chai.assert.equal(resp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(resp.message, "Accepted");
@@ -116,7 +155,7 @@ describe("UlasClient", () => {
     // test that the method throws if no feature log entry is passed
     let hasThrown: boolean = false;
     try {
-      await ulasClient.logFeature(accessToken);
+      await ulasClient.logFeature(actx, accessToken);
     } catch (e) {
       hasThrown = true;
     }
@@ -133,7 +172,7 @@ describe("UlasClient", () => {
     startEntry.logPostingSource = LogPostingSource.RealTime;
     startEntry.usageType = UsageType.Beta;
     startEntry.usageData.push({ name: "imodelid", value: (new Guid(true).toString()) }, { name: "user", value: "123-123" });
-    const startResp: LogPostingResponse = await ulasClient.logFeature(accessToken, startEntry);
+    const startResp: LogPostingResponse = await ulasClient.logFeature(actx, accessToken, startEntry);
     chai.assert(startResp);
     chai.assert.equal(startResp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(startResp.message, "Accepted");
@@ -144,7 +183,7 @@ describe("UlasClient", () => {
     endEntry.logPostingSource = startEntry.logPostingSource;
     endEntry.usageType = startEntry.usageType;
     endEntry.usageData = startEntry.usageData;
-    const endResp: LogPostingResponse = await ulasClient.logFeature(accessToken, endEntry);
+    const endResp: LogPostingResponse = await ulasClient.logFeature(actx, accessToken, endEntry);
     chai.assert(endResp);
     chai.assert.equal(endResp.status, BentleyStatus.SUCCESS);
     chai.assert.equal(endResp.message, "Accepted");

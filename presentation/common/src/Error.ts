@@ -16,6 +16,7 @@ export enum PresentationStatus {
   InvalidArgument = Error + 3,  /** Argument is invalid */
   InvalidResponse = Error + 4,  /** Response is invalid */
   NoContent = Error + 5,        /** Requested content when there is none */
+  BackendOutOfSync = Error + 6, /** Backend needs to be synced with client state */
 }
 
 /**

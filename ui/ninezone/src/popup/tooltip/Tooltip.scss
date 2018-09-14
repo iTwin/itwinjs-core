@@ -1,3 +1,4 @@
+@import "@bentley/ui-core/lib/colors";
 @import "../../_geometry";
 @import "../../_z-index";
 
@@ -5,5 +6,8 @@
   position: absolute;
   left: 0;
   top: 0;
+  background-color: rgba(#333, 0.9);
+  color: $text-light;
+
   @include nz-z-index(tooltip);
 }

@@ -6,6 +6,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
+import { CommonProps } from "../Props";
 import "./Toggle.scss";
 
 enum ButtonType {
@@ -13,8 +14,7 @@ enum ButtonType {
   Blue,
 }
 
-export interface ToggleProps {
-  className?: string;
+export interface ToggleProps extends CommonProps {
   disabled?: boolean;
   isOn?: boolean;
   rounded?: boolean;
@@ -60,8 +60,9 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
   }
 
   public render(): JSX.Element {
+    const halfHeight = this.state.height / 2;
     const checkmarkClassName = classnames ("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible" );
-    const toggleStyle: CSSProperties = { borderRadius: this.props.rounded ? this.state.height / 2 : 3 };
+    const toggleStyle: CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
     const toggleClassName = classnames (
             "toggle",
             this.props.buttonType === ButtonType.Primary && "toggle-primary",

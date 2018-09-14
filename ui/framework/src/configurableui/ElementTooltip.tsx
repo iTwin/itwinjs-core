@@ -4,37 +4,64 @@
 /** @module ConfigurableUi */
 
 import * as React from "react";
-import { UiEvent } from "@bentley/ui-core";
-import Tooltip from "@bentley/ui-ninezone/lib/widget/tool-settings/Tooltip";
+import * as classnames from "classnames";
 
-/** ElementTooltip State.
+import { UiEvent } from "@bentley/ui-core";
+import { XAndY } from "@bentley/geometry-core";
+import { ToolTipOptions } from "@bentley/imodeljs-frontend";
+
+import ToolSettingsTooltip from "@bentley/ui-ninezone/lib/widget/tool-settings/Tooltip";
+import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
+
+/** [[ElementTooltip]] Props. */
+export interface ElementTooltipProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+/** [[ElementTooltip]] State.
  */
 export interface ElementTooltipState {
   isTooltipVisible: boolean;
   message: string;
+  el?: HTMLElement;
+  pt?: XAndY;
+  options?: ToolTipOptions;
 }
+
+/** [[ElementTooltipChangedEvent]] arguments.
+ */
+export interface ElementTooltipChangedEventArgs {
+  isTooltipVisible: boolean;
+  message: string;
+  el?: HTMLElement;
+  pt?: XAndY;
+  options?: ToolTipOptions;
+}
+
+const adjustPosition = offsetAndContainInContainer({ x: 8, y: 8 });
 
 /** ElementTooltip Changed Event class.
  */
-export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipState> { }
+export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEventArgs> { }
 
 /** ElementTooltip React component.
  */
-export class ElementTooltip extends React.Component<{}, ElementTooltipState> {
+export class ElementTooltip extends React.Component<ElementTooltipProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
 
-  public static get ElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
+  public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
-  public static showTooltip(message: string): void {
+  public static showTooltip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip._isTooltipVisible = true;
-    ElementTooltip.ElementTooltipChangedEvent.emit({ isTooltipVisible: true, message });
+    ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
 
   public static hideTooltip(): void {
     ElementTooltip._isTooltipVisible = false;
-    ElementTooltip.ElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
+    ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
   }
 
   /** hidden */
@@ -44,30 +71,48 @@ export class ElementTooltip extends React.Component<{}, ElementTooltipState> {
   };
 
   public render() {
+    if (!this.state.isTooltipVisible)
+      return null;
+
+    const className = classnames(
+      "element-tooltip",
+      this.props.className);
+
     return (
-      <Tooltip
-        isVisible={this.state.isTooltipVisible}
+      <ToolSettingsTooltip
+        className={className}
+        style={this.props.style}
+        position={this.state.pt}
+        adjustPosition={adjustPosition}
+        containIn={this._handleContainIn}
       >
         {this.state.message &&
           <div dangerouslySetInnerHTML={{ __html: this.state.message }} />
         }
-      </Tooltip>
+      </ToolSettingsTooltip>
     );
   }
 
   public componentDidMount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.addListener(this._handleElementTooltipChangedEvent);
+    ElementTooltip.onElementTooltipChangedEvent.addListener(this._handleElementTooltipChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    ElementTooltip.ElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
+    ElementTooltip.onElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
   }
 
-  private _handleElementTooltipChangedEvent = (args: ElementTooltipState) => {
+  private _handleContainIn = (tooltip: HTMLElement) => {
+    if (this.state.el)
+      return this.state.el;
+    return Tooltip.defaultProps.containIn(tooltip);
+  }
+
+  private _handleElementTooltipChangedEvent = (args: ElementTooltipChangedEventArgs) => {
     this.setState(() => ({
-      message: args.message,
       isTooltipVisible: args.isTooltipVisible,
+      message: args.message,
+      el: args.el,
+      pt: args.pt,
     }));
   }
-
 }

@@ -138,13 +138,13 @@ class NavigationWidgetWithDef extends React.Component<Props> {
   }
 
   public componentDidMount() {
-    FrontstageManager.ToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-    FrontstageManager.NavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.ToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-    FrontstageManager.NavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
   }
 
   public render(): React.ReactNode {

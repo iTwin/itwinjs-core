@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64, BeEvent, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, BeEvent, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
   ClassRegistry,
@@ -59,6 +59,7 @@ describe("iModel", () => {
   let imodel3: IModelDb;
   let imodel4: IModelDb;
   let imodel5: IModelDb;
+  const actx = new ActivityLoggingContext("");
 
   before(() => {
     imodel1 = IModelTestUtils.openIModel("test.bim");
@@ -296,29 +297,32 @@ describe("iModel", () => {
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
   });
 
-  it("should find a tile tree for a geometric model", () => {
+  it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const tree = imodel1.tiles.getTileTreeProps("0x1c");
+    const actx2 = new ActivityLoggingContext("tiletreetest");
+    const tree = await imodel1.tiles.requestTileTreeProps(actx2, "0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
     expect(tree.maxTilesToSkip).to.equal(1);
     expect(tree.rootTile).not.to.be.undefined;
 
+    // Empty model => identity transform
     const tf = Transform.fromJSON(tree.location);
     expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
+    expect(tf.origin.x).to.equal(0);
+    expect(tf.origin.y).to.equal(0);
+    expect(tf.origin.z).to.equal(0);
 
-    expect(tree.rootTile.id.treeId).to.equal(tree.id);
-    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
 
+    // Empty model => null range
     const range = Range3d.fromJSON(tree.rootTile.range);
-    expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
-    expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
+    expect(range.isNull).to.be.true;
 
-    expect(tree.rootTile.geometry).to.be.undefined; // empty model => empty tile
+    expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
+    expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
-    expect(tree.rootTile.childIds.length).to.equal(0);
   });
 
   it("should produce an array of rows", () => {
@@ -568,7 +572,7 @@ describe("iModel", () => {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isDefined(testImodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
     }
 
@@ -827,7 +831,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap("0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap(actx, "0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
 
     // make sure we can read native asset files.
@@ -837,7 +841,7 @@ describe("iModel", () => {
 
   it("should import schemas", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    imodel1.importSchema(schemaPathname); // will throw an exception if import fails
+    imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
@@ -881,7 +885,7 @@ describe("iModel", () => {
     let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+    testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64;
@@ -987,7 +991,7 @@ describe("iModel", () => {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
     }
 
@@ -1173,7 +1177,7 @@ describe("iModel", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx }, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 

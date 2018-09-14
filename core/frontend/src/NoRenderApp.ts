@@ -10,6 +10,8 @@ import { ViewRect } from "./Viewport";
  * This is typically used in tests.
  */
 export class NullTarget extends RenderTarget {
+  public get animationFraction(): number { return 0; }
+  public set animationFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
   public get cameraFrustumNearScaleLimit(): number { return 0; }
   public get viewRect(): ViewRect { return new ViewRect(); }
@@ -39,6 +41,7 @@ export class NullTarget extends RenderTarget {
  * This is typically used in tests.
  */
 export class NullRenderSystem extends RenderSystem {
+  public get isValid(): boolean { return false; }
   public createTarget() { return new NullTarget(); }
   public createOffscreenTarget() { return new NullTarget(); }
   public createGraphicBuilder() { return undefined as any; }
@@ -46,7 +49,7 @@ export class NullRenderSystem extends RenderSystem {
   public createBranch() { return undefined as any; }
   public createBatch() { return undefined as any; }
   public dispose() { }
-  public constructor() { super(undefined as any); }
+  public constructor() { super(); }
 }
 
 /**

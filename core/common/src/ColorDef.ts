@@ -12,6 +12,7 @@
  */
 export enum ColorByName {
   aliceBlue = 0xFFF8F0,
+  amber = 0x00BFFF,
   antiqueWhite = 0xD7EBFA,
   aqua = 0xFFFF00,
   aquamarine = 0xD4FF7F,
@@ -419,6 +420,9 @@ export class ColorDef {
     c.b += (color.b - c.b) * weight;
     return ColorDef.from(c.r, c.g, c.b, c.t, result);
   }
+
+  /** Create a new ColorDef that is the inverse (all colors set to 255 - this) of this color. */
+  public invert(): ColorDef { const colors = this.colors; return ColorDef.from(255 - colors.r, 255 - colors.g, 255 - colors.b); }
 
   /** Create a ColorDef from hue, saturation, lightness values */
   public static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef {

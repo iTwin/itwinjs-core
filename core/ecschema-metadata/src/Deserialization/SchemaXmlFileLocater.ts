@@ -154,7 +154,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * Constructs a SchemaKey based on the information in the Schema XML.
    * @param data The Schema XML as a string.
    */
-  protected getSchemaKey(data: string): SchemaKey {
+  public getSchemaKey(data: string): SchemaKey {
     const matches = data.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
@@ -178,7 +178,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     if (!file)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
 
-    const data = file.toString();
+    const data = file.toString().replace(/(\s*)<!--.*?-->/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
 
     const keys: SchemaKey[] = [];
     const matches = data.match(/<ECSchemaReference ([^]+?)\/>/g);

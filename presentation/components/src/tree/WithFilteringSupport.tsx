@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 import * as React from "react";
 import { Subtract } from "@bentley/presentation-common";
@@ -132,6 +132,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
             expandedNodes={this.state.filteredDataProvider ? this.state.filteredDataProvider.getAllNodeIds() : []}
+            highlightString={filter}
             {...props}
           />
           {overlay}

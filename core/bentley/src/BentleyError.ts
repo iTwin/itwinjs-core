@@ -4,7 +4,7 @@
 /** @module Errors */
 
 import { DbResult } from "./BeSQLite";
-import { LogFunction } from "./Logger";
+import { LogFunction, Logger } from "./Logger";
 
 /** Standard status code.
  * This status code should be rarely used.
@@ -234,46 +234,47 @@ export enum IModelHubStatus {
   MissingRequiredProperties = IMODELHUBERROR_BASE + 2,
   InvalidPropertiesValues = IMODELHUBERROR_BASE + 3,
   UserDoesNotHavePermission = IMODELHUBERROR_BASE + 4,
-  InvalidBriefcase = IMODELHUBERROR_BASE + 5,
-  BriefcaseDoesNotExist = IMODELHUBERROR_BASE + 6,
-  BriefcaseDoesNotBelongToUser = IMODELHUBERROR_BASE + 7,
-  AnotherUserPushing = IMODELHUBERROR_BASE + 8,
-  ChangeSetAlreadyExists = IMODELHUBERROR_BASE + 9,
-  ChangeSetDoesNotExist = IMODELHUBERROR_BASE + 10,
-  FileIsNotUploaded = IMODELHUBERROR_BASE + 11,
-  iModelIsNotInitialized = IMODELHUBERROR_BASE + 12,
-  ChangeSetPointsToBadSeed = IMODELHUBERROR_BASE + 13,
-  iModelHubOperationFailed = IMODELHUBERROR_BASE + 14,
-  PullIsRequired = IMODELHUBERROR_BASE + 15,
-  MaximumNumberOfBriefcasesPerUser = IMODELHUBERROR_BASE + 16,
-  MaximumNumberOfBriefcasesPerUserPerMinute = IMODELHUBERROR_BASE + 17,
-  DatabaseTemporarilyLocked = IMODELHUBERROR_BASE + 18,
-  iModelAlreadyExists = IMODELHUBERROR_BASE + 19,
-  iModelDoesNotExist = IMODELHUBERROR_BASE + 20,
-  LockDoesNotExist = IMODELHUBERROR_BASE + 21,
+  UserDoesNotHaveAccess = IMODELHUBERROR_BASE + 5,
+  InvalidBriefcase = IMODELHUBERROR_BASE + 6,
+  BriefcaseDoesNotExist = IMODELHUBERROR_BASE + 7,
+  BriefcaseDoesNotBelongToUser = IMODELHUBERROR_BASE + 8,
+  AnotherUserPushing = IMODELHUBERROR_BASE + 9,
+  ChangeSetAlreadyExists = IMODELHUBERROR_BASE + 10,
+  ChangeSetDoesNotExist = IMODELHUBERROR_BASE + 11,
+  FileIsNotUploaded = IMODELHUBERROR_BASE + 12,
+  iModelIsNotInitialized = IMODELHUBERROR_BASE + 13,
+  ChangeSetPointsToBadSeed = IMODELHUBERROR_BASE + 14,
+  OperationFailed = IMODELHUBERROR_BASE + 15,
+  PullIsRequired = IMODELHUBERROR_BASE + 16,
+  MaximumNumberOfBriefcasesPerUser = IMODELHUBERROR_BASE + 17,
+  MaximumNumberOfBriefcasesPerUserPerMinute = IMODELHUBERROR_BASE + 18,
+  DatabaseTemporarilyLocked = IMODELHUBERROR_BASE + 19,
+  iModelIsLocked = IMODELHUBERROR_BASE + 20,
+  CodesExist = IMODELHUBERROR_BASE + 21,
   LocksExist = IMODELHUBERROR_BASE + 22,
-  LockOwnedByAnotherBriefcase = IMODELHUBERROR_BASE + 23,
-  UserAlreadyExists = IMODELHUBERROR_BASE + 24,
-  UserDoesNotExist = IMODELHUBERROR_BASE + 25,
-  CodeStateInvalid = IMODELHUBERROR_BASE + 26,
-  CodeReservedByAnotherBriefcase = IMODELHUBERROR_BASE + 27,
-  CodeDoesNotExist = IMODELHUBERROR_BASE + 28,
-  CodesExist = IMODELHUBERROR_BASE + 29,
-  FileDoesNotExist = IMODELHUBERROR_BASE + 30,
-  FileAlreadyExists = IMODELHUBERROR_BASE + 31,
-  iModelIsLocked = IMODELHUBERROR_BASE + 32,
-  EventTypeDoesNotExist = IMODELHUBERROR_BASE + 33,
-  EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 34,
-  EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 35,
-  ProjectAssociationIsNotEnabled = IMODELHUBERROR_BASE + 36,
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 37,
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 38,
-  ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 39,
-  VersionAlreadyExists = IMODELHUBERROR_BASE + 40,
-  QueryIdsNotSpecified = IMODELHUBERROR_BASE + 41,
-  ConflictsAggregate = IMODELHUBERROR_BASE + 42,
-  SeedFileInitializationFailed = IMODELHUBERROR_BASE + 43,
-  DatabaseOperationFailed = IMODELHUBERROR_BASE + 44,
+  iModelAlreadyExists = IMODELHUBERROR_BASE + 23,
+  iModelDoesNotExist = IMODELHUBERROR_BASE + 24,
+  FileDoesNotExist = IMODELHUBERROR_BASE + 25,
+  FileAlreadyExists = IMODELHUBERROR_BASE + 26,
+  LockDoesNotExist = IMODELHUBERROR_BASE + 27,
+  LockOwnedByAnotherBriefcase = IMODELHUBERROR_BASE + 28,
+  CodeStateInvalid = IMODELHUBERROR_BASE + 29,
+  CodeReservedByAnotherBriefcase = IMODELHUBERROR_BASE + 30,
+  CodeDoesNotExist = IMODELHUBERROR_BASE + 31,
+  EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
+  EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
+  EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
+  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
+  FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
+  ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
+  VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
+  JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
+  ConflictsAggregate = IMODELHUBERROR_BASE + 41,
+  FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
+
+  DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
+  SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
@@ -306,7 +307,7 @@ export class BentleyError extends Error {
     this._getMetaData = getMetaData;
     this.name = this._initName();
     if (log)
-      log(category || "BentleyError", this.toString(), this._getMetaData);  // TODO: Can we come up with a better default category?
+      Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
@@ -554,6 +555,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
       case IModelHubStatus.UserDoesNotHavePermission: return "User does not have permission";
+      case IModelHubStatus.UserDoesNotHaveAccess: return "User does not have access";
       case IModelHubStatus.InvalidBriefcase: return "Invalid briefcase";
       case IModelHubStatus.BriefcaseDoesNotExist: return "Briefcase does not exist";
       case IModelHubStatus.BriefcaseDoesNotBelongToUser: return "Briefcase does not belong to user";
@@ -563,36 +565,35 @@ export class BentleyError extends Error {
       case IModelHubStatus.FileIsNotUploaded: return "File is not uploaded";
       case IModelHubStatus.iModelIsNotInitialized: return "iModel is not initialized";
       case IModelHubStatus.ChangeSetPointsToBadSeed: return "ChangeSet points to a bad seed file";
-      case IModelHubStatus.iModelHubOperationFailed: return "iModelHub operation failed";
+      case IModelHubStatus.OperationFailed: return "iModelHub operation has failed";
       case IModelHubStatus.PullIsRequired: return "Pull is required";
       case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return "Limit of briefcases per user was reached";
       case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return "Limit of briefcases per user per minute was reached";
       case IModelHubStatus.DatabaseTemporarilyLocked: return "Database is temporarily locked";
-      case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
+      case IModelHubStatus.iModelIsLocked: return "iModel is locked";
+      case IModelHubStatus.CodesExist: return "Code already exists";
+      case IModelHubStatus.LocksExist: return "Lock already exists";
       case IModelHubStatus.iModelAlreadyExists: return "iModel already exists";
       case IModelHubStatus.iModelDoesNotExist: return "iModel does not exist";
       case IModelHubStatus.LockDoesNotExist: return "Lock does not exist";
-      case IModelHubStatus.LocksExist: return "Lock already exists";
       case IModelHubStatus.LockOwnedByAnotherBriefcase: return "Lock is owned by another briefcase";
-      case IModelHubStatus.UserAlreadyExists: return "User already exists";
-      case IModelHubStatus.UserDoesNotExist: return "User does not exist";
       case IModelHubStatus.CodeStateInvalid: return "Code state is invalid";
       case IModelHubStatus.CodeReservedByAnotherBriefcase: return "Code is reserved by another briefcase";
       case IModelHubStatus.CodeDoesNotExist: return "Code does not exist";
-      case IModelHubStatus.CodesExist: return "Code already exists";
       case IModelHubStatus.FileDoesNotExist: return "File does not exist";
       case IModelHubStatus.FileAlreadyExists: return "File already exists";
-      case IModelHubStatus.iModelIsLocked: return "iModel is locked";
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
-      case IModelHubStatus.ProjectAssociationIsNotEnabled: return "Project association is not enabled";
       case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
       case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
+      case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
-      case IModelHubStatus.QueryIdsNotSpecified: return "Query Id is not specified";
+      case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
+      case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
 
       // errors that are returned for incorrect iModelHub request.
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";

@@ -8,21 +8,21 @@ import { PresentationError } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import { initialize, terminate } from "../IntegrationTests";
 
-before(() => {
-  initialize();
-});
-
-after(() => {
-  terminate();
-});
-
 describe("NativePlatform", () => {
 
   let nativePlatform: NativePlatformDefinition;
   let imodel: IModelDb;
 
+  before(() => {
+    initialize();
+  });
+
+  after(() => {
+    terminate();
+  });
+
   beforeEach(() => {
-    const testIModelName: string = "assets/datasets/1K.bim";
+    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = IModelDb.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform(); // tslint:disable-line: variable-name naming-convention
