@@ -10,7 +10,6 @@ import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { octDecodeNormal } from "./Surface";
-import { StopWatch } from "@bentley/bentleyjs-core";   // Temporary for animation testing.
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -136,8 +135,6 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
 
 const scratchAnimParams = new Float32Array(4);        // displacement index, displacement fraction, normal index, normal fraction.
 const scratchAnimScalarParams = new Float32Array(4);  // index, fraction, origin, scale.
-let testStopWatch: StopWatch;
-const testAnimationDuration = 10.0;
 class AnimationLocation { public index: number = 0.0; public fraction: number = 0.0; }
 
 function computeInputLocation(inputs: number[], fraction: number): AnimationLocation {
@@ -152,9 +149,6 @@ function computeInputLocation(inputs: number[], fraction: number): AnimationLoca
   return location;
 }
 export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
-  if (undefined === testStopWatch)
-    testStopWatch = new StopWatch("Animation", true);
-
   scratchAnimParams[0] = scratchAnimParams[1] = 0.0;
 
   vert.addFunction(computeAnimationFrameDisplacement);
@@ -172,7 +166,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
   vert.addUniform("u_animParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_animParams", (uniform, params) => {
       // TBD... from fraction within animation compute frame and frameFraction;
-      const animationFraction = (testStopWatch.currentSeconds % testAnimationDuration) / testAnimationDuration;
+      const animationFraction = params.target.animationFraction;
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       if (lutGeom.lut.auxDisplacements !== undefined) {
         const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
@@ -213,7 +207,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
     vert.addUniform("u_qAnimScalarParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
         const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-        const animationFraction = (testStopWatch.currentSeconds % testAnimationDuration) / testAnimationDuration;
+        const animationFraction = params.target.animationFraction;
         scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = 0.0;
         if (lutGeom.lut.auxParams !== undefined) {
           const auxParam = lutGeom.lut.auxParams[0];  // TBD - allow channel selection.

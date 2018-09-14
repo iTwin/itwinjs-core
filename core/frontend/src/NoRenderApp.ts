@@ -10,6 +10,8 @@ import { ViewRect } from "./Viewport";
  * This is typically used in tests.
  */
 export class NullTarget extends RenderTarget {
+  public get animationFraction(): number { return 0; }
+  public set animationFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
   public get cameraFrustumNearScaleLimit(): number { return 0; }
   public get viewRect(): ViewRect { return new ViewRect(); }
