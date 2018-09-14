@@ -65,6 +65,10 @@ export class Layout1 extends WidgetZoneLayout {
   public get rightZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
   }
+
+  public get isResizable() {
+    return false;
+  }
 }
 
 export class Layout2 extends WidgetZoneLayout {
@@ -78,6 +82,10 @@ export class Layout2 extends WidgetZoneLayout {
 
   public get rightZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
+  }
+
+  public get isResizable() {
+    return false;
   }
 }
 
@@ -96,6 +104,10 @@ export class Layout3 extends WidgetZoneLayout {
 
   public get minHeight() {
     return Layout.FREE_FORM_DEFAULT_MIN_HEIGHT;
+  }
+
+  public get isResizable() {
+    return false;
   }
 }
 

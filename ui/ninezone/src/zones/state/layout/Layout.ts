@@ -61,6 +61,10 @@ export class Layout {
     return HorizontalAnchor.Right;
   }
 
+  public get isResizable(): boolean {
+    return true;
+  }
+
   public resize(x: number, y: number, handle: ResizeHandle) {
     switch (handle) {
       case Edge.Top: {
@@ -98,6 +102,9 @@ export class Layout {
     if (px < 0)
       throw new RangeError();
 
+    if (!this.isResizable)
+      return 0;
+
     const maxTop = this.topZone ? this.topZone.bounds.bottom : this.root.bounds.top;
     const growSelfBy = Math.max(Math.min(px, this.bounds.top - maxTop), 0);
     const shrinkBy = Math.max(0, px - growSelfBy);
@@ -112,6 +119,9 @@ export class Layout {
   public tryShrinkTop(px: number): number {
     if (px < 0)
       throw new RangeError();
+
+    if (!this.isResizable)
+      return 0;
 
     const height = this._bounds.getHeight();
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
@@ -132,6 +142,9 @@ export class Layout {
     if (px < 0)
       throw new RangeError();
 
+    if (!this.isResizable)
+      return 0;
+
     const maxBottom = this.bottomZone ? this.bottomZone.bounds.top : this.root.bounds.bottom;
     const growSelfBy = Math.max(0, Math.min(px, maxBottom - this.bounds.bottom));
     const shrinkBottomZoneBy = Math.max(0, px - growSelfBy);
@@ -147,6 +160,9 @@ export class Layout {
   public tryShrinkBottom(px: number): number {
     if (px < 0)
       throw new RangeError();
+
+    if (!this.isResizable)
+      return 0;
 
     const height = this.bounds.getHeight();
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
@@ -165,6 +181,9 @@ export class Layout {
   public tryGrowLeft(px: number): number {
     if (px < 0)
       throw new RangeError();
+
+    if (!this.isResizable)
+      return 0;
 
     const initialBounds = this.getInitialBounds();
     const newLeft = this.bounds.left - px;
@@ -204,6 +223,9 @@ export class Layout {
     if (px < 0)
       throw new RangeError();
 
+    if (!this.isResizable)
+      return 0;
+
     const initialBounds = this.getInitialBounds();
     const newRight = this.bounds.right + px;
     if (this.anchor === HorizontalAnchor.Left && newRight > initialBounds.right)
@@ -222,6 +244,9 @@ export class Layout {
   public tryShrinkRight(px: number): number {
     if (px < 0)
       throw new RangeError();
+
+    if (!this.isResizable)
+      return 0;
 
     const width = this.bounds.getWidth();
     const shrinkSelfBy = Math.max(0, Math.min(px, width - this.minWidth));

@@ -146,6 +146,16 @@ describe("Layout", () => {
       sut.bounds.top.should.eq(200 - 50 - 25);
       sut.bounds.bottom.should.eq(400);
     });
+
+    it("should not grow top if layout is not resizable", () => {
+      const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(100, 200, 200, 400), root.object));
+      sut.callBase = true;
+      sut.setup((x) => x.isResizable).returns(() => false);
+
+      sut.object.tryGrowTop(100).should.eq(0);
+      sut.object.bounds.top.should.eq(200);
+      sut.object.bounds.bottom.should.eq(400);
+    });
   });
 
   describe("#tryShrinkTop()", () => {
