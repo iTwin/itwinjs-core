@@ -73,6 +73,7 @@ export class StateManager {
           const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
           acc[id] = {
             ...model.props.zones[id],
+            isLayoutChanged: false,
             bounds,
           };
           return acc;
@@ -84,9 +85,9 @@ export class StateManager {
     return newState;
   }
 
-  public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, state: NineZoneProps): NineZoneProps {
+  public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number, state: NineZoneProps): NineZoneProps {
     const model = new NineZone(state);
-    model.getWidgetZone(zoneId).getLayout().resize(x, y, handle);
+    model.getWidgetZone(zoneId).getLayout().resize(x, y, handle, filledHeightDiff);
 
     const newState: NineZoneProps = {
       ...model.props,
@@ -97,6 +98,7 @@ export class StateManager {
           const bounds = model.getWidgetZone(id).getLayout().bounds;
           acc[id] = {
             ...model.props.zones[id],
+            ...zoneId === id ? { isLayoutChanged: true } : {},
             bounds,
           };
           return acc;

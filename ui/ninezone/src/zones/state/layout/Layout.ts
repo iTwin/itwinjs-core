@@ -65,7 +65,9 @@ export class Layout {
     return true;
   }
 
-  public resize(x: number, y: number, handle: ResizeHandle) {
+  public resize(x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) {
+    const filledBounds = this.bounds.setHeight(this.bounds.getHeight() - filledHeightDiff);
+    this.setBounds(filledBounds);
     switch (handle) {
       case Edge.Top: {
         if (y < 0)

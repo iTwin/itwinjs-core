@@ -22,6 +22,7 @@ export enum DropTarget {
 export interface ZoneProps {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
+  readonly isLayoutChanged: boolean;
   readonly floating?: FloatingProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
   readonly anchor?: HorizontalAnchor;
@@ -57,6 +58,7 @@ export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
       right: 0,
       bottom: 0,
     },
+    isLayoutChanged: false,
     widgets: [
       getDefaultWidgetProps(id),
     ],
@@ -68,6 +70,7 @@ export const getDefaultStatusZoneProps = (): StatusZoneProps => {
   return {
     id: 8,
     isInFooterMode: true,
+    isLayoutChanged: false,
     bounds: {
       left: 0,
       top: 0,

@@ -779,9 +779,9 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle) => {
+  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
+      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone);
       return {
         nineZone,
       };
@@ -1797,10 +1797,11 @@ export default class ZonesExample extends React.Component<{}, State> {
         content={this.getZoneContent(zoneId)}
         isDragged={isDragged}
         isOpen={isOpen}
-        onResize={(x, y, handle) => {
-          this._handleOnWidgetResize(zoneId, x, y, handle);
-        }}
+        fillZone={zone.props.isLayoutChanged}
         tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
+        onResize={(x, y, handle, diff) => {
+          this._handleOnWidgetResize(zoneId, x, y, handle, diff);
+        }}
       />
     );
   }
