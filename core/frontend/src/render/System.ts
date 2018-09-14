@@ -116,8 +116,6 @@ export type GraphicList = RenderGraphic[];
 
 /** A Decoration that is drawn onto the 2d canvas on top of a ScreenViewport. CanvasDecorations may be pickable by implementing [[pick]]. */
 export interface CanvasDecoration {
-  [propName: string]: any;
-
   /**
    * Method to draw this decoration into the supplied CanvasRenderingContext2D. This method is called every time a frame is rendered.
    * @param ctx The CanvasRenderingContext2D for the [[ScreenViewport]] being rendered.
@@ -151,6 +149,9 @@ export interface CanvasDecoration {
    */
   onMouseButton?(ev: BeButtonEvent): boolean;
   onWheel?(ev: BeWheelEvent): boolean;
+
+  /** Cursor to use when mouse is inside decoration. Default is "pointer". */
+  decorationCursor?: string;
 }
 
 export type CanvasDecorationList = CanvasDecoration[];

@@ -8,7 +8,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
 import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeCursor, BeModifierKeys, EventHandled, BeTouchEvent, InputSource } from "./Tool";
+import { BeButtonEvent, BeButton, BeModifierKeys, EventHandled, BeTouchEvent, InputSource } from "./Tool";
 import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -76,7 +76,7 @@ export class SelectionTool extends PrimitiveTool {
     this.isSelectByPoints = false;
     this.points.length = 0;
 
-    IModelApp.toolAdmin.setCursor(enableLocate ? BeCursor.Arrow : BeCursor.CrossHair);
+    IModelApp.toolAdmin.setCursor(enableLocate ? "default" : "crosshair");
     IModelApp.toolAdmin.setLocateCircleOn(enableLocate);
 
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
