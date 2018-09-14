@@ -4,7 +4,7 @@
 import { AccessToken, ResponseError, AuthenticationError, IModelClient } from "../../";
 
 import {
-  Briefcase, Code, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
+  Briefcase, WsgCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
 } from "../../";
 
 import * as utils from "./TestUtils";
@@ -39,7 +39,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
     let j = statingCount;
     Logger.logTrace("performance", `Creating codes from ${statingCount}`);
     const codes = Array(count).fill(0).map(() => {
-      const code = new Code();
+      const code = new WsgCode();
       code.briefcaseId = briefcase.briefcaseId;
       code.changeState = "new";
       code.codeScope = codeScope;

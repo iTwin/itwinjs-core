@@ -63,7 +63,7 @@ export class CodeBase extends WsgInstance {
  * Code instance. Codes ensure uniqueness of names in the file.
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Code extends CodeBase {
+export class WsgCode extends CodeBase {
   /** The unique string that can be used as a name value in iModel. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
   public value?: string;
@@ -99,7 +99,7 @@ function encodeForCodeId(str: string): string {
  * @param code Code to get instance id for.
  * @returns Encoded code instance id.
  */
-function getCodeInstanceId(code: Code): string | undefined {
+function getCodeInstanceId(code: WsgCode): string | undefined {
   if (!code || !code.codeSpecId || !code.codeScope || !code.value)
     return undefined;
 
@@ -154,7 +154,7 @@ export class ConflictingCodesError extends IModelHubError {
   /**
    * Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]].
    */
-  public conflictingCodes?: Code[];
+  public conflictingCodes?: WsgCode[];
 
   /**
    * Create ConflictingCodesError from IModelHubError instance.
@@ -187,7 +187,7 @@ export class ConflictingCodesError extends IModelHubError {
     }
     for (const value of (error.data.ConflictingCodes as any[])) {
       const instance = { className: "Code", schemaName: "iModelScope", properties: value };
-      const code = ECJsonTypeMap.fromJson<Code>(Code, "wsg", instance);
+      const code = ECJsonTypeMap.fromJson<WsgCode>(WsgCode, "wsg", instance);
       if (code) {
         this.conflictingCodes.push(code);
       }
@@ -251,7 +251,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it contains invalid [Code]($common) values.
    */
-  public byCodes(codes: Code[]) {
+  public byCodes(codes: WsgCode[]) {
     ArgumentCheck.nonEmptyArray("codes", codes);
     this._isMultiCodeQuery = false;
     if (codes.length < 1) {
@@ -416,7 +416,7 @@ export class CodeHandler {
   }
 
   /** Convert Codes to MultiCodes. */
-  private static convertCodesToMultiCodes(codes: Code[]): MultiCode[] {
+  private static convertCodesToMultiCodes(codes: WsgCode[]): MultiCode[] {
     const map = new Map<string, MultiCode>();
     for (const code of codes) {
       const id: string = `${code.codeScope}-${code.codeSpecId}-${code.state}`;
@@ -438,12 +438,12 @@ export class CodeHandler {
   }
 
   /** Convert MultiCodes to Codes. */
-  private static convertMultiCodesToCodes(multiCodes: MultiCode[]): Code[] {
-    const result: Code[] = [];
+  private static convertMultiCodesToCodes(multiCodes: MultiCode[]): WsgCode[] {
+    const result: WsgCode[] = [];
 
     for (const multiCode of multiCodes) {
       for (const value of multiCode.values!) {
-        const code = new Code();
+        const code = new WsgCode();
         code.briefcaseId = multiCode.briefcaseId;
         code.codeScope = multiCode.codeScope;
         code.codeSpecId = multiCode.codeSpecId;
@@ -468,7 +468,7 @@ export class CodeHandler {
   }
 
   /** Send partial request for code updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: WsgCode[], updateOptions?: CodeUpdateOptions): Promise<WsgCode[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -505,7 +505,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical Codes in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: Code[], updateOptions?: CodeUpdateOptions): Promise<Code[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: WsgCode[], updateOptions?: CodeUpdateOptions): Promise<WsgCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -515,7 +515,7 @@ export class CodeHandler {
     updateOptions = updateOptions || {};
     this.setupOptionDefaults(updateOptions);
 
-    const result: Code[] = [];
+    const result: WsgCode[] = [];
     let conflictError: ConflictingCodesError | undefined;
     const aggregateError = new AggregateResponseError();
 
@@ -566,19 +566,19 @@ export class CodeHandler {
    * @returns Resolves to an array of Codes matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<WsgCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
-    let codes: Code[];
+    let codes: WsgCode[];
     if (query.isMultiCodeQuery) {
       const multiCodes = await this._handler.getInstances<MultiCode>(alctx, MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
       alctx.enter();
       codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
     } else {
-      codes = await this._handler.postQuery<Code>(alctx, Code, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      codes = await this._handler.postQuery<WsgCode>(alctx, WsgCode, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
       alctx.enter();
     }
 
