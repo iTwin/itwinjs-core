@@ -6,7 +6,7 @@
 
 [IModelHubError]($clients) with [IModelHubStatus.iModelIsLocked]($bentley) or [IModelHubStatus.iModelIsNotInitialized]($bentley) can occur when sending requests to iModel that was created, but not initialized by iModel Hub. See [iModels](./iModels.md) for more information.
 
-[IModelHubError]($clients) with [IModelHubStatus.iModelHubOperationFailed]($bentley), [IModelHubStatus.DatabaseOperationFailed]($bentley) or [IModelHubStatus.DatabaseTemporarilyLocked]($bentley) can be thrown when an issue with a dependent service has occured within iModel Hub. In most of the cases these requests can be retried later.
+[IModelHubError]($clients) with [IModelHubStatus.OperationFailed]($bentley), [IModelHubStatus.DatabaseOperationFailed]($bentley) or [IModelHubStatus.DatabaseTemporarilyLocked]($bentley) can be thrown when an issue with a dependent service has occured within iModel Hub. In most of the cases these requests can be retried later.
 
 [IModelRequestError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the required arguments is undefined or has an invalid value.
 

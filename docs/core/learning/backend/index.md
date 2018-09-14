@@ -30,8 +30,6 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 ## Loading and Creating Elements, Aspects, and Models
 * [Access Elements](./AccessElements.md)
 * [Create Elements](./CreateElements.md)
-* [Access Aspects](./AccessAspects.md)
-* [Create Aspects](./CreateAspects.md)
 * [Access Models](./AccessModels.md)
 * [Create Models](./CreateModels.md)
 

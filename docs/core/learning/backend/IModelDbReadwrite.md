@@ -4,7 +4,6 @@ An IModelDb also serves as a staging area where a [backend](../Glossary.md#backe
 
 A backend can make the following kinds of changes:
 * [Create or update Elements](./CreateElements.md)
-* [Create or update Aspects](./CreateAspects.md)
 * [Create or update Models](./CreateModels.md)
 * [Reserve Codes](./ReserveCodes.md)
 
