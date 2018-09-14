@@ -29,7 +29,7 @@ export default class Presentation {
    *
    * Example:
    * ``` ts
-   * [[include:Frontend.Initialization.Presentation]]
+   * [[include:Presentation.Frontend.Initialization]]
    * ```
    *
    * The method should be called after a call

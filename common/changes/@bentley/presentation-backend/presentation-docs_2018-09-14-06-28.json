@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix module names and visibility",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}
