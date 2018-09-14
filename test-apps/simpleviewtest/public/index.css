@@ -421,7 +421,7 @@
   width: 100px;
 }
 
-#standardRotationMenu .simpleicon, #animationMenu .simpleicon {
+#standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {
   float:left;
 }
 #animationSlider {
