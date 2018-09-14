@@ -7,35 +7,11 @@
 @import "_variables";
 
 .nz-widget-stacked {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: minmax(0, 1fr);
+  display: flex;
   max-height: 100%;
   position: relative;
 
   $border-width: $nz-widget-border-width;
-
-  > .nz-tabs-column {
-    grid-row: 1;
-    display: grid;
-    grid-template-rows: min-content minmax($nz-tab-height * 1.5, auto);
-
-    > .nz-tabs-grip-container {
-      position: relative;
-      grid-row: 2;
-      grid-column: 1;
-
-      > .nz-tabs-grip {
-        position: absolute;
-        height: 100%;
-      }
-    }
-
-    > .nz-tabs {
-      grid-row: 1;
-      grid-column: 1;
-    }
-  }
 
   > .nz-top-grip {
     width: 100%;
@@ -44,7 +20,8 @@
   }
 
   > .nz-content-area {
-    grid-row: 1;
+    flex-grow: 1;
+    min-width: 0;
     border-style: solid;
     border-width: $border-width;
     border-color: $nz-widget-border-color;
@@ -53,7 +30,6 @@
     border-bottom-left-radius: $nz-widget-border-radius;
     border-bottom-right-radius: $nz-widget-border-radius;
     pointer-events: auto;
-    display: grid;
 
     > .nz-bottom-grip {
       width: 100%;
@@ -80,12 +56,24 @@
     }
   }
 
+  > .nz-tabs-column {
+    display: flex;
+    flex-direction: column;
+
+    > .nz-tabs-grip-container {
+      position: relative;
+      flex-basis: $nz-tab-height * 1.5;
+      flex-grow: 1;
+
+      > .nz-tabs-grip {
+        position: absolute;
+        height: 100%;
+      }
+    }
+  }
+
   &.nz-left-anchor {
-    grid-template-columns: 1fr auto;
-
     > .nz-tabs-column {
-      grid-column: 2;
-
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
           left: -($resize-grip-size + $border-width) / 2;
@@ -94,7 +82,6 @@
     }
 
     > .nz-content-area {
-      grid-column: 1;
       border-top-left-radius: $nz-widget-border-radius;
 
       > .nz-settings {
@@ -109,9 +96,9 @@
   }
 
   &.nz-right-anchor {
-    > .nz-tabs-column {
-      grid-column: 1;
+    flex-direction: row-reverse;
 
+    > .nz-tabs-column {
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
           right: -($resize-grip-size + $border-width) / 2;
@@ -120,7 +107,6 @@
     }
 
     > .nz-content-area {
-      grid-column: 2;
       border-top-right-radius: $nz-widget-border-radius;
 
       > .nz-settings {
@@ -140,14 +126,9 @@
   &.nz-is-closed {
     height: 100%;
     align-items: center;
-    grid-template-columns: 1fr auto;
 
     &.nz-bottom-anchor, &.nz-bottom-anchor {
-      align-items: end;
-    }
-
-    &.nz-left-anchor {
-      grid-template-columns: auto 1fr;
+      align-items: flex-end;
     }
 
     > .nz-top-grip {
@@ -155,9 +136,9 @@
     }
 
     > .nz-tabs-column {
-      grid-template-rows: 1fr 0;
-
       > .nz-tabs-grip-container {
+        flex-basis: 0;
+
         > .nz-tabs-grip {
           display: none;
         }
