@@ -12,16 +12,20 @@ Every `Promise`-returning method *must*:
   * Immediately upon catching an Error thrown by a rejected `await`.
   * On the first line of a `.then` or a `.catch` callback that is invoked by a Promise.
 
+A Promise-returning function must *not* call ActivityLoggingContext.current.
+
 Note that a Promise-returning method is any method that returns a Promise, whether or not it is declared with the `async` keyword.
 
-There is one exception to the above rule. An [RpcInterface implementation method](../RpcInterface.md#server-implementation) does not take a ActivityLoggingContext object as an argument. Instead, it must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). An RcpInterface implementation method must follow all of the other the rules listed above.
+There is one exception to the above rule. An [RpcInterface implementation method](../RpcInterface.md#server-implementation) does not take a ActivityLoggingContext object as an argument. Instead, it must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). An RcpInterface implementation method must follow all of the other the rules listed above. Other kinds of async functions must not call ActivityLoggingContext.current.
 
 ## Callbacks to asynchronous functions
 Examples of asynchronous functions that invoke callbacks are:
-  * `setTimeout` and `setInterval`
-  * `XmlHttpRequest` (if called in the backend)
-  * `fs` async functions (called only in non-portable backend code)
+  * setTimeout and setInterval
+  * XmlHttpRequest (if called in the backend)
+  * fs async functions (called only in non-portable backend code)
 
 If a callback does any logging or calls functions that do:
-  * *Before* invoking the function that emits events, an app must assign the current ActivityLoggingContext to a local variable.
-  * The callback that the app passes to that function must, on its first line, call the [ActivityLoggingContext.enter]($bentleyjs-core) method on that local variable in the enclosing scope.
+  * Before invoking the function that emits events, an app must get the value of ActivityLoggingContext.current and assign it to a local variable in the scope that encloses the callback.
+  * The callback must, on its first line, call the ActivityLoggingContext.enter method on that local variable in the enclosing scope.
+
+A callback to an async function must not call ActivityLoggingContext.current.
