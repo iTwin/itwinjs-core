@@ -1428,7 +1428,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     const handleMode = this.getTabHandleMode(zone, widget);
     switch (widget.id) {
       case 3: {
-        return ([
+        return (
           <WidgetTab
             key="3_1"
             mode={mode1}
@@ -1440,8 +1440,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-tools" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 4: {
         return (
@@ -1476,7 +1476,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         );
       }
       case 6: {
-        return ([
+        return (
           <WidgetTab
             key="6_1"
             mode={mode1}
@@ -1488,11 +1488,11 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 7: {
-        return ([
+        return (
           <WidgetTab
             key="7_1"
             mode={mode1}
@@ -1504,11 +1504,11 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 8: {
-        return ([
+        return (
           <WidgetTab
             key="8_1"
             mode={mode1}
@@ -1523,8 +1523,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 9: {
         return (
@@ -1755,7 +1755,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getTabs(zoneId: WidgetZoneIndex, isOpen: boolean, anchor: HorizontalAnchor) {
-    let tabs: JSX.Element[] = [];
+    const tabs: JSX.Element[] = [];
     let i = -1;
 
     const zone = this.state.nineZone.zones[zoneId];
@@ -1767,7 +1767,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
       if (i !== 0)
         tabs.push(<TabSeparator key={i} />);
-      tabs = tabs.concat(widgetTabs);
+      tabs.push(widgetTabs);
     }
 
     return tabs;
@@ -1825,7 +1825,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
-      <>
+      <React.Fragment key={zoneId}>
         <Zone bounds={zone.props.floating ? zone.props.floating.bounds : zone.props.bounds}>
           {this.getWidget(zoneId)}
         </Zone>
@@ -1835,13 +1835,16 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 
   private getZone1() {
     return (
-      <Zone bounds={this.state.nineZone.zones[1].bounds}>
+      <Zone
+        bounds={this.state.nineZone.zones[1].bounds}
+        key={1}
+      >
         <ToolsWidget
           button={
             <AppButton
@@ -1891,7 +1894,10 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private getZone2() {
     return (
-      <Zone bounds={this.state.nineZone.zones[2].bounds}>
+      <Zone
+        bounds={this.state.nineZone.zones[2].bounds}
+        key={2}
+      >
         {this.getToolSettingsWidget()}
       </Zone>
     );
@@ -1908,8 +1914,10 @@ export default class ZonesExample extends React.Component<{}, State> {
     const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
-      <>
-        <Zone bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}>
+      <React.Fragment key={zoneId}>
+        <Zone
+          bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
+        >
           <ToolsWidget
             isNavigation
             preserveSpace
@@ -1979,7 +1987,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 
@@ -1989,7 +1997,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
       return (
-        <>
+        <React.Fragment key={statusZone.id}>
           <FooterZone
             isInFooterMode={statusZone.props.isInFooterMode}
             bounds={statusZone.props.bounds}
@@ -2141,11 +2149,11 @@ export default class ZonesExample extends React.Component<{}, State> {
           {!outlineBounds ? undefined :
             <GhostOutline bounds={outlineBounds} />
           }
-        </>
+        </React.Fragment>
       );
 
     return (
-      <>
+      <React.Fragment key={statusZone.id}>
         <Zone bounds={statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds}>
           {this.getWidget(statusZone.id)}
         </Zone>
@@ -2155,7 +2163,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 }
