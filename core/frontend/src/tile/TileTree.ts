@@ -3,7 +3,20 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils, dispose, IDisposable, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  compareNumbers,
+  compareStrings,
+  SortedArray,
+  Id64,
+  Id64String,
+  BeTimePoint,
+  BeDuration,
+  JsonUtils,
+  dispose,
+  IDisposable,
+  base64StringToUint8Array,
+} from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
@@ -552,8 +565,7 @@ export class TileTree implements IDisposable {
     this.iModel = props.iModel;
     this.is3d = props.is3d;
     this.id = props.id;
-    const prefixIndex = props.id.lastIndexOf("_");
-    this.modelId = Id64.fromJSON(props.id.slice(prefixIndex < 0 ? 0 : prefixIndex + 1));
+    this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
     this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
     this.clipVector = props.clipVector;
@@ -793,13 +805,14 @@ export namespace TileTree {
       public readonly is3d: boolean,
       public readonly loader: TileLoader,
       public readonly location: Transform,
+      public readonly modelId: Id64String,
       public readonly maxTilesToSkip?: number,
       public readonly yAxisUp?: boolean,
       public readonly isTerrain?: boolean,
       public readonly clipVector?: ClipVector) { }
 
-    public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader) {
-      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
+    public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String) {
+      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), modelId, props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
     }
   }
 
@@ -818,7 +831,7 @@ export class TileTreeState {
 
   constructor(private _modelState: SpatialModelState) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._modelState.iModel, this._modelState.is3d, loader));
+    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._modelState.iModel, this._modelState.is3d, loader, this._modelState.id));
     this.loadStatus = TileTree.LoadStatus.Loaded;
   }
 }

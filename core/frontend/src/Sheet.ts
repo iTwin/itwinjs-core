@@ -583,6 +583,7 @@ export namespace Attachments {
         false, // NB: The attachment is 3d. The attachment tiles are 2d.
         loader,
         Transform.createIdentity(),
+        modelId,
         undefined,
         undefined,
       ));
