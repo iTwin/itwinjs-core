@@ -5,7 +5,7 @@ import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Sc
 import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
 import { AccessToken, IModelRepository, Project } from "@bentley/imodeljs-clients";
 import { assert, StopWatch } from "@bentley/bentleyjs-core";
-import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
@@ -145,7 +145,7 @@ function getRenderMode(): string {
 
 function getViewFlagsString(): string {
   const vf = activeViewState.viewState!.displayStyle.viewFlags;
-  let vfString = " ";
+  let vfString = "";
   if (!vf.dimensions) vfString += "-dim";
   if (!vf.patterns) vfString += "-pat";
   if (!vf.weights) vfString += "-wt";
@@ -217,7 +217,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
-  rowData.set("View Flags", getViewFlagsString());
+  rowData.set("View Flags", " " + getViewFlagsString());
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
   // Calculate average timings
@@ -245,63 +245,26 @@ function printResults(configs: DefaultConfigs, rowData: Map<string, number | str
   addDataToCsvFile(configs.outputFile!, rowData);
 }
 
-export function savePng() {
-  let img = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0"
-    + "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO"
-    + "3gAAAABJRU5ErkJggg==";
-  img = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
+function getImageString(configs: DefaultConfigs): string {
+  let output = configs.outputPath ? configs.outputPath : "";
+  const lastChar = output[output.length - 1];
+  if (lastChar !== "/" && lastChar !== "\\")
+    output += "\\";
+  output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  output += configs.viewName ? "_" + configs.viewName : "";
+  output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  output += getRenderMode() ? "_" + getRenderMode() : "";
+  output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  output += ".png";
+  return output;
+}
+
+function savePng(fileName: string) {
+  if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+  const img = System.instance.canvas.toDataURL("image/png");
   const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
   const buf = new Buffer(data, "base64");
-  fs.writeFileSync("image2.png", buf);
-
-  //   // write((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob().toString(), "demo.png", "image/png");
-
-  //   (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob((blob) => {
-  //     // IModelApp.renderSystem.canvas!.toBlob((blob) => {
-  //     const url = URL.createObjectURL(blob);
-  //     // localStorage.setItem("elephant.png", url);
-
-  //     const a = document.createElement("a");
-  //     a.href = url, a.download = "demoModel.png";
-  //     document.body.appendChild(a);
-  //     a.click();
-  //     setTimeout(() => {
-  //       document.body.removeChild(a);
-  //       window.URL.revokeObjectURL(url);
-  //     }, 0);
-  //   });
-
-  //   // const a = document.createElement("a");
-  //   // const url = URL.createObjectURL((document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob());
-  //   // a.href = url, a.download = "demoModel.png";
-  //   // document.body.appendChild(a);
-  //   // a.click();
-  //   // setTimeout(() => {
-  //   //   document.body.removeChild(a);
-  //   //   window.URL.revokeObjectURL(url);
-  //   // }, 0);
-
-  //   // (document.getElementById("imodelview") as HTMLCanvasElement)!.toBlob();
-
-  //   const tempUrl = (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL("image/png");
-  //   // const tempUrl = IModelApp.renderSystem.canvas.toDataURL("image/png");
-  //   const defaultFileLocation = path.join(__dirname, "../../../frontend/performance/performancePic.png");
-  //   // PerformanceWriterClient.saveCanvas(tempUrl); // (document.getElementById("imodelview") as HTMLCanvasElement)!.toDataURL());
-  //   const newlink = document.createElement("a");
-  //   // newlink.innerHTML = "Google";
-  //   // newlink.setAttribute("title", "Google");
-
-  //   newlink.setAttribute("href", tempUrl);
-  //   newlink.setAttribute("id", "download");
-  //   newlink.setAttribute("download", defaultFileLocation);
-  //   newlink.setAttribute("target", "_blank");
-  //   document.body.appendChild(newlink);
-
-  //   // const link = $('<a href="' + tempUrl + '" id="download" download="' + fileName + '" target="_blank"> </a>');
-  //   document.body.appendChild(newlink);
-  //   (document.getElementById("download") as HTMLCanvasElement).click();
-  //   // $("#download").get(0).click();
-
+  fs.writeFileSync(fileName, buf);
 }
 
 class ViewSize {
@@ -416,15 +379,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function outputSavedView() {
-  debugPrint("1111111111111111111111 - start outputSavedView");
-
-}
-
-async function timeSavedView(testConfig: DefaultConfigs) {
-  debugPrint("1111111111111111111111 - start timeSavedView");
-  debugPrint("1111111111111111111111 - start timeSavedView");
-
+async function loadIModel(testConfig: DefaultConfigs) {
   // Start the backend
   createWindow();
 
@@ -466,19 +421,32 @@ async function timeSavedView(testConfig: DefaultConfigs) {
 
   // Load all tiles
   await waitForTilesToLoad(testConfig.iModelLocation!);
-  debugPrint("1111111111111111111111 - waitForTilesToLoad has FINISHED");
+}
 
-  // debugPrint("1111111111111111111111 - b4 save png ");
-  // await savePng();
-  // debugPrint("1111111111111111111111 - after save png ");
+async function closeIModel() {
+  if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
+  IModelApp.shutdown();
+}
+
+async function outputSavedView(testConfig: DefaultConfigs) {
+  // Open and finish loading model
+  await loadIModel(testConfig);
+
+  savePng(getImageString(testConfig));
+
+  // Close the imodel
+  await closeIModel();
+}
+
+async function timeSavedView(testConfig: DefaultConfigs) {
+  // Open and finish loading model
+  await loadIModel(testConfig);
 
   // Throw away the first n renderFrame times, until it's more consistent
   for (let i = 0; i < 15; ++i) {
     theViewport!.sync.setRedrawPending();
     theViewport!.renderFrame();
   }
-
-  debugPrint("///////////////////////////////// start extra renderFrames");
 
   // Add a pause so that user can start the GPU Performance Capture program
   // await resolveAfterXMilSeconds(7000);
@@ -488,7 +456,6 @@ async function timeSavedView(testConfig: DefaultConfigs) {
   const numToRender = 50;
   for (let i = 0; i < numToRender; ++i) {
     theViewport!.sync.setRedrawPending();
-    // debugPrint("///////////--- start collecting timing data");
     theViewport!.renderFrame();
     finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
   }
@@ -505,8 +472,8 @@ async function timeSavedView(testConfig: DefaultConfigs) {
 
   printResults(testConfig, getRowData(finalFrameTimings, testConfig));
 
-  if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-  IModelApp.shutdown();
+  // Close the imodel
+  await closeIModel();
 }
 
 // selects the configured view.
@@ -535,14 +502,19 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
 
   // Perform all tests for this model
   for (const testData of modelData.tests) {
+    if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
+    if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
+
     // Create DefaultTestConfigs
     const testConfig = new DefaultConfigs(testData, modConfigs, true);
 
     if (testData.testType === "image")
-      await outputSavedView();
+      await outputSavedView(testConfig);
     else
       await timeSavedView(testConfig);
   }
+  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
+  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
 }
 
 describe("Performance Tests (#WebGLPerformance)", () => {
@@ -552,11 +524,7 @@ describe("Performance Tests (#WebGLPerformance)", () => {
 
   jsonData.modelSet.forEach((modelData: any) => {
     it("Test " + modelData.iModelName, (done) => {
-      if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
-      if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
       testModel(configs, modelData).then((_result) => {
-        if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
-        if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
         done();
       }).catch((error) => {
         debugPrint("Exception in testModel: " + error.toString());
