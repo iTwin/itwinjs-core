@@ -393,6 +393,37 @@ function setAnimationStateMessage(msg: string) {
   animationState.innerHTML = msg;
 }
 
+function enableAnimationUI(enabled: boolean = true) {
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  animationDuration.disabled = !enabled;
+  animationLoop.disabled = !enabled;
+}
+
+function isAnimationLooping(): boolean {
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  return animationLoop.checked;
+}
+
+function processAnimationSliderAdjustment(_event: any) {
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+
+  if (animationSlider.value === "0") {
+    stopAnimation([]);
+    return;
+  }
+
+  if (!isAnimating)
+    startAnimation([]);
+  if (!isAnimationPaused)
+    pauseAnimation([]);
+
+  const sliderValue = parseInt(animationSlider.value, undefined);
+  const animationFraction = sliderValue / 1000.0;
+  animationPauseTime = animationStartTime + (animationEndTime - animationStartTime) * animationFraction;
+  theViewport!.animationFraction = animationFraction;
+}
+
 function updateAnimation() {
   if (isAnimationPaused) {
     window.requestAnimationFrame(updateAnimation);
@@ -403,9 +434,9 @@ function updateAnimation() {
   const animationCurTime = (new Date()).getTime();
   theViewport!.animationFraction = (animationCurTime - animationStartTime) / (animationEndTime - animationStartTime);
   animationSlider.value = (theViewport!.animationFraction * 1000).toString();
+  const userHitStop = !isAnimating;
   if (animationCurTime >= animationEndTime || !isAnimating) { // stop the animation!
-    const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
-    animationDuration.disabled = false;
+    enableAnimationUI();
     animationSlider.value = "0";
     theViewport!.animationFraction = 0;
     isAnimating = false;
@@ -413,15 +444,17 @@ function updateAnimation() {
   } else { // continue the animation - request the next frame
     window.requestAnimationFrame(updateAnimation);
   }
+  if (!userHitStop && isAnimationLooping()) // only loop if user did not hit stop (naturally finished animation)
+    startAnimation([]);
 }
 
 function startAnimation(_event: any) {
   if (isAnimationPaused) { // resume animation
-    isAnimationPaused = false;
     const animationPauseOffset = (new Date()).getTime() - animationPauseTime; // how long were we paused?
     animationStartTime += animationPauseOffset;
     animationEndTime += animationPauseOffset;
     setAnimationStateMessage("Playing.");
+    isAnimationPaused = false;
     return;
   }
 
@@ -434,7 +467,7 @@ function startAnimation(_event: any) {
   animationStartTime = (new Date()).getTime();
   const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
   animationEndTime = animationStartTime + parseFloat(animationDuration.value) * 1000;
-  animationDuration.disabled = true;
+  enableAnimationUI(false);
   isAnimating = true;
   isAnimationPaused = false;
   window.requestAnimationFrame(updateAnimation);
@@ -1393,6 +1426,7 @@ function wireIconsToFunctions() {
   document.getElementById("animationPause")!.addEventListener("click", pauseAnimation);
   document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
   document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
+  document.getElementById("animationSlider")!.addEventListener("input", processAnimationSliderAdjustment);
 
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
