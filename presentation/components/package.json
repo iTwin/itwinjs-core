@@ -2,6 +2,11 @@
   "name": "@bentley/presentation-components",
   "version": "0.128.0",
   "description": "React components based on iModelJs Presentation library",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "EC",
@@ -11,7 +16,6 @@
     "React",
     "Component"
   ],
-  "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"

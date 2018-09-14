@@ -3,7 +3,10 @@
   "version": "0.128.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"

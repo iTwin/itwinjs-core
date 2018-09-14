@@ -5,7 +5,10 @@
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json .nyc_output",

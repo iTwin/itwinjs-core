@@ -2,9 +2,13 @@
   "name": "@bentley/ui-components",
   "version": "0.128.0",
   "description": "iModelJs UI complex components",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "main": "lib/index.js",
   "typings": "lib/index",
-  "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run build:scss && npm run copy:public",
     "build:scss": "cpx ./src/**/*.scss ./lib",
@@ -18,7 +22,6 @@
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.test.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
-  "repository": {},
   "keywords": [
     "Bentley",
     "BIM",

@@ -5,7 +5,10 @@
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "devDependencies": {
     "@bentley/bentleyjs-tools": "0.128.0",
     "@types/chai": "^4.1.4",

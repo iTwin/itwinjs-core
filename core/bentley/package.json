@@ -5,7 +5,10 @@
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
   "license": "MIT",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
