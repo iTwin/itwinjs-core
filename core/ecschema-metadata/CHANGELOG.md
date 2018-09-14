@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Thu, 13 Sep 2018 17:07:11 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+
+## 0.128.0
+Fri, 14 Sep 2018 17:08:05 GMT
+
+*Version update only*
 
 ## 0.127.0
 Thu, 13 Sep 2018 17:07:11 GMT
