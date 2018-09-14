@@ -3,7 +3,10 @@
   "version": "0.127.0",
   "description": "Bentley build tools",
   "license": "MIT",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "scripts": {
     "copy:rules": "cpx ./node_modules/tslint-consistent-codestyle/rules/**/* ./tslint-rules/tslint-consistent-codestyle/rules && cpx ./node_modules/tslint-consistent-codestyle/src/**/* ./tslint-rules/tslint-consistent-codestyle/src",
     "build": "tsc 1>&2 && npm run copy:rules",
@@ -11,6 +14,15 @@
     "docs": "",
     "lint": "",
     "test": ""
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
   },
   "dependencies": {
     "cache-require-paths": "^0.3.0",

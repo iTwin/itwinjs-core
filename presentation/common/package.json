@@ -2,13 +2,17 @@
   "name": "@bentley/presentation-common",
   "version": "0.127.0",
   "description": "Common pieces for iModelJs presentation packages",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "EC",
     "Presentation",
     "iModelJS"
   ],
-  "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"

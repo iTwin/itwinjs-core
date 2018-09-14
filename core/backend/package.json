@@ -23,7 +23,10 @@
     "perftest": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "BIM",

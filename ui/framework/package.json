@@ -2,10 +2,10 @@
   "name": "@bentley/ui-framework",
   "version": "0.127.0",
   "description": "UI framework",
-  "author": "Bentley Systems",
-  "license": "UNLICENSED",
-  "publishConfig": {
-    "registry": "https://npm.bentley.com/npm/npm/"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
   },
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -21,6 +21,15 @@
     "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.test.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "0.127.0",
