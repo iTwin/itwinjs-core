@@ -129,6 +129,19 @@ interface CellKey {
   columnKey: string;
 }
 
+/** TableRowRenderer props. */
+interface TableRowRendererProps {
+  rowRendererCreator: () => any;
+}
+
+/** ReactDataGrid requires a class component for the RowRenderer because it sets a ref to it. */
+class TableRowRenderer extends React.Component<TableRowRendererProps> {
+  public render() {
+    const creatorFn = this.props.rowRendererCreator();
+    return creatorFn(this.props);
+  }
+}
+
 /**
  * Table React component
  */
@@ -910,6 +923,8 @@ export class Table extends React.Component<TableProps, TableState> {
         };
       }
 
+      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer(dropProps, dragProps)} />;
+
       return (
         <DragDropWrapper
           dropStyle={{
@@ -920,7 +935,7 @@ export class Table extends React.Component<TableProps, TableState> {
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
-            rowRenderer={this._createRowRenderer(dropProps, dragProps)}
+            rowRenderer={rowRenderer}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
@@ -930,13 +945,15 @@ export class Table extends React.Component<TableProps, TableState> {
           />
         </DragDropWrapper>
       );
-    } else
+    } else {
+      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
+
       return (
         <div className={wrapperName} onMouseDown={this._onMouseDown}>
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
-            rowRenderer={this._createRowRenderer()}
+            rowRenderer={rowRenderer}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
@@ -946,6 +963,7 @@ export class Table extends React.Component<TableProps, TableState> {
           />
         </div>
       );
+    }
   }
 }
 
