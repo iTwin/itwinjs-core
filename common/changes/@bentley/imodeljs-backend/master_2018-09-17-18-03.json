@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Got rid of RpcInvocation.current.context - use ActivityLoggingContext.current instead",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Sam.Wilson@Bentley.com"
+}

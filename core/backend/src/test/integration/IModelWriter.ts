@@ -5,7 +5,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, XYZProps } from "@bentley/geometry-core";
 import {
   SubCategoryAppearance, CategorySelectorProps, CategoryProps, CodeScopeSpec, CodeSpec, ColorDef, DefinitionElementProps,
-  GeometryStreamBuilder, GeometryStreamProps, IModel, InformationPartitionElementProps, ModelSelectorProps, SpatialViewDefinitionProps,
+  GeometryStreamBuilder, GeometryStreamProps, IModel, InformationPartitionElementProps, ModelSelectorProps, SpatialViewDefinitionProps, BisCodeSpec,
 } from "@bentley/imodeljs-common";
 import {
   CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalPartition,
@@ -60,6 +60,7 @@ export class IModelWriter {
     const modelSelectorProps: ModelSelectorProps = {
       classFullName: ModelSelector.classFullName,
       model: modelId,
+      code: { spec: BisCodeSpec.modelSelector, scope: modelId },
       models,
     };
     return iModelDb.elements.insertElement(modelSelectorProps);
@@ -69,6 +70,7 @@ export class IModelWriter {
   public static insertCategorySelector(iModelDb: IModelDb, modelId: Id64, categories: string[]): Id64 {
     const categorySelectorProps: CategorySelectorProps = {
       classFullName: CategorySelector.classFullName,
+      code: { spec: BisCodeSpec.categorySelector, scope: modelId },
       model: modelId,
       categories,
     };
@@ -80,6 +82,7 @@ export class IModelWriter {
     const displayStyleProps: DefinitionElementProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: modelId,
+      code: { spec: BisCodeSpec.displayStyle, scope: modelId },
       isPrivate: false,
     };
     return iModelDb.elements.insertElement(displayStyleProps);

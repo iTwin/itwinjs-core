@@ -15,8 +15,8 @@ const loggingCategory = "imodeljs-backend.Functional";
 
 export class Functional extends Schema {
   public static registerSchema() {
-    if (!Schemas.getRegisteredSchema(Functional.name))
-      Schemas.registerSchema(new Functional());
+    Schemas.unregisterSchema(Functional.name);
+    Schemas.registerSchema(new Functional());
   }
   private constructor() {
     super();
