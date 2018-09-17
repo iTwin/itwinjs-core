@@ -115,7 +115,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements; }
+  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements || undefined !== this.lut.auxParams || undefined !== this.lut.auxNormals; }
 
   protected constructor() { super(); }
 }
