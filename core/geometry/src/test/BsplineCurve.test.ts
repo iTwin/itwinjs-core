@@ -16,6 +16,7 @@ import { GeometryCoreTestIO } from "./IModelJson.test";
 import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -38,50 +39,56 @@ describe("BsplineCurve", () => {
 
   it("HelloWorld", () => {
     const ck = new Checker();
-    for (const order of [2, 3, 4, 5]) {
-      if (Checker.noisy.bsplineEvaluation) console.log("\n\n ************* order ", order);
-      // const a = 1.0;
-      const b = 2.0;
-      const points = [];
-      const degree = order - 1;
-      const numPoles = 5;
-      const knots = KnotVector.createUniformClamped(numPoles, degree, 0.0, 1.0);
-      // x should exactly match the knot value (even for high order)
-      for (let i = 0; i < numPoles; i++) {
-        const x = knots.grevilleKnot(i);
-        points.push(Point3d.create(x, b, 0));
-      }
-      const curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
-      const arcLength = curve.curveLength();
-      ck.testLE(arcLength, curve.quickLength() + Geometry.smallMetricDistance, "order", order);
-      if (Checker.noisy.bsplineEvaluation) {
-        console.log("BsplineCurve", curve);
-        console.log({ numPoles: curve.numPoles, numSpan: curve.numSpan });
-        console.log("length", arcLength);
-      }
-      for (let span = 0; span < curve.numSpan; span++) {
-        const p0 = curve.evaluatePointInSpan(span, 0.0);
-        const p1 = curve.evaluatePointInSpan(span, 0.5);
-        const p2 = curve.evaluatePointInSpan(span, 1.0);
-
-        for (const spanFraction of [0.2, 0.3, 0.9]) {
-          const knot = curve.spanFractionToKnot(span, spanFraction);
-          const spanPoint = curve.evaluatePointInSpan(span, spanFraction);
-          const spanTangent = curve.evaluatePointAndTangentInSpan(span, spanFraction);
-          const spanTangent2 = curve.knotToPointAnd2Derivatives(knot);
-          ck.testPoint3d(spanPoint, spanTangent2.origin, "evaluate == 2 derivative origin");
-          ck.testVector3d(spanTangent.direction, spanTangent2.vectorU, "evaluate == 2 derivative origin");
-          ck.testPoint3d(spanPoint, spanTangent.origin, "point and tangent evaluate");
-          const knotPoint = curve.knotToPoint(knot);
-          ck.testCoordinate(knot, knotPoint.x, "x == knot");
-          ck.testPoint3d(spanPoint, knotPoint, "spanPoint, knotPoint", order, span, spanFraction);
-
+    for (const rational of [false, true]) {
+      for (const order of [2, 3, 4, 5]) {
+        if (Checker.noisy.bsplineEvaluation) console.log("\n\n ************* order ", order);
+        // const a = 1.0;
+        const b = 2.0;
+        const points = [];
+        const degree = order - 1;
+        const numPoles = 5;
+        const knots = KnotVector.createUniformClamped(numPoles, degree, 0.0, 1.0);
+        // x should exactly match the knot value (even for high order)
+        for (let i = 0; i < numPoles; i++) {
+          const x = knots.grevilleKnot(i);
+          points.push(Point3d.create(x, b, 0));
         }
-        ck.testCoordinate(b, p1.y, "constant bspline y");
-        if (Checker.noisy.bsplineEvaluation) console.log("span", span, p0, p1, p2);
-        if (span + 1 < curve.numSpan) {
-          const q2 = curve.evaluatePointInSpan(span + 1, 0.0);
-          ck.testPoint3d(p2, q2, "span match");
+        let curve: BSplineCurve3d | BSplineCurve3dH;
+        if (rational)
+          curve = BSplineCurve3dH.createUniformKnots(points, order) as BSplineCurve3dH;
+        else
+          curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
+        const arcLength = curve.curveLength();
+        ck.testLE(arcLength, curve.quickLength() + Geometry.smallMetricDistance, "order", order);
+        if (Checker.noisy.bsplineEvaluation) {
+          console.log("BsplineCurve", curve);
+          console.log({ numPoles: curve.numPoles, numSpan: curve.numSpan });
+          console.log("length", arcLength);
+        }
+        for (let span = 0; span < curve.numSpan; span++) {
+          const p0 = curve.evaluatePointInSpan(span, 0.0);
+          const p1 = curve.evaluatePointInSpan(span, 0.5);
+          const p2 = curve.evaluatePointInSpan(span, 1.0);
+
+          for (const spanFraction of [0.2, 0.3, 0.9]) {
+            const knot = curve.spanFractionToKnot(span, spanFraction);
+            const spanPoint = curve.evaluatePointInSpan(span, spanFraction);
+            const spanTangent = curve.evaluatePointAndTangentInSpan(span, spanFraction);
+            const spanTangent2 = curve.knotToPointAnd2Derivatives(knot);
+            ck.testPoint3d(spanPoint, spanTangent2.origin, "evaluate == 2 derivative origin");
+            ck.testVector3d(spanTangent.direction, spanTangent2.vectorU, "evaluate == 2 derivative origin");
+            ck.testPoint3d(spanPoint, spanTangent.origin, "point and tangent evaluate");
+            const knotPoint = curve.knotToPoint(knot);
+            ck.testCoordinate(knot, knotPoint.x, "x == knot");
+            ck.testPoint3d(spanPoint, knotPoint, "spanPoint, knotPoint", order, span, spanFraction);
+
+          }
+          ck.testCoordinate(b, p1.y, "constant bspline y");
+          if (Checker.noisy.bsplineEvaluation) console.log("span", span, p0, p1, p2);
+          if (span + 1 < curve.numSpan) {
+            const q2 = curve.evaluatePointInSpan(span + 1, 0.0);
+            ck.testPoint3d(p2, q2, "span match");
+          }
         }
       }
     }

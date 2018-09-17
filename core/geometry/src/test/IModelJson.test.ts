@@ -161,6 +161,7 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createRuledSweeps(), true, false);
 
     exerciseIModelJSon(ck, Sample.createBsplineCurves(), true, false);
+    exerciseIModelJSon(ck, Sample.createBspline3dHCurves(), true, false);
     exerciseIModelJSon(ck, Sample.createXYGridBsplineSurface(4, 3, 3, 2)!, true, false);
     exerciseIModelJSon(ck, Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!, true, false);
     exerciseIModelJSon(ck, Sample.createSimpleIndexedPolyfaces(1), true, false);
