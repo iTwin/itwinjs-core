@@ -5,7 +5,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
+import { FunctionalElementProps, IModel, InformationPartitionElementProps, Code } from "@bentley/imodeljs-common";
 import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -63,6 +63,7 @@ describe("Functional Domain", () => {
     const breakdownProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Breakdown",
       model: modelId,
+      code: Code.createEmpty(),
       userLabel: "Breakdown1",
     };
     const breakdownId: Id64 = iModelDb.elements.insertElement(breakdownProps);
@@ -70,6 +71,7 @@ describe("Functional Domain", () => {
 
     const componentProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Component",
+      code: Code.createEmpty(),
       model: modelId,
       userLabel: "Component1",
     };

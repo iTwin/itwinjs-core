@@ -97,7 +97,7 @@ describe("iModel", () => {
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
-    const e1 = new LightLocation({ category: "0x11", classFullName: "BisCore.LightLocation" }, imodel1);
+    const e1 = new LightLocation({ category: "0x11", classFullName: "BisCore.LightLocation", model: "0x01", code: Code.createEmpty() }, imodel1);
     assert.isDefined(e1);
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
@@ -578,8 +578,9 @@ describe("iModel", () => {
 
     const props: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
-      model: new Id64(),
-      category: new Id64(),
+      model: "0",
+      category: "0",
+      code: Code.createEmpty(),
       intProperty: 0,
     };
 

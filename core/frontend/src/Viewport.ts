@@ -1324,7 +1324,7 @@ export abstract class Viewport {
       return;
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
-      if (props.placement !== undefined)
+      if (props.placement !== undefined && this.view.viewsModel(props.model))
         placementProps.push(props.placement);
     }
     this.zoomToPlacementProps(placementProps, options);

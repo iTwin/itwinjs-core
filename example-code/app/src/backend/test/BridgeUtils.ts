@@ -81,6 +81,7 @@ export function insertModelSelector(iModelDb: IModelDb, modelId: Id64, models: s
   const modelSelectorProps: ModelSelectorProps = {
     classFullName: ModelSelector.classFullName,
     model: modelId,
+    code: { spec: BisCodeSpec.modelSelector, scope: modelId },
     models,
   };
   return iModelDb.elements.insertElement(modelSelectorProps);
@@ -92,6 +93,7 @@ export function insertCategorySelector(iModelDb: IModelDb, modelId: Id64, catego
   const categorySelectorProps: CategorySelectorProps = {
     classFullName: CategorySelector.classFullName,
     model: modelId,
+    code: { spec: BisCodeSpec.categorySelector, scope: modelId },
     categories,
   };
   return iModelDb.elements.insertElement(categorySelectorProps);
@@ -103,6 +105,7 @@ export function insertDisplayStyle3d(iModelDb: IModelDb, modelId: Id64): Id64 {
   const displayStyleProps: DefinitionElementProps = {
     classFullName: DisplayStyle3d.classFullName,
     model: modelId,
+    code: { spec: BisCodeSpec.displayStyle, scope: modelId },
     isPrivate: false,
   };
   return iModelDb.elements.insertElement(displayStyleProps);
