@@ -3,7 +3,7 @@ layout: landingPage.html
 header: "Just the magic for Creating, Visualizing, Querying, Mining, Synchronizing, Aligning, Securing, and Unlocking the hidden value of your<br>Infrastructure Digital Twin"
 middleImage: assets/graphic.png
 middleHeader: "Open, for Business"
-middleContent: " "
+middleContent: "Infrastructure assets are complex, valuable, and long-lived yet ever-changing. To fulfil the The software to create a Digital Twin to design, build, operate, and maintain them must meet all of those demands. No single software system can possibly meet all of those requirements at once. iModelJs is designed to be flexible and open so that it can be used wherever "
 features:
   [
     {header: "Aligned", icon: assets\assets_bullet-code.png, description: "An iModel combines information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The vocabulary of iModelJs is BIS. More..."},
