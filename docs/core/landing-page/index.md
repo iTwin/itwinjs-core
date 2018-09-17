@@ -10,7 +10,7 @@ middleContent: [
     {
         image: 'assets/imodel_editor.png',
         header: 'iModel Overview',
-        content: 'Example simpler viewer'
+        content: 'Example view demonstrator'
     },
 ]
 features:
