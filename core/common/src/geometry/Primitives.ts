@@ -26,7 +26,7 @@ export class AxisAlignedBox3d extends Range3d {
   public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
 
   /** Get the center point of this AxisAlignedBox3d */
-  public getCenter(): Point3d { return this.low.interpolate(.5, this.high); }
+  public get center(): Point3d { return this.low.interpolate(.5, this.high); }
 
   /** Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand to minimum about the center.
    * @param min The minimum length for each dimension.
@@ -109,8 +109,10 @@ export class ElementAlignedBox2d extends Range2d {
  */
 export class Placement3d implements Placement3dProps {
   public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
+  /** Get the rotation from local coordinates of this placement to world coordinates. */
+  public get rotation(): Matrix3d { return this.angles.toMatrix3d(); }
   /** Get the transform from local coordinates of this placement to world coordinates. */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.angles.toMatrix3d()); }
+  public get transform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.rotation); }
 
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
@@ -121,7 +123,7 @@ export class Placement3d implements Placement3dProps {
   /** Get the 8 corners, in world coordinates, of this placement. */
   public getWorldCorners(out?: Frustum): Frustum {
     const frust = Frustum.fromRange(this.bbox, out);
-    frust.multiply(this.getTransform());
+    frust.multiply(this.transform);
     return frust;
   }
 
@@ -141,7 +143,7 @@ export class Placement3d implements Placement3dProps {
     if (!this.isValid)
       return range;
 
-    this.getTransform().multiplyRange(this.bbox, range);
+    this.transform.multiplyRange(this.bbox, range);
 
     // low and high are not allowed to be equal
     range.ensureMinLengths();
@@ -152,8 +154,10 @@ export class Placement3d implements Placement3dProps {
 /** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
 export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
+  /** Get the rotation from local coordinates of this placement to world coordinates. */
+  public get rotation(): Matrix3d { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   /** Get the transform from local coordinates of this placement to world coordinates. */
-  public getTransform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!); }
+  public get transform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), this.rotation); }
   /** Create a new Placement2d from a Placement2dProps. */
   public static fromJSON(json?: Placement2dProps): Placement2d {
     const props: any = json ? json : {};
@@ -163,7 +167,7 @@ export class Placement2d implements Placement2dProps {
   /** Get the 8 corners, in world coordinates, of this placement. */
   public getWorldCorners(out?: Frustum): Frustum {
     const frust = Frustum.fromRange(this.bbox, out);
-    frust.multiply(this.getTransform());
+    frust.multiply(this.transform);
     return frust;
   }
 
@@ -183,7 +187,7 @@ export class Placement2d implements Placement2dProps {
     if (!this.isValid)
       return range;
 
-    this.getTransform().multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
+    this.transform.multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
 
     // low and high are not allowed to be equal
     range.ensureMinLengths();

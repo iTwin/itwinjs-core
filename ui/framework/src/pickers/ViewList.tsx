@@ -1,8 +1,9 @@
 import * as React from "react";
 import ListPicker, { ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, DrawingViewState, SheetViewState, SpatialViewState, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
+import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
 export default class ViewListWidget extends React.Component<any, any> {
   constructor(props: any) {
@@ -67,6 +68,26 @@ export default class ViewListWidget extends React.Component<any, any> {
     });
   }
 
+  public static isSpatial(classname: string): boolean {
+    return classname === "SpatialViewDefinition" || classname === "OrthographicViewDefinition";
+  }
+
+  public static isDrawing(classname: string): boolean {
+    return classname === "DrawingViewDefinition";
+  }
+
+  public static isSheet(classname: string): boolean {
+    return classname === "SheetViewDefinition";
+  }
+
+  public async queryViewProps(imodel: IModelConnection): Promise<ViewDefinitionProps[]> {
+    const params: ViewQueryParams = {};
+    params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
+    params.where = "";
+    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
+    return viewProps as ViewDefinitionProps[];
+  }
+
   // Query the views and set the initial state with the iModel's views
   public async loadViews() {
     // Query views and add them to state
@@ -74,28 +95,23 @@ export default class ViewListWidget extends React.Component<any, any> {
     const views2d: ListItem[] = [];
     const sheets: ListItem[] = [];
     const unknown: ListItem[] = [];
-    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-    const viewSpecs: IModelConnection.ViewSpec[] = await this.props.imodel!.views.getViewList(viewQueryParams);
-    for (const viewSpec of viewSpecs) {
-      const viewState: ViewState = await this.props.imodel!.views.load(viewSpec.id);
+    const viewDefProps = await this.queryViewProps(this.props.imodel!);
+    viewDefProps.forEach((viewProp: ViewDefinitionProps) => {
       const viewItem: ListItem = {
-        key: viewSpec.id,
-        name: viewSpec.name,
+        key: viewProp.id!,
+        name: viewProp.userLabel ? viewProp.userLabel : viewProp.code!.value!,
         enabled: false,
         type: ListItemType.Item,
       };
-      if (viewState instanceof SpatialViewState)
+      if (ViewListWidget.isSpatial(viewProp.bisBaseClass!))
         views3d.push(viewItem);
-      else if (viewState instanceof DrawingViewState)
+      else if (ViewListWidget.isDrawing(viewProp.bisBaseClass!))
         views2d.push(viewItem);
-      else if (viewState instanceof SheetViewState)
+      else if (ViewListWidget.isSheet(viewProp.bisBaseClass!))
         sheets.push(viewItem);
-      else {
-        // tslint:disable-next-line:no-console
-        console.error("Got a view state in the widget that is not a spatial view, sheet or drawing.");
+      else
         unknown.push(viewItem);
-      }
-    }
+    });
 
     this.setStateContainers(views3d, views2d, sheets, unknown);
   }

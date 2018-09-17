@@ -11,6 +11,7 @@ import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSe
 import { TileTree, TileTreeState, Tile, TileLoader, MissingNodes } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
+/** @hidden */
 class CesiumUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
@@ -37,6 +38,7 @@ class CesiumUtils {
   }
 }
 
+/** @hidden */
 class RealityModelTileTreeProps implements TileTreeProps {
   public id: string = "";
   public rootTile: TileProps;
@@ -52,6 +54,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
   }
 }
 
+/** @hidden */
 class RealityModelTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -73,9 +76,13 @@ class RealityModelTileProps implements TileProps {
     }
   }
 }
+
+/** @hidden */
 class FindChildResult {
   constructor(public id: string, public json: any) { }
 }
+
+/** @hidden */
 class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
@@ -176,7 +183,10 @@ interface RDSClientProps {
   tilesId: string;
 }
 
-// ##TODO temporarly here for testing, needs to be moved to the clients repo
+/**
+ * ###TODO temporarly here for testing, needs to be moved to the clients repo
+ * @hidden
+ */
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private _baseUrl: string = "";

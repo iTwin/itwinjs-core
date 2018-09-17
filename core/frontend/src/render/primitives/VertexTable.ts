@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Range1d, Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   ColorIndex,
@@ -141,6 +141,22 @@ export class AuxParam {
     this.inputs = props.inputs;
   }
 }
+export interface AuxNormalProps {
+  readonly index: number;
+  readonly name: string;
+  readonly inputs: number[];
+}
+export class AuxNormal {
+  public readonly index: number;
+  public readonly name: string;
+  public readonly inputs: number[];
+
+  public constructor(props: AuxNormalProps) {
+    this.index = props.index;
+    this.name = props.name;
+    this.inputs = props.inputs;
+  }
+}
 /** Describes a VertexTable. */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
@@ -167,6 +183,8 @@ export interface VertexTableProps {
   readonly uvParams?: QParams2d;
   // The auxilliary displacements for animations.
   readonly auxDisplacements?: AuxDisplacement[];
+  // The auxilliary normals for animations.
+  readonly auxNormals?: AuxNormal[];
   // The auxilliary parameters for animations.
   readonly auxParams?: AuxParam[];
 }
@@ -203,6 +221,8 @@ export class VertexTable implements VertexTableProps {
   public readonly uvParams?: QParams2d;
   // The auxilliary displacements for animations.
   public readonly auxDisplacements?: AuxDisplacement[];
+  // The auxilliary normals for animations.
+  public readonly auxNormals?: AuxNormal[];
   // The auxilliary parameters for animations.
   public readonly auxParams?: AuxParam[];
 
@@ -220,6 +240,7 @@ export class VertexTable implements VertexTableProps {
     this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.uvParams = props.uvParams;
     this.auxDisplacements = props.auxDisplacements;
+    this.auxNormals = props.auxNormals;
     this.auxParams = props.auxParams;
   }
 
@@ -526,6 +547,7 @@ export interface SurfaceParams {
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
   readonly material?: RenderMaterial;
+  readonly thematicRange?: Range1d;
 }
 
 /**

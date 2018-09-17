@@ -389,6 +389,7 @@ export class IdMap implements IDisposable {
 }
 
 export class System extends RenderSystem {
+  public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
@@ -402,6 +403,7 @@ export class System extends RenderSystem {
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
+  public get isValid(): boolean { return this.canvas !== undefined; }
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get techniques() { return this._techniques!; }
 
@@ -578,7 +580,8 @@ export class System extends RenderSystem {
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
-    super(canvas);
+    super();
+    this.canvas = canvas;
     this.context = context;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");

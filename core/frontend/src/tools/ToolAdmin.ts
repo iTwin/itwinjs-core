@@ -16,7 +16,7 @@ import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeButtonState, BeCursor, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
+import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { CanvasDecoration } from "../render/System";
 
@@ -84,7 +84,7 @@ export class ToolState {
 export class SuspendedToolState {
   private readonly _toolState: ToolState;
   private readonly _accuSnapState: AccuSnap.ToolState;
-  private readonly _viewCursor?: BeCursor;
+  private readonly _viewCursor?: string;
   private _inDynamics: boolean;
   private _shuttingDown = false;
 
@@ -298,7 +298,7 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
   public readonly toolState = new ToolState();
-  private _overlayDecoration?: CanvasDecoration;
+  private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
   public cursorView?: ScreenViewport;
@@ -306,7 +306,7 @@ export class ToolAdmin {
   private _primitiveTool?: PrimitiveTool;
   private _idleTool?: IdleTool;
   private _inputCollector?: InputCollector;
-  private _saveCursor?: BeCursor = undefined;
+  private _saveCursor?: string;
   private _saveLocateCircle = false;
   private _defaultTool = "Select";
   private _modifierKeyWentDown = false;
@@ -457,7 +457,7 @@ export class ToolAdmin {
     wheelEvent.wheelDelta = delta;
     current.toEvent(wheelEvent, true);
 
-    const overlayHit = this.pickOverLayDecoration(wheelEvent);
+    const overlayHit = this.pickCanvasDecoration(wheelEvent);
     if (undefined !== overlayHit && undefined !== overlayHit.onWheel && overlayHit.onWheel(wheelEvent))
       return EventHandled.Yes;
 
@@ -685,7 +685,7 @@ export class ToolAdmin {
   private async onMouseLeave(vp: ScreenViewport) {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
-    this.setOverlayDecoration(vp);
+    this.setCanvasDecoration(vp);
     vp.invalidateDecorations(); // stop drawing locate circle...
   }
 
@@ -778,21 +778,23 @@ export class ToolAdmin {
       return this.idleTool.onMouseEndDrag(ev);
   }
 
-  private setOverlayDecoration(vp: ScreenViewport, dec?: CanvasDecoration, ev?: BeButtonEvent) {
-    if (dec === this._overlayDecoration)
+  private setCanvasDecoration(vp: ScreenViewport, dec?: CanvasDecoration, ev?: BeButtonEvent) {
+    if (dec === this._canvasDecoration)
       return;
 
-    if (this._overlayDecoration && this._overlayDecoration.onMouseLeave)
-      this._overlayDecoration.onMouseLeave();
-    this._overlayDecoration = dec;
+    if (this._canvasDecoration && this._canvasDecoration.onMouseLeave)
+      this._canvasDecoration.onMouseLeave();
+    this._canvasDecoration = dec;
     if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+
+    vp.canvas.style.cursor = dec ? (dec.decorationCursor ? dec.decorationCursor : "pointer") : IModelApp.viewManager.cursor;
     vp.invalidateDecorations();
   }
 
-  private pickOverLayDecoration(ev: BeButtonEvent) {
+  private pickCanvasDecoration(ev: BeButtonEvent) {
     const vp = ev.viewport!;
-    const decoration = (undefined === this.viewTool) ? vp.pickOverlayDecoration(ev.viewPoint) : undefined;
-    this.setOverlayDecoration(vp, decoration, ev);
+    const decoration = (undefined === this.viewTool) ? vp.pickCanvasDecoration(ev.viewPoint) : undefined;
+    this.setCanvasDecoration(vp, decoration, ev);
     return decoration;
   }
 
@@ -809,7 +811,7 @@ export class ToolAdmin {
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
 
-    const overlayHit = this.pickOverLayDecoration(ev);
+    const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit) {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
@@ -950,7 +952,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
-    const overlayHit = this.pickOverLayDecoration(ev);
+    const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
 
@@ -1201,7 +1203,7 @@ export class ToolAdmin {
 
     IModelApp.accuSnap.onStartTool();
 
-    this.setCursor(BeCursor.CrossHair);
+    this.setCursor("crosshair");
     this.setViewTool(newTool);
   }
 
@@ -1246,7 +1248,7 @@ export class ToolAdmin {
 
   public isDefaultTool(tool?: Tool) { return (undefined !== tool && tool.toolId === this._defaultTool); }
 
-  public setCursor(cursor: BeCursor | undefined): void {
+  public setCursor(cursor: string | undefined): void {
     if (undefined === this._saveCursor)
       IModelApp.viewManager.setViewCursor(cursor);
     else
@@ -1277,7 +1279,7 @@ export class ToolAdmin {
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._overlayDecoration === undefined; }
+  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }
 
   /** @hidden */
   public beginDynamics(): void {
@@ -1350,7 +1352,7 @@ export class ToolAdmin {
     this._saveLocateCircle = this.toolState.locateCircleOn;
     this._saveCursor = IModelApp.viewManager.cursor;
     this.toolState.locateCircleOn = false;
-    IModelApp.viewManager.setViewCursor(BeCursor.NotAllowed);
+    IModelApp.viewManager.setViewCursor("not-allowed");
   }
 
   /** Performs default handling of mouse wheel event (zoom in/out) */
@@ -1389,7 +1391,7 @@ export class ToolAdmin {
 
   public setLocateCursor(enableLocate: boolean): void {
     const { viewManager } = IModelApp;
-    this.setCursor(viewManager.inDynamicsMode ? BeCursor.Dynamics : BeCursor.CrossHair);
+    this.setCursor(viewManager.inDynamicsMode ? "move" : "crosshair");
     this.setLocateCircleOn(enableLocate);
     viewManager.invalidateDecorationsAllViews();
   }
@@ -1500,7 +1502,8 @@ export class WheelEventProcessor {
 
       trans.multiplyPoint3d(viewCenter, viewCenter);
       vp.npcToWorld(viewCenter, viewCenter);
-      status = vp.zoom(viewCenter, zoomRatio);
+      vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
+      status = ViewStatus.Success;
     }
 
     // if we scrolled out, we may have invalidated the current AccuSnap path

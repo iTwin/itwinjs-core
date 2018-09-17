@@ -24,9 +24,9 @@ export type EventType =
   "ChangeSetPostPushEvent" |
   /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
   "ChangeSetPrePushEvent" |
-  /** Sent when one or more [[Code]]s are updated. See [[CodeEvent]]. */
+  /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]]. */
   "CodeEvent" |
-  /** Sent when all [[Code]]s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]]. */
+  /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]]. */
   "AllCodesDeletedEvent" |
   /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
   "BriefcaseDeletedEvent" |
@@ -116,7 +116,7 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
 /**
- * Sent when one or more [[Code]]s are updated. See [[CodeHandler.update]]. Code updates can be very frequent, so it's recommended to not to subscribe to CodeEvents, if it's not necessary.
+ * Sent when one or more [Code]($common)s are updated. See [[CodeHandler.update]]. Code updates can be very frequent, so it's recommended to not to subscribe to CodeEvents, if it's not necessary.
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
@@ -143,7 +143,7 @@ export class CodeEvent extends BriefcaseEvent {
 }
 
 /**
- * Sent when all [[Code]]s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
+ * Sent when all [Code]($common)s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
  */
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }

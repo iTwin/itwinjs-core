@@ -142,12 +142,6 @@ export class ViewsFrontstage {
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
-          {
-            classId: "ActivityWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
         ],
       },
       bottomCenter: {

@@ -96,7 +96,8 @@ function createCommon(animated: boolean): ProgramBuilder {
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true);
+    addAnimation(vert, true, true
+    );
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -187,6 +188,11 @@ const computeNormal = `
   return normalize(u_nmx * octDecodeNormal(normal));
 `;
 
+const computeAnimatedNormal = `
+  if (u_animParams.z >= 0.0)
+    return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
+` + computeNormal;
+
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
     baseColor.rgb = u_bgColor.rgb;
@@ -203,11 +209,9 @@ const computeTexCoord = `
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
 const computeAnimatedTexCoord = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
-    return vec2(0.0);
-
-  return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
-`;
+  if (u_qAnimScalarParams.x >= 0.0)
+    return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
+` + computeTexCoord;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -250,31 +254,29 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
   });
 }
 
-function addNormal(builder: ProgramBuilder) {
+function addNormal(builder: ProgramBuilder, animated: boolean) {
   addNormalMatrix(builder.vert);
 
   builder.vert.addFunction(octDecodeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
-  if (!animated) {
-    builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-      prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-        const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-        const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
-        if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-          const uvQParams = surfGeom.lut.uvQParams;
-          if (undefined !== uvQParams) {
-            uniform.setUniform4fv(uvQParams);
-          }
+  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        const uvQParams = surfGeom.lut.uvQParams;
+        if (undefined !== uvQParams) {
+          uniform.setUniform4fv(uvQParams);
         }
-      });
+      }
     });
-  }
+  });
 
   builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);
@@ -301,7 +303,7 @@ export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): Prog
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
-  addNormal(builder);
+  addNormal(builder, animated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);

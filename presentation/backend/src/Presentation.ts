@@ -55,7 +55,7 @@ export default class Presentation {
    *
    * Example:
    * ``` ts
-   * [[include:Backend.Initialization.Presentation]]
+   * [[include:Presentation.Backend.Initialization]]
    * ```
    *
    * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)

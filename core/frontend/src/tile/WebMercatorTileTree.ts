@@ -106,6 +106,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
     this.location = Transform.createIdentity();
   }
 }
+
 class WebMercatorTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -121,6 +122,7 @@ class WebMercatorTileProps implements TileProps {
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
   }
 }
+
 class WebMercatorTileLoader extends TileLoader {
   private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
@@ -130,8 +132,7 @@ class WebMercatorTileLoader extends TileLoader {
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
-    const projectExtents = _iModel.projectExtents;
-    const projectCenter = projectExtents.getCenter();
+    const projectCenter = _iModel.projectExtents.center;
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
@@ -577,7 +578,7 @@ export class BackgroundMapState {
   private _mapType: MapType;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader, ""));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
   public getPlane(): Plane3dByOriginAndUnitNormal {

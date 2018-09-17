@@ -55,7 +55,7 @@ export enum InitializationState {
     Failed = 3,
     /** Initialization failed due to file having outdated schemas. */
     OutdatedFile = 4,
-    /** Initialization failed due to file having [[Code]] values that are too long. */
+    /** Initialization failed due to file having [Code]($common) values that are too long. */
     CodeTooLong = 5,
     /**
      * Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend).
@@ -287,7 +287,7 @@ export class IModelHandler {
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param imodelId Id of the iModel to be deleted. See [[IModelRepository]].
-     * @throws [[IModelHubError]] with [IModelHubStatus.IModelDoesNotExists]$(bentley) if iModel with specified id does not exist.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
@@ -467,7 +467,7 @@ export class IModelHandler {
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param imodel iModel to update. See [[IModelRepository]].
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-     * @throws [[IModelHubError]] with [IModelHubStatus.IModelDoesNotExists]$(bentley) if iModel does not exist.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)

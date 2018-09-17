@@ -113,9 +113,9 @@ export class SheetBorder {
   }
 }
 
-/** Contains functionality specific to view attachments. */
+/** @hidden */
 export namespace Attachments {
-
+  /** @hidden */
   export class AttachmentViewport extends OffScreenViewport {
     public rendering: boolean = false;
     public toParent: Transform = Transform.createIdentity();  // attachment NPC to sheet world
@@ -197,7 +197,10 @@ export namespace Attachments {
     public get isAspectRatioLocked(): boolean { return true; }
   }
 
-  /** Describes the location of a tile within the range of a quad subdivided in four parts. */
+  /**
+   * Describes the location of a tile within the range of a quad subdivided in four parts.
+   * @hidden
+   */
   export const enum Tile3dPlacement {
     UpperLeft,
     UpperRight,
@@ -206,7 +209,10 @@ export namespace Attachments {
     Root,   // root placement is for root tile of a tree: a single placement representing entire image (not subdivided)
   }
 
-  /** Describes the state of the scene for a given level of the tile tree. All tiles on a given level use the same scene to generate their graphics. */
+  /**
+   * Describes the state of the scene for a given level of the tile tree. All tiles on a given level use the same scene to generate their graphics.
+   * @hidden
+   */
   export const enum State {
     NotLoaded,  // We haven't tried to create the scene for this level of the tree
     Empty,      // This level of the tree has an empty scene
@@ -216,6 +222,7 @@ export namespace Attachments {
 
   const QUERY_SHEET_TILE_PIXELS: number = 512;
 
+  /** @hidden */
   abstract class AttachmentTileLoader extends TileLoader {
     public abstract get is3dAttachment(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
@@ -226,6 +233,7 @@ export namespace Attachments {
     }
   }
 
+  /** @hidden */
   class TileLoader2d extends AttachmentTileLoader {
     private readonly _viewFlagOverrides: ViewFlag.Overrides;
 
@@ -242,6 +250,7 @@ export namespace Attachments {
     public get is3dAttachment(): boolean { return false; }
   }
 
+  /** @hidden */
   class TileLoader3d extends AttachmentTileLoader {
     /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
     private static _DEBUG_NO_TEXTURES = false;
@@ -259,7 +268,7 @@ export namespace Attachments {
     public get is3dAttachment(): boolean { return true; }
   }
 
-  /** An extension of Tile specific to rendering 2d attachments. */
+  /** @hidden */
   export class Tile2d extends Tile {
     public constructor(root: Tree2d, range: ElementAlignedBox2d) {
       super(new Tile.Params(
@@ -289,7 +298,7 @@ export namespace Attachments {
     }
   }
 
-  /** An extension of Tile specific to rendering 3d attachments. */
+  /** @hidden */
   export class Tile3d extends Tile {
     /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
     private static _DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
@@ -561,7 +570,7 @@ export namespace Attachments {
     }
   }
 
-  /** An extension of TileTree specific to rendering attachments. */
+  /** @hidden */
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
@@ -583,13 +592,14 @@ export namespace Attachments {
         false, // NB: The attachment is 3d. The attachment tiles are 2d.
         loader,
         Transform.createIdentity(),
+        modelId,
         undefined,
         undefined,
       ));
     }
   }
 
-  /** An extension of TileTree specific to rendering 2d attachments. */
+  /** @hidden */
   export class Tree2d extends Tree {
     public readonly view: ViewState2d;
     public readonly viewRoot: TileTree;
@@ -666,6 +676,7 @@ export namespace Attachments {
     }
   }
 
+  /** @hidden */
   class TileColorSequence {
     private _index: number = 0;
     private readonly _colors: number[] = [
@@ -693,7 +704,7 @@ export namespace Attachments {
 
   const tileColorSequence = new TileColorSequence();
 
-  /** An extension of TileTree specific to rendering 3d attachments. It contains a chain of tiles with texture renderings of the sheet (increasing in detail). */
+  /** @hidden */
   export class Tree3d extends Tree {
     public readonly tileColor: ColorDef;
     public readonly biasDistance: number; // distance in z to position tile in parent viewport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
@@ -794,7 +805,7 @@ export namespace Attachments {
     }
   }
 
-  /** An attachment is a reference to a View, placed on a sheet. THe attachment specifies its view and its position on the sheet. */
+  /** @hidden */
   export abstract class Attachment {
     /** DEBUG ONLY - The color of the attachment bounding box if drawn. */
     public static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef = ColorDef.red;
@@ -917,7 +928,7 @@ export namespace Attachments {
     }
   }
 
-  /** A 2d sheet view attachment. */
+  /** @hidden */
   export class Attachment2d extends Attachment {
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
@@ -932,7 +943,7 @@ export namespace Attachments {
     }
   }
 
-  /** A 3d sheet view attachment. */
+  /** @hidden */
   export class Attachment3d extends Attachment {
     private _states: State[];  // per level of the tree
 
@@ -960,7 +971,7 @@ export namespace Attachments {
     }
   }
 
-  /** A list of view attachments for a sheet. */
+  /** @hidden */
   export class AttachmentList {
     public readonly list: Attachment[] = [];
     private _allReady: boolean = true;

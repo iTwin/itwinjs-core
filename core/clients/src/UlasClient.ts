@@ -282,7 +282,7 @@ class UlasLogEntryLogConverter {
     const fstr: string = "";
 
     const userProfile: UserProfile = token.getUserProfile()!;
-    const ultId: number = parseInt(userProfile.ultimateId, 10);
+    const ultimateSite: number = parseInt(userProfile.ultimateSite, 10);
     const imsID: string = userProfile.userId;
     // WIP: must be replaced by pulling from policy file. For now we use imsID.
     const pid: string = imsID;
@@ -311,7 +311,7 @@ class UlasLogEntryLogConverter {
 
     const uType: string = UlasLogEntryLogConverter.usageTypeToString(entry.usageType);
     return {
-      ultId, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
+      ultimateSite, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
       evTimeZ, lVer, lSrc, country, uType,
     };
   }
@@ -328,7 +328,7 @@ class UlasLogEntryLogConverter {
       const fstr: string = "";
 
       const userProfile: UserProfile = token.getUserProfile()!;
-      const ultId: number = parseInt(userProfile.ultimateId, 10);
+      const ultimateSite: number = parseInt(userProfile.ultimateSite, 10);
       const imsID: string = userProfile.userId;
       // WIP: must be replaced by pulling from policy file. For now we use imsID.
       const pid: string = imsID;
@@ -381,7 +381,7 @@ class UlasLogEntryLogConverter {
       }
 
       json.push({
-        ultId, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
+        ultimateSite, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
         evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
       });
     }

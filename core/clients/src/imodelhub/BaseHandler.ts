@@ -201,7 +201,7 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Get an instance of [[CustomRequestOptions]]. It can be used to set custom request parameters for all future requests made by this handler.
+   * Get an instance of CustomRequestOptions, which can be used to set custom request parameters for all future requests made by this handler.
    */
   public getCustomRequestOptions(): CustomRequestOptions {
     return this._customRequestOptions;

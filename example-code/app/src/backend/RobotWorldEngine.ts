@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { EnvMacroSubst, DbResult, Id64Props, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
@@ -118,7 +118,7 @@ export class RobotWorldEngine {
         // Create an assembly with r1 and r2 as the children and a new (hidden) element as the head.
         const r1 = iModelDb.elements.getElement(r1Id) as Robot;
         const r2 = iModelDb.elements.getElement(r2Id) as Robot;
-        const parent = iModelDb.elements.createElement({ classFullName: InformationRecordElement.classFullName, model: r1.model });
+        const parent = iModelDb.elements.createElement({ classFullName: InformationRecordElement.classFullName, model: r1.model, code: Code.createEmpty() });
         const parentId = iModelDb.elements.insertElement(parent);
         r1.parent = new RelatedElement({ id: parentId });
         r2.parent = new RelatedElement({ id: parentId });
@@ -130,6 +130,7 @@ export class RobotWorldEngine {
     public static insertRobot(iModelDb: IModelDb, modelId: Id64Props, name: string, location: Point3d): Id64Props {
         const props: GeometricElement3dProps = {
             model: modelId,
+            code: Code.createEmpty(),
             classFullName: RobotWorld.Class.Robot,      // In this example, I know what class and category to use.
             category: Robot.getCategory(iModelDb).id,
             geom: Robot.generateGeometry(),             // In this example, I know how to generate geometry, and I know that the placement is empty.
@@ -143,6 +144,7 @@ export class RobotWorldEngine {
     public static insertBarrier(iModelDb: IModelDb, modelId: Id64Props, location: Point3d, angle: Angle, length: number): Id64Props {
         const props: GeometricElement3dProps = {      // I know what class and category to use.
             model: modelId,
+            code: Code.createEmpty(),
             classFullName: RobotWorld.Class.Barrier,
             category: Barrier.getCategory(iModelDb).id,
             geom: Barrier.generateGeometry(length),

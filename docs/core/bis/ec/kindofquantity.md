@@ -14,7 +14,7 @@ Units referenced in a Kind Of Quantity are from the Units 2.0 framework.
 
 **persistenceUnit** The unit values of this kind will be stored in
 
-**precision** The number of significant digits values of this kind have. Zero means none set.
+**relativeError** Defines the measurement error as a unitless ratio between the measurement error and the actual value, abs((actualValue – measuredValue)/actualValue).  Scaled to the current value it defines the maximum precision of a value stored using this kind of quantity.  Zero means none set.
 
 **defaultPresentationUnit** The unit used when displaying this kind of value in the UI. Persistence unit used if not set.
 

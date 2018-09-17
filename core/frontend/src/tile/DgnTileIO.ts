@@ -27,7 +27,10 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 
-/** Provides facilities for deserializing tiles in 'dgn' format. Such tiles contain element geometry. */
+/**
+ * Provides facilities for deserializing tiles in 'dgn' format. Such tiles contain element geometry.
+ * @hidden
+ */
 export namespace DgnTileIO {
   export const enum Flags {
     None = 0,
@@ -37,6 +40,7 @@ export namespace DgnTileIO {
     HasSizeMultiplier = 1 << 3,
   }
 
+  /** @hidden */
   export class Header extends TileIO.Header {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
@@ -57,6 +61,7 @@ export namespace DgnTileIO {
     }
   }
 
+  /** @hidden */
   class FeatureTableHeader {
     public static readFrom(stream: TileIO.StreamBuffer) {
       const length = stream.nextUint32;
@@ -70,7 +75,10 @@ export namespace DgnTileIO {
       public readonly count: number) { }
   }
 
-  /** Deserializes a dgn tile. */
+  /**
+   * Deserializes a dgn tile.
+   * @hidden
+   */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);

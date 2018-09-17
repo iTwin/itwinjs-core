@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import { ScreenViewport } from "./Viewport";
-import { BeCursor, EventHandled, BeButtonEvent } from "./tools/Tool";
+import { EventHandled, BeButtonEvent } from "./tools/Tool";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
@@ -55,7 +55,7 @@ export interface SelectedViewportChangedArgs {
  */
 export class ViewManager {
   public inDynamicsMode = false;
-  public cursor?: BeCursor;
+  public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
   public readonly decorators: Decorator[] = [];
   private _selectedView?: ScreenViewport;
@@ -79,6 +79,7 @@ export class ViewManager {
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
+    this.cursor = "default";
   }
 
   /** @hidden */
@@ -86,7 +87,6 @@ export class ViewManager {
     this._viewports.length = 0;
     this.decorators.length = 0;
     this._selectedView = undefined;
-    this.cursor = undefined;
   }
 
   /** Called after the selected view changes.
@@ -302,7 +302,7 @@ export class ViewManager {
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.
    */
-  public setViewCursor(cursor: BeCursor | undefined) {
+  public setViewCursor(cursor: string = "default") {
     if (cursor === this.cursor)
       return;
 

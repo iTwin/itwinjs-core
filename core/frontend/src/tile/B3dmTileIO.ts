@@ -12,7 +12,10 @@ import { ColorMap } from "../render/primitives/ColorMap";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
 
-/** Provides facilities for deserializing Batched 3D Model (B3dm) tiles.  */
+/**
+ * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
+ * @hidden
+ */
 export namespace B3dmTileIO {
   export class Header extends TileIO.Header {
     public readonly length: number;
@@ -39,7 +42,10 @@ export namespace B3dmTileIO {
     }
   }
 
-  /** Deserializes an B3DM tile. */
+  /**
+   * Deserializes a B3DM tile.
+   * @hidden
+   */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);

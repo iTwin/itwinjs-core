@@ -9,33 +9,10 @@ import { DeploymentEnv } from "../Client";
 import { IModelBankClient } from "./IModelBankClient";
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
-import { ActivityLoggingContext, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, EnvMacroSubst, assert } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
-import { IModelBankFileSystemProject } from "./IModelBankFileSystemProject";
-
-/** The format of a config file that imodel-bank's runWebServer program will read
- * in order to get the information needed to set up and run an iModelBank server.
- */
-export interface IModelBankServerConfig {
-  /** The protocol and hostname of the server. E.g., "https://localhost".
-   * baseUrl will be used to form the upload and download URLs returned by the server to the client for
-   * briefcase, seedfile, and changeset upload/download.
-   */
-  baseUrl: string;
-  /** The port where the server should listen */
-  port: number;
-  /** The path to the .key file to be used by https. Path may be relative to the server config file.  */
-  keyFile: string;
-  /** The path to the .crt file to be used by https. Path may be relative to the server config file. */
-  certFile: string;
-  /** Access control URL - a server that performs the permissions check */
-  accessControlUrl: string | undefined;
-  /** admin user name - for ULAS */
-  adminConnectUserName: string;
-  /** admin user's password - for ULAS */
-  adminConnectUserPassword: string;
-}
+import { IModelBankFileSystemProject, IModelBankServerConfig } from "./IModelBankFileSystemProject";
 
 // A running instance of iModelBank
 class RunningBank {
@@ -83,7 +60,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
     this.runningBanks = new Map<string, RunningBank>();
   }
 
-  /** Make sure a bank server is running for the specified iModel */
+  /* Make sure a bank server is running for the specified iModel */
   private queryContextPropsFor(iModelId: string): NamedIModelAccessContextProps {
     for (const context of this.proj.group.iModelBankProjectAccessContextGroup.contexts) {
       if (context.imodeljsCoreClientsIModelBankAccessContext.iModelId === iModelId) {
@@ -109,6 +86,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
 
     //  Run the bank
     const imodelDir = this.proj.fsAdmin.getIModelDir(this.proj.group.iModelBankProjectAccessContextGroup.name, iModelId);
+    assert(fs.existsSync(imodelDir));
 
     const thisBankServerConfig: IModelBankServerConfig = Object.assign({}, this.serverConfig);
     thisBankServerConfig.port = port;

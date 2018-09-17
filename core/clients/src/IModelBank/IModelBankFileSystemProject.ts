@@ -21,30 +21,31 @@ function unQuote(str: string): string {
   return !isQuoted(str) ? str : str.replace(/\'/g, "");
 }
 
-/** The format of a config file that imodel-bank's runWebServer program will read
+/*
+ * The format of a config file that imodel-bank's runWebServer program will read
  * in order to get the information needed to set up and run an iModelBank server.
  */
 export interface IModelBankServerConfig {
-  /** The protocol and hostname of the server. E.g., "https://localhost".
+  /* The protocol and hostname of the server. E.g., "https://localhost".
    * baseUrl will be used to form the upload and download URLs returned by the server to the client for
    * briefcase, seedfile, and changeset upload/download.
    */
   baseUrl: string;
-  /** The port where the server should listen */
+  /* The port where the server should listen */
   port: number;
-  /** The path to the .key file to be used by https. Path may be relative to the server config file.  */
+  /* The path to the .key file to be used by https. Path may be relative to the server config file.  */
   keyFile: string;
-  /** The path to the .crt file to be used by https. Path may be relative to the server config file. */
+  /* The path to the .crt file to be used by https. Path may be relative to the server config file. */
   certFile: string;
-  /** Access control URL - a server that performs the permissions check */
+  /* Access control URL - a server that performs the permissions check */
   accessControlUrl: string | undefined;
-  /** admin user name - for ULAS */
+  /* admin user name - for ULAS */
   adminConnectUserName: string;
-  /** admin user's password - for ULAS */
+  /* admin user's password - for ULAS */
   adminConnectUserPassword: string;
 }
 
-/** The format of a config file that contains logging configuration information.
+/* The format of a config file that contains logging configuration information.
  * The following macros may be used:
  * * IMODEL-BANK-DEFAULT-LOG-LEVEL  - default log level for all categories
  * * IMODEL-BANK-IMODEL-BANK-LOG-LEVEL - log level for the iModelBank logging category
@@ -54,9 +55,9 @@ export interface IModelBankServerConfig {
  * * IMODEL-BANK-SEQ-PORT - the port of the SEQ logging client
  */
 export interface IModelBankLoggingConfig {
-  /** Log levels */
+  /* Log levels */
   loggerConfig?: LoggerLevelsConfig;
-  /** SEQ logging configuration - must use the SeqConfig format. See @bentleyjs-core/SeqLoggerConfig */
+  /* SEQ logging configuration - must use the SeqConfig format. See @bentleyjs-core/SeqLoggerConfig */
   seq?: any; // SeqConfig
 }
 
@@ -68,20 +69,20 @@ export interface IModelBankFileSystemProjectOptions {
   createIfNotExist?: boolean;
 }
 
-/** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
+/* Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
  */
 export class IModelBankPermissionDummy implements IModelAuthorizationClient {
   public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
     if (!userProfile)
-      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
+      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", organizationId: "", ultimateSite: "", usageCountryIso: "" };
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
     return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
   }
 }
 
-/** Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
+/* Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
 export class IModelBankFileSystemProject extends IModelProjectClient {
   public group: IModelBankAccessContextGroupProps;
   public fsAdmin: IModelBankFileSystemAdmin;

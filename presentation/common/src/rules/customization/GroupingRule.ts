@@ -39,7 +39,7 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
 /** Grouping rule specifications */
 export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
-/** Used for serializing [[GroupSpecification]] to JSON */
+/** Available types of [[GroupingSpecification]] */
 export const enum GroupingSpecificationTypes {
   Class = "Class",
   Property = "Property",

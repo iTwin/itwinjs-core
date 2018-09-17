@@ -35,6 +35,17 @@ export class Schemas {
     Schemas._registeredSchemas[key] = schema;
   }
 
+  /** Unregister a schema that may already be registered.
+   * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
+   * @param schemaName Name of the schema to unregister
+   * @hidden
+   */
+  public static unregisterSchema(schemaName: string): void {
+    const key = schemaName.toLowerCase();
+    if (!(key === "biscore")) // Can't unregister BisCore
+      delete Schemas._registeredSchemas[key];
+  }
+
   /** Look up a previously registered schema
    * @param schemaName The name of the schema
    * @returns the previously registered schema or undefined if not registered.
