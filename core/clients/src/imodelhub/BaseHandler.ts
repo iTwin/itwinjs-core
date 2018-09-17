@@ -55,7 +55,7 @@ export class IModelBaseHandler extends WsgClient {
     super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
     this._fileHandler = fileHandler;
     if (!Config.isBrowser)
-      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
+      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
   }
 
   public formatProjectIdForUrl(projectId: string) { return projectId; }
