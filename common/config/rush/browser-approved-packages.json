@@ -115,20 +115,12 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cookie-parser",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "deep-assign",
       "allowedCategories": [ "common" ]
     },
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
-      "name": "delay-cli",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "dotenv",
@@ -145,10 +137,6 @@
     {
       "name": "exports-loader",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "express-session",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "faker",
@@ -219,10 +207,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "minimist",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "mocha-multi-reporters",
       "allowedCategories": [ "frontend" ]
     },
@@ -247,24 +231,8 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "npm-run-all",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "object-assign",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "openid-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "passport",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "path",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "postcss-flexbugs-fixes",

@@ -60,11 +60,11 @@ describe("UrlDiscoveryClient", () => {
   it("should discover ConnectService URLs correctly", async () => {
     ConnectUrlMock.mockGetUrl("DEV");
     let url = await urlDiscoveryClient.discoverUrl(actx, ConnectClient.searchKey, "DEV");
-    chai.expect(url).equals("https://dev-connect-contextregistry.bentley.com");
+    chai.expect(url).equals("https://dev-wsg20-eus.cloudapp.net");
 
     ConnectUrlMock.mockGetUrl("QA");
     url = await urlDiscoveryClient.discoverUrl(actx, ConnectClient.searchKey, "QA");
-    chai.expect(url).equals("https://qa-connect-contextregistry.bentley.com");
+    chai.expect(url).equals("https://qa-connect-wsg20.bentley.com");
 
     ConnectUrlMock.mockGetUrl("PROD");
     url = await urlDiscoveryClient.discoverUrl(actx, ConnectClient.searchKey, "PROD");
@@ -72,8 +72,7 @@ describe("UrlDiscoveryClient", () => {
 
     ConnectUrlMock.mockGetUrl("PERF");
     url = await urlDiscoveryClient.discoverUrl(actx, ConnectClient.searchKey, "PERF");
-    chai.expect(url).equals("https://perf-connect-contextregistry.bentley.com");
-    console.log(url); // tslint:disable-line:no-console
+    chai.expect(url).equals("https://perf-wsg20-eus.cloudapp.net");
   });
 
   it("should discover IModelHubService URLs correctly", async () => {
