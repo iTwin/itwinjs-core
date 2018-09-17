@@ -73,7 +73,7 @@ describe("Example Code", () => {
         // This is an example of the rare case where a synchronous function invokes an async function and
         // the async callback emits logging messages. In this case, because the caller is synchronous, it must
         // access the current ActivityLoggingContext and assign it to a local variable.
-        const context = ActivityLoggingContext.current!;        // Rare! Never in an async!
+        const context = ActivityLoggingContext.current;        // Rare! Never in an async!
         setTimeout(() => {
             context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
             Logger.logTrace("cat", "callback invoked");
