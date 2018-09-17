@@ -4,7 +4,7 @@
 import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core/lib/geometry-core";
 import {
-    SubCategoryAppearance, CategorySelectorProps, CategoryProps, CodeScopeSpec, CodeSpec, ColorDef, DefinitionElementProps,
+    SubCategoryAppearance, CategorySelectorProps, CategoryProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DefinitionElementProps,
     IModel, InformationPartitionElementProps, ModelSelectorProps, SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common/lib/common";
 import {
@@ -69,6 +69,7 @@ export class IModelDbHandler {
         const modelSelectorProps: ModelSelectorProps = {
             classFullName: ModelSelector.classFullName,
             model: modelId,
+            code: Code.createEmpty(),
             models,
         };
         return iModelDb.elements.insertElement(modelSelectorProps);
@@ -79,6 +80,7 @@ export class IModelDbHandler {
         const categorySelectorProps: CategorySelectorProps = {
             classFullName: CategorySelector.classFullName,
             model: modelId,
+            code: Code.createEmpty(),
             categories,
         };
         return iModelDb.elements.insertElement(categorySelectorProps);
@@ -89,6 +91,7 @@ export class IModelDbHandler {
         const displayStyleProps: DefinitionElementProps = {
             classFullName: DisplayStyle3d.classFullName,
             model: modelId,
+            code: Code.createEmpty(),
             isPrivate: false,
         };
         return iModelDb.elements.insertElement(displayStyleProps);

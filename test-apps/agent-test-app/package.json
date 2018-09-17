@@ -13,7 +13,7 @@
     "password": "Regular@iMJs"
   },
   "scripts": {
-    "build": "tsc --rootDir ./src",
+    "build": "tsc --rootDir ./src 1>&2",
     "clean": "rimraf lib",
     "lint": "tslint --project .",
     "test": "",
