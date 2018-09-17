@@ -13,8 +13,8 @@ export abstract class Token {
   protected _samlAssertion: string;
 
   protected _userProfile?: UserProfile;
-  protected _startsAt?: Date;
-  protected _expiresAt?: Date;
+  private _startsAt?: Date;
+  private _expiresAt?: Date;
   protected _x509Certificate?: string;
 
   protected constructor(samlAssertion: string) {
@@ -64,8 +64,7 @@ export abstract class Token {
       email: extractAttribute("emailaddress"),
       userId: extractAttribute("userid"),
       organization: extractAttribute("organization"),
-      organizationId: extractAttribute("organizationid"),
-      ultimateSite: extractAttribute("ultimatesite"),
+      ultimateId: extractAttribute("ultimatesite"),
       usageCountryIso: extractAttribute("usagecountryiso"),
     };
 
@@ -99,10 +98,8 @@ export class AuthorizationToken extends Token {
 
 /** Token issued by DelegationSecureTokenService for API access  */
 export class AccessToken extends Token {
-  private _samlAccessTokenString?: string;
-  private _jwt?: string;
-  private static _samlTokenPrefix = "Token";
-  private static _jwtTokenPrefix = "Bearer";
+  private _accessTokenString?: string;
+  private static _tokenPrefix = "Token";
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
   public static fromSamlAssertion(samlAssertion: string): AuthorizationToken | undefined {
@@ -121,9 +118,8 @@ export class AccessToken extends Token {
     return tok;
   }
 
-  /** Create an AccessToken from a SAML based accessTokenString for Windows Federated Authentication workflows */
   public static fromTokenString(accessTokenString: string): AccessToken | undefined {
-    const index = accessTokenString.toLowerCase().indexOf(AccessToken._samlTokenPrefix.toLowerCase());
+    const index = accessTokenString.toLowerCase().indexOf(AccessToken._tokenPrefix.toLowerCase());
     if (index < 0)
       return undefined;
 
@@ -139,28 +135,15 @@ export class AccessToken extends Token {
     return AccessToken.fromSamlAssertion(samlStr);
   }
 
-  /** Create an AccessToken from a JWT token for OIDC workflows */
-  public static fromJsonWebTokenString(jwt: string, userProfile: UserProfile, startsAt: Date, expiresAt: Date): AccessToken {
-    const token = new AccessToken("");
-    token._jwt = jwt;
-    token._userProfile = userProfile;
-    token._startsAt = startsAt;
-    token._expiresAt = expiresAt;
-    return token;
-  }
-
   public toTokenString(): string | undefined {
-    if (this._jwt)
-      return AccessToken._jwtTokenPrefix + " " + this._jwt;
-
-    if (this._samlAccessTokenString)
-      return this._samlAccessTokenString;
+    if (this._accessTokenString)
+      return this._accessTokenString;
 
     if (!this._samlAssertion)
       return undefined;
 
     const tokenStr: string = Base64.btoa(this._samlAssertion);
-    return AccessToken._samlTokenPrefix + " " + tokenStr;
+    return AccessToken._tokenPrefix + " " + tokenStr;
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {

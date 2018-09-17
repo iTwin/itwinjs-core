@@ -15,7 +15,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/bentleyjs-tools",
       "projectFolder": "tools/bentley",
       "reviewCategory": "tools",
@@ -180,12 +181,6 @@
     {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "agent-test-app",
-      "projectFolder": "test-apps/agent-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     }

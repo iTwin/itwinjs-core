@@ -14,10 +14,10 @@ chai.should();
 
 export class ConnectUrlMock {
   private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-contextregistry.bentley.com",
-    QA: "https://qa-connect-contextregistry.bentley.com",
+    DEV: "https://dev-wsg20-eus.cloudapp.net",
+    QA: "https://qa-connect-wsg20.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-connect-contextregistry.bentley.com",
+    PERF: "https://perf-wsg20-eus.cloudapp.net",
   };
 
   public static getUrl(env: DeploymentEnv): string {
@@ -45,11 +45,11 @@ describe("ConnectClient", () => {
   it("should setup its URLs", async () => {
     ConnectUrlMock.mockGetUrl("DEV");
     let url: string = await new ConnectClient("DEV").getUrl(actx, true);
-    chai.expect(url).equals("https://dev-connect-contextregistry.bentley.com");
+    chai.expect(url).equals("https://dev-wsg20-eus.cloudapp.net");
 
     ConnectUrlMock.mockGetUrl("QA");
     url = await new ConnectClient("QA").getUrl(actx, true);
-    chai.expect(url).equals("https://qa-connect-contextregistry.bentley.com");
+    chai.expect(url).equals("https://qa-connect-wsg20.bentley.com");
 
     ConnectUrlMock.mockGetUrl("PROD");
     url = await new ConnectClient("PROD").getUrl(actx, true);
@@ -57,7 +57,7 @@ describe("ConnectClient", () => {
 
     ConnectUrlMock.mockGetUrl("PERF");
     url = await new ConnectClient("PERF").getUrl(actx, true);
-    chai.expect(url).equals("https://perf-connect-contextregistry.bentley.com");
+    chai.expect(url).equals("https://perf-wsg20-eus.cloudapp.net");
   });
 
   it("should get a list of projects", async function (this: Mocha.ITestCallbackContext) {
