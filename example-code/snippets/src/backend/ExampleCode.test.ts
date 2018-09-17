@@ -68,7 +68,6 @@ describe("Example Code", () => {
     }
     // __PUBLISH_EXTRACT_END__
 
-
     // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback2
     function synchronousFunctionCallsAsync() {
         // This is an example of the rare case where a synchronous function invokes an async function and
