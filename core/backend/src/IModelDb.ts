@@ -292,6 +292,10 @@ export class IModelDb extends IModel {
    * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from the iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.open]]
+   * ```
    * @param accessToken Delegation token of the authorized user.
    * @param contextId Id of the Connect Project or Asset containing the iModel
    * @param iModelId Id of the iModel
