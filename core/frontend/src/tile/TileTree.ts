@@ -38,13 +38,14 @@ function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   return 0 === diff ? compareStrings(lhs.contentId, rhs.contentId) : diff;
 }
 
-// ###TODO: TileRequests and MissingNodes are likely to change...
+/** @hidden */
 export class MissingNodes extends SortedArray<Tile> {
   public awaitingChildren: boolean = false;
 
   public constructor() { super(compareMissingTiles); }
 }
 
+/** @hidden */
 export class TileRequests {
   private _map = new Map<TileTree, MissingNodes>();
 
@@ -71,6 +72,7 @@ export class TileRequests {
   }
 }
 
+/** @hidden */
 export class Tile implements IDisposable {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
@@ -441,8 +443,12 @@ export class Tile implements IDisposable {
   }
 }
 
+/** @hidden */
 export namespace Tile {
-  /** Describes the current status of a Tile. Tiles are loaded by making asynchronous requests to the backend. */
+  /**
+   * Describes the current status of a Tile. Tiles are loaded by making asynchronous requests to the backend.
+   * @hidden
+   */
   export const enum LoadStatus {
     NotLoaded = 0, // No attempt to load the tile has been made, or the tile has since been unloaded. It currently has no graphics.
     Queued = 1, // A request has been made to load the tile from the backend, and a response is pending.
@@ -452,20 +458,29 @@ export namespace Tile {
     Abandoned = 5, // A request was made to the backed, then later cancelled as it was determined that the tile is no longer needed on the frontend.
   }
 
-  /** Describes the visibility of a tile based on its size and a view frustum. */
+  /**
+   * Describes the visibility of a tile based on its size and a view frustum.
+   * @hidden
+   */
   export const enum Visibility {
     OutsideFrustum, // this tile is entirely outside of the viewing frustum
     TooCoarse, // this tile is too coarse to be drawn
     Visible, // this tile is of the correct size to be drawn
   }
 
-  /** Returned by Tile.selectTiles() to indicate whether a parent tile should be drawn in place of a child tile. */
+  /**
+   * Returned by Tile.selectTiles() to indicate whether a parent tile should be drawn in place of a child tile.
+   * @hidden
+   */
   export const enum SelectParent {
     No,
     Yes,
   }
 
-  /** Arguments used when selecting and drawing tiles. */
+  /**
+   * Arguments used when selecting and drawing tiles
+   * @hidden
+   */
   export class DrawArgs {
     public readonly location: Transform;
     public readonly root: TileTree;
@@ -528,7 +543,10 @@ export namespace Tile {
     public markChildrenLoading(): void { this.missing.awaitingChildren = true; }
   }
 
-  /** Parameters used to construct a Tile. */
+  /**
+   * Parameters used to construct a Tile.
+   * @hidden
+   */
   export class Params {
     public constructor(
       public readonly root: TileTree,
@@ -547,6 +565,7 @@ export namespace Tile {
   }
 }
 
+/** @hidden */
 export class TileTree implements IDisposable {
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
@@ -624,6 +643,7 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   noSolarLight: true,
 }));
 
+/** @hidden */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async loadTileContents(missingtiles: MissingNodes): Promise<void>;
@@ -710,6 +730,7 @@ function bisectRange2d(range: Range3d, takeUpper: boolean): void {
     pt.y = (range.low.y + range.high.y) / 2.0;
 }
 
+/** @hidden */
 export class IModelTileLoader extends TileLoader {
   constructor(private _iModel: IModelConnection, private _asClassifier: boolean) { super(); }
 
@@ -795,8 +816,12 @@ export class IModelTileLoader extends TileLoader {
   }
 }
 
+/** @hidden */
 export namespace TileTree {
-  /** Parameters used to construct a TileTree */
+  /**
+   * Parameters used to construct a TileTree
+   * @hidden
+   */
   export class Params {
     public constructor(
       public readonly id: string,
@@ -816,6 +841,7 @@ export namespace TileTree {
     }
   }
 
+  /** @hidden */
   export enum LoadStatus {
     NotLoaded,
     Loading,
@@ -824,6 +850,7 @@ export namespace TileTree {
   }
 }
 
+/** @hidden */
 export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;

@@ -51,22 +51,36 @@ import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
 export namespace IModelTileIO {
+  /** Flags describing the geometry contained within a tile */
   export const enum Flags {
+    /** No special flags */
     None = 0,
+    /** The tile contains some curved geometry */
     ContainsCurves = 1 << 0,
+    /** Some geometry within the tile range was omitted based on its size */
     Incomplete = 1 << 2,
   }
 
+  /** Header embedded at the beginning of the binary tile data describing its contents */
   export class Header extends TileIO.Header {
+    /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
+    /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is emtpy */
     public readonly contentRange: ElementAlignedBox3d;
+    /** The chord tolerance in meters at which the tile's geometry was faceted */
     public readonly tolerance: number;
+    /** The number of elements which contributed at least some geometry to the tile content */
     public readonly numElementsIncluded: number;
+    /** The number of elements within the tile range which contributed no geometry to the tile content */
     public readonly numElementsExcluded: number;
+    /** The total number of bytes in the binary tile data, including this header */
     public readonly length: number;
 
     public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
 
+    /** Deserialize a header from the binary data at the stream's current position.
+     * If the binary data does not contain a valid header, the Header will be marked 'invalid'.
+     */
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
       this.flags = stream.nextUint32;
@@ -81,6 +95,7 @@ export namespace IModelTileIO {
     }
   }
 
+  /** @hidden */
   class FeatureTableHeader {
     public static readFrom(stream: TileIO.StreamBuffer) {
       const length = stream.nextUint32;
@@ -101,6 +116,7 @@ export namespace IModelTileIO {
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
 
+    /** Attempt to initialize a Reader to deserialize iModel tile data beginning at the stream's current position. */
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
@@ -115,6 +131,7 @@ export namespace IModelTileIO {
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled, sizeMultiplier) : undefined;
     }
 
+    /** Attempt to deserialize the tile data */
     public async read(): Promise<GltfTileIO.ReaderResult> {
       this._buffer.reset();
       const header = new Header(this._buffer);
@@ -156,9 +173,13 @@ export namespace IModelTileIO {
       return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, sizeMultiplier));
     }
 
+    /** @hidden */
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
+
+    /** @hidden */
     protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { assert(false); return false; }
 
+    /** @hidden */
     protected createDisplayParams(json: any): DisplayParams | undefined {
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
@@ -195,10 +216,12 @@ export namespace IModelTileIO {
       return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
     }
 
+    /** @hidden */
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
       return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
     }
 
+    /** @hidden */
     protected materialFromJson(key: string): RenderMaterial | undefined {
       if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
         return undefined;

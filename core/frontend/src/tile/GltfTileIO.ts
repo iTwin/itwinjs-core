@@ -34,6 +34,7 @@ export namespace GltfTileIO {
     renderGraphic?: RenderGraphic;
     sizeMultiplier?: number;
   }
+
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
@@ -52,12 +53,14 @@ export namespace GltfTileIO {
     }
   }
 
+  /** @hidden */
   export const enum PrimitiveType {
     Lines = 1,
     LineStrip = 3,
     Triangles = 4,
   }
 
+  /** @hidden */
   export const enum DataType {
     // SignedByte = 0x1400,
     UnsignedByte = 0x1401,
@@ -77,6 +80,7 @@ export namespace GltfTileIO {
     // Sampler2d = 35678,
   }
 
+  /** @hidden */
   export const enum Constants {
     CullFace = 2884,
     DepthTest = 2929,
@@ -90,12 +94,14 @@ export namespace GltfTileIO {
     VertexShader = 35633,
   }
 
+  /** @hidden */
   export type DataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
   /**
    * A chunk of binary data exposed as a typed array.
    * The count member indicates how many elements exist. This may be less than this.buffer.length due to padding added to the
    * binary stream to ensure correct alignment.
+   * @hidden
    */
   export class BufferData {
     public readonly buffer: DataBuffer;
@@ -158,6 +164,7 @@ export namespace GltfTileIO {
    * underlying type. For example, a buffer of 4 32-bit floating point 'vec2' elements will have a count of 4,
    * but its data member will contain 8 32-bit floating point values (2 per vec2).
    * The accessor member may contain additional JSON data specific to a particular buffer.
+   * @hidden
    */
   export class BufferView {
     public readonly data: Uint8Array;

@@ -12,6 +12,6 @@ features:
     {header: 'Approachable', icon: assets\assets_bullet-chat.png, description: 'Programmers love iModelJs because it builds on the most modern and popular technologies and frameworks available, minimizing the out-of-the-box learning  curve. More...'},
     {header: 'Anywhere', icon: assets\assets_bullet-lock.png, description: 'Write your application logic once and run it on Cloud, Desktop, Web, and Mobile. More... '},
     {header: 'Amazing', icon: assets\assets_bullet-lock.png, description: 'iModelJs handles the complex tasks of managing large scale distributed Digital Twins efficiently so you can focus on other things. The library is modular so you only use what you need. More...'},
-    {header: 'About', icon: assets\assets_bullet-devices.png, description: 'There are lots of resources to ask questions, make suggestions, and get help. We'd also love to have your contributions. More...'}
+    {header: 'About', icon: assets\assets_bullet-devices.png, description: "There are lots of resources to ask questions, make suggestions, and get help. We'd also love to have your contributions. More..."}
   ]
 ---

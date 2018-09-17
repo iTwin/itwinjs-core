@@ -121,6 +121,7 @@ export namespace TileIO {
     protected invalidate(): void { this._format = Format.Unknown; }
   }
 
+  /** @hidden */
   export class GeometryCollection {
     public constructor(public readonly meshes: MeshList,
       public readonly isComplete: boolean,
