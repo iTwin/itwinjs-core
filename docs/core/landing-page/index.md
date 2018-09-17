@@ -24,5 +24,3 @@ features:
     {header: 'About', icon: assets\assets_bullet-devices.svg, description: "There are lots of resources to ask questions, make suggestions, and get help. We'd also love to have your contributions. More..."}
   ]
 ---
-
-This is the content
