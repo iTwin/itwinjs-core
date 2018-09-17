@@ -5,7 +5,7 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 * [Tools and Drawing Aids](./Tools.md)
 * Access to Connect and iModelHub using [IModelClient]($frontend)
 * [Notifications]($frontend)
-* Internationalization support using [I18N]($frontend)
+* [Localization support](./Localization.md)
 * App configuration using [Feature Gates](../common/FeatureGates.md)
 * User settings using [SettingsAdmin]($frontend)
 

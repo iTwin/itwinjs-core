@@ -1,6 +1,6 @@
 # Localization in iModelJs
 
-Presenting information to the user in their preferred locale (language, date and time formatting, number formatting, etc.) is an important consideration for every computer program. iModelJs provides localization capabilities through the IModelApp.i18n object.
+Presenting information to the user in their preferred locale (language, date and time formatting, number formatting, etc.) is an important consideration for every computer program. iModelJs provides localization capabilities through the [IModelApp.i18n]($frontend) object.
 
 ## Language translation
 

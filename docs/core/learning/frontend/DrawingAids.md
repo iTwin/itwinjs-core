@@ -6,4 +6,4 @@ Drawing Aids include:
   * [ElementLocateManager]($frontend)
   * [TentativePoint]($frontend)
 
-These are accessed via [IModelApp](./IModelApp.md).
+These are accessed via [IModelApp]($frontend).
