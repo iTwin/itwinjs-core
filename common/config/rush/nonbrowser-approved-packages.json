@@ -84,7 +84,7 @@
     },
     {
       "name": "debug",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "dirty-chai",

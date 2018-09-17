@@ -382,6 +382,25 @@
       "protocol": "inspector",
       "outputCapture": "std"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug agent-test-app",
+      "program": "${workspaceRoot}/test-apps/agent-test-app/lib/Main.js",
+      "cwd": "${workspaceRoot}/test-apps/agent-test-app/",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
+      ],
+      "args": [
+        "--listenFor=45000",
+        "--email=Regular.IModelJsTestUser@mailinator.com",
+        "--password=Regular@iMJs",
+        "--listen_time=40000"
+      ],
+      "protocol": "inspector"
+    },
   ],
   "compounds": [
     {

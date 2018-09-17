@@ -225,10 +225,10 @@ export class ConnectClient extends WsgClient {
   private readonly _rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
 
   private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-wsg20-eus.cloudapp.net",
-    QA: "https://qa-connect-wsg20.bentley.com",
+    DEV: "https://dev-connect-contextregistry.bentley.com",
+    QA: "https://qa-connect-contextregistry.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-wsg20-eus.cloudapp.net",
+    PERF: "https://perf-connect-contextregistry.bentley.com",
   };
 
   public constructor(public deploymentEnv: DeploymentEnv) {
