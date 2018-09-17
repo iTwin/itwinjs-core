@@ -341,6 +341,7 @@ export namespace IModelTileIO {
       });
     }
 
+    /** @hidden */
     protected readFeatureTable(): FeatureTable | undefined {
       const startPos = this._buffer.curPos;
       const header = FeatureTableHeader.readFrom(this._buffer);
