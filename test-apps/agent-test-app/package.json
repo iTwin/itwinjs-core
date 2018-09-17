@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsc --rootDir ./src 1>&2",
     "clean": "rimraf lib",
+    "docs": "",
     "lint": "tslint --project .",
     "test": "",
     "test:integration": "",
