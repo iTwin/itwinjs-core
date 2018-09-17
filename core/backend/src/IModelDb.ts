@@ -800,7 +800,7 @@ export class IModelDb extends IModel {
   }
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
-   * @throws [[IModelError]] if the metadata cannot be found nor loaded.
+   * @throws [IModelError]($common) if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {
     let metadata = this.classMetaDataRegistry.find(classFullName);

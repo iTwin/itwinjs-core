@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
+import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
@@ -79,7 +79,7 @@ export abstract class ViewingToolHandle {
   public noMotion(_ev: BeButtonEvent): boolean { return false; }
   public motion(_ev: BeButtonEvent): boolean { return false; }
   public checkOneShot(): boolean { return true; }
-  public getHandleCursor(): BeCursor { return BeCursor.Default; }
+  public getHandleCursor(): string { return "default"; }
   public abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
   public abstract firstPoint(ev: BeButtonEvent): boolean;
   public abstract testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean;
@@ -723,7 +723,7 @@ class ViewPan extends ViewingToolHandle {
   private _anchorPt: Point3d = new Point3d();
   private _lastPtNpc: Point3d = new Point3d();
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.inHandleModify ? BeCursor.ClosedHand : BeCursor.OpenHand; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? "grabbing" : "grab"; }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
     const vp = ev.viewport!;
@@ -798,7 +798,7 @@ class ViewRotate extends ViewingToolHandle {
   private _frustum = new Frustum();
   private _activeFrustum = new Frustum();
   public get handleType() { return ViewHandleType.Rotate; }
-  public getHandleCursor() { return BeCursor.Rotate; }
+  public getHandleCursor() { return "move"; }
 
   public testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
@@ -910,7 +910,7 @@ class ViewLook extends ViewingToolHandle {
   private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor(): string { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -978,7 +978,7 @@ class ViewScroll extends ViewingToolHandle {
   private _anchorPtView = new Point3d();
   private _lastPtView = new Point3d();
   public get handleType() { return ViewHandleType.Scroll; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor(): string { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1088,7 +1088,7 @@ class ViewZoom extends ViewingToolHandle {
   private _lastPtView = new Point3d();
   private _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor() { return "crosshair"; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1528,7 +1528,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return true;
   }
 
-  public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
+  public getHandleCursor() { return "crosshair"; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)

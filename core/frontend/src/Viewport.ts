@@ -10,7 +10,6 @@ import {
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg } from "@bentley/bentleyjs-core";
-import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
@@ -1780,7 +1779,7 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
-  public pickOverlayDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
+  public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
@@ -1802,10 +1801,10 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default): void {
-    if (cursor === BeCursor.OpenHand)
+  public setCursor(cursor: string = "default"): void {
+    if (cursor === "grab")
       this.canvas.style.cursor = "-webkit-grab";
-    else if (cursor === BeCursor.ClosedHand)
+    else if (cursor === "grabbing")
       this.canvas.style.cursor = "-webkit-grabbing";
     else
       this.canvas.style.cursor = cursor;

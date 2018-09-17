@@ -985,14 +985,15 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected clearControls(): void {
-    if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
-      for (const controlId of this._controlIds) {
-        if (!this.iModel.selectionSet.has(controlId))
-          continue;
-        this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
-        break;
-      }
-    }
+    this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+    // if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
+    //   this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
+    //   for (const controlId of this._controlIds) {
+    //     if (!this.iModel.selectionSet.has(controlId))
+    //       continue;
+    //     break;
+    //   }
+    // }
     super.clearControls();
   }
 
