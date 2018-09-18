@@ -28,6 +28,8 @@ export * from "./ViewDefinition";
 export * from "./BisCore";
 export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
+export * from "./domains/Generic";
+export * from "./domains/GenericElements";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

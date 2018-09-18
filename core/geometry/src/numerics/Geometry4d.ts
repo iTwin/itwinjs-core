@@ -7,9 +7,25 @@
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
 import { Matrix3d, Transform } from "../Transform";
+import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
+
+/**
+ *
+ * @param ddg numerator second derivative
+ * @param dh denominator derivative
+ * @param ddh denominator second derivative
+ * @param f primary function (g/h)
+ * @param df derivative of (g/h)
+ * @param divh = (1/h)
+ * @param dgdivh previously computed first derivative of (g/h)
+ */
+function quotientDerivative2(ddg: number, dh: number, ddh: number,
+  f: number, df: number, divh: number): number {
+  return divh * (ddg - 2.0 * df * dh - f * ddh);
+}
 
 /** 4 Dimensional point (x,y,z,w) used in perspective calculations.
  * * the coordinates are stored in a Float64Array of length 4.
@@ -196,7 +212,7 @@ export class Point4d implements BeJSONFunctions {
    * @param xIndex first index for x,y,z,w sequence
    */
   public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
-    return Point4d.create (data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
+    return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
   }
 
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
@@ -330,22 +346,109 @@ export class Point4d implements BeJSONFunctions {
     return result;
   }
 
+  /**
+   * If `this.w` is nonzero, return a 4d point `(x/w,y/w,z/w, 1)`
+   * If `this.w` is zero, return undefined.
+   * @param result optional result
+   */
   public normalizeWeight(result?: Point4d): Point4d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }
-
+  /**
+   * If `this.w` is nonzero, return a 3d point `(x/w,y/w,z/w)`
+   * If `this.w` is zero, return undefined.
+   * @param result optional result
+   */
   public realPoint(result?: Point3d): Point3d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     if (mag === 0.0)
       return undefined;
-    result = result ? result : new Point3d();
-    const a = 1.0 / mag;
-    result.set(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a);
-    return result;
+    const a = 1.0 / mag;    // in zero case everything multiplies right back to true zero.
+    return Point3d.create(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a, result);
+  }
+  /**
+   * * If w is nonzero, return Point3d with x/w,y/w,z/w.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param result optional result
+   */
+  public static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    return Point3d.create(x * a, y * a, z * a, result);
   }
 
+  /**
+   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param dx x coordinate of derivative
+   * @param dy y coordinate of derivative
+   * @param dz z coordinate of derivative
+   * @param dw w coordinate of derivative
+   * @param result optional result
+   */
+  public static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    // real point is X/w.
+    // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    const aa = a * a;
+    return Ray3d.createXYZUVW(x * a, y * a, z * a,
+      (dx * w - dw * x) * aa,
+      (dy * w - dw * y) * aa,
+      (dz * w - dw * z) * aa,
+      result);
+  }
+  /**
+   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param dx x coordinate of derivative
+   * @param dy y coordinate of derivative
+   * @param dz z coordinate of derivative
+   * @param dw w coordinate of derivative
+   * @param result optional result
+   */
+  public static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number,
+    dx: number, dy: number, dz: number, dw: number,
+    ddx: number, ddy: number, ddz: number, ddw: number,
+    result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    // real point is X/w.
+    // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    const aa = a * a;
+    const fx = x * a;
+    const fy = y * a;
+    const fz = z * a;
+    const dfx = (dx * w - dw * x) * aa;
+    const dfy = (dy * w - dw * y) * aa;
+    const dfz = (dz * w - dw * z) * aa;
+    return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
+      fx, fy, fz,
+      dfx, dfy, dfz,
+      quotientDerivative2(ddx, dw, ddw, fx, dfx, a),
+      quotientDerivative2(ddy, dw, ddw, fy, dfy, a),
+      quotientDerivative2(ddz, dw, ddw, fz, dfz, a),
+      result);
+  }
+
+  /**
+   * * If this.w is nonzero, return Point3d with x/w,y/w,z/w.
+   * * If this.w is zero, return 000
+   */
   public realPointDefault000(result?: Point3d): Point3d {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     if (mag === 0.0)

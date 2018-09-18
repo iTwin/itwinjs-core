@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+    /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -56,7 +56,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback
     //                                  Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
     async function asyncFunctionCallsAsync(context: ActivityLoggingContext): Promise<void> {
-        context.enter();
+        context.enter();        // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
 
         await new Promise((resolve) => {
             setTimeout(() => {
@@ -68,13 +68,12 @@ describe("Example Code", () => {
     }
     // __PUBLISH_EXTRACT_END__
 
-
     // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback2
     function synchronousFunctionCallsAsync() {
         // This is an example of the rare case where a synchronous function invokes an async function and
         // the async callback emits logging messages. In this case, because the caller is synchronous, it must
         // access the current ActivityLoggingContext and assign it to a local variable.
-        const context = ActivityLoggingContext.current!;        // Rare! Never in an async!
+        const context = ActivityLoggingContext.current;        // Must hold a local reference for callback to use.
         setTimeout(() => {
             context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
             Logger.logTrace("cat", "callback invoked");
@@ -83,12 +82,12 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
 
     async function someAsync(_context: ActivityLoggingContext): Promise<void> { }
-
+    // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
     // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncMethod
 
     //                                Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
     async function asyncMethodExample(context: ActivityLoggingContext): Promise<void> {
-        context.enter();            // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+        context.enter();
 
         try {
             await someAsync(context); // Rule: Pass the ActivityLoggingContext to Promise-returning methods

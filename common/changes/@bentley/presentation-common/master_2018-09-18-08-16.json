@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add missing documentation for rules' `condition` parameter",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -22,6 +22,13 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   ruleType: RuleTypes.StyleOverride;
 
   /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
+  /**
    * Foreground color that should be used for node. Supports on of the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`

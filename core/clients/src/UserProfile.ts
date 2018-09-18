@@ -12,7 +12,8 @@ export class UserProfile {
     public email: string,
     public userId: string,
     public organization: string,
-    public ultimateId: string,
+    public organizationId: string,
+    public ultimateSite: string,
     public usageCountryIso: string,
   ) { }
 

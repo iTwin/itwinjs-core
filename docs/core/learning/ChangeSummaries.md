@@ -162,6 +162,7 @@ After having extracting Change Summaries for each of the three Changesets the fo
 > ```
 >
 > *Result*
+>
 > `ChangedInstance.Id` | `AccessString` | `OpCode`
 > -------------------- | -------------- | -------
 > 1                    | Name           | 2 (Update)

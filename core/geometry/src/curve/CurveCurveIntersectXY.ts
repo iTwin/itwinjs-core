@@ -21,6 +21,7 @@ import { GrowableFloat64Array } from "../GrowableArray";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BezierCurve3dH } from "../bspline/BezierCurve";
 import { Bezier } from "../numerics/BezierPolynomials";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -694,6 +695,21 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     }
     return undefined;
   }
+  public handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
+    /* NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH ..."easy" if both present BezierCurve3dH span loaders
+    if (this._geometryB instanceof LineSegment3d) {
+      this.dispatchSegmentBsplineCurve(
+        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
+        curve, this._extendA, true);
+    } else if (this._geometryB instanceof LineString3d) {
+      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
+    }
+    */
+    return undefined;
+  }
+
 }
 export class CurveCurve {
   /**

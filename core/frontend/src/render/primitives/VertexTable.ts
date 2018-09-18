@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Range1d, Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   ColorIndex,
@@ -547,6 +547,7 @@ export interface SurfaceParams {
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
   readonly material?: RenderMaterial;
+  readonly thematicRange?: Range1d;
 }
 
 /**

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+import { FunctionalElementProps, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
 import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
-import { FunctionalElementProps, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
 
 /**
  * A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented

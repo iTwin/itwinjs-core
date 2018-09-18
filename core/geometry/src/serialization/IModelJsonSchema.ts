@@ -30,6 +30,8 @@ import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { Point4d } from "../numerics/Geometry4d";
 /* tslint:disable: object-literal-key-quotes no-console*/
 
 export namespace IModelJson {
@@ -622,23 +624,43 @@ export namespace IModelJson {
       return undefined;
     }
 
-    public static parseBcurve(data?: any): BSplineCurve3d | undefined {
+    public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
       if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order) && data.closed !== undefined) {
-        const poles: Point3d[] = [];
-        for (const p of data.points) poles.push(Point3d.fromJSON(p));
-        const knots: number[] = [];
-        for (const knot of data.knots) knots.push(knot);
-        // TODO -- wrap poles and knots for closed case !!
-        if (data.closed) {
-          for (let i = 0; i + 1 < data.order; i++) {
-            poles.push(poles[i].clone());
+        if (data.points[0].length === 4) {
+          const hPoles: Point4d[] = [];
+          for (const p of data.points) hPoles.push(Point4d.fromJSON(p));
+          const knots: number[] = [];
+          for (const knot of data.knots) knots.push(knot);
+          // TODO -- wrap poles and knots for closed case !!
+          if (data.closed) {
+            for (let i = 0; i + 1 < data.order; i++) {
+              hPoles.push(hPoles[i].clone());
+            }
           }
-        }
-        const newCurve = BSplineCurve3d.create(poles, knots, data.order);
-        if (newCurve) {
-          if (data.closed === true)
-            newCurve.setWrappable(true);
-          return newCurve;
+          const newCurve = BSplineCurve3dH.create(hPoles, knots, data.order);
+          if (newCurve) {
+            if (data.closed === true)
+              newCurve.setWrappable(true);
+            return newCurve;
+          }
+        } else if (data.points[0].length === 3 || data.points[0].length === 2) {
+
+          const poles: Point3d[] = [];
+          for (const p of data.points) poles.push(Point3d.fromJSON(p));
+          const knots: number[] = [];
+          for (const knot of data.knots) knots.push(knot);
+          // TODO -- wrap poles and knots for closed case !!
+          if (data.closed) {
+            for (let i = 0; i + 1 < data.order; i++) {
+              poles.push(poles[i].clone());
+            }
+          }
+          const newCurve = BSplineCurve3d.create(poles, knots, data.order);
+          if (newCurve) {
+            if (data.closed === true)
+              newCurve.setWrappable(true);
+            return newCurve;
+          }
         }
 
       }
@@ -1429,6 +1451,41 @@ export namespace IModelJson {
         };
       }
     }
+
+    public handleBSplineCurve3dH(curve: BSplineCurve3dH): any {
+      // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
+      // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
+      if (curve.isClosable) {
+        const knots = curve.copyKnots(true);
+        const poles = curve.copyPoints();
+        const degree = curve.degree;
+        for (let i = 0; i < degree; i++) poles.pop();
+        // knots have replicated first and last.  Change the values to be periodic.
+        const leftIndex = degree;
+        const rightIndex = knots.length - degree - 1;
+        const knotPeriod = knots[rightIndex] - knots[leftIndex];
+        knots[0] = knots[rightIndex - degree] - knotPeriod;
+        knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
+        return {
+          "bcurve": {
+            "points": poles,
+            "knots": knots,
+            "closed": true,
+            "order": curve.order,
+          },
+        };
+      } else {
+        return {
+          "bcurve": {
+            "points": curve.copyPoints(),
+            "knots": curve.copyKnots(true),
+            "closed": false,
+            "order": curve.order,
+          },
+        };
+      }
+    }
+
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.

@@ -1,0 +1,43 @@
+#main-landing-wrapper {
+  margin-bottom: 1em !important;
+}
+
+.overlay {
+  transition: .5s ease;
+  opacity: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  text-align: center;
+  position: absolute;
+}
+
+#demo-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.example-view-demonstrator {
+  opacity: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: .5s ease;
+  backface-visibility: hidden;
+}
+
+#demo-container:hover .example-view-demonstrator {
+  opacity: 0.3;
+}
+
+#demo-container:hover .overlay {
+  opacity: 1;
+}
+
+#viewiModelBtn {
+  background-color: #6c757d;
+  background-image: none;
+  color: white;
+}

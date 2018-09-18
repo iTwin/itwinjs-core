@@ -24,6 +24,7 @@ import { Arc3d } from "./curve/Arc3d";
 import { LineString3d } from "./curve/LineString3d";
 import { PointString3d } from "./curve/PointString3d";
 import { Plane3dByOriginAndVectors } from "./AnalyticGeometry";
+import { BSplineCurve3dH } from "./bspline/BSplineCurve3dH";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -32,6 +33,7 @@ export abstract class GeometryHandler {
   public abstract handleArc3d(g: Arc3d): any;
   public handleCurveCollection(_g: CurveCollection): any { }
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
+  public abstract handleBSplineCurve3dH(g: BSplineCurve3dH): any;
   public abstract handleBSplineSurface3d(g: BSplineSurface3d): any;
 
   public abstract handleCoordinateXYZ(g: CoordinateXYZ): any;
@@ -71,6 +73,7 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleArc3d(_g: Arc3d): any { return undefined; }
   public handleCurveCollection(_g: CurveCollection): any { return undefined; }
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   public handleBSplineSurface3d(_g: BSplineSurface3d): any { return undefined; }
 
   public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
