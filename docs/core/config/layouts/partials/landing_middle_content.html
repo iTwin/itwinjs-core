@@ -1,28 +1,41 @@
+<!-- Loop through all middleContents. If even, the img goes first. Content first if odd. -->
 <div id="middle-content-wrapper">
-  <div class="middle-content-group" style="order:1">
-    <img class="middle-content-image" src="landing-page/assets/graphic.png" style="order: 1;">
-    <div class="middle-content-text" style="order:2">
-      <h4> Open, for Business </h4>
+  {{#each this.middleContent}}
+  <div class="middle-content-group" style="order:{{addOne @index}}">
+    {{#if_even @index}}
+    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" style="order: 1;" />
+    <div class="middle-content-text" style="order:2; margin-bottom: 2em">
+      {{#if this.header}}
+      <h4> {{{this.header}}} </h4>
+      {{/if}}
       <span class="gradient"></span>
-      Infrastructure assets are complex, valuable, and long-lived yet ever-changing. To fulfil the The software to
-      create a Digital Twin to design, build, operate, and maintain them must meet all of those demands. No single
-      software system can possibly meet all of those requirements at once. iModelJs is designed to be flexible and open
-      so that it can be used wherever
+      {{#if this.content}}
+      {{{this.content}}}
+      {{/if}}
     </div>
-  </div>
-  <div class="middle-content-group" style="order:2">
-    <div class="middle-content-text" style="order:1">
-      <h4> iModel Overview </h4>
+    {{else}}
+    <div class="middle-content-text" style="order:1; margin-bottom: 2em">
+      {{#if this.header}}
+      <h4> {{{this.header}}} </h4>
+      {{/if}}
       <span class="gradient"></span>
-      View demonstrator
+      {{#if this.content}}
+      {{{this.content}}}
+      {{/if}}
     </div>
-    <div id="demo-container" style="order:2">
-      <img src="landing-page/assets/imodel_editor.png" style="order: 2;" class="example-view-demonstrator">
-      <div class="overlay">
-        <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="/learning/viewer-demonstrator/" role="button"
-          target="_blank">Open
-          iModel <i class="fa fa-external-link"></i> </a>
-      </div>
-    </div>
+    <img src="{{../this.docSite}}/{{this.image}}" style="order: 2;" />
+    {{/if_even}}
   </div>
+  {{/each}}
+</div>
+<div class="middle-content-text">
+  <h4> Try iModelJs now </h4>
+</div>
+<div id="demo-container">
+  <img src="landing-page/assets/imodel_editor.png" class="example-view-demonstrator">
+  <div class="overlay">
+    <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="/learning/viewer-demonstrator/" role="button"
+      target="_blank">Open iModelJs Viewer <i class="fa fa-external-link"></i> </a>
+  </div>
+</div>
 </div>
