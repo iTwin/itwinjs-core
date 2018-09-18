@@ -32,7 +32,7 @@ Currently, only AnalysisModel3d is defined. This class is for Analysis Models th
 
 ### Contents of Analysis Models
 
-Analysis Models contain Analysis Elements, but they may also contain other types of Elements. Analysis Models will frequently contain InformationElements., AnalysisModel3ds may contains SpatialElement3ds. Analysis Models never contain PhysicalElements.
+Analysis Models contain Analysis Elements, but they may also contain other types of Elements. Analysis Models will frequently contain InformationElements. AnalysisModel3ds may contain SpatialElement3ds. Analysis Models never contain PhysicalElements.
 
 ### Analysis Models in Model Hierarchy
 

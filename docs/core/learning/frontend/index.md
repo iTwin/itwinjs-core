@@ -1,6 +1,6 @@
 # The App Frontend
 
-The frontend of an app refers to the layers of software that are concerned mainly with data display and user interaction., as described in the [app architecture overview](../../overview/SoftwareArchitecture.md).
+The frontend of an app refers to the layers of software that are concerned mainly with data display and user interaction, as described in the [app architecture overview](../../overview/SoftwareArchitecture.md).
 
 The frontend *always* runs inside a web browser.
 
