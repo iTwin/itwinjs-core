@@ -225,7 +225,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
             scratchAnimScalarParams[3] = auxParam.qScale / rangeScale;
           } else {
             scratchAnimScalarParams[2] = 0.000001;
-            scratchAnimScalarParams[3] = 0.999998;
+            scratchAnimScalarParams[3] = 0.999998 / 0xffff;
           }
         }
         uniform.setUniform4fv(scratchAnimScalarParams);
