@@ -1,7 +1,3 @@
-# imodels
-/imodels/*.Tiles
-/imodels/*.TileCache
-
 # performance tests
 *.xlsx
 *.csv
