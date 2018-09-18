@@ -16,7 +16,7 @@ import * as path from "path";
 // Full path of the json file; will use the default json file instead if this file cannot be found
 const jsonFilePath = "";
 
-const wantConsoleOutput: boolean = true;
+const wantConsoleOutput: boolean = false;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
     console.log(msg); // tslint:disable-line
