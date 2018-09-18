@@ -12,6 +12,7 @@ import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { octDecodeNormal } from "./Surface";
 import { Range1d } from "@bentley/geometry-core";
+import { Gradient } from "@bentley/imodeljs-common";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -219,13 +220,13 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
           scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * meshGeom.lut.numVertices;
           scratchAnimScalarParams[1] = paramLocation.fraction;
           const thematicRange = meshGeom.thematicRange as Range1d;
-          if (false && undefined !== thematicRange) {
+          if (undefined !== thematicRange) {
             const rangeScale = thematicRange.high - thematicRange.low;
-            scratchAnimScalarParams[2] = (auxParam.qOrigin - thematicRange.low) / rangeScale;
-            scratchAnimScalarParams[3] = auxParam.qScale / rangeScale;
+            scratchAnimScalarParams[2] = Gradient.ThematicSettings.margin + (auxParam.qOrigin - thematicRange.low) / rangeScale;
+            scratchAnimScalarParams[3] = Gradient.ThematicSettings.contentRange * auxParam.qScale / rangeScale;
           } else {
-            scratchAnimScalarParams[2] = 0.000001;
-            scratchAnimScalarParams[3] = 0.999998 / 0xffff;
+            scratchAnimScalarParams[2] = Gradient.ThematicSettings.margin;
+            scratchAnimScalarParams[3] = Gradient.ThematicSettings.contentRange / 0xffff;
           }
         }
         uniform.setUniform4fv(scratchAnimScalarParams);
