@@ -1,6 +1,6 @@
-# The @bentley/imodeljs-frontend package
+# The App Frontend
 
-The frontend of an app refers to the layers of software that are concerned mainly with data display and user interaction., as described in the [app architecture overview](../../overview/SoftwareArchitecture.md).
+The frontend of an app refers to the layers of software that are concerned mainly with data display and user interaction, as described in the [app architecture overview](../../overview/SoftwareArchitecture.md).
 
 The frontend *always* runs inside a web browser.
 
@@ -8,10 +8,11 @@ The frontend *always* runs inside a web browser.
 * When used with a desktop apps, it runs inside the Electron frontend process in Chrome.
 * When used in a mobile app, it runs inside the Safari built-in browser on iOS and the Chrome browser for Android.
 
+An app always implements its own frontend script and resources. The app's frontend script must depend on @bentley/imodeljs-frontend.
+
 The iModelJs frontend library is delivered in the **npm package** `@bentley/imodeljs-frontend`
 
-
-## Frontend Concerns
+## Frontend operations supported by @bentley/imodeljs-frontend
 
 * [Login and obtain AccessTokens](../common/AccessToken.md)
 * [Open a "connection" to an iModel](./IModelConnection.md)

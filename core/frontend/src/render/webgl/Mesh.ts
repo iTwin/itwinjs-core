@@ -115,7 +115,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: RenderCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
+  public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
 
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);

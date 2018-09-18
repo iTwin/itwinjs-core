@@ -10,16 +10,18 @@ The backend:
 * has direct access to the native library, and hence its methods are generally synchronous.
 * may load third-party native code
 
+An app can use a pre-existing backend. Or, an app can implement its own backend, which must depend on @bentley/imodeljs-backend.
+
 The iModelJs backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
-## Backend Concerns
+## Backend operations supported by @bentley/imodeljs-backend
 
 * Administration
   * [IModelHost](./IModelHost.md)
   * [Initialize Logging](../common/Logging.md)
   * [Configure FeatureGates](../common/FeatureGates.md)
 
-* Expose the operations of the backend as [RpcInterfaces](./Glossary.md#rpcinterface).
+* Expose the operations of the backend as RpcInterfaces
     * [Define](../RpcInterface.md#defining-the-interface) one or more RpcInterfaces.
     * [Implement](../RpcInterface.md#server-implementation) the RpcInterfaces.
     * [Configure](../RpcInterface.md#3-configure-interfaces) the RpcInterfaces.

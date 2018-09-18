@@ -7,9 +7,9 @@ import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Batch, Branch, Graphic } from "./Graphic";
+import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
@@ -17,6 +17,9 @@ import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
+import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
+import { SurfaceType } from "../primitives/VertexTable";
+import { MeshGraphic } from "./Mesh";
 
 export class ShaderProgramParams {
   public readonly target: Target;
@@ -171,6 +174,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
+  private readonly _scratchRange = new ElementAlignedBox3d();
   private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
@@ -194,7 +198,7 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Translucent))
       flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite))
+    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteStencilVolume))
       flags |= CompositeFlags.Hilite;
 
     assert(5 === RenderPass.Translucent);
@@ -373,9 +377,9 @@ export class RenderCommands {
     return this._commands[idx];
   }
 
-  public addHiliteBranch(branch: Branch, batch: Batch): void {
-    this.pushAndPopBranchForPass(RenderPass.Hilite, branch, () => {
-      branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, batch));
+  public addHiliteBranch(branch: Branch, batch: Batch, pass: RenderPass): void {
+    this.pushAndPopBranchForPass(pass, branch, () => {
+      branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, batch, pass));
     });
   }
 
@@ -495,6 +499,29 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
+    if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
+      if (prim instanceof SurfacePrimitive && RenderPass.StencilVolume === prim.getRenderPass(this.target)) {
+        const surf = prim as SurfacePrimitive;
+        if (surf.cachedGeometry instanceof SurfaceGeometry) {
+          const geom = surf.cachedGeometry as SurfaceGeometry;
+          this._scratchRange.setNull();
+          const lowX = geom.qOrigin[0];
+          const lowY = geom.qOrigin[1];
+          const lowZ = geom.qOrigin[2];
+          const hiX = 0xffff * geom.qScale[0] + lowX;
+          const hiY = 0xffff * geom.qScale[1] + lowY;
+          const hiZ = 0xffff * geom.qScale[2] + lowZ;
+          this._scratchRange.setXYZ(lowX, lowY, lowZ);
+          this._scratchRange.extendXYZ(hiX, hiY, hiZ);
+          let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
+          frustum = frustum.transformBy(this.target.currentTransform, frustum);
+          if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
+            return;
+          }
+        }
+      }
+    }
+
     const command = DrawCommand.createForPrimitive(prim, this._curBatch);
     this.addDrawCommand(command);
 
@@ -509,6 +536,23 @@ export class RenderCommands {
     this.pushAndPopBranch(branch, () => {
       branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     });
+  }
+
+  public computeBatchHiliteRenderPass(batch: Batch): RenderPass {
+    let pass = RenderPass.Hilite;
+    if (batch.graphic instanceof MeshGraphic) {
+      const mg = batch.graphic as MeshGraphic;
+      if (SurfaceType.Classifier === mg.surfaceType)
+        pass = RenderPass.HiliteStencilVolume;
+    } else if (batch.graphic instanceof GraphicsArray) {
+      const ga = batch.graphic as GraphicsArray;
+      if (ga.graphics[0] instanceof MeshGraphic) {
+        const mg = ga.graphics[0] as MeshGraphic;
+        if (SurfaceType.Classifier === mg.surfaceType)
+          pass = RenderPass.HiliteStencilVolume;
+      }
+    }
+    return pass;
   }
 
   public addBatch(batch: Batch): void {
@@ -554,7 +598,7 @@ export class RenderCommands {
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
     if (anyHilited) {
-      (batch.graphic as Graphic).addHiliteCommands(this, batch);
+      (batch.graphic as Graphic).addHiliteCommands(this, batch, this.computeBatchHiliteRenderPass(batch));
     }
 
     this._opaqueOverrides = this._translucentOverrides = false;
