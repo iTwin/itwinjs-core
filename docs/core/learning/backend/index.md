@@ -19,7 +19,7 @@ The iModelJs backend library is delivered in the **npm package** `@bentley/imode
   * [Initialize Logging](../common/Logging.md)
   * [Configure FeatureGates](../common/FeatureGates.md)
 
-* Expose the operations of the backend as [RpcInterfaces](./Glossary.md#rpcinterface).
+* Expose the operations of the backend as RpcInterfaces
     * [Define](../RpcInterface.md#defining-the-interface) one or more RpcInterfaces.
     * [Implement](../RpcInterface.md#server-implementation) the RpcInterfaces.
     * [Configure](../RpcInterface.md#3-configure-interfaces) the RpcInterfaces.
