@@ -29,6 +29,13 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.Grouping;
 
+  /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
   /** Specification of ECClass which should be grouped using this rule */
   class: SingleSchemaClassSpecification;
 
