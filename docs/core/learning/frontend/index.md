@@ -8,10 +8,11 @@ The frontend *always* runs inside a web browser.
 * When used with a desktop apps, it runs inside the Electron frontend process in Chrome.
 * When used in a mobile app, it runs inside the Safari built-in browser on iOS and the Chrome browser for Android.
 
+An app always implements its own frontend script and resources. The app's frontend script must depend on @bentley/imodeljs-frontend.
+
 The iModelJs frontend library is delivered in the **npm package** `@bentley/imodeljs-frontend`
 
-
-## Frontend Operations
+## Frontend operations supported by @bentley/imodeljs-frontend
 
 * [Login and obtain AccessTokens](../common/AccessToken.md)
 * [Open a "connection" to an iModel](./IModelConnection.md)

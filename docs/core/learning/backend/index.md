@@ -10,9 +10,11 @@ The backend:
 * has direct access to the native library, and hence its methods are generally synchronous.
 * may load third-party native code
 
+An app can use a pre-existing backend. Or, an app can implement its own backend, which must depend on @bentley/imodeljs-backend.
+
 The iModelJs backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
-## Backend Operations
+## Backend operations supported by @bentley/imodeljs-backend
 
 * Administration
   * [IModelHost](./IModelHost.md)
