@@ -95,8 +95,9 @@ function createCommon(animated: boolean): ProgramBuilder {
   const builder = new ProgramBuilder(true, animated);
   const vert = builder.vert;
 
+  const animateNormal = false; // WIP...
   if (animated)
-    addAnimation(vert, true, false /* animated normal WIP... true */);
+    addAnimation(vert, true, animateNormal);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
