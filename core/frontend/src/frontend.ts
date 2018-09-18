@@ -37,6 +37,7 @@ export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
 export * from "./NoRenderApp";
+export * from "./tile/TileTree";
 
 /** @docs-package-description
  * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).

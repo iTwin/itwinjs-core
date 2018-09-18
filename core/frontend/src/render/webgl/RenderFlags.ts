@@ -18,6 +18,7 @@ export const enum RenderPass {
     ViewOverlay,
     SkyBox,
     Terrain,
+    HiliteStencilVolume,
     COUNT,
 }
 

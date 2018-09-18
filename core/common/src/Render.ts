@@ -917,7 +917,6 @@ export namespace Gradient {
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
-    margin: number;
     marginColor: number;
     colorScheme: number;
     rangeLow: number;
@@ -928,17 +927,18 @@ export namespace Gradient {
   export class ThematicSettings {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
-    public margin: number = .05;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
     public colorScheme: number = ThematicColorScheme.BlueRed;
     public range: Range1d = Range1d.createNull();
     public static defaults = new ThematicSettings();
+    public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
+    public static get contentRange(): number { return 1.0 - 2.0 * ThematicSettings.margin; }
+    public static get contentMax(): number { return 1.0 - ThematicSettings.margin; }
 
     public static fromJSON(json: ThematicSettingsProps) {
       const result = new ThematicSettings();
       result.mode = json.mode;
       result.stepCount = json.stepCount;
-      result.margin = json.margin;
       result.marginColor = new ColorDef(json.marginColor);
       result.colorScheme = json.colorScheme;
       result.range = Range1d.createXX(json.rangeLow, json.rangeHigh);
@@ -1253,10 +1253,10 @@ export namespace Gradient {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            if (f < settings.margin || f > 1.0 - settings.margin) {
+            if (f < ThematicSettings.margin || f > ThematicSettings.contentMax) {
               color = settings.marginColor;
             } else {
-              f = (f - settings.margin) / (1 - 2 * settings.margin);
+              f = (f - ThematicSettings.margin) / (ThematicSettings.contentRange);
               switch (settings.mode) {
                 case ThematicMode.SteppedWithDelimiter:
                 case ThematicMode.Stepped: {

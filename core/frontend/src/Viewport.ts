@@ -1622,8 +1622,9 @@ export abstract class Viewport {
     }
 
     timer.stop();
-    if (isRedrawNeeded)
+    if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
+    }
 
     return true;
   }

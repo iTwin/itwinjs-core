@@ -11,27 +11,22 @@ middleContent: [
     {
         header: "Open, By Design",
         content:
-'iModelJs layers atop the most popular and most standard cloud and web technologies. It starts with <a href="https://www.typescriptlang.org">TypeScript</a>, in our opinion the most productive and compelling programming ecosystem anywhere, ever. It builds on [SQLite], [JavaScript], [Node.js], [NPM], [Electron], [Docker], [Kubernetes] and many other open source leaders, in addition to standards like HTML, CSS, and WebGL. The stack is intentionally chosen to be as mainstream and open as possible to reduce input impedance with your codebase, and to preserve your flexibility over time.'
+'iModelJs layers atop the most popular and most standard cloud and web technologies. It starts with <a href="https://www.typescriptlang.org">TypeScript</a>, in our opinion the most productive and compelling programming ecosystem anywhere, ever. It builds on <a href="https://www.sqlite.org">SQLite</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript</a>, <a href="https://nodejs.org">Node.js</a>, <a href="https://www.npmjs.com">NPM</a>, <a href="https://electronjs.org">Electron</a>, <a href="https://www.docker.com">Docker</a>, <a href="https://kubernetes.io">Kubernetes</a> and many other open source leaders, in addition to standards like HTML, CSS, and WebGL. The stack is intentionally chosen to be as mainstream and open as possible to reduce input impedance with your codebase, and to preserve your flexibility over time.'
     },
     {
         header: "Open, For Innovation",
         content:
-"We know that when you use a library like iModelJs, you're likely not interested in 'becoming an iModelJs developer'. Rather, you wish to incorporate code and data from many sources, joining it into a unified system and user experience. We strive that iModels and iModelJs won't be the weak link in that chain."
+"We know that when you use a library like iModelJs, you're not expecting to 'become an iModelJs developer'. Rather, you wish to incorporate code and data from many sources, joining it into a unified system and user experience. We strive that iModels and iModelJs won't be the weak link in that chain."
     },
     {
         header: "Open for suggestions",
         content:
-"The opportunities for leveraging the hidden value of Digital Twins are so vast and so diverse, that its likely that many use cases will stress edge conditions in the iModelJs stack. In that cases, we expect that you may have suggestions for enhancements, improvements or even new ideas to benefit the iModelJs community. Please don't be shy about telling us how things can be improved - either with Issue reports, discussion posts, or even Pull Requests."
-    },
-    {
-        image: "assets/imodel_editor.png",
-        header: "iModel Overview",
-        content: "Example simpler viewer"
+"The opportunities for leveraging the hidden value of Infrastructure Digital Twins are so vast and so diverse, that its likely that many use cases will stress edge conditions in the iModelJs stack. In that cases, we suspect that you may have suggestions for enhancements, improvements or new ideas to benefit the iModelJs community. Please don't be shy about telling us how things can be improved - either with Issue reports, discussion posts, or even Pull Requests."
     },
 ]
 features:
   [
-    {header: "Aligned", icon: "assets/assets_bullet-code.svg", description: "An iModel combines information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The vocabulary of iModelJs is BIS. More..."},
+    {header: "Aligned", icon: "assets/assets_bullet-code.svg", description: 'An iModel can combine information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The vocabulary of iModels is BIS. <a href="bis/index.html">More...</a>'},
     {header: "Accountable", icon: "assets/assets_bullet-lock.svg", description: "Change is a first class concept in iModelJs. Knowing who changed what and when adds a new dimension (time) to your Digital Twin. More..."},
     {header: "Accessible", icon: "assets/assets_bullet-users.svg", description: "iModelJs is infinitely scalable since it follows the 'microservices' pattern between frontend and backend coupled with a distributed database. More..."},
     {header: "Approachable", icon: "assets/assets_bullet-chat.svg", description: "Programmers love iModelJs because it purposely builds on the most modern and popular technologies and frameworks available, minimizing the out-of-the-box learning  curve. More..." },
