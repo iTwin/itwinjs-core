@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add initial support for the Generic domain.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

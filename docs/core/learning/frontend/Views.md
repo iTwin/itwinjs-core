@@ -1,9 +1,10 @@
 # Using Views in iModelJs
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications
-can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
 
-Multiple Views may be simultaneously visible on the same web page, and are coordinated via the [ViewManager]($frontend) class.
+Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
+
+Multiple Views may be simultaneously visible on the same web page, and are coordinated by using the ViewManager.
 
 ## ViewDefinition Elements
 

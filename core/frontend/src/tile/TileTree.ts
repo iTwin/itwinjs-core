@@ -217,7 +217,9 @@ export class Tile implements IDisposable {
   /** Returns the range of this tile's contents in world coordinates. */
   public computeWorldContentRange(): ElementAlignedBox3d {
     const range = new ElementAlignedBox3d();
-    this.root.location.multiplyRange(this.contentRange, range);
+    if (!this.contentRange.isNull)
+      this.root.location.multiplyRange(this.contentRange, range);
+
     return range;
   }
 

@@ -6,10 +6,12 @@
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix3, Matrix4 } from "../Matrix";
 import { LUTGeometry } from "../CachedGeometry";
+import { MeshGeometry } from "../Mesh";
 import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { octDecodeNormal } from "./Surface";
+import { Range1d } from "@bentley/geometry-core";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -56,6 +58,8 @@ vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale
 
 const computeAnimationDisplacement = `
 vec3 computeAnimationDisplacement(float frameIndex0, float fraction, vec3 origin, vec3 scale) {
+if (frameIndex0 < 0.0)
+  return vec3(0.0, 0.0, 0.0);
 vec3 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
 if (fraction > 0.0) {
   vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex0 + u_vertParams.w * 2.0, origin, scale);
@@ -82,7 +86,7 @@ const computeAnimationFrameParam = `
 float computeAnimationFrameParam(float frameIndex, float origin, float scale) {
   vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  return origin + scale * decodeUInt16(enc1.xy);
+  return clamp((origin + scale * decodeUInt16(enc1.xy)), 0.0, 1.0);
 }`;
 
 const computeAnimationParam = `
@@ -149,7 +153,7 @@ function computeInputLocation(inputs: number[], fraction: number): AnimationLoca
   return location;
 }
 export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
-  scratchAnimParams[0] = scratchAnimParams[1] = 0.0;
+  scratchAnimParams[0] = scratchAnimParams[1] = scratchAnimParams[2] = scratchAnimParams[3] = -1.0;
 
   vert.addFunction(computeAnimationFrameDisplacement);
   vert.addFunction(computeAnimationDisplacement);
@@ -165,7 +169,6 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
 
   vert.addUniform("u_animParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_animParams", (uniform, params) => {
-      // TBD... from fraction within animation compute frame and frameFraction;
       const animationFraction = params.target.animationFraction;
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       if (lutGeom.lut.auxDisplacements !== undefined) {
@@ -206,17 +209,24 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
   if (includeTexture) {
     vert.addUniform("u_qAnimScalarParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
-        const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+        const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
         const animationFraction = params.target.animationFraction;
-        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = 0.0;
-        if (lutGeom.lut.auxParams !== undefined) {
-          const auxParam = lutGeom.lut.auxParams[0];  // TBD - allow channel selection.
+        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = -1.0;
+        if (meshGeom.lut.auxParams !== undefined) {
+          const auxParam = meshGeom.lut.auxParams[0];  // TBD - allow channel selection.
           const paramLocation = computeInputLocation(auxParam.inputs, animationFraction);
 
-          scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * lutGeom.lut.numVertices;
+          scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * meshGeom.lut.numVertices;
           scratchAnimScalarParams[1] = paramLocation.fraction;
-          scratchAnimScalarParams[2] = auxParam.qOrigin;
-          scratchAnimScalarParams[3] = auxParam.qScale;
+          const thematicRange = meshGeom.thematicRange as Range1d;
+          if (undefined !== thematicRange) {
+            const rangeScale = thematicRange.high - thematicRange.low;
+            scratchAnimScalarParams[2] = (auxParam.qOrigin - thematicRange.low) / rangeScale;
+            scratchAnimScalarParams[3] = auxParam.qScale / rangeScale;
+          } else {
+            scratchAnimScalarParams[2] = 0.000001;
+            scratchAnimScalarParams[3] = 0.999998;
+          }
         }
         uniform.setUniform4fv(scratchAnimScalarParams);
       });

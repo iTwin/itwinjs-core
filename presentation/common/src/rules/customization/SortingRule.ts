@@ -11,6 +11,13 @@ import { SingleSchemaClassSpecification } from "../ClassSpecifications";
  */
 export interface SortingRuleBase extends RuleBase, ConditionContainer {
   /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
+  /**
    * Specification of ECClass whose ECInstances should be sorted by this rule.
    * Defaults to all classes in current context if not specified.
    */

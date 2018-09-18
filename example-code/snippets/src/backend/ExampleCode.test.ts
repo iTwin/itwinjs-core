@@ -1,11 +1,11 @@
-/*---------------------------------------------------------------------------------------------
+    /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
-import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -52,6 +52,71 @@ describe("Example Code", () => {
         return modeledElementId;
     }
     // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback
+    //                                  Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
+    async function asyncFunctionCallsAsync(context: ActivityLoggingContext): Promise<void> {
+        context.enter();        // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+                Logger.logTrace("cat", "callback invoked");
+                resolve();
+            }, 1);
+        });
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback2
+    function synchronousFunctionCallsAsync() {
+        // This is an example of the rare case where a synchronous function invokes an async function and
+        // the async callback emits logging messages. In this case, because the caller is synchronous, it must
+        // access the current ActivityLoggingContext and assign it to a local variable.
+        const context = ActivityLoggingContext.current;        // Must hold a local reference for callback to use.
+        setTimeout(() => {
+            context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+            Logger.logTrace("cat", "callback invoked");
+        }, 1);
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    async function someAsync(_context: ActivityLoggingContext): Promise<void> { }
+    // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+    // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncMethod
+
+    //                                Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
+    async function asyncMethodExample(context: ActivityLoggingContext): Promise<void> {
+        context.enter();
+
+        try {
+            await someAsync(context); // Rule: Pass the ActivityLoggingContext to Promise-returning methods
+            context.enter();        // Rule: Enter the ActivityLoggingContext on the line after an await
+            Logger.logTrace("cat", "promise resolved");
+        } catch (_err) {
+            context.enter();        // Rule: Enter the ActivityLoggingContext in an async rejection
+            Logger.logTrace("cat", "promise rejected");
+        }
+
+        // The same rules, using .then.catch instead of await + try/catch.
+        someAsync(context)          // Rule: Pass the ActivityLoggingContext to Promise-returning methods
+            .then(() => {
+                context.enter();    // Rule: Enter the ActivityLoggingContext on the line of .then callback
+                Logger.logTrace("cat", "promise resolved");
+            })
+            .catch((_err) => {
+                context.enter();    // Rule: Enter the ActivityLoggingContext in .catch callback
+                Logger.logTrace("cat", "promise rejected");
+            });
+
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    it("should handle ActivityLoggingContext in async callbacks", async () => {
+        await asyncFunctionCallsAsync(new ActivityLoggingContext("abc"));
+        await synchronousFunctionCallsAsync();
+        await asyncMethodExample(new ActivityLoggingContext("abc"));
+    });
 
     it("should update the imodel project extents", async () => {
         // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
