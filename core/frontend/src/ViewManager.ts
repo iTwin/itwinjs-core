@@ -222,13 +222,12 @@ export class ViewManager {
   public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
+  public get sceneInvalidated(): boolean { return this._invalidateScenes; }
   public onNewTilesReady(): void { this.invalidateScenes(); }
 
   // Invoked by ToolAdmin event loop.
   public renderLoop(): void {
-    if (0 === this._viewports.length)
-      return;
-
+    if (0 === this._viewports.length) return;
     if (this._skipSceneCreation)
       this.validateViewportScenes();
     else if (this._invalidateScenes)
@@ -242,12 +241,6 @@ export class ViewManager {
       for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame())
           break;
-
-    this.processIdle();
-  }
-
-  private processIdle(): void {
-    // ###TODO: pre-compile shaders?
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.
