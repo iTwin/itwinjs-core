@@ -12,7 +12,7 @@ The backend:
 
 The iModelJs backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
-## Backend Concerns
+## Backend Operations
 
 * Administration
   * [IModelHost](./IModelHost.md)
