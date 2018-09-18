@@ -3,11 +3,11 @@
 An instance of [IModelApp]($frontend) provides the services needed by the [frontend](../../overview/App.md#app-frontend) in an [interactive](../WriteAnInteractiveApp.md) iModelJs app. Services include:
 * Management of graphical views using [ViewManager](./Views.md)
 * [Tools and Drawing Aids](./Tools.md)
-* Access to Connect and iModelHub using [IModelClient]($frontend)
-* [Notifications]($frontend)
+* Access to Connect and iModelHub using [IModelClient]($clients)
+* [Notifications]($frontend:Notifications)
 * [Localization support](./Localization.md)
 * App configuration using [Feature Gates](../common/FeatureGates.md)
-* User settings using [SettingsAdmin]($frontend)
+* User settings using [Settings]($clients:Settings)
 
 Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different implementations of them.
 

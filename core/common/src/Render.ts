@@ -7,7 +7,7 @@ import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
@@ -914,17 +914,36 @@ export namespace Gradient {
     Custom = 5,
   }
 
+  export interface ThematicSettingsProps {
+    mode: ThematicMode;
+    stepCount: number;
+    margin: number;
+    marginColor: number;
+    colorScheme: number;
+    rangeLow: number;
+    rangeHigh: number;
+  }
+
   /** @hidden Gradient settings specific to thematic mesh display */
-  export class ThematicProps {
+  export class ThematicSettings {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
     public margin: number = .05;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
     public colorScheme: number = ThematicColorScheme.BlueRed;
-    public rangeLow: number = Number.MAX_VALUE;
-    public rangeHigh: number = Number.MIN_VALUE;
+    public range: Range1d = Range1d.createNull();
+    public static defaults = new ThematicSettings();
 
-    public static defaults = new ThematicProps();
+    public static fromJSON(json: ThematicSettingsProps) {
+      const result = new ThematicSettings();
+      result.mode = json.mode;
+      result.stepCount = json.stepCount;
+      result.margin = json.margin;
+      result.marginColor = new ColorDef(json.marginColor);
+      result.colorScheme = json.colorScheme;
+      result.range = Range1d.createXX(json.rangeLow, json.rangeHigh);
+      return result;
+    }
   }
 
   /** Gradient fraction value to [[ColorDef]] pair */
@@ -959,7 +978,7 @@ export namespace Gradient {
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
     /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
-    thematicSettings?: ThematicProps;
+    thematicSettings?: ThematicSettingsProps;
   }
 
   export class Symb implements SymbProps {
@@ -968,7 +987,7 @@ export namespace Gradient {
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
-    public thematicSettings?: ThematicProps;
+    public thematic?: ThematicSettings;
     public keys: KeyColor[] = [];
 
     /** create a GradientSymb from a json object. */
@@ -982,8 +1001,7 @@ export namespace Gradient {
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
-      if (undefined !== json.thematicSettings)
-        result.thematicSettings = json.thematicSettings;
+      result.thematic = (json.thematicSettings === undefined) ? undefined : ThematicSettings.fromJSON(json.thematicSettings);
 
       return result;
     }
@@ -1225,9 +1243,9 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          let settings = this.thematicSettings;
+          let settings = this.thematic;
           if (settings === undefined) {
-            settings = ThematicProps.defaults;
+            settings = ThematicSettings.defaults;
           }
 
           // TBD - Stepped and isolines...

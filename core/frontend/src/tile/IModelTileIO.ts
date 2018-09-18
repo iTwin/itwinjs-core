@@ -47,7 +47,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Range1d, Range2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
 export namespace IModelTileIO {
@@ -210,8 +210,8 @@ export namespace IModelTileIO {
               // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
               textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
             }
-            if (undefined !== gradient.thematicSettings) {
-              thematicRange = Range1d.createXX(gradient.thematicSettings.rangeLow, gradient.thematicSettings.rangeHigh);
+            if (undefined !== gradient.thematic) {
+              thematicRange = gradient.thematic.range;
             }
           }
         }

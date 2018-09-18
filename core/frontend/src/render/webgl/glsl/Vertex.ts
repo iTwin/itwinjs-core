@@ -219,13 +219,13 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
           scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * meshGeom.lut.numVertices;
           scratchAnimScalarParams[1] = paramLocation.fraction;
           const thematicRange = meshGeom.thematicRange as Range1d;
-          if (undefined !== thematicRange) {
+          if (false && undefined !== thematicRange) {
             const rangeScale = thematicRange.high - thematicRange.low;
             scratchAnimScalarParams[2] = (auxParam.qOrigin - thematicRange.low) / rangeScale;
             scratchAnimScalarParams[3] = auxParam.qScale / rangeScale;
           } else {
             scratchAnimScalarParams[2] = 0.000001;
-            scratchAnimScalarParams[3] = 0.999998;
+            scratchAnimScalarParams[3] = 0.999998 / 0xffff;
           }
         }
         uniform.setUniform4fv(scratchAnimScalarParams);
