@@ -219,7 +219,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
           scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * meshGeom.lut.numVertices;
           scratchAnimScalarParams[1] = paramLocation.fraction;
           const thematicRange = meshGeom.thematicRange as Range1d;
-          if (undefined !== thematicRange) {
+          if (false && undefined !== thematicRange) {
             const rangeScale = thematicRange.high - thematicRange.low;
             scratchAnimScalarParams[2] = (auxParam.qOrigin - thematicRange.low) / rangeScale;
             scratchAnimScalarParams[3] = auxParam.qScale / rangeScale;
