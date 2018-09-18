@@ -4,9 +4,9 @@ This section provides explanations of the concepts you'll encounter in iModelJs,
 
 Helpful articles:
 
-* [Frontend classes](./frontend/index)
-* [Backend classes](./backend/index)
-* [Common classes](./common/index)
+* [App frontend development](./frontend/index)
+* [App backend development](./backend/index)
+* [Classes packages by both frontends and backends](./common/index)
 * [ECSQL](./ECSQL.md)
 * [Change Summaries](./ChangeSummaries.md)
 * [Remote Procedure Call (RPC) Interfaces](./RpcInterface)
