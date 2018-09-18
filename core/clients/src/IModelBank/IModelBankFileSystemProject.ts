@@ -75,7 +75,7 @@ export interface IModelBankFileSystemProjectOptions {
 export class IModelBankPermissionDummy implements IModelAuthorizationClient {
   public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
     if (!userProfile)
-      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
+      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", organizationId: "", ultimateSite: "", usageCountryIso: "" };
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
     return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);

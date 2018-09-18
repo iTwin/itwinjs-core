@@ -106,6 +106,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
     this.location = Transform.createIdentity();
   }
 }
+
 class WebMercatorTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -121,6 +122,7 @@ class WebMercatorTileProps implements TileProps {
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
   }
 }
+
 class WebMercatorTileLoader extends TileLoader {
   private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;

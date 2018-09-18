@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
 } from "../ShaderBuilder";
 import { FeatureMode } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addIdOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix, addAnimation } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
@@ -27,6 +27,7 @@ import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
 import { System } from "../System";
+import { ShaderProgram } from "../ShaderProgram";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -96,7 +97,7 @@ function createCommon(animated: boolean): ProgramBuilder {
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true, false /* animated normal WIP... true */);
+    addAnimation(vert, true, true);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -188,11 +189,9 @@ const computeNormal = `
 `;
 
 const computeAnimatedNormal = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-    return vec3(0.0);
-
-  return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
-`;
+  if (u_animParams.z >= 0.0)
+    return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
+` + computeNormal;
 
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
@@ -210,11 +209,9 @@ const computeTexCoord = `
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
 const computeAnimatedTexCoord = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
-    return vec2(0.0);
-
-  return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
-`;
+  if (u_qAnimScalarParams.x >= 0.0)
+    return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
+` + computeTexCoord;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -261,27 +258,25 @@ function addNormal(builder: ProgramBuilder, animated: boolean) {
   addNormalMatrix(builder.vert);
 
   builder.vert.addFunction(octDecodeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", false && animated ? computeAnimatedNormal : computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
-  if (!animated) {
-    builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-      prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-        const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-        const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
-        if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-          const uvQParams = surfGeom.lut.uvQParams;
-          if (undefined !== uvQParams) {
-            uniform.setUniform4fv(uvQParams);
-          }
+  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        const uvQParams = surfGeom.lut.uvQParams;
+        if (undefined !== uvQParams) {
+          uniform.setUniform4fv(uvQParams);
         }
-      });
+      }
     });
-  }
+  });
 
   builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);
@@ -359,4 +354,56 @@ const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) 
 
 export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+}
+
+export function createProcessClassifierStencilForIdsProgram(context: WebGLRenderingContext): ShaderProgram {
+  const feat = FeatureMode.Pick;
+  const builder = createCommon(false);
+  addShaderFlags(builder);
+
+  addFeatureSymbology(builder, feat, FeatureSymbologyOptions.None);
+  addSurfaceFlags(builder, false);
+  addSurfaceDiscard(builder, feat);
+  addNormal(builder, false);
+
+  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
+  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
+      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+    });
+  });
+
+  addTexture(builder, false);
+
+  builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
+      const surfGeom = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        uniform.setUniform1i(surfGeom.isGlyph ? 1 : 0);
+      }
+    });
+  });
+
+  // Fragment and Vertex
+  addColor(builder, true);
+
+  // Fragment
+  builder.frag.addFunction(getSurfaceColor);
+  addLighting(builder);
+  addWhiteOnWhiteReversal(builder.frag);
+
+  builder.frag.addFunction(GLSLDecode.depthRgb);
+  addIdOutputs(builder.frag);
+
+  addMaterial(builder.frag);
+  // addMonochrome(builder.frag);
+  // addSurfaceDiscardByAlpha(builder.frag);
+
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+
+  return builder.buildProgram(context);
 }

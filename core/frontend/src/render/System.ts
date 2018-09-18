@@ -118,10 +118,12 @@ export abstract class RenderClipVolume implements IDisposable {
 /** An array of RenderGraphics */
 export type GraphicList = RenderGraphic[];
 
-/** A Decoration that is drawn onto the 2d canvas on top of a ScreenViewport. CanvasDecorations may be pickable by implementing [[pick]]. */
+/** A Decoration that is drawn onto the [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
+ * CanvasDecorations may be pickable by implementing [[pick]].
+ */
 export interface CanvasDecoration {
   /**
-   * Method to draw this decoration into the supplied CanvasRenderingContext2D. This method is called every time a frame is rendered.
+   * Required method to draw this decoration into the supplied [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D). This method is called every time a frame is rendered.
    * @param ctx The CanvasRenderingContext2D for the [[ScreenViewport]] being rendered.
    * @note Before this this function is called, the state of the CanvasRenderingContext2D is [saved](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save),
    * and it is [restored](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore) when this method returns. Therefore,
@@ -152,9 +154,12 @@ export interface CanvasDecoration {
    * corresponding up event.
    */
   onMouseButton?(ev: BeButtonEvent): boolean;
+  /**
+   * Optional method to be called when the mouse wheel is rolled with the pointer over this decoration.
+   * @return true to indicate that the event has been handled and should not be propagated to default handler
+   */
   onWheel?(ev: BeWheelEvent): boolean;
-
-  /** Cursor to use when mouse is inside decoration. Default is "pointer". */
+  /** Cursor to use when mouse is inside this decoration. Default is "pointer". */
   decorationCursor?: string;
 }
 

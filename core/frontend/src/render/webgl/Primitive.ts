@@ -50,11 +50,11 @@ export abstract class Primitive extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch): void {
+  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
     if (!this.isEdge) {
-      commands.getCommands(RenderPass.Hilite).push(DrawCommand.createForPrimitive(this, batch));
+      commands.getCommands(pass).push(DrawCommand.createForPrimitive(this, batch));
     }
   }
 

@@ -1,14 +1,14 @@
-# The Common Library
+# Common Libraries
 
-The common library contains TypeScript classes and other types that can be used by both [frontends](..\Glossary.md#frontend) and [backends](..\Glossary.md#backend).
+Common libraries contain TypeScript classes and other types that can be used by both [frontends](..\frontend\index.md) and [backends](..\backend\index.md).
 
-The common library is contained in the following npm packages:
+The iModelJs common libraries are contained in the following npm packages:
 
 * `@bentley/imodeljs-common`
 * `@bentley/imodeljs-clients`
 * `@bentley/bentleyjs-core`
 
-Topics:
+Common operations:
 
 * [Obtaining an AccessToken](./AccessToken.md)
 * [FeatureGates](./FeatureGates)

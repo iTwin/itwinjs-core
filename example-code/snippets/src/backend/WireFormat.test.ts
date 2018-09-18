@@ -6,7 +6,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, AngleSweep, Angle, LineString3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
+import { ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps, Code } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -87,6 +87,7 @@ describe("Wire Format Snippets", () => {
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
+      code: Code.createEmpty(),
       category: categoryId,
       placement,
       geom: builder.geometryStream,

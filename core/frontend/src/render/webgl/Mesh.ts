@@ -29,6 +29,7 @@ import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
+import { Range1d } from "@bentley/geometry-core";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -41,6 +42,7 @@ export class MeshData implements IDisposable {
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
   public readonly lut: VertexLUT;
+  public readonly thematicRange?: Range1d;
 
   private constructor(lut: VertexLUT, params: MeshParams) {
     this.lut = lut;
@@ -51,6 +53,7 @@ export class MeshData implements IDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
+    this.thematicRange = params.surface.thematicRange;
 
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
@@ -112,7 +115,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: RenderCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
+  public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
 
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);
@@ -141,6 +144,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this._mesh.texture; }
   public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
+  public get thematicRange() { return this._mesh.thematicRange; }
 
   public get lut() { return this._mesh.lut; }
 

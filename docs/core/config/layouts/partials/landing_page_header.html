@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{pageTitle this site.name}}</title>
+  <meta name="description" content="{{site.description}}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" type="text/css" href="{{site.siteRoot}}styles/bundle.css">
+  <link rel="stylesheet" type="text/css" href="{{site.siteRoot}}styles/prism.css">
+
+  <!-- fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+  {{#each this.fileImports}}
+  <link rel="stylesheet" type="text/css" href="{{../site.siteRoot}}styles/{{this}}">
+  {{/each}}
+  {{#if this.docSiteMetadata.favicon}}
+  <link rel='shortcut icon' type='image/x-icon' href='{{site.siteRoot}}{{this.docSiteMetadata.favicon}}' />
+  {{/if}}
+</head>
+
+<body data-site-root={{site.siteRoot}} class='layout-index {{displayIf "fullScreen" layout-noSidebar}}'>
+  <div id="navContainer" class="nav-landing-container">
+    <nav class="navbar navbar-expand-md navbar-light">
+      <a href="{{site.siteRoot}}" class="navbar-brand">
+        {{#if this.docSiteMetadata.logo}}
+        <img id="site-logo" class="site-logo" src="{{site.siteRoot}}{{this.docSiteMetadata.logo}}" />
+        {{/if}}
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar7">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="navbar-collapse collapse justify-content-stretch" id="navbar7">
+        <ul class="navbar-nav ml-auto">
+          {{#any docSites}}
+          {{{headerTabs docSites this docSiteMetadata}}}
+          {{/any}}
+        </ul>
+      </div>
+    </nav>
+
+    <p class="nav-header-tagline">
+      {{#if this.header}}
+      {{{this.header}}}
+      {{/if}}
+    </p>
+    <a id="viewDocumentationBtn" class="btn btn-primary mb-2" href="{{site.siteRoot}}/reference" role="button">View
+      Documentation</a>
+    <a id="viewOnGitHubBtn" class="btn btn-outline-secondary mb-2" href="{{this.docSiteMetadata.editSrcBaseURL}}"
+      target="_blank">View on Github
+    </a>
+  </div>

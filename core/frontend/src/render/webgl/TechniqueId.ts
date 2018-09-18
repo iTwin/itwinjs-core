@@ -23,6 +23,7 @@ export const enum TechniqueId {
   CopyColor,
   CopyColorNoAlpha,
   CopyStencil,
+  ProcessClassifierStencilForIds,
   ClearPickAndColor,
   ClipMask,
   SkyBox,

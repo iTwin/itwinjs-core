@@ -70,7 +70,7 @@ export class Logger {
 
   /** Add the currently registered activityId, if any, to the specified metadata. */
   public static addActivityId(mdata: any) {
-    if ((ActivityLoggingContext.current === undefined) || mdata.hasOwnProperty("ActivityId"))
+    if ((ActivityLoggingContext.current.activityId === "") || mdata.hasOwnProperty("ActivityId"))
       return;
     const activityId = ActivityLoggingContext.current.activityId;
     if (activityId !== "")
@@ -89,7 +89,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current === undefined))
+    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
       return;
     const mdata: any = getMetaData ? getMetaData() : {};
     Logger.addActivityId(mdata);
@@ -98,7 +98,7 @@ export class Logger {
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current === undefined))
+    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
       return "";
     return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }

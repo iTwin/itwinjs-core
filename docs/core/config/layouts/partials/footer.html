@@ -1,0 +1,118 @@
+<!-- Footer -->
+<footer class="page-footer font-small mdb-color pt-1 pb-3">
+  <!-- Footer Links Container -->
+  <div class="container text-center text-md-left">
+
+    <!-- Footer links -->
+    <div class="row footer-links text-center text-md-left mt-1 pb-1">
+
+      <!-- Header tabs column -->
+      <div class="col-md-6 col-lg-4 col-xl-5 mx-auto mt-1">
+        <h6 class="text-uppercase mb-2 font-weight-bold">Sitemap</h6>
+        <ul class="footer-list">
+          <li class="footer-list-item">
+            <a href="{{site.siteRoot}}">Home</a>
+          </li>
+          {{#each this.docSiteMetadata.headerTabs}}
+          <li class="footer-list-item">
+            <a href="{{../site.siteRoot}}{{this.docSite}}">{{@key}}</a>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- About us column -->
+      <div class="col-md-4 col-lg-2 col-xl-4 mx-auto mt-1">
+        <h6 class="text-uppercase mb-2 font-weight-bold">About Us</h6>
+        <ul class="footer-list">
+          <li class="footer-list-item">
+            <a href="https://www.bentley.com" target="_blank">Company</a>
+          </li>
+          <li class="footer-list-item">
+            <a href="https://www.bentley.com/en/terms-of-use-and-select-online-agreement" target="_blank">Terms of Use</a>
+          </li>
+          <li class="footer-list-item">
+            <a href="https://www.bentley.com/en/privacy-policy" target="_blank">Privacy Policy</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Grid column -->
+      <div class="col-md-2 col-lg-3 col-xl-2 mx-auto mt-1">
+        <h6 class="text-uppercase mb-2 font-weight-bold">Need Help?</h6>
+        <ul class="footer-list">
+          <li class="footer-list-item">
+            <a href="https://www.bentley.com/en/about-us/contact-us" target="_blank">Contact Us</a>
+          </li>
+          <li class="footer-list-item">
+            <a href="https://www.bentley.com" target="_blank">Knowledge Base</a>
+          </li>
+        </ul>
+      </div>
+      <!-- Grid column -->
+
+    </div>
+    <!-- Footer links -->
+
+    <hr id="footer-hr">
+
+    <!-- Grid row -->
+    <div class="row d-flex align-items-center mt-2">
+
+      <!-- Grid column -->
+      <div class="col-md-7 col-lg-8 align-top d-none d-md-block">
+
+        {{#if this.docSiteMetadata.logo}}
+        <img id="site-logo" class="site-logo" style="zoom:75%;" src="{{site.siteRoot}}{{this.docSiteMetadata.logo}}" />
+        {{/if}}
+        {{#if this.docSiteMetadata.sponsoredByLogo}}
+        <small style="color: white; margin-right: 7px;"> powered by </small>
+        <img id="sponsored-by-logo" class="sponsored-by-logo" style="zoom:75%; width: 162px; height: 37px;" src="{{site.siteRoot}}{{this.docSiteMetadata.sponsoredByLogo}}" />
+        {{/if}}
+      </div>
+      <!-- Grid column -->
+
+      <!-- Grid column -->
+      <div class="col-md-5 col-lg-4 ml-lg-0">
+
+        <!-- Social buttons -->
+        <div class="text-center text-md-right">
+          <ul class="list-unstyled list-inline">
+            <li class="list-inline-item">
+              <a class="btn-floating btn-sm rgba-white-slight mx-1" href="https://twitter.com/bentleysystems" target="_blank">
+                <i class="fa fa-twitter"></i>
+              </a>
+            </li>
+            </li>
+            <li class="list-inline-item">
+              <a class="btn-floating btn-sm rgba-white-slight mx-1" href="https://github.com/imodeljs" target="_blank">
+                <i class="fa fa-github"></i>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a class="btn-floating btn-sm rgba-white-slight mx-1" href="https://stackoverflow.com/tags/imodeljs"
+                target="_blank">
+                <i class="fa fa-stack-overflow"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+      <!-- Grid column -->
+
+    </div>
+    <!-- Grid row -->
+
+  </div>
+  <!-- Footer Links Container -->
+
+</footer>
+<!-- Footer -->
+
+</div>
+<a href="javascript:" id="return-to-top"><i class="icon icon-chevron-up"></i></a>
+<script src="{{site.siteRoot}}scripts/bundle.js"></script>
+</body>
+
+</html>

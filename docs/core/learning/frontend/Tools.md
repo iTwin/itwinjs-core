@@ -6,7 +6,7 @@ A [Tool]($frontend) is a JavaScript class that performs an action on behalf of a
 * [ViewTool]($frontend)s (such as zoom, pan, and view rotation) pause the active tool while they are executing and resume the active tool when finished. They are implemented as subclasses of ViewTool.
 * [PrimitiveTool]($frontend)s are used for graphical interactions with an iModel. When invoked, they become the active tool, reacting to user input such as data points, mouse movements, gestures, keystrokes, and resets. Interactive Tools are the most flexible Tool type, but they are also the most challenging to implement. iModelJs provides some specializations of Interactive Tool that are easier to implement.
 
-The ($frontend) package provides a comprehensive set of Viewing Tools, so most iModelJs applications do not need to implement their own.
+The frontend package provides a comprehensive set of Viewing Tools, so most iModelJs applications do not need to implement their own.
 
 iModelJs also provides a Select Tool, which allows users to select existing elements and interact with them through EditorManipulators that are provided by the element handlers. Providing a capable EditorManipulator for an element often eliminates the need for  modification tools specific to that element type.
 

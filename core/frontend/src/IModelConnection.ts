@@ -37,7 +37,7 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of [[Tile]]s for this IModelConnection. */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
@@ -585,10 +585,14 @@ export namespace IModelConnection {
     }
   }
 
-  /** @hidden */
+  /** Provides access to tiles associated with an IModelConnection */
   export class Tiles {
+    /** @hidden */
     private _iModel: IModelConnection;
+
+    /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
+
     public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
     public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
   }

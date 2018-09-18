@@ -35,7 +35,6 @@
 - [Notifications]($frontend:Notifications)
 - [Selection Set]($frontend:SelectionSet)
 - [Rendering]($frontend:Rendering)
-- [Tile]($frontend:Tile)
 - [All]($frontend:All)
 
 ---
