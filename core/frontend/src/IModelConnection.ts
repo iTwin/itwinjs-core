@@ -37,7 +37,7 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of [[Tiles]] for this IModelConnection. */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();

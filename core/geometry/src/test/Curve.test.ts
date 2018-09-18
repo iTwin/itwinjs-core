@@ -9,6 +9,7 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurveIntervalRole, CurveLocationDetail, CurvePrimitive, CoordinateXYZ } from "../curve/CurvePrimitive";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Sample } from "../serialization/GeometrySamples";
 import { Geometry } from "../Geometry";
 import { Ray3d } from "../AnalyticGeometry";
@@ -23,6 +24,7 @@ import { prettyPrint } from "./testFunctions";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { BezierCurve3dH, BezierCurve3d } from "../bspline/BezierCurve";
+import { Point4d } from "../numerics/Geometry4d";
 
 /* tslint:disable:no-console */
 
@@ -246,6 +248,24 @@ class ExerciseCurve {
       ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
       ExerciseCurve.exerciseStroke(ck, bcurve);
       ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
+    }
+// with weights, but all weights 1.0
+    const bcurveH1 = BSplineCurve3dH.createUniformKnots(
+      [Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 1), Point4d.create(10, 4, 0, 1)],
+      3);
+    if (ck.testPointer(bcurveH1) && bcurveH1) {
+      ExerciseCurve.exerciseFractionToPoint(ck, bcurveH1, false, false);
+      ExerciseCurve.exerciseStroke(ck, bcurveH1);
+      ExerciseCurve.exerciseClosestPoint(ck, bcurveH1, 0.1);
+    }
+
+    const bcurveH = BSplineCurve3dH.createUniformKnots(
+      [Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 0.8), Point4d.create(10, 4, 0, 1)],
+      3);
+    if (ck.testPointer(bcurveH) && bcurveH) {
+      ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
+      ExerciseCurve.exerciseStroke(ck, bcurveH);
+      ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1);
     }
 
     const bezierCurve0 = BezierCurve3d.create([
