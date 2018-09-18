@@ -20,7 +20,7 @@ import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
+import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha, createProcessClassifierStencilForIdsProgram } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeUniformElementId, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
@@ -31,6 +31,7 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
+// import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -385,6 +386,12 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
+export const enum ClassificationType {
+  Selected = 1,
+  Unselected = 2,
+  All = 3,
+}
+
 // A collection of rendering techniques accessed by ID.
 export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
@@ -445,6 +452,83 @@ export class Techniques implements IDisposable {
     });
   }
 
+  /** Execute each command in the list if it meets the classification criteria */
+  public executeForClassification(target: Target, commands: DrawCommands, renderPass: RenderPass, type: ClassificationType) {
+    assert(RenderPass.None !== renderPass, "invalid render pass");
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+      for (const command of commands) {
+        command.preExecute(executor);
+
+        const techniqueId = command.getTechniqueId(target);
+        if (TechniqueId.Invalid !== techniqueId) {
+          // A primitive command.
+          assert(command.isPrimitiveCommand, "expected primitive command");
+          // ###TODO: Make sure it meets the type criteria.
+          // const prim = command.primitive as SurfacePrimitive;
+          // const geom = prim.cachedGeometry as SurfaceGeometry;
+          const isSelected: boolean = true; // ###TODO: Set based on whether this geometry is selected.
+          if ((type === ClassificationType.All) || (isSelected === (type === ClassificationType.Selected))) {
+            flags.init(target, renderPass, command.hasAnimation);
+            const tech = this.getTechnique(techniqueId); // ###TODO: force it to use simpler shader since we don't care what it draws
+            const program = tech.getShader(flags);
+            if (executor.setProgram(program)) {
+              command.execute(executor);
+            }
+          }
+        } else {
+          // A branch command.
+          assert(!command.isPrimitiveCommand, "expected non-primitive command");
+          command.execute(executor);
+        }
+
+        command.postExecute(executor);
+      }
+    });
+  }
+
+  /** Execute the commands for a single given classification primitive */
+  public executeForIndexedClassifier(target: Target, commands: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+    assert(RenderPass.None !== renderPass, "invalid render pass");
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+
+      // First execute the batch push.
+      commands[0].preExecute(executor);
+      let techniqueId = commands[0].getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!commands[0].isPrimitiveCommand, "expected non-primitive command");
+      commands[0].execute(executor);
+      commands[0].postExecute(executor);
+
+      // Execute the command for the given classification primitive.
+      const command = commands[index + 1];
+      command.preExecute(executor);
+      techniqueId = command.getTechniqueId(target);
+      assert(TechniqueId.Invalid !== techniqueId);
+      // A primitive command.
+      assert(command.isPrimitiveCommand, "expected primitive command");
+      flags.init(target, renderPass, command.hasAnimation);
+      const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
+      const program = tech.getShader(flags);
+      if (executor.setProgram(program)) {
+        command.execute(executor);
+      }
+      command.postExecute(executor);
+
+      // Execute the batch pop.
+      const last = commands.length - 1;
+      commands[last].preExecute(executor);
+      techniqueId = commands[last].getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!commands[last].isPrimitiveCommand, "expected non-primitive command");
+      commands[last].execute(executor);
+      commands[last].postExecute(executor);
+    });
+  }
+
   /** Draw a single primitive. Usually used for special-purpose rendering techniques. */
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));
@@ -484,6 +568,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
     this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
+    this._list[TechniqueId.ProcessClassifierStencilForIds] = new SingularTechnique(createProcessClassifierStencilForIdsProgram(gl));
     this._list[TechniqueId.CopyStencil] = new SingularTechnique(createCopyStencilProgram(gl));
     this._list[TechniqueId.CompositeHilite] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite, gl));
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
