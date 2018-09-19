@@ -153,7 +153,7 @@ export namespace IModelTileIO {
       let sizeMultiplier = this._sizeMultiplier;
       const completeTile = 0 === (header.flags & IModelTileIO.Flags.Incomplete);
       const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-      if (emptyTile || this._asClassifier) {
+      if (emptyTile || this._asClassifier) {    // Classifier algorithm currently supports only a single tile.
         isLeaf = true;
       } else {
         const canSkipSubdivision = header.tolerance <= maxLeafTolerance;
