@@ -164,6 +164,10 @@ class WebMercatorTileLoader extends TileLoader {
     return props;
   }
   public async loadTileContents(missingArray: Tile[]): Promise<void> {
+    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
+    for (const tile of missingArray)
+      tile.setIsQueued();
+
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)
         this._providerInitializing = this._imageryProvider.initialize();
@@ -173,8 +177,7 @@ class WebMercatorTileLoader extends TileLoader {
     }
 
     await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isNotLoaded);
-      missingTile.setIsQueued();
+      assert(missingTile.isQueued);
 
       const quadId = new QuadId(missingTile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);

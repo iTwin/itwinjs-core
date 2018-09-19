@@ -189,8 +189,8 @@ const computeNormal = `
 `;
 
 const computeAnimatedNormal = `
-  if (u_animParams.z >= 0.0)
-    return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
+  if (u_animNormalParams.x >= 0.0)
+    return normalize(u_nmx * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z);
 ` + computeNormal;
 
 const applyBackgroundColor = `
@@ -209,8 +209,8 @@ const computeTexCoord = `
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
 const computeAnimatedTexCoord = `
-  if (u_qAnimScalarParams.x >= 0.0)
-    return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
+  if (u_animScalarQParams.x >= 0.0)
+    return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_qAnimScalarQParams.y);
 ` + computeTexCoord;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
