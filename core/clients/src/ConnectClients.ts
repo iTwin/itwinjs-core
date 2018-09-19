@@ -70,6 +70,12 @@ export class RbacProject extends WsgInstance {
   // Empty!
 }
 
+/** RBAC user */
+@ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class RbacUser extends WsgInstance {
+  // Empty!
+}
+
 /** RBAC permission */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Permission extends WsgInstance {
@@ -152,6 +158,18 @@ export class RbacClient extends WsgClient {
 
     const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
     return this.getInstances<RbacProject>(alctx, RbacProject, token, url, queryOptions);
+  }
+
+  /**
+   * Gets all users in a project
+   * @param token Delegation token of the authorized user
+   * @param projectId Id of the project we want to get users for
+   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not TypeScript property names.
+   * @returns Resolves to an array of users
+   */
+  public async getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions) {
+    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/Project/" + projectId + "/User";
+    return this.getInstances<RbacUser>(alctx, RbacUser, token, url, queryOptions);
   }
 
   /**
