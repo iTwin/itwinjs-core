@@ -3,23 +3,12 @@
 exports[`Backstage <Backstage /> renders correctly 1`] = `
 <Fragment>
   <Backstage
-    className="backstageOpen"
     isOpen={true}
+    onClose={[Function]}
+    showOverlay={true}
   />
   <div
     onClick={[Function]}
-    style={
-      Object {
-        "background": "#222222",
-        "height": "100%",
-        "left": "0px",
-        "opacity": 0.6,
-        "position": "absolute",
-        "top": "0px",
-        "width": "100%",
-        "zIndex": 590,
-      }
-    }
   />
 </Fragment>
 `;
@@ -27,7 +16,6 @@ exports[`Backstage <Backstage /> renders correctly 1`] = `
 exports[`Backstage <Backstage /> with child items 1`] = `
 <Fragment>
   <Backstage
-    className="backstageOpen"
     isOpen={true}
     items={
       Array [
@@ -58,21 +46,11 @@ exports[`Backstage <Backstage /> with child items 1`] = `
         />,
       ]
     }
+    onClose={[Function]}
+    showOverlay={true}
   />
   <div
     onClick={[Function]}
-    style={
-      Object {
-        "background": "#222222",
-        "height": "100%",
-        "left": "0px",
-        "opacity": 0.6,
-        "position": "absolute",
-        "top": "0px",
-        "width": "100%",
-        "zIndex": 590,
-      }
-    }
   />
 </Fragment>
 `;
