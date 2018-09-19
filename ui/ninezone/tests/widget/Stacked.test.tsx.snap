@@ -38,6 +38,9 @@ exports[`<Stacked /> renders correctly 1`] = `
       />
     </div>
   </div>
+  <div
+    className="nz-height-expander"
+  />
   <ResizeGrip
     className="nz-top-grip"
     direction={1}

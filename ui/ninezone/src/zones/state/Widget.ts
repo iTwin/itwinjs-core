@@ -87,6 +87,12 @@ export default class Widget {
       return true;
     return false;
   }
+
+  public get isAlone(): boolean {
+    if (this.zone.props.widgets.length === 1)
+      return true;
+    return false;
+  }
 }
 
 export class DraggingWidget {

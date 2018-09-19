@@ -6,9 +6,8 @@
 
 import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 import Cell from "../../utilities/Cell";
-import Layout from "./layout/Layout";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
-import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9, NineZoneRoot } from "./layout/Layouts";
+import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9, NineZoneRoot, WidgetZoneLayout } from "./layout/Layouts";
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
@@ -96,24 +95,24 @@ export namespace ZoneIdToWidget {
 }
 
 export class LayoutFactory {
-  public create(zone: WidgetZone, root: NineZoneRoot): Layout {
+  public create(zone: WidgetZone, root: NineZoneRoot): WidgetZoneLayout {
     switch (zone.props.id) {
       case 1:
-        return new Layout1(zone, root);
+        return new Layout1({ zone, root });
       case 2:
-        return new Layout2(zone, root);
+        return new Layout2({ zone, root });
       case 3:
-        return new Layout3(zone, root);
+        return new Layout3({ zone, root });
       case 4:
-        return new Layout4(zone, root);
+        return new Layout4({ zone, root });
       case 6:
-        return new Layout6(zone, root);
+        return new Layout6({ zone, root });
       case 7:
-        return new Layout7(zone, root);
+        return new Layout7({ zone, root });
       case 8:
-        return new Layout8(zone, root);
+        return new Layout8({ zone, root });
       case 9:
-        return new Layout9(zone, root);
+        return new Layout9({ zone, root });
     }
     throw new RangeError();
   }
@@ -121,7 +120,6 @@ export class LayoutFactory {
 
 export default class Zone {
   private readonly _id: ZoneIndex;
-  protected _layout: Layout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
   public readonly cell: Cell;
@@ -168,8 +166,9 @@ export default class Zone {
 }
 
 export class WidgetZone extends Zone {
-  protected _layout: Layout | undefined = undefined;
+  protected _layout: WidgetZoneLayout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
+  protected _widget: Widget | undefined = undefined;
   protected _cell: Cell | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
 
@@ -181,7 +180,11 @@ export class WidgetZone extends Zone {
     return this.props.id;
   }
 
-  public getLayout(): Layout {
+  public get bounds() {
+    return this.props.bounds;
+  }
+
+  public getLayout(): WidgetZoneLayout {
     if (!this._layout)
       this._layout = new LayoutFactory().create(this, this.nineZone.root);
     return this._layout;
@@ -194,6 +197,24 @@ export class WidgetZone extends Zone {
         this._widgets.push(new Widget(this, widget));
     }
     return this._widgets;
+  }
+
+  public get isEmpty() {
+    return this.props.widgets.length === 0;
+  }
+
+  public get hasMergedWidgets() {
+    return this.props.widgets.length > 1;
+  }
+
+  public get hasSingleDefaultWidget() {
+    return this.props.widgets.length === 1 && this.props.widgets[0].id === this.id;
+  }
+
+  public get defaultWidget(): Widget {
+    if (!this._widget)
+      this._widget = this.nineZone.getWidget(this.id);
+    return this._widget;
   }
 
   public get isWidgetOpen(): boolean {
@@ -217,13 +238,17 @@ export class WidgetZone extends Zone {
   }
 
   public get isMergedVertically(): boolean {
+    if (!this.hasMergedWidgets)
+      return false;
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.cell.isColumnAlignedWith(widgets[1].defaultZone.cell);
+    return widgets[0].defaultZone.cell.isColumnAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get isMergedHorizontally(): boolean {
+    if (!this.hasMergedWidgets)
+      return false;
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
+    return widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get defaultHorizontalAnchor(): HorizontalAnchor {

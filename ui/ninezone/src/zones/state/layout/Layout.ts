@@ -37,20 +37,20 @@ export class Layout {
     this._bounds = bounds;
   }
 
-  public get topZone(): Layout | undefined {
-    return undefined;
+  public get topLayouts(): Layout[] {
+    return [];
   }
 
-  public get bottomZone(): Layout | undefined {
-    return undefined;
+  public get bottomLayouts(): Layout[] {
+    return [];
   }
 
-  public get leftZone(): Layout | undefined {
-    return undefined;
+  public get leftLayouts(): Layout[] {
+    return [];
   }
 
-  public get rightZone(): Layout | undefined {
-    return undefined;
+  public get rightLayouts(): Layout[] {
+    return [];
   }
 
   public getInitialBounds(): RectangleProps {
@@ -101,21 +101,49 @@ export class Layout {
   }
 
   public tryGrowTop(px: number): number {
+    const grown = this.getGrowTop(px);
+
+    this.topLayouts.map((z) => {
+      const growSelfBy = Math.max(Math.min(grown, this.bounds.top - z.bounds.bottom), 0);
+      const shrinkBy = Math.max(0, grown - growSelfBy);
+      z.tryShrinkBottom(shrinkBy);
+    });
+
+    this._bounds = this.bounds.inset(0, -grown, 0, 0);
+    return grown;
+  }
+
+  public getGrowTop(px: number): number {
     if (px < 0)
       throw new RangeError();
 
     if (!this.isResizable)
       return 0;
 
-    const maxTop = this.topZone ? this.topZone.bounds.bottom : this.root.bounds.top;
-    const growSelfBy = Math.max(Math.min(px, this.bounds.top - maxTop), 0);
-    const shrinkBy = Math.max(0, px - growSelfBy);
-    const shrunkBy = this.topZone ? this.topZone.tryShrinkBottom(shrinkBy) : 0;
+    if (this.topLayouts.length === 0) {
+      const growSelfBy = Math.max(Math.min(px, this.bounds.top - this.root.bounds.top), 0);
+      return growSelfBy;
+    }
 
-    const grown = growSelfBy + shrunkBy;
-    this._bounds = this.bounds.inset(0, -grown, 0, 0);
+    const zones = this.topLayouts.map((z) => {
+      const growSelfBy = Math.max(Math.min(px, this.bounds.top - z.bounds.bottom), 0);
+      const shrinkBy = Math.max(0, px - growSelfBy);
+      const shrunkBy = z.getShrinkBottom(shrinkBy);
+      return {
+        z,
+        growSelfBy,
+        shrunkBy,
+      };
+    });
 
-    return grown;
+    const minTop = zones.reduce((prev, curr) => {
+      const total = curr.growSelfBy + curr.shrunkBy;
+      if (total < prev)
+        return total;
+      return prev;
+    }, zones[0].growSelfBy + zones[0].shrunkBy);
+
+    return minTop;
   }
 
   public tryShrinkTop(px: number): number {
@@ -128,11 +156,11 @@ export class Layout {
     const height = this._bounds.getHeight();
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
 
-    const maxBottom = this.bottomZone ? this.bottomZone.bounds.top : this.root.bounds.bottom;
+    const maxBottom = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].bounds.top : this.root.bounds.bottom;
     const moveBottom = Math.max(0, Math.min(px - shrinkSelfBy, maxBottom - this.bounds.bottom));
 
     const shrinkBottomBy = Math.max(0, px - shrinkSelfBy - moveBottom);
-    const bottomShrunkBy = this.bottomZone ? this.bottomZone.tryShrinkTop(shrinkBottomBy) : 0;
+    const bottomShrunkBy = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].tryShrinkTop(shrinkBottomBy) : 0;
 
     this._bounds = this.bounds.inset(0, shrinkSelfBy, 0, 0);
     this._bounds = this.bounds.offsetY(moveBottom + bottomShrunkBy);
@@ -147,13 +175,13 @@ export class Layout {
     if (!this.isResizable)
       return 0;
 
-    const maxBottom = this.bottomZone ? this.bottomZone.bounds.top : this.root.bounds.bottom;
+    const maxBottom = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].bounds.top : this.root.bounds.bottom;
     const growSelfBy = Math.max(0, Math.min(px, maxBottom - this.bounds.bottom));
     const shrinkBottomZoneBy = Math.max(0, px - growSelfBy);
 
-    const bottomZoneShrunkBy = this.bottomZone ? this.bottomZone.tryShrinkTop(shrinkBottomZoneBy) : 0;
+    const bottomLayoutshrunkBy = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].tryShrinkTop(shrinkBottomZoneBy) : 0;
 
-    const grown = growSelfBy + bottomZoneShrunkBy;
+    const grown = growSelfBy + bottomLayoutshrunkBy;
     this._bounds = this.bounds.inset(0, 0, 0, -grown);
 
     return grown;
@@ -169,13 +197,31 @@ export class Layout {
     const height = this.bounds.getHeight();
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
 
-    const maxTop = this.topZone ? this.topZone.bounds.bottom : this.root.bounds.top;
+    const maxTop = this.topLayouts.length > 0 ? this.topLayouts[0].bounds.bottom : this.root.bounds.top;
     const moveTop = Math.max(0, Math.min(px - shrinkSelfBy, this.bounds.top - maxTop));
     const shrinkTopBy = Math.max(0, px - shrinkSelfBy - moveTop);
-    const topShrunkBy = this.topZone ? this.topZone.tryShrinkBottom(shrinkTopBy) : 0;
+    const topShrunkBy = this.topLayouts.length > 0 ? this.topLayouts[0].tryShrinkBottom(shrinkTopBy) : 0;
 
     this._bounds = this.bounds.inset(0, 0, 0, shrinkSelfBy);
     this._bounds = this.bounds.offsetY(-(topShrunkBy + moveTop));
+
+    return moveTop + shrinkSelfBy + topShrunkBy;
+  }
+
+  public getShrinkBottom(px: number): number {
+    if (px < 0)
+      throw new RangeError();
+
+    if (!this.isResizable)
+      return 0;
+
+    const height = this.bounds.getHeight();
+    const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
+
+    const maxTop = this.topLayouts.length > 0 ? this.topLayouts[0].bounds.bottom : this.root.bounds.top;
+    const moveTop = Math.max(0, Math.min(px - shrinkSelfBy, this.bounds.top - maxTop));
+    const shrinkTopBy = Math.max(0, px - shrinkSelfBy - moveTop);
+    const topShrunkBy = this.topLayouts.length > 0 ? this.topLayouts[0].getShrinkBottom(shrinkTopBy) : 0;
 
     return moveTop + shrinkSelfBy + topShrunkBy;
   }
@@ -192,10 +238,10 @@ export class Layout {
     if (this.anchor === HorizontalAnchor.Right && newLeft < initialBounds.left)
       px = Math.max(Math.min(px, px - initialBounds.left + newLeft), 0);
 
-    const minLeft = this.leftZone ? this.leftZone.bounds.right : this.root.bounds.left;
+    const minLeft = this.leftLayouts.length > 0 ? this.leftLayouts[0].bounds.right : this.root.bounds.left;
     const growSelfBy = Math.max(Math.min(px, this.bounds.left - minLeft), 0);
     const shrinkBy = Math.max(0, px - growSelfBy);
-    const shrunkBy = this.leftZone ? this.leftZone.tryShrinkRight(shrinkBy) : 0;
+    const shrunkBy = this.leftLayouts.length > 0 ? this.leftLayouts[0].tryShrinkRight(shrinkBy) : 0;
 
     const grown = growSelfBy + shrunkBy;
     this._bounds = this.bounds.inset(-grown, 0, 0, 0);
@@ -209,11 +255,11 @@ export class Layout {
     const width = this.bounds.getWidth();
     const shrinkSelfBy = Math.max(0, Math.min(px, width - this.minWidth));
 
-    const maxRight = this.rightZone ? this.rightZone.bounds.left : this.root.bounds.right;
+    const maxRight = this.rightLayouts.length > 0 ? this.rightLayouts[0].bounds.left : this.root.bounds.right;
     const moveRight = Math.max(0, Math.min(px - shrinkSelfBy, maxRight - this.bounds.right));
 
     const shrinkRightBy = Math.max(0, px - shrinkSelfBy - moveRight);
-    const rightShrunkBy = this.rightZone ? this.rightZone.tryShrinkLeft(shrinkRightBy) : 0;
+    const rightShrunkBy = this.rightLayouts.length > 0 ? this.rightLayouts[0].tryShrinkLeft(shrinkRightBy) : 0;
 
     this._bounds = this.bounds.inset(shrinkSelfBy, 0, 0, 0);
     this._bounds = this.bounds.offsetX(rightShrunkBy + moveRight);
@@ -233,10 +279,10 @@ export class Layout {
     if (this.anchor === HorizontalAnchor.Left && newRight > initialBounds.right)
       px = Math.max(Math.min(px, px - newRight + initialBounds.right), 0);
 
-    const maxRight = this.rightZone ? this.rightZone.bounds.left : this.root.bounds.right;
+    const maxRight = this.rightLayouts.length > 0 ? this.rightLayouts[0].bounds.left : this.root.bounds.right;
     const growSelfBy = Math.max(Math.min(px, maxRight - this.bounds.right), 0);
     const shrinkBy = Math.max(0, px - growSelfBy);
-    const shrunkBy = this.rightZone ? this.rightZone.tryShrinkLeft(shrinkBy) : 0;
+    const shrunkBy = this.rightLayouts.length > 0 ? this.rightLayouts[0].tryShrinkLeft(shrinkBy) : 0;
 
     const grown = growSelfBy + shrunkBy;
     this._bounds = this.bounds.inset(0, 0, -grown, 0);
@@ -253,11 +299,11 @@ export class Layout {
     const width = this.bounds.getWidth();
     const shrinkSelfBy = Math.max(0, Math.min(px, width - this.minWidth));
 
-    const minLeft = this.leftZone ? this.leftZone.bounds.right : this.root.bounds.left;
+    const minLeft = this.leftLayouts.length > 0 ? this.leftLayouts[0].bounds.right : this.root.bounds.left;
     const moveLeft = Math.max(0, Math.min(px - shrinkSelfBy, this.bounds.left - minLeft));
 
     const shrinkLeftBy = Math.max(0, px - shrinkSelfBy - moveLeft);
-    const leftShrunkBy = this.leftZone ? this.leftZone.tryShrinkRight(shrinkLeftBy) : 0;
+    const leftShrunkBy = this.leftLayouts.length > 0 ? this.leftLayouts[0].tryShrinkRight(shrinkLeftBy) : 0;
 
     this._bounds = this.bounds.inset(0, 0, shrinkSelfBy, 0);
     this._bounds = this.bounds.offsetX(-(leftShrunkBy + moveLeft));

@@ -17,9 +17,33 @@ export class NineZoneRoot extends Root {
   }
 }
 
+export interface WidgetZoneLayoutProps {
+  readonly zone: WidgetZone;
+  readonly root: NineZoneRoot;
+  readonly leftZones?: WidgetZoneLayout.AdjacentZonesGetter;
+  readonly topZones?: WidgetZoneLayout.AdjacentZonesGetter;
+  readonly rightZones?: WidgetZoneLayout.AdjacentZonesGetter;
+  readonly bottomZones?: WidgetZoneLayout.AdjacentZonesGetter;
+}
+
 export class WidgetZoneLayout extends Layout {
-  public constructor(public readonly zone: WidgetZone, public readonly root: NineZoneRoot) {
-    super(zone.props.bounds, root);
+  public readonly zone: WidgetZone;
+  public readonly root: NineZoneRoot;
+  private readonly _leftZones: WidgetZoneLayout.AdjacentZonesGetter;
+  private readonly _topZones: WidgetZoneLayout.AdjacentZonesGetter;
+  private readonly _rightZones: WidgetZoneLayout.AdjacentZonesGetter;
+  private readonly _bottomZones: WidgetZoneLayout.AdjacentZonesGetter;
+
+  public constructor(props: WidgetZoneLayoutProps) {
+    super(props.zone.bounds, props.root);
+
+    this.zone = props.zone;
+    this.root = props.root;
+
+    this._leftZones = props.leftZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.LeftZones());
+    this._topZones = props.topZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.TopZones());
+    this._rightZones = props.rightZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.RightZones());
+    this._bottomZones = props.bottomZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.BottomZones());
   }
 
   private get _columnStartFraction() {
@@ -55,15 +79,159 @@ export class WidgetZoneLayout extends Layout {
   public get anchor(): HorizontalAnchor {
     return this.zone.horizontalAnchor;
   }
+
+  public getInitialLeftZone(): WidgetZone | undefined {
+    return undefined;
+  }
+
+  public getInitialTopZone(): WidgetZone | undefined {
+    return undefined;
+  }
+
+  public getInitialRightZone(): WidgetZone | undefined {
+    return undefined;
+  }
+
+  public getInitialBottomZone(): WidgetZone | undefined {
+    return undefined;
+  }
+
+  public getLeftZones(): WidgetZone[] {
+    return this._leftZones(this);
+  }
+
+  public getRightZones(): WidgetZone[] {
+    return this._rightZones(this);
+  }
+
+  public getTopZones(): WidgetZone[] {
+    return this._topZones(this);
+  }
+
+  public getBottomZones(): WidgetZone[] {
+    return this._bottomZones(this);
+  }
+
+  public get leftLayouts() {
+    return this.getLeftZones().map((z) => z.getLayout());
+  }
+
+  public get topLayouts() {
+    return this.getTopZones().map((z) => z.getLayout());
+  }
+
+  public get rightLayouts() {
+    return this.getRightZones().map((z) => z.getLayout());
+  }
+
+  public get bottomLayouts() {
+    return this.getBottomZones().map((z) => z.getLayout());
+  }
+}
+
+export namespace WidgetZoneLayout {
+  export interface AdjacentZonesStrategy {
+    getSingleMergedZone(isMergedVertically: boolean): boolean;
+    reduceToFirstZone(): boolean;
+    getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined;
+  }
+
+  export class LeftZones implements AdjacentZonesStrategy {
+    public getSingleMergedZone(isMergedVertically: boolean): boolean {
+      return !isMergedVertically;
+    }
+
+    public reduceToFirstZone(): boolean {
+      return true;
+    }
+
+    public getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined {
+      return layout.getInitialTopZone();
+    }
+  }
+
+  export class TopZones implements AdjacentZonesStrategy {
+    public getSingleMergedZone(isMergedVertically: boolean): boolean {
+      return isMergedVertically;
+    }
+
+    public reduceToFirstZone(): boolean {
+      return true;
+    }
+
+    public getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined {
+      return layout.getInitialTopZone();
+    }
+  }
+
+  export class BottomZones implements AdjacentZonesStrategy {
+    public getSingleMergedZone(isMergedVertically: boolean): boolean {
+      return isMergedVertically;
+    }
+
+    public reduceToFirstZone(): boolean {
+      return false;
+    }
+
+    public getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined {
+      return layout.getInitialBottomZone();
+    }
+  }
+
+  export class RightZones implements AdjacentZonesStrategy {
+    public getSingleMergedZone(isMergedVertically: boolean): boolean {
+      return !isMergedVertically;
+    }
+
+    public reduceToFirstZone(): boolean {
+      return false;
+    }
+
+    public getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined {
+      return layout.getInitialRightZone();
+    }
+  }
+
+  export type AdjacentZonesGetter = (layout: WidgetZoneLayout) => WidgetZone[];
+
+  export const adjacentZones = (strategy: AdjacentZonesStrategy): AdjacentZonesGetter => (layout: WidgetZoneLayout) => {
+    const zone = layout.zone;
+    if (zone.hasMergedWidgets) {
+      const widgets = zone.getWidgets();
+      const zones = widgets.map((w) => w.defaultZone);
+      if (strategy.getSingleMergedZone(zone.isMergedVertically)) {
+        const reducedZone = strategy.reduceToFirstZone() ? zones.reduce((prev, current) => prev.id < current.id ? prev : current, zones[0]) : zones.reduce((prev, current) => prev.id > current.id ? prev : current, zones[0]);
+        const bottomZone = strategy.getInitialZone(reducedZone.getLayout());
+        return bottomZone ? [bottomZone] : [];
+      }
+      const bottomZones = zones.reduce<WidgetZone[]>((prev, current) => {
+        const initial = strategy.getInitialZone(current.getLayout());
+        if (initial)
+          prev.push(initial);
+        return prev;
+      }, []);
+      return bottomZones;
+    }
+
+    const initialZone = strategy.getInitialZone(layout);
+    if (!initialZone)
+      return [];
+
+    if (zone.hasSingleDefaultWidget && initialZone.isEmpty) {
+      return [initialZone.defaultWidget.zone];
+    }
+
+    return [initialZone];
+  };
 }
 
 export class Layout1 extends WidgetZoneLayout {
-  public get bottomZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
+  public getInitialBottomZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4);
   }
 
-  public get rightZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
+  public getInitialRightZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(2);
   }
 
   public get isResizable() {
@@ -72,16 +240,16 @@ export class Layout1 extends WidgetZoneLayout {
 }
 
 export class Layout2 extends WidgetZoneLayout {
-  public get bottomZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
+  public getInitialBottomZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7);
   }
 
-  public get leftZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(1).getLayout();
+  public getInitialLeftZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(1);
   }
 
-  public get rightZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
+  public getInitialRightZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3);
   }
 
   public get isResizable() {
@@ -90,12 +258,12 @@ export class Layout2 extends WidgetZoneLayout {
 }
 
 export class Layout3 extends WidgetZoneLayout {
-  public get bottomZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
+  public getInitialBottomZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6);
   }
 
-  public get leftZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(2).getLayout();
+  public getInitialLeftZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(2);
   }
 
   public get minWidth() {
@@ -112,66 +280,62 @@ export class Layout3 extends WidgetZoneLayout {
 }
 
 export class Layout4 extends WidgetZoneLayout {
-  public get topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
+  public getInitialBottomZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7);
   }
 
-  public get bottomZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
+  public getInitialTopZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3);
   }
 
-  public get rightZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
+  public getInitialRightZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6);
   }
 }
 
 export class Layout6 extends WidgetZoneLayout {
-  public get topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(3).getLayout();
+  public getInitialBottomZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(9);
   }
 
-  public get bottomZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
+  public getInitialTopZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(3);
   }
 
-  public get leftZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
+  public getInitialLeftZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4);
   }
 }
 
 export class Layout7 extends WidgetZoneLayout {
-  public get topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(4).getLayout();
+  public getInitialTopZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(4);
   }
 
-  public get bottomZone() {
+  public getInitialBottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(8);
     return undefined;
   }
 
-  public get rightZone() {
+  public getInitialRightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
-    return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(9);
+    return this.zone.nineZone.root.nineZone.getWidgetZone(8);
   }
 }
 
 export class Layout8 extends WidgetZoneLayout {
-  public get topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
-  }
-
-  public get leftZone() {
+  public getInitialLeftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return undefined;
-    return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(7);
   }
 
-  public get rightZone() {
+  public getInitialRightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
       return undefined;
-    return this.zone.nineZone.root.nineZone.getWidgetZone(9).getLayout();
+    return this.zone.nineZone.root.nineZone.getWidgetZone(9);
   }
 
   public getInitialBounds(): RectangleProps {
@@ -184,19 +348,19 @@ export class Layout8 extends WidgetZoneLayout {
 }
 
 export class Layout9 extends WidgetZoneLayout {
-  public get topZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6).getLayout();
+  public getInitialTopZone() {
+    return this.zone.nineZone.root.nineZone.getWidgetZone(6);
   }
 
-  public get bottomZone() {
+  public getInitialBottomZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(8);
     return undefined;
   }
 
-  public get leftZone() {
+  public getInitialLeftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(7).getLayout();
-    return this.zone.nineZone.root.nineZone.getWidgetZone(8).getLayout();
+      return this.zone.nineZone.root.nineZone.getWidgetZone(7);
+    return this.zone.nineZone.root.nineZone.getWidgetZone(8);
   }
 }
