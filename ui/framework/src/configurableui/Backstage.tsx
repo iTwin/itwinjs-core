@@ -4,11 +4,9 @@
 /** @module Backstage */
 
 import * as React from "react";
-import { CSSProperties } from "react";
+// import { CSSProperties } from "react";
 
 import { UiFramework } from "../UiFramework";
-
-import "./Backstage.scss";
 
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps, CommandHandler } from "./ItemProps";
@@ -21,6 +19,9 @@ import { UiEvent } from "@bentley/ui-core";
 import NZ_Backstage from "@bentley/ui-ninezone/lib/backstage/Backstage";
 import NZ_BackstageItem from "@bentley/ui-ninezone/lib/backstage/Item";
 import NZ_BackstageSeparator from "@bentley/ui-ninezone/lib/backstage/Separator";
+import NZ_UserProfile from "@bentley/ui-ninezone/lib/backstage/UserProfile";
+
+import { AccessToken } from "@bentley/imodeljs-clients";
 
 // import { BackstageHide } from "../App"; // BARRY_TODO
 
@@ -110,6 +111,10 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
 
   public get id(): string {
     return this._frontstageId;
+  }
+
+  public get isActive(): boolean {
+    return FrontstageManager.activeFrontstageId === this._frontstageId;
   }
 }
 
@@ -204,9 +209,14 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    const icon = <Icon iconInfo={this._backstageItem.iconInfo}/>;
     return (
-      <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
+      <NZ_BackstageItem key={this._backstageItem.id}
+          isActive={this._backstageItem.isActive}
+          isDisabled={!this._backstageItem.isEnabled}
+          label={this._backstageItem.label}
+          icon={icon}
+          onClick={this._backstageItem.execute} />
     );
   }
 }
@@ -223,7 +233,7 @@ export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBac
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    const icon = <Icon iconInfo={this._backstageItem.iconInfo}/>;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );
@@ -242,7 +252,7 @@ export class TaskLaunchBackstageItem extends React.Component<TaskLaunchBackstage
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    const icon = <Icon iconInfo={this._backstageItem.iconInfo}/>;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );
@@ -293,9 +303,12 @@ function closeBackStage() {
 /** Props for the [[Backstage]] React component.
  */
 export interface BackstageProps {
+  accessToken?: AccessToken;
   isVisible: boolean;
   className?: string;
+  showOverlay?: boolean;
   style?: React.CSSProperties;
+  onClose?: () => void;
 }
 
 /** Backstage React component.
@@ -312,41 +325,35 @@ export class Backstage extends React.Component<BackstageProps> {
     closeBackStage();
   }
 
-  public render(): React.ReactNode {
-    if (this.props.isVisible) {
-      const smokedGlassStyle: CSSProperties = {
-        position: "absolute",
-        left: "0px",
-        width: "100%",
-        top: "0px",
-        height: "100%",
-        opacity: 0.6,
-        background: "#222222",
-        zIndex: 590, // right behind backstage.
-      };
-
-      return (
-        <>
-          <NZ_Backstage
-            className="backstageOpen"
-            isOpen={true}
-            items={this.props.children}
-          />
-          <div style={smokedGlassStyle} onClick={closeBackStage} />
-        </>
-      );
-    } else {
-      return (
-        <NZ_Backstage
-          className="backstageClose"
-          isOpen={true}
-          items={this.props.children}
-        />
-      );
+  private _getUserProfile (): React.ReactNode | undefined {
+    if (this.props.accessToken) {
+      const userProfile = this.props.accessToken.getUserProfile();
+      if (userProfile) {
+        return (
+          <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email} />
+        );
+      }
     }
 
+    return undefined;
   }
-}
+
+  public render(): React.ReactNode {
+    return (
+        <>
+          <NZ_Backstage
+            isOpen={this.props.isVisible}
+            showOverlay={this.props.showOverlay}
+            onClose={closeBackStage}
+            header={this._getUserProfile()}
+            items={this.props.children}
+          />
+          <div onClick={closeBackStage} />
+        </>
+      );
+    }
+  }
+
 // -----------------------------------------------------------------------------
 // export default
 // -----------------------------------------------------------------------------

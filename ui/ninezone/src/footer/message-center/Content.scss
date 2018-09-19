@@ -44,4 +44,15 @@
       height: 100%;
     }
   }
+
+  > .nz-message-prompt {
+    display: none;
+    text-align: center;
+    margin: 30px 15px;
+    font-style: italic;
+  }
+
+  & .nz-messages:empty ~ .nz-message-prompt {
+    display: block;
+  }
 }

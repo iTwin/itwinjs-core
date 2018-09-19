@@ -91,6 +91,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
                 </>
               }
               messages={this.getMessages()}
+              prompt={UiFramework.i18n.translate("UiFramework:messageCenter.prompt")}
             />
         }
       />

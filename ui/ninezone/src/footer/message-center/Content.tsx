@@ -14,6 +14,8 @@ export interface MessageCenterContentProps extends CommonProps, NoChildrenProps 
   tabs?: React.ReactNode;
   /** Messages of message center. See [[Message]] */
   messages?: React.ReactNode;
+  /* Optional prompt when no messages are present */
+  prompt?: string;
 }
 
 /** Used by [[MessageCenter]] component. */
@@ -34,6 +36,7 @@ export const MessageCenterContent: React.StatelessComponent<MessageCenterContent
       <div className="nz-messages">
         {props.messages}
       </div>
+      <span className="nz-message-prompt">{props.prompt}</span>
       <div className="nz-gradient" />
     </div>
   );

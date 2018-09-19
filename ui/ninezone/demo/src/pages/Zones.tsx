@@ -2069,6 +2069,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                             </>
                           }
                           messages={this.getMessagesCenterMessages()}
+                          prompt="No messages."
                         />
                     }
                   />

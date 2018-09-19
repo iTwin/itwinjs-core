@@ -21,7 +21,6 @@ export enum Position {
 
 export interface PopupProps extends CommonProps {
   showShadow: boolean; // show or hide the box shadow
-  showOverlay: boolean; // show or hide the overlay
   showArrow: boolean; // show or hide the arrow
   isShown: boolean; // indicate if the popup is shown or not
   showOnHover: boolean;
@@ -53,7 +52,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   public static defaultProps: Partial<PopupProps> = {
     position: Position.Bottom,
     showShadow: true,
-    showOverlay: false,
     showArrow: false,
     showOnHover: false,
     showTime: 300,
@@ -87,7 +85,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   public componentWillUnmount() {
     this._hoverTimer.stop();
     document.body.removeEventListener("click", this._onBodyClick, false);
-    document.body.addEventListener("keydown", this._onEsc, false);
+    document.body.removeEventListener("keydown", this._onEsc, false);
   }
 
   private _onMouseEnter = () => {
@@ -279,7 +277,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.className,
     );
 
-    // const overlayClassName = classnames("popup-overlay", this.props.showOverlay && "show");
     return (
       <div className={className} ref={this.setRef}>
         {this.props.children}
@@ -287,7 +284,5 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     );
   }
 }
-
-// <div className={overlayClassName}/>
 
 export default Popup;
