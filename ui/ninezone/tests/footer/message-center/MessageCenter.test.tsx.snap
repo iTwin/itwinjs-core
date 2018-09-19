@@ -8,6 +8,7 @@ exports[`<MessageCenter /> renders correctly 1`] = `
       content={
         <Unknown
           messages={undefined}
+          prompt={undefined}
           tabs={undefined}
         />
       }

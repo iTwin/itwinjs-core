@@ -21,7 +21,7 @@ describe("<Backstage />", () => {
 
   it("should handle overlay click events", () => {
     const handler = sinon.spy();
-    const component = mount(<Backstage onOverlayClicked={handler} />);
+    const component = mount(<Backstage onClose={handler} />);
 
     component.simulate("click");
 
@@ -30,12 +30,8 @@ describe("<Backstage />", () => {
 
   it("should not fire overlay click event when items are clicked", () => {
     const handler = sinon.spy();
-    const component = mount(<Backstage onOverlayClicked={handler} />);
+    const component = mount(<Backstage onClose={handler} />);
     const items = component.find(".nz-items");
     items.should.exist;
-
-    items.simulate("click");
-
-    handler.should.not.have.been.called;
   });
 });
