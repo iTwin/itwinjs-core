@@ -5,8 +5,8 @@ The frontend of an app refers to the layers of software that are concerned mainl
 The frontend *always* runs inside a web browser.
 
 * When used as a Web app, it can run in any modern web browser. See compatibility list. It communicates with a backend and/or other services via HTTP.
-* When part of a desktop app, it runs inside the Electron frontend process in Chrome.
-* When part of a mobile app, it runs inside the Safari built-in browser on iOS and the Chrome browser for Android.
+* When part of a desktop app, it runs inside the [Electron](https://electronjs.org) frontend process in [Chromium](https://www.chromium.org/Home).
+* When part of a mobile app, it runs inside the Safari built-in browser on iOS and the [Chromium](https://www.chromium.org/Home) browser for Android.
 
 An app always implements its own frontend script and resources. The app's frontend script must depend on @bentley/imodeljs-frontend.
 
@@ -23,4 +23,18 @@ The iModel.js frontend library is delivered in the **npm package** `@bentley/imo
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 
-<!-- TODO - add browser compatibility list -->
+## Web browser compatibility
+
+> Note: The quality of the web browser's WebGL implementation has a big impact on display performance.
+
+### Supported
+
+* Chrome
+* Firefox
+* Safari
+* Edge
+* Opera
+
+### Not supported
+
+* Internet Explorer

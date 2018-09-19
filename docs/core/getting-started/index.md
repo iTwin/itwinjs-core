@@ -33,10 +33,4 @@ The following tools are very helpful and highly suggested for working with iMode
   - `npm` is used to install and manage dependencies of an iModel.js application.
   - The `npm` [command line](https://docs.npmjs.com/cli/npm) and `npm` [scripts](https://docs.npmjs.com/misc/scripts) are used to build and test iModel.js applications.
 
-<!-- TODO: add link when external NPM package server is accessible -->
-
-## Sample Applications
-
-- **create-domain-imodel**
-
 <!-- TODO: add links when samples are posted to GitHub -->
