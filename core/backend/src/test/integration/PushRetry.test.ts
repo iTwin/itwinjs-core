@@ -7,7 +7,7 @@ import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodelj
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { IModelRepository, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
+import { HubIModel, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
 import * as utils from "./../../../../clients/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/lib/test/ResponseBuilder";
@@ -151,7 +151,7 @@ describe("PushRetry", () => {
   });
 
   it.skip("should retry to push changes (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
     }
@@ -192,7 +192,7 @@ describe("PushRetry", () => {
   });
 
   it.skip("should fail to push and not retry again (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
     }

@@ -16,12 +16,12 @@ import { IModelBaseHandler } from "./BaseHandler";
 const loggingCategory = "imodeljs-clients.imodelhub";
 
 /**
- * IModelRepository represents an iModel on iModelHub. Getting a valid IModelRepository instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as imodelId argument to those methods.
+ * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as imodelId argument to those methods.
  *
  * For iModel representation in iModelJs, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
  */
 @ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class IModelRepository extends WsgInstance {
+export class HubIModel extends WsgInstance {
     /** Description of the iModel. */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
     public description?: string;
@@ -153,7 +153,7 @@ class SeedFileHandler {
 
     /**
      * Get relative url for SeedFile requests.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param fileId Id of the Seed File.
      */
     private getRelativeUrl(imodelId: string, fileId?: string) {
@@ -164,7 +164,7 @@ class SeedFileHandler {
      * Get the seed files given the id of the iModel.
      * @hidden
      * @param token Delegation token of the authorized user.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param query Optional query object to filter the queried SeedFiles or select different data from them.
      * @returns Resolves to the seed file.
      */
@@ -183,7 +183,7 @@ class SeedFileHandler {
      * Upload the seed file. Use [[confirmUploadSeedFile]] to confirm the completion of the upload.
      * @hidden
      * @param token Delegation token of the authorized user.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param seedFile Information of the SeedFile to be uploaded.
      * @param seedPathname Pathname of the SeedFile to be uploaded.
      * @param progressCallback Callback for tracking progress.
@@ -215,7 +215,7 @@ class SeedFileHandler {
 }
 
 /**
- * Query object for getting [[IModelRepository]] instances. You can use this to modify the [[IModelHandler.get]] results.
+ * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelHandler.get]] results.
  */
 export class IModelQuery extends InstanceIdQuery {
     /**
@@ -232,7 +232,7 @@ export class IModelQuery extends InstanceIdQuery {
 }
 
 /**
- * Handler for managing [[IModelRepository]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
+ * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  */
 export class IModelHandler {
     private _handler: IModelBaseHandler;
@@ -254,7 +254,7 @@ export class IModelHandler {
     /**
      * Get relative url for iModel requests.
      * @param projectId Id of the project.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      */
     private getRelativeUrl(contextId: string, imodelId?: string) {
         return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${imodelId || ""}`;
@@ -265,17 +265,17 @@ export class IModelHandler {
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param query Optional query object to filter the queried iModels or select different data from them.
-     * @returns [[IModelRepository]] instances that match the query.
-     * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an IModelRepository with the specified id could not be found.
+     * @returns [[HubIModel]] instances that match the query.
+     * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<IModelRepository[]> {
+    public async get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Querying iModels in project ${contextId}`);
         ArgumentCheck.defined("token", token);
         ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
-        const imodels = await this._handler.getInstances<IModelRepository>(alctx, IModelRepository, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
+        const imodels = await this._handler.getInstances<HubIModel>(alctx, HubIModel, token, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
         alctx.enter();
         Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${contextId}`);
 
@@ -286,7 +286,7 @@ export class IModelHandler {
      * Delete an iModel with specified id from a [[Project]]. This method is not supported in iModelBank.
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
-     * @param imodelId Id of the iModel to be deleted. See [[IModelRepository]].
+     * @param imodelId Id of the iModel to be deleted. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -300,7 +300,7 @@ export class IModelHandler {
 
         if (this._handler.getCustomRequestOptions().isSet) {
             // In order to add custom request options, request with body is needed.
-            const iModelRepository = new IModelRepository();
+            const iModelRepository = new HubIModel();
             iModelRepository.wsgId = imodelId;
             iModelRepository.changeState = "deleted";
             await this._handler.deleteInstance(alctx, token, this.getRelativeUrl(contextId, imodelId), iModelRepository);
@@ -319,18 +319,18 @@ export class IModelHandler {
      * @param iModelName Name of the iModel on the Hub.
      * @param description Description of the iModel on the Hub.
      */
-    private async createIModelInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<IModelRepository> {
+    private async createIModelInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<HubIModel> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Creating iModel with name ${iModelName} in project ${projectId}`);
 
-        let imodel: IModelRepository;
-        const iModel = new IModelRepository();
+        let imodel: HubIModel;
+        const iModel = new HubIModel();
         iModel.name = iModelName;
         if (description)
             iModel.description = description;
 
         try {
-            imodel = await this._handler.postInstance<IModelRepository>(alctx, IModelRepository, token, this.getRelativeUrl(projectId), iModel);
+            imodel = await this._handler.postInstance<HubIModel>(alctx, HubIModel, token, this.getRelativeUrl(projectId), iModel);
             alctx.enter();
             Logger.logTrace(loggingCategory, `Created iModel instance with name ${iModelName} in project ${projectId}`);
         } catch (err) {
@@ -369,7 +369,7 @@ export class IModelHandler {
     /**
      * Get the [[InitializationState]] for the specified iModel. See [[IModelHandler.create]].
      * @param token Delegation token of the authorized user.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      * @returns State of the seed file initialization.
      * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -402,7 +402,7 @@ export class IModelHandler {
      */
     public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
         description?: string, progressCallback?: (progress: ProgressInfo) => void,
-        timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModelRepository> {
+        timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<HubIModel> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Creating iModel in project ${contextId}`);
         ArgumentCheck.defined("token", token);
@@ -465,20 +465,20 @@ export class IModelHandler {
      * Update iModel's name and/or description
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
-     * @param imodel iModel to update. See [[IModelRepository]].
+     * @param imodel iModel to update. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: IModelRepository): Promise<IModelRepository> {
+    public async update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Updating iModel in project ${contextId}`);
         ArgumentCheck.defined("token", token);
         ArgumentCheck.validGuid("contextId", contextId);
 
-        const updatediModel = await this._handler.postInstance<IModelRepository>(alctx, IModelRepository, token, this.getRelativeUrl(contextId, imodel.wsgId), imodel);
+        const updatediModel = await this._handler.postInstance<HubIModel>(alctx, HubIModel, token, this.getRelativeUrl(contextId, imodel.wsgId), imodel);
 
         Logger.logTrace(loggingCategory, `Updated iModel with id ${imodel.wsgId}`);
 
@@ -488,7 +488,7 @@ export class IModelHandler {
     /**
      * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
      * @param token Delegation token of the authorized user.
-     * @param imodelId Id of the iModel. See [[IModelRepository]].
+     * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param downloadToPathname Directory where the seed file should be downloaded.
      * @param progressCallback Callback for tracking progress.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)

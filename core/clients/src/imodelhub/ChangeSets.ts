@@ -250,7 +250,7 @@ export class ChangeSetHandler {
   /**
    * Get relative url for ChangeSet requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the ChangeSet.
    */
   private getRelativeUrl(imodelId: string, changeSetId?: string) {
@@ -260,7 +260,7 @@ export class ChangeSetHandler {
   /**
    * Get the [[ChangeSet]]s for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried ChangeSets or select different data from them.
    * @returns ChangeSets that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
@@ -335,7 +335,7 @@ export class ChangeSetHandler {
    *
    * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param changeSetPathname Pathname of the ChangeSet file to be uploaded.
    * @param progressCallback Callback for tracking upload progress.

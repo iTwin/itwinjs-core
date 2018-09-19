@@ -5,8 +5,8 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ChangesType, Briefcase, WsgCode, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository,
+  ChangesType, Briefcase, HubCode, IModelHubError,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
@@ -674,7 +674,7 @@ export class BriefcaseManager {
   private static async createBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
     actx.enter();
 
-    const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: HubIModel = (await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
@@ -1249,24 +1249,24 @@ export class BriefcaseManager {
   }
 
   /** Parse Code array from json */
-  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): WsgCode[] {
+  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): HubCode[] {
     return JSON.parse(json, (key: any, value: any) => {
       if (key === "state") {
         return (value as number);
       }
       // If the key is a number, it is an array member.
       if (!Number.isNaN(Number.parseInt(key, 10))) {
-        const code = new WsgCode();
+        const code = new HubCode();
         Object.assign(code, value);
         code.briefcaseId = briefcase.briefcaseId;
         return code;
       }
       return value;
-    }) as WsgCode[];
+    }) as HubCode[];
   }
 
   /** Extracts codes from current ChangeSet */
-  private static extractCodes(briefcase: BriefcaseEntry): WsgCode[] {
+  private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
       throw new IModelError(res.error.status);
@@ -1274,7 +1274,7 @@ export class BriefcaseManager {
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): WsgCode[] {
+  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
@@ -1479,7 +1479,7 @@ export class BriefcaseManager {
     hubName = hubName || path.basename(pathname, ".bim");
 
     actx.enter();
-    const iModel: IModelRepository = await BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
+    const iModel: HubIModel = await BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
 
     return iModel.wsgId;
   }

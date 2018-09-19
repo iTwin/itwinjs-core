@@ -148,7 +148,7 @@ export class BriefcaseHandler {
   /**
    * Get relative url for Briefcase requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the briefcase.
    */
   private getRelativeUrl(imodelId: string, briefcaseId?: number) {
@@ -160,7 +160,7 @@ export class BriefcaseHandler {
    *
    * A briefcase is automatically acquired when calling [IModelDb.open]($backend) or [IModelDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @returns The acquired Briefcase instance.
    * @throws [[IModelHubError]] with [IModelHubStatus.MaximumNumberOfBriefcasesPerUser]($bentley) or [IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute]($bentley) if a limit of Briefcases for that user was reached. Users should use the Briefcases they have previously acquired. If that is no longer possible, they should delete them, to be able to acquire new ones.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -183,7 +183,7 @@ export class BriefcaseHandler {
   /**
    * Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase to be deleted.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
@@ -202,7 +202,7 @@ export class BriefcaseHandler {
   /**
    * Get the [[Briefcase]]s.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Briefcases or select different data from them.
    * @returns Briefcases that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[BriefcaseQuery.byId]] is used and a Briefcase with the specified id could not be found.

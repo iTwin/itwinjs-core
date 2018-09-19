@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelBankAccessContextGroupProps, IModelFileSystemProps, NamedIModelAccessContextProps, makeIModelBankAccessContextGroupPropsFromFileSystem } from "./IModelBankAccessContext";
 import { AccessToken } from "../Token";
-import { IModelRepository, IModelQuery } from "../imodelhub/iModels";
+import { HubIModel, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
 import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
@@ -150,13 +150,13 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     return (query !== undefined) && (query.getId() !== undefined);
   }
 
-  private toRepo(props: NamedIModelAccessContextProps): IModelRepository {
+  private toRepo(props: NamedIModelAccessContextProps): HubIModel {
     const id = props.imodeljsCoreClientsIModelBankAccessContext.iModelId;
     const name = props.name;
     return { wsgId: id, ecId: id, name };
   }
 
-  public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
+  public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     if (projectId !== undefined) {
       if (projectId === "")
         return Promise.reject(new IModelHubClientError(IModelHubStatus.UndefinedArgumentError));
@@ -164,7 +164,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
         return Promise.reject(new IModelHubClientError(IModelHubStatus.InvalidArgumentError));
     }
 
-    const repos: IModelRepository[] = [];
+    const repos: HubIModel[] = [];
     for (const context of this.group.iModelBankProjectAccessContextGroup.contexts) {
       if (this.matchesFilter(context, query))
         repos.push(this.toRepo(context));
@@ -177,7 +177,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     return Promise.resolve(repos);
   }
 
-  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<HubIModel> {
     const existing = await this.queryIModels(alctx, _accessToken, _projectId, new IModelQuery().byName(params.name));
     alctx.enter();
     if (existing.length !== 0)
