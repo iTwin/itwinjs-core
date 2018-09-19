@@ -8,7 +8,6 @@ Backend code:
 * has access to the local file system
 * determines the JavaScript engine (vs. the frontend where the JavaScript engine comes from the user's browser).
 * has direct access to the native library, and hence its methods are generally synchronous.
-* may load third-party native code
 
 The iModel.js backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
@@ -22,10 +21,10 @@ App backends, services, and agents must depend on @bentley/imodeljs-backend.
   * [Configure FeatureGates](../common/FeatureGates.md)
 
 * Expose the operations of the backend as RpcInterfaces
-    * [Define](../RpcInterface.md#defining-the-interface) one or more RpcInterfaces.
-    * [Implement](../RpcInterface.md#server-implementation) the RpcInterfaces.
-    * [Configure](../RpcInterface.md#3-configure-interfaces) the RpcInterfaces.
-    * [Serve](../RpcInterface.md#4-serve-the-interfaces) the RpcInterfaces to clients.
+  * [Define](../RpcInterface.md#defining-the-interface) one or more RpcInterfaces.
+  * [Implement](../RpcInterface.md#server-implementation) the RpcInterfaces.
+  * [Configure](../RpcInterface.md#3-configure-interfaces) the RpcInterfaces.
+  * [Serve](../RpcInterface.md#4-serve-the-interfaces) the RpcInterfaces to clients.
 
 * IModelDb
   * [Open an IModelDb](./IModelDb.md)

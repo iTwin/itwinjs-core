@@ -3,7 +3,7 @@
 ![](./imodeljs.ico)
 </p>
 <p style="text-align: center;">
-<b>iModel.js</b> is a JavaScript API for creating, querying, displaying, and modifying iModels.
+<b>iModel.js</b> is a JavaScript library for creating, querying, displaying, and modifying iModels.
 </p>
 
 ## Documentation Overview
@@ -50,7 +50,7 @@ iModel.js is written in [TypeScript](https://www.typescriptlang.org/). Even thou
 
 The iModel.js library requires a JavaScript engine with es2017 support.
 
-## Helpful articles:
+## Helpful articles
 
 * [App frontend development](./frontend/index)
 * [App backend development](./backend/index)
@@ -75,7 +75,7 @@ Tutorials:
 
 See also:
 
-* [Glossary of terms used in iModel.js ](./Glossary)
+* [Glossary of terms used in iModel.js](./Glossary)
 * [Frequently asked Questions](./faq)
 
 ## iModel.js Organization
@@ -90,4 +90,3 @@ The iModel.js library is divided into these npm packages in the `@bentley` scope
 |**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tools) that modify iModels.
 |**imodeljs-common**|Classes that are shared between the frontend and backend.
 |**imodeljs-native**|Performs low-level I/O to an iModel. Runs only on backends, and `imodeljs-backend` depends on this package.
-

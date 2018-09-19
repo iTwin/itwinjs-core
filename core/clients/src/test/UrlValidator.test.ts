@@ -6,6 +6,9 @@ import * as fs from "fs";
 
 import { whitelistPath, logPath } from "./TestConfig";
 
+const whitelistViolationDetails = "If this is caused by a necessary API change, update the whitelist and notify iModelBank of the updates. " +
+  "If the whitelist violation is unintentional, modify your changes to use existing API functionality.";
+
 const regex = [
   // All GUIDs
   [/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/g, "********-****-****-****-************"],
@@ -65,7 +68,7 @@ describe("URL Whitelist Validator", () => {
     // Split into line array
     whitelistURLs = data.split(/\r?\n/);
     // Assert length > 0
-    chai.expect(whitelistURLs.length, "No whitelist URLs found in " + whitelistPath).to.be.above(0);
+    chai.expect(whitelistURLs.length, `No whitelist URLs found in ${whitelistPath}`).to.be.above(0);
   });
 
   it("should load the log URLs", () => {
@@ -73,7 +76,7 @@ describe("URL Whitelist Validator", () => {
     // Split into line array
     logURLs = data.split(/\r?\n/);
     // Assert length > 0
-    chai.expect(logURLs.length, "No log URLs found in " + logPath).to.be.above(0);
+    chai.expect(logURLs.length, `No log URLs found in ${logPath}`).to.be.above(0);
   });
 
   it("should format the log URLs", () => {
@@ -94,7 +97,7 @@ describe("URL Whitelist Validator", () => {
   it("should only use whitelisted URLs", () => {
     logURLs.forEach((url) => {
       if (url !== "") {
-        chai.expect(whitelistURLs.indexOf(url), "The URL " + url + " is not whitelisted.").to.be.above(-1);
+        chai.expect(whitelistURLs.indexOf(url), `The URL "${url}" is not whitelisted.\n${whitelistViolationDetails}`).to.be.above(-1);
       }
     });
   });
