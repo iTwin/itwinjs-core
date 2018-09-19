@@ -44,7 +44,7 @@ export * from "./tile/TileTree";
  */
 /**
  * @docs-group-description IModelApp
- * Classes for configuring and administering an iModelJs application.
+ * Classes for configuring and administering an iModel.js application.
  */
 /**
  * @docs-group-description IModelConnection

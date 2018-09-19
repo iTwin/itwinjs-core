@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
-// On mobile platforms, this file is not included. Instead, the iModelJs host app implements IModelJsFs in native code and projects it into JavaScript.
+// On mobile platforms, this file is not included. Instead, the iModel.js host app implements IModelJsFs in native code and projects it into JavaScript.
 
 /** @module Portability */
 

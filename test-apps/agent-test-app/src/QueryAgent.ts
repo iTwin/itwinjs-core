@@ -15,7 +15,7 @@ const actx = new ActivityLoggingContext("");
 
 /** Sleep for ms */
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-/** Agent for querying changesets. Contains backend iModelJs engine. */
+/** Agent for querying changesets. Contains backend iModel.js engine. */
 export class QueryAgent {
     private _tokenStore?: OpenIdConnectTokenStore;
     private _projectId?: string;

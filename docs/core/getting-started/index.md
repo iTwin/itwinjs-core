@@ -1,8 +1,8 @@
-# Getting Started With iModelJs
+# Getting Started With iModel.js
 
 ## Required Tools
 
-Writing an iModelJs application requires the following software:
+Writing an iModel.js application requires the following software:
 
 - [Node.js](https://nodejs.org/) (latest 8.x LTS version)
   - This provides the backend JavaScript runtime.
@@ -10,14 +10,14 @@ Writing an iModelJs application requires the following software:
 - [Google Chrome](https://www.google.com/chrome/)
   - This is the preferred tool for developing and debugging frontend JavaScript.
 - [Git](https://git-scm.com/downloads)
-  - This is the source code control system for the iModelJs repositories.
+  - This is the source code control system for the iModel.js repositories.
 
 ## Suggested Tools
 
-The following tools are very helpful and highly suggested for working with iModelJs:
+The following tools are very helpful and highly suggested for working with iModel.js:
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-  - This is the recommended editor and debugger for iModelJs applications.
+  - This is the recommended editor and debugger for iModel.js applications.
   - VS Code also supplies a graphical user interface for working with Git.
   - The following VS Code extensions can also be quite helpful:
     - [TSLint](https://marketplace.visualstudio.com/items?itemName=eg2.tslint)
@@ -28,10 +28,10 @@ The following tools are very helpful and highly suggested for working with iMode
 ## Recommended Reading
 
 - [TypeScript](http://www.typescriptlang.org/)
-  - iModelJs applications are written in TypeScript and then *compiled* to plain JavaScript.
+  - iModel.js applications are written in TypeScript and then *compiled* to plain JavaScript.
 - [Node Package Manager (npm)](https://www.npmjs.com/)
-  - `npm` is used to install and manage dependencies of an iModelJs application.
-  - The `npm` [command line](https://docs.npmjs.com/cli/npm) and `npm` [scripts](https://docs.npmjs.com/misc/scripts) are used to build and test iModelJs applications.
+  - `npm` is used to install and manage dependencies of an iModel.js application.
+  - The `npm` [command line](https://docs.npmjs.com/cli/npm) and `npm` [scripts](https://docs.npmjs.com/misc/scripts) are used to build and test iModel.js applications.
 
 <!-- TODO: add link when external NPM package server is accessible -->
 

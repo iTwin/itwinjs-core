@@ -1,7 +1,7 @@
 {
   "name": "@bentley/presentation-frontend",
   "version": "0.128.0",
-  "description": "Frontend of iModelJs Presentation library",
+  "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
     "type": "git",

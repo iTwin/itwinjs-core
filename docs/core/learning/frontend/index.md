@@ -10,7 +10,7 @@ The frontend *always* runs inside a web browser.
 
 An app always implements its own frontend script and resources. The app's frontend script must depend on @bentley/imodeljs-frontend.
 
-The iModelJs frontend library is delivered in the **npm package** `@bentley/imodeljs-frontend`
+The iModel.js frontend library is delivered in the **npm package** `@bentley/imodeljs-frontend`
 
 ## Frontend operations supported by @bentley/imodeljs-frontend
 

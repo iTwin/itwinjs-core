@@ -1,7 +1,7 @@
 {
   "name": "@bentley/presentation-components",
   "version": "0.128.0",
-  "description": "React components based on iModelJs Presentation library",
+  "description": "React components based on iModel.js Presentation library",
   "license": "MIT",
   "repository": {
     "type": "git",

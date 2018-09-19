@@ -1048,7 +1048,7 @@ export declare class SnapRequest {
 }
 
 /**
- * Helper class for iModelJs tests to disable native assertions
+ * Helper class for iModel.js tests to disable native assertions
  * @hidden
  */
 export declare class DisableNativeAssertions implements IDisposable {

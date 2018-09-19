@@ -1,6 +1,6 @@
 # RpcInterface
 
-As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModelJs app is typically implemented in separate components, which run in different threads, processes, and/or machines. These components communicate through interfaces, which are called *RpcInterfaces* because they use remote procedure calls, or [RPC](../learning/Glossary.md#RPC).
+As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components, which run in different threads, processes, and/or machines. These components communicate through interfaces, which are called *RpcInterfaces* because they use remote procedure calls, or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 
@@ -40,13 +40,13 @@ The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram show
 
 ### Web RPC configuration
 
-The Web RPC configuration transforms client calls on an [RpcInterface](#RpcInterface) into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iModelJs cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
+The Web RPC configuration transforms client calls on an [RpcInterface](#RpcInterface) into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iModel.js cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
 
-iModelJs comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
+iModel.js comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
 
 ### Desktop RPC configuration
 
-The iModelJs desktop RPC configuration is specific to the Electron framework. It marshalls calls on an [RpcInterface](#RpcInterface) through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in thebackend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
+The iModel.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an [RpcInterface](#RpcInterface) through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in thebackend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
 
 ### In-process RPC configuration
 
@@ -68,10 +68,10 @@ A backend method that turns around an invokes another backend's method via RpcIn
 
 Briefly, here is how it works:
 * Frontend/client
-  * iModelJs on the frontend assigns a unique ActivityId value to an RpcIntereface call.
+  * iModel.js on the frontend assigns a unique ActivityId value to an RpcIntereface call.
   * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
 * Backend
-  * iModelJs on the backend gets the ActivityId from the HTTP header.
+  * iModel.js on the backend gets the ActivityId from the HTTP header.
   * RpcInvocation passes the ActivityId to RpcInterface implementation methods.
   * RpcInvocation and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
   * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.

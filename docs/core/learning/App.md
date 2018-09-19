@@ -1,4 +1,4 @@
-# iModelJs Apps
+# iModel.js Apps
 
 From the same JavaScript codebase, it is possible to create:
 
@@ -25,7 +25,7 @@ See the [diagram of a Web agent](./SoftwareArchitecture.md#web) for an overview 
 
 An *iModel Agent* is a program that performs an unattended action upon being invoked by an event from iModelHub.
 
-As an example, consider an iModelJs Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
+As an example, consider an iModel.js Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
 
 ![>](./next.png) [How to write a Web agent](../learning/WriteAWebAgent.md).
 
@@ -43,7 +43,7 @@ An iModel service or app backend exposes an *interface* that clients can use to 
 
 ## Interactive Apps
 
-An interactive app obtains information from an iModel and presents that information in a user interface. It has a [frontend](#app-frontend) and a [backend](#app-backend), which communication through [RpcInterfaces](./RpcInterface.md). An iModelJs-based interactive app can be configured to run as a Web app, a desktop app, or a mobile app.
+An interactive app obtains information from an iModel and presents that information in a user interface. It has a [frontend](#app-frontend) and a [backend](#app-backend), which communication through [RpcInterfaces](./RpcInterface.md). An iModel.js-based interactive app can be configured to run as a Web app, a desktop app, or a mobile app.
 
 ![>](./next.png) [How to write an interactive app](../learning/WriteAnInteractiveApp.md).
 
@@ -57,7 +57,7 @@ When configured as a Web app, the [frontend](#app-frontend) will run in a Web br
 
 #### Desktop Apps
 
-[Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
+[Electron](https://electronjs.org/) is used to package an iModel.js app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
 
 ![>](./next.png) [How to write an interactive desktop app](../learning/WriteAnInteractiveDesktopApp.md).
 
@@ -69,7 +69,7 @@ When configured as a mobile app, the [frontend](#app-frontend) and [backend](#ap
 
 ### Architecture
 
-The two concerns of an interactive app are cleanly separated in the [iModelJs app architecture](./SoftwareArchitecture.md) into frontend and backend.
+The two concerns of an interactive app are cleanly separated in the [iModel.js app architecture](./SoftwareArchitecture.md) into frontend and backend.
 
 #### App Backend
 

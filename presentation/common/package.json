@@ -1,7 +1,7 @@
 {
   "name": "@bentley/presentation-common",
   "version": "0.128.0",
-  "description": "Common pieces for iModelJs presentation packages",
+  "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
     "type": "git",

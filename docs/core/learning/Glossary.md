@@ -2,12 +2,12 @@
 tableRowAnchors: true
 ---
 
-# Glossary of terms in iModelJs
+# Glossary of terms in iModel.js
 
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information with a different orientation and units.
-|**Backend**|The part of an iModelJs app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
+|**Backend**|The part of an iModel.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The *base* BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](./backend/IModelDb.md).
@@ -39,7 +39,7 @@ tableRowAnchors: true
 |**ElementState**|A TypeScript class that holds the properties of an Element in the frontend. See [ElementState]($frontend).
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
-|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. [FeatureGates](./common/FeatureGates.md) are created in JSON and may be tested at runtime to *gate off* access to a feature.
+|**FeatureGate**|A technique for controlling the behavior of an iModel.js program at runtime. [FeatureGates](./common/FeatureGates.md) are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../learning/App.md#app-frontend)
@@ -53,7 +53,7 @@ tableRowAnchors: true
 |**iModel**|A distributed relational database holding information about an infrastructure asset defined in BIS. Many copies of an iModel may be extant simultaneously, each held in a Briefcase and synchronized via ChangeSets from iModelHub.
 |**IModelApp**|The *administrator* class for frontend applications. By subclassing IModelApp, applications can control the behavior of the frontend services.
 |**IModelConnection**|A TypeScript class in the frontend that represents the connection to the iModel on the backend.
-|**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iModelJs applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
+|**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iModel.js applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
 |**L10N**|An abbreviation for [Localization](https://en.wikipedia.org/wiki/Internationalization_and_localization).
 |**LineStyle**|A named pattern that is repeated along a path when it is displayed to represent the meaning of the path.
 |**Model**|A set of Elements used to describe another Element (its *ModeledElement*) in more detail. Every Element is *contained in* one and only one Model via a ModelContainsElements relationship. In this manner, Models form a hierarchy of Elements. There are many subclasses of Model (e.g. PhysicalModel, FunctionalModel, etc.)
@@ -65,7 +65,7 @@ tableRowAnchors: true
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.
 |**Project Extents**|The *volume of interest* for an iModel's Spatial Coordinate System. All spatial elements in an iModel must be completely inside its Project Extents.
-|**Props**|iModelJs uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
+|**Props**|iModel.js uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**RPC**|Remote procedure call. Allows a client to invoke an operation in a service. Web apps use HTTP to implement RPC calls, while desktop apps use pipes.
 |**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../learning/RpcInterface.md) for more information.
@@ -89,4 +89,4 @@ tableRowAnchors: true
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a [ViewDefinition]($backend). A [ViewState]($frontend) is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
-|**Wire format**|The JSON representation of objects that must be used when transferring data in iModelJs. See Props.
+|**Wire format**|The JSON representation of objects that must be used when transferring data in iModel.js. See Props.

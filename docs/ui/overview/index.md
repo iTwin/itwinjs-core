@@ -2,16 +2,16 @@
 ![](./imodeljs.ico)
 </p>
 <h1 style="text-align: center;">
-  iModelJs UI - React components and TypeScript library for building iModelJs application user interfaces
+  iModel.js UI - React components and TypeScript library for building iModel.js application user interfaces
 </h1>
 
 ## Introduction
 
-iModelJs UI is a set of [React](https://www.reactjs.org) components and a [TypeScript](https://www.typescriptlang.org) library for building [iModelJs](https://imodeljs.github.io/iModelJs-docs-output) application user interfaces.
+iModel.js UI is a set of [React](https://www.reactjs.org) components and a [TypeScript](https://www.typescriptlang.org) library for building [iModel.js](https://imodeljs.github.io/iModel.js-docs-output) application user interfaces.
 
 ## Library Organization
 
-The iModelJs UI library is divided into these NPM packages in the `@bentley` scope:
+The iModel.js UI library is divided into these NPM packages in the `@bentley` scope:
 
 |Package Name|Description
 |-----|-----

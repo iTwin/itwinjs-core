@@ -24,7 +24,7 @@ import * as viewTool from "./tools/ViewTool";
 
 /**
  * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
- * It connects the user interface with the iModelJs services. There can be only one IModelApp active in a session.
+ * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
  *
  * Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different
  * implementations of them.
@@ -67,14 +67,14 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
-   * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
+   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {
    *  . . .
    * }
    * ```
-   * in your source somewhere before you use any iModelJs services, call:
+   * in your source somewhere before you use any iModel.js services, call:
    * ``` ts
    * MyApp.startup();
    * ```

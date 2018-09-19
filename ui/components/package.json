@@ -1,7 +1,7 @@
 {
   "name": "@bentley/ui-components",
   "version": "0.128.0",
-  "description": "iModelJs UI complex components",
+  "description": "iModel.js UI complex components",
   "license": "MIT",
   "repository": {
     "type": "git",

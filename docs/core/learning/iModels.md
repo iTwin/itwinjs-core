@@ -18,7 +18,7 @@ iModels have a property called [Project Extents](../learning/glossary#project-ex
 
 ## The format of information in an iModel is defined by BIS
 
-The [Base Infrastructure Schemas](../bis/index) are a family of [domain-specific](../bis/intro/schemas-domains) class definitions that define the properties and relationships of entities within an iModel. All information held in an iModel is an instance of some class defined in BIS, inserted using the iModelJs API.
+The [Base Infrastructure Schemas](../bis/index) are a family of [domain-specific](../bis/intro/schemas-domains) class definitions that define the properties and relationships of entities within an iModel. All information held in an iModel is an instance of some class defined in BIS, inserted using the iModel.js API.
 
 ## An iModel is comprised of many Models
 
@@ -32,10 +32,10 @@ Every Element is *owned by* (i.e. *contained in*) one and only one Model.
 
 There are many types of Elements, corresponding to the type of information they contain. Only [GeometricElement]($backend)s, held in [GeometricModel]($backend)s, are visible in [Views](../learning/frontend/views).
 
-## iModelJs makes iModels accessible anywhere
+## iModel.js makes iModels accessible anywhere
 
-The purpose of the iModelJs library is to make iModels accessible to everyone, everywhere, for any purpose that is approved by the iModel's owner. It provides ways to create, modify, query, display, and analyze iModels. JavaScript was chosen as the language for iModelJs due to its ubiquitous nature and the vast body of open source tools and frameworks available for it.
+The purpose of the iModel.js library is to make iModels accessible to everyone, everywhere, for any purpose that is approved by the iModel's owner. It provides ways to create, modify, query, display, and analyze iModels. JavaScript was chosen as the language for iModel.js due to its ubiquitous nature and the vast body of open source tools and frameworks available for it.
 
 ## ECSQL is the query language of iModels
 
-An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModelJs includes [ECSQL](../learning/ecsql) to form qeuries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.
+An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModel.js includes [ECSQL](../learning/ecsql) to form qeuries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.

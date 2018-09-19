@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-i18n",
   "version": "0.128.0",
-  "description": "iModelJs localization code",
+  "description": "iModel.js localization code",
   "license": "MIT",
   "repository": {
     "type": "git",

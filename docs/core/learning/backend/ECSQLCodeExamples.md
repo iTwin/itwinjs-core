@@ -24,7 +24,7 @@ Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific EC
 
 ### Binding to all parameters at once
 
-See section "[ECSQL parameter types in iModelJs](../ECSQLParameterTypes.md)" to learn which types to use for the parameters when binding all
+See section "[ECSQL parameter types in iModel.js](../ECSQLParameterTypes.md)" to learn which types to use for the parameters when binding all
 parameters at once.
 
 #### Positional parameters

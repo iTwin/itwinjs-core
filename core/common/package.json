@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-common",
   "version": "0.128.0",
-  "description": "iModelJs components common to frontend and backend",
+  "description": "iModel.js components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
   "typings": "lib/common",

@@ -10,7 +10,7 @@ Backend code:
 * has direct access to the native library, and hence its methods are generally synchronous.
 * may load third-party native code
 
-The iModelJs backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
+The iModel.js backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
 App backends, services, and agents must depend on @bentley/imodeljs-backend.
 

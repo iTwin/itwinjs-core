@@ -17,7 +17,7 @@ match its semver version range used by `presentation-backend`.
 
 The primary frontend dependency is `presentation-frontend`. However,
 consumers typically also want to depend on `presentation-components` which
-contains various iModelJs Presentation-driven data providers and other components.
+contains various iModel.js Presentation-driven data providers and other components.
 The packages can be installed with
 ```bash
 npm install presentation-frontend presentation-components

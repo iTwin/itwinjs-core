@@ -1,6 +1,6 @@
-# iModelJs Documentation Linking Syntax
+# iModel.js Documentation Linking Syntax
 
-The documentation for the iModelJs website is authored from two sources:
+The documentation for the iModel.js website is authored from two sources:
 
 1. Markdown (`.md`) files in the `docs` directory
 2. TypeDoc comments in source `.ts` files

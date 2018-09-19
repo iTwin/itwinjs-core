@@ -1,8 +1,8 @@
-# iModelJs Types used in [ECSQL](./ECSQL.md) Parameter Bindings
+# iModel.js Types used in [ECSQL](./ECSQL.md) Parameter Bindings
 
-The following table list which iModelJs type you can use for binding values to [ECSQL parameters](./ECSQL.md#ecsql-parameters).
+The following table list which iModel.js type you can use for binding values to [ECSQL parameters](./ECSQL.md#ecsql-parameters).
 
-ECSQL Parameter Type | iModelJs Type
+ECSQL Parameter Type | iModel.js Type
 ------------- | ----------
 Boolean       | boolean
 Blob          | ArrayBuffer, SharedArrayBuffer, Base64 string

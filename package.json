@@ -2,7 +2,7 @@
     "name": "imodeljs-core",
     "//private": "NOTE: This 'root' package is private. It is never published",
     "private": true,
-    "description": "iModelJs core components",
+    "description": "iModel.js core components",
     "license": "MIT",
     "repository": {
         "type": "git",
