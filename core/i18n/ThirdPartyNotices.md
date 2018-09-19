@@ -1,7 +1,7 @@
 
 # Third-Party Code
 
-The iModelJs library potentially incorporates work from the following third-party code:
+The iModel.js library potentially incorporates work from the following third-party code:
 
 ## [i18next](https://i18next.com)
 

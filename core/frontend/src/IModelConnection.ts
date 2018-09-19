@@ -261,8 +261,8 @@ export class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModelJs types to be used for the different ECSQL parameter types.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.

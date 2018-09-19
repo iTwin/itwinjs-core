@@ -25,7 +25,7 @@ import {
 import { ViewContext, SceneContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
-import { TileTree, Tile, TileRequests, TileLoader, MissingNodes } from "./tile/TileTree";
+import { TileTree, Tile, TileRequests, TileLoader } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
@@ -227,7 +227,7 @@ export namespace Attachments {
     public abstract get is3dAttachment(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
-    public async loadTileContents(_missing: MissingNodes): Promise<void> {
+    public async loadTileContents(_missing: Tile[]): Promise<void> {
       // ###TODO: This doesn't appear to be needed, yet it gets invoked?
       return Promise.resolve();
     }

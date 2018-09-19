@@ -1,21 +1,21 @@
-# iModelHub - The Backbone for iModelJs Applications
+# iModelHub - The Backbone for iModel.js Applications
 
 [iModelHub](http:/www.iModelHub.com) is a cloud service for managing and coordinating access to [iModels](./iModels).
 
 Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases](../learning/backend/Briefcases). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout.) Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../learning/backend/ChangeSets) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like and accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
 
-iModelHub accepts ChangeSets from iModelJs [backends](../learning/backend/index) through a process called [*Check In*](#upload-changesets), and sends them to other validated users when requested through a process called [*Synchronization*](#download-changesets). iModelJs applications determine when and how to Check In and Synchronize.
+iModelHub accepts ChangeSets from iModel.js [backends](../learning/backend/index) through a process called [*Check In*](#upload-changesets), and sends them to other validated users when requested through a process called [*Synchronization*](#download-changesets). iModel.js applications determine when and how to Check In and Synchronize.
 
-## The Connection between iModelJs and iModelHub
+## The Connection between iModel.js and iModelHub
 
 1. Every iModel has an [identity](./iModels#every-imodel-has-a-guid) registered in iModelHub.
 2. Users log into iModelHub for authentication.
-3. iModelJs backends have an identity, registered with iModelHub.
+3. iModel.js backends have an identity, registered with iModelHub.
 4. iModel owners decide, via iModelHub, which users and which applications have access to their iModels.
 
-When an iModelJs backend opens an iModel, it is first required to verify with iModelHub that the iModel's owner has granted the right for the current user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
+When an iModel.js backend opens an iModel, it is first required to verify with iModelHub that the iModel's owner has granted the right for the current user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
 
-> This means that applications written using iModelJs require a valid project on iModelHub.
+> This means that applications written using iModel.js require a valid project on iModelHub.
 
 ## The Timeline of Changes to an iModel
 
@@ -54,4 +54,4 @@ Applications can register listeners for notifications from iModelHub. It is poss
 
 ---
 
-1. iModelJs does what it can to enforce security for iModels. It makes no guarantee that a determined hacker won't be able to defeat any barriers iModelJs imposes.
+1. iModel.js does what it can to enforce security for iModels. It makes no guarantee that a determined hacker won't be able to defeat any barriers iModel.js imposes.

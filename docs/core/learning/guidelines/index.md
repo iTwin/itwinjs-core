@@ -1,4 +1,4 @@
-# Tips and Guidelines for iModelJs
+# Tips and Guidelines for iModel.js
 
 * [TypeScript Coding Guideline](./typescript-coding-guidelines.md)
 * [Tips for Converting C++ to TypeScript](./tips-for-converting-c.md)

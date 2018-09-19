@@ -63,7 +63,7 @@ export class CodeBase extends WsgInstance {
  * Code instance. Codes ensure uniqueness of names in the file.
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class WsgCode extends CodeBase {
+export class HubCode extends CodeBase {
   /** The unique string that can be used as a name value in iModel. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
   public value?: string;
@@ -99,7 +99,7 @@ function encodeForCodeId(str: string): string {
  * @param code Code to get instance id for.
  * @returns Encoded code instance id.
  */
-function getCodeInstanceId(code: WsgCode): string | undefined {
+function getCodeInstanceId(code: HubCode): string | undefined {
   if (!code || !code.codeSpecId || !code.codeScope || !code.value)
     return undefined;
 
@@ -154,7 +154,7 @@ export class ConflictingCodesError extends IModelHubError {
   /**
    * Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]].
    */
-  public conflictingCodes?: WsgCode[];
+  public conflictingCodes?: HubCode[];
 
   /**
    * Create ConflictingCodesError from IModelHubError instance.
@@ -187,7 +187,7 @@ export class ConflictingCodesError extends IModelHubError {
     }
     for (const value of (error.data.ConflictingCodes as any[])) {
       const instance = { className: "Code", schemaName: "iModelScope", properties: value };
-      const code = ECJsonTypeMap.fromJson<WsgCode>(WsgCode, "wsg", instance);
+      const code = ECJsonTypeMap.fromJson<HubCode>(HubCode, "wsg", instance);
       if (code) {
         this.conflictingCodes.push(code);
       }
@@ -251,7 +251,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it contains invalid [Code]($common) values.
    */
-  public byCodes(codes: WsgCode[]) {
+  public byCodes(codes: HubCode[]) {
     ArgumentCheck.nonEmptyArray("codes", codes);
     this._isMultiCodeQuery = false;
     if (codes.length < 1) {
@@ -357,7 +357,7 @@ export class CodeSequenceHandler {
 
   /**
    * Get relative url for Code sequence requests.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    */
   private getRelativeUrl(imodelId: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/CodeSequence/`;
@@ -366,7 +366,7 @@ export class CodeSequenceHandler {
   /**
    * Get an index value based on the [[CodeSequence]]. This only suggests the last used or next available index value in the sequence and does not reserve the Code.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param sequence Code sequence describing the format of the Code value.
    * @returns Resolves to the suggested index value.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -408,7 +408,7 @@ export class CodeHandler {
 
   /**
    * Get relative url for Code requests.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param codeId Id of the code.
    */
   private getRelativeUrl(imodelId: string, multiCode = true, codeId?: string) {
@@ -416,7 +416,7 @@ export class CodeHandler {
   }
 
   /** Convert Codes to MultiCodes. */
-  private static convertCodesToMultiCodes(codes: WsgCode[]): MultiCode[] {
+  private static convertCodesToMultiCodes(codes: HubCode[]): MultiCode[] {
     const map = new Map<string, MultiCode>();
     for (const code of codes) {
       const id: string = `${code.codeScope}-${code.codeSpecId}-${code.state}`;
@@ -438,12 +438,12 @@ export class CodeHandler {
   }
 
   /** Convert MultiCodes to Codes. */
-  private static convertMultiCodesToCodes(multiCodes: MultiCode[]): WsgCode[] {
-    const result: WsgCode[] = [];
+  private static convertMultiCodesToCodes(multiCodes: MultiCode[]): HubCode[] {
+    const result: HubCode[] = [];
 
     for (const multiCode of multiCodes) {
       for (const value of multiCode.values!) {
-        const code = new WsgCode();
+        const code = new HubCode();
         code.briefcaseId = multiCode.briefcaseId;
         code.codeScope = multiCode.codeScope;
         code.codeSpecId = multiCode.codeSpecId;
@@ -468,7 +468,7 @@ export class CodeHandler {
   }
 
   /** Send partial request for code updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: WsgCode[], updateOptions?: CodeUpdateOptions): Promise<WsgCode[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -494,7 +494,7 @@ export class CodeHandler {
   /**
    * Update multiple [Code]($common)s. This call can simultaneously reserve new Codes and update states of already owned Codes. If large amount of Codes are updated, they are split across multiple requests. See [[CodeUpdateOptions.codesPerRequest]]. Default is 2000 Codes per request.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param codes Codes to update. Requires briefcaseId, state, codeSpecId, codeScope and value to be set on every instance. briefcaseId must be the same for every Code. Set queryOnly to true to just check if a Code can be reserved.
    * @param updateOptions Options for the update request. You can set this to change how conflicts are handled or to handle different amount of Codes per request.
    * @returns The code that was just obtained from the server.
@@ -505,7 +505,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical Codes in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: WsgCode[], updateOptions?: CodeUpdateOptions): Promise<WsgCode[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -515,7 +515,7 @@ export class CodeHandler {
     updateOptions = updateOptions || {};
     this.setupOptionDefaults(updateOptions);
 
-    const result: WsgCode[] = [];
+    const result: HubCode[] = [];
     let conflictError: ConflictingCodesError | undefined;
     const aggregateError = new AggregateResponseError();
 
@@ -561,24 +561,24 @@ export class CodeHandler {
   /**
    * Get the [Code]($common)s that have been issued for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Codes or select different data from them.
    * @returns Resolves to an array of Codes matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<WsgCode[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
-    let codes: WsgCode[];
+    let codes: HubCode[];
     if (query.isMultiCodeQuery) {
       const multiCodes = await this._handler.getInstances<MultiCode>(alctx, MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
       alctx.enter();
       codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
     } else {
-      codes = await this._handler.postQuery<WsgCode>(alctx, WsgCode, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      codes = await this._handler.postQuery<HubCode>(alctx, HubCode, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
       alctx.enter();
     }
 
@@ -590,7 +590,7 @@ export class CodeHandler {
   /**
    * Delete all [Code]($common)s owned by the specified [[Briefcase]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcacase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.

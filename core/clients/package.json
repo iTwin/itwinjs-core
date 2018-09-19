@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-clients",
   "version": "0.128.0",
-  "description": "Clients for various Bentley Services used by iModelJs",
+  "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/index.js",
   "typings": "lib/index",
   "license": "MIT",

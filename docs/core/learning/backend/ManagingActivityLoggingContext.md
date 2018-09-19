@@ -1,6 +1,6 @@
 # Managing the ActivityLoggingContext
 
-Asynchronous backend methods must cooperate to propagate a request's [ActivityId](../../overview/RpcInterface.md#logging-and-activityids) into logging messages. The current ActivityId is held by the [ActivityLoggingContext]($bentleyjs-core) class. The following rules must be followed by async methods to manage this class:
+Asynchronous backend methods must cooperate to propagate a request's [ActivityId](../../learning/RpcInterface.md#logging-and-activityids) into logging messages. The current ActivityId is held by the [ActivityLoggingContext]($bentleyjs-core) class. The following rules must be followed by async methods to manage this class:
 
 ## Promise-returning functions
 Every `Promise`-returning functions *must*:

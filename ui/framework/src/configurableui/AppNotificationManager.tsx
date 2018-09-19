@@ -22,7 +22,7 @@ import { ElementTooltip } from "./ElementTooltip";
 
 /**
  * The AppNotificationManager class is a subclass of NotificationManager. This implementation uses
- * the iModelJs UI library to display alerts, messages, prompts and tooltips.
+ * the iModel.js UI library to display alerts, messages, prompts and tooltips.
  *
  * The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
  * Implementations of the NotificationManager may present the information in different ways. For example, in

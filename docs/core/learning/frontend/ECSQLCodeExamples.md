@@ -2,7 +2,7 @@
 
 ## Parameter Bindings
 
-See section "[ECSQL parameter types in iModelJs](../ECSQLParameterTypes)" to learn which types to use for the parameters when binding all
+See section "[ECSQL parameter types in iModel.js](../ECSQLParameterTypes)" to learn which types to use for the parameters when binding all
 parameters at once.
 
 ### Positional parameters

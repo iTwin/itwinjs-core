@@ -112,7 +112,7 @@ export class VersionHandler {
   /**
    * Get relative url for Version requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param versionId Id of the version.
    */
   private getRelativeUrl(imodelId: string, versionId?: string) {
@@ -122,7 +122,7 @@ export class VersionHandler {
   /**
    * Get the named [[Version]]s of an iModel. Returned Versions are ordered from the latest [[ChangeSet]] to the oldest.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Versions or select different data from them.
    * @returns Versions that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
@@ -144,7 +144,7 @@ export class VersionHandler {
   /**
    * Create a named [[Version]] of an iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the [[ChangeSet]] to create a named Version for.
    * @param name Name of the new named Version.
    * @param description Description of the new named Version.
@@ -178,7 +178,7 @@ export class VersionHandler {
   /**
    * Update the named [[Version]] of an iModel. Only the description can be changed when updating the named Version.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param version Named version to update.
    * @returns Updated Version instance from iModelHub.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.

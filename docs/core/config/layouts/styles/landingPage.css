@@ -1,5 +1,12 @@
 #main-landing-wrapper {
   margin-bottom: 1em !important;
+  background-color: #fafdff
+}
+
+p.digital-twin {
+  color: yellow;
+  font-size: 45px;
+  margin-bottom: 1em;
 }
 
 .overlay {

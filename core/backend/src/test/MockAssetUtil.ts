@@ -5,7 +5,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, InitializationState,
+  Response, ChangeSet, HubIModel, Briefcase, SeedFile, InitializationState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
   ConnectRequestQueryOptions,
@@ -113,7 +113,7 @@ export class MockAssetUtil {
         if (iModelAsset.substring(0, iModelAsset.indexOf(".")) === iModelAssetFolder && iModelAsset.substring(iModelAsset.indexOf(".")) === ".json") {
           const buff = IModelJsFs.readFileSync(path.join(iModelFolderPath, iModelAsset));
           const jsonObj = JSON.parse(buff.toString())[0];
-          const iModelObj = getTypedInstance<IModelRepository>(IModelRepository, jsonObj);
+          const iModelObj = getTypedInstance<HubIModel>(HubIModel, jsonObj);
           iModelName = iModelAsset.substring(0, iModelAsset.indexOf("."));
           this._iModelMap.set(iModelObj.wsgId.toString(), iModelName);
         }
@@ -215,7 +215,7 @@ export class MockAssetUtil {
             const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
             const buff = IModelJsFs.readFileSync(sampleIModelPath);
             const jsonObj = JSON.parse(buff.toString())[0];
-            return Promise.resolve(getTypedInstance<IModelRepository>(IModelRepository, jsonObj));
+            return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
           }
         }
         return Promise.reject(`No matching asset found for iModel with name: ${hubName}`);
@@ -245,7 +245,7 @@ export class MockAssetUtil {
         if (iModelPath !== "") {
           const buff = IModelJsFs.readFileSync(iModelPath);
           const jsonObj = JSON.parse(buff.toString());
-          return Promise.resolve(getTypedInstances<IModelRepository>(IModelRepository, jsonObj));
+          return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
         }
         return Promise.reject(`No matching asset found for iModel with id: ${query.getId()}`);
       });

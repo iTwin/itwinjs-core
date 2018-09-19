@@ -1,7 +1,7 @@
 {
   "name": "@bentley/ui-ninezone",
   "version": "0.128.0",
-  "description": "iModelJs Nine-zone React UI components",
+  "description": "iModel.js Nine-zone React UI components",
   "license": "MIT",
   "repository": {
     "type": "git",

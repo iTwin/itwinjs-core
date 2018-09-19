@@ -1,7 +1,7 @@
 {
   "name": "@bentley/ui-core",
   "version": "0.128.0",
-  "description": "iModelJs UI core components",
+  "description": "iModel.js UI core components",
   "license": "MIT",
   "repository": {
     "type": "git",

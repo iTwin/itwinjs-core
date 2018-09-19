@@ -5,7 +5,7 @@ import { IHubProjectConfig, ChangesetGenerationConfig } from "./Config";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients/lib";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { Project, IModelQuery } from "@bentley/imodeljs-clients/lib";
-import { IModelRepository as HubIModel } from "@bentley/imodeljs-clients/lib/imodelhub/iModels";
+import { HubIModel as HubIModel } from "@bentley/imodeljs-clients/lib/imodelhub/iModels";
 import { Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
 import { Version } from "@bentley/imodeljs-clients/lib/imodelhub";

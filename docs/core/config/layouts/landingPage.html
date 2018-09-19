@@ -5,10 +5,10 @@
     <article id="main-landing" class='main-content'>
       <div id="middle-content-wrapper" style="display: flex; align-content: center">
         {{>landing_middle_content}}
+        {{#if this.features}}
+        {{>landing_features}}
+        {{/if}}
       </div>
-      {{#if this.features}}
-      {{>landing_features}}
-      {{/if}}
 
       <div id="main" class='grid-row mt-5' style="text-align: center;">
         {{{contents}}}

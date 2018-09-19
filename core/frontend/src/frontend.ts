@@ -37,17 +37,18 @@ export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
 export * from "./NoRenderApp";
+export * from "./tile/TileTree";
 
 /** @docs-package-description
  * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description IModelApp
- * Classes for configuring and administering an iModelJs application.
+ * Classes for configuring and administering an iModel.js application.
  */
 /**
  * @docs-group-description IModelConnection
- * Classes for working with a connection to an [iModel briefcase]($docs/overview/IModels.md)
+ * Classes for working with a connection to an [iModel briefcase]($docs/learning/IModels.md)
  */
 /**
  * @docs-group-description ElementState

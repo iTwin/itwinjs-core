@@ -8,7 +8,7 @@ import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeState, Tile, TileLoader, MissingNodes } from "./TileTree";
+import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
 /** @hidden */
@@ -104,9 +104,9 @@ class RealityModelTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-    const missingArray = missingTiles.extractArray();
+  public async loadTileContents(missingArray: Tile[]): Promise<void> {
     await Promise.all(missingArray.map(async (missingTile) => {
+      assert(missingTile.isNotLoaded);
       if (missingTile.isNotLoaded) {
         const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
         if (foundChild !== undefined) {

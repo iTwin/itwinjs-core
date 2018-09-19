@@ -1,6 +1,6 @@
-# iModelJs TypeScript Coding Guidelines
+# iModel.js TypeScript Coding Guidelines
 
-These are the TypeScript coding guidelines that we expect all iModelJs contributors to follow.
+These are the TypeScript coding guidelines that we expect all iModel.js contributors to follow.
 Where possible, these guidelines are enforced through our TSLint configuration file (tslint.json).
 
 ## Names

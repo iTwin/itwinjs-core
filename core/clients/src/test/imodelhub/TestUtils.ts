@@ -12,7 +12,7 @@ import {
   ProgressInfo, UrlDescriptor, DeploymentEnv, IModelClient,
 } from "../../";
 import {
-  IModelHubClient, WsgCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
+  IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
 } from "../../";
@@ -313,8 +313,8 @@ export function randomCodeValue(prefix: string): string {
   return (prefix + Math.floor(Math.random() * Math.pow(2, 30)).toString());
 }
 
-export function randomCode(briefcase: number): WsgCode {
-  const code = new WsgCode();
+export function randomCode(briefcase: number): HubCode {
+  const code = new HubCode();
   code.briefcaseId = briefcase;
   code.codeScope = "TestScope";
   code.codeSpecId = "0XA";
@@ -323,7 +323,7 @@ export function randomCode(briefcase: number): WsgCode {
   return code;
 }
 
-function convertCodesToMultiCodes(codes: WsgCode[]): MultiCode[] {
+function convertCodesToMultiCodes(codes: HubCode[]): MultiCode[] {
   const map = new Map<string, MultiCode>();
   for (const code of codes) {
     const id: string = `${code.codeScope}-${code.codeSpecId}-${code.state}`;
@@ -344,12 +344,12 @@ function convertCodesToMultiCodes(codes: WsgCode[]): MultiCode[] {
   return Array.from(map.values());
 }
 
-export function mockGetCodes(iModelId: string, query?: string, ...codes: WsgCode[]) {
+export function mockGetCodes(iModelId: string, query?: string, ...codes: HubCode[]) {
   if (!TestConfig.enableMocks)
     return;
 
   if (query === undefined) {
-    const requestResponse = ResponseBuilder.generateGetArrayResponse<WsgCode>(codes);
+    const requestResponse = ResponseBuilder.generateGetArrayResponse<HubCode>(codes);
     const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Code", "$query");
     ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse);
   } else {
@@ -359,7 +359,7 @@ export function mockGetCodes(iModelId: string, query?: string, ...codes: WsgCode
   }
 }
 
-export function mockUpdateCodes(iModelId: string, ...codes: WsgCode[]) {
+export function mockUpdateCodes(iModelId: string, ...codes: HubCode[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -371,7 +371,7 @@ export function mockUpdateCodes(iModelId: string, ...codes: WsgCode[]) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...codes: WsgCode[]) {
+export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...codes: HubCode[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -382,7 +382,7 @@ export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...co
   const requestResponse = ResponseBuilder.generateError("iModelHub.CodeReservedByAnotherBriefcase", "", "",
     new Map<string, any>([
       ["ConflictingCodes", JSON.stringify(codes.map((value) => {
-        const obj = ECJsonTypeMap.toJson<WsgCode>("wsg", value);
+        const obj = ECJsonTypeMap.toJson<HubCode>("wsg", value);
         return obj.properties;
       }))],
     ]));

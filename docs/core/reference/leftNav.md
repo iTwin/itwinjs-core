@@ -1,4 +1,4 @@
-## iModelJs Packages
+## iModel.js Packages
 
 ---
 

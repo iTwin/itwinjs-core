@@ -1,6 +1,6 @@
 {
   "name": "agent-test-app",
-  "description": "Demonstrates using iModelJs to create an agent",
+  "description": "Demonstrates using iModel.js to create an agent",
   "license": "MIT",
   "config": {
     "port": "8080",

@@ -11,7 +11,7 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 
 ## Design considerations
 
-- This schema does not use either of the two available [breakdown mechanisms](./../intro/modeling-with-bis.md) in `BIS` (`IParent` and models). The direct reason is that instances of `CompositeElement` uploaded by [iModel Bridges](../../overview/imodel-bridges.md) can be persisted in arbitrary models. Reusing a standardized `BIS` breakdown mechanism is desired but no appropriate, model agnostic, mechanism is currently available.
+- This schema does not use either of the two available [breakdown mechanisms](./../intro/modeling-with-bis.md) in `BIS` (`IParent` and models). The direct reason is that instances of `CompositeElement` uploaded by [iModel Bridges](../../learning/imodel-bridges.md) can be persisted in arbitrary models. Reusing a standardized `BIS` breakdown mechanism is desired but no appropriate, model agnostic, mechanism is currently available.
 - Decomposition is modeled after IFC. We like to align as much as possible with the industry standard.
 
 ## Naming considerations

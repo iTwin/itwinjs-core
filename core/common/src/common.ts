@@ -76,7 +76,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description iModels
- * Classes for working with [iModels]($docs/overview/IModels.md) in both the frontend and backend
+ * Classes for working with [iModels]($docs/learning/IModels.md) in both the frontend and backend
  */
 /**
  * @docs-group-description RpcInterface

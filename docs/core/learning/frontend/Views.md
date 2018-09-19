@@ -1,6 +1,6 @@
-# Using Views in iModelJs
+# Using Views in iModel.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModel.js applications can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 
@@ -64,7 +64,7 @@ Once a view is selected from the list, it may be loaded with:
 
 To connect a ViewState to a rectangular region on a web page, you create instances of the [Viewport]($frontend) class. The constructor of Viewport takes an `HTMLCanvasElement` and a
 (fully loaded) ViewState. In this manner, Viewports form the connection between a rectangular region on your web page and a set of
-Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, and the iModelJs rendering system.
+Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, and the iModel.js rendering system.
 
 > Note: before creating a Viewport, be sure to call [IModelApp.startup]($frontend).
 
@@ -85,7 +85,7 @@ If there is more than one Viewport visible, the ViewManager keeps track of the *
 
 ## Viewing Tools
 
-The iModelJs library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
+The iModel.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
 supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [WalkViewTool]($frontend), [RotateViewTool]($frontend), etc.) or create your own subclasses for
 special viewing operations.
 

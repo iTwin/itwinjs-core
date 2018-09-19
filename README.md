@@ -1,21 +1,21 @@
-﻿# The iModelJs Library
+﻿# The iModel.js Library
 
 Copyright © Bentley Systems, Inc. 2018
 
-The iModelJs library is an open source library for creating and accessing iModels.
+The iModel.js library is an open source library for creating and accessing iModels.
 
-## Getting Started With iModelJs
+## Getting Started With iModel.js
 
 * [This Overview](./docs/index) explains the purpose and organization of the library.
 * [These Tutorials](./docs/tutorials/index) provide examples of its use.
 * The [API Documentation](./api/) gives details of the classes and functions.
-* [Additional Resources](./docs/overview/CommunityResources) are available to ask questions and get further help.
+* [Additional Resources](./docs/learning/CommunityResources) are available to ask questions and get further help.
 * [Release Notes](./ReleaseNotes) describes changes from previous versions.
-* [Contributions](./Contributing) to iModelJs are welcome.
+* [Contributions](./Contributing) to iModel.js are welcome.
 
 ## About this Repository
 
-This repository is a *monorepo* that holds the source code to several iModelJs npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a *monorepo* that holds the source code to several iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
 
 See [rush.json](./rush.json) for the list of packages. These packages are described below:
 
