@@ -1,23 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Backstage /> renders correctly 1`] = `
-<div
-  className="nz-backstage-backstage"
-  onClick={[Function]}
->
+<Fragment>
   <div
-    className="nz-items"
+    className="nz-backstage-backstage_Overlay nz-show"
+    onClick={[Function]}
   />
-</div>
+  <div
+    className="nz-backstage-backstage"
+  >
+    <div
+      className="nz-header"
+    />
+    <ul />
+    <div
+      className="nz-footer"
+    />
+  </div>
+</Fragment>
 `;
 
 exports[`<Backstage /> should set is-open class 1`] = `
-<div
-  className="nz-backstage-backstage nz-is-open"
-  onClick={[Function]}
->
+<Fragment>
   <div
-    className="nz-items"
+    className="nz-backstage-backstage_Overlay nz-open nz-show"
+    onClick={[Function]}
   />
-</div>
+  <div
+    className="nz-backstage-backstage nz-open"
+  >
+    <div
+      className="nz-header"
+    />
+    <ul />
+    <div
+      className="nz-footer"
+    />
+  </div>
+</Fragment>
 `;

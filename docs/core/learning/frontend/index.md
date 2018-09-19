@@ -29,7 +29,7 @@ The iModel.js frontend library is delivered in the **npm package** `@bentley/imo
 
 ### Supported
 
-* Chrome
+* Chrome (recommended for development)
 * Firefox
 * Safari
 * Edge

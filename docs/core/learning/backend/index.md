@@ -30,14 +30,15 @@ App backends, services, and agents must depend on @bentley/imodeljs-backend.
   * [Open an IModelDb](./IModelDb.md)
   * [Synchronizing with iModelHub](./IModelDbSync.md)
   * [Writing to an IModelDb](./IModelDbReadwrite.md)
-    * [Concurrency control](./ConcurrencyControl.md)
+  * [Concurrency control](./ConcurrencyControl.md)
 
 * Working with Schemas and Elements in TypeScript
   * [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
 
-* Loading and Creating Elements, Aspects, and Models
+* Loading and Creating Elements, ElementAspects, and Models
   * [Access Elements](./AccessElements.md)
   * [Create Elements](./CreateElements.md)
+  * [Access ElementAspects](./AccessElementAspects.md)
   * [Access Models](./AccessModels.md)
   * [Create Models](./CreateModels.md)
 
