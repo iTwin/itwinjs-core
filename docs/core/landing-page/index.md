@@ -25,12 +25,12 @@ middleContent: [
 ]
 features:
   [
-    {header: "Aligned", icon: "assets/assets_bullet-code.svg", description: 'An iModel can combine information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The vocabulary of iModels is BIS. <a href="bis/index.html">More...</a>'},
-    {header: "Accountable", icon: "assets/assets_bullet-lock.svg", description: 'Change is a first class concept in iModel.js. Knowing who changed what and when adds a new dimension (time) to your Digital Twin. iModelHub stores the <i>timeline of changes</i> for an iModel. <a href="learning/imodelhub">More...</a>'},
-    {header: "Accessible", icon: "assets/assets_bullet-users.svg", description: 'iModel.js is infinitely scalable. It follows the microservices pattern between frontend and backend, coupled with a distributed database. <a href="learning/softwarearchitecture">More...</a>'},
-    {header: "Approachable", icon: "assets/assets_bullet-chat.svg", description: 'Programmers love iModel.js because it purposely builds on the most modern and popular technologies and frameworks available, minimizing the out-of-the-box learning  curve.' },
-    {header: "Anywhere", icon: "assets/assets_bullet-devices.svg", description: 'Write your application logic and user interface once and run it on Cloud, Desktop, Web, and Mobile devices. <a href="learning/portability">More...</a>'},
-    {header: "Amazing", icon: "assets/assets_bullet-speed.svg", description: 'iModel.js handles the complexity of managing large scale distributed Digital Twins efficiently so you can focus on other things. The library is modular so you only use what you need.' },
-    {header: "About", icon: "assets/assets_bullet-chat.svg", description: 'There are lots of resources to ask questions, make suggestions, and get help. We would also love to have your contributions. <a href="learning/communityresources">More...</a>'}
+    {header: "Aligned", icon: "assets/bullet-code.svg", description: 'An iModel can combine information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The vocabulary of iModels is BIS. <a href="bis/index.html">More...</a>'},
+    {header: "Accountable", icon: "assets/bullet-lock.svg", description: 'Change is a first class concept in iModel.js. Knowing who changed what and when adds a new dimension (time) to your Digital Twin. iModelHub stores the <i>timeline of changes</i> for an iModel. <a href="learning/imodelhub">More...</a>'},
+    {header: "Accessible", icon: "assets/bullet-users.svg", description: 'iModel.js is infinitely scalable. It follows the <i>microservices</i> pattern between frontend and backend, coupled with a distributed database. <a href="learning/softwarearchitecture">More...</a>'},
+    {header: "Approachable", icon: "assets/bullet-chat.svg", description: 'Programmers love iModel.js because it purposely builds on the most modern and popular technologies and frameworks available, minimizing the out-of-the-box learning  curve.' },
+    {header: "Anywhere", icon: "assets/bullet-devices.svg", description: 'Write your application logic and user interface once and run it on Cloud, Desktop, Web, and Mobile devices. <a href="learning/portability">More...</a>'},
+    {header: "Amazing", icon: "assets/bullet-speed.svg", description: 'iModel.js handles the complexity of managing a large scale distributed Digital Twin efficiently so you can focus on other things. The library is modular so you only use what you need.' },
+    {header: "About", icon: "assets/bullet-chat.svg", description: 'There are lots of resources to ask questions, make suggestions, and get help. We would also love to have your contributions. <a href="learning/communityresources">More...</a>'}
   ]
 ---
