@@ -58,12 +58,12 @@ vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale
 }`;
 
 const computeAnimationDisplacement = `
-vec3 computeAnimationDisplacement(float frameIndex0, float fraction, vec3 origin, vec3 scale) {
+vec3 computeAnimationDisplacement(float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
 if (frameIndex0 < 0.0)
   return vec3(0.0, 0.0, 0.0);
 vec3 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
 if (fraction > 0.0) {
-  vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex0 + u_vertParams.w * 2.0, origin, scale);
+  vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex1, origin, scale);
   displacement += fraction * (displacement1 - displacement);
   }
 return displacement;
@@ -75,10 +75,10 @@ vec3 computeAnimationFrameNormal(float frameIndex) {
   return octDecodeNormal(enc.xy);
 }`;
 const computeAnimationNormal = `
-vec3 computeAnimationNormal(float frameIndex0, float fraction) {
+vec3 computeAnimationNormal(float frameIndex0, float frameIndex1, float fraction) {
 vec3 normal = computeAnimationFrameNormal(frameIndex0);
 if (fraction > 0.0) {
-  vec3 normal1 = computeAnimationFrameNormal(frameIndex0 + u_vertParams.w);
+  vec3 normal1 = computeAnimationFrameNormal(frameIndex1);
   normal += fraction * (normal1 - normal);
   }
 return normal;
@@ -91,10 +91,10 @@ float computeAnimationFrameParam(float frameIndex, float origin, float scale) {
 }`;
 
 const computeAnimationParam = `
-vec2 computeAnimationParam(float frameIndex0, float fraction, float origin, float scale) {
+vec2 computeAnimationParam(float frameIndex0, float frameIndex1, float fraction, float origin, float scale) {
 float param = computeAnimationFrameParam(frameIndex0, origin, scale);
 if (fraction > 0.0) {
-  float param1 = computeAnimationFrameParam(frameIndex0 + u_vertParams.w, origin, scale);
+  float param1 = computeAnimationFrameParam(frameIndex1, origin, scale);
   param += fraction * (param1 - param);
   }
 return vec2(.5, param);
@@ -138,23 +138,23 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
   });
 }
 
-const scratchAnimParams = new Float32Array(4);        // displacement index, displacement fraction, normal index, normal fraction.
-const scratchAnimScalarParams = new Float32Array(4);  // index, fraction, origin, scale.
-class AnimationLocation { public index: number = 0.0; public fraction: number = 0.0; }
+const scratchAnimDisplacementParams = new Float32Array(3);  // index0, index1, fraction.
+const scratchAnimScalarParams = new Float32Array(3);        // index0, index1, fraction.
+const scratchAnimNormalParams = new Float32Array(3);        // index0, index1, fraction.
+const scratchAnimScalarQParams = new Float32Array(3);        // index0, index1, fraction.
 
-function computeInputLocation(inputs: number[], fraction: number): AnimationLocation {
+function computeAnimParams(params: Float32Array, inputs: number[], indices: number[], fraction: number): void {
   const inputValue = fraction * inputs[inputs.length - 1];
-  const location = new AnimationLocation();
   for (let i = 0; i < inputs.length - 1; i++) {
     if (inputValue >= inputs[i] && inputValue < inputs[i + 1]) {
-      location.index = i;
-      location.fraction = inputValue - inputs[i] / (inputs[i + 1] - inputs[i]);
+      params[0] = indices[i];
+      params[1] = indices[i + 1];
+      params[2] = inputValue - inputs[i] / (inputs[i + 1] - inputs[i]);
     }
   }
-  return location;
 }
 export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
-  scratchAnimParams[0] = scratchAnimParams[1] = scratchAnimParams[2] = scratchAnimParams[3] = -1.0;
+  scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = -1.0;
 
   vert.addFunction(computeAnimationFrameDisplacement);
   vert.addFunction(computeAnimationDisplacement);
@@ -168,25 +168,15 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
     vert.addFunction(computeAnimationParam);
   }
 
-  vert.addUniform("u_animParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_animParams", (uniform, params) => {
-      const animationFraction = params.target.animationFraction;
+  vert.addUniform("u_animDispParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
+      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       if (lutGeom.lut.auxDisplacements !== undefined) {
         const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
-        const displacementLocation = computeInputLocation(auxDisplacement.inputs, animationFraction);
-
-        scratchAnimParams[0] = auxDisplacement.index + displacementLocation.index * lutGeom.lut.numVertices * 2.0;
-        scratchAnimParams[1] = displacementLocation.fraction;
+        computeAnimParams(scratchAnimDisplacementParams, auxDisplacement.inputs, auxDisplacement.indices, params.target.animationFraction);
       }
-      if (lutGeom.lut.auxNormals !== undefined) {
-        const auxNormal = lutGeom.lut.auxNormals[0];  // TBD - allow channel selection.
-        const normalLocation = computeInputLocation(auxNormal.inputs, animationFraction);
-
-        scratchAnimParams[2] = auxNormal.index + normalLocation.index * lutGeom.lut.numVertices;
-        scratchAnimParams[3] = normalLocation.fraction;
-      }
-      uniform.setUniform4fv(scratchAnimParams);
+      uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
   });
   vert.addUniform("u_qAnimDispScale", VariableType.Vec3, (prog) => {
@@ -207,29 +197,50 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
       }
     });
   });
+  if (includeNormal) {
+    vert.addUniform("u_animNormalParams", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_animNormalParams", (uniform, params) => {
+        scratchAnimNormalParams[0] = scratchAnimNormalParams[1] = scratchAnimNormalParams[2] = -1.0;
+        const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+        if (lutGeom.lut.auxNormals !== undefined) {
+          const auxNormal = lutGeom.lut.auxNormals[0];  // TBD - allow channel selection.
+          computeAnimParams(scratchAnimNormalParams, auxNormal.inputs, auxNormal.indices, params.target.animationFraction);
+        }
+        uniform.setUniform3fv(scratchAnimNormalParams);
+      });
+    });
+  }
+
   if (includeTexture) {
-    vert.addUniform("u_qAnimScalarParams", VariableType.Vec4, (prog) => {
+    vert.addUniform("u_qAnimScalarParams", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
         const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
-        const animationFraction = params.target.animationFraction;
-        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = scratchAnimScalarParams[3] = -1.0;
+        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = -1.0;
         if (meshGeom.lut.auxParams !== undefined) {
           const auxParam = meshGeom.lut.auxParams[0];  // TBD - allow channel selection.
-          const paramLocation = computeInputLocation(auxParam.inputs, animationFraction);
+          computeAnimParams(scratchAnimScalarParams, auxParam.inputs, auxParam.indices, params.target.animationFraction);
+        }
+        uniform.setUniform3fv(scratchAnimScalarParams);
+      });
+    });
+    vert.addUniform("u_qAnimScalarQParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_qAnimScalarQParams", (uniform, params) => {
+        const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
+        scratchAnimScalarQParams[0] = scratchAnimScalarQParams[1] = -1.0;
 
-          scratchAnimScalarParams[0] = auxParam.index + paramLocation.index * meshGeom.lut.numVertices;
-          scratchAnimScalarParams[1] = paramLocation.fraction;
+        if (meshGeom.lut.auxParams !== undefined) {
+          const auxParam = meshGeom.lut.auxParams[0];  // TBD - allow channel selection.
           const thematicRange = meshGeom.thematicRange as Range1d;
           if (undefined !== thematicRange) {
             const rangeScale = thematicRange.high - thematicRange.low;
-            scratchAnimScalarParams[2] = Gradient.ThematicSettings.margin + (auxParam.qOrigin - thematicRange.low) / rangeScale;
-            scratchAnimScalarParams[3] = Gradient.ThematicSettings.contentRange * auxParam.qScale / rangeScale;
+            scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin + (auxParam.qOrigin - thematicRange.low) / rangeScale;
+            scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange * auxParam.qScale / rangeScale;
           } else {
-            scratchAnimScalarParams[2] = Gradient.ThematicSettings.margin;
-            scratchAnimScalarParams[3] = Gradient.ThematicSettings.contentRange / 0xffff;
+            scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin;
+            scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange / 0xffff;
           }
+          uniform.setUniform2fv(scratchAnimScalarQParams);
         }
-        uniform.setUniform4fv(scratchAnimScalarParams);
       });
     });
   }

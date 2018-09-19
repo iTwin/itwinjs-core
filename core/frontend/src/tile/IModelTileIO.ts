@@ -466,6 +466,7 @@ export namespace IModelTileIO {
             qOrigin: displacementJson.qOrigin,
             qScale: displacementJson.qScale,
             inputs: displacementJson.inputs,
+            indices: displacementJson.indices,
           }));
         }
       }
@@ -477,6 +478,7 @@ export namespace IModelTileIO {
             index: normalJson.index,
             name: normalJson.name,
             inputs: normalJson.inputs,
+            indices: normalJson.indices,
           }));
         }
       }
@@ -490,6 +492,7 @@ export namespace IModelTileIO {
             qOrigin: paramJson.qOrigin,
             qScale: paramJson.qScale,
             inputs: paramJson.inputs,
+            indices: paramJson.indices,
           }));
         }
       }
