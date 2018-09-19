@@ -1,6 +1,6 @@
 # The App Backend
 
-The backend of an app refers to the layers of software that are concerned mainly with data access, as described in the [app architecture overview](../../overview/SoftwareArchitecture.md). The backend may be in the form of a [service or agent](../../overview/App.md#agents-and-services) or an [app-specific backend](../../overview/App.md#app-backend).
+The backend of an app refers to the layers of software that are concerned mainly with data access, as described in the [app architecture overview](../../learning/SoftwareArchitecture.md). The backend may be in the form of a [service or agent](../../learning/App.md#agents-and-services) or an [app-specific backend](../../learning/App.md#app-backend).
 
 The backend:
 

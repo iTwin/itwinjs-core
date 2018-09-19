@@ -2,7 +2,7 @@
 
 This article describes the technologies and best practices that make iModelJs apps portable. An well-written iModelJs app will run on many platforms without modification.
 
-In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/AppTailoring.md).
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../learning/AppTailoring.md).
 
 This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 
@@ -18,7 +18,7 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 ## Frontend Portability
 
-Since an iModelJs app [frontend](../overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
+Since an iModelJs app [frontend](../learning/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
 ### Using Plaform-specfic Modules in the Frontend
 In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
@@ -34,7 +34,7 @@ if (isIos) {
 ## Backend Portability
 
 ### Services and Agents
-True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
+True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../learning/RpcInterface.md#web-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.

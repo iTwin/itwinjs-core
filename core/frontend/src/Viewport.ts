@@ -321,7 +321,7 @@ export interface ViewportAnimator {
 }
 
 /**
- * A ViewportAnimator that animated decorations. While the animator is
+ * A ViewportAnimator that animates decorations. While the animator is
  * active, decorations will be invalidated on each frame. The animator's
  * animateDecorations() function will be invoked to update any animation state; then
  * decorations will be re-requested and rendered.

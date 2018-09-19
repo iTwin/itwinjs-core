@@ -47,7 +47,7 @@ export * from "./NoRenderApp";
  */
 /**
  * @docs-group-description IModelConnection
- * Classes for working with a connection to an [iModel briefcase]($docs/overview/IModels.md)
+ * Classes for working with a connection to an [iModel briefcase]($docs/learning/IModels.md)
  */
 /**
  * @docs-group-description ElementState

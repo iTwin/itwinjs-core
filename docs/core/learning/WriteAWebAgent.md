@@ -1,6 +1,6 @@
 # Write A Web Agent
 
-To write a [Web Agent](../overview/App.md#imodel-agents), you will do the following:
+To write a [Web Agent](../learning/App.md#imodel-agents), you will do the following:
 
 1. Write initialization logic, such as:
     * Start [IModelHost](./backend/IModelHost.md)

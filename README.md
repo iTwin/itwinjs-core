@@ -9,7 +9,7 @@ The iModelJs library is an open source library for creating and accessing iModel
 * [This Overview](./docs/index) explains the purpose and organization of the library.
 * [These Tutorials](./docs/tutorials/index) provide examples of its use.
 * The [API Documentation](./api/) gives details of the classes and functions.
-* [Additional Resources](./docs/overview/CommunityResources) are available to ask questions and get further help.
+* [Additional Resources](./docs/learning/CommunityResources) are available to ask questions and get further help.
 * [Release Notes](./ReleaseNotes) describes changes from previous versions.
 * [Contributions](./Contributing) to iModelJs are welcome.
 

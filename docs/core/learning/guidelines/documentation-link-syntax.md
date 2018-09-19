@@ -59,7 +59,7 @@ For example:
 ```ts
 /** in a TypeDoc comment
  * @see [label]($docs/learning/path/filename.md#section)
- * @see [label]($docs/overview/path/filename.md#section)
+ * @see [label]($docs/learning/path/filename.md#section)
  */
 
 ```

@@ -1,6 +1,6 @@
 # Write an iModel Bridge
 
-As explained in the [overview](../overview/imodel-bridges.md), a "bridge" is a program that:
+As explained in the [overview](../learning/imodel-bridges.md), a "bridge" is a program that:
 1. Reads information from a data source,
 2. Aligns the source data with the BIS schema and preferrably a domain schema, and
 3. Writes BIS data to an iModel.
@@ -13,7 +13,7 @@ Specificaly, a bridge must:
 * Convert Changed Data
   * Connect to the data source.
   * Detect changes to the source data.
-  * [Transform](../overview/imodel-bridges.md#data-alignment) the new or changed source data into the target BIS schema.
+  * [Transform](../learning/imodel-bridges.md#data-alignment) the new or changed source data into the target BIS schema.
   * Write the resulting BIS data to the local briefcase.
   * Remove BIS data corresponding to deleted source data.
   * Obtain required Locks and Codes from the iModel server and/or code server.
@@ -59,7 +59,7 @@ Here is a simple example of a fictitious source data format and the logic to con
 ## Detecting and pushing changes
 
 Rather than starting over when the source data changes, a bridge should be able to detect and convert only the changes. That makes for compact, meaningful ChangeSets, which are added to the iModel's
-[timeline](../overview/IModelHub.md#the-timeline-of-changes-to-an-imodel).
+[timeline](../learning/IModelHub.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
 

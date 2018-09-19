@@ -42,7 +42,7 @@ tableRowAnchors: true
 |**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. [FeatureGates](./common/FeatureGates.md) are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
-|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../overview/App.md#app-frontend)
+|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../learning/App.md#app-frontend)
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.
@@ -68,7 +68,7 @@ tableRowAnchors: true
 |**Props**|iModelJs uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**RPC**|Remote procedure call. Allows a client to invoke an operation in a service. Web apps use HTTP to implement RPC calls, while desktop apps use pipes.
-|**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../overview/RpcInterface.md) for more information.
+|**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../learning/RpcInterface.md) for more information.
 |**Rush**|A tool for [managing multiple NPM packages](http://rushjs.io/) within a single git repository.
 |**Schema**|See ECSchema
 |**SheetModel**|A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to [DrawingViewDefinition]($backend)s. or [SpatialViewDefinition]($backend)s.

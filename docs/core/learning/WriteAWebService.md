@@ -1,6 +1,6 @@
 # Write A Web Service
 
-To write a [Web Service](../overview/App.md#imodel-services), you will do the following:
+To write a [Web Service](../learning/App.md#imodel-services), you will do the following:
 
 1. Write initialization logic, such as:
     * Start [IModelHost](./backend/IModelHost.md)

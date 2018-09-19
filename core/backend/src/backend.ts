@@ -43,7 +43,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description iModels
- * Classes for working with [iModels]($docs/overview/iModels.md)
+ * Classes for working with [iModels]($docs/learning/iModels.md)
  */
 /**
  * @docs-group-description Schema
