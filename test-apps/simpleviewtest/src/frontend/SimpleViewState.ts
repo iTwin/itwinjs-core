@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IModelRepository, Project } from "@bentley/imodeljs-clients/lib";
+import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients/lib";
 import { IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/common";
 
@@ -9,7 +9,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/common";
 export class SimpleViewState {
   public accessToken?: AccessToken;
   public project?: Project;
-  public iModel?: IModelRepository;
+  public iModel?: HubIModel;
   public iModelConnection?: IModelConnection;
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;

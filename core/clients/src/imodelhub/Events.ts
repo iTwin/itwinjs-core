@@ -297,7 +297,7 @@ export class EventSubscriptionHandler {
   /**
    * Get relative url for EventSubscription requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param instanceId Id of the subscription.
    */
   private getRelativeUrl(imodelId: string, instanceId?: string) {
@@ -307,7 +307,7 @@ export class EventSubscriptionHandler {
   /**
    * Create an [[EventSubscription]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -332,7 +332,7 @@ export class EventSubscriptionHandler {
   /**
    * Update an [[EventSubscription]]. Can change the [[EventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[EventSubscriptionHandler.create]] that hasn't expired.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param subscription Updated EventSubscription.
    * @return EventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[EventSubscription]] does not exist with the specified subscription.wsgId.
@@ -357,7 +357,7 @@ export class EventSubscriptionHandler {
   /**
    * Delete an [[EventSubscription]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param eventSubscriptionId Id of the EventSubscription.
    * @returns Resolves if the EventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if EventSubscription does not exist with the specified subscription.wsgId.
@@ -406,7 +406,7 @@ export class EventHandler extends EventBaseHandler {
   /**
    * Get relative url for EventSAS requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    */
   private getEventSASRelativeUrl(imodelId: string): string {
     return `/Repositories/iModel--${imodelId}/iModelScope/EventSAS/`;
@@ -415,7 +415,7 @@ export class EventHandler extends EventBaseHandler {
   /**
    * Get event SAS Token. Used to authenticate for [[EventHandler.getEvent]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @return SAS Token to connect to the topic.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
@@ -483,7 +483,7 @@ export class EventHandler extends EventBaseHandler {
    * Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
    * @param authenticationCallback Callback used to get AccessToken. Only the first registered authenticationCallback for this subscriptionId will be used.
    * @param subscriptionId Id of EventSubscription.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param listener Callback that is called when an [[IModelHubEvent]] is received.
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.

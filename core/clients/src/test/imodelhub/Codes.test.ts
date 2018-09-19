@@ -7,7 +7,7 @@ import * as utils from "./TestUtils";
 import { AccessToken, IModelClient } from "../../";
 
 import {
-  CodeState, WsgCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubClientError, CodeSequence, CodeSequenceType,
 } from "../../";
 
@@ -17,7 +17,7 @@ import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core
 
 chai.should();
 
-function containsCode(codes: WsgCode[], wantCode: WsgCode) {
+function containsCode(codes: HubCode[], wantCode: HubCode) {
   for (const code of codes) {
     if (code.briefcaseId === wantCode.briefcaseId
       && code.codeScope === wantCode.briefcaseId
@@ -62,7 +62,7 @@ describe("iModelHub CodeHandler", () => {
     const result = await iModelClient.Codes().update(alctx, accessToken, iModelId, [code1, code2]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(2);
-    result.forEach((value: WsgCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
+    result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
   });
 
   it("should fail on conflicting codes", async () => {
@@ -76,7 +76,7 @@ describe("iModelHub CodeHandler", () => {
     const result = await iModelClient.Codes().update(alctx, accessToken, iModelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
-    result.forEach((value: WsgCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
+    result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
 
     code2.briefcaseId = briefcaseId2;
     code3.briefcaseId = briefcaseId2;
@@ -107,7 +107,7 @@ describe("iModelHub CodeHandler", () => {
     const result = await iModelClient.Codes().update(alctx, accessToken, iModelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
-    result.forEach((value: WsgCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
+    result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
 
     code2.briefcaseId = briefcaseId2;
     code3.briefcaseId = briefcaseId2;
@@ -286,7 +286,7 @@ describe("iModelHub CodeHandler", () => {
     const codes = await iModelClient.Codes().get(alctx, accessToken, iModelId, query);
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
-    codes.forEach((code: WsgCode) => {
+    codes.forEach((code: HubCode) => {
       chai.expect(code.briefcaseId).to.be.not.equal(briefcaseId);
     });
   });
@@ -306,7 +306,7 @@ describe("iModelHub CodeHandler", () => {
   it("should not create a query by codes with invalid codes", () => {
     let error: IModelHubClientError | undefined;
     try {
-      new CodeQuery().byCodes([new WsgCode()]);
+      new CodeQuery().byCodes([new HubCode()]);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

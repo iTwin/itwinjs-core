@@ -4,7 +4,7 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { Version, HubIModel, VersionQuery, IModelQuery } from "../imodelhub";
 import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
@@ -75,7 +75,7 @@ export class TestConfig {
   }
 
   /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModelRepository, version?: Version }> {
+  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: HubIModel, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
     const imodelHubClient: IModelClient = new IModelHubClient(deploymentEnv);
 
@@ -85,7 +85,7 @@ export class TestConfig {
     });
     expect(project);
 
-    let iModel: IModelRepository | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let iModel: HubIModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     if (iModelName) {
       const iModels = await imodelHubClient.IModels().get(actx, accessToken, project.wsgId, new IModelQuery().byName(iModelName));

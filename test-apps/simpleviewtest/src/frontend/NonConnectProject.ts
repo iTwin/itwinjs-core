@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IModelRepository, UserProfile } from "@bentley/imodeljs-clients";
+import { AccessToken, HubIModel, UserProfile } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
@@ -36,7 +36,7 @@ export class NonConnectProject extends ProjectAbstraction {
     IModelApp.iModelClient = new IModelBankClient(iminfo.url, iminfo.hubDeploymentEnv, undefined);
 
     // Open the iModel
-    state.iModel = { wsgId: iminfo.iModelId, ecId: iminfo.iModelId } as IModelRepository;
+    state.iModel = { wsgId: iminfo.iModelId, ecId: iminfo.iModelId } as HubIModel;
     state.project = { wsgId: "", ecId: "", name: iminfo.name };
     showStatus("opening iModel", state.project.name);
     state.iModelConnection = await IModelConnection.open(state.accessToken!, "", iminfo.iModelId, OpenMode.Readonly);

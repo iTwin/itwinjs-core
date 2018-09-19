@@ -4,7 +4,7 @@
 /** @module iModels */
 
 import { Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, WsgCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
+import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
@@ -167,8 +167,8 @@ export class ConcurrencyControl {
       return Promise.reject(err);
   }
 
-  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string, value?: string): WsgCode {
-    const requestCode = new WsgCode();
+  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string, value?: string): HubCode {
+    const requestCode = new HubCode();
     requestCode.briefcaseId = briefcaseEntry.briefcaseId;
     requestCode.state = CodeState.Reserved;
     requestCode.codeSpecId = codeSpecId;
@@ -177,11 +177,11 @@ export class ConcurrencyControl {
     return requestCode;
   }
 
-  private buildHubCodesFromCode(briefcaseEntry: BriefcaseEntry, code: Code): WsgCode {
+  private buildHubCodesFromCode(briefcaseEntry: BriefcaseEntry, code: Code): HubCode {
     return this.buildHubCodes(briefcaseEntry, code.spec.toString(), code.scope, code.value);
   }
 
-  private buildHubCodesFromRequest(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): WsgCode[] | undefined {
+  private buildHubCodesFromRequest(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): HubCode[] | undefined {
     const reqAny = ConcurrencyControl.convertRequestToAny(req);
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
@@ -189,7 +189,7 @@ export class ConcurrencyControl {
     return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
   }
 
-  private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): WsgCode[] | undefined {
+  private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): HubCode[] | undefined {
     return codes.map((code: Code) => this.buildHubCodesFromCode(briefcaseEntry, code));
   }
 
@@ -244,13 +244,13 @@ export class ConcurrencyControl {
   }
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
-  private async reserveCodes2(actx: ActivityLoggingContext, request: WsgCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<WsgCode[]> {
+  private async reserveCodes2(actx: ActivityLoggingContext, request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
     actx.enter();
     return BriefcaseManager.imodelClient.Codes().update(actx, accessToken, briefcaseEntry.iModelId, request);
   }
 
   /** process the Code-specific part of the request. */
-  private async reserveCodesFromRequest(actx: ActivityLoggingContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<WsgCode[]> {
+  private async reserveCodesFromRequest(actx: ActivityLoggingContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
     actx.enter();
     const request = this.buildHubCodesFromRequest(briefcaseEntry, req);
     if (request === undefined)
@@ -260,7 +260,7 @@ export class ConcurrencyControl {
   }
 
   /** Reserve the specified codes */
-  public async reserveCodes(actx: ActivityLoggingContext, accessToken: AccessToken, codes: Code[]): Promise<WsgCode[]> {
+  public async reserveCodes(actx: ActivityLoggingContext, accessToken: AccessToken, codes: Code[]): Promise<HubCode[]> {
     actx.enter();
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
@@ -273,7 +273,7 @@ export class ConcurrencyControl {
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
-  public async queryCodeStates(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<WsgCode[]> {
+  public async queryCodeStates(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<HubCode[]> {
     actx.enter();
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
@@ -474,8 +474,8 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: WsgCode[] = [];
-    public unavailableLocks: WsgCode[] = [];
+    public unavailableCodes: HubCode[] = [];
+    public unavailableLocks: HubCode[] = [];
   }
 
   /** Code manager */
@@ -521,7 +521,7 @@ export namespace ConcurrencyControl {
      * @param scopeId The scope to query
      * @param value Optional. The Code value to query.
      */
-    public async query(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<WsgCode[]> {
+    public async query(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<HubCode[]> {
       return this._iModel.concurrencyControl.queryCodeStates(actx, accessToken, specId, scopeId, value);
     }
   }

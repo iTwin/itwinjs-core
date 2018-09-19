@@ -189,10 +189,11 @@ export class Sample {
   }
   public static createBsplineCurves(): BSplineCurve3d[] {
     const result: BSplineCurve3d[] = [];
+    const zScale = 0.1;
     for (const order of [2, 3, 4, 5]) {
       const points = [];
       for (const x of [0, 1, 2, 3, 4, 5, 7]) {
-        points.push(Point3d.create(1, x, 1 + x * x));
+        points.push(Point3d.create(1, x, zScale * (1 + x * x)));
       }
       const curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
       result.push(curve);
@@ -201,14 +202,15 @@ export class Sample {
 
   }
   public static createBspline3dHCurves(): BSplineCurve3dH[] {
-    const result: BSplineCurve3d[] = [];
+    const result: BSplineCurve3dH[] = [];
+    const zScale = 0.1;
     for (const weightVariation of [0, 0.125]) {
       for (const order of [2, 3, 4, 5]) {
         const points = [];
         for (const x of [0, 1, 2, 3, 4, 5, 7]) {
-          points.push(Point4d.create(1, x, 1 + x * x, 1.0 + weightVariation * Math.sin(x * Math.PI * 0.25)));
+          points.push(Point4d.create(1, x, zScale * (1 + x * x), 1.0 + weightVariation * Math.sin(x * Math.PI * 0.25)));
         }
-        const curve = BSplineCurve3dH.createUniformKnots(points, order) as BSplineCurve3d;
+        const curve = BSplineCurve3dH.createUniformKnots(points, order) as BSplineCurve3dH;
         result.push(curve);
       }
     }

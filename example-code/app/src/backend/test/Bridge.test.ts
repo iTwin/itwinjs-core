@@ -12,7 +12,7 @@ import { Barrier } from "../BarrierElement";
 import { Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken, IModelRepository } from "@bentley/imodeljs-clients";
+import { AccessToken, HubIModel } from "@bentley/imodeljs-clients";
 import { IModelDb, BriefcaseManager, ConcurrencyControl, OpenParams, IModelHost, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__
@@ -58,7 +58,7 @@ async function queryProjectIdByName(activityContext: ActivityLoggingContext, acc
   });
 }
 
-async function queryIModelByName(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
+async function queryIModelByName(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
   const client = BriefcaseManager.imodelClient as IModelHubClient;
   const iModels = await client.IModels().get(activityContext, accessToken, projectId, new IModelQuery().byName(iModelName));
   if (iModels.length === 0)
@@ -76,7 +76,7 @@ async function createIModel(activityContext: ActivityLoggingContext, accessToken
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: IModelRepository = await BriefcaseManager.imodelClient.IModels().create(activityContext, accessToken, projectId, name, seedFile);
+  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.IModels().create(activityContext, accessToken, projectId, name, seedFile);
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }
@@ -160,7 +160,7 @@ describe.skip("Bridge", async () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let seedPathname: string;
-  let imodelRepository: IModelRepository;
+  let imodelRepository: HubIModel;
 
   before(async () => {
     IModelHost.startup();

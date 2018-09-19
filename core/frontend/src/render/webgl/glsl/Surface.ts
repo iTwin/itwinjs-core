@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
 } from "../ShaderBuilder";
 import { FeatureMode } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addIdOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix, addAnimation } from "./Vertex";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
@@ -27,6 +27,7 @@ import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 import { Material } from "../Material";
 import { System } from "../System";
+import { ShaderProgram } from "../ShaderProgram";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -353,4 +354,56 @@ const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) 
 
 export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
+}
+
+export function createProcessClassifierStencilForIdsProgram(context: WebGLRenderingContext): ShaderProgram {
+  const feat = FeatureMode.Pick;
+  const builder = createCommon(false);
+  addShaderFlags(builder);
+
+  addFeatureSymbology(builder, feat, FeatureSymbologyOptions.None);
+  addSurfaceFlags(builder, false);
+  addSurfaceDiscard(builder, feat);
+  addNormal(builder, false);
+
+  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
+  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
+      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+    });
+  });
+
+  addTexture(builder, false);
+
+  builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
+      const surfGeom = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        uniform.setUniform1i(surfGeom.isGlyph ? 1 : 0);
+      }
+    });
+  });
+
+  // Fragment and Vertex
+  addColor(builder, true);
+
+  // Fragment
+  builder.frag.addFunction(getSurfaceColor);
+  addLighting(builder);
+  addWhiteOnWhiteReversal(builder.frag);
+
+  builder.frag.addFunction(GLSLDecode.depthRgb);
+  addIdOutputs(builder.frag);
+
+  addMaterial(builder.frag);
+  // addMonochrome(builder.frag);
+  // addSurfaceDiscardByAlpha(builder.frag);
+
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+
+  return builder.buildProgram(context);
 }
