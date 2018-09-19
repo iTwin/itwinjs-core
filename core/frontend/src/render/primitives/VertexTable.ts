@@ -107,38 +107,45 @@ export interface AuxChannelProps {
   readonly qScale: number[];
   readonly inputs: number[];
 }
-export class AuxDisplacement {
+export interface AuxChannelBaseProps {
+  readonly index: number;
+  readonly name: string;
+  readonly inputs: number[];
+}
+export class AuxChannelBase {
   public readonly index: number;
   public readonly name: string;
-  public readonly qOrigin: Float32Array;
-  public readonly qScale: Float32Array;
   public readonly inputs: number[];
 
-  public constructor(props: AuxChannelProps) {
+  public constructor(props: AuxChannelBaseProps) {
     this.index = props.index;
     this.name = props.name;
+    this.inputs = props.inputs;
+  }
+}
+export class AuxDisplacement extends AuxChannelBase {
+
+  public readonly qOrigin: Float32Array;
+  public readonly qScale: Float32Array;
+
+  public constructor(props: AuxChannelProps) {
+    super(props);
     this.qOrigin = new Float32Array(3);
     this.qScale = new Float32Array(3);
     for (let i = 0; i < 3; i++) {
       this.qOrigin[i] = props.qOrigin[i];
       this.qScale[i] = props.qScale[i];
     }
-    this.inputs = props.inputs;
   }
 }
-export class AuxParam {
-  public readonly index: number;
-  public readonly name: string;
+export class AuxParam extends AuxChannelBase {
   public readonly qOrigin: number;
   public readonly qScale: number;
-  public readonly inputs: number[];
 
   public constructor(props: AuxChannelProps) {
-    this.index = props.index;
-    this.name = props.name;
+    super(props);
     this.qOrigin = props.qOrigin[0];
     this.qScale = props.qScale[0];
-    this.inputs = props.inputs;
   }
 }
 export interface AuxNormalProps {
@@ -146,15 +153,9 @@ export interface AuxNormalProps {
   readonly name: string;
   readonly inputs: number[];
 }
-export class AuxNormal {
-  public readonly index: number;
-  public readonly name: string;
-  public readonly inputs: number[];
-
+export class AuxNormal extends AuxChannelBase {
   public constructor(props: AuxNormalProps) {
-    this.index = props.index;
-    this.name = props.name;
-    this.inputs = props.inputs;
+    super(props);
   }
 }
 /** Describes a VertexTable. */

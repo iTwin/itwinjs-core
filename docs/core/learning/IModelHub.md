@@ -2,7 +2,7 @@
 
 [iModelHub](http:/www.iModelHub.com) is a cloud service for managing and coordinating access to [iModels](./iModels).
 
-Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases](../learning/backend/Briefcases). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout.) Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../learning/backend/ChangeSets) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like and accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
+Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [briefcases](../Glossary.md#briefcase). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout.) Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../Glossary.md#changeset) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like an accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
 
 iModelHub accepts ChangeSets from iModel.js [backends](../learning/backend/index) through a process called [*Check In*](#upload-changesets), and sends them to other validated users when requested through a process called [*Synchronization*](#download-changesets). iModel.js applications determine when and how to Check In and Synchronize.
 

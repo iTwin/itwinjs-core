@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, IModelHubPermissions } from "../ConnectClients";
+import { ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, IModelHubPermissions, RbacUser } from "../ConnectClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 
@@ -195,4 +195,27 @@ describe("RbacClient", () => {
     chai.expect(permissions & IModelHubPermissions.ManageVersions);
   });
 
+  it("should get the users in the specified project", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    // Get test project
+    const queryOptions: ConnectRequestQueryOptions = {
+      $filter: "Name+eq+'" + TestConfig.projectName + "'",
+    };
+    const project: Project = await connectClient.getProject(actx, accessToken, queryOptions);
+    chai.expect(!!project);
+
+    // Get the user ID we are using that should exist in the returned users
+    const currentUserId = accessToken.getUserProfile()!.userId;
+    // Get users
+    const users: RbacUser[] = await rbacClient.getUsers(actx, accessToken!, project.wsgId);
+
+    // We should have some valid users
+    chai.expect(users.length !== 0);
+    // Test that the user accessing this is existent in the users returned
+    let foundUser = false;
+    users.map((user: RbacUser) => { foundUser = foundUser || (user.wsgId === currentUserId); });
+    chai.expect(foundUser);
+  });
 });
