@@ -31,7 +31,8 @@
   "messageCenter": {
     "messages": "Messages",
     "all": "All",
-    "problems": "Problems"
+    "problems": "Problems",
+    "prompt": "No messages."
   },
   "activityCenter": {
     "percentComplete": "% complete"

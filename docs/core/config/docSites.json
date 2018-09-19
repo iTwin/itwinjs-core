@@ -21,9 +21,9 @@
   },
   "metadata": {
     "home": "landing-page",
-    "logo": "landing-page/assets/assets_imodeljs-logo.svg",
-    "sponsoredByLogo": "landing-page/assets/assets_bentley.svg",
-    "favicon": "overview/imodeljs.ico",
+    "logo": "landing-page/assets/imodeljs-logo.svg",
+    "sponsoredByLogo": "landing-page/assets/bentley.svg",
+    "favicon": "learning/imodeljs.ico",
     "docSiteOrder": [
       "landing-page",
       "getting-started",
