@@ -29,7 +29,7 @@ export interface FeedbackWidgetState {
 
 /**
  * Sample widget component that contains feedback components
- * (ValidationTextbox, InputFieldMessage)
+ * (ValidationTextbox, InputFieldMessage, PointerMessage)
  */
 export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
   /** hidden */
@@ -58,21 +58,6 @@ export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
               </td>
             </tr>
             <tr>
-              <td>Only accepts 'h':</td>
-              <td>
-                {/* Valid only if 'h' is the value provided */}
-                <ValidationTextbox
-                  errorText="Input must be 'h'"
-                  onValueChanged={(value: string) => {
-                    if (value === "h")
-                      return InputStatus.Valid;
-                    return InputStatus.Invalid;
-                  }
-                  }
-                />
-              </td>
-            </tr>
-            <tr>
               <td>No numbers:</td>
               <td>
                 {/* Invalid if value provided is a number */}
@@ -94,7 +79,7 @@ export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
             // The InputFieldMessage class is displayed via a portal, so this element
             // will render under the provided parent rather than under the <table>
             <InputFieldMessage
-              parent={
+              target={
                 this.state.inputMessageParent
               }
               children={

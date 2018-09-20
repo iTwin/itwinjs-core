@@ -15,6 +15,7 @@ export * from "./clientservices/IModelServices";
 export * from "./configurableui";
 export * from "./feedback/ValidationTextbox";
 export * from "./messages/InputField";
+export * from "./messages/Pointer";
 export * from "./pickers/ViewList";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/CategorySelector";

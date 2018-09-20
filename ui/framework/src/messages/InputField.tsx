@@ -20,7 +20,7 @@ const DivWithOnOutsideClick = withOnOutsideClick(Div);
 /** Properties of [[InputField]] component. */
 export interface InputFieldProps extends CommonProps {
   /** Parent of message. */
-  parent: Element | null;
+  target: Element | null;
   /** Message content. */
   children: React.ReactNode;
   /** Function that will close the message */
@@ -31,7 +31,7 @@ export interface InputFieldProps extends CommonProps {
 export class InputField extends React.Component<InputFieldProps> {
   public render(): React.ReactNode {
     return (
-      (this.props.parent) ? ReactDOM.createPortal(this._getErrorMessage(), this.props.parent) : <div />
+      (this.props.target) ? ReactDOM.createPortal(this._getErrorMessage(), this.props.target) : <div />
     );
   }
 

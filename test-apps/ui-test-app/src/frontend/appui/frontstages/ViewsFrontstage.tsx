@@ -12,6 +12,7 @@ import {
   ActivityMessageEndReason,
   NotifyMessageDetails,
   OutputMessagePriority,
+  OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
@@ -254,6 +255,55 @@ export class ViewsFrontstage {
     IModelApp.notifications.endActivityMessage(endReason);
   }
 
+  /** Tool that will display a pointer message on keyboard presses.
+   */
+  private _tool4 = () => {
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
+    details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv,
+      {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      });
+    IModelApp.notifications.outputMessage(details);
+    document.addEventListener("keyup", this._handleTool4Keypress);
+    document.addEventListener("mousemove", this._handleTool4Dismiss);
+  }
+
+  private _handleTool4Keypress = (event: any) => {
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", "", OutputMessageType.Pointer);
+    const midX = window.innerWidth / 2;
+    const midY = window.innerHeight / 2;
+    const offset = 200;
+    switch (event.keyCode) {
+      case 37:
+        details.briefMessage = "Left pressed";
+        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX - offset, y: midY });
+        IModelApp.notifications.outputMessage(details);
+        break;
+      case 38:
+        details.briefMessage = "Up pressed";
+        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY - offset });
+        IModelApp.notifications.outputMessage(details);
+        break;
+      case 39:
+        details.briefMessage = "Right pressed";
+        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX + offset, y: midY });
+        IModelApp.notifications.outputMessage(details);
+        break;
+      case 40:
+        details.briefMessage = "Down pressed";
+        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY + offset });
+        IModelApp.notifications.outputMessage(details);
+        break;
+    }
+  }
+
+  private _handleTool4Dismiss = () => {
+    IModelApp.notifications.closePointerMessage();
+    document.removeEventListener("keyup", this._handleTool4Keypress);
+    document.removeEventListener("mousemove", this._handleTool4Dismiss);
+  }
+
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
@@ -322,6 +372,7 @@ export class ViewsFrontstage {
             <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
             <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
             <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
+            <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" execute={this._tool4} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"

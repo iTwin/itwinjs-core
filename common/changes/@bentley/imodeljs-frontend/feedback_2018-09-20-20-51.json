@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added customized pointer messages to ViewsFrontstage",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Allison.Macdonald@bentley.com"
+}
