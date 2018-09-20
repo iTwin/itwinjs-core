@@ -16,7 +16,7 @@ import {
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton, ToolItemDef } from "@bentley/ui-framework";
+import { ToolButton, ToolItemDef, CommandItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
 import { ZoneState } from "@bentley/ui-framework";
 import { WidgetState } from "@bentley/ui-framework";
@@ -32,6 +32,8 @@ import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
+import { AppToolFormatsProvider } from "../../../frontend/utils/ToolFormatsProvider";
+
 import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
 
 export class ViewsFrontstage {
@@ -202,6 +204,10 @@ export class ViewsFrontstage {
     IModelApp.tools.run("View.Rotate", IModelApp.viewManager.selectedView);
   }
 
+  private _measurePointsCommand = () => {
+    IModelApp.tools.run("Measure.Points", IModelApp.viewManager.selectedView);
+  }
+
   private _tool1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
@@ -258,6 +264,32 @@ export class ViewsFrontstage {
       applicationData: { key: "value" },
     });
 
+    const setLengthFormatMetricCommand = new CommandItemDef({
+      commandId: "setLengthFormatMetric",
+      iconClass: "icon-info",
+      labelKey: "SampleApp:buttons.setLengthFormatMetric",
+      commandHandler: {
+        messageId: "", parameters: null,
+        execute: () => {
+          (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(false);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
+        },
+      },
+    });
+
+    const setLengthFormatImperialCommand = new CommandItemDef({
+      commandId: "setLengthFormatImperial",
+      iconClass: "icon-info",
+      labelKey: "SampleApp:buttons.setLengthFormatImperial",
+      commandHandler: {
+        messageId: "", parameters: null,
+        execute: () => {
+          (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(true);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
+        },
+      },
+    });
+
     const horizontalToolbar =
       <Toolbar
         expandsTo={Direction.Bottom}
@@ -269,6 +301,15 @@ export class ViewsFrontstage {
             <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this._toggleCameraCommand} />
             <ToolButton toolId="walk" iconClass="icon-walk" execute={this._walkCommand} />
             <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this._rotateCommand} />
+            <ToolButton toolId="measure" iconClass="icon-measure-distance" execute={this._measurePointsCommand} />
+            <GroupButton
+              labelKey="SampleApp:buttons.toolGroup"
+              iconClass="icon-placeholder"
+              items={[setLengthFormatMetricCommand, setLengthFormatImperialCommand]}
+              direction={Direction.Bottom}
+              itemsInColumn={4}
+            />
+
           </>
         }
       />;

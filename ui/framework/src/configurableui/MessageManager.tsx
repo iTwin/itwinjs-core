@@ -221,6 +221,7 @@ export class MessageManager {
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
   public static outputPrompt(_prompt: string): void {
+    UiFramework.store.dispatch({ type: "ConfigurableUI:SET_TOOLPROMPT", payload: _prompt });
     // TODO - outputPrompt
   }
 

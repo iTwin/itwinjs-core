@@ -11,6 +11,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
+import { QuantityFormatManager } from "./QuantityFormatManager";
 import { RenderSystem } from "./render/System";
 import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
@@ -37,6 +38,7 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
+  public static quantityFormatManager: QuantityFormatManager;
   public static toolAdmin: ToolAdmin;
   public static accuDraw: AccuDraw;
   public static accuSnap: AccuSnap;
@@ -96,6 +98,8 @@ export class IModelApp {
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
+
+    IModelApp.quantityFormatManager = new QuantityFormatManager(); // create before onStartup, so app can set format provider
 
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 

@@ -31,6 +31,7 @@ export * from "./NotificationManager";
 export * from "./SelectionSet";
 export * from "./Sprites";
 export * from "./TentativePoint";
+export * from "./QuantityFormatManager";
 export * from "./ViewContext";
 export * from "./ViewManager";
 export * from "./Viewport";

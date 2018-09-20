@@ -59,6 +59,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/imodeljs-quantity",
+      "projectFolder": "core/quantity",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
       "reviewCategory": "frontend",
