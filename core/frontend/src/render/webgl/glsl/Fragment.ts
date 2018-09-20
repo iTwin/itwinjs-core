@@ -111,31 +111,6 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 }
 
-const assignIdOutputsMRT = `
-  FragColor0 = baseColor;
-  FragColor1 = v_element_id0;
-  FragColor2 = v_element_id1;
-`;
-
-const assignIdOutputsMP = `
-  if (1 == u_renderTargetIndex)
-    FragColor = v_element_id0;
-  else if (2 == u_renderTargetIndex)
-    FragColor = v_element_id1;
-  else
-    FragColor = baseColor;
-`;
-
-export function addIdOutputs(frag: FragmentShaderBuilder): void {
-  if (System.instance.capabilities.supportsMRTPickShaders) {
-    frag.addDrawBuffersExtension();
-    frag.set(FragmentShaderComponent.AssignFragData, assignIdOutputsMRT);
-  } else {
-    addRenderTargetIndex(frag);
-    frag.set(FragmentShaderComponent.AssignFragData, assignIdOutputsMP);
-  }
-}
-
 export namespace GLSLFragment {
   export const assignFragColor = "FragColor = baseColor;";
 

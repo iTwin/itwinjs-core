@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP #34200 and #34205 - Add select and flash to classified reality data.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "marc.neely@bentley.com"
+}

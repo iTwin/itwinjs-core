@@ -295,7 +295,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const vf = params.target.currentViewFlags;
-      const useLighting = params.geometry.wantMixHiliteColorForFlash(vf);
+      const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
       const transparency = useLighting ? 0 : 255;
       const hiliteColor = FloatRgba.fromColorDef(params.target.hiliteSettings.color, transparency);
       hiliteColor.bind(uniform);
