@@ -253,6 +253,7 @@ describe.only("Layout", () => {
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
       const bottomLayout = new LayoutMock(new Rectangle(0, 225, 10, 250));
       sut.bottomLayouts = [bottomLayout];
+      bottomLayout.getShrinkTop = (px) => px;
       bottomLayout.tryShrinkTop = (px) => {
         shrinkBottomLayoutBy = px;
         return 0;
@@ -266,9 +267,8 @@ describe.only("Layout", () => {
       const sut = new LayoutMock(new Rectangle(0, 50, 10, 150));
       const bottomLayout = new LayoutMock(new Rectangle(0, 225, 10, 250));
       sut.bottomLayouts = [bottomLayout];
-      bottomLayout.tryShrinkTop = (px) => {
-        return px;
-      };
+      bottomLayout.getShrinkTop = (px) => px;
+      bottomLayout.tryShrinkTop = (px) => px;
       const grown = sut.tryGrowBottom(100);
 
       grown.should.eq(100);
