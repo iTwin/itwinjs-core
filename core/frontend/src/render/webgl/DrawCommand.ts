@@ -6,7 +6,7 @@
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform } from "@bentley/geometry-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
@@ -148,7 +148,7 @@ class PrimitiveCommand extends DrawCommand {
 }
 
 /** Draw a batch primitive, possibly with symbology overridden per-feature */
-class BatchPrimitiveCommand extends PrimitiveCommand {
+export class BatchPrimitiveCommand extends PrimitiveCommand {
   private readonly _batch: Batch;
 
   public constructor(primitive: Primitive, batch: Batch) {
@@ -164,6 +164,20 @@ class BatchPrimitiveCommand extends PrimitiveCommand {
   public postExecute(exec: ShaderProgramExecutor): void {
     exec.target.currentOverrides = undefined;
     exec.target.currentPickTable = undefined;
+  }
+
+  public computeIsFlashed(flashedId: Id64): boolean {
+    if (this.primitive instanceof SurfacePrimitive) {
+      const sp = this.primitive as SurfacePrimitive;
+      if (undefined !== sp.meshData.features && sp.meshData.features.isUniform) {
+        const fi = sp.meshData.features.uniform!;
+        const feature = this._batch.featureTable.findFeature(fi);
+        if (undefined !== feature) {
+          return feature.elementId === flashedId.toString();
+        }
+      }
+    }
+    return !flashedId.isValid;
   }
 }
 
