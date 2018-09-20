@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Rework animation data to pack values and simplify extraction.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

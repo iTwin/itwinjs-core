@@ -190,7 +190,7 @@ const computeNormal = `
 
 const computeAnimatedNormal = `
   if (u_animNormalParams.x >= 0.0)
-    return normalize(u_nmx * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z);
+    return normalize(u_nmx * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
 ` + computeNormal;
 
 const applyBackgroundColor = `
@@ -210,7 +210,7 @@ const computeTexCoord = `
 `;
 const computeAnimatedTexCoord = `
   if (u_animScalarQParams.x >= 0.0)
-    return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_qAnimScalarQParams.y);
+    return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_animScalarQParams.y);
 ` + computeTexCoord;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }

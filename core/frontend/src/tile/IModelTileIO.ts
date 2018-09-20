@@ -461,7 +461,6 @@ export namespace IModelTileIO {
         auxDisplacements = [];
         for (const displacementJson of json.auxDisplacements) {
           auxDisplacements.push(new AuxDisplacement({
-            index: displacementJson.index,
             name: displacementJson.name,
             qOrigin: displacementJson.qOrigin,
             qScale: displacementJson.qScale,
@@ -475,7 +474,6 @@ export namespace IModelTileIO {
         auxNormals = [];
         for (const normalJson of json.auxNormals) {
           auxNormals.push(new AuxNormal({
-            index: normalJson.index,
             name: normalJson.name,
             inputs: normalJson.inputs,
             indices: normalJson.indices,
@@ -487,7 +485,6 @@ export namespace IModelTileIO {
         auxParams = [];
         for (const paramJson of json.auxParams) {
           auxParams.push(new AuxParam({
-            index: paramJson.index,
             name: paramJson.name,
             qOrigin: paramJson.qOrigin,
             qScale: paramJson.qScale,

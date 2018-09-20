@@ -101,7 +101,6 @@ const scratchColorDef = new ColorDef();
 
 /** Describes a auxilliary channel */
 export interface AuxChannelProps {
-  readonly index: number;
   readonly name: string;
   readonly qOrigin: number[];
   readonly qScale: number[];
@@ -109,19 +108,16 @@ export interface AuxChannelProps {
   readonly indices: number[];
 }
 export interface AuxChannelBaseProps {
-  readonly index: number;
   readonly name: string;
   readonly inputs: number[];
   readonly indices: number[];
 }
 export class AuxChannelBase {
-  public readonly index: number;
   public readonly name: string;
   public readonly inputs: number[];
   public readonly indices: number[];
 
   public constructor(props: AuxChannelBaseProps) {
-    this.index = props.index;
     this.name = props.name;
     this.inputs = props.inputs;
     this.indices = props.indices;
@@ -153,7 +149,6 @@ export class AuxParam extends AuxChannelBase {
   }
 }
 export interface AuxNormalProps {
-  readonly index: number;
   readonly name: string;
   readonly inputs: number[];
   readonly indices: number[];
