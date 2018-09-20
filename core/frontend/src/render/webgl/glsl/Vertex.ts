@@ -70,9 +70,11 @@ return displacement;
 }`;
 const computeAnimationFrameNormal = `
 vec3 computeAnimationFrameNormal(float frameIndex) {
-  vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex, u_vertParams.xy, g_vert_center, 1.0);
+  float vertexIndex = floor(g_vertexLUTIndex/2.0);
+  vec2 tc = computeLUTCoords(frameIndex + vertexIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  return octDecodeNormal(enc.xy);
+  vec2 param = (vertexIndex * 2.0 == g_vertexLUTIndex) ? enc.xy : enc.zw;
+  return octDecodeNormal(param);
 }`;
 const computeAnimationNormal = `
 vec3 computeAnimationNormal(float frameIndex0, float frameIndex1, float fraction) {
@@ -85,9 +87,11 @@ return normal;
 }`;
 const computeAnimationFrameParam = `
 float computeAnimationFrameParam(float frameIndex, float origin, float scale) {
-  vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex, u_vertParams.xy, g_vert_center, 1.0);
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  return clamp((origin + scale * decodeUInt16(enc1.xy)), 0.0, 1.0);
+  float vertexIndex = floor(g_vertexLUTIndex/2.0);
+  vec2 tc = computeLUTCoords(frameIndex + vertexIndex, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec2 param = (vertexIndex * 2.0 == g_vertexLUTIndex) ? enc.xy : enc.zw;
+  return clamp((origin + scale * decodeUInt16(param)), 0.0, 1.0);
 }`;
 
 const computeAnimationParam = `
@@ -141,7 +145,7 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
 const scratchAnimDisplacementParams = new Float32Array(3);  // index0, index1, fraction.
 const scratchAnimScalarParams = new Float32Array(3);        // index0, index1, fraction.
 const scratchAnimNormalParams = new Float32Array(3);        // index0, index1, fraction.
-const scratchAnimScalarQParams = new Float32Array(3);        // index0, index1, fraction.
+const scratchAnimScalarQParams = new Float32Array(2);       // origin, scale.
 
 function computeAnimParams(params: Float32Array, inputs: number[], indices: number[], fraction: number): void {
   const inputValue = fraction * inputs[inputs.length - 1];
@@ -150,8 +154,11 @@ function computeAnimParams(params: Float32Array, inputs: number[], indices: numb
       params[0] = indices[i];
       params[1] = indices[i + 1];
       params[2] = inputValue - inputs[i] / (inputs[i + 1] - inputs[i]);
+      return;
     }
   }
+  params[0] = params[1] = indices[inputs.length - 1];
+  params[2] = 0.0;
 }
 export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
   scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = -1.0;
@@ -212,8 +219,8 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
   }
 
   if (includeTexture) {
-    vert.addUniform("u_qAnimScalarParams", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_qAnimScalarParams", (uniform, params) => {
+    vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
         const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
         scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = -1.0;
         if (meshGeom.lut.auxParams !== undefined) {
@@ -223,8 +230,8 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
         uniform.setUniform3fv(scratchAnimScalarParams);
       });
     });
-    vert.addUniform("u_qAnimScalarQParams", VariableType.Vec2, (prog) => {
-      prog.addGraphicUniform("u_qAnimScalarQParams", (uniform, params) => {
+    vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
         const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
         scratchAnimScalarQParams[0] = scratchAnimScalarQParams[1] = -1.0;
 
