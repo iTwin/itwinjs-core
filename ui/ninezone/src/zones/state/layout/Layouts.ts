@@ -35,7 +35,10 @@ export class WidgetZoneLayout extends Layout {
   private readonly _bottomZones: WidgetZoneLayout.AdjacentZonesGetter;
 
   public constructor(props: WidgetZoneLayoutProps) {
-    super(props.zone.bounds, props.root);
+    super({
+      bounds: props.zone.bounds,
+      root: props.root,
+    });
 
     this.zone = props.zone;
     this.root = props.root;
