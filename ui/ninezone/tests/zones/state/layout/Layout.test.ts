@@ -353,11 +353,11 @@ describe.only("Layout", () => {
     });
 
     it("should not grow beyond left zone", () => {
-      const leftLayouts = TypeMoq.Mock.ofType<Layout>();
-      leftLayouts.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 250, 10));
-      leftLayouts.setup((x) => x.tryShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      const leftLayout = TypeMoq.Mock.ofType<Layout>();
+      leftLayout.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 250, 10));
+      leftLayout.setup((x) => x.getShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
       const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(300, 0, 400, 10), root.object));
-      sut.setup((x) => x.leftLayouts).returns(() => [leftLayouts.object]);
+      sut.setup((x) => x.leftLayouts).returns(() => [leftLayout.object]);
       sut.callBase = true;
 
       sut.object.tryGrowLeft(100).should.eq(50);
@@ -370,6 +370,7 @@ describe.only("Layout", () => {
       const sut = new LayoutMock(new Rectangle(325, 0, 600, 10));
       const leftLayout = new LayoutMock(new Rectangle(100, 0, 300, 10));
       sut.leftLayouts = [leftLayout];
+      leftLayout.getShrinkRight = (px) => px;
       leftLayout.tryShrinkRight = (px) => {
         shrinkLeftLayoutBy = px;
         return 0;
@@ -393,7 +394,7 @@ describe.only("Layout", () => {
 
     it("should not grow above original size", () => {
       const leftLayouts = TypeMoq.Mock.ofType<Layout>();
-      leftLayouts.setup((x) => x.tryShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      leftLayouts.setup((x) => x.getShrinkRight(TypeMoq.It.isAnyNumber())).returns(() => 0);
       leftLayouts.setup((x) => x.bounds).returns(() => new Rectangle(100, 0, 200, 0));
       const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(200, 10, 300, 20), root.object));
       sut.callBase = true;

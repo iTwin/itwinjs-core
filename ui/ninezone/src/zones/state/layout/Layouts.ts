@@ -146,7 +146,7 @@ export namespace WidgetZoneLayout {
     }
 
     public getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined {
-      return layout.getInitialTopZone();
+      return layout.getInitialLeftZone();
     }
   }
 
@@ -287,10 +287,6 @@ export class Layout4 extends WidgetZoneLayout {
   public getInitialTopZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3);
   }
-
-  public getInitialRightZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(6);
-  }
 }
 
 export class Layout6 extends WidgetZoneLayout {
@@ -300,10 +296,6 @@ export class Layout6 extends WidgetZoneLayout {
 
   public getInitialTopZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(3);
-  }
-
-  public getInitialLeftZone() {
-    return this.zone.nineZone.root.nineZone.getWidgetZone(4);
   }
 }
 
@@ -320,7 +312,7 @@ export class Layout7 extends WidgetZoneLayout {
 
   public getInitialRightZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(9);
+      return undefined;
     return this.zone.nineZone.root.nineZone.getWidgetZone(8);
   }
 }
@@ -360,7 +352,7 @@ export class Layout9 extends WidgetZoneLayout {
 
   public getInitialLeftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
-      return this.zone.nineZone.root.nineZone.getWidgetZone(7);
+      return undefined;
     return this.zone.nineZone.root.nineZone.getWidgetZone(8);
   }
 }
