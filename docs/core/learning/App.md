@@ -83,7 +83,7 @@ App-specific backends are written in TypeScript/JavaScript and depend on `@bentl
 
 An app can use many services, both general-purpose and app-specific.
 
-App backends may use [logging](../learning/common/Logging.md) to help with diagnosing problems.
+See [the learning article](./backend/index.md) for how to write backend code.
 
 #### App Frontend
 
@@ -92,3 +92,5 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
 The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](./RpcInterface.md) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. Both the UI and functionality of the app frontend [can be tailored](./AppTailoring.md) to best fit each desired configuration and target platform.
+
+See [the learning article](./frontend/index.md) for how to write a frontend.

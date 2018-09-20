@@ -1,18 +1,24 @@
 # The App Frontend
 
-The frontend of an app refers to the layers of software that are concerned mainly with data display and user interaction, as described in the [app architecture overview](../../learning/SoftwareArchitecture.md).
+The frontend of an app is concerned mainly with data display and user interaction. Frontend code:
+* Always runs in a web browser.
+* Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
 
-The frontend *always* runs inside a web browser.
+The following app configurations are supported:
+* [Web app](../App.md#web-apps) - See [browser compatibility](#web-browser-compatibility)
+* [Desktop app](../App.md#desktop-apps)
+* [Mobile app](../App.md#mobile-apps)
 
-* When used as a Web app, it can run in any modern web browser. See compatibility list. It communicates with a backend and/or other services via HTTP.
-* When part of a desktop app, it runs inside the [Electron](https://electronjs.org) frontend process in [Chromium](https://www.chromium.org/Home).
-* When part of a mobile app, it runs inside the Safari built-in browser on iOS and the [Chromium](https://www.chromium.org/Home) browser for Android.
+See the [app architecture overview](../../learning/SoftwareArchitecture.md) for more on app structure.
 
-An app always implements its own frontend script and resources. The app's frontend script must depend on @bentley/imodeljs-frontend.
+An app's frontend always implements its own frontend script and resources.
 
-The iModel.js frontend library is delivered in the **npm package** `@bentley/imodeljs-frontend`
+An app's frontend will often depend on npm packages to help implement the its GUI.
 
-## Frontend operations supported by @bentley/imodeljs-frontend
+An app's frontend script requires the `@bentley/imodeljs-frontend` npm package.
+The [common packages](..\common\index.md) will also be required.
+
+These packages provide the following functions that a frontend requires:
 
 * [Login and obtain AccessTokens](../common/AccessToken.md)
 * [Open a "connection" to an iModel](./IModelConnection.md)

@@ -3,7 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Logging */
 
-/** A notion of the logging context in which a backend operation is performed, used to correlate a frontend request with all of the backend operations that it requests. */
+/** A notion of the logging context in which a backend operation is performed, used to correlate
+ * a frontend request with all of the backend operations that it requests.
+ * See [ActivityLoggingContext rules]($docs/learning/backend/managingactivityloggingcontext.md).
+ */
 export class ActivityLoggingContext {
   /** The current activity context. */
   public static get current() { return ActivityLoggingContext._current; }
@@ -18,8 +21,8 @@ export class ActivityLoggingContext {
   }
 
   /**
-   * Set or reset the logging context. Should be called by a backend async function.
-   * All async backend functions must call this at every resume point, that is, at beginning of the function and on the line after each await.
+   * Set or reset the current ActivityLoggingContext to be this object. Should be called by backend async functions and the functions that they call
+   * at every resume point. See [ActivityLoggingContext rules]($docs/learning/backend/managingactivityloggingcontext.md).
    */
   public enter(): this {
     ActivityLoggingContext._current = this;
