@@ -316,7 +316,7 @@ describe.only("Layout", () => {
       const sut = new LayoutMock(new Rectangle(0, 150, 10, 200));
       const topLayout = new LayoutMock(new Rectangle(0, 100, 10, 150));
       sut.topLayouts = [topLayout];
-      topLayout.tryShrinkBottom = () => 25;
+      topLayout.getShrinkBottom = () => 25;
       sut.tryShrinkBottom(100);
 
       sut.bounds.top.should.eq(150 - 25);
@@ -326,7 +326,7 @@ describe.only("Layout", () => {
     it("should move beside top zone", () => {
       const topLayout = TypeMoq.Mock.ofType<Layout>();
       topLayout.setup((x) => x.bounds).returns(() => new Rectangle(0, 100, 10, 150));
-      topLayout.setup((x) => x.tryShrinkBottom(TypeMoq.It.isAnyNumber())).returns(() => 0);
+      topLayout.setup((x) => x.getShrinkBottom(TypeMoq.It.isAnyNumber())).returns(() => 0);
       const sut = TypeMoq.Mock.ofInstance(new Layout(new Rectangle(0, 170, 10, 200), root.object));
       sut.callBase = true;
       sut.setup((x) => x.topLayouts).returns(() => [topLayout.object]);
