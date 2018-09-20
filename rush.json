@@ -15,7 +15,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/bentleyjs-tools",
       "projectFolder": "tools/bentley",
       "reviewCategory": "tools",

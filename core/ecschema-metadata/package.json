@@ -46,7 +46,9 @@
     "typedoc": "^0.11.1",
     "typescript": "~3.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "glob": "^7.1.2"
+  },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "0.128.0"
   },
