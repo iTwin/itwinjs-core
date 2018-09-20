@@ -78,7 +78,7 @@ class LayoutMock extends Layout {
   public set minWidth(width: number) { this._minWidth = width; }
 }
 
-describe("Layout", () => {
+describe.only("Layout", () => {
   const root = TypeMoq.Mock.ofType<Root>();
 
   beforeEach(() => {
@@ -200,7 +200,7 @@ describe("Layout", () => {
       const sut = new LayoutMock(new Rectangle(100, 200, 200, 400));
       const bottomLayout = new LayoutMock(new Rectangle());
       sut.bottomLayouts = [bottomLayout];
-      bottomLayout.tryShrinkTop = () => 25;
+      bottomLayout.getShrinkTop = () => 25;
       sut.tryShrinkTop(100);
 
       sut.bounds.top.should.eq(225);

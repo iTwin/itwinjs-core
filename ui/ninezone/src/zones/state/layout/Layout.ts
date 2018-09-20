@@ -147,25 +147,55 @@ export class Layout {
   }
 
   public tryShrinkTop(px: number): number {
+    const shrunkBy = this.getShrinkTop(px);
+
+    const height = this.bounds.getHeight();
+    const shrinkSelfBy = Math.max(0, Math.min(shrunkBy, height - this.minHeight));
+    this.bottomLayouts.map((z) => {
+      const moveSelfBy = Math.max(0, Math.min(shrunkBy - shrinkSelfBy, z.bounds.top - this.bounds.bottom));
+      const shrinkBy = Math.max(0, shrunkBy - shrinkSelfBy - moveSelfBy);
+      z.tryShrinkTop(shrinkBy);
+    });
+
+    this._bounds = this.bounds.inset(0, shrinkSelfBy, 0, 0);
+    this._bounds = this.bounds.offsetY(shrunkBy - shrinkSelfBy);
+
+    return shrunkBy;
+  }
+
+  public getShrinkTop(px: number): number {
     if (px < 0)
       throw new RangeError();
 
     if (!this.isResizable)
       return 0;
 
-    const height = this._bounds.getHeight();
+    const height = this.bounds.getHeight();
     const shrinkSelfBy = Math.max(0, Math.min(px, height - this.minHeight));
+    if (this.bottomLayouts.length === 0) {
+      const moveBottom = Math.max(0, Math.min(px - shrinkSelfBy, this.root.bounds.bottom - this.bounds.bottom));
+      return moveBottom + shrinkSelfBy;
+    }
 
-    const maxBottom = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].bounds.top : this.root.bounds.bottom;
-    const moveBottom = Math.max(0, Math.min(px - shrinkSelfBy, maxBottom - this.bounds.bottom));
+    const zones = this.bottomLayouts.map((z) => {
+      const moveSelfBy = Math.max(0, Math.min(px - shrinkSelfBy, z.bounds.top - this.bounds.bottom));
+      const shrinkBy = Math.max(0, px - shrinkSelfBy - moveSelfBy);
+      const shrunkBy = z.getShrinkTop(shrinkBy);
+      return {
+        z,
+        moveSelfBy,
+        shrunkBy,
+      };
+    });
 
-    const shrinkBottomBy = Math.max(0, px - shrinkSelfBy - moveBottom);
-    const bottomShrunkBy = this.bottomLayouts.length > 0 ? this.bottomLayouts[0].tryShrinkTop(shrinkBottomBy) : 0;
+    const minTotal = zones.reduce((prev, curr) => {
+      const total = curr.moveSelfBy + curr.shrunkBy;
+      if (total < prev)
+        return total;
+      return prev;
+    }, zones[0].moveSelfBy + zones[0].shrunkBy);
 
-    this._bounds = this.bounds.inset(0, shrinkSelfBy, 0, 0);
-    this._bounds = this.bounds.offsetY(moveBottom + bottomShrunkBy);
-
-    return moveBottom + shrinkSelfBy + bottomShrunkBy;
+    return minTotal + shrinkSelfBy;
   }
 
   public tryGrowBottom(px: number): number {
