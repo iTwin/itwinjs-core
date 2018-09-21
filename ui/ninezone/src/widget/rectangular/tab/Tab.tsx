@@ -35,7 +35,7 @@ export interface TabProps extends CommonProps {
  * Rectangular widget tab. Used in [[Stacked]] component.
  * @note See [[Draggable]] tab.
  */
-export class Tab extends React.Component<TabProps> {
+export class Tab extends React.PureComponent<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",

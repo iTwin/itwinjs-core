@@ -22,8 +22,7 @@ export interface UserProfileProps extends CommonProps, NoChildrenProps {
 }
 
 /** UserProfile component of 9-zone UI app. */
-export class UserProfile extends React.Component<UserProfileProps> {
-
+export class UserProfile extends React.PureComponent<UserProfileProps> {
   private _getInitials(): string {
     let initials: string = "";
     if (this.props.firstName.length > 0)

@@ -33,7 +33,7 @@ export interface ScrollableState {
 }
 
 /** A [[Toolbar]] with scroll overflow strategy. */
-export class Scrollable extends React.Component<ScrollableProps, ScrollableState> {
+export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
   private static readonly _DESKTOP_ITEM_HEIGHT = Scrollable._DESKTOP_ITEM_WIDTH;
   private static readonly _DESKTOP_SEPARATOR_SIZE = 1;

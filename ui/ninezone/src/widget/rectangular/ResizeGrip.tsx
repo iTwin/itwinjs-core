@@ -53,7 +53,7 @@ export class ResizeDirectionHelpers {
 }
 
 /** Resize grip used by [[Stacked]] component. */
-export class ResizeGrip extends React.Component<ResizeGripProps> {
+export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   private _relativePosition?: Point;
   private _grip = React.createRef<HTMLDivElement>();
 

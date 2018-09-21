@@ -13,7 +13,7 @@ export interface State {
   activeItem: number;
 }
 
-export default class BackstagePage extends React.Component<{}, State> {
+export default class BackstagePage extends React.PureComponent<{}, State> {
   public readonly state: Readonly<State> = {
     isOpen: false,
     activeItem: 0,

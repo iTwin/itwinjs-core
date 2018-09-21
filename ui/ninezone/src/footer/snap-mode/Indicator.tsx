@@ -24,7 +24,7 @@ export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
 }
 
 /** One of [[Footer]] indicators. */
-export class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
+export class SnapModeIndicator extends React.PureComponent<SnapModeIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-snapMode-indicator",

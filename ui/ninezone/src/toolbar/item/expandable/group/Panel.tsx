@@ -16,7 +16,7 @@ export interface PanelProps extends CommonProps {
 }
 
 /** Basic panel. Used as base for [[Group]] and [[NestedGroup]] components. */
-export class Panel extends React.Component<PanelProps> {
+export class Panel extends React.PureComponent<PanelProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-panel",

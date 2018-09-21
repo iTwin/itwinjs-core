@@ -24,7 +24,7 @@ export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProp
 }
 
 /** One of [[Footer]] indicators. */
-export class MessageCenterIndicator extends React.Component<MessageCenterIndicatorProps> {
+export class MessageCenterIndicator extends React.PureComponent<MessageCenterIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-messageCenter-indicator",

@@ -16,7 +16,7 @@ export interface ContentProps extends CommonProps, React.HTMLAttributes<HTMLDivE
 }
 
 /** Content component of 9-Zone UI app. */
-export class Content extends React.Component<ContentProps> {
+export class Content extends React.PureComponent<ContentProps> {
   public render() {
     const { className, ...props } = this.props;
 

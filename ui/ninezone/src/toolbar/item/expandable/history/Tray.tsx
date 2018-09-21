@@ -65,7 +65,7 @@ export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
 }
 
 /** History tray used in [[ExpandableItem]] component. */
-export class HistoryTray extends React.Component<HistoryTrayProps> {
+export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
   public render() {
     const items = FlattenChildren(this.props.items);
     const count = React.Children.count(items);

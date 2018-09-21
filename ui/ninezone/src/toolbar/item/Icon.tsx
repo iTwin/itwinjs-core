@@ -24,7 +24,7 @@ export interface ItemProps extends CommonProps {
 }
 
 /** Toolbar item component. Used in [[Toolbar]] */
-export class Item extends React.Component<ItemProps> {
+export class Item extends React.PureComponent<ItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-icon",

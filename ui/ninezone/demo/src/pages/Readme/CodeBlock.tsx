@@ -10,7 +10,7 @@ export interface Props {
   value: string;
 }
 
-export default class CodeBlock extends React.Component<Props> {
+export default class CodeBlock extends React.PureComponent<Props> {
   private _code: HTMLElement | undefined = undefined;
 
   public componentDidMount() {

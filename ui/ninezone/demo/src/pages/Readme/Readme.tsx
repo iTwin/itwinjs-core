@@ -11,7 +11,7 @@ import * as readmeFile from "@src/../README.md";
 
 import "highlight.js/styles/vs2015.css";
 
-export default class Readme extends React.Component {
+export default class Readme extends React.PureComponent {
   public render() {
     return (
       <Markdown

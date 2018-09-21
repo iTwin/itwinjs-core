@@ -20,7 +20,7 @@ export const cols3: React.CSSProperties = {
   gridTemplateColumns: "1fr 1fr 1fr",
 };
 
-export default class Footer extends React.Component {
+export default class Footer extends React.PureComponent {
   public render() {
     return (
       <div

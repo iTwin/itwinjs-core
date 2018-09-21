@@ -25,7 +25,7 @@ export interface SnapModeDialogProps extends CommonProps, NoChildrenProps {
 }
 
 /** Dialog used in [[SnapModeIndicator]] component. */
-export class SnapModeDialog extends React.Component<SnapModeDialogProps> {
+export class SnapModeDialog extends React.PureComponent<SnapModeDialogProps> {
   public render() {
     const dialogClassName = classnames(
       "nz-footer-snapMode-dialog",

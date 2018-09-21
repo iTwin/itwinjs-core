@@ -27,7 +27,7 @@ export interface HistoryItemProps extends CommonProps {
  * Basic history item used in [[Tray]] component.
  * @note See [[Icon]] for item with icon.
  */
-export class HistoryItem extends React.Component<HistoryItemProps> {
+export class HistoryItem extends React.PureComponent<HistoryItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-history-item",

@@ -16,7 +16,7 @@ export interface TitleProps extends CommonProps {
 }
 
 /** Tool group title. */
-export class Title extends React.Component<TitleProps> {
+export class Title extends React.PureComponent<TitleProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-title",

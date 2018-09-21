@@ -29,7 +29,7 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 /** Expandable toolbar item. */
-export class ExpandableItem extends React.Component<ExpandableItemProps> {
+export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
   private _panel = document.createElement("div");
   private _history = document.createElement("div");
 

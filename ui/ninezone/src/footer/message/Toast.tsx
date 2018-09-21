@@ -37,7 +37,7 @@ export interface ToastDefaultProps extends Partial<ToastProps> {
 }
 
 /** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component. */
-export class Toast extends React.Component<ToastProps> {
+export class Toast extends React.PureComponent<ToastProps> {
   public static readonly defaultProps: ToastDefaultProps = {
     timeout: 2000,
   };

@@ -62,7 +62,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
  * A toolbar that may contain items.
  * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
  */
-export class Toolbar extends React.Component<ToolbarProps> {
+export class Toolbar extends React.PureComponent<ToolbarProps> {
   /** @returns Toolbar direction based on [[ToolbarProps.expandsTo]] */
   public static getToolbarDirection(props: ToolbarProps): OrthogonalDirection {
     const expandsTo = Toolbar.getExpandsTo(props);

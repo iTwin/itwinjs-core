@@ -29,7 +29,7 @@ const container: React.CSSProperties = {
   backgroundColor: "#EEE",
 };
 
-export default class ZoneTargets extends React.Component<{}> {
+export default class ZoneTargets extends React.PureComponent<{}> {
   public render() {
     return (
       <div style={root}>

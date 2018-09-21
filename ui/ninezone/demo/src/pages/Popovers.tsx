@@ -39,7 +39,7 @@ export interface Props {
   isPopoverOpen?: boolean;
 }
 
-export default class PopoversExample extends React.Component<Props> {
+export default class PopoversExample extends React.PureComponent<Props> {
   public render() {
     return (
       <div style={root}>

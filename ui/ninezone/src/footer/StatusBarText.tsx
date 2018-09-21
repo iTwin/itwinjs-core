@@ -18,7 +18,7 @@ export interface StatusBarTextProps extends CommonProps, NoChildrenProps {
 }
 
 /** Generic Text that can be used in StatusBar component. */
-export class StatusBarText extends React.Component<StatusBarTextProps> {
+export class StatusBarText extends React.PureComponent<StatusBarTextProps> {
   public render() {
     const combinedClassName = classnames(
       "nz-footer-text",

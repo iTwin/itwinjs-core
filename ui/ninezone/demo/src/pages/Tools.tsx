@@ -39,7 +39,7 @@ export const cols2: React.CSSProperties = {
   justifyItems: "center",
 };
 
-export default class Tools extends React.Component<{}, State> {
+export default class Tools extends React.PureComponent<{}, State> {
   public readonly state: Readonly<State> = {
     onBackCount: 0,
     isPanelVisible: false,

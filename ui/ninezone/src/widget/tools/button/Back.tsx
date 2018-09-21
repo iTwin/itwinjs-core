@@ -18,7 +18,7 @@ export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoC
  * Back button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
  */
-export class BackButton extends React.Component<BackButtonProps> {
+export class BackButton extends React.PureComponent<BackButtonProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(

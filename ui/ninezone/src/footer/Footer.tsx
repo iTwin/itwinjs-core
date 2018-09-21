@@ -24,23 +24,25 @@ export interface FooterProps extends CommonProps, NoChildrenProps {
 
 /** Footer component. Should be used in [[FooterZone]] */
 // tslint:disable-next-line:variable-name
-export const Footer: React.StatelessComponent<FooterProps> = (props: FooterProps) => {
-  const className = classnames(
-    "nz-footer-footer",
-    props.isInWidgetMode && "nz-widget-mode",
-    props.className);
+export class Footer extends React.PureComponent<FooterProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-footer",
+      this.props.isInWidgetMode && "nz-widget-mode",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-message">
-        {props.message}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-message">
+          {this.props.message}
+        </div>
+        <div className="nz-indicators">
+          {this.props.indicators}
+        </div>
       </div>
-      <div className="nz-indicators">
-        {props.indicators}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}

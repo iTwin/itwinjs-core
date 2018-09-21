@@ -16,7 +16,7 @@ import ZoneTargets from "./pages/ZoneTargets";
 import Footer from "./pages/Footer";
 import Tools from "./pages/Tools";
 
-export default class Demo extends React.Component {
+export default class Demo extends React.PureComponent {
   public render() {
     return (
       <HashRouter>

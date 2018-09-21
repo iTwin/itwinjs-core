@@ -24,7 +24,7 @@ export const withContainIn = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithContainIn extends React.Component<ComponentProps & WithContainInProps> {
+  return class WithContainIn extends React.PureComponent<ComponentProps & WithContainInProps> {
     public getContainerBounds(): Rectangle {
       if (!this.props.container)
         return new Rectangle();

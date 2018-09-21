@@ -16,7 +16,7 @@ export interface ToolSettingsProps extends CommonProps {
 }
 
 /** Tool settings. Used as content of [[ToolSettings]] component. */
-export class ToolSettings extends React.Component<ToolSettingsProps> {
+export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-settings",

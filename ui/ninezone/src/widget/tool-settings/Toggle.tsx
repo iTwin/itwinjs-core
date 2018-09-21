@@ -25,7 +25,7 @@ export interface ToggleProps extends CommonProps, NoChildrenProps {
  * Tool settings toggle component.
  * @note Used as content in [[Settings]] and [[Nested]] components
  */
-export class Toggle extends React.Component<ToggleProps> {
+export class Toggle extends React.PureComponent<ToggleProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-toggle",

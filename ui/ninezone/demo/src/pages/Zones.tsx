@@ -186,7 +186,7 @@ const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup 
   return (toolState as ToolGroup).trays !== undefined;
 };
 
-export default class ZonesExample extends React.Component<{}, State> {
+export default class ZonesExample extends React.PureComponent<{}, State> {
   private _temporaryMessageTimer = new Timer(2000);
   private _zones: React.RefObject<Zones>;
   private _app: React.RefObject<App>;
