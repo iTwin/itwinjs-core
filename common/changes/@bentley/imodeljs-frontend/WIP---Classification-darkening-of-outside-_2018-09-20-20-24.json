@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP - Classification darkening of outside.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "marc.neely@bentley.com"
+}

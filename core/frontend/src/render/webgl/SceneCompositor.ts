@@ -747,27 +747,30 @@ abstract class Compositor extends SceneCompositor {
       });
     }
 
+    // Process the area outside the classifiers.
     // ###TODO: Need a way to only do this to reality mesh and point cloud data
-    // // Set the stencil using the stencil command list.
-    // fbStack.execute(fboSet!, false, () => {
-    //   this._target.pushState(this._target.decorationState);
-    //   System.instance.applyRenderState(this._stencilSetRenderState);
-    //   this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
-    //   this._target.popBranch();
-    // });
+    // Set the stencil using the stencil command list.
+    fbStack.execute(fboSet!, false, () => {
+      this._target.pushState(this._target.decorationState);
+      System.instance.applyRenderState(this._stencilSetRenderState);
+      this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+      this._target.popBranch();
+    });
 
-    // // Process the stencil volumes, blending into the current color buffer.
-    // fbStack.execute(fboCopy!, true, () => {
-    //   this._target.pushState(this._target.decorationState);
-    //   this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
-    //   this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
-    //   System.instance.applyRenderState(this._classifyColorRenderState);
-    //   this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
-    //   this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
-    //   const params = new DrawParams(this._target, this._geom.stencilCopy!);
-    //   this._target.techniques.draw(params);
-    //   this._target.popBranch();
-    // });
+    // Process the stencil volumes, blending into the current color buffer.
+    fbStack.execute(fboCopy!, true, () => {
+      this._target.pushState(this._target.decorationState);
+      this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
+      this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
+      this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.6];
+      this._classifyColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.Zero, GL.BlendFactor.Zero, GL.BlendFactor.ConstAlpha, GL.BlendFactor.One); // want to just darken dest. color
+      System.instance.applyRenderState(this._classifyColorRenderState);
+      this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
+      this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
+      const params = new DrawParams(this._target, this._geom.stencilCopy!);
+      this._target.techniques.draw(params);
+      this._target.popBranch();
+    });
   }
 
   private renderHilite(commands: RenderCommands) {
