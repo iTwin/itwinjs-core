@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+This log was last generated on Fri, 21 Sep 2018 23:16:13 GMT and should not be manually modified.
+
+## 0.129.0
+Fri, 21 Sep 2018 23:16:13 GMT
+
+### Updates
+
+- Add initial support for the Generic domain.
+- ElementAspectProps now inherits "id" from EntityProps
+- Get rid of RpcInvocation.current.context - use ActivityLoggingContext.current instead
 
 ## 0.128.0
 Fri, 14 Sep 2018 17:08:05 GMT

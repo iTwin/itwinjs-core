@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.129.0",
+      "tag": "@bentley/imodeljs-frontend_v0.129.0",
+      "date": "Fri, 21 Sep 2018 23:16:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added customized pointer messages to ViewsFrontstage"
+          },
+          {
+            "comment": "Rework animation data to pack values and simplify extraction."
+          },
+          {
+            "comment": "Fix assertions when loading map tiles."
+          },
+          {
+            "comment": "Exclude contents of /frontend/render/webgl/ from SDK docs."
+          },
+          {
+            "comment": "WIP #34205 - Selection of classifiers for reality data."
+          },
+          {
+            "comment": "Initial implementation of quantity formatting package, tests, and example usage in IModelApp."
+          },
+          {
+            "comment": "Increase darkening of unclassified geometry.  Don't flash reality models. (For Bob Mankowsky YII)"
+          },
+          {
+            "comment": "WIP - Classification darkening of outside."
+          },
+          {
+            "comment": "WIP #34200 and #34205 - Add select and flash to classified reality data."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.128.0",
       "tag": "@bentley/imodeljs-frontend_v0.128.0",
       "date": "Fri, 14 Sep 2018 17:08:05 GMT",
