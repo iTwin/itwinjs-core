@@ -21,25 +21,26 @@ export interface ToolSettingsWidgetProps extends CommonProps, NoChildrenProps {
  * Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
  */
-// tslint:disable-next-line:variable-name
-export const ToolSettingsWidget: React.StatelessComponent<ToolSettingsWidgetProps> = (props: ToolSettingsWidgetProps) => {
-  const className = classnames(
-    "nz-widget-toolSettings",
-    props.className);
+export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
+  public render() {
+    const className = classnames(
+      "nz-widget-toolSettings",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {!props.content ? undefined :
-        <div className="nz-content">
-          {props.content}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {!this.props.content ? undefined :
+          <div className="nz-content">
+            {this.props.content}
+          </div>
+        }
+        <div className="nz-tab">
+          {this.props.tab}
         </div>
-      }
-      <div className="nz-tab">
-        {props.tab}
       </div>
-    </div>
-  );
-};
+    );
+  }
+}

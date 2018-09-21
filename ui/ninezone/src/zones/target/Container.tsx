@@ -16,18 +16,19 @@ export interface ContainerProps extends CommonProps {
 }
 
 /** Container for zone targets. */
-// tslint:disable-next-line:variable-name
-export const Container: React.StatelessComponent<ContainerProps> = (props: ContainerProps) => {
-  const className = classnames(
-    "nz-zones-target-container",
-    props.className);
+export class Container extends React.PureComponent<ContainerProps> {
+  public render() {
+    const className = classnames(
+      "nz-zones-target-container",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

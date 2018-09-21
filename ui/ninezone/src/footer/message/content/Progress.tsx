@@ -21,31 +21,32 @@ export interface ProgressProps extends CommonProps, NoChildrenProps {
   status: Status;
 }
 
-// tslint:disable-next-line:variable-name
-const ProgressComponent: React.StatelessComponent<ProgressProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-progress",
-    StatusHelpers.getCssClassName(props.status),
-    props.className);
+class ProgressComponent extends React.PureComponent<ProgressProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-progress",
+      StatusHelpers.getCssClassName(this.props.status),
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-progress">
-        <div
-          className="nz-progress-bar"
-          style={{
-            width: Css.toPercentage(props.progress),
-          }}
-        >
-          <div className="nz-progress-bar-tip"></div>
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-progress">
+          <div
+            className="nz-progress-bar"
+            style={{
+              width: Css.toPercentage(this.props.progress),
+            }}
+          >
+            <div className="nz-progress-bar-tip"></div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 /** Progress bar component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name

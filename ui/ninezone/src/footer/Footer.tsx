@@ -23,7 +23,6 @@ export interface FooterProps extends CommonProps, NoChildrenProps {
 }
 
 /** Footer component. Should be used in [[FooterZone]] */
-// tslint:disable-next-line:variable-name
 export class Footer extends React.PureComponent<FooterProps> {
   public render() {
     const className = classnames(

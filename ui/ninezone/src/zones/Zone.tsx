@@ -23,23 +23,24 @@ export interface ZoneProps extends CommonProps {
  * A zone that may contain widgets.
  * @note For status zone (zone 8) [[FooterZone]] component should be used.
  */
-// tslint:disable-next-line:variable-name
-export const ZoneComponent: React.StatelessComponent<ZoneProps> = (props: ZoneProps) => {
-  const className = classnames(
-    "nz-zones-zone",
-    props.className);
+export class ZoneComponent extends React.PureComponent<ZoneProps> {
+  public render() {
+    const className = classnames(
+      "nz-zones-zone",
+      this.props.className);
 
-  const style: React.CSSProperties = {
-    ...CssProperties.fromBounds(props.bounds),
-    ...props.style,
-  };
+    const style: React.CSSProperties = {
+      ...CssProperties.fromBounds(this.props.bounds),
+      ...this.props.style,
+    };
 
-  return (
-    <div
-      className={className}
-      style={style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

@@ -25,7 +25,7 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
   isNavigation?: boolean;
   /** Vertical toolbar. See [[Toolbar]] */
   verticalToolbar?: React.ReactNode;
-  /** Pass true to reduce the distance between toolbars when [[ToolsProps.button]] is not provided. */
+  /** Pass true to reduce the distance between toolbars when [[Toolsthis.props.button]] is not provided. */
   preserveSpace?: boolean;
 }
 
@@ -33,30 +33,31 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
  * Tools widget is used in Tools (Zone 1) and Navigation (Zone 3) zones of 9-Zone UI.
  * @note Should be placed in [[Zone]] component.
  */
-// tslint:disable-next-line:variable-name
-export const Tools: React.StatelessComponent<ToolsProps> = (props: ToolsProps) => {
-  const singleToolbar = (props.verticalToolbar && !props.horizontalToolbar) ||
-    (!props.verticalToolbar && props.horizontalToolbar);
-  const noGap = singleToolbar && !props.button;
-  const reducedGap = !singleToolbar && !props.button && props.preserveSpace;
-  const className = classnames(
-    "nz-widget-tools",
-    noGap && "nz-no-gap",
-    reducedGap && "nz-reduced-gap",
-    props.isNavigation && "nz-is-navigation",
-    props.className);
+export class Tools extends React.PureComponent<ToolsProps> {
+  public render() {
+    const singleToolbar = (this.props.verticalToolbar && !this.props.horizontalToolbar) ||
+      (!this.props.verticalToolbar && this.props.horizontalToolbar);
+    const noGap = singleToolbar && !this.props.button;
+    const reducedGap = !singleToolbar && !this.props.button && this.props.preserveSpace;
+    const className = classnames(
+      "nz-widget-tools",
+      noGap && "nz-no-gap",
+      reducedGap && "nz-reduced-gap",
+      this.props.isNavigation && "nz-is-navigation",
+      this.props.className);
 
-  return (
-    <div className={className} style={props.style}>
-      <div className="nz-app-button">
-        {props.button}
+    return (
+      <div className={className} style={this.props.style}>
+        <div className="nz-app-button">
+          {this.props.button}
+        </div>
+        <div className="nz-horizontal-toolbar">
+          {this.props.horizontalToolbar}
+        </div>
+        <div className="nz-vertical-toolbar">
+          {this.props.verticalToolbar}
+        </div>
       </div>
-      <div className="nz-horizontal-toolbar">
-        {props.horizontalToolbar}
-      </div>
-      <div className="nz-vertical-toolbar">
-        {props.verticalToolbar}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}

@@ -20,26 +20,27 @@ export interface DialogProps extends CommonProps, NoChildrenProps {
 }
 
 /** Dialog used in [[Modal]] component. */
-// tslint:disable-next-line:variable-name
-export const Dialog: React.StatelessComponent<DialogProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-dialog",
-    props.className);
+export class Dialog extends React.PureComponent<DialogProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-dialog",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div>
-        {props.titleBar}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div>
+          {this.props.titleBar}
+        </div>
+        <div>
+          {this.props.content}
+        </div>
+        <div className="nz-resize-handle">
+          {this.props.resizeHandle}
+        </div>
       </div>
-      <div>
-        {props.content}
-      </div>
-      <div className="nz-resize-handle">
-        {props.resizeHandle}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}

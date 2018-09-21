@@ -20,25 +20,26 @@ export interface MessageCenterContentProps extends CommonProps, NoChildrenProps 
 }
 
 /** Used by [[MessageCenter]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageCenterContent: React.StatelessComponent<MessageCenterContentProps> = (props: MessageCenterContentProps) => {
-  const className = classnames(
-    "nz-footer-messageCenter-content",
-    props.className);
+export class MessageCenterContent extends React.PureComponent<MessageCenterContentProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-messageCenter-content",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-tabs">
-        {props.tabs}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-tabs">
+          {this.props.tabs}
+        </div>
+        <div className="nz-messages">
+          {this.props.messages}
+        </div>
+        <span className="nz-message-prompt">{this.props.prompt}</span>
+        <div className="nz-gradient" />
       </div>
-      <div className="nz-messages">
-        {props.messages}
-      </div>
-      <span className="nz-message-prompt">{props.prompt}</span>
-      <div className="nz-gradient" />
-    </div>
-  );
-};
+    );
+  }
+}

@@ -13,16 +13,17 @@ import "./Arrow.scss";
  * Arrow icon.
  * @note Used in [[Merge]], [[Back]] components.
  */
-// tslint:disable-next-line:variable-name
-export const Arrow: React.StatelessComponent<CommonProps> = (props: CommonProps) => {
-  const className = classnames(
-    "nz-zones-target-arrow",
-    props.className);
+export class Arrow extends React.PureComponent<CommonProps> {
+  public render() {
+    const className = classnames(
+      "nz-zones-target-arrow",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    />
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      />
+    );
+  }
+}

@@ -19,22 +19,23 @@ export interface MessageButtonProps extends CommonProps {
   onClick?: () => void;
 }
 
-// tslint:disable-next-line:variable-name
-const ButtonComponent: React.StatelessComponent<MessageButtonProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-button",
-    props.className);
+class ButtonComponent extends React.PureComponent<MessageButtonProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-button",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}
 
 /** Button component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name

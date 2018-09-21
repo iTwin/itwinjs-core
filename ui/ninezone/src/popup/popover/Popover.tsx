@@ -19,19 +19,20 @@ export interface PopoverProps extends CommonProps {
 }
 
 /** Popover component. */
-// tslint:disable-next-line:variable-name
-export const Popover: React.StatelessComponent<PopoverProps> = (props) => {
-  const className = classnames(
-    "nz-popup-popover-popover",
-    DirectionHelpers.getCssClassName(props.direction),
-    props.className);
+export class Popover extends React.PureComponent<PopoverProps> {
+  public render() {
+    const className = classnames(
+      "nz-popup-popover-popover",
+      DirectionHelpers.getCssClassName(this.props.direction),
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

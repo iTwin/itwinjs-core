@@ -14,18 +14,19 @@ export interface MessageResizeHandleProps extends CommonProps, NoChildrenProps {
 }
 
 /** Resize handle of [[Dialog]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageResizeHandle: React.StatelessComponent<MessageResizeHandleProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-resizeHandle",
-    props.className);
+export class MessageResizeHandle extends React.PureComponent<MessageResizeHandleProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-resizeHandle",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-dot" />
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-dot" />
+      </div>
+    );
+  }
+}

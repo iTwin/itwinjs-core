@@ -10,17 +10,18 @@ import { Activity, ActivityProps } from "./Activity";
 import "./Sticky.scss";
 
 /** Sticky message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
-// tslint:disable-next-line:variable-name
-export const Sticky: React.StatelessComponent<ActivityProps> = (props) => {
-  const { className, ...other } = props;
+export class Sticky extends React.PureComponent<ActivityProps> {
+  public render() {
+    const { className, ...other } = this.props;
 
-  return (
-    <Activity
-      {...other}
-      className={classnames(
-        "nz-footer-message-sticky",
-        className,
-      )}
-    />
-  );
-};
+    return (
+      <Activity
+        {...other}
+        className={classnames(
+          "nz-footer-message-sticky",
+          className,
+        )}
+      />
+    );
+  }
+}
