@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added ui-framework & ui-components unit tests",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}
