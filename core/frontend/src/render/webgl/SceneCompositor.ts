@@ -762,7 +762,7 @@ abstract class Compositor extends SceneCompositor {
       this._target.pushState(this._target.decorationState);
       this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
       this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
-      this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.6];
+      this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.4];
       this._classifyColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.Zero, GL.BlendFactor.Zero, GL.BlendFactor.ConstAlpha, GL.BlendFactor.One); // want to just darken dest. color
       System.instance.applyRenderState(this._classifyColorRenderState);
       this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
