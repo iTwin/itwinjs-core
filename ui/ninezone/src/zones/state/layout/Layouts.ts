@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Rectangle, { RectangleProps } from "../../../utilities/Rectangle";
+import Rectangle from "../../../utilities/Rectangle";
 import { WidgetZone } from "../Zone";
 import NineZone from "../NineZone";
 import Layout from "./Layout";
@@ -65,7 +65,7 @@ export class WidgetZoneLayout extends Layout {
     return (this.zone.cell.row + 1) / 3;
   }
 
-  public getInitialBounds(): RectangleProps {
+  public getInitialBounds(): Rectangle {
     const isInFooterMode = this.zone.nineZone.root.isInFooterMode;
     const rootBounds = this.zone.nineZone.root.bounds;
     const parentBounds = isInFooterMode ? rootBounds.inset(0, 0, 0, Root.FOOTER_HEIGHT) : rootBounds;
@@ -75,8 +75,20 @@ export class WidgetZoneLayout extends Layout {
     const right = parentBounds.left + parentSize.width * this._columnEndFraction;
     const top = parentBounds.top + parentSize.height * this._rowStartFraction;
     const bottom = parentBounds.top + parentSize.height * this._rowEndFraction;
+    const zoneBounds = new Rectangle(left, top, right, bottom);
 
-    return new Rectangle(left, top, right, bottom);
+    if (this.zone.hasSingleDefaultWidget)
+      return zoneBounds;
+
+    return this.zone.getWidgets().reduce<Rectangle>((prev, current) => {
+      const defaultZone = current.defaultZone;
+      if (this.zone.equals(defaultZone))
+        return prev;
+
+      const layout = defaultZone.getLayout();
+      const bounds = layout.getInitialBounds();
+      return prev.outerMergeWith(bounds);
+    }, zoneBounds);
   }
 
   public get anchor(): HorizontalAnchor {
@@ -333,7 +345,7 @@ export class Layout8 extends WidgetZoneLayout {
     return this.zone.nineZone.root.nineZone.getWidgetZone(9);
   }
 
-  public getInitialBounds(): RectangleProps {
+  public getInitialBounds() {
     const parentBounds = this.zone.nineZone.root.bounds;
     if (this.zone.nineZone.root.isInFooterMode)
       return new Rectangle(parentBounds.left, parentBounds.bottom - Root.FOOTER_HEIGHT, parentBounds.right, parentBounds.bottom);

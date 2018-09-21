@@ -79,7 +79,7 @@ export class Layout {
     return [];
   }
 
-  public getInitialBounds(): RectangleProps {
+  public getInitialBounds(): Rectangle {
     return new Rectangle();
   }
 
