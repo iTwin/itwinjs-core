@@ -37,6 +37,7 @@ export class WidgetZoneLayout extends Layout {
   public constructor(props: WidgetZoneLayoutProps) {
     super({
       bounds: props.zone.bounds,
+      floatingBounds: props.zone.props.floating && props.zone.props.floating.bounds,
       root: props.root,
     });
 
@@ -47,6 +48,10 @@ export class WidgetZoneLayout extends Layout {
     this._topZones = props.topZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.TopZones());
     this._rightZones = props.rightZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.RightZones());
     this._bottomZones = props.bottomZones || WidgetZoneLayout.adjacentZones(new WidgetZoneLayout.BottomZones());
+  }
+
+  public get isFloating() {
+    return this.zone.isFloating();
   }
 
   private get _columnStartFraction() {

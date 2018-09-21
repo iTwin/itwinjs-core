@@ -102,10 +102,20 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const bounds = model.getWidgetZone(id).getLayout().bounds;
+          const layout = model.getWidgetZone(id).getLayout();
+          const bounds = layout.bounds;
+          const floatingBounds = layout.floatingBounds;
+
           acc[id] = {
             ...model.props.zones[id],
             ...zoneId === id ? { isLayoutChanged: true } : {},
+            ...floatingBounds && state.zones[id].floating ? {
+              floating: {
+                ...state.zones[id].floating,
+                stackId: state.zones[id].floating!.stackId,
+                bounds: floatingBounds,
+              },
+            } : {},
             bounds,
           };
           return acc;

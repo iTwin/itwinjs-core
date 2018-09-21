@@ -11,6 +11,7 @@ import Root from "./Root";
 
 export interface LayoutProps {
   readonly bounds: RectangleProps;
+  readonly floatingBounds?: RectangleProps;
   readonly root: Root;
   readonly resizers?: Partial<Resizers>;
 }
@@ -23,6 +24,7 @@ export class Layout {
 
   public readonly root: Root;
   private _bounds: Rectangle;
+  private _floatingBounds?: Rectangle;
   private _growTop: ResizeStrategy;
   private _shrinkTop: ResizeStrategy;
   private _growBottom: ResizeStrategy;
@@ -34,6 +36,7 @@ export class Layout {
 
   public constructor(props: LayoutProps) {
     this._bounds = Rectangle.create(props.bounds);
+    this._floatingBounds = props.floatingBounds ? Rectangle.create(props.floatingBounds) : undefined;
     this.root = props.root;
 
     this._growTop = (props.resizers && props.resizers.growTop) || new GrowTopStrategy();
@@ -61,6 +64,14 @@ export class Layout {
   /** @hidden */
   public set bounds(bounds: Rectangle) {
     this._bounds = bounds;
+  }
+
+  public get floatingBounds() {
+    return this._floatingBounds;
+  }
+
+  public set floatingBounds(bounds: Rectangle | undefined) {
+    this._floatingBounds = bounds;
   }
 
   public get topLayouts(): Layout[] {
@@ -92,6 +103,41 @@ export class Layout {
   }
 
   public resize(x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) {
+    if (this.floatingBounds) {
+      this.floatingBounds = this.floatingBounds.setHeight(this.floatingBounds.getHeight() - filledHeightDiff);
+      switch (handle) {
+        case Edge.Top: {
+          if (y < 0)
+            this._growTop.tryResizeFloating(-y, this);
+          else if (y > 0)
+            this._shrinkTop.tryResizeFloating(y, this);
+          break;
+        }
+        case Edge.Bottom: {
+          if (y < 0)
+            this._shrinkBottom.tryResizeFloating(-y, this);
+          else if (y > 0)
+            this._growBottom.tryResizeFloating(y, this);
+          break;
+        }
+        case Edge.Left: {
+          if (x < 0)
+            this._growLeft.tryResizeFloating(-x, this);
+          else if (x > 0)
+            this._shrinkLeft.tryResizeFloating(x, this);
+          break;
+        }
+        case Edge.Right: {
+          if (x < 0)
+            this._shrinkRight.tryResizeFloating(-x, this);
+          else if (x > 0)
+            this._growRight.tryResizeFloating(x, this);
+          break;
+        }
+      }
+      return;
+    }
+
     this.bounds = this.bounds.setHeight(this.bounds.getHeight() - filledHeightDiff);
     switch (handle) {
       case Edge.Top: {
@@ -193,15 +239,16 @@ export class Layout {
 export interface ResizeStrategy {
   getMaxResize(px: number, layout: Layout): number;
   tryResize(px: number, layout: Layout): number;
+  tryResizeFloating(px: number, layout: Layout): number;
 }
 
 export abstract class GrowStrategy implements ResizeStrategy {
   public abstract getLayoutsToShrink(layout: Layout): Layout[];
-  public abstract getMaxResizeToRoot(layout: Layout): number;
+  public abstract getSpaceToRoot(bounds: Rectangle, root: Root): number;
   public abstract getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout): number;
   public abstract getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
   public abstract tryShrinkLayout(layoutToShrink: Layout, shrinkBy: number): void;
-  public abstract getResizedBounds(growBy: number, layout: Layout): Rectangle;
+  public abstract getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
 
   public getMaxGrowBy(_layout: Layout): number {
     return Number.MAX_SAFE_INTEGER;
@@ -217,7 +264,7 @@ export abstract class GrowStrategy implements ResizeStrategy {
     const growBy = Math.min(px, this.getMaxGrowBy(layout));
     const layoutsToShrink = this.getLayoutsToShrink(layout);
     if (layoutsToShrink.length === 0) {
-      const maxResizeToRoot = this.getMaxResizeToRoot(layout);
+      const maxResizeToRoot = this.getSpaceToRoot(layout.bounds, layout.root);
       const growSelfBy = Math.max(Math.min(growBy, maxResizeToRoot), 0);
       return growSelfBy;
     }
@@ -243,22 +290,36 @@ export abstract class GrowStrategy implements ResizeStrategy {
       this.tryShrinkLayout(z, shrinkBy);
     });
 
-    layout.bounds = this.getResizedBounds(growBy, layout);
+    layout.bounds = this.getResizedBounds(layout.bounds, growBy);
+    return growBy;
+  }
+
+  public tryResizeFloating(px: number, layout: Layout) {
+    if (px < 0)
+      throw new RangeError();
+    if (!layout.floatingBounds)
+      throw new ReferenceError();
+    if (!layout.isResizable)
+      return 0;
+
+    const growBy = Math.min(px, this.getMaxGrowBy(layout));
+    const spaceToRoot = this.getSpaceToRoot(layout.floatingBounds, layout.root);
+    const growSelfBy = Math.max(Math.min(growBy, spaceToRoot), 0);
+
+    layout.floatingBounds = this.getResizedBounds(layout.floatingBounds, growSelfBy);
     return growBy;
   }
 }
 
 export abstract class ShrinkStrategy implements ResizeStrategy {
-  public abstract getLayoutsToShrink(_layout: Layout): Layout[];
-  public abstract getMaxMoveToRoot(_layout: Layout): number;
-  public abstract getMaxMoveSelfBy(_layoutToShrink: Layout, _layout: Layout): number;
-  public abstract getMaxShrinkLayout(_layoutToShrink: Layout, _shrinkBy: number): number;
-  public abstract tryShrinkLayout(_layoutToShrink: Layout, _shrinkBy: number): void;
-  public abstract getResizedBounds(_shrinkBy: number, _moveBy: number, layout: Layout): Rectangle;
-
-  public getMaxShrinkSelfBy(_layout: Layout): number {
-    return Number.MAX_SAFE_INTEGER;
-  }
+  public abstract getLayoutsToShrink(layout: Layout): Layout[];
+  public abstract getMaxMoveToRoot(layout: Layout): number;
+  public abstract getMaxMoveSelfBy(layoutToShrink: Layout, layout: Layout): number;
+  public abstract getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
+  public abstract tryShrinkLayout(layoutToShrink: Layout, shrinkBy: number): void;
+  public abstract getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
+  public abstract getMinSize(layout: Layout): number;
+  public abstract getCurrentSize(bounds: Rectangle): number;
 
   public getMaxResize(px: number, layout: Layout) {
     if (px < 0)
@@ -267,8 +328,9 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     if (!layout.isResizable)
       return 0;
 
-    const maxShrinkBy = this.getMaxShrinkSelfBy(layout);
-    const shrinkSelfBy = Math.max(0, Math.min(px, maxShrinkBy));
+    const minSize = this.getMinSize(layout);
+    const currentSize = this.getCurrentSize(layout.bounds);
+    const shrinkSelfBy = Math.max(0, Math.min(px, currentSize - minSize));
     const layoutsToShrink = this.getLayoutsToShrink(layout);
     if (layoutsToShrink.length === 0) {
       const maxMoveToRoot = this.getMaxMoveToRoot(layout);
@@ -291,8 +353,9 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
   public tryResize(px: number, layout: Layout) {
     const maxResize = this.getMaxResize(px, layout);
 
-    const maxShrinkSelfBy = this.getMaxShrinkSelfBy(layout);
-    const shrinkSelfBy = Math.max(0, Math.min(maxResize, maxShrinkSelfBy));
+    const minSize = this.getMinSize(layout);
+    const currentSize = this.getCurrentSize(layout.bounds);
+    const shrinkSelfBy = Math.max(0, Math.min(maxResize, currentSize - minSize));
     const layoutsToShrink = this.getLayoutsToShrink(layout);
     layoutsToShrink.map((z) => {
       const maxMoveSelfBy = this.getMaxMoveSelfBy(z, layout);
@@ -301,23 +364,46 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
       this.tryShrinkLayout(z, shrinkBy);
     });
 
-    layout.bounds = this.getResizedBounds(shrinkSelfBy, maxResize - shrinkSelfBy, layout);
+    layout.bounds = this.getResizedBounds(layout.bounds, shrinkSelfBy, maxResize - shrinkSelfBy);
 
     return maxResize;
+  }
+
+  public tryResizeFloating(px: number, layout: Layout) {
+    if (px < 0)
+      throw new RangeError();
+    if (!layout.floatingBounds)
+      throw new ReferenceError();
+    if (!layout.isResizable)
+      return 0;
+
+    const minSize = this.getMinSize(layout);
+    const currentSize = this.getCurrentSize(layout.floatingBounds);
+    const shrinkSelfBy = Math.max(0, Math.min(px, currentSize - minSize));
+
+    layout.floatingBounds = this.getResizedBounds(layout.floatingBounds, shrinkSelfBy, 0);
+
+    return shrinkSelfBy;
   }
 }
 
 export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
-  public getMaxShrinkSelfBy(layout: Layout): number {
-    const height = layout.bounds.getHeight();
-    return height - layout.minHeight;
+  public getMinSize(layout: Layout): number {
+    return layout.minHeight;
+  }
+
+  public getCurrentSize(bounds: Rectangle): number {
+    return bounds.getHeight();
   }
 }
 
 export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
-  public getMaxShrinkSelfBy(layout: Layout): number {
-    const width = layout.bounds.getWidth();
-    return width - layout.minWidth;
+  public getMinSize(layout: Layout): number {
+    return layout.minWidth;
+  }
+
+  public getCurrentSize(bounds: Rectangle): number {
+    return bounds.getWidth();
   }
 }
 
@@ -326,8 +412,8 @@ export class GrowTopStrategy extends GrowStrategy {
     return layout.topLayouts;
   }
 
-  public getMaxResizeToRoot(layout: Layout) {
-    return layout.bounds.top - layout.root.bounds.top;
+  public getSpaceToRoot(bounds: Rectangle, root: Root) {
+    return bounds.top - root.bounds.top;
   }
 
   public getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout) {
@@ -342,8 +428,8 @@ export class GrowTopStrategy extends GrowStrategy {
     layoutToShrink.tryShrinkBottom(shrinkBy);
   }
 
-  public getResizedBounds(growBy: number, layout: Layout) {
-    return layout.bounds.inset(0, -growBy, 0, 0);
+  public getResizedBounds(bounds: Rectangle, growBy: number) {
+    return bounds.inset(0, -growBy, 0, 0);
   }
 }
 
@@ -368,8 +454,8 @@ export class ShrinkTopStrategy extends ShrinkVerticalStrategy {
     layoutToShrink.tryShrinkTop(shrinkBy);
   }
 
-  public getResizedBounds(shrinkBy: number, moveBy: number, layout: Layout) {
-    const resizedBounds = layout.bounds.inset(0, shrinkBy, 0, 0);
+  public getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number) {
+    const resizedBounds = bounds.inset(0, shrinkBy, 0, 0);
     return resizedBounds.offsetY(moveBy);
   }
 }
@@ -379,8 +465,8 @@ export class GrowBottomStrategy extends GrowStrategy {
     return layout.bottomLayouts;
   }
 
-  public getMaxResizeToRoot(layout: Layout) {
-    return layout.root.bounds.bottom - layout.bounds.bottom;
+  public getSpaceToRoot(bounds: Rectangle, root: Root) {
+    return root.bounds.bottom - bounds.bottom;
   }
 
   public getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout) {
@@ -395,8 +481,8 @@ export class GrowBottomStrategy extends GrowStrategy {
     layoutToShrink.tryShrinkTop(shrinkBy);
   }
 
-  public getResizedBounds(growBy: number, layout: Layout) {
-    return layout.bounds.inset(0, 0, 0, -growBy);
+  public getResizedBounds(bounds: Rectangle, growBy: number) {
+    return bounds.inset(0, 0, 0, -growBy);
   }
 }
 
@@ -421,8 +507,8 @@ export class ShrinkBottomStrategy extends ShrinkVerticalStrategy {
     layoutToShrink.tryShrinkBottom(shrinkBy);
   }
 
-  public getResizedBounds(shrinkBy: number, moveBy: number, layout: Layout) {
-    const resizedBounds = layout.bounds.inset(0, 0, 0, shrinkBy);
+  public getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number) {
+    const resizedBounds = bounds.inset(0, 0, 0, shrinkBy);
     return resizedBounds.offsetY(-moveBy);
   }
 }
@@ -433,12 +519,15 @@ export class GrowLeftStrategy extends GrowStrategy {
   }
 
   public getMaxGrowBy(layout: Layout) {
+    if (layout.floatingBounds)
+      return Number.MAX_SAFE_INTEGER;
+
     const initialBounds = layout.getInitialBounds();
     return layout.anchor === HorizontalAnchor.Right ? layout.bounds.left - initialBounds.left : Number.MAX_SAFE_INTEGER;
   }
 
-  public getMaxResizeToRoot(layout: Layout) {
-    return layout.bounds.left - layout.root.bounds.left;
+  public getSpaceToRoot(bounds: Rectangle, root: Root) {
+    return bounds.left - root.bounds.left;
   }
 
   public getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout) {
@@ -453,8 +542,8 @@ export class GrowLeftStrategy extends GrowStrategy {
     layoutToShrink.tryShrinkRight(shrinkBy);
   }
 
-  public getResizedBounds(growBy: number, layout: Layout) {
-    return layout.bounds.inset(-growBy, 0, 0, 0);
+  public getResizedBounds(bounds: Rectangle, growBy: number) {
+    return bounds.inset(-growBy, 0, 0, 0);
   }
 }
 
@@ -479,8 +568,8 @@ export class ShrinkLeftStrategy extends ShrinkHorizontalStrategy {
     layoutToShrink.tryShrinkLeft(shrinkBy);
   }
 
-  public getResizedBounds(shrinkBy: number, moveBy: number, layout: Layout) {
-    const resizedBounds = layout.bounds.inset(shrinkBy, 0, 0, 0);
+  public getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number) {
+    const resizedBounds = bounds.inset(shrinkBy, 0, 0, 0);
     return resizedBounds.offsetX(moveBy);
   }
 }
@@ -491,12 +580,15 @@ export class GrowRightStrategy extends GrowStrategy {
   }
 
   public getMaxGrowBy(layout: Layout) {
+    if (layout.floatingBounds)
+      return Number.MAX_SAFE_INTEGER;
+
     const initialBounds = layout.getInitialBounds();
     return layout.anchor === HorizontalAnchor.Left ? initialBounds.right - layout.bounds.right : Number.MAX_SAFE_INTEGER;
   }
 
-  public getMaxResizeToRoot(layout: Layout) {
-    return layout.root.bounds.right - layout.bounds.right;
+  public getSpaceToRoot(bounds: Rectangle, root: Root) {
+    return root.bounds.right - bounds.right;
   }
 
   public getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout) {
@@ -511,8 +603,8 @@ export class GrowRightStrategy extends GrowStrategy {
     layoutToShrink.tryShrinkLeft(shrinkBy);
   }
 
-  public getResizedBounds(growBy: number, layout: Layout) {
-    return layout.bounds.inset(0, 0, -growBy, 0);
+  public getResizedBounds(bounds: Rectangle, growBy: number) {
+    return bounds.inset(0, 0, -growBy, 0);
   }
 }
 
@@ -537,8 +629,8 @@ export class ShrinkRightStrategy extends ShrinkHorizontalStrategy {
     layoutToShrink.tryShrinkRight(shrinkBy);
   }
 
-  public getResizedBounds(shrinkBy: number, moveBy: number, layout: Layout) {
-    const resizedBounds = layout.bounds.inset(0, 0, shrinkBy, 0);
+  public getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number) {
+    const resizedBounds = bounds.inset(0, 0, shrinkBy, 0);
     return resizedBounds.offsetX(-moveBy);
   }
 }
