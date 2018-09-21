@@ -10,6 +10,7 @@ import { ReactNode } from "react";
 
 import { ZoneDef } from "./ZoneDef";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import Footer from "@bentley/ui-ninezone/lib/footer/Footer";
 import ActivityMessage from "@bentley/ui-ninezone/lib/footer/message/Activity";
@@ -91,7 +92,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     let footerSections: React.ReactNode = null;
     const widgetDef = this.props.zoneDef.getOnlyWidgetDef();
     if (widgetDef) {
-      const widgetControl: StatusBarWidgetControl = widgetDef.widgetControl as StatusBarWidgetControl;
+      const widgetControl: StatusBarWidgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
       if (widgetControl && widgetControl.getReactNode) {
         footerSections = widgetControl.getReactNode(this, this.props.isInFooterMode, this.state.openWidget);
       }
@@ -108,14 +109,14 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
 
   public componentDidMount() {
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
-    MessageManager.onActivityMessageAddedEvent.addListener(this._handleActivityMessageAddedEvent);
-    MessageManager.onActivityMessageCanceledEvent.addListener(this._handleActivityMessageCanceledEvent);
+    MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
+    MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
   }
 
   public componentWillUnmount() {
     MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
-    MessageManager.onActivityMessageAddedEvent.removeListener(this._handleActivityMessageAddedEvent);
-    MessageManager.onActivityMessageCanceledEvent.removeListener(this._handleActivityMessageCanceledEvent);
+    MessageManager.onActivityMessageUpdatedEvent.removeListener(this._handleActivityMessageUpdatedEvent);
+    MessageManager.onActivityMessageCancelledEvent.removeListener(this._handleActivityMessageCancelledEvent);
   }
 
   private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
@@ -145,7 +146,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
    * Sets state of the status bar to updated values reflecting activity progress.
    * @param args  New values to set for ActivityMessage
    */
-  private _handleActivityMessageAddedEvent = (args: ActivityMessageEventArgs) => {
+  private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
     const visibleMessage = StatusBarMessageType.Activity;
     this.setState((_prevState) => ({
       visibleMessage,
@@ -157,7 +158,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   /**
    * Hides ActivityMessage after cancelation
    */
-  private _handleActivityMessageCanceledEvent = () => {
+  private _handleActivityMessageCancelledEvent = () => {
     this.setState((_prevState) => ({
       isActivityMessageVisible: false,
     }));

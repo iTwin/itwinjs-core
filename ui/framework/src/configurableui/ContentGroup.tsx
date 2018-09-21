@@ -5,6 +5,7 @@
 
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
@@ -65,6 +66,7 @@ export class ContentGroup {
   public groupId: string;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
+  private _contentSetMap = new Map<React.ReactNode, ContentControl>();
 
   constructor(groupProps: ContentGroupProps) {
     if (groupProps.id !== undefined)
@@ -85,8 +87,12 @@ export class ContentGroup {
       id = this.groupId + "-" + index;
 
     // TODO - should this call getContentControl if widget is sharable
-    if (!this._contentControls.get(id)) {
-      this._contentControls.set(id, ConfigurableUiManager.createConfigurable(contentProps.classId, id, contentProps.applicationData) as ContentControl);
+    if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
+      const contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
+      if (contentControl.getType() !== ConfigurableUiControlType.Content) {
+        throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
+      }
+      this._contentControls.set(id, contentControl);
     }
 
     return this._contentControls.get(id);
@@ -95,13 +101,21 @@ export class ContentGroup {
   public getContentSet(): React.ReactNode[] {
     const contentControls: React.ReactNode[] = new Array<React.ReactNode>();
 
+    this._contentSetMap.clear();
+
     this.contentPropsList.map((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
-      if (control)
+      if (control) {
         contentControls.push(control.reactElement);
+        this._contentSetMap.set(control.reactElement, control);
+      }
     });
 
     return contentControls;
+  }
+
+  public getControlFromElement(node: React.ReactNode): ContentControl | undefined {
+    return this._contentSetMap.get(node);
   }
 
 }
@@ -115,13 +129,13 @@ export class ContentGroup {
 export class ContentGroupManager {
   private static _groups: { [groupId: string]: ContentGroup } = {};
 
-  public static loadContentGroups(groupPropsList: ContentGroupProps[]) {
+  public static loadGroups(groupPropsList: ContentGroupProps[]) {
     groupPropsList.map((groupProps, _index) => {
-      this.loadGroupProps(groupProps);
+      this.loadGroup(groupProps);
     });
   }
 
-  public static loadGroupProps(groupProps: ContentGroupProps) {
+  public static loadGroup(groupProps: ContentGroupProps) {
     const group = new ContentGroup(groupProps);
     if (groupProps.id)
       this.addGroup(groupProps.id, group);

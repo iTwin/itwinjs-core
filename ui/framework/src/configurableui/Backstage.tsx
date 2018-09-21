@@ -28,18 +28,9 @@ import NZ_BackstageSeparator from "@bentley/ui-ninezone/lib/backstage/Separator"
 // BackstageItemDef and sub-interfaces
 // -----------------------------------------------------------------------------
 
-/** Backstage item size enum.
- */
-export enum BackstageItemSize {
-  Small,
-  Large,
-}
-
 /** Base properties for a [[Backstage]] item.
  */
 export interface BackstageItemProps extends ItemProps {
-  size?: BackstageItemSize;     // Default - BackstageItemSize.Small
-
   subtitleId?: string;
   subtitleExpr?: string;
 }
@@ -54,7 +45,7 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps {
   commandId: string;
-  commandHandler?: CommandHandler;
+  commandHandler: CommandHandler;
 }
 
 /** Properties for a Task launch Backstage item.
@@ -71,14 +62,12 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
 /** Base class for a [[Backstage]] item definition.
  */
 export abstract class BackstageItemDef extends ItemDefBase {
-  public size: BackstageItemSize = BackstageItemSize.Small;
   public subtitle: string = "";
 
   constructor(backstageItemDef: BackstageItemProps) {
     super(backstageItemDef);
 
     if (backstageItemDef) {
-      this.size = (backstageItemDef.size !== undefined) ? backstageItemDef.size : BackstageItemSize.Small;
       this.subtitle = (backstageItemDef.subtitleId !== undefined) ? UiFramework.i18n.translate(backstageItemDef.subtitleId) : "";
       // subtitleExpr?: string;
     }
@@ -103,6 +92,7 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
 
   public execute(): void {
     Backstage.hide();
+
     const frontstageDef = FrontstageManager.findFrontstageDef(this._frontstageId);
     if (frontstageDef)
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
@@ -124,20 +114,15 @@ export class CommandLaunchBackstageItemDef extends BackstageItemDef {
 
     if (commandBackstageItemProps) {
       this._commandId = commandBackstageItemProps.commandId;
-
-      if (commandBackstageItemProps.commandHandler !== undefined)
-        this._commandHandler = commandBackstageItemProps.commandHandler;
+      this._commandHandler = commandBackstageItemProps.commandHandler;
     }
   }
 
   public execute(): void {
     Backstage.hide();
 
-    // TODO
-    if (this._commandHandler && this._commandHandler.execute)
-      this._commandHandler.execute();
-    else
-      window.alert("Command '" + this.id + "' launch");
+    if (this._commandHandler)
+      this._commandHandler.execute(this._commandHandler.parameters);
   }
 
   public get id(): string {
@@ -162,6 +147,7 @@ export class TaskLaunchBackstageItemDef extends BackstageItemDef {
 
   public execute(): void {
     Backstage.hide();
+
     const workflow = WorkflowManager.findWorkflow(this._workflowId);
     if (workflow) {
       const task = workflow.getTask(this._taskId);
@@ -347,8 +333,8 @@ export class Backstage extends React.Component<BackstageProps> {
 
   }
 }
+
 // -----------------------------------------------------------------------------
 // export default
 // -----------------------------------------------------------------------------
-
 export default Backstage;

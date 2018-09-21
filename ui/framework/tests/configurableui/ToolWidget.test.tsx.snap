@@ -1,0 +1,115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToolWidget ToolWidget should render correctly 1`] = `
+<ToolWidgetWithDef
+  horizontalToolbar={
+    <Toolbar
+      expandsTo={3}
+      items={
+        <UNDEFINED>
+          <ToolButton
+            iconClass="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconClass="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <GroupButton
+            direction={3}
+            iconClass="icon-placeholder"
+            items={
+              Array [
+                "tool1",
+                "tool2",
+                "item3",
+                "item4",
+                "item5",
+                "item6",
+                "item7",
+                "item8",
+                "tool1",
+                "tool2",
+                "item3",
+                "item4",
+                "item5",
+                "item6",
+                "item7",
+                "item8",
+              ]
+            }
+            itemsInColumn={7}
+            labelKey="SampleApp:buttons.toolGroup"
+          />
+        </UNDEFINED>
+      }
+    />
+  }
+  toolWidgetDef={
+    ToolWidgetDef {
+      "_appButtonId": "SampleApp.BackstageToggle",
+      "_horizontalIds": Array [],
+      "_iconLabelSupport": IconLabelSupport {
+        "label": "",
+        "tooltip": "",
+      },
+      "_verticalIds": Array [],
+      "classId": "",
+      "defaultOpenUsed": false,
+      "defaultState": 1,
+      "executeAppButtonClick": [Function],
+      "featureId": "",
+      "horizontalDirection": 3,
+      "id": "Widget-NaN",
+      "isDefaultOpen": true,
+      "isFloatingStateSupported": false,
+      "isFloatingStateWindowResizable": true,
+      "isFreeform": false,
+      "isStatusBar": false,
+      "isToolSettings": false,
+      "priority": 0,
+      "renderHorizontalToolbar": [Function],
+      "renderVerticalToolbar": [Function],
+      "verticalDirection": 2,
+      "widgetType": 0,
+    }
+  }
+  verticalToolbar={
+    <Toolbar
+      expandsTo={2}
+      items={
+        <UNDEFINED>
+          <ToolButton
+            iconClass="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconClass="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <GroupButton
+            iconClass="icon-placeholder"
+            items={
+              Array [
+                "tool1",
+                "tool2",
+                "item3",
+                "item4",
+                "item5",
+                "item6",
+                "item7",
+                "item8",
+              ]
+            }
+            labelKey="SampleApp:buttons.anotherGroup"
+          />
+        </UNDEFINED>
+      }
+    />
+  }
+/>
+`;

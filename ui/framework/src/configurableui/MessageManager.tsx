@@ -13,7 +13,7 @@ import {
   MessageBoxIconType,
   MessageBoxValue,
 } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, MessageContainer } from "@bentley/ui-core";
 import { MessageSeverity } from "@bentley/ui-core";
 import { ModalDialogManager } from "./ModalDialogManager";
 import UiFramework from "../UiFramework";
@@ -51,11 +51,11 @@ export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
 
 /** Activity Message Added Event class.
  */
-export class ActivityMessageAddedEvent extends UiEvent<ActivityMessageEventArgs> { }
+export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> { }
 
-/** Activity Message Canceled Event class.
+/** Activity Message Cancelled Event class.
  */
-export class ActivityMessageCanceledEvent extends UiEvent<{}> { }
+export class ActivityMessageCancelledEvent extends UiEvent<{}> { }
 
 /**
  * Keeps track of the current activity message, and updates whenever
@@ -64,22 +64,10 @@ export class ActivityMessageCanceledEvent extends UiEvent<{}> { }
  * Used to display tracked progress in ActivityMessage.
  */
 class OngoingActivityMessage {
-  private _message: string = "";
-  private _percentage: number = 0;
-  private _details: ActivityMessageDetails = new ActivityMessageDetails(true, true, true);
-  private _restored: boolean = false;
-
-  public get Message(): string { return this._message; }
-  public set Message(title: string) { this._message = title; }
-
-  public get Percentage(): number { return this._percentage; }
-  public set Percentage(percentage: number) { this._percentage = percentage; }
-
-  public get Details(): ActivityMessageDetails { return this._details; }
-  public set Details(details: ActivityMessageDetails) { this._details = details; }
-
-  public get IsRestored(): boolean { return this._restored; }
-  public set IsRestored(_restored: boolean) { this._restored = _restored; }
+  public message: string = "";
+  public percentage: number = 0;
+  public details: ActivityMessageDetails = new ActivityMessageDetails(true, true, true);
+  public isRestored: boolean = false;
 }
 
 /** The MessageManager class manages messages and prompts. It is used by the [[AppNotificationManager]] class.
@@ -89,19 +77,33 @@ export class MessageManager {
   private static _messages: NotifyMessageDetails[] = new Array<NotifyMessageDetails>();
   private static _MessageAddedEvent: MessageAddedEvent = new MessageAddedEvent();
 
-  private static _ActivityMessageAddedEvent: ActivityMessageAddedEvent = new ActivityMessageAddedEvent();
-  private static _ActivityMessageCanceledEvent: ActivityMessageCanceledEvent = new ActivityMessageCanceledEvent();
+  private static _ActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
+  private static _ActivityMessageCancelledEvent: ActivityMessageCancelledEvent = new ActivityMessageCancelledEvent();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
 
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.ouptputMessage(). */
   public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
-  public static get onActivityMessageAddedEvent(): ActivityMessageAddedEvent { return this._ActivityMessageAddedEvent; }
-  public static get onActivityMessageCanceledEvent(): ActivityMessageCanceledEvent { return this._ActivityMessageCanceledEvent; }
+
+  /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */
+  public static get onActivityMessageUpdatedEvent(): ActivityMessageUpdatedEvent { return this._ActivityMessageUpdatedEvent; }
+
+  /** The ActivityMessageCancelledEvent is fired when an Activity message is cancelled via
+   * IModelApp.notifications.endActivityMessage(ActivityMessageEndReason.Cancelled) or
+   * by the user clicking the 'Cancel' link.
+   */
+  public static get onActivityMessageCancelledEvent(): ActivityMessageCancelledEvent { return this._ActivityMessageCancelledEvent; }
 
   /** List of messages as [[NotifyMessageDetails]]. */
   public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
 
-  /** Output a message and/or alert to the user. */
+  /** Clear the message list. */
+  public static clearMessages(): void {
+    this._messages.splice(0);
+  }
+
+  /** Output a message and/or alert to the user.
+   * @param  message  Details about the message to output.
+   */
   public static addMessage(message: NotifyMessageDetails): void {
     this._messages.push(message);
 
@@ -114,17 +116,13 @@ export class MessageManager {
   }
 
   /**
-   * Sets details on _OngoingActivityMessage to be referenced when displaying
-   * an ActivityMessage.
+   * Sets details for setting up an Activity message.
    * @param details    Details for setup of ActivityMessage
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
-    if (!details)
-      return false;
-
-    this._OngoingActivityMessage.Details = details;
-    this._OngoingActivityMessage.IsRestored = true;
+    this._OngoingActivityMessage.details = details;
+    this._OngoingActivityMessage.isRestored = true;
     return true;
   }
 
@@ -138,20 +136,17 @@ export class MessageManager {
    * @returns true if details is valid and can be used to display ActivityMessage
    */
   public static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean {
-    if (!message || !percentage)
-      return false;
+    this._OngoingActivityMessage.message = message;
+    this._OngoingActivityMessage.percentage = percentage;
 
-    this._OngoingActivityMessage.Message = message;
-    this._OngoingActivityMessage.Percentage = percentage;
-
-    this.onActivityMessageAddedEvent.emit({
+    this.onActivityMessageUpdatedEvent.emit({
       message,
       percentage,
-      details: this._OngoingActivityMessage.Details,
-      restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.IsRestored,
+      details: this._OngoingActivityMessage.details,
+      restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.isRestored,
     });
 
-    this._OngoingActivityMessage.IsRestored = false;
+    this._OngoingActivityMessage.isRestored = false;
 
     return true;
   }
@@ -163,7 +158,7 @@ export class MessageManager {
    */
   public static endActivityMessage(isCompleted: boolean): boolean {
     this.endActivityProcessing(isCompleted);
-    this.onActivityMessageCanceledEvent.emit({});
+    this.onActivityMessageCancelledEvent.emit({});
     return true;
   }
 
@@ -173,9 +168,9 @@ export class MessageManager {
    */
   private static endActivityProcessing(isCompleted: boolean): void {
     if (isCompleted)
-      this._OngoingActivityMessage.Details.onActivityCompleted();
+      this._OngoingActivityMessage.details.onActivityCompleted();
     else
-      this._OngoingActivityMessage.Details.onActivityCancelled();
+      this._OngoingActivityMessage.details.onActivityCancelled();
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
@@ -185,22 +180,9 @@ export class MessageManager {
 
   /** Gets an icon CSS class name based on a given [[NotifyMessageDetails]]. */
   public static getIconClassName(details: NotifyMessageDetails): string {
-    let iconClassName = classnames("icon", "notifymessage-icon");
-
-    switch (details.priority) {
-      case OutputMessagePriority.Info:
-        iconClassName = classnames(iconClassName, "icon-info", "message-box-information");
-        break;
-      case OutputMessagePriority.Warning:
-        iconClassName = classnames(iconClassName, "icon-status-warning", "message-box-warning");
-        break;
-      case OutputMessagePriority.Error:
-        iconClassName = classnames(iconClassName, "icon-status-error", "message-box-error");
-        break;
-      case OutputMessagePriority.Fatal:
-        iconClassName = classnames(iconClassName, "icon-status-rejected", "message-box-error");
-        break;
-    }
+    const severity = MessageManager.getSeverity(details);
+    const className = MessageContainer.getIconClassName(severity, false);
+    const iconClassName = classnames("icon", "notifymessage-icon", className);
 
     return iconClassName;
   }

@@ -108,7 +108,10 @@ export class FrontstageDef {
   public bottomRight?: ZoneDef;
 
   private _activeToolItem?: ToolItemDef;
+
   public defaultLayout?: ContentLayoutDef;
+
+  /** Gets the [[ContentGroup]] for this Frontstage */
   public contentGroup?: ContentGroup;
 
   constructor(frontstageProps: FrontstageProps) {
@@ -193,8 +196,11 @@ export class FrontstageDef {
     });
   }
 
-  public setActiveView(newContent: ContentControl): void {
-    FrontstageManager.onContentControlActivatedEvent.emit({ contentControl: newContent });
+  public setActiveView(newContent: ContentControl, oldContent?: ContentControl): void {
+    if (oldContent)
+      oldContent.onDeactivated();
+    newContent.onActivated();
+    FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
   }
 
   public getZoneDef(zoneId: number): ZoneDef | undefined {

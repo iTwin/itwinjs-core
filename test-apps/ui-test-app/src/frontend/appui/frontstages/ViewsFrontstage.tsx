@@ -213,9 +213,7 @@ export class ViewsFrontstage {
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
       if (widgetDef) {
-        const widgetControl = widgetDef.widgetControl;
-        if (widgetControl)
-          widgetControl.setWidgetState(WidgetState.Open);
+        widgetDef.setWidgetState(WidgetState.Open);
       }
     }
   }

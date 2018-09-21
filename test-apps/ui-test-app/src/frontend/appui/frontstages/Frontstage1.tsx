@@ -5,11 +5,10 @@ import * as React from "react";
 
 import { FrontstageProps } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
-import { MessageButton, PageButton, ToolButton } from "@bentley/ui-framework";
+import { ToolButton } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
 import { ZoneState } from "@bentley/ui-framework";
 import { WidgetState } from "@bentley/ui-framework";
-import { MessageDirection } from "@bentley/ui-framework";
 import { NavigationWidget } from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
@@ -119,8 +118,6 @@ export class Frontstage1 {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <PageButton pageId="my-page" iconClass="icon-placeholder" />
-            <MessageButton messageId="my-message" iconClass="icon-placeholder" direction={MessageDirection.UI} />
             <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
             <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
             <GroupButton

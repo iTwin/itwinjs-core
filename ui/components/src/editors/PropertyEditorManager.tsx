@@ -11,14 +11,7 @@ import * as React from "react";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
 
-/** Each control that supports property editing must implement PropertyContainer.
- */
-export interface PropertyContainer {
-  commitPropertyValue(editor: PropertyEditor, record: PropertyRecord, description: PropertyDescription, newPropertyValue: PropertyValue): void;
-  cancelEditor(record: PropertyRecord, description: PropertyDescription): void;
-}
-
-/** Each property editor implements DataController.
+/** DataControllers can be implemented per typename to validate and commit values.
  */
 export interface DataController {
   validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
@@ -30,9 +23,9 @@ export interface DataController {
 export abstract class PropertyEditor implements DataController {
   public customDataController: DataController | undefined = undefined;
 
-  public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
-
   public abstract get reactElement(): React.ReactNode;
+
+  public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
 
   public commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     if (this.customDataController)
