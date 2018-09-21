@@ -1,0 +1,10 @@
+{
+  // This is only to get intellisense working in VSCode
+  // Without this, since the test directory is not included in the root tsconfig.json,
+  // files under source/ that are included from test/ don't honor the "baseUrl" property
+  "extends": "../tsconfig.json",
+  "include": [
+    "../src/**/*.ts",
+    "**/*.test.ts"
+  ]
+}

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, IModelHubPermissions } from "../ConnectClients";
+import { ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, IModelHubPermissions, RbacUser } from "../ConnectClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 
@@ -14,10 +14,10 @@ chai.should();
 
 export class ConnectUrlMock {
   private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-wsg20-eus.cloudapp.net",
-    QA: "https://qa-connect-wsg20.bentley.com",
+    DEV: "https://dev-connect-contextregistry.bentley.com",
+    QA: "https://qa-connect-contextregistry.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-wsg20-eus.cloudapp.net",
+    PERF: "https://perf-connect-contextregistry.bentley.com",
   };
 
   public static getUrl(env: DeploymentEnv): string {
@@ -45,11 +45,11 @@ describe("ConnectClient", () => {
   it("should setup its URLs", async () => {
     ConnectUrlMock.mockGetUrl("DEV");
     let url: string = await new ConnectClient("DEV").getUrl(actx, true);
-    chai.expect(url).equals("https://dev-wsg20-eus.cloudapp.net");
+    chai.expect(url).equals("https://dev-connect-contextregistry.bentley.com");
 
     ConnectUrlMock.mockGetUrl("QA");
     url = await new ConnectClient("QA").getUrl(actx, true);
-    chai.expect(url).equals("https://qa-connect-wsg20.bentley.com");
+    chai.expect(url).equals("https://qa-connect-contextregistry.bentley.com");
 
     ConnectUrlMock.mockGetUrl("PROD");
     url = await new ConnectClient("PROD").getUrl(actx, true);
@@ -57,7 +57,7 @@ describe("ConnectClient", () => {
 
     ConnectUrlMock.mockGetUrl("PERF");
     url = await new ConnectClient("PERF").getUrl(actx, true);
-    chai.expect(url).equals("https://perf-wsg20-eus.cloudapp.net");
+    chai.expect(url).equals("https://perf-connect-contextregistry.bentley.com");
   });
 
   it("should get a list of projects", async function (this: Mocha.ITestCallbackContext) {
@@ -195,4 +195,27 @@ describe("RbacClient", () => {
     chai.expect(permissions & IModelHubPermissions.ManageVersions);
   });
 
+  it("should get the users in the specified project", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
+    // Get test project
+    const queryOptions: ConnectRequestQueryOptions = {
+      $filter: "Name+eq+'" + TestConfig.projectName + "'",
+    };
+    const project: Project = await connectClient.getProject(actx, accessToken, queryOptions);
+    chai.expect(!!project);
+
+    // Get the user ID we are using that should exist in the returned users
+    const currentUserId = accessToken.getUserProfile()!.userId;
+    // Get users
+    const users: RbacUser[] = await rbacClient.getUsers(actx, accessToken!, project.wsgId);
+
+    // We should have some valid users
+    chai.expect(users.length !== 0);
+    // Test that the user accessing this is existent in the users returned
+    let foundUser = false;
+    users.map((user: RbacUser) => { foundUser = foundUser || (user.wsgId === currentUserId); });
+    chai.expect(foundUser);
+  });
 });

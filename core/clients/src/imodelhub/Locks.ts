@@ -441,7 +441,7 @@ export class LockHandler {
   /**
    * Update multiple [[Lock]]s. This call can simultaneously acquire new Locks and update states of already owned Locks. If large amount of Locks are updated, they are split across multiple requests. See [[LockUpdateOptions.locksPerRequest]]. Default is 2000 Locks per request.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set for every
    * Lock instance. They must be consistent throughout all of the Locks.
    * @param updateOptions Options for the update request. You can set this to change
@@ -451,7 +451,7 @@ export class LockHandler {
    * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
    * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/Locks/#handling-conflicts) section for more information.
    * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including locks with different briefcaseId values in the request.
-   * @throws [[IModelHubError]] with [IModelHubStatus.IModelHubOperationFailed]($bentley) when including multiple identical locks in the request.
+   * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
@@ -509,7 +509,7 @@ export class LockHandler {
   /**
    * Get the [[Lock]]s that have been issued for the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Locks or select different data from them.
    * @returns Resolves to an array of Locks matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -548,7 +548,7 @@ export class LockHandler {
   /**
    * Delete all [[Lock]]s owned by the specified [[Briefcase]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcacase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.

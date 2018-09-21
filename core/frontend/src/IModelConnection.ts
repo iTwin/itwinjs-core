@@ -9,7 +9,7 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
+  TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -37,7 +37,7 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of [[Tile]]s for this IModelConnection. */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
@@ -261,8 +261,8 @@ export class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModelJs types to be used for the different ECSQL parameter types.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
@@ -585,11 +585,15 @@ export namespace IModelConnection {
     }
   }
 
-  /** @hidden */
+  /** Provides access to tiles associated with an IModelConnection */
   export class Tiles {
+    /** @hidden */
     private _iModel: IModelConnection;
+
+    /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids); }
-    public async getTileProps(ids: TileId[]): Promise<TileProps[]> { return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids); }
+
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
   }
 }

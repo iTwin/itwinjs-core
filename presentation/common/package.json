@@ -1,14 +1,18 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "0.126.0",
-  "description": "Common pieces for iModelJs presentation packages",
+  "version": "0.128.0",
+  "description": "Common pieces for iModel.js presentation packages",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "EC",
     "Presentation",
     "iModelJS"
   ],
-  "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
@@ -32,13 +36,13 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0"
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.126.0",
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -67,7 +71,8 @@
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "~3.0.0",
-    "typescript-json-schema": "^0.28.0"
+    "typescript-json-schema": "^0.28.0",
+    "yargs": "^12.0.0"
   },
   "nyc": {
     "nycrc-path": "../.nycrc"

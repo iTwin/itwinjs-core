@@ -1,0 +1,70 @@
+{
+  "outputName": "performanceResults_new.csv",
+  "outputPath": "D:\\output\\performanceData\\",
+  "iModelLocation": "D:\\models\\TimingTests\\",
+  "view": {
+    "width": 1000,
+    "height": 1000
+  },
+  "modelSet": [
+    {
+      "iModelName": "Wraith.ibim",
+      "tests": [
+        {
+          "testType": "timing",
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "displayStyle": "Filled Hidden Line"
+        },
+        {
+          "testType": "timing",
+          "viewName": "V0",
+          "viewFlags": {
+            "fill": true
+          },
+          "displayStyle": "Filled Hidden Line"
+        }
+      ]
+    },
+    {
+      "iModelName": "Wraith_MultiMulti.ibim",
+      "tests": [
+        {
+          "testType": "image",
+          "viewName": "V0",
+          "displayStyle": "Smooth"
+        },
+        {
+          "testType": "timing",
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import { ViewState } from "../ViewState";
 
 export namespace FeatureSymbology {
 
-  /** The Properties that define an Appearance. */
+  /** The properties that define an Appearance. */
   export interface AppearanceProps {
     /** The color of the Appearance */
     rgb?: RgbColor;
@@ -104,26 +104,35 @@ export namespace FeatureSymbology {
     private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
   }
 
+  /**
+   * Specifies a set of per-Feature symbology overrides.
+   */
   export class Overrides {
-    /** Drawn Sets */
+    /** The IDs of elements which should never be drawn */
     public readonly neverDrawn = new Set<string>();
+    /** The IDs of elements which should always be drawn. If an element ID is present in both neverDrawn and alwaysDrawn, it is never drawn. */
     public readonly alwaysDrawn = new Set<string>();
+    /** If true, no elements except those included in the alwaysDrawn set will be drawn */
     public isAlwaysDrawnExclusive: boolean = false;
 
-    /** Following properties are only mutable internally: */
     private _defaultOverrides = Appearance.defaults;
     private _constructions = false;
     private _dimensions = false;
     private _patterns = false;
     private _lineWeights = true;
 
+    /** Mapping of model IDs to overrides applied to all elements within the corresponding model */
     public readonly modelOverrides = new Map<string, Appearance>();
+    /** Mapping of element IDs to overrides applied to the corresponding element */
     public readonly elementOverrides = new Map<string, Appearance>();
+    /** Mapping of subcategory IDs to overrides applied to geometry belonging to the corresponding subcategory */
     public readonly subCategoryOverrides = new Map<string, Appearance>();
-
+    /** Set of IDs of visible subcategories. Geometry belonging to other subcategories will not be drawn */
     public readonly visibleSubCategories = new Set<string>();
 
+    /** Overrides applied to features for which no other overrides are defined */
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
+    /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
     public get lineWeights(): boolean { return this._lineWeights; }
 
     public isNeverDrawn(id: Id64String): boolean { return this.neverDrawn.has(id.toString()); }
@@ -196,8 +205,6 @@ export namespace FeatureSymbology {
     }
 
     public isFeatureVisible(feature: Feature): boolean {
-      // TFS#808986: Navigator puts some elements into both the 'never' and 'always' lists which is weird but
-      // the docs for ViewController::GetNeverDrawn() assert that in that case the 'never' list wins.
       const { elementId, subCategoryId, geometryClass } = feature;
       const isValidElemId = !Id64.isInvalidId(elementId);
 

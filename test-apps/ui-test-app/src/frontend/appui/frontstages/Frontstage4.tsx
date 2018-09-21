@@ -235,6 +235,7 @@ export class Frontstage4 {
         },
       },
     });
+
     const detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation."; // <br/>Hello <a href=\"http://www.google.com\">Google!</a>
     const warningMessageCommand = new CommandItemDef({
       commandId: "warningMessage",

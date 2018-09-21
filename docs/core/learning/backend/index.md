@@ -1,49 +1,58 @@
-# The Backend Library
+# App backend development
 
-The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers. The backend may be in the form of a [service or agent](../../overview/App.md#agents-and-services) or an [app-specific backend](../../overview/App.md#app-backend).
+Backend code is the portion of an app that:
+* Runs on a computer with a copy of an iModel
+* Has access to the local file system
+* Can use native libraries
 
-The backend:
+A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend). See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iModelJs apps are structured.
 
-* has direct access to the native library, and hence its methods are generally synchronous.
-* has access to the local file system
-* determines the JavaScript engine (vs. the frontend where the JavaScript engine comes from the user's browser). Usually that is V8 from Node.js
-* may load third-party native code
+App backends require the `@bentley/imodeljs-backend` npm package.
+The [common packages](..\common\index.md) will also be required.
 
-See [the app architecture overview](../../overview/App.md) for more on how backends fit into overall app architecture.
+These packages provide the following functions to support backend operations:
 
-All Promise-returning backend methods must [manage the LoggingActivityContext](./ManagingLoggingActivityContext.md).
+* Administration
+  * [IModelHost](./IModelHost.md)
+  * [Initialize Logging](../common/Logging.md)
+  * [Configure FeatureGates](../common/FeatureGates.md)
 
-The backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
-
-## Administration
-* [IModelHost](./IModelHost.md)
-
-## IModelDb
-* [Open an IModelDb](./IModelDb.md)
-* [Synchronizing with iModelHub](./IModelDbSync.md)
-* [Writing to an IModelDb](./IModelDbReadwrite.md)
+* IModelDb
+  * [Open an IModelDb](./IModelDb.md)
+  * [Synchronizing with iModelHub](./IModelDbSync.md)
+  * [Writing to an IModelDb](./IModelDbReadwrite.md)
   * [Concurrency control](./ConcurrencyControl.md)
 
-## Working with Schemas and Elements in TypeScript
-* [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
+* Working with Schemas and Elements in TypeScript
+  * [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
 
-## Loading and Creating Elements, Aspects, and Models
-* [Access Elements](./AccessElements.md)
-* [Create Elements](./CreateElements.md)
-* [Access Aspects](./AccessAspects.md)
-* [Create Aspects](./CreateAspects.md)
-* [Access Models](./AccessModels.md)
-* [Create Models](./CreateModels.md)
+* Loading and Creating Elements, ElementAspects, and Models
+  * [Access Elements](./AccessElements.md)
+  * [Create Elements](./CreateElements.md)
+  * [Access ElementAspects](./AccessElementAspects.md)
+  * [Access Models](./AccessModels.md)
+  * [Create Models](./CreateModels.md)
 
-## ECSQL
+* ECSQL
 
-* [What is ECSQL?](../ECSQL.md)
-* [Executing ECSQL statements](./ExecutingECSQL.md)
-* [Code Examples](./ECSQLCodeExamples.md)
-* [Frequently used ECSQL queries](./ECSQL-queries.md)
+  * [What is ECSQL?](../ECSQL.md)
+  * [Executing ECSQL statements](./ExecutingECSQL.md)
+  * [Code Examples](./ECSQLCodeExamples.md)
+  * [Frequently used ECSQL queries](./ECSQL-queries.md)
 
-## Dealing with Codes
-* [Reserve Codes](./ReserveCodes.md)
+* Dealing with Codes
+  * [Reserve Codes](./ReserveCodes.md)
 
-## Change Summary
-* [Change Summary Overview](../ChangeSummaries)
+* Change Summary
+  * [Change Summary Overview](../ChangeSummaries)
+
+For services and app backends:
+
+* Correlating backend operations with frontend Requests
+  * [Manage the ActivityLoggingContext](./ManagingActivityLoggingContext.md).
+
+* Exposing the operations of the backend as RpcInterfaces
+  * [Define](../RpcInterface.md#define-the-interface) one or more RpcInterfaces.
+  * [Implement](../RpcInterface.md#server-implementation) the RpcInterfaces.
+  * [Configure](../RpcInterface.md#configure-interfaces) the RpcInterfaces.
+  * [Serve](../RpcInterface.md#serve-the-interfaces) the RpcInterfaces to clients.

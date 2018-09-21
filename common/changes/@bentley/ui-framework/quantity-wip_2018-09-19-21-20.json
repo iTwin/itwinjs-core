@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial implementation of quantity formatting package, tests, and example usage in IModelApp. ",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

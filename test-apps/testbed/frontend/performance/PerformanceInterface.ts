@@ -7,6 +7,8 @@ export interface PerformanceData {
   garbageExecute: number;
   initCommands: number;
   backgroundDraw: number;
+  skybox: number;
+  terrain: number;
   setClips: number;
   opaqueDraw: number;
   translucentDraw: number;

@@ -2,7 +2,7 @@
 tableRowAnchors: true
 ---
 
-# Glossary of terms in iModelJs UI
+# Glossary of terms in iModel.js UI
 
 |Term | Definition
 |------------|------------|--------|--------|-------|

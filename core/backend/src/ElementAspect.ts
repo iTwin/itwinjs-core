@@ -15,6 +15,7 @@ import { ElementAspectProps } from "@bentley/imodeljs-common";
 export class ElementAspect extends Entity implements ElementAspectProps {
   public element: Id64;
 
+  /** @hidden */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.element = Id64.fromJSON(props.element);

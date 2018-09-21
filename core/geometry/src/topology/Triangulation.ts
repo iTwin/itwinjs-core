@@ -9,6 +9,7 @@ import { Point3d, XAndY } from "../PointVector";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../GrowableArray";
 import { Range2d } from "../Range";
+import { IndexedXYZCollection } from "../IndexedXYZCollection";
 
 export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation
@@ -133,12 +134,12 @@ export class Triangulator {
     // NOW WE KNOW ...
     // strokedLoops[largestAreaIndex] is the largest loop.  (Hence outer, but orientation is not guaranteed.)
     const holeLoops = [];
-    let startingNode = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[largestLoopIndex], true, true);
+    let startingNode = Triangulator.createFaceLoopFromIndexedXYZCollection(strokedLoops[largestLoopIndex], true, true);
     if (!startingNode)
       return Triangulator._returnGraph;
     for (let i = 0; i < strokedLoops.length; i++) {
       if (i !== largestLoopIndex) {
-        const holeLoop = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[i], false, true);
+        const holeLoop = Triangulator.createFaceLoopFromIndexedXYZCollection(strokedLoops[i], false, true);
         if (holeLoop)
           holeLoops.push(Triangulator.getLeftmost(holeLoop));
       }
@@ -152,7 +153,7 @@ export class Triangulator {
    * * To triangulate a polygon with holes, use earcutFromOuterAndInnerLoops
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    */
-  public static earcutSingleLoop(data: Point3d[]): HalfEdgeGraph {
+  public static earcutSingleLoop(data: XAndY[]): HalfEdgeGraph {
     Triangulator._returnGraph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromXAndYArray(data, true, true);
 
@@ -193,7 +194,7 @@ export class Triangulator {
    * * First loop is assumed outer -- will be reordered as CCW
    * * Additional loops assumed inner -- will be reordered as CW
    */
-  public static earcutOuterAndInnerLoops(loops: Point3d[][]): HalfEdgeGraph {
+  public static earcutOuterAndInnerLoops(loops: XAndY[][]): HalfEdgeGraph {
     Triangulator._returnGraph = new HalfEdgeGraph();
     const range = Range2d.createNull();
     const numLoops = loops.length;
@@ -232,13 +233,13 @@ export class Triangulator {
       return baseNode;
     return graph.splitEdge(baseNode, xy.x, xy.y, z);
   }
-  private static directcreateFaceLoopFromGrowableXYZ(graph: HalfEdgeGraph, data: GrowableXYZArray): HalfEdge | undefined {
+  private static directcreateFaceLoopFromIndexedXYZCollection(graph: HalfEdgeGraph, data: IndexedXYZCollection): HalfEdge | undefined {
     let i;
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let baseNode: HalfEdge | undefined;
     const xyz = Point3d.create();
     for (i = 0; i < data.length; i++) {
-      data.getPoint3dAt(i, xyz);
+      data.atPoint3dIndex(i, xyz);
       baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, xyz);
     }
     return baseNode;
@@ -293,9 +294,9 @@ export class Triangulator {
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    */
-  public static createFaceLoopFromGrowableXYZArray(data: GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromIndexedXYZCollection(data: GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     const graph = Triangulator._returnGraph;
-    const base = Triangulator.directcreateFaceLoopFromGrowableXYZ(graph, data);
+    const base = Triangulator.directcreateFaceLoopFromIndexedXYZCollection(graph, data);
     return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }
 
@@ -520,7 +521,7 @@ export class Triangulator {
   /** link loops[1], loops[2] etc into the outer loop, producing a single-ring polygon without holes
    *
    */
-  private static constructAndSpliceHoles(loops: Point3d[][], outerNode: HalfEdge) {
+  private static constructAndSpliceHoles(loops: XAndY[][], outerNode: HalfEdge) {
     const queue: HalfEdge[] = [];
     let list;
 

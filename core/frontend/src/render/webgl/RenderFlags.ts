@@ -18,6 +18,7 @@ export const enum RenderPass {
     ViewOverlay,
     SkyBox,
     Terrain,
+    HiliteStencilVolume,
     COUNT,
 }
 
@@ -26,13 +27,6 @@ export const enum GeometryType {
     IndexedTriangles,
     IndexedPoints,
     ArrayedPoints,
-}
-
-export const enum SurfaceType {
-    Unlit,
-    Lit,
-    Textured,
-    TexturedLit,
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */

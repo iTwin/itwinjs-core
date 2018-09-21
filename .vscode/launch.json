@@ -3,8 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
-    {
+  "configurations": [{
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Integration)",
@@ -197,6 +196,9 @@
       "request": "launch",
       "name": "SimpleViewTest Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
@@ -397,14 +399,45 @@
       "protocol": "inspector",
       "outputCapture": "std"
     },
-  ],
-  "compounds": [
     {
-      "name": "Run Testbed (all)",
-      "configurations": [
-        "_Testbed (frontend)",
-        "_Testbed (backend)"
-      ]
-    }
-  ]
+      "type": "node",
+      "request": "launch",
+      "name": "Quantity Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/quantity",
+      "args": [
+        "--testDir=${workspaceFolder}/core/quantity/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug agent-test-app",
+      "program": "${workspaceRoot}/test-apps/agent-test-app/lib/Main.js",
+      "cwd": "${workspaceRoot}/test-apps/agent-test-app/",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
+      ],
+      "args": [
+        "--listenFor=45000",
+        "--email=Regular.IModelJsTestUser@mailinator.com",
+        "--password=Regular@iMJs",
+        "--listen_time=40000"
+      ],
+      "protocol": "inspector"
+    },
+  ],
+  "compounds": [{
+    "name": "Run Testbed (all)",
+    "configurations": [
+      "_Testbed (frontend)",
+      "_Testbed (backend)"
+    ]
+  }]
 }

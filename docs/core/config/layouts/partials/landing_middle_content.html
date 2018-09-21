@@ -1,0 +1,40 @@
+<!-- Loop through all middleContents. If even, the img goes first. Content first if odd. -->
+<div id="middle-content-wrapper">
+  {{#each this.middleContent}}
+  <div class="middle-content-group" style="order:{{addOne @index}}">
+    {{#if_even @index}}
+    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" style="order: 1;" />
+    <div class="middle-content-text" style="order:2; margin-bottom: 2em">
+      {{#if this.header}}
+      <h4> {{{this.header}}} </h4>
+      {{/if}}
+      <span class="gradient"></span>
+      {{#if this.content}}
+      {{{this.content}}}
+      {{/if}}
+    </div>
+    {{else}}
+    <div class="middle-content-text" style="order:1; margin-bottom: 2em">
+      {{#if this.header}}
+      <h4> {{{this.header}}} </h4>
+      {{/if}}
+      <span class="gradient"></span>
+      {{#if this.content}}
+      {{{this.content}}}
+      {{/if}}
+    </div>
+    <img src="{{../this.docSite}}/{{this.image}}" style="order: 2;" />
+    {{/if_even}}
+  </div>
+  {{/each}}
+</div>
+<div class="middle-content-text">
+  <h4> Try iModel.js now </h4>
+</div>
+<div id="demo-container">
+  <img src="landing-page/assets/imodel_viewer.png" class="example-view-demonstrator">
+  <div class="overlay">
+    <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="/learning/viewer-demonstrator/" role="button"
+      target="_blank">Open iModel.js Example Viewer <i class="fa fa-external-link"></i> </a>
+  </div>
+</div>

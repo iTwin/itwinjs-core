@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Notifications */
-import { Viewport } from "./Viewport";
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -89,7 +88,7 @@ export interface ToolTipOptions {
 
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
-  public viewport?: Viewport;
+  public viewport?: HTMLElement;
   public displayPoint?: Point2d;
   public relativePosition = RelativePosition.TopRight;
 
@@ -107,7 +106,7 @@ export class NotifyMessageDetails {
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
    */
-  public setPointerTypeDetails(viewport: Viewport, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
+  public setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
     this.viewport = viewport;
     this.displayPoint = Point2d.fromJSON(displayPoint);
     this.relativePosition = relativePosition;
@@ -203,4 +202,11 @@ export class NotificationManager {
   }
 
   protected _showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+
+  /** Hides the Pointer message. */
+  public closePointerMessage(): void {
+    this._hidePointerMessage();
+  }
+
+  protected _hidePointerMessage(): void { }
 }

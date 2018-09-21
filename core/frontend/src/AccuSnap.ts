@@ -331,7 +331,7 @@ export class AccuSnap implements Decorator {
     const spriteSize = errorSprite.size;
     const pt = AccuSnap.adjustIconLocation(vp, ev.rawPoint, spriteSize);
 
-    this.errorIcon.activate(errorSprite, vp, pt, 0);
+    this.errorIcon.activate(errorSprite, vp, pt);
   }
 
   private clearSprites() {
@@ -345,6 +345,9 @@ export class AccuSnap implements Decorator {
     if (!hit)
       return false;
 
+    if (hit.isModelHit)
+      return false;       // Avoid annoying flashing of reality models.
+
     const snap = AccuSnap.toSnapDetail(hit);
     return !snap || snap.isHot || this._settings.hiliteColdHits;
   }
@@ -352,7 +355,6 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     this.areFlashed.forEach((vp) => {
-      // eventHandlers.CallAllHandlers(UnFlashCaller(vp.get()));
       vp.setFlashed(undefined, 0.0);
     });
     this.areFlashed.clear();

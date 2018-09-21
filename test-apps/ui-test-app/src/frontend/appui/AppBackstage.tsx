@@ -80,15 +80,19 @@ class AppBackstage extends React.Component<AppBackstageProps> {
     new BackstageHide().run();
   }
 
+  private _handleOnClose() {
+    new BackstageHide().run();
+  }
+
   public render(): React.ReactNode {
 
     return (
-      <Backstage isVisible={this.props.isVisible} >
-        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconClass="icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconClass="icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconClass="icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconClass="icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test5" labelKey="SampleApp:backstage.testFrontstage5" iconClass="icon-placeholder" />
+      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.openIModelState.accessToken} >
+        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconClass="icon icon-user" />
+        <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconClass="icon icon-folder-opened" />
+        <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconClass="icon icon-graph" />
+        <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconClass="icon icon-3d-cube" />
+        <FrontstageLaunchBackstageItem frontstageId="Test5" labelKey="SampleApp:backstage.testFrontstage5" iconClass="icon icon-wrench" />
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="Views Frontstage" iconClass="icon-placeholder" />
       </Backstage>

@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module iModelBank */
 import { DeploymentEnv } from "../Client";
 import { assert } from "@bentley/bentleyjs-core";
 
-/** Format of the imodel.json file found in an iModel directory of an iModel file system. */
+/* Format of the imodel.json file found in an iModel directory of an iModel file system. */
 export interface IModelFileSystemIModelProps {
   name: string;
   description: string;
@@ -13,7 +12,7 @@ export interface IModelFileSystemIModelProps {
   seedFile?: string;
 }
 
-/** Format of the imodelfs.json file found in the root directory of an iModel file system. */
+/* Format of the imodelfs.json file found in the root directory of an iModel file system. */
 export interface IModelFileSystemProps {
   name: string;
   id: string;
@@ -21,7 +20,7 @@ export interface IModelFileSystemProps {
   iModels: IModelFileSystemIModelProps[];
 }
 
-/** The externalize format of an IModelAccessContext */
+/* The externalize format of an IModelAccessContext */
 export interface IModelAccessContextProps {
   imodeljsCoreClientsIModelBankAccessContext: {
     iModelId: string;
@@ -30,12 +29,12 @@ export interface IModelAccessContextProps {
   };
 }
 
-/** The externalized format of an IModelAccessContext that has been assigned a name. */
+/* The externalized format of an IModelAccessContext that has been assigned a name. */
 export interface NamedIModelAccessContextProps extends IModelAccessContextProps {
   name: string;
 }
 
-/** The externalized format of a group of named IModelBankAccessContexts */
+/* The externalized format of a group of named IModelBankAccessContexts */
 export interface IModelBankAccessContextGroupProps {
   iModelBankProjectAccessContextGroup: {
     id: string;

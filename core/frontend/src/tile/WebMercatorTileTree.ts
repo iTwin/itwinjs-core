@@ -4,10 +4,10 @@
 /** @module Tile */
 
 import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, TileId, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
-import { Id64Props, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile, TileRequests, MissingNodes } from "./TileTree";
+import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { ImageUtil } from "../ImageUtil";
@@ -94,7 +94,7 @@ class QuadId {
 }
 class WebMercatorTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
-  public id: Id64Props = "";
+  public id: string = "";
   /** Metadata describing the tree's root Tile. */
   public rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
@@ -106,33 +106,23 @@ class WebMercatorTileTreeProps implements TileTreeProps {
     this.location = Transform.createIdentity();
   }
 }
-class WebMercatorTileProps implements TileProps {
-  public id: TileId;
-  public parentId?: string;
-  public range: Range3dProps;
-  public contentRange?: Range3dProps;
-  public maximumSize: number;
 
-  public childIds: string[];
-  public hasContents: boolean = true;
-  public geometry?: any;
+class WebMercatorTileProps implements TileProps {
+  public readonly contentId: string;
+  public readonly range: Range3dProps;
+  public readonly contentRange?: Range3dProps;
+  public readonly maximumSize: number;
+  public readonly sizeMultiplier: number = 1.0;
+  public readonly isLeaf: boolean = false;
 
   constructor(thisId: string, mercatorToDb: Transform) {
-    this.id = new TileId(new Id64(), thisId);
+    this.contentId = thisId;
     const quadId = new QuadId(thisId);
     this.range = quadId.getRange(mercatorToDb);
-    this.childIds = [];
-    const level = quadId.level + 1;
-    const column = quadId.column * 2;
-    const row = quadId.row * 2;
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
-    for (let i = 0; i < 2; ++i) {
-      for (let j = 0; j < 2; ++j) {
-        this.childIds.push(level + "_" + (column + i) + "_" + (row + j));
-      }
-    }
   }
 }
+
 class WebMercatorTileLoader extends TileLoader {
   private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
@@ -142,8 +132,7 @@ class WebMercatorTileLoader extends TileLoader {
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
     const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
 
-    const projectExtents = _iModel.projectExtents;
-    const projectCenter = projectExtents.getCenter();
+    const projectCenter = _iModel.projectExtents.center;
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
@@ -158,13 +147,27 @@ class WebMercatorTileLoader extends TileLoader {
     this.mercatorToDb = dbToMercator.inverse() as Transform;
   }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+    const quadId = new QuadId(parent.contentId);
+    const level = quadId.level + 1;
+    const column = quadId.column * 2;
+    const row = quadId.row * 2;
+
     const props: WebMercatorTileProps[] = [];
-    for (const tileId of tileIds) { props.push(new WebMercatorTileProps(tileId, this.mercatorToDb)); }
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        const childId = level + "_" + (column + i) + "_" + (row + j);
+        props.push(new WebMercatorTileProps(childId, this.mercatorToDb));
+      }
+    }
 
     return props;
   }
-  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+  public async loadTileContents(missingArray: Tile[]): Promise<void> {
+    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
+    for (const tile of missingArray)
+      tile.setIsQueued();
+
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)
         this._providerInitializing = this._imageryProvider.initialize();
@@ -173,23 +176,20 @@ class WebMercatorTileLoader extends TileLoader {
       this._providerInitializing = undefined;
     }
 
-    const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
-      if (missingTile.isNotLoaded) {
-        missingTile.setIsQueued();
+      assert(missingTile.isQueued);
 
-        const quadId = new QuadId(missingTile.id);
-        const corners = quadId.getCorners(this.mercatorToDb);
-        const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-        if (undefined === imageSource) {
-          missingTile.setNotFound();
-        } else {
-          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
-          textureLoad.catch((_err) => missingTile.setNotFound());
-          textureLoad.then((result) => {
-            missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-          });
-        }
+      const quadId = new QuadId(missingTile.contentId);
+      const corners = quadId.getCorners(this.mercatorToDb);
+      const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+      if (undefined === imageSource) {
+        missingTile.setNotFound();
+      } else {
+        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
+        textureLoad.catch((_err) => missingTile.setNotFound());
+        textureLoad.then((result) => {
+          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
+        });
       }
     }));
   }
@@ -301,7 +301,7 @@ class BingAttribution {
   constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
 
   public matchesTile(tile: Tile): boolean {
-    const quadId = new QuadId(tile.id);
+    const quadId = new QuadId(tile.contentId);
     for (const coverage of this._coverages) {
       if (coverage.overlaps(quadId))
         return true;
@@ -579,7 +579,7 @@ export class BackgroundMapState {
   private _mapType: MapType;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader));
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader, ""));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
   public getPlane(): Plane3dByOriginAndUnitNormal {

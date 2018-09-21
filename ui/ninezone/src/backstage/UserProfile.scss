@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+ @import "_variables";
+
+.nz-backstage-userprofile {
+  padding: $nz-backstage-user-profile-spacing 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  > span:first-child {
+    flex: initial;
+    font-size: 1em;
+    width: $nz-backstage-user-profile-size;
+    height: $nz-backstage-user-profile-size;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    margin-left: $nz-backstage-icon-spacing-left;
+    background-color: $bwc-dataviz-red;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.1);
+  }
+
+  > span:last-child {
+    flex: 1;
+    margin-left: $nz-backstage-user-profile-label-spacing-left;
+    margin-right: $nz-backstage-user-profile-label-spacing-right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}

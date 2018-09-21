@@ -6,8 +6,8 @@ See [how to write an interactive app](./WriteAnInteractiveApp.md) for a guide to
 ## 2. Tailor the App
 Any interactive app can be configured as a desktop app. A small additional effort is required to tailor it.
 
-You must write an [Electron-specific main](../overview/AppTailoring.md) to do the following:
-* [Configure the backend interfaces](./RpcInterface.md#3-configure-interfaces) for Electron.
+You must write an [Electron-specific main](../learning/AppTailoring.md) to do the following:
+* [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) for Electron.
 * Integrate with Electron IPC
 * Identify the main html page.
 

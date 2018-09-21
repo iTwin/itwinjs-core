@@ -46,6 +46,7 @@ export class IModelHostConfiguration {
 
 /**
  * IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
+ * See [the learning article]($docs/learning/backend/IModelHost.md)
  */
 export class IModelHost {
   public static configuration?: IModelHostConfiguration;
@@ -58,7 +59,7 @@ export class IModelHost {
   /** Configured FeatureGates for this IModelHost. */
   public static readonly features = new FeatureGates();
 
-  /** This method must be called before any iModelJs services are used.
+  /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
@@ -89,7 +90,7 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
-  /** This method must be called when an iModelJs services is shut down. Raises [[onBeforeShutdown]] */
+  /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static shutdown() {
     if (!IModelHost.configuration)
       return;

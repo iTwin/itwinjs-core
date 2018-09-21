@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Exclude contents of /frontend/render/webgl/ from SDK docs.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

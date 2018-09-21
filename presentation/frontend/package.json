@@ -1,7 +1,12 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "0.126.0",
-  "description": "Frontend of iModelJs Presentation library",
+  "version": "0.128.0",
+  "description": "Frontend of iModel.js Presentation library",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "EC",
@@ -9,7 +14,6 @@
     "iModelJS",
     "Frontend"
   ],
-  "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
@@ -30,19 +34,19 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/imodeljs-i18n": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0",
-    "@bentley/imodeljs-frontend": "0.126.0",
-    "@bentley/presentation-common": "0.126.0"
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/imodeljs-i18n": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
+    "@bentley/imodeljs-frontend": "0.128.0",
+    "@bentley/presentation-common": "0.128.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/bentleyjs-tools": "0.126.0",
-    "@bentley/imodeljs-i18n": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0",
-    "@bentley/imodeljs-frontend": "0.126.0",
-    "@bentley/presentation-common": "0.126.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/imodeljs-i18n": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
+    "@bentley/imodeljs-frontend": "0.128.0",
+    "@bentley/presentation-common": "0.128.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

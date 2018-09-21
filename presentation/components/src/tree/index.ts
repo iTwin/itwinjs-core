@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 export { default as PresentationTreeDataProvider } from "./DataProvider";
 export { default as IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";

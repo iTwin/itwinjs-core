@@ -97,7 +97,7 @@ describe("iModel", () => {
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
-    const e1 = new LightLocation({ category: "0x11", classFullName: "BisCore.LightLocation" }, imodel1);
+    const e1 = new LightLocation({ category: "0x11", classFullName: "BisCore.LightLocation", model: "0x01", code: Code.createEmpty() }, imodel1);
     assert.isDefined(e1);
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
@@ -297,29 +297,32 @@ describe("iModel", () => {
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
   });
 
-  it("should find a tile tree for a geometric model", () => {
+  it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const tree = imodel1.tiles.getTileTreeProps("0x1c");
+    const actx2 = new ActivityLoggingContext("tiletreetest");
+    const tree = await imodel1.tiles.requestTileTreeProps(actx2, "0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
     expect(tree.maxTilesToSkip).to.equal(1);
     expect(tree.rootTile).not.to.be.undefined;
 
+    // Empty model => identity transform
     const tf = Transform.fromJSON(tree.location);
     expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
+    expect(tf.origin.x).to.equal(0);
+    expect(tf.origin.y).to.equal(0);
+    expect(tf.origin.z).to.equal(0);
 
-    expect(tree.rootTile.id.treeId).to.equal(tree.id);
-    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+    expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
 
+    // Empty model => null range
     const range = Range3d.fromJSON(tree.rootTile.range);
-    expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
-    expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
+    expect(range.isNull).to.be.true;
 
-    expect(tree.rootTile.geometry).to.be.undefined; // empty model => empty tile
+    expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
+    expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
-    expect(tree.rootTile.childIds.length).to.equal(0);
   });
 
   it("should produce an array of rows", () => {
@@ -575,8 +578,9 @@ describe("iModel", () => {
 
     const props: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
-      model: new Id64(),
-      category: new Id64(),
+      model: "0",
+      category: "0",
+      code: Code.createEmpty(),
       intProperty: 0,
     };
 

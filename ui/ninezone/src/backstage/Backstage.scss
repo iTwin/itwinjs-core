@@ -1,98 +1,75 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/colors";
 @import "../_z-index";
 @import "_variables";
 
 .nz-backstage-backstage {
   position: absolute;
-  width: 0;
+  left: 0;
+  top: 0;
+  width: $nz-backstage-width;
+  height: 100%;
+  font-size: $nz-backstage-item-font-size;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: rgba($nz-backstage-item-color, 0.85);
+  background-color: $nz-backstage-background;
+  transform: translateX(-100%);
+  @include nz-z-index(backstage);
+  -moz-transition: transform .25s ease;
+  -webkit-transition: transform .25s ease;
+  transition: transform .25s ease;
+
+  &.nz-open {
+    -moz-transform: translateX(0%);
+    -webkit-transform: translateX(0%);
+    transform: translateX(0%);
+  }
+
+  > ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  > .nz-header {
+    display: none;
+    border-bottom: $nz-backstage-user-profile-divider-height solid $nz-backstage-divider-color;
+
+    &.nz-show {
+      display: block;
+    }
+  }
+
+  > .nz-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+.nz-backstage-backstage_Overlay {
+  position: fixed;
+  width: 100%;
   height: 100%;
   top: 0;
   left: 0;
   overflow: hidden;
-  background-color: rgba(#222, 0.6);
-
+  opacity: 0;
+  visibility: hidden;
+  background: transparent;
   @include nz-z-index(backstage);
+  -moz-transition: .25s ease;
+  -webkit-transition: .25s ease;
+  transition: .25s ease;
 
-  > .nz-items {
-    width: 0;
-    height: 100%;
-    background-color: $background-5;
-    transition: transform .25s ease;
-    transform: translateX(-100%);
-
-    // Handle tiny separators between items.
-    > * {
-      position: relative;
-
-      &:before {
-        content: '';
-        height: $nz-tiny-separator-height;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: $background-4;
-      }
-
-      &:last-child:after {
-        content: '';
-        height: $nz-tiny-separator-height;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        background-color: $background-4;
-      }
-
-      &:first-child {
-        &:before {
-          height: 0;
-        }
-      }
-    }
-
-    > .nz-is-active {
-      &:before {
-        height: 0;
-      }
-
-      &:after {
-        height: 0;
-      }
-
-      & + * {
-        &:before {
-          height: 0;
-        }
-      }
-    }
-
-    > .nz-backstage-separator {
-      &:before {
-        height: 0;
-      }
-
-      &:after {
-        height: 0;
-      }
-
-      & + * {
-        &:before {
-          height: 0;
-        }
-      }
-    }
+  &.nz-open {
+    visibility: visible;
+    opacity: 1;
   }
 
-  &.nz-is-open {
-    width: 100%;
-
-    > .nz-items {
-      min-width: 280px;
-      transform: translateX(0);
-    }
+  &.nz-show {
+    background-color: rgba($nz-backstage-overlay-background, 0.6);
   }
 }

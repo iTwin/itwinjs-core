@@ -1,6 +1,6 @@
 # How to Contribute
 
-We'd love to accept your patches and contributions to iModelJs. There are
+We'd love to accept your patches and contributions to iModel.js. There are
 just a few guidelines you need to follow.
 
 ## Contributor License Agreement

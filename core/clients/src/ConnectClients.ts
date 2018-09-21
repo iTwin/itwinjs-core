@@ -70,6 +70,12 @@ export class RbacProject extends WsgInstance {
   // Empty!
 }
 
+/** RBAC user */
+@ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class RbacUser extends WsgInstance {
+  // Empty!
+}
+
 /** RBAC permission */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Permission extends WsgInstance {
@@ -155,6 +161,18 @@ export class RbacClient extends WsgClient {
   }
 
   /**
+   * Gets all users in a project
+   * @param token Delegation token of the authorized user
+   * @param projectId Id of the project we want to get users for
+   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not TypeScript property names.
+   * @returns Resolves to an array of users
+   */
+  public async getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions) {
+    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/Project/" + projectId + "/User";
+    return this.getInstances<RbacUser>(alctx, RbacUser, token, url, queryOptions);
+  }
+
+  /**
    * Get the permissions relevant to the iModelHubService for a specified project
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the specified project.
@@ -225,10 +243,10 @@ export class ConnectClient extends WsgClient {
   private readonly _rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
 
   private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-wsg20-eus.cloudapp.net",
-    QA: "https://qa-connect-wsg20.bentley.com",
+    DEV: "https://dev-connect-contextregistry.bentley.com",
+    QA: "https://qa-connect-contextregistry.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-wsg20-eus.cloudapp.net",
+    PERF: "https://perf-connect-contextregistry.bentley.com",
   };
 
   public constructor(public deploymentEnv: DeploymentEnv) {

@@ -1,6 +1,6 @@
-# Learning iModelJs UI
+# Learning iModel.js UI
 
-This section provides explanations of the concepts you'll encounter in iModelJs UI.
+This section provides explanations of the concepts you'll encounter in iModel.js UI.
 
 Helpful articles:
 
@@ -12,5 +12,5 @@ Helpful articles:
 
 See also:
 
-* [Glossary of terms used in iModelJs UI](./Glossary)
+* [Glossary of terms used in iModel.js UI](./Glossary)
 * [Frequently asked Questions](./faq)

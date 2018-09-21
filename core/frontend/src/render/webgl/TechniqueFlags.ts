@@ -29,24 +29,27 @@ export class TechniqueFlags {
   public clip: ClipDef;
   public featureMode: FeatureMode;
   public isTranslucent: boolean;
+  public isAnimated: boolean;
   private _isHilite: boolean;
 
   public constructor(translucent: boolean = false) {
     this.isTranslucent = translucent;
     this._isHilite = false;
+    this.isAnimated = false;
     this.featureMode = FeatureMode.None;
     this.clip = new ClipDef();
   }
 
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
-  public init(target: Target, pass: RenderPass): void {
-    if (RenderPass.Hilite === pass) {
+  public init(target: Target, pass: RenderPass, isAnimated: boolean = false): void {
+    if (RenderPass.Hilite === pass || RenderPass.HiliteStencilVolume === pass) {
       this.initForHilite(target.clipDef);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
       this.clip = target.clipDef;
+      this.isAnimated = isAnimated;
 
       if (undefined !== target.currentOverrides) {
         this.featureMode = FeatureMode.Overrides;

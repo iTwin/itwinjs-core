@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "./Token";
-import { IModelRepository, IModelQuery } from "./imodelhub/iModels";
+import { HubIModel, IModelQuery } from "./imodelhub/iModels";
 import { UserProfile } from "./UserProfile";
 import { IModelClient } from "./IModelClient";
 import { ProgressInfo } from "./Request";
@@ -24,9 +24,9 @@ export abstract class IModelProjectClient {
   public abstract queryProject(alctx: ActivityLoggingContext, accessToken: AccessToken, query: any | undefined): Promise<Project>;
 
   // IModel management
-  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository>;
+  public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<HubIModel>;
   public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
-  public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]>;
+  public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]>;
 }
 
 /** Interface implemented by a service that allows client apps to connect to an iModel server */

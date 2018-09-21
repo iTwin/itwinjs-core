@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL, RenderState, System, DepthType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GL, RenderState, System, DepthType } from "@bentley/imodeljs-frontend/lib/webgl";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @module PropertyGrid */
 
 import * as _ from "lodash";
 import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components/lib/properties";

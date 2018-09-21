@@ -28,7 +28,6 @@ import {
   FilePropertyProps,
   IModelToken,
   TileTreeProps,
-  TileProps,
   IModelNotFoundResponse,
   EcefLocation,
   SnapRequestProps,
@@ -293,10 +292,6 @@ export class IModelDb extends IModel {
    * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from the iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
-   * <p><em>Example:</em>
-   * ``` ts
-   * [[include:IModelDb.open]]
-   * ```
    * @param accessToken Delegation token of the authorized user.
    * @param contextId Id of the Connect Project or Asset containing the iModel
    * @param iModelId Id of the iModel
@@ -456,7 +451,7 @@ export class IModelDb extends IModel {
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
@@ -801,7 +796,7 @@ export class IModelDb extends IModel {
   }
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
-   * @throws [[IModelError]] if the metadata cannot be found nor loaded.
+   * @throws [IModelError]($common) if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {
     let metadata = this.classMetaDataRegistry.find(classFullName);
@@ -1334,31 +1329,37 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public getTileTreeJson(id: string): any {
+    public requestTileTreeProps(actx: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTileTree(id);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + id);
-
-      return result!;
+      return new Promise<TileTreeProps>((resolve, reject) => {
+        actx.enter();
+        this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + id));
+          else
+            resolve(ret.result! as TileTreeProps);
+        });
+      });
     }
 
     /** @hidden */
-    public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
-
-    /** @hidden */
-    public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
+    public requestTileContent(actx: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      actx.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const { error, result } = this._iModel.nativeDb.getTiles(treeId, tileIds);
-      if (error)
-        throw new IModelError(error.status, "TreeId=" + treeId);
-
-      assert(Array.isArray(result));
-      return result! as TileProps[];
+      return new Promise<Uint8Array>((resolve, reject) => {
+        actx.enter();
+        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
+          if (undefined !== ret.error)
+            reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+          else
+            resolve(ret.result!);
+        });
+      });
     }
   }
 }

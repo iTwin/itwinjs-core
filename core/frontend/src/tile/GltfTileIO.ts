@@ -31,9 +31,10 @@ export namespace GltfTileIO {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
     contentRange?: ElementAlignedBox3d;
-    geometry?: TileIO.GeometryCollection;
     renderGraphic?: RenderGraphic;
+    sizeMultiplier?: number;
   }
+
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
@@ -52,12 +53,14 @@ export namespace GltfTileIO {
     }
   }
 
+  /** @hidden */
   export const enum PrimitiveType {
     Lines = 1,
     LineStrip = 3,
     Triangles = 4,
   }
 
+  /** @hidden */
   export const enum DataType {
     // SignedByte = 0x1400,
     UnsignedByte = 0x1401,
@@ -77,6 +80,7 @@ export namespace GltfTileIO {
     // Sampler2d = 35678,
   }
 
+  /** @hidden */
   export const enum Constants {
     CullFace = 2884,
     DepthTest = 2929,
@@ -90,12 +94,14 @@ export namespace GltfTileIO {
     VertexShader = 35633,
   }
 
+  /** @hidden */
   export type DataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
   /**
    * A chunk of binary data exposed as a typed array.
    * The count member indicates how many elements exist. This may be less than this.buffer.length due to padding added to the
    * binary stream to ensure correct alignment.
+   * @hidden
    */
   export class BufferData {
     public readonly buffer: DataBuffer;
@@ -158,6 +164,7 @@ export namespace GltfTileIO {
    * underlying type. For example, a buffer of 4 32-bit floating point 'vec2' elements will have a count of 4,
    * but its data member will contain 8 32-bit floating point values (2 per vec2).
    * The accessor member may contain additional JSON data specific to a particular buffer.
+   * @hidden
    */
   export class BufferView {
     public readonly data: Uint8Array;
@@ -192,6 +199,7 @@ export namespace GltfTileIO {
       public readonly samplers: any,
       public readonly yAxisUp: boolean) { }
 
+    /** Attempt to construct a new ReaderProps from the binary data beginning at the supplied stream's current read position. */
     public static create(buffer: TileIO.StreamBuffer, yAxisUp: boolean = false): ReaderProps | undefined {
       const header = new Header(buffer);
       if (!header.isValid)
@@ -213,7 +221,7 @@ export namespace GltfTileIO {
         const extensions = JsonUtils.asObject(sceneValue.extensions);
         const samplers = JsonUtils.asObject(sceneValue.samplers);
 
-        if (undefined === materialValues || undefined === meshes || undefined === accessors || undefined === bufferViews)
+        if (undefined === meshes)
           return undefined;
 
         return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);
@@ -228,34 +236,58 @@ export namespace GltfTileIO {
 
   /** Deserializes glTF tile data. */
   export abstract class Reader {
+    /** @hidden */
     protected readonly _buffer: TileIO.StreamBuffer;
+    /** @hidden */
     protected readonly _accessors: any;
+    /** @hidden */
     protected readonly _bufferViews: any;
+    /** @hidden */
     protected readonly _meshes: any;
+    /** @hidden */
     protected readonly _batchData: any;
+    /** @hidden */
     protected readonly _materialValues: any;
+    /** @hidden */
     protected readonly _textures: any;
+    /** @hidden */
     protected readonly _renderMaterials: any;  // Materials that may be deserialized and created directly
+    /** @hidden */
     protected readonly _namedTextures: any;    // Textures that may be deserialized and created directly
+    /** @hidden */
     protected readonly _images: any;
+    /** @hidden */
     protected readonly _samplers: any;
+    /** @hidden */
     protected readonly _binaryData: Uint8Array;
+    /** @hidden */
     protected readonly _iModel: IModelConnection;
+    /** @hidden */
     protected readonly _is3d: boolean;
+    /** @hidden */
     protected readonly _modelId: Id64;
+    /** @hidden */
     protected readonly _system: RenderSystem;
+    /** @hidden */
     protected readonly _returnToCenter: number[] | undefined;
+    /** @hidden */
     protected readonly _yAxisUp: boolean;
+    /** @hidden */
+    protected readonly _asClassifier: boolean;
     private readonly _canceled?: IsCanceled;
 
+    /** Asynchronously deserialize the tile data and return the result. */
     public async abstract read(): Promise<ReaderResult>;
 
+    /** @hidden */
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
+    /** @hidden */
     protected get _hasBakedLighting(): boolean { return false; }
 
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d): GltfTileIO.ReaderResult {
+    /** @hidden */
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       if (this._isCanceled)
-        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf };
+        return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
       const readStatus = this.readGltf(geometry);
@@ -285,14 +317,17 @@ export namespace GltfTileIO {
           }
         }
       }
+
       return {
         readStatus,
         isLeaf,
+        sizeMultiplier,
         contentRange,
-        geometry,
         renderGraphic,
       };
     }
+
+    /** @hidden */
     public getBufferView(json: any, accessorName: string): BufferView | undefined {
       try {
         const accessorValue = JsonUtils.asString(json[accessorName]);
@@ -330,12 +365,17 @@ export namespace GltfTileIO {
       }
     }
 
+    /** @hidden */
     public readBufferData32(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UInt32); }
+    /** @hidden */
     public readBufferData16(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedShort); }
+    /** @hidden */
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
+    /** @hidden */
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, isCanceled?: IsCanceled) {
+    /** @hidden */
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
@@ -355,19 +395,26 @@ export namespace GltfTileIO {
       this._modelId = modelId;
       this._is3d = is3d;
       this._system = system;
+      this._asClassifier = asClassifier;
       this._canceled = isCanceled;
     }
 
+    /** @hidden */
     protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
       const view = this.getBufferView(json, accessorName);
       return undefined !== view ? view.toBufferData(type) : undefined;
     }
 
+    /** @hidden */
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
+    /** @hidden */
     protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
+    /** @hidden */
     protected abstract createDisplayParams(_json: any): DisplayParams | undefined;
+    /** @hidden */
     protected abstract extractReturnToCenter(extensions: any): number[] | undefined;
 
+    /** @hidden */
     protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
       for (const meshKey of Object.keys(this._meshes)) {
         const meshValue = this._meshes[meshKey];
@@ -386,6 +433,7 @@ export namespace GltfTileIO {
       return TileIO.ReadStatus.Success;
     }
 
+    /** @hidden */
     protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable): Mesh | undefined {
       const materialName = JsonUtils.asString(primitive.material);
       const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
@@ -396,6 +444,7 @@ export namespace GltfTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const hasBakedLighting = this._hasBakedLighting;
+      const asClassifier = this._asClassifier;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -404,6 +453,7 @@ export namespace GltfTileIO {
         is2d: !this._is3d,
         isPlanar,
         hasBakedLighting,
+        asClassifier,
       });
 
       if (!this.readVertices(mesh.points, primitive))
@@ -448,6 +498,7 @@ export namespace GltfTileIO {
       return mesh;
     }
 
+    /** @hidden */
     protected readVertices(positions: QPoint3dList, primitive: any): boolean {
       const view = this.getBufferView(primitive.attributes, "POSITION");
       if (undefined === view || DataType.UnsignedShort !== view.type)
@@ -478,6 +529,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected readIndices(json: any, accessorName: string): number[] | undefined {
       const data = this.readBufferData32(json, accessorName);
       if (undefined === data)
@@ -490,6 +542,7 @@ export namespace GltfTileIO {
       return indices;
     }
 
+    /** @hidden */
     protected readFeatures(features: Mesh.Features, json: any): boolean {
       const indices = this.readFeatureIndices(json);
       if (undefined === indices)
@@ -499,6 +552,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected readColorIndices(json: any): Uint16Array | undefined {
       const data = this.readBufferData16(json.attributes, "_COLORINDEX");
       if (undefined === data)
@@ -511,6 +565,7 @@ export namespace GltfTileIO {
       return colors;
     }
 
+    /** @hidden */
     protected readMeshIndices(mesh: Mesh, json: any): boolean {
       const data = this.readBufferData32(json, "indices");
       if (undefined === data)
@@ -528,6 +583,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected readNormals(normals: OctEncodedNormal[], json: any, accessorName: string): boolean {
       const data = this.readBufferData8(json, accessorName);
       if (undefined === data)
@@ -544,6 +600,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected readUVParams(params: Point2d[], json: any, accessorName: string): boolean {
       const view = this.getBufferView(json, accessorName);
       let data: any;
@@ -584,6 +641,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected readMeshEdges(mesh: Mesh, json: any): boolean {
       if (undefined === json || undefined === mesh)
         return false;
@@ -606,6 +664,7 @@ export namespace GltfTileIO {
       return this.readPolylines(mesh.edges.polylines, json, "polylines", false);
     }
 
+    /** @hidden */
     protected readEdgeIndices(json: any, accessorName: string): MeshEdge[] | undefined {
       const data = this.readBufferData32(json, accessorName);
       if (undefined === data)
@@ -620,6 +679,7 @@ export namespace GltfTileIO {
       return edges;
     }
 
+    /** @hidden */
     protected readNormalPairs(json: any, accessorName: string): OctEncodedNormalPair[] | undefined {
       const data = this.readBufferData8(json, accessorName);
       if (undefined === data)
@@ -639,6 +699,7 @@ export namespace GltfTileIO {
       return normPairs;
     }
 
+    /** @hidden */
     protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
       const view = this.getBufferView(json, accessorName);
       if (undefined === view)
@@ -688,6 +749,7 @@ export namespace GltfTileIO {
       return true;
     }
 
+    /** @hidden */
     protected async loadTextures(): Promise<void> {
       if (undefined === this._textures)
         return Promise.resolve();
@@ -699,6 +761,7 @@ export namespace GltfTileIO {
       return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
     }
 
+    /** @hidden */
     protected async loadTextureImage(imageJson: any, samplerJson: any): Promise<RenderTexture | undefined> {
       try {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
@@ -724,6 +787,8 @@ export namespace GltfTileIO {
         return undefined;
       }
     }
+
+    /** @hidden */
     protected async loadTexture(textureId: string): Promise<void> {
       const textureJson = JsonUtils.asObject(this._textures[textureId]);
       if (undefined === textureJson)
@@ -734,6 +799,7 @@ export namespace GltfTileIO {
       });
     }
 
+    /** @hidden */
     protected findTextureMapping(textureId: string): TextureMapping | undefined {
       const textureJson = JsonUtils.asObject(this._textures[textureId]);
       const texture = undefined !== textureJson ? textureJson.renderTexture as RenderTexture : undefined;

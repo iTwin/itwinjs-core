@@ -21,6 +21,7 @@ export class Entity implements EntityProps {
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public id: Id64;
 
+  /** @hidden */
   constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
@@ -28,6 +29,7 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
 
+  /** @hidden */
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;

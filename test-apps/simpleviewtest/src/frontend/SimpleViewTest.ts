@@ -16,7 +16,8 @@ import {
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton,
 } from "@bentley/imodeljs-frontend";
-import { FeatureSymbology, GraphicType, PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import * as ttjs from "tooltip.js";
 import { ConnectProject } from "./ConnectProject";
 import { NonConnectProject } from "./NonConnectProject";
@@ -167,6 +168,17 @@ async function buildModelMenu(state: SimpleViewState) {
 
     modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
     curModelPropIndices.push(i);
+
+    let j = 0;
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        for (const classifier of model.jsonProperties.classifiers) {
+          modelMenu.innerHTML += '&nbsp;&nbsp;<input id="cbxModel' + i + "_" + j + '" type="checkbox"> ' + classifier.name + "\n<br>\n";
+          j++;
+        }
+      }
+    }
+
     i++;
   }
 
@@ -176,6 +188,19 @@ async function buildModelMenu(state: SimpleViewState) {
     const enabled = spatialView.modelSelector.has(curModelProps[c].id!.toString());
     updateCheckboxToggleState(cbxName, enabled);
     addModelToggleHandler(cbxName);
+
+    const model = spatialView.iModel.models.getLoaded(curModelProps[c].id!.toString());
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        let cc = 0;
+        for (const classifier of model.jsonProperties.classifiers) {
+          const classifierName = "cbxModel" + c + "_" + cc;
+          updateCheckboxToggleState(classifierName, classifier.isActive);
+          addClassifierToggleHandler(classifierName);
+          cc++;
+        }
+      }
+    }
   }
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
@@ -244,6 +269,33 @@ function applyModelToggleChange(_cbxModel: string) {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
+// apply a classifier checkbox state being changed (change isActive flag on classifier on a model)
+function applyClassifierToggleChange(cName: string) {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+  const view = theViewport!.view as SpatialViewState;
+
+  for (let c = 0; c < curNumModels; c++) {
+    const model = view.iModel.models.getLoaded(curModelProps[c].id!.toString());
+    if (model !== undefined) {
+      if (model.jsonProperties.classifiers !== undefined) {
+        let cc = 0;
+        for (const classifier of model.jsonProperties.classifiers) {
+          const classifierName = "cbxModel" + c + "_" + cc;
+          if (cName === classifierName) { // Found the classifier
+            classifier.isActive = getCheckboxToggleState(classifierName);
+            theViewport!.sync.invalidateScene();
+            const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+            menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+            return;
+          }
+          cc++;
+        }
+      }
+    }
+  }
+}
+
 function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
   view.changeCategoryDisplay(catId, !invis);
 }
@@ -290,6 +342,11 @@ function addModelToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
 }
 
+// add a click handler to classifier checkbox
+function addClassifierToggleHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyClassifierToggleChange(id));
+}
+
 // add a click handler to category checkbox
 function addCategoryToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyCategoryToggleChange(id));
@@ -317,6 +374,122 @@ function toggleRenderModeMenu(_event: any) {
 
 function toggleSnapModeMenu(_event: any) {
   const menu = document.getElementById("changeSnapModeMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+function toggleAnimationMenu(_event: any) {
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+let isAnimating: boolean = false;
+let isAnimationPaused: boolean = false;
+let animationStartTime: number = 0;
+let animationPauseTime: number = 0;
+let animationEndTime: number = 0;
+
+function setAnimationStateMessage(msg: string) {
+  const animationState = document.getElementById("animationState") as HTMLDivElement;
+  animationState.innerHTML = msg;
+}
+
+function enableAnimationUI(enabled: boolean = true) {
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  animationDuration.disabled = !enabled;
+  animationLoop.disabled = !enabled;
+}
+
+function isAnimationLooping(): boolean {
+  const animationLoop = document.getElementById("animationLoop") as HTMLInputElement;
+  return animationLoop.checked;
+}
+
+function processAnimationSliderAdjustment(_event: any) {
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+
+  if (animationSlider.value === "0") {
+    stopAnimation([]);
+    return;
+  }
+
+  if (!isAnimating)
+    startAnimation([]);
+  if (!isAnimationPaused)
+    pauseAnimation([]);
+
+  const sliderValue = parseInt(animationSlider.value, undefined);
+  const animationFraction = sliderValue / 1000.0;
+  animationPauseTime = animationStartTime + (animationEndTime - animationStartTime) * animationFraction;
+  theViewport!.animationFraction = animationFraction;
+}
+
+function updateAnimation() {
+  if (isAnimationPaused) {
+    window.requestAnimationFrame(updateAnimation);
+    return;
+  }
+
+  const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
+  const animationCurTime = (new Date()).getTime();
+  theViewport!.animationFraction = (animationCurTime - animationStartTime) / (animationEndTime - animationStartTime);
+  animationSlider.value = (theViewport!.animationFraction * 1000).toString();
+  const userHitStop = !isAnimating;
+  if (animationCurTime >= animationEndTime || !isAnimating) { // stop the animation!
+    enableAnimationUI();
+    animationSlider.value = "0";
+    theViewport!.animationFraction = 0;
+    isAnimating = false;
+    setAnimationStateMessage("Stopped.");
+  } else { // continue the animation - request the next frame
+    window.requestAnimationFrame(updateAnimation);
+  }
+  if (!userHitStop && isAnimationLooping()) // only loop if user did not hit stop (naturally finished animation)
+    startAnimation([]);
+}
+
+function startAnimation(_event: any) {
+  if (isAnimationPaused) { // resume animation
+    const animationPauseOffset = (new Date()).getTime() - animationPauseTime; // how long were we paused?
+    animationStartTime += animationPauseOffset;
+    animationEndTime += animationPauseOffset;
+    setAnimationStateMessage("Playing.");
+    isAnimationPaused = false;
+    return;
+  }
+
+  if (isAnimating)
+    return; // cannot animate while animating
+
+  setAnimationStateMessage("Playing.");
+
+  theViewport!.animationFraction = 0;
+  animationStartTime = (new Date()).getTime();
+  const animationDuration = document.getElementById("animationDuration") as HTMLInputElement;
+  animationEndTime = animationStartTime + parseFloat(animationDuration.value) * 1000;
+  enableAnimationUI(false);
+  isAnimating = true;
+  isAnimationPaused = false;
+  window.requestAnimationFrame(updateAnimation);
+}
+
+function pauseAnimation(_event: any) {
+  if (isAnimationPaused || !isAnimating)
+    return;
+  animationPauseTime = (new Date()).getTime();
+  isAnimationPaused = true;
+  setAnimationStateMessage("Paused.");
+}
+
+function stopAnimation(_event: any) {
+  if (!isAnimating)
+    return; // already not animating!
+  isAnimating = false;
+  isAnimationPaused = false;
+}
+
+function processAnimationMenuEvent(_event: any) { // keep animation menu open even when it is clicked
+  const menu = document.getElementById("animationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
@@ -468,6 +641,7 @@ async function openView(state: SimpleViewState) {
 }
 
 async function _changeView(view: ViewState) {
+  stopAnimation([]); // cease any previous animation
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
@@ -730,7 +904,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
       this._markers.push(marker);
     };
 
-    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.getCenter());
+    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.center);
     createBoundsMarker("low", this._extents.low);
     createBoundsMarker("high", this._extents.high);
   }
@@ -742,8 +916,6 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined !== selectedId)
       this.iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
   }
-
-  //  public async getElementProps(elementIds: Id64Set): Promise<ElementProps[]> { return IModelReadRpcInterface.getClient().getElementProps(this.iModel.iModelToken, elementIds); }
 
   protected async createControls(): Promise<boolean> {
     /* // TESTING ELEMENT QUERY
@@ -763,33 +935,36 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._boxId)
       return false;
 
+    const iModel = this.iModel;
+
     // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._boxId)) {
+    if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
       showControls = true;
-      if (this.iModel.selectionSet.size > 1) {
-        this.iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+      if (iModel.selectionSet.size > 1) {
+        iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
       }
     }
 
     if (!showControls)
       return false;
 
-    this._extents = this.iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
+    this._extents = iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
 
+    const transientIds = iModel.transientIds;
     if (0 === this._controlIds.length) {
-      this._controlIds[0] = this.iModel.transientIds.next.value;
-      this._controlIds[1] = this.iModel.transientIds.next.value;
-      this._controlIds[2] = this.iModel.transientIds.next.value;
-      this._controlIds[3] = this.iModel.transientIds.next.value;
-      this._controlIds[4] = this.iModel.transientIds.next.value;
-      this._controlIds[5] = this.iModel.transientIds.next.value;
+      this._controlIds[0] = transientIds.next.value;
+      this._controlIds[1] = transientIds.next.value;
+      this._controlIds[2] = transientIds.next.value;
+      this._controlIds[3] = transientIds.next.value;
+      this._controlIds[4] = transientIds.next.value;
+      this._controlIds[5] = transientIds.next.value;
     }
 
     const xOffset = 0.5 * this._extents.xLength();
     const yOffset = 0.5 * this._extents.yLength();
     const zOffset = 0.5 * this._extents.zLength();
-    const center = this._extents.getCenter();
+    const center = this._extents.center;
 
     this._controlAxis[0] = Vector3d.unitX();
     this._controlAxis[1] = Vector3d.unitX(-1.0);
@@ -810,14 +985,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected clearControls(): void {
-    if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
-      for (const controlId of this._controlIds) {
-        if (!this.iModel.selectionSet.has(controlId))
-          continue;
-        this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
-        break;
-      }
-    }
+    this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
     super.clearControls();
   }
 
@@ -1061,10 +1229,15 @@ class IncidentMarkerDemo {
 
 // Starts Measure between points tool
 function startMeasurePoints(event: any) {
-  const menu = document.getElementById("snapModeList") as HTMLDivElement;
-  if (event.target === menu)
-    return;
-  IModelApp.tools.run("Measure.Points", theViewport!);
+  const useMeasureTool = false;
+  if (useMeasureTool) {
+    const menu = document.getElementById("snapModeList") as HTMLDivElement;
+    if (event.target === menu)
+      return;
+    IModelApp.tools.run("Measure.Points", theViewport!);
+  } else {
+    ProjectExtentsDecoration.toggle();
+  }
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1201,6 +1374,11 @@ function addRenderModeHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
 }
 
+function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool menu
+  const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1241,10 +1419,17 @@ function wireIconsToFunctions() {
   document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+  document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
+  document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
+  document.getElementById("animationPause")!.addEventListener("click", pauseAnimation);
+  document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
+  document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
+  document.getElementById("animationSlider")!.addEventListener("input", processAnimationSliderAdjustment);
 
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
   document.getElementById("projectExtents")!.addEventListener("click", () => ProjectExtentsDecoration.toggle());
+  document.getElementById("debugToolsMenu")!.addEventListener("click", () => { keepOpenDebugToolsMenu(); });
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));

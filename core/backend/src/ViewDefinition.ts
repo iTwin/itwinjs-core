@@ -104,7 +104,9 @@ export class DisplayStyle2d extends DisplayStyle {
   public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A DisplayStyle for 3d views. */
+/** A DisplayStyle for 3d views.
+ * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
+ */
 export class DisplayStyle3d extends DisplayStyle {
   public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -112,11 +114,14 @@ export class DisplayStyle3d extends DisplayStyle {
 /**
  * Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
+ * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
  */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: string[];
+  /** @hidden */
   constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
+  /** @hidden */
   public toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
@@ -137,11 +142,14 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 /**
  * Holds a list of Ids of Categories to be displayed in a view.
  * @see [CategorySelectorState]($frontend)
+ * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
  */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: string[];
+  /** @hidden */
   constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
+  /** @hidden */
   public toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
@@ -178,12 +186,14 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64;
 
+  /** @hidden */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
   }
 
+  /** @hidden */
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -230,6 +240,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
+  /** @hidden */
   public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -239,6 +250,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     this.camera = new Camera(props.camera);
   }
 
+  /** @hidden */
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
@@ -268,7 +280,9 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   /** The element Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64;
+  /** @hidden */
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
+  /** @hidden */
   public toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -279,7 +293,9 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement(this.modelSelectorId) as ModelSelector; }
 }
 
-/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
+/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
+ * See [how to create a OrthographicViewDefinition]$(docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
+ */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -295,6 +311,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   /** The rotation of this view. */
   public angle: Angle;
 
+  /** @hidden */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
@@ -302,6 +319,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
   }
+  /** @hidden */
   public toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;

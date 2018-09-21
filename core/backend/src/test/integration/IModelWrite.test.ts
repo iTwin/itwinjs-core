@@ -6,7 +6,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken, MockAssetUtil } from "../MockAssetUtil";
-import { AccessToken, CodeState, IModelRepository, Code as HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
 
 import * as TypeMoq from "typemoq";
 
@@ -211,7 +211,7 @@ describe.skip("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
@@ -258,7 +258,7 @@ describe.skip("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesConflictTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
@@ -316,7 +316,7 @@ describe.skip("IModelWriteTest", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = "OptimisticConcurrencyTest";
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.wsgId);
     }

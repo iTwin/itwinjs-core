@@ -1,10 +1,14 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.126.0",
-  "description": "iModelJs localization code",
+  "version": "0.128.0",
+  "description": "iModel.js localization code",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "main": "lib/i18n",
   "typings": "lib/i18n",
-  "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
@@ -12,7 +16,6 @@
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
-  "repository": {},
   "keywords": [
     "Bentley",
     "BIM",
@@ -23,18 +26,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0"
+    "@bentley/bentleyjs-core": "0.128.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/bentleyjs-tools": "0.126.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
+    "@types/node": "^10.5.5",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",

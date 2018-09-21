@@ -1,6 +1,6 @@
-# iModelJs UI API Reference Documentation
+# iModel.js UI API Reference Documentation
 
-Description of iModelJs UI API
+Description of iModel.js UI API
 
 - ($core)
 

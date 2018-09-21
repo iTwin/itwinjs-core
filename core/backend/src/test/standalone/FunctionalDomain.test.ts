@@ -5,7 +5,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
+import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
 import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -41,6 +41,10 @@ describe("Functional Domain", () => {
     await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
     iModelDb.saveChanges("Import TestFunctional schema");
 
+    const codeSpec = new CodeSpec(iModelDb, new Id64(), "Test Functional Elements", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec);
+    assert.isTrue(codeSpec.id.isValid);
+
     // Create and populate a FunctionalModel
     const partitionProps: InformationPartitionElementProps = {
       classFullName: FunctionalPartition.classFullName,
@@ -63,7 +67,7 @@ describe("Functional Domain", () => {
     const breakdownProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Breakdown",
       model: modelId,
-      userLabel: "Breakdown1",
+      code: new Code({ spec: codeSpec.id, scope: modelId, value: "Breakdown1" }),
     };
     const breakdownId: Id64 = iModelDb.elements.insertElement(breakdownProps);
     assert.isTrue(breakdownId.isValid);
@@ -71,7 +75,7 @@ describe("Functional Domain", () => {
     const componentProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Component",
       model: modelId,
-      userLabel: "Component1",
+      code: new Code({ spec: codeSpec.id, scope: modelId, value: "Component1" }),
     };
     const componentId: Id64 = iModelDb.elements.insertElement(componentProps);
     assert.isTrue(componentId.isValid);

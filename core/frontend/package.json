@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.126.0",
-  "description": "iModelJs frontend components",
+  "version": "0.128.0",
+  "description": "iModel.js frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
   "license": "MIT",
@@ -9,11 +9,14 @@
     "build": "tsc 1>&2 && npm run copy:public",
     "clean": "rimraf lib package-deps.json",
     "copy:public": "cpx ./src/public/**/* ./lib/public",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "BIM",
@@ -24,27 +27,30 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/geometry-core": "0.126.0",
-    "@bentley/imodeljs-clients": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0",
-    "@bentley/imodeljs-i18n": "0.126.0"
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/geometry-core": "0.128.0",
+    "@bentley/imodeljs-clients": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
+    "@bentley/imodeljs-i18n": "0.128.0",
+    "@bentley/imodeljs-quantity": "0.128.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.126.0",
-    "@bentley/bentleyjs-tools": "0.126.0",
-    "@bentley/geometry-core": "0.126.0",
-    "@bentley/imodeljs-clients": "0.126.0",
-    "@bentley/imodeljs-common": "0.126.0",
-    "@bentley/imodeljs-i18n": "0.126.0",
+    "@bentley/bentleyjs-core": "0.128.0",
+    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/geometry-core": "0.128.0",
+    "@bentley/imodeljs-clients": "0.128.0",
+    "@bentley/imodeljs-common": "0.128.0",
+    "@bentley/imodeljs-i18n": "0.128.0",
+    "@bentley/imodeljs-quantity": "0.128.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
     "@types/js-base64": "^2.3.1",
+    "@types/node": "^10.5.5",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",

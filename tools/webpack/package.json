@@ -1,9 +1,12 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.126.0",
+  "version": "0.128.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
@@ -104,7 +107,7 @@
     "typescript": ">=2.9.1"
   },
   "devDependencies": {
-    "@types/react": "^16.4.7",
+    "@types/react": "^16.4.14",
     "@types/react-dom": "^16.0.6",
     "chromedriver": "^2.41.0",
     "electron-chromedriver": "^2.0.0",

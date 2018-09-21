@@ -77,7 +77,7 @@ export class Marker implements CanvasDecoration {
     if (this.title)
       ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
-
+  /** Called when a mouse button is pressed over this Marker. */
   public onMouseButton?(_ev: BeButtonEvent): boolean;
 
   /** Determine whether the point is within this Marker.  */

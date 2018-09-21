@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ActivityIdLoggingContext.current is no longer undefinable",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Sam.Wilson@Bentley.com"
+}

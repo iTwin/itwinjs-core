@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module UnifiedSelection */
+
 import * as React from "react";
 import { Id64Set, Id64, IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";

@@ -306,17 +306,22 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               </div>
             }
             buttons={
-              <>
-                {
-                  (messageDetails && messageDetails.supportsCancellation) &&
-                  <Hyperlink text="Cancel"
-                    onClick={this._cancelActivityMessage}
-                  />
-                }
-                <MessageButton onClick={this._dismissActivityMessage}>
-                  <i className="icon icon-close" />
-                </MessageButton>
-              </>
+              (messageDetails && messageDetails.supportsCancellation) ?
+                <>
+                  <div>
+                    <Hyperlink text="Cancel"
+                      onClick={this._cancelActivityMessage}
+                    />
+                    <MessageButton onClick={this._dismissActivityMessage}>
+                      <i className="icon icon-close" />
+                    </MessageButton>
+                  </div>
+                </> :
+                <>
+                  <MessageButton onClick={this._dismissActivityMessage}>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                </>
             }
             progress={
               (messageDetails && messageDetails.showProgressBar) &&
@@ -327,7 +332,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
             }
           />
         </StatusMessage>
-      </ActivityMessage>
+      </ActivityMessage >
     );
   }
 

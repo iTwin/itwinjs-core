@@ -75,7 +75,7 @@ export class ThumbnailHandler {
    * Get relative url for tip Thumbnail requests.
    * @hidden
    * @param projectId Id of the [[Project]].
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
   private getRelativeProjectUrl(projectId: string, imodelId: string, size: ThumbnailSize) {
@@ -85,7 +85,7 @@ export class ThumbnailHandler {
   /**
    * Get relative url for Thumbnail requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    * @param thumbnailId Id of the thumbnail.
    */
@@ -135,7 +135,7 @@ export class ThumbnailHandler {
    * @hidden
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the connect project.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
@@ -158,7 +158,7 @@ export class ThumbnailHandler {
   /**
    * Get the [[Thumbnail]]s. Returned Thumbnails are ordered from the latest [[ChangeSet]] to the oldest.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    * @param query Optional query object to filter the queried Thumbnails.
    * @return Array of Thumbnails of the specified size that match the query.
@@ -184,7 +184,7 @@ export class ThumbnailHandler {
   /**
    * Download a [[Thumbnail]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param thumbnail Small, Large or Tip thumbnail. Use [[ThumbnailHandler.get]] to get a [[SmallThumbnail]] or [[LargeThumbnail]] instance or provide Tip thumbnail information by constructing a [[TipThumbnail]] instance.
    * @return Base64 encoded string containing the PNG image.
    * @throws Error if a successful server response contains no content.

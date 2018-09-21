@@ -2,21 +2,19 @@
   "name": "imodeljs-core",
   "//private": "NOTE: This 'root' package is private. It is never published",
   "private": true,
-  "description": "iModelJs core components",
+  "description": "iModel.js core components",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
+    "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
-    "build": "",
+    "build": "echo NOTE: use 'rush build' instead",
     "clean": "echo NOTE: use 'rush clean' instead",
-    "prelint": "echo NOTE: use 'rush lint' instead",
-    "lint": " ",
+    "docs": "echo NOTE: use 'rush docs' instead",
+    "lint": "echo NOTE: use 'rush lint' instead",
     "preinstall": "echo ERROR: use 'rush install' instead && exit 1",
     "install-imodeljs-addon": "installImodelJsNative",
-    "predocs": "echo NOTE: use 'rush docs' instead",
-    "docs": " ",
     "test": "npm run test-no-gui && npm run test:frontend",
     "test-no-gui": "npm run test:bentley && npm run test:geometry && npm run test:clients && npm run test:backend && npm run test:example-code-snippets && npm run test:example-code-app && npm run test:ecschema-metadata",
     "test:integration": "npm run test:clients:integration && npm run test:backend:integration && npm run test:frontend:integration && npm run test:example-code-snippets && npm run test:example-code-app",

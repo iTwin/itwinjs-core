@@ -265,15 +265,14 @@ export class AccuDraw {
   public grabInputFocus() { }
 
   public activate(): void {
-    // Upgrade state to inactive so OnBeginDynamics knows it is ok to move to active...
+    // Upgrade state to inactive so upgradeToActiveState knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
       this.currentState = CurrentState.Inactive;
-
-    this.onBeginDynamics();
+    this.upgradeToActiveState();
   }
 
   public deactivate() {
-    this.onEndDynamics();
+    this.downgradeInactiveState();
     // Don't allow compass to come back until user re-enables it...
     if (CurrentState.Inactive === this.currentState)
       this.currentState = CurrentState.Deactivated;
@@ -411,8 +410,7 @@ export class AccuDraw {
       const lastPt = this.point.clone();
       this.fixPoint(pointActive, vp);
       pointChanged = !lastPt.isExactEqual(this.point);
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
       handled = true;
     } else {
       this.currentView = vp; // Keep view up to date...
@@ -2590,10 +2588,7 @@ export class AccuDraw {
     if (this.isInactive || this.isDeactivated) {
       this.point.setFrom(pointActive);
       this.currentView = vp;
-
-      if (this.published.flags)
-        this.processHints();
-
+      this.processHints();
       return;
     }
     if (this.isActive) {
@@ -2624,7 +2619,12 @@ export class AccuDraw {
     }
   }
 
+  /** @hidden */
   public refreshDecorationsAndDynamics(): void {
+    // Immediately process hints and show dynamics using adjusted point when not called from button down...
+    if (!this.flags.inDataPoint)
+      this.processHints();
+
     // Make sure AccuDraw updates its decorations...
     if (undefined !== this.currentView)
       this.currentView.invalidateDecorations();
@@ -2633,7 +2633,8 @@ export class AccuDraw {
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
-  public onBeginDynamics(): boolean {
+  /** @hidden */
+  public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
 
@@ -2680,7 +2681,8 @@ export class AccuDraw {
     return false;
   }
 
-  public onEndDynamics(): boolean {
+  /** @hidden */
+  public downgradeInactiveState(): boolean {
     if (!this.isEnabled)
       return false;
     this.onEventCommon();
@@ -2690,6 +2692,9 @@ export class AccuDraw {
     this.currentState = CurrentState.Inactive;
     return false;
   }
+
+  public onBeginDynamics(): boolean { return this.upgradeToActiveState(); }
+  public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
@@ -2734,9 +2739,7 @@ export class AccuDraw {
       }
 
       this.saveLockedCoords();
-
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
 
       if (this.currentState >= CurrentState.Inactive)
         this.updateRotation();
@@ -2884,7 +2887,6 @@ export class AccuDraw {
   }
 
   private doProcessHints(): void {
-
     if (!this.floatingOrigin) {
       if (this.published.flags & AccuDrawFlags.SetOrigin)
         this.unlockAllFields();
