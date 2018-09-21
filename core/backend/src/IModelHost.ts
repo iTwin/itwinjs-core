@@ -46,6 +46,7 @@ export class IModelHostConfiguration {
 
 /**
  * IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
+ * See [the learning article]($docs/learning/backend/IModelHost.md)
  */
 export class IModelHost {
   public static configuration?: IModelHostConfiguration;

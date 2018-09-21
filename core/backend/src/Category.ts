@@ -19,6 +19,7 @@ export class SubCategory extends DefinitionElement {
   /** Construct a SubCategory.
    * @param props The properties of the SubCategory
    * @param iModel The IModelDb for the SubCategory
+   * @hidden
    */
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
@@ -48,6 +49,8 @@ export class SubCategory extends DefinitionElement {
 /** A Category element is the target of the `category` member of [[GeometricElement]]. */
 export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
+
+  /** @hidden */
   public constructor(props: CategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.rank = JsonUtils.asInt(props.rank);
@@ -79,6 +82,7 @@ export class DrawingCategory extends Category {
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory
    * @param iModel The IModelDb where the DrawingCategory may be inserted.
+   * @hidden
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
@@ -103,11 +107,12 @@ export class DrawingCategory extends Category {
   }
 }
 
-/** Categorizes SpatialElements. */
+/** Categorizes SpatialElements. See [how to create a SpatialCategory]$(docs/learning/backend/CreateElements.md#SpatialCategory). */
 export class SpatialCategory extends Category {
   /** Construct a SpatialCategory
    * @param opts  The properties of the new SpatialCategory
    * @param iModel The IModelDb where the SpatialCategory may be inserted.
+   * @hidden
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 

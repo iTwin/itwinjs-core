@@ -26,6 +26,7 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
   public readonly sourceClassName?: string;
   public readonly targetClassName?: string;
 
+  /** @hidden */
   protected constructor(props: LinkTableRelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
@@ -35,6 +36,7 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
     this.targetClassName = props.targetClassName;
   }
 
+  /** @hidden */
   public toJSON(): LinkTableRelationshipProps {
     const val = super.toJSON() as LinkTableRelationshipProps;
     val.id = this.id;

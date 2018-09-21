@@ -40,10 +40,12 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description IModelHost
  * Classes for configuring and administering the backend [host]($docs/learning/backend/IModelHost.md).
+ * See [the learning article]($docs/learning/backend/IModelHost.md)
  */
 /**
  * @docs-group-description iModels
  * Classes for working with [iModels]($docs/learning/iModels.md)
+ * See [the learning article]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Schema
@@ -52,14 +54,17 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Models
  * Subclasses of [Models]($docs/BIS/intro/model-fundamentals.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Elements
  * Subclasses of [Elements]($docs/BIS/intro/element-fundamentals.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Codes
  * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description ViewDefinitions

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add more links to learning articles",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Sam.Wilson@Bentley.com"
+}
