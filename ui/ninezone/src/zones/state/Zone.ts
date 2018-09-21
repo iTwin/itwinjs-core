@@ -295,6 +295,34 @@ export class WidgetZone extends Zone {
     return false;
   }
 
+  public canBeMergedTo(zone: WidgetZone): boolean {
+    if (!this.isMergeable)
+      return false;
+    if (!zone.isMergeable)
+      return false;
+    if (this.equals(zone))
+      return false;
+
+    const cellsBetween = this.cell.getAlignedCellsTo(zone.cell);
+    for (const cell of cellsBetween) {
+      const zoneBetween = this.nineZone.findZone(cell);
+      if (!zoneBetween.isMergeable)
+        return false;
+    }
+
+    if (this.cell.isRowAlignedWith(zone.cell))
+      if (this.isMergedHorizontally || this.props.widgets.length === 1)
+        if (zone.isMergedHorizontally || zone.props.widgets.length === 1)
+          return true;
+
+    if (this.cell.isColumnAlignedWith(zone.cell))
+      if (this.isMergedVertically || this.props.widgets.length === 1)
+        if (zone.isMergedVertically || zone.props.widgets.length === 1)
+          return true;
+
+    return false;
+  }
+
   public getDropTarget(): DropTarget {
     const draggingWidget = this.nineZone.draggingWidget;
     if (!draggingWidget)
@@ -307,24 +335,8 @@ export class WidgetZone extends Zone {
     if (draggingZone.equals(this))
       return DropTarget.Back;
 
-    const draggingCell = draggingZone.cell;
-    const targetCell = this.cell;
-    const cellsBetween = draggingCell.getAlignedCellsTo(targetCell);
-    for (const cell of cellsBetween) {
-      const zone = this.nineZone.findZone(cell);
-      if (!zone.isMergeable)
-        return DropTarget.None;
-    }
-
-    if (draggingCell.isRowAlignedWith(targetCell))
-      if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
-        if (this.isMergedHorizontally || this.props.widgets.length === 1)
-          return DropTarget.Merge;
-
-    if (draggingCell.isColumnAlignedWith(targetCell))
-      if (draggingZone.isMergedVertically || draggingZone.props.widgets.length === 1)
-        if (this.isMergedVertically || this.props.widgets.length === 1)
-          return DropTarget.Merge;
+    if (draggingZone.canBeMergedTo(this))
+      return DropTarget.Merge;
 
     return DropTarget.None;
   }

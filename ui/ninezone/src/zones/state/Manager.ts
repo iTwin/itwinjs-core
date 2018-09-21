@@ -13,11 +13,18 @@ import Widget from "./Widget";
 import { WidgetZone, StatusZone, StatusZoneProps, ZoneProps } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
+export type NineZoneFactory = (props: NineZoneProps) => NineZone;
+
 export class StateManager {
   private _lastStackId = 1;
+  private _nineZoneFactory: NineZoneFactory;
+
+  public constructor(nineZoneFactory: NineZoneFactory) {
+    this._nineZoneFactory = nineZoneFactory;
+  }
 
   public handleTabClick(widgetId: number, tabIndex: number, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
@@ -58,7 +65,7 @@ export class StateManager {
   }
 
   public layout(size: SizeProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     model.root.size = size;
 
     const newState: NineZoneProps = {
@@ -86,7 +93,7 @@ export class StateManager {
   }
 
   public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     model.getWidgetZone(zoneId).getLayout().resize(x, y, handle, filledHeightDiff);
 
     const newState: NineZoneProps = {
@@ -110,7 +117,7 @@ export class StateManager {
   }
 
   public setIsInFooterMode(isInFooterMode: boolean, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const root = model.root;
     if (root.isInFooterMode === isInFooterMode)
       return { ...model.props };
@@ -140,8 +147,38 @@ export class StateManager {
     return newState;
   }
 
+  public mergeZone(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex, state: NineZoneProps): NineZoneProps {
+    const model = this._nineZoneFactory(state);
+    const zone = model.getWidgetZone(toMergeId);
+    const target = model.getWidgetZone(targetId);
+    if (!zone.canBeMergedTo(target))
+      return state;
+
+    const newState: NineZoneProps = {
+      ...state,
+      zones: {
+        ...state.zones,
+        [toMergeId]: {
+          ...state.zones[toMergeId],
+          widgets: [],
+        },
+        [targetId]: {
+          ...state.zones[targetId],
+          widgets: [
+            ...state.zones[targetId].widgets,
+            {
+              id: toMergeId,
+              tabIndex: -1,
+            },
+          ],
+        },
+      },
+    };
+    return newState;
+  }
+
   public handleWidgetTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
@@ -244,7 +281,7 @@ export class StateManager {
   }
 
   public handleWidgetTabDrag(dragged: PointProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget)
@@ -278,7 +315,7 @@ export class StateManager {
   }
 
   public handleTargetChanged(target: TargetProps | undefined, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget || !target)
@@ -297,7 +334,7 @@ export class StateManager {
   }
 
   private mergeDrop(state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     if (!model.target)
       return model.props;
@@ -370,7 +407,7 @@ export class StateManager {
   }
 
   private backDrop(state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const draggingWidget = model.draggingWidget;
     if (!draggingWidget)
@@ -408,6 +445,10 @@ export class StateManager {
   }
 }
 
+const defaultFactory = (props: NineZoneProps): NineZone => {
+  return new NineZone(props);
+};
+
 // tslint:disable-next-line:variable-name
-export const Manager = new StateManager();
+export const Manager = new StateManager(defaultFactory);
 export default Manager;

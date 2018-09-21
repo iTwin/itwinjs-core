@@ -3,18 +3,31 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import DefaultStateManager, { StateManager } from "../../../src/zones/state/Manager";
+import * as Moq from "typemoq";
+import DefaultStateManager, { StateManager, NineZoneFactory } from "../../../src/zones/state/Manager";
 import { TargetType } from "../../../src/zones/state/Target";
-import { NineZoneProps } from "../../../src/zones/state/NineZone";
+import NineZone, { NineZoneProps } from "../../../src/zones/state/NineZone";
 import { HorizontalAnchor } from "../../../src/widget/Stacked";
 import TestProps from "./TestProps";
+import { WidgetZone } from "../../../src/zones/state/Zone";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;
 
 describe("StateManager", () => {
+  const nineZoneFactoryMock = Moq.Mock.ofType<NineZoneFactory>();
+  const nineZonePropsMock = Moq.Mock.ofType<NineZoneProps>();
+  const nineZoneMock = Moq.Mock.ofType<NineZone>();
+
+  beforeEach(() => {
+    nineZoneFactoryMock.reset();
+    nineZonePropsMock.reset();
+
+    nineZoneFactoryMock.setup((x) => x(Moq.It.isAny())).returns(() => nineZoneMock.object);
+  });
+
   it("should construct an instance", () => {
-    new StateManager();
+    new StateManager(nineZoneFactoryMock.object);
   });
 
   describe("handleTabClick", () => {
@@ -514,6 +527,32 @@ describe("StateManager", () => {
 
       state.zones[9].allowsMerging.should.true;
       state.should.eq(TestProps.defaultProps);
+    });
+  });
+
+  describe("mergeZone", () => {
+    it("should merge zone", () => {
+      const zone4Mock = Moq.Mock.ofType<WidgetZone>();
+      const zone6Mock = Moq.Mock.ofType<WidgetZone>();
+      zone4Mock.setup((x) => x.canBeMergedTo(Moq.It.is((z) => z === zone6Mock.object))).returns(() => true);
+      nineZoneMock.setup((x) => x.getWidgetZone(Moq.It.isValue(4))).returns(() => zone4Mock.object).verifiable(Moq.Times.once());
+      nineZoneMock.setup((x) => x.getWidgetZone(Moq.It.isValue(6))).returns(() => zone6Mock.object).verifiable(Moq.Times.once());
+
+      const sut = new StateManager(nineZoneFactoryMock.object);
+      const state = sut.mergeZone(4, 6, TestProps.defaultProps);
+      state.should.matchSnapshot();
+    });
+
+    it("should not modify state when zone can not be merged", () => {
+      const zone4Mock = Moq.Mock.ofType<WidgetZone>();
+      const zone6Mock = Moq.Mock.ofType<WidgetZone>();
+      zone4Mock.setup((x) => x.canBeMergedTo(Moq.It.is((z) => z === zone6Mock.object))).returns(() => false);
+      nineZoneMock.setup((x) => x.getWidgetZone(Moq.It.isValue(4))).returns(() => zone4Mock.object).verifiable(Moq.Times.once());
+      nineZoneMock.setup((x) => x.getWidgetZone(Moq.It.isValue(6))).returns(() => zone6Mock.object).verifiable(Moq.Times.once());
+      const sut = new StateManager(nineZoneFactoryMock.object);
+
+      const state = sut.mergeZone(4, 6, nineZonePropsMock.object);
+      expect(state).eq(nineZonePropsMock.object);
     });
   });
 });

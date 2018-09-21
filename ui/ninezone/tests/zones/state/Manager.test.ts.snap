@@ -1,0 +1,148 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StateManager mergeZone should merge zone 1`] = `
+Object {
+  "size": Object {
+    "height": 0,
+    "width": 0,
+  },
+  "zones": Object {
+    "1": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 1,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 1,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "2": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 2,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 2,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "3": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 3,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 3,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "4": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 4,
+      "isLayoutChanged": false,
+      "widgets": Array [],
+    },
+    "6": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 6,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 6,
+          "tabIndex": -1,
+        },
+        Object {
+          "id": 4,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "7": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 7,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 7,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "8": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 8,
+      "isInFooterMode": true,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 8,
+          "tabIndex": -1,
+        },
+      ],
+    },
+    "9": Object {
+      "allowsMerging": true,
+      "bounds": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
+      "id": 9,
+      "isLayoutChanged": false,
+      "widgets": Array [
+        Object {
+          "id": 9,
+          "tabIndex": -1,
+        },
+      ],
+    },
+  },
+}
+`;

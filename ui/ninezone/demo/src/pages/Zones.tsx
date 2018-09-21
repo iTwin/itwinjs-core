@@ -204,7 +204,13 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._dialogContainer = document.createElement("div");
 
-    const nineZone = NineZoneManager.setAllowsMerging(4, false, getDefaultNineZone());
+    const nineZone =
+      NineZoneManager.mergeZone(9, 6,
+        NineZoneManager.setAllowsMerging(4, false,
+          getDefaultNineZone(),
+        ),
+      );
+
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
