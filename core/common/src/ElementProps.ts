@@ -161,7 +161,6 @@ export interface ElementLoadProps {
 
 /** Properties of an [ElementAspect]($backend) */
 export interface ElementAspectProps extends EntityProps {
-  id: Id64Props;
   element: Id64Props;
 }
 
