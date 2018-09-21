@@ -12,6 +12,7 @@ import { XYZProps, Matrix4dProps, TransformProps } from "@bentley/geometry-core"
  */
 export interface SnapRequestProps {
   id: Id64Props;
+  testPoint: XYZProps;
   closePoint: XYZProps;
   worldToView: Matrix4dProps;
   viewFlags?: any;

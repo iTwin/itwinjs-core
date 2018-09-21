@@ -831,7 +831,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap(actx, "0x222", { closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
 
     // make sure we can read native asset files.

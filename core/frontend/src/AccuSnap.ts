@@ -452,6 +452,7 @@ export class AccuSnap implements Decorator {
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, out?: LocateResponse): Promise<SnapDetail | undefined> {
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId, // ###TODO check !isElementHit
+      testPoint: thisHit.testPoint,
       closePoint: thisHit.hitPoint,
       worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
       viewFlags: thisHit.viewport.viewFlags,
