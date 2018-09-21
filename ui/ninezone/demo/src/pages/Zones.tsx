@@ -1802,6 +1802,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         verticalAnchor={zone.verticalAnchor}
         content={this.getZoneContent(zoneId)}
         isDragged={isDragged}
+        isFloating={zone.props.floating ? true : false}
         isOpen={isOpen}
         fillZone={zone.props.isLayoutChanged}
         tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}

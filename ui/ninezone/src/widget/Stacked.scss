@@ -173,4 +173,12 @@
   &.nz-fill-zone {
     height: 100%;
   }
+
+  &.nz-is-floating {
+    > .nz-content-area {
+      > .nz-content-grip {
+        display: block;
+      }
+    }
+  }
 }

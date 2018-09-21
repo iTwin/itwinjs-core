@@ -67,10 +67,12 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   content?: React.ReactNode;
   /** Describes if the widget should fill the zone. */
   fillZone?: boolean;
-  /** Describes to which side the widget is horizontally anchored. Defaults to [[HorizontalAnchor.Right]] */
-  horizontalAnchor?: HorizontalAnchor;
+  /** Describes to which side the widget is horizontally anchored. */
+  horizontalAnchor: HorizontalAnchor;
   /** Describes if the widget is being dragged. */
   isDragged?: boolean;
+  /** Describes if the widget is floating. */
+  isFloating?: boolean;
   /** True if widget is open, false otherwise. */
   isOpen?: boolean;
   /** Function called when resize action is performed. */
@@ -111,8 +113,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
 
   private _handleTabsGripResize = (x: number) => {
     const filledHeightDiff = this._getFilledHeightDiff();
-    const horizontalAnchor = this.props.horizontalAnchor === undefined ? HorizontalAnchor.Right : this.props.horizontalAnchor;
-    switch (horizontalAnchor) {
+    switch (this.props.horizontalAnchor) {
       case HorizontalAnchor.Left: {
         this.props.onResize && this.props.onResize(x, 0, Edge.Right, filledHeightDiff);
         break;
@@ -125,7 +126,17 @@ export class Stacked extends React.PureComponent<StackedProps> {
   }
 
   private _handleContentGripResize = (x: number) => {
-    this.props.onResize && this.props.onResize(x, 0, Edge.Right, 0);
+    const filledHeightDiff = this._getFilledHeightDiff();
+    switch (this.props.horizontalAnchor) {
+      case HorizontalAnchor.Left: {
+        this.props.onResize && this.props.onResize(x, 0, Edge.Left, filledHeightDiff);
+        break;
+      }
+      case HorizontalAnchor.Right: {
+        this.props.onResize && this.props.onResize(x, 0, Edge.Right, filledHeightDiff);
+        break;
+      }
+    }
   }
 
   private _handleTopGripResize = (_x: number, y: number) => {
@@ -139,13 +150,13 @@ export class Stacked extends React.PureComponent<StackedProps> {
   }
 
   public render() {
-    const horizontalAnchor = this.props.horizontalAnchor === undefined ? HorizontalAnchor.Right : this.props.horizontalAnchor;
     const className = classnames(
       "nz-widget-stacked",
-      HorizontalAnchorHelpers.getCssClassName(horizontalAnchor),
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
       VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor === undefined ? VerticalAnchor.Middle : this.props.verticalAnchor),
       !this.props.isOpen && "nz-is-closed",
       this.props.isDragged && "nz-is-dragged",
+      this.props.isFloating && "nz-is-floating",
       this.props.fillZone && "nz-fill-zone",
       this.props.className);
 
@@ -158,7 +169,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
         <div className="nz-content-area">
           <Content
             className="nz-content"
-            anchor={horizontalAnchor}
+            anchor={this.props.horizontalAnchor}
             content={this.props.content}
           />
           <ResizeGrip
