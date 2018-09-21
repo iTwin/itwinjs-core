@@ -182,17 +182,11 @@ export abstract class GraphicBuilder {
     this.addLineStrings([9, tmpPts], [2, [p[0], p[3]]], [2, [p[4], p[5]]], [2, [p[1], p[7]]], [2, [p[2], p[6]]]);
   }
 
-  /**
-   * Set symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
-   * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
-   */
+  /** Set symbology for decoration. */
   public setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid) {
     this.activateGraphicParams(GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels));
   }
 
-  /**
-   * Set blanking fill symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
-   * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
-   */
+  /** Set blanking fill symbology for decoration. */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

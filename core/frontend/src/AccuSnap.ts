@@ -3,17 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY, Transform, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Transform, Vector3d, CurveCurve } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
 import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
-import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
+import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitPriority, IntersectDetail, SnapHeat, HitGeomType } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
+import { SnapRequestProps } from "@bentley/imodeljs-common";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap implements Decorator {
@@ -35,8 +36,6 @@ export class AccuSnap implements Decorator {
   public errorKey?: string;
   /** localized message explaining why last error was generated. */
   public explanation?: string;
-  /** During snap creation: the snap to try */
-  private _candidateSnapMode = SnapMode.Nearest;
   /** Number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools */
   private _suppressed = 0;
   /** Time motion stopped. */
@@ -73,12 +72,6 @@ export class AccuSnap implements Decorator {
   private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
-  /**
-   * Get the SnapMode that was used to generate the SnapDetail. Since getActiveSnapModes can return multiple SnapMode values, this method  returns
-   * the SnapMode that was chosen.
-   */
-  public get snapMode(): SnapMode { return this._candidateSnapMode; }
-
   /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
    * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a snap divisor ui component.
    */
@@ -98,6 +91,12 @@ export class AccuSnap implements Decorator {
    */
   public synchSnapMode(): void { }
 
+  /** Check whether current tentative snap has valid urve geometry for finding extended intersections. */
+  private get _searchForExtendedIntersections(): boolean {
+    const snap = IModelApp.tentativePoint.getCurrSnap();
+    return (undefined !== snap && undefined !== snap.primitive);
+  }
+
   /**
    * Check to see whether its appropriate to generate an AccuSnap point, given the current user
    * and command settings, and whether a tentative point is currently active.
@@ -105,7 +104,7 @@ export class AccuSnap implements Decorator {
   public get isActive(): boolean {
     // Unless we're snapping in intersect mode (to find extended intersections), skip if tentative point active...
     if (IModelApp.tentativePoint.isActive) {
-      if (!this._doSnapping)
+      if (!this._doSnapping || !this._searchForExtendedIntersections)
         return false;
       const snaps = this.getActiveSnapModes();
       for (const snap of snaps) { if (snap === SnapMode.Intersection) return true; }
@@ -408,74 +407,114 @@ export class AccuSnap implements Decorator {
     this.onEnabledStateChange(this._doSnapping, previousDoSnapping);
   }
 
-  private getNextAccuSnappable(hitList: HitList<HitDetail>): HitDetail | undefined {
-    const thisHit = hitList.getNextHit();
-    if (thisHit)
-      this.explanation = "";
-    return thisHit;
+  public intersectXY(tpSnap: SnapDetail, second: SnapDetail): IntersectDetail | undefined {
+    // Get single segment curve from each snap to intersect...
+    const tpSegment = tpSnap.getCurvePrimitive();
+    if (undefined === tpSegment)
+      return undefined;
+    const segment = second.getCurvePrimitive();
+    if (undefined === segment)
+      return undefined;
+
+    const worldToView = second.viewport.worldToViewMap.transform0;
+    const detail = CurveCurve.IntersectionProjectedXY(worldToView, tpSegment, true, segment, true);
+    if (0 === detail.dataA.length)
+      return undefined;
+
+    let closeIndex = 0;
+    if (detail.dataA.length > 1) {
+      const snapPt = worldToView.multiplyPoint3d(HitGeomType.Point === tpSnap.geomType && HitGeomType.Point !== second.geomType ? second.getPoint() : tpSnap.getPoint(), 1); // Don't check distance from arc centers...
+      let lastDist: number | undefined;
+
+      for (let i = 0; i < detail.dataA.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+        const testDist = snapPt.realDistanceXY(testPt);
+
+        if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
+          lastDist = testDist;
+          closeIndex = i;
+        }
+      }
+    }
+
+    const intersect = new IntersectDetail(tpSnap, SnapMode.Intersection, SnapHeat.InRange, detail.dataA[closeIndex].point); // Should be ok to share hit detail with tentative...
+
+    second.primitive = segment; // Just save single segment that was intersected for line strings/shapes...
+    intersect.secondHit = second;
+    intersect.primitive = tpSegment;
+    intersect.geomType = HitGeomType.None;
+    intersect.normal = tpSnap.normal; // Preserve normal at tentative snap location for AccuDraw smart rotation...better than nothing...
+
+    return intersect;
   }
 
-  public async requestSnap(thisHit: HitDetail, snapMode: SnapMode, hotDistanceInches: number, out?: LocateResponse): Promise<SnapDetail | undefined> {
-    const result = await thisHit.viewport.iModel.requestSnap(
-      {
-        id: thisHit.sourceId,
-        closePoint: thisHit.hitPoint,
-        worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
-        viewFlags: thisHit.viewport.viewFlags,
-        snapMode,
-        snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
-        snapDivisor: this.keypointDivisor,
-      }); // ### TODO offSubCategories...
+  // ###TODO pass optional HitList for intersect snap...
+  public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, out?: LocateResponse): Promise<SnapDetail | undefined> {
+    const requestProps: SnapRequestProps = {
+      id: thisHit.sourceId, // ###TODO check !isElementHit
+      closePoint: thisHit.hitPoint,
+      worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
+      viewFlags: thisHit.viewport.viewFlags,
+      snapModes,
+      snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
+      snapDivisor: keypointDivisor,
+    }; // ### TODO offSubCategories...
+    const result = await thisHit.viewport.iModel.requestSnap(requestProps);
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)
       return undefined;
 
-    const snap = new SnapDetail(thisHit, snapMode, result.heat!, result.snapPoint!);
+    const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
     snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined !== result.localToWorld ? Transform.fromJSON(result.localToWorld) : undefined, result.geomType);
+    if (undefined !== result.parentGeomType)
+      snap.parentGeomType = result.parentGeomType;
+    if (undefined !== result.hitPoint)
+      snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
     if (undefined !== result.normal)
       snap.normal = Vector3d.fromJSON(result.normal);
 
-    IModelApp.accuDraw.onSnap(snap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
     return snap;
   }
 
   private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {
-    let bestDist = 1e200;
-    let bestSnap: SnapDetail | undefined;
-    let bestHit: HitDetail | undefined;
-    const ignore = new LocateResponse();
-    for (let thisHit; undefined !== (thisHit = this.getNextAccuSnappable(hitList)); out = ignore) {
-      // if there are multiple hits at the same dist, then find the best snap from all of them. Otherwise, the snap
-      // from the first one is the one we want.
-      if (bestHit && 0 !== hitList.compare(thisHit, bestHit))
-        break;
+    const thisHit = hitList.getNextHit();
+    if (undefined === thisHit)
+      return undefined;
 
-      const thisSnap = await this.requestSnap(thisHit, this.snapMode, this._hotDistanceInches, out);
-      if (undefined === thisSnap)
-        continue;
-
-      // Pass the snap path instead of the hit path in case a filter modifies the path contents.
-      let filterStatus = LocateFilterStatus.Accept;
-      if (this.isLocateEnabled)
-        filterStatus = IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out);
-
-      const thisDist = thisSnap.hitPoint.distance(thisSnap.snapPoint);
-      if (LocateFilterStatus.Accept === filterStatus && !(bestSnap && (thisDist >= bestDist))) {
-        bestHit = thisHit;
-        bestSnap = thisSnap;
-        bestDist = thisDist;
-      } else if (LocateFilterStatus.Reject === filterStatus) {
-        out.snapStatus = SnapStatus.FilteredByApp;
-      }
+    let snapModes: SnapMode[];
+    if (IModelApp.tentativePoint.isActive) {
+      snapModes = [];
+      snapModes.push(SnapMode.Nearest); // Special case: isActive only allows snapping with tentative to find extended intersections...
+    } else {
+      snapModes = this.getActiveSnapModes(); // Get the list of point snap modes to consider
     }
 
-    if (bestHit) {
-      hitList.setCurrentHit(bestHit);
-      return bestSnap;
+    this.explanation = "";
+    const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, this.keypointDivisor, out);
+    if (undefined === thisSnap)
+      return undefined;
+
+    const filterStatus = (this.isLocateEnabled ? IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
+    if (LocateFilterStatus.Accept !== filterStatus) {
+      out.snapStatus = SnapStatus.FilteredByApp;
+      return undefined;
     }
 
-    return undefined;
+    if (IModelApp.tentativePoint.isActive) {
+      const tpSnap = IModelApp.tentativePoint.getCurrSnap();
+      if (undefined === tpSnap)
+        return undefined;
+      const intersectSnap = this.intersectXY(tpSnap, thisSnap);
+      if (undefined === intersectSnap)
+        return undefined;
+      hitList.setCurrentHit(thisHit);
+      return intersectSnap;
+    }
+
+    IModelApp.accuDraw.onSnap(thisSnap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
+    hitList.setCurrentHit(thisHit);
+    return thisSnap;
   }
 
   private findHits(ev: BeButtonEvent, force: boolean = false): SnapStatus {
@@ -518,15 +557,6 @@ export class AccuSnap implements Decorator {
     }
 
     return SnapStatus.Success;
-  }
-
-  /**
-   * If AccuSnap is active, search under cursor for new hits and generate the best AccuSnap point from that list, if any.
-   * @return the best hit.
-   */
-  private async getNewSnapDetail(out: LocateResponse, ev: BeButtonEvent): Promise<SnapDetail | undefined> {
-    out.snapStatus = this.findHits(ev);
-    return (SnapStatus.Success !== out.snapStatus) ? undefined : this.getAccuSnapDetail(this.aSnapHits!, out);
   }
 
   private findLocatableHit(ev: BeButtonEvent, newSearch: boolean, out: LocateResponse): HitDetail | undefined {
@@ -576,9 +606,10 @@ export class AccuSnap implements Decorator {
     if (this._doSnapping) {
       // if we don't have any more candidate hits, get a new list at the current location
       if (!this.aSnapHits || (0 === this.aSnapHits.length)) {
-        hit = await this.getNewSnapDetail(out, ev);
+        out.snapStatus = this.findHits(ev);
+        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
       } else {
-        // drop the current hit from the list and then retest the list (without the dropped hit) to find the new "best" snap
+        // drop the current hit from the list and then retest the list (without the dropped hit) to find the new snap
         this.aSnapHits.removeCurrentHit();
         hit = await this.getAccuSnapDetail(this.aSnapHits, out);
       }
@@ -595,141 +626,20 @@ export class AccuSnap implements Decorator {
     return out.snapStatus;
   }
 
-  private doIntersectSnap(_ev: BeButtonEvent, _usingMultipleSnaps: boolean, _out: LocateResponse): SnapDetail | undefined {
-    // const hitList = this.aSnapHits;
-    // const testHits: HitDetail[] = [];
-    // const testPoint = this.isLocateEnabled() ? ev.point : ev.rawPoint;
-    // let count = 0;
-
-    // // if there's a tentative point, use it
-    // const tpHit = Application.tentativePoint.getCurrSnap();
-    // if (tpHit) {
-    //   testHits[count++] = tpHit;
-
-    //   // if the tentative snap is already an intersection, use both elements
-    //   if (HitDetailType.Intersection === tpHit.getHitType() && (HitSource.TentativeSnap === tpHit.locateSource))
-    //     testHits[count++] = ((IntersectDetail *) tpHit) -> GetSecondHit();
-    // }
-
-    // if (count < 2) {
-    //   // multiple snaps: must repeat the locate logic each time, in case previous locate was done
-    //   //                  by a non-intersection snap at a location far from here
-    //   if (SnapStatus:: Success != FindHits(& hitList, ev, usingMultipleSnaps))
-    //   return SnapStatus:: NoElements;
-
-    //   hitList -> ResetCurrentHit();
-    //   testHits[count++] = GetNextIntersectable(& status, hitList);
-    // }
-
-    // if (nullptr == testHits[0])
-    //   return SnapStatus:: NoElements;
-
-    // if (nullptr == testHits[1])
-    //   testHits[1] = GetNextIntersectable(& status, hitList);
-
-    // // test all possible intersections, finding the "best" one
-    // HitList intsctList;
-    // for (; testHits[1]; testHits[1] = GetNextIntersectable(& status, hitList)) {
-    //   SnapDetailP thisIntsct = nullptr;
-    //   if (SnapStatus:: Success == snapContext.IntersectDetails(& thisIntsct, testHits[0], testHits[1], testPoint, TentativePoint:: GetInstance().IsSnapped()))
-    //   {
-    //     intsctList.AddHit(thisIntsct, false, false);
-    //     thisIntsct -> Release(); // ref count was incremented when we added to list
-    //   }
-    // }
-
-    // * intsctSnap = (SnapDetailP) intsctList.GetHit(0);
-    // if (nullptr != * intsctSnap) {
-    //   (* intsctSnap) -> AddRef();
-    //   return SnapStatus:: Success;
-    // }
-
-    // return SnapStatus:: NoSnapPossible;
-    return undefined;
-  }
-
-  /* Choose one snap from the set of all active snaps. If the snapOverride is a simple
-    snap like keypoint, then the set will contain a single snap and this choosing
-    process just returns it. If the snapOverride is a multi-snap, then the set contains
-    all of the point snaps that it represents. If the snapOverride is a constraint snap,
-    then the set contains all of the point snaps that underlie it.
-
-    Just consider the snaps in the set in the order given by the user and pick the
-    first hot one. If none are hot, pick the one that's closest to the cursor.
-
-    Exception: If snap point is not on the curve, then we ignore its hot-ness.
-
-    Depending on element type, the center (centroid) and origin snap locations may not lie
-    on on the target element. For lineString, shape, bspline, etc. center snap may not even be
-    on a keypoint. To make them choose-able, AccuSnap makes them hot all of the time. As a result,
-    if these snaps are first in the list, they may take precedence over all others. To combat
-    this problem, we apply this exception.
-
-    Note: Sometimes keypoint and intersection snaps can be crowded close together.
-    There's nothing we can do about this here. The user may be able to choose one over the
-    other by sneaking up from right or left. Otherwise, the first one in the list is chosen.
-*/
-  private async getPreferredSnap(ev: BeButtonEvent, out: LocateResponse): Promise<SnapDetail | undefined> {
-    // Get the list of point snap modes to consider
-    let snapModes: SnapMode[];
-
-    // Special case: If tentative point is active, then we can only do intersections.
-    if (IModelApp.tentativePoint.isActive) {
-      snapModes = [];
-      snapModes.push(SnapMode.Intersection);
-    } else {
-      snapModes = this.getActiveSnapModes();
-    }
-
-    // Consider each point snap mode and find the preferred one.
-    let preferred: SnapDetail | undefined;
-    let preferredDistance = 1.0e200;
-
-    for (const snapMode of snapModes) {
-      // Try to generate a snap for this snap mode and compare it with the others.
-      this._candidateSnapMode = snapMode;
-
-      const snap = (this._candidateSnapMode !== SnapMode.Intersection) ? await this.getNewSnapDetail(out, ev) : await this.doIntersectSnap(ev, snapModes.length > 1, out);
-      if (SnapStatus.Aborted === out.snapStatus)
-        return undefined;
-
-      if ((SnapStatus.Success === out.snapStatus) && snap) {
-        if (snap.isHot && (SnapMode.Center === this._candidateSnapMode || SnapHeat.InRange === snap.heat)) {
-          preferred = snap;
-          break;
-        } else {
-          const dist = snap.hitPoint.distance(snap.snapPoint);
-          if (dist < preferredDistance) {
-            // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
-            preferred = snap;
-            preferredDistance = dist;
-          }
-        }
-      }
-    }
-
-    if (!preferred) { //  No snap could be generated?
-      out.snapStatus = SnapStatus.NoElements;
-      return undefined;
-    }
-
-    return preferred;
-  }
-
   /** Find the best snap point according to the current cursor location */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
-
     this.clearToolTip(ev);
-
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
     let hit: HitDetail | undefined;
     if (this.isActive) {
-      if (this._doSnapping)
-        hit = await this.getPreferredSnap(ev, out);
-      else if (this.isLocateEnabled)
+      if (this._doSnapping) {
+        out.snapStatus = this.findHits(ev);
+        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+      } else if (this.isLocateEnabled) {
         hit = this.findLocatableHit(ev, true, out);
+      }
     }
 
     // set the current hit and display the sprite (based on snap's KeypointType)

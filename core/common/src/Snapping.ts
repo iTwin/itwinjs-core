@@ -15,7 +15,7 @@ export interface SnapRequestProps {
   closePoint: XYZProps;
   worldToView: Matrix4dProps;
   viewFlags?: any;
-  snapMode?: number;
+  snapModes?: number[];
   snapAperture?: number;
   snapDivisor?: number;
   offSubCategories?: string[];
@@ -26,13 +26,14 @@ export interface SnapRequestProps {
  */
 export interface SnapResponseProps {
   status: number;
+  snapMode?: number;
   heat?: number;
   geomType?: number;
   parentGeomType?: number;
   subCategory?: string;
-  weight: number;
+  hitPoint?: XYZProps;
   snapPoint?: XYZProps;
+  normal?: XYZProps;
   curve?: any;
   localToWorld?: TransformProps;
-  normal?: XYZProps;
 }

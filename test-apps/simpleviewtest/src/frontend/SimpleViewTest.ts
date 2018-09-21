@@ -14,7 +14,7 @@ import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, ImageUtil, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton,
+  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -737,6 +737,11 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined !== IModelApp.accuSnap.currHit) {
+      const status = await IModelApp.accuSnap.resetButton(); // Test AccuSnap hit cycling...only restart when no current hit or not hot snap on next hit...
+      if (SnapStatus.Success === status)
+        return EventHandled.No;
+    }
     this.onReinitialize();
     return EventHandled.No;
   }
@@ -957,16 +962,6 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected async createControls(): Promise<boolean> {
-    /* // TESTING ELEMENT QUERY
-         if (1 === this.iModel.selectionSet.size) {
-          const props = await this.getElementProps(this.iModel.selectionSet.elements);
-          if (0 !== props.length && undefined !== props[0].placement) {
-            const placement = Placement3d.fromJSON(props[0].placement);
-            this._extents = placement.calculateRange();
-            return true;
-          }
-        } */
-
     //    if (this.iModel.isReadonly)
     //      return false;
 
@@ -1024,15 +1019,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected clearControls(): void {
-    this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
-    // if (0 !== this._controlIds.length && this.iModel.selectionSet.isActive) {
-    //   this.iModel.selectionSet.remove(this._controlIds); // Remove selected controls as they won't continue to be displayed...
-    //   for (const controlId of this._controlIds) {
-    //     if (!this.iModel.selectionSet.has(controlId))
-    //       continue;
-    //     break;
-    //   }
-    // }
+    this.iModel.selectionSet.remove(this._controlIds); // Remove any selected controls as they won't continue to be displayed...
     super.clearControls();
   }
 
@@ -1276,15 +1263,10 @@ class IncidentMarkerDemo {
 
 // Starts Measure between points tool
 function startMeasurePoints(event: any) {
-  const useMeasureTool = false;
-  if (useMeasureTool) {
-    const menu = document.getElementById("snapModeList") as HTMLDivElement;
-    if (event.target === menu)
-      return;
-    IModelApp.tools.run("Measure.Points", theViewport!);
-  } else {
-    ProjectExtentsDecoration.toggle();
-  }
+  const menu = document.getElementById("snapModeList") as HTMLDivElement;
+  if (event.target === menu)
+    return;
+  IModelApp.tools.run("Measure.Points", theViewport!);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1547,24 +1529,42 @@ window.onbeforeunload = () => {
       activeViewState.iModelConnection.close(activeViewState.accessToken!);
 };
 
-function stringToSnapMode(name: string): SnapMode {
+function stringToSnapModes(name: string): SnapMode[] {
+  const snaps: SnapMode[] = [];
   switch (name) {
-    case "Keypoint": return SnapMode.NearestKeypoint;
-    case "Nearest": return SnapMode.Nearest;
-    case "Center": return SnapMode.Center;
-    case "Origin": return SnapMode.Origin;
-    case "Intersection": return SnapMode.Intersection;
-    default: return SnapMode.NearestKeypoint;
+    case "Keypoint":
+      snaps.push(SnapMode.NearestKeypoint);
+      break;
+    case "Nearest":
+      snaps.push(SnapMode.Nearest);
+      break;
+    case "Center":
+      snaps.push(SnapMode.Center);
+      break;
+    case "Origin":
+      snaps.push(SnapMode.Origin);
+      break;
+    case "Intersection":
+      snaps.push(SnapMode.Intersection);
+      break;
+    default:
+      snaps.push(SnapMode.NearestKeypoint);
+      snaps.push(SnapMode.Nearest);
+      snaps.push(SnapMode.Intersection);
+      snaps.push(SnapMode.MidPoint);
+      snaps.push(SnapMode.Origin);
+      snaps.push(SnapMode.Center);
+      snaps.push(SnapMode.Bisector);
+      break;
   }
+  return snaps;
 }
 
 class SVTAccuSnap extends AccuSnap {
+  public get keypointDivisor() { return 2; }
   public getActiveSnapModes(): SnapMode[] {
     const select = (document.getElementById("snapModeList") as HTMLSelectElement)!;
-    const snapMode = stringToSnapMode(select.value);
-    const snaps: SnapMode[] = [];
-    snaps.push(snapMode);
-    return snaps;
+    return stringToSnapModes(select.value);
   }
 }
 
