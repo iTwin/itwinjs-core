@@ -50,7 +50,8 @@
   },
   "tests": {
     "singleContent": "Single Content",
-    "label": "Test Label"
+    "label": "Test Label",
+    "subtitle": "Test Subtitle"
   },
   "ContentLayoutDef": {
     "SingleContent": "Single Content",

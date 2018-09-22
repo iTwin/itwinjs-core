@@ -48,7 +48,7 @@ export class FrontstageZone extends React.Component<FrontstageZoneProps> {
         return (
           <ToolSettingsZone
             zoneDef={zoneDef}
-            zoneState={this.props.zoneState} />
+            bounds={this.props.zoneState.bounds} />
         );
       } else if (zoneDef.isStatusBar) {
         if (!isStatusZone(this.props.zoneState))

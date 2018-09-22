@@ -11,110 +11,13 @@ import ConfigurableUiManager from "./ConfigurableUiManager";
 import { Icon } from "./IconLabelSupport";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
-import { MessageDirection, MessageItemProps, PageItemProps, ToolItemProps, CommandItemProps, CommandHandler } from "./ItemProps";
+import { ToolItemProps, CommandItemProps, CommandHandler } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
 /** @module Item */
-
-/** An Item that sends a Message.
- */
-export class MessageItemDef extends ItemDefBase {
-  public messageId: string;
-  public direction: MessageDirection;
-
-  public isActive: boolean = false;
-  public isToggle: boolean = false;
-
-  public messageData?: string;
-  public messageDataExpr?: string;
-  public overrideMessageId?: string;
-
-  constructor(messageItemDef: MessageItemProps) {
-    super(messageItemDef);
-
-    this.messageId = messageItemDef.messageId;
-    this.direction = messageItemDef.direction;
-
-    if (messageItemDef.isActive !== undefined)
-      this.isActive = messageItemDef.isActive;
-    if (messageItemDef.isToggle !== undefined)
-      this.isToggle = messageItemDef.isToggle;
-
-    if (messageItemDef.messageData !== undefined)
-      this.messageData = messageItemDef.messageData;
-    if (messageItemDef.messageDataExpr !== undefined)
-      this.messageDataExpr = messageItemDef.messageDataExpr;
-    if (messageItemDef.overrideMessageId !== undefined)
-      this.overrideMessageId = messageItemDef.overrideMessageId;
-  }
-
-  public get id(): string {
-    return this.messageId;
-  }
-
-  public execute(): void {
-    // TODO
-    window.alert("Message '" + this.id + "' launch");
-  }
-
-  public toolbarReactNode(index?: number): React.ReactNode {
-    const key = (index !== undefined) ? index.toString() : this.id;
-
-    return (
-      <ToolbarIcon
-        key={key}
-        onClick={this.execute}
-        icon={
-          <Icon iconInfo={this.iconInfo} />
-        }
-      />
-    );
-  }
-}
-
-/** An Item that opens a Page.
- */
-export class PageItemDef extends ItemDefBase {
-  public pageId: string;
-  public sourceFile?: string;
-  public isDialog?: boolean = false;
-
-  constructor(pageItemDef: PageItemProps) {
-    super(pageItemDef);
-
-    this.pageId = pageItemDef.pageId;
-
-    if (pageItemDef.sourceFile !== undefined)
-      this.sourceFile = pageItemDef.sourceFile;
-    if (pageItemDef.isDialog !== undefined)
-      this.isDialog = pageItemDef.isDialog;
-  }
-
-  public get id(): string {
-    return this.pageId;
-  }
-
-  public execute(): void {
-    // TODO
-    window.alert("Page '" + this.id + "' launch");
-  }
-
-  public toolbarReactNode(index?: number): React.ReactNode {
-    const key = (index !== undefined) ? index.toString() : this.id;
-
-    return (
-      <ToolbarIcon
-        key={key}
-        onClick={this.execute}
-        icon={
-          <Icon iconInfo={this.iconInfo} />
-        }
-      />
-    );
-  }
-}
 
 /** An Item that launches a Tool.
  */
@@ -123,13 +26,13 @@ export class ToolItemDef extends ItemDefBase {
   private _toolUiProvider: ToolUiProvider | undefined;
   private _execute?: () => any;
 
-  constructor(toolItemDef: ToolItemProps) {
-    super(toolItemDef);
+  constructor(toolItemProps: ToolItemProps) {
+    super(toolItemProps);
 
-    this.toolId = toolItemDef.toolId;
+    this.toolId = toolItemProps.toolId;
 
-    if (toolItemDef.execute !== undefined)
-      this._execute = toolItemDef.execute;
+    if (toolItemProps.execute !== undefined)
+      this._execute = toolItemProps.execute;
   }
 
   public get id(): string {
@@ -137,7 +40,8 @@ export class ToolItemDef extends ItemDefBase {
   }
 
   public execute(): void {
-    FrontstageManager.activeFrontstageDef.setActiveToolItem(this);
+    if (FrontstageManager.activeFrontstageDef)
+      FrontstageManager.activeFrontstageDef.setActiveToolItem(this);
 
     if (this._execute) {
       this._execute();
@@ -173,10 +77,17 @@ export class ToolItemDef extends ItemDefBase {
 
   public get toolUiProvider(): ToolUiProvider | undefined {
     // TODO - should call getConfigurable if widget is sharable
-    if (!this._toolUiProvider) {
-      this._toolUiProvider = ConfigurableUiManager.createConfigurable(this.toolId, this.id) as ToolUiProvider;
-      if (this._toolUiProvider) {
-        this._toolUiProvider.toolItem = this;
+    if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
+      const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.id) as ToolUiProvider;
+      if (toolUiProvider) {
+        if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
+          throw Error("ToolItemDef.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
+        }
+
+        this._toolUiProvider = toolUiProvider;
+        if (this._toolUiProvider) {
+          this._toolUiProvider.toolItem = this;
+        }
       }
     }
 
@@ -194,9 +105,7 @@ export class CommandItemDef extends ItemDefBase {
     super(commandItemProps);
 
     this.commandId = commandItemProps.commandId;
-
-    if (commandItemProps.commandHandler !== undefined)
-      this._commandHandler = commandItemProps.commandHandler;
+    this._commandHandler = commandItemProps.commandHandler;
   }
 
   public get id(): string {
@@ -204,11 +113,8 @@ export class CommandItemDef extends ItemDefBase {
   }
 
   public execute(): void {
-    // TODO
-    if (this._commandHandler && this._commandHandler.execute)
-      this._commandHandler.execute();
-    else
-      window.alert("Command '" + this.id + "' launch");
+    if (this._commandHandler)
+      this._commandHandler.execute(this._commandHandler.parameters);
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
@@ -247,62 +153,6 @@ export class CommandButton extends React.Component<CommandItemProps, ItemButtonS
   public static getDerivedStateFromProps(newProps: CommandItemProps, state: ItemButtonState): ItemButtonState | null {
     if (newProps.commandId !== state.itemDef.id) {
       return { itemDef: new CommandItemDef(newProps) };
-    }
-
-    return null;
-  }
-
-  public render(): React.ReactNode {
-    return (
-      this.state.itemDef.toolbarReactNode()
-    );
-  }
-}
-
-/** Message Button React Component.
- */
-export class MessageButton extends React.Component<MessageItemProps, ItemButtonState> {
-
-  /** hidden */
-  public readonly state: Readonly<ItemButtonState>;
-
-  constructor(messageItemProps: MessageItemProps) {
-    super(messageItemProps);
-
-    this.state = { itemDef: new MessageItemDef(messageItemProps) };
-  }
-
-  public static getDerivedStateFromProps(newProps: MessageItemProps, state: ItemButtonState): ItemButtonState | null {
-    if (newProps.messageId !== state.itemDef.id) {
-      return { itemDef: new MessageItemDef(newProps) };
-    }
-
-    return null;
-  }
-
-  public render(): React.ReactNode {
-    return (
-      this.state.itemDef.toolbarReactNode()
-    );
-  }
-}
-
-/** Page Button React Component.
- */
-export class PageButton extends React.Component<PageItemProps, ItemButtonState> {
-
-  /** hidden */
-  public readonly state: Readonly<ItemButtonState>;
-
-  constructor(pageItemProps: PageItemProps) {
-    super(pageItemProps);
-
-    this.state = { itemDef: new PageItemDef(pageItemProps) };
-  }
-
-  public static getDerivedStateFromProps(newProps: PageItemProps, state: ItemButtonState): ItemButtonState | null {
-    if (newProps.pageId !== state.itemDef.id) {
-      return { itemDef: new PageItemDef(newProps) };
     }
 
     return null;

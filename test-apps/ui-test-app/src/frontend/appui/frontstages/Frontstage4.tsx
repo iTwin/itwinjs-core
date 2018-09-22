@@ -215,7 +215,6 @@ export class Frontstage4 {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => {
           let displayString = "Current Snap Mode(s):";
 
@@ -243,7 +242,6 @@ export class Frontstage4 {
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, warningStr, detailMsg, OutputMessageType.Sticky)),
       },
     });
@@ -252,7 +250,6 @@ export class Frontstage4 {
       iconClass: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorStr, detailMsg, OutputMessageType.Alert)),
       },
     });
@@ -349,7 +346,6 @@ export class Frontstage4 {
       iconClass: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => ModalDialogManager.openModalDialog(this.messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
       },
     });
@@ -358,7 +354,6 @@ export class Frontstage4 {
       iconClass: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => ModalDialogManager.openModalDialog(this.messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
       },
     });
@@ -367,7 +362,6 @@ export class Frontstage4 {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => ModalDialogManager.openModalDialog(this.messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
       },
     });
@@ -376,7 +370,6 @@ export class Frontstage4 {
       iconClass: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => ModalDialogManager.openModalDialog(this.messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
       },
     });
@@ -385,7 +378,6 @@ export class Frontstage4 {
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => ModalDialogManager.openModalDialog(this.messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
       },
     });
@@ -394,7 +386,6 @@ export class Frontstage4 {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => {
           IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
             .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
@@ -406,7 +397,6 @@ export class Frontstage4 {
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: async () => {
           const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.", MessageBoxIconType.Warning);
           window.alert("Closing message box ... value is " + value);

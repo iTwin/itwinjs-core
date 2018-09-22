@@ -12,6 +12,7 @@ import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 import { NavigationAidControl } from "./NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs } from "./FrontstageManager";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
 
@@ -38,8 +39,12 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public renderCornerItem(): React.ReactNode | undefined {
-    if (!this._navigationAidControl)
-      this._navigationAidControl = ConfigurableUiManager.createConfigurable(this._navigationAidId, this._navigationAidId) as NavigationAidControl;
+    if (!this._navigationAidControl && this._navigationAidId) {
+      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId) as NavigationAidControl;
+      if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
+        throw Error("NavigationWidgetDef.renderCornerItem error: navigationAidId '" + this._navigationAidId + "' is registered to a control that is NOT a NavigationAid");
+      }
+    }
 
     if (this._navigationAidControl) {
       const size = this._navigationAidControl.getSize() || "64px";

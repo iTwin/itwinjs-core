@@ -14,7 +14,7 @@ export interface IconLabelProps {
   iconSrc?: string;
   labelKey?: string;
   labelExpr?: string;
-  tooltipId?: string;
+  tooltipKey?: string;
   tooltipExpr?: string;
 }
 
@@ -45,7 +45,7 @@ export class IconLabelSupport {
       this.label = (iconLabelDef.labelKey !== undefined) ? UiFramework.i18n.translate(iconLabelDef.labelKey) : "";
       // labelExpr?: string;
 
-      this.tooltip = (iconLabelDef.tooltipId !== undefined) ? UiFramework.i18n.translate(iconLabelDef.tooltipId) : "";
+      this.tooltip = (iconLabelDef.tooltipKey !== undefined) ? UiFramework.i18n.translate(iconLabelDef.tooltipKey) : "";
       // tooltipExpr?: string;
     }
   }

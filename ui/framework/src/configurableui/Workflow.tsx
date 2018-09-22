@@ -60,7 +60,9 @@ export class Workflow extends ItemDefBase {
     this.isDefault = (workflowDef.isDefault !== undefined) ? workflowDef.isDefault : true;
 
     this._taskIds.map((taskId: string, _index: number) => {
-      this._tasks.set(taskId, TaskManager.findTask(taskId));
+      const task = TaskManager.findTask(taskId);
+      if (task)
+        this._tasks.set(taskId, task);
     });
   }
 
@@ -112,12 +114,10 @@ export class Workflow extends ItemDefBase {
   public getSortedTasks(_onlyVisible?: boolean): Task[] {
     const sortedTasks = new Array<Task>();
 
-    for (const key in this._tasks) {
-      if (this._tasks.hasOwnProperty(key)) {
-        const task: Task | undefined = this._tasks.get(key);
-        if (task && task.isVisible)
-          sortedTasks.push(task);
-      }
+    for (const key of this._tasks.keys()) {
+      const task: Task | undefined = this._tasks.get(key);
+      if (task && task.isVisible)
+        sortedTasks.push(task);
     }
 
     sortedTasks.sort((a: Task, b: Task) => {
@@ -158,7 +158,7 @@ export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 /** Workflow Manager class.
  */
 export class WorkflowManager {
-  private static _workflows: { [workflowId: string]: Workflow } = {};
+  private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
   private static _activeWorkflow: Workflow;
   private static _defaultWorkflowId: string;
   private static _taskPickerDef: TaskPickerProps;
@@ -185,12 +185,12 @@ export class WorkflowManager {
     WorkflowManager.addWorkflow(workflowDef.id, workflow);
   }
 
-  public static findWorkflow(workflowId: string): Workflow {
-    return this._workflows[workflowId];
+  public static findWorkflow(workflowId: string): Workflow | undefined {
+    return this._workflows.get(workflowId);
   }
 
   public static addWorkflow(workflowId: string, workflow: Workflow) {
-    this._workflows[workflowId] = workflow;
+    this._workflows.set(workflowId, workflow);
   }
 
   public static setActiveWorkflow(workflow: Workflow) {
@@ -221,9 +221,10 @@ export class WorkflowManager {
   public static getSortedWorkflows(): Workflow[] {
     const sortedWorkflows = new Array<Workflow>();
 
-    for (const key in this._workflows) {
-      if (this._workflows.hasOwnProperty(key)) {
-        sortedWorkflows.push(this._workflows[key]);
+    for (const key of this._workflows.keys()) {
+      const workflow = this._workflows.get(key);
+      if (workflow) {
+        sortedWorkflows.push(workflow);
       }
     }
 

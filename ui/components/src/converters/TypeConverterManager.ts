@@ -6,16 +6,17 @@
 import { TypeConverter } from "./TypeConverter";
 
 /**
- * Manages Type Converters. Type Converters are registered with and obtained from the
- * manager.
+ * Manages Type Converters. Type Converters are registered with and obtained from the manager.
  */
 export class TypeConverterManager {
   private static _converters: { [index: string]: (TypeConverter) } = {};
   private static _defaultTypeConverter: TypeConverter;
 
   public static registerConverter(typename: string, converter: typeof TypeConverter): void {
-    if (TypeConverterManager._converters.hasOwnProperty(typename))
-      return;
+    if (TypeConverterManager._converters.hasOwnProperty(typename)) {
+      const nameOfConverter = TypeConverterManager._converters[typename].constructor.name;
+      throw Error("TypeConverterManager.registerConverter error: type '" + typename + "' already registered to '" + nameOfConverter + "'");
+    }
 
     const instance = new converter();
     TypeConverterManager._converters[typename] = instance;

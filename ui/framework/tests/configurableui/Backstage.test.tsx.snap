@@ -1,6 +1,81 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Backstage <Backstage /> renders correctly 1`] = `
+exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Icon
+      iconInfo={
+        Object {
+          "iconClass": "icon-placeholder",
+          "iconSrc": undefined,
+        }
+      }
+    />
+  }
+  key="my-command-id"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Icon
+      iconInfo={
+        Object {
+          "iconClass": "icon-placeholder",
+          "iconSrc": undefined,
+        }
+      }
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="Test1"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> SeparatorBackstageItem renders correctly 1`] = `
+<BackstageSeparator
+  key="NaN"
+/>
+`;
+
+exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Icon
+      iconInfo={
+        Object {
+          "iconClass": "icon-placeholder",
+          "iconSrc": undefined,
+        }
+      }
+    />
+  }
+  key="ExampleWorkflow:Task1"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
+<Fragment>
+  <Backstage
+    isOpen={false}
+    onClose={[Function]}
+    showOverlay={true}
+  />
+  <div
+    onClick={[Function]}
+  />
+</Fragment>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
 <Fragment>
   <Backstage
     isOpen={true}
@@ -23,8 +98,6 @@ exports[`Backstage <Backstage /> with child items 1`] = `
           commandHandler={
             Object {
               "execute": [Function],
-              "messageId": "",
-              "parameters": null,
             }
           }
           commandId="my-command-id"

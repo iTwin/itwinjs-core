@@ -3,20 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
-import { FrontstageDef } from "./FrontstageDef";
-
 /** Interface for a ConfigurableUi element
  */
-export interface IConfigurable {
-  adopt(other: IConfigurable): boolean;
+export interface ConfigurableUiElement {
   uniqueId: string;
   classId: string;
   name: string;
 
-  // Request(requestId: string, options?: any, abortUpdate?: boolean): Promise<any>;
-  // RegisterMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
-  // UnregisterMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
-  // BroadcastMessage(messageName: string, messageArguments?: any[]): void;
+  // adopt(other: ConfigurableUiElement): boolean;
+  // request(requestId: string, options?: any, abortUpdate?: boolean): Promise<any>;
+  // registerMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
+  // unregisterMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
+  // broadcastMessage(messageName: string, messageArguments?: any[]): void;
 }
 
 /** Information for creating a ConfigurableUi element
@@ -30,7 +28,7 @@ export class ConfigurableCreateInfo {
 
 /** The base class for all ConfigurableUi elements
  */
-export class Configurable implements IConfigurable {
+export class ConfigurableBase implements ConfigurableUiElement {
   private _uniqueId: string;
   private _classId: string;
   private _name: string;
@@ -42,27 +40,27 @@ export class Configurable implements IConfigurable {
   }
 
   /** @hidden */
-  public adopt(other: IConfigurable): boolean {
-    if (this === other)
-      return true;
+  // public adopt(other: ConfigurableUiElement): boolean {
+  //   if (this === other)
+  //     return true;
 
-    if (!this._canAdopt(other))
-      return false;
+  //   if (!this._canAdopt(other))
+  //     return false;
 
-    this._adopt(other);
+  //   this._adopt(other);
 
-    // in case the "other" was adopted, the object is going to be disposed;
-    // however, it may have created some listeners, etc. in its constructor, so we have to
-    // call its OnDestroy callback to give it a chance to clean up
-    const onDestroy = (other as any)._OnDestroy;
-    if (onDestroy)
-      onDestroy();
+  //   // in case the "other" was adopted, the object is going to be disposed;
+  //   // however, it may have created some listeners, etc. in its constructor, so we have to
+  //   // call its OnDestroy callback to give it a chance to clean up
+  //   const onDestroy = (other as any)._OnDestroy;
+  //   if (onDestroy)
+  //     onDestroy();
 
-    return true;
-  }
+  //   return true;
+  // }
 
-  protected _canAdopt(other: IConfigurable): boolean { return this._classId === other.classId; }
-  protected _adopt(other: IConfigurable): void { this._uniqueId = other.uniqueId; }
+  // protected _canAdopt(other: ConfigurableUiElement): boolean { return this._classId === other.classId; }
+  // protected _adopt(other: ConfigurableUiElement): void { this._uniqueId = other.uniqueId; }
 
   /** @hidden */
   public get uniqueId(): string { return this._uniqueId; }
@@ -77,43 +75,44 @@ export class Configurable implements IConfigurable {
 
 /** The base class for all ConfigurableUi elements that belong to a stage.
  */
-export class StageConfigurable extends Configurable {
-  private _stage?: FrontstageDef;
+export class StageConfigurable extends ConfigurableBase {
+  // private _stage?: FrontstageDef;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
-  protected _adopt(other: IConfigurable): void {
-    super._adopt(other);
+  // protected _adopt(other: ConfigurableUiElement): void {
+  //   super._adopt(other);
 
-    const otherStageConfigurable = other as StageConfigurable;
-    this.currentStage = otherStageConfigurable.currentStage;
-  }
+  //   const otherStageConfigurable = other as StageConfigurable;
+  //   this.currentStage = otherStageConfigurable.currentStage;
+  // }
 
   /** @hidden */
-  public set currentStage(stage: FrontstageDef | undefined) {
-    if (stage === this._stage)
-      return;
+  // public set currentStage(stage: FrontstageDef | undefined) {
+  //   if (stage === this._stage)
+  //     return;
 
-    this._stage = stage;
-    this._onStageChanged();
-  }
+  //   this._stage = stage;
+  //   this._onStageChanged();
+  // }
 
-  public get currentStage(): FrontstageDef | undefined { return this._stage; }
+  // public get currentStage(): FrontstageDef | undefined { return this._stage; }
 
-  /** Called when the owning stage changes.
-   */
-  protected _onStageChanged(): void { }
+  // /** Called when the owning stage changes.
+  //  */
+  // protected _onStageChanged(): void { }
 }
 
 /** The type of the ConfigurableUiControl.
  */
 export enum ConfigurableUiControlType {
-  Content,        /** Represents @ref ContentControl        */
-  Widget,         /** Represents @ref WidgetControl         */
-  ControlHost,    /** Represents @ref ConfigurableUiControlHost           */
-  NavigationAid,  /** Represents @ref NavigationAid         */
+  Content,          /** Represents [[ContentControl]] */
+  NavigationAid,    /** Represents [[NavigationAidControl]] */
+  StatusBarWidget,  /** Represents [[StatusBarWidgetControl]]  */
+  ToolUiProvider,   /** Represents [[ToolUiProvider]]  */
+  Widget,           /** Represents [[WidgetControl]]  */
 }
 
 /** The absract base class for all Frontstage controls.
