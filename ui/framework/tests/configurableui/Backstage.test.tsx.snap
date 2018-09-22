@@ -30,6 +30,8 @@ exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly
       }
     />
   }
+  isActive={true}
+  isDisabled={false}
   key="Test1"
   label="tests.label"
   onClick={[Function]}
@@ -61,10 +63,16 @@ exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] =
 `;
 
 exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
-<Backstage
-  className="backstageClose"
-  isOpen={true}
-/>
+<Fragment>
+  <Backstage
+    isOpen={false}
+    onClose={[Function]}
+    showOverlay={true}
+  />
+  <div
+    onClick={[Function]}
+  />
+</Fragment>
 `;
 
 exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `

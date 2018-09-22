@@ -24,6 +24,8 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   describe("<Backstage />", () => {
@@ -69,7 +71,7 @@ describe("Backstage", () => {
       const commandHandler = { execute: spyMethod };
       const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleId="UiFramework:tests.subtitle" iconClass="icon-placeholder" commandHandler={commandHandler} />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
-      backstageItem.find("div.nz-backstage-item").simulate("click");
+      backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
     });
 
@@ -91,7 +93,7 @@ describe("Backstage", () => {
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
-      backstageItem.find("div.nz-backstage-item").simulate("click");
+      backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
       remove();
     });
@@ -149,7 +151,7 @@ describe("Backstage", () => {
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
-      backstageItem.find("div.nz-backstage-item").simulate("click");
+      backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
       remove();
     });
