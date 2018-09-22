@@ -446,43 +446,49 @@ export class Techniques implements IDisposable {
   }
 
   /** Execute the commands for a single given classification primitive */
-  public executeForIndexedClassifier(target: Target, commands: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
+    // There should be 3 commands per classifier in the cmdsByIndex array.
+    index *= 3;
+    if (index < 0 || index > cmdsByIndex.length - 3)
+      return; // index out of range
+
+    const pushCmd = cmdsByIndex[index];
+    const primCmd = cmdsByIndex[index + 1];
+    const popCmd = cmdsByIndex[index + 2];
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
 
-      // First execute the batch push.
-      commands[0].preExecute(executor);
-      let techniqueId = commands[0].getTechniqueId(target);
+      // First execute the push.
+      pushCmd.preExecute(executor);
+      let techniqueId = pushCmd.getTechniqueId(target);
       assert(TechniqueId.Invalid === techniqueId);
-      assert(!commands[0].isPrimitiveCommand, "expected non-primitive command");
-      commands[0].execute(executor);
-      commands[0].postExecute(executor);
+      assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
+      pushCmd.execute(executor);
+      pushCmd.postExecute(executor);
 
       // Execute the command for the given classification primitive.
-      const command = commands[index + 1];
-      command.preExecute(executor);
-      techniqueId = command.getTechniqueId(target);
+      primCmd.preExecute(executor);
+      techniqueId = primCmd.getTechniqueId(target);
       assert(TechniqueId.Invalid !== techniqueId);
       // A primitive command.
-      assert(command.isPrimitiveCommand, "expected primitive command");
-      flags.init(target, renderPass, command.hasAnimation);
+      assert(primCmd.isPrimitiveCommand, "expected primitive command");
+      flags.init(target, renderPass, primCmd.hasAnimation);
       const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
       const program = tech.getShader(flags);
       if (executor.setProgram(program)) {
-        command.execute(executor);
+        primCmd.execute(executor);
       }
-      command.postExecute(executor);
+      primCmd.postExecute(executor);
 
       // Execute the batch pop.
-      const last = commands.length - 1;
-      commands[last].preExecute(executor);
-      techniqueId = commands[last].getTechniqueId(target);
+      popCmd.preExecute(executor);
+      techniqueId = popCmd.getTechniqueId(target);
       assert(TechniqueId.Invalid === techniqueId);
-      assert(!commands[last].isPrimitiveCommand, "expected non-primitive command");
-      commands[last].execute(executor);
-      commands[last].postExecute(executor);
+      assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
+      popCmd.execute(executor);
+      popCmd.postExecute(executor);
     });
   }
 

@@ -94,7 +94,7 @@ export abstract class CachedGeometry implements IDisposable {
   // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
   public wantMixHiliteColorForFlash(vf: ViewFlags, target: Target): boolean {
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
-    if (this.hasBakedLighting || RenderPass.StencilVolume === this.getRenderPass(target))
+    if (this.hasBakedLighting || RenderPass.Classification === this.getRenderPass(target))
       return true;
     else if (!this.isLitSurface)
       return false;

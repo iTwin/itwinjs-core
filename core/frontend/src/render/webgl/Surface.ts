@@ -79,7 +79,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getRenderPass(target: Target): RenderPass {
     if (this.isClassifier)
-      return RenderPass.StencilVolume;
+      return RenderPass.Classification;
     const mat = this.isLit ? this._mesh.material : undefined;
     const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
