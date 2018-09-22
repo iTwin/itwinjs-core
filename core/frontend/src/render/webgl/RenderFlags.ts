@@ -10,7 +10,7 @@ export const enum RenderPass {
     OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
     OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
     OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
-    StencilVolume,
+    Classification,     // Stencil volumes for normal processing of reality data classification.
     Translucent,
     HiddenEdge,
     Hilite,
@@ -18,7 +18,8 @@ export const enum RenderPass {
     ViewOverlay,
     SkyBox,
     Terrain,
-    HiliteStencilVolume,
+    HiliteClassification,  // Secondary hilite pass for stencil volumes to process hlited classifiers for reality data
+    ClassificationByIndex, // Stencil volumes for processing classification one cliassifier at a time (used for generating pick data Ids and flashing a single classifier).
     COUNT,
 }
 

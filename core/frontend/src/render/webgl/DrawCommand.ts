@@ -212,7 +212,7 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Translucent))
       flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteStencilVolume))
+    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
       flags |= CompositeFlags.Hilite;
 
     assert(5 === RenderPass.Translucent);
@@ -476,6 +476,7 @@ export class RenderCommands {
         this.addPickableDecorations(dec);
 
       this._addTranslucentAsOpaque = false;
+      this.setupClassificationByVolume();
       return;
     }
 
@@ -510,11 +511,12 @@ export class RenderCommands {
 
       this._stack.pop();
     }
+    this.setupClassificationByVolume();
   }
 
   public addPrimitive(prim: Primitive): void {
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
-      if (prim instanceof SurfacePrimitive && RenderPass.StencilVolume === prim.getRenderPass(this.target)) {
+      if (prim instanceof SurfacePrimitive && RenderPass.Classification === prim.getRenderPass(this.target)) {
         const surf = prim as SurfacePrimitive;
         if (surf.cachedGeometry instanceof SurfaceGeometry) {
           const geom = surf.cachedGeometry as SurfaceGeometry;
@@ -557,13 +559,13 @@ export class RenderCommands {
     if (batch.graphic instanceof MeshGraphic) {
       const mg = batch.graphic as MeshGraphic;
       if (SurfaceType.Classifier === mg.surfaceType)
-        pass = RenderPass.HiliteStencilVolume;
+        pass = RenderPass.HiliteClassification;
     } else if (batch.graphic instanceof GraphicsArray) {
       const ga = batch.graphic as GraphicsArray;
       if (ga.graphics[0] instanceof MeshGraphic) {
         const mg = ga.graphics[0] as MeshGraphic;
         if (SurfaceType.Classifier === mg.surfaceType)
-          pass = RenderPass.HiliteStencilVolume;
+          pass = RenderPass.HiliteClassification;
       }
     }
     return pass;
@@ -622,4 +624,31 @@ export class RenderCommands {
   public setCheckRange(frustum: Frustum) { this._frustumPlanes = new FrustumPlanes(frustum); }
   // Clear the culling frustum.
   public clearCheckRange(): void { this._frustumPlanes = undefined; }
+
+  private setupClassificationByVolume(): void {
+    // To make is easier to process the classifiers individually, set up a secondary command list for them where they
+    // are each separated by their own push & pop and can more easily be accessed by index.
+    const groupedCmds = this._commands[RenderPass.Classification];
+    const byIndexCmds = this._commands[RenderPass.ClassificationByIndex];
+    const numCmds = groupedCmds.length;
+    let curCmdIndex = 0;
+    while (curCmdIndex < numCmds) {
+      // Find the next set of clasifiers (should be between a push & pop branch).
+      const pushCmd = groupedCmds[curCmdIndex++];
+      if (!pushCmd.isPushCommand())
+        continue;
+      let primCmdIndex = curCmdIndex++;
+      if (!groupedCmds[primCmdIndex].isPrimitiveCommand) continue;
+      while (groupedCmds[curCmdIndex].isPrimitiveCommand)++curCmdIndex;
+      const popCmdIndex = curCmdIndex++;
+      const popCmd = groupedCmds[popCmdIndex];
+      if (!popCmd.isPopCommand()) continue;
+      // Loop through the primitive commands between the push and pop, copying them to the byIndex command list.
+      while (primCmdIndex < popCmdIndex) {
+        byIndexCmds.push(pushCmd);
+        byIndexCmds.push(groupedCmds[primCmdIndex++]);
+        byIndexCmds.push(popCmd);
+      }
+    }
+  }
 }
