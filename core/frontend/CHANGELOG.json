@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.130.0",
+      "tag": "@bentley/imodeljs-frontend_v0.130.0",
+      "date": "Sun, 23 Sep 2018 01:19:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: fix for multiple classifiers"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.129.0",
       "tag": "@bentley/imodeljs-frontend_v0.129.0",
       "date": "Fri, 21 Sep 2018 23:16:13 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 21 Sep 2018 23:16:13 GMT and should not be manually modified.
+This log was last generated on Sun, 23 Sep 2018 01:19:16 GMT and should not be manually modified.
+
+## 0.130.0
+Sun, 23 Sep 2018 01:19:16 GMT
+
+### Updates
+
+- Added ui-framework & ui-components unit tests
 
 ## 0.129.0
 Fri, 21 Sep 2018 23:16:13 GMT
