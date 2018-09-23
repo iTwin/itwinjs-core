@@ -6,7 +6,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageStackChangedEventArgs } from "./FrontstageManager";
+import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrameworkFrontstage } from "./FrameworkFrontstage";
 import { ZoneDef } from "./ZoneDef";
@@ -50,7 +50,7 @@ export interface FrontstageComposerProps {
  */
 export interface FrontstageComposerState {
   frontstageId: string;
-  modalFronstageStackDepth: number;
+  modalFronstageCount: number;
   nineZone: NineZoneProps;
 }
 
@@ -75,7 +75,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     this.state = {
       nineZone,
       frontstageId: activeFrontstageId,
-      modalFronstageStackDepth: FrontstageManager.modalFrontstageStackDepth,
+      modalFronstageCount: FrontstageManager.modalFrontstageCount,
     };
   }
 
@@ -93,10 +93,10 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     });
   }
 
-  private _handleModalFrontstageStackChangedEvent = (_args: ModalFrontstageStackChangedEventArgs) => {
+  private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
     this.setState((_prevState) => {
       return {
-        modalFronstageStackDepth: FrontstageManager.modalFrontstageStackDepth,
+        modalFronstageCount: FrontstageManager.modalFrontstageCount,
       };
     });
 
@@ -109,10 +109,10 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     FrontstageManager.closeModalFrontstage();
   }
 
-  private renderModalFrontstage() {
+  private renderModalFrontstage(): React.ReactNode {
     const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
     if (!activeModalFrontstage)
-      return undefined;
+      return null;
 
     const { title, content, appBarRight } = activeModalFrontstage;
 
@@ -130,20 +130,19 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   }
 
   public render(): React.ReactNode {
-    if (!this._frontstageDef)
-      return null;
-
     return (
       <>
         {this.renderModalFrontstage()}
 
-        <FrameworkFrontstage
-          frontstageDef={this._frontstageDef}
-          nineZone={this.state.nineZone}
-          widgetChangeHandler={this}
-          targetChangeHandler={this}
-          zoneDefProvider={this}
-        />
+        {this._frontstageDef &&
+          <FrameworkFrontstage
+            frontstageDef={this._frontstageDef}
+            nineZone={this.state.nineZone}
+            widgetChangeHandler={this}
+            targetChangeHandler={this}
+            zoneDefProvider={this}
+          />
+        }
       </>
     );
   }
@@ -152,13 +151,13 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     this.layout();
     window.addEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
-    FrontstageManager.onModalFrontstageStackChangedEvent.addListener(this._handleModalFrontstageStackChangedEvent);
+    FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
   }
 
   public componentWillUnmount(): void {
     document.removeEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
-    FrontstageManager.onModalFrontstageStackChangedEvent.removeListener(this._handleModalFrontstageStackChangedEvent);
+    FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
   }
 
   private _handleWindowResize = () => {

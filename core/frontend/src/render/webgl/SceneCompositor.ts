@@ -621,27 +621,16 @@ abstract class Compositor extends SceneCompositor {
     });
   }
 
-  private countClassifiers(commands: DrawCommands): number {
-    let count = 0;
-    for (const command of commands) {
-      if (command.isPrimitiveCommand) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  private findFlashedClassifier(commands: DrawCommands): number {
+  private findFlashedClassifier(cmdsByIndex: DrawCommands): number {
     if (!this._target.flashedElemId.isValid)
       return -1; // nothing flashed
-    let curIndex = -1;
-    for (const command of commands) {
+    for (let i = 1; i < cmdsByIndex.length; i += 3) {
+      const command = cmdsByIndex[i];
       if (command.isPrimitiveCommand) {
-        curIndex++;
         if (command instanceof BatchPrimitiveCommand) {
           const batch = command as BatchPrimitiveCommand;
           if (batch.computeIsFlashed(this._target.flashedElemId)) {
-            return curIndex;
+            return (i - 1) / 3;
           }
         }
       }
@@ -649,21 +638,22 @@ abstract class Compositor extends SceneCompositor {
     return -1; // couldn't find it
   }
 
-  private renderIndexedClassifier(commands: DrawCommands, index: number, needComposite: boolean) {
+  private renderIndexedClassifier(cmdsByIndex: DrawCommands, index: number, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
     System.instance.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, () => {
       this._target.pushState(this._target.decorationState);
       System.instance.applyRenderState(this._stencilSetRenderState);
-      this._target.techniques.executeForIndexedClassifier(this._target, commands, RenderPass.StencilVolume, index);
+      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.Classification, index);
       this._target.popBranch();
     });
     // Process the stencil for the pick data.
-    this.renderIndexedClassifierForReadPixels(commands, index, this._classifyPickDataRenderState, needComposite);
+    this.renderIndexedClassifierForReadPixels(cmdsByIndex, index, this._classifyPickDataRenderState, needComposite);
   }
 
   private renderClassification(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean) {
-    const cmds = commands.getCommands(RenderPass.StencilVolume);
-    if (0 === cmds.length) {
+    const cmds = commands.getCommands(RenderPass.Classification);
+    const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
+    if (0 === cmds.length || 0 === cmdsByIndex.length) {
       return;
     }
 
@@ -675,7 +665,7 @@ abstract class Compositor extends SceneCompositor {
         } else {
           this._target.pushState(this._target.decorationState);
           System.instance.applyRenderState(this._debugStencilRenderState);
-          this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+          this._target.techniques.execute(this._target, cmds, RenderPass.Classification);
           this._target.popBranch();
         }
       });
@@ -696,17 +686,17 @@ abstract class Compositor extends SceneCompositor {
 
     if (renderForReadPixels) {
       // We need to render the classifier stencil volumes one at a time, so first count them then render them in a loop.
-      const numClassifiers = this.countClassifiers(cmds);
+      const numClassifiers = cmdsByIndex.length / 3;
       for (let i = 0; i < numClassifiers; ++i) {
-        this.renderIndexedClassifier(cmds, i, needComposite);
+        this.renderIndexedClassifier(cmdsByIndex, i, needComposite);
       }
       return;
     }
 
-    const flashedClassifier = this.findFlashedClassifier(cmds);
+    const flashedClassifier = this.findFlashedClassifier(cmdsByIndex);
 
     // Process the selected classifiers.
-    const cmdsH = commands.getCommands(RenderPass.HiliteStencilVolume);
+    const cmdsH = commands.getCommands(RenderPass.HiliteClassification);
     if (cmds.length > 0) {
       // Set the stencil for the given classifier stencil volume.
       fbStack.execute(fboSet, false, () => {
@@ -733,7 +723,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
         this._target.pushState(this._target.decorationState);
         System.instance.applyRenderState(this._stencilSetRenderState);
-        this._target.techniques.executeForIndexedClassifier(this._target, cmds, RenderPass.StencilVolume, flashedClassifier);
+        this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.Classification, flashedClassifier);
         this._target.popBranch();
       });
       // Process the stencil.
@@ -742,7 +732,7 @@ abstract class Compositor extends SceneCompositor {
         this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, this._target.flashIntensity * 0.5];
         this._classifyColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.ConstAlpha, GL.BlendFactor.One, GL.BlendFactor.OneMinusConstAlpha); // want to just add flash color
         System.instance.applyRenderState(this._classifyColorRenderState);
-        this._target.techniques.executeForIndexedClassifier(this._target, cmds, RenderPass.OpaquePlanar, flashedClassifier);
+        this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaquePlanar, flashedClassifier);
         this._target.popBranch();
       });
     }
@@ -753,7 +743,7 @@ abstract class Compositor extends SceneCompositor {
     fbStack.execute(fboSet!, false, () => {
       this._target.pushState(this._target.decorationState);
       System.instance.applyRenderState(this._stencilSetRenderState);
-      this._target.techniques.execute(this._target, cmds, RenderPass.StencilVolume);
+      this._target.techniques.execute(this._target, cmds, RenderPass.Classification);
       this._target.popBranch();
     });
 
@@ -783,7 +773,7 @@ abstract class Compositor extends SceneCompositor {
       this.drawPass(commands, RenderPass.Hilite);
     });
     // Process the hilite stencil volumes.
-    const cmds = commands.getCommands(RenderPass.HiliteStencilVolume);
+    const cmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 === cmds.length) {
       return;
     }
@@ -984,12 +974,12 @@ class MRTCompositor extends Compositor {
     }
   }
 
-  protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, index: number, state: RenderState, needComposite: boolean) {
+  protected renderIndexedClassifierForReadPixels(cmdsByIndex: DrawCommands, index: number, state: RenderState, needComposite: boolean) {
     this._readPickDataFromPingPong = true;
     const fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.idOnlyAndComposite! : this._fbos.idOnly!, true, () => {
       System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmds, RenderPass.OpaqueGeneral, index);
+      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
     this._readPickDataFromPingPong = false;
   }
@@ -1125,7 +1115,7 @@ class MPCompositor extends Compositor {
     }
   }
 
-  protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, index: number, state: RenderState, _needComposite: boolean) {
+  protected renderIndexedClassifierForReadPixels(cmdsByIndex: DrawCommands, index: number, state: RenderState, _needComposite: boolean) {
     // Note that we only need to render to the Id textures here, no color, since the color buffer is not used in readPixels.
     this._readPickDataFromPingPong = true;
     const stack = System.instance.frameBufferStack;
@@ -1133,13 +1123,13 @@ class MPCompositor extends Compositor {
     stack.execute(this._fbos.idLowWithDepth!, true, () => {
       state.stencil.backOperation.zPass = GL.StencilOperation.Keep; // don't clear the stencil yet so we can do another pass.
       System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmds, RenderPass.OpaqueGeneral, index);
+      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
     this._currentRenderTargetIndex = 2;
     stack.execute(this._fbos.idHighWithDepth!, true, () => {
       state.stencil.backOperation.zPass = GL.StencilOperation.Zero; // clear the stencil this time before the next classifier is drawn.
       System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmds, RenderPass.OpaqueGeneral, index);
+      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
     this._currentRenderTargetIndex = 0;
     this._readPickDataFromPingPong = false;

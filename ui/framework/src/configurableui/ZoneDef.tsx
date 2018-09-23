@@ -57,7 +57,7 @@ export class ZoneDef {
 
     if (zoneProps.widgetProps) {
       zoneProps.widgetProps.map((widgetProps, _index) => {
-        const widgetDef = WidgetDefFactory.Create(widgetProps);
+        const widgetDef = WidgetDefFactory.create(widgetProps);
         if (widgetDef) {
           this.addWidgetDef(widgetDef);
 

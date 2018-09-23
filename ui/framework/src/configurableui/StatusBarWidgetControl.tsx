@@ -4,7 +4,7 @@
 /** @module StatusBar */
 
 import WidgetControl from "./WidgetControl";
-import { ConfigurableCreateInfo } from "./ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 /** Status Bar Field type.
  */
@@ -25,4 +25,6 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
   }
 
   public abstract getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode;
+
+  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.StatusBarWidget; }
 }

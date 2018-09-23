@@ -90,6 +90,7 @@ export class AppNotificationManager extends NotificationManager {
       case (ActivityMessageEndReason.Cancelled):
         return MessageManager.endActivityMessage(false);
     }
+    return false;
   }
 
   protected toolTipIsOpen(): boolean {

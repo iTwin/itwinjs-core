@@ -33,7 +33,7 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
 
   public async convertFromString(value: string): Promise<any> {
     if (null === value || undefined === value)
-      return null;
+      return undefined;
 
     const dateValue = new Date(value);
     return dateValue;

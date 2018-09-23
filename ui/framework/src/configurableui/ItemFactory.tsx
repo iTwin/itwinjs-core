@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { MessageItemDef, PageItemDef, ToolItemDef, CommandItemDef } from "./Item";
+import { ToolItemDef, CommandItemDef } from "./Item";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList, ItemProps } from "./ItemProps";
 import { GroupItemDef } from "./GroupItem";
@@ -33,9 +33,9 @@ export class ItemMap extends Map<string, ItemDefBase> {
 export class ItemList {
   private _items: ItemDefBase[] = new Array<ItemDefBase>();
 
-  constructor(itemListDef?: ItemPropsList) {
-    if (itemListDef && itemListDef.items) {
-      itemListDef.items.map((itemDef, _index) => {
+  constructor(itemPropsList?: ItemPropsList) {
+    if (itemPropsList && itemPropsList.items) {
+      itemPropsList.items.map((itemDef, _index) => {
         const item = ItemFactory.Create(itemDef);
         if (item) {
           this.addItem(item);
@@ -59,10 +59,6 @@ export class ItemFactory {
   public static Create(def: ItemProps): ItemDefBase | undefined {
     if ("groupId" in def) {
       return new GroupItemDef(def);
-    } else if ("messageId" in def) {
-      return new MessageItemDef(def);
-    } else if ("pageId" in def) {
-      return new PageItemDef(def);
     } else if ("toolId" in def) {
       return new ToolItemDef(def);
     } else if ("commandId" in def) {

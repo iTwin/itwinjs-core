@@ -214,9 +214,7 @@ export class ViewsFrontstage {
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
       if (widgetDef) {
-        const widgetControl = widgetDef.widgetControl;
-        if (widgetControl)
-          widgetControl.setWidgetState(WidgetState.Open);
+        widgetDef.setWidgetState(WidgetState.Open);
       }
     }
   }
@@ -319,7 +317,6 @@ export class ViewsFrontstage {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => {
           (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(false);
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
@@ -332,7 +329,6 @@ export class ViewsFrontstage {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => {
           (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(true);
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));

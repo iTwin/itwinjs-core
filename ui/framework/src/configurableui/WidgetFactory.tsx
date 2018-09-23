@@ -10,14 +10,18 @@ import { NavigationWidgetDef } from "./NavigationWidget";
 /** Factory class for creating an appropriate Widget definition based on Widget properties.
  */
 export class WidgetDefFactory {
-  public static Create(props: WidgetProps): WidgetDef {
-    if ("appButtonId" in props) {
-      return new ToolWidgetDef(props);
-    } else if ("navigationAidId" in props) {
-      return new NavigationWidgetDef(props);
+  /** Creates an appropriate [[WidgetDef]] based on the given [[WidgetProps]].
+   * @param widgetProps  The properties used to create the WidgetDef
+   * @returns  The created WidgetDef
+   */
+  public static create(widgetProps: WidgetProps): WidgetDef {
+    if ("appButtonId" in widgetProps) {
+      return new ToolWidgetDef(widgetProps);
+    } else if ("navigationAidId" in widgetProps) {
+      return new NavigationWidgetDef(widgetProps);
     }
 
-    return new WidgetDef(props);
+    return new WidgetDef(widgetProps);
   }
 }
 

@@ -11,7 +11,11 @@ describe("BooleanTypeConverter", () => {
     await TestUtils.initializeUiComponents();
   });
 
-  const converter = new BooleanTypeConverter();
+  let converter: BooleanTypeConverter;
+
+  beforeEach(() => {
+    converter = new BooleanTypeConverter();
+  });
 
   describe("convertToString", () => {
 
@@ -63,6 +67,14 @@ describe("BooleanTypeConverter", () => {
 
     it("returns false if parameter is not localized true value", async () => {
       expect(await converter.convertFromString("test")).to.be.false;
+    });
+
+  });
+
+  describe("isBooleanType", () => {
+
+    it("returns true", () => {
+      expect(converter.isBooleanType).to.be.true;
     });
 
   });

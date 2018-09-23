@@ -75,14 +75,14 @@ export class TypeConverter implements SortComparer, OperatorProcessor {
     return value.toString();
   }
 
+  public async convertFromString(_value: string): Promise<any> {
+    return undefined;
+  }
+
   public async convertPropertyToString(_propertyDescription: PropertyDescription, value: any): Promise<string> {
     if (null === value || undefined === value)
       return "";
     return this.convertToString(value);
-  }
-
-  public async convertFromString(_value: string): Promise<any> {
-    return undefined;
   }
 
   public async convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue> {
