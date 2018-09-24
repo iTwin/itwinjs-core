@@ -118,7 +118,8 @@ export abstract class RenderClipVolume implements IDisposable {
 /** An array of RenderGraphics */
 export type GraphicList = RenderGraphic[];
 
-/** A Decoration that is drawn onto the [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
+/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations))] that is drawn onto the
+ * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
  */
 export interface CanvasDecoration {

@@ -261,7 +261,7 @@ export class AccuDraw {
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** A subclass of IModelApp can implement onStartup to return a subclass of AccuDraw that implements this method to set focus to the AccuDraw UI. */
+  /** Implement this method to set focus to the AccuDraw UI. */
   public grabInputFocus() { }
 
   public activate(): void {

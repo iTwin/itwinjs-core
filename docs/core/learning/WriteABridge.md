@@ -63,15 +63,15 @@ Rather than starting over when the source data changes, a bridge should be able 
 
 In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
 
-In order to do incremental updates, a bridge must do ID mapping and change-detection.
+In order to do incremental updates, a bridge must do Id mapping and change-detection.
 
-### ID mapping
+### Id mapping
 
-ID mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data.
+Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data.
 
-If the source data has stable, unique IDs, then ID mapping could be straightforward. The bridge just needs to record the source -> BIS ID mappings somewhere. If the source data IDs are GUIDs, then the bridge can assign them to the federationGuid property value of the BIS elements that it creates. That way, the mappings will be directly recorded in the iModel itself.
+If the source data has stable, unique IDs, then Id mapping could be straightforward. The bridge just needs to record the source -> BIS Id mappings somewhere. If the source data IDs are GUIDs, then the bridge can assign them to the federationGuid property value of the BIS elements that it creates. That way, the mappings will be directly recorded in the iModel itself.
 
-If the soruce data does not have stable, unique IDs, then the bridge will have to use some other means of identifying pieces of source data in a stable way. A crytographic hash of the source data itself can work as a stable ID -- that is, it can be used to identify data that has not changed.
+If the soruce data does not have stable, unique IDs, then the bridge will have to use some other means of identifying pieces of source data in a stable way. A crytographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 
 ### Change-detection
@@ -84,7 +84,7 @@ If timestamps are not available, then the bridge will have to use some other mea
 
 A basic change-detection algorithm is:
 * For each source data item:
-  * add source item's ID to the *source_items_seen* set
+  * add source item's Id to the *source_items_seen* set
   * Look in the mappings for the corresponding data in the iModel (element, aspect, model)
   * If found,
     * Detect if the source item's current data has changed. If so,
@@ -93,11 +93,11 @@ A basic change-detection algorithm is:
   * Else,
     * Convert the source data to BIS data
     * Insert the new data into the iModel
-    * Add the source data item's ID to the mappings
+    * Add the source data item's Id to the mappings
 
 Infer deletions:
-* For each source data item ID previously converted
-  * if item ID is not in *source_items_seen*
+* For each source data item Id previously converted
+  * if item Id is not in *source_items_seen*
     * Find the the corresponind data in the iModel
       * Delete the data in the iModel
-      * Remove the the source data item's ID from the mappings
+      * Remove the the source data item's Id from the mappings

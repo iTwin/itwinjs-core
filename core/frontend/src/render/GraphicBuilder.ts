@@ -52,11 +52,12 @@ export const enum GraphicType {
   ViewOverlay,
 }
 
-/** Exposes methods for constructing a RenderGraphic from geometric primitives. */
+/** Provides methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
   private readonly _placement: Transform;
   public readonly type: GraphicType;
   public readonly viewport: Viewport;
+  /** The Id for the graphic when creating a pickable decoration. */
   public pickId?: string;
 
   public get placement(): Transform { return this._placement; }
@@ -183,7 +184,8 @@ export abstract class GraphicBuilder {
   }
 
   /**
-   * Set symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
+   * Set symbology for decorations.
+   * @note Pickable decorations require a category, must initialize
    * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
    */
   public setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid) {
@@ -191,7 +193,8 @@ export abstract class GraphicBuilder {
   }
 
   /**
-   * Set blanking fill symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
+   * Set blanking fill symbology for decorations.
+   * @note Pickable decorations require a category, must initialize
    * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }

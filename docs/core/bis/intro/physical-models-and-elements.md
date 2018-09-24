@@ -4,7 +4,7 @@
 
 ## Introduction
 
-`PhysicalModels` and `PhysicalElements` are used to model the physical world, as it exists currently, as it existed in the past or as it is expected to exist in the future.
+`PhysicalModels` and `PhysicalElements` are used to model the physical world, as it exists currently, as it existed in the past, or as it is expected to exist in the future.
 
 Any object in the real world is modeled as a PhysicalElement a maximum of once within a BIS repository. The various disciplines that work together on infrastructure can *not* each have their own PhysicalElement for the same real-world object. Modeling the physical world is a cooperative, coordinated effort.
 

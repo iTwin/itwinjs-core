@@ -56,7 +56,7 @@ export class IModelApp {
   protected static _imodelClient?: IModelClient;
   public static get initialized() { return IModelApp._initialized; }
 
-  /** IModel Server Client to be used for all frontend operations */
+  /** IModelClient to be used for all frontend operations */
   public static get iModelClient(): IModelClient {
     if (!this._imodelClient)
       this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);

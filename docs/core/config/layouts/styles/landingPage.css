@@ -1,12 +1,36 @@
 #main-landing-wrapper {
-  margin-bottom: 1em !important;
-  background-color: #fafdff
+  margin-bottom: 0em !important;
+  background-color: #fffefae3
+}
+
+.imodeljs-header-tagline {
+    max-width: 75%;
+    text-align: center;
+    line-height: 1em;
+    margin: 10px auto;
+}
+
+.imodeljs-header-tagline p {
+  color: white;
+  line-height: 1em;
+  margin-bottom: 1em;
 }
 
 p.digital-twin {
   color: yellow;
-  font-size: 45px;
-  margin-bottom: 1em;
+  font-size: 350%;
+}
+
+p.tagline-magic {
+  font-size: 160%;
+  margin-bottom: 1.3em;
+}
+
+p.tagline-unlocking {
+  color: rgb(241, 241, 241);
+  font-size: 300%;
+  line-height: 1;
+  margin-bottom: .3em;
 }
 
 .overlay {
@@ -24,6 +48,7 @@ p.digital-twin {
   display: flex;
   align-items: center;
   position: relative;
+  margin-bottom: 1em;
 }
 
 .example-view-demonstrator {

@@ -40,7 +40,7 @@ export class SettingsResult {
   }
 }
 
-/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, IModel, and User */
+/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User */
 export interface SettingsAdmin {
 
   /** Saves a user-specific settings object to the settings service.

@@ -177,7 +177,7 @@ export interface EntityMetaDataProps {
   description?: string;
   modifier?: string;
   displayLabel?: string;
-  /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
+  /** The  base classes from which this class derives. If more than one, the first is the super class and the others are [mixins]($docs/bis/ec/ec-mixin-class). */
   baseClasses: string[];
   /** The Custom Attributes for this class */
   customAttributes?: CustomAttribute[];

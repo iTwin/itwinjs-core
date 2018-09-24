@@ -28,7 +28,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## Do not use `null`
 
-* Use `undefined`. **Do not** use `null` anywhere.
+* Use `undefined`. Do not use `null` except where external libraries require it.
 
 ## `===` and `!==` Operators
 
@@ -49,7 +49,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 Programmer monitors are almost always wider than they are tall. It is common for widths to be at least 120 columns but heights to be less than 100. Therefore to make the greatest use of screen real estate, it is desireable to preserve vertical screen space wherever possible.
 
-1. Some codebases advocate breaking lines at 80 columns. This is silly and wasteful. Don't break lines before 120 columns.
+1. Some codebases advocate breaking lines at 80 columns. With current screen sizes, this is silly and wasteful. Don't break lines before 120 columns.
 1. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
 1. There should never be more than one blank line in a row.
 1. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
