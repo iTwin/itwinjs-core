@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support center snap as part of multi-snap when interiors aren't pickable (open path or wireframe view)",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}
