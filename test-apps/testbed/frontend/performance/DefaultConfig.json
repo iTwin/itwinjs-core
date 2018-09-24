@@ -1,12 +1,608 @@
 {
-  "outputName": "performanceResults_new.csv",
+  "outputName": "performanceResults.csv",
   "outputPath": "D:\\output\\performanceData\\",
   "iModelLocation": "D:\\models\\TimingTests\\",
   "view": {
-    "width": 1000,
-    "height": 1000
+    "width": 500,
+    "height": 500
   },
-  "modelSet": [
+  "testSet": [
+    {
+      "iModelName": "TimingTest_01.ibim",
+      "testName": "Render Mode Images",
+      "testType": "both",
+      "outputName": "renderModePerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\renderModes",
+      "viewName": "V0",
+      "tests": [
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "HiddenLine",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SolidFill",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "HiddenLine"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SolidFill"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade"
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Edge Images",
+      "testType": "both",
+      "outputName": "edgePerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\edges\\",
+      "tests": [
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V2",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V2",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V2",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAll.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAll.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyOne.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyOne.ibim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": true,
+            "hiddenEdges": true,
+            "sourceLights": true,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Light Images",
+      "testType": "both",
+      "iModelName": "TimingTest_01.ibim",
+      "outputName": "lightPerformanceResults.csv",
+      "outputPath": "D:/output/performanceData/light/",
+      "viewFlags": {
+        "renderMode": "SmoothShade",
+        "dimensions": true,
+        "patterns": true,
+        "weights": true,
+        "styles": true,
+        "transparency": true,
+        "fill": true,
+        "textures": true,
+        "materials": true,
+        "visibleEdges": false,
+        "hiddenEdges": false,
+        "sourceLights": false,
+        "cameraLights": false,
+        "solarLights": false,
+        "shadows": false,
+        "clipVolume": true,
+        "constructions": false,
+        "monochrome": false,
+        "noGeometryMap": false,
+        "backgroundMap": false,
+        "hLineMaterialColors": false,
+        "edgeMask": 0
+      },
+      "tests": [
+        {
+          "viewName": "V0"
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "solarLights": true
+          }
+        },
+        {
+          "viewName": "V1"
+        },
+        {
+          "viewName": "V1",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V1",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V1",
+          "viewFlags": {
+            "solarLights": true
+          }
+        },
+        {
+          "viewName": "V2"
+        },
+        {
+          "viewName": "V2",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V2",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V2",
+          "viewFlags": {
+            "solarLights": true
+          }
+        },
+        {
+          "viewName": "V3"
+        },
+        {
+          "viewName": "V3",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V3",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V3",
+          "viewFlags": {
+            "solarLights": true
+          }
+        },
+        {
+          "viewName": "V4"
+        },
+        {
+          "viewName": "V4",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V4",
+          "viewFlags": {
+            "sourceLights": true
+          }
+        },
+        {
+          "viewName": "V4",
+          "viewFlags": {
+            "solarLights": true
+          }
+        }
+      ]
+    },
     {
       "iModelName": "Wraith.ibim",
       "tests": [

@@ -16,9 +16,23 @@ export function readCsvFile(file: string) {
   rawFile.send(undefined);
 }
 
+export function createFilePath(filePath: string) {
+  const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
+  let curFile = "";
+  for (const file of files) {
+    if (file === "") break;
+    curFile += file + "\\";
+    if (!fs.existsSync(curFile)) fs.mkdirSync(curFile);
+  }
+}
+
 export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
   let fd;
-  const file = filePath + fileName;
+  let file = filePath;
+  const lastChar = filePath[filePath.length - 1];
+  if (lastChar !== "/" && lastChar !== "\\")
+    file += "\\";
+  file += fileName;
   if (!fs.existsSync(filePath)) fs.mkdirSync(filePath);
   if (!fs.existsSync(file)) {
     try {
