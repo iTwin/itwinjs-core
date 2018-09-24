@@ -43,7 +43,9 @@ export class IModelApp {
   public static accuSnap: AccuSnap;
   public static locateManager: ElementLocateManager;
   public static tentativePoint: TentativePoint;
+  /** Instance of an I18N used to access the iModelJs localization services. */
   public static i18n: I18N;
+  /** Instance of an object implementing the SettingsAdmin interface, used to access the iModelJs Settings services. */
   public static settingsAdmin: SettingsAdmin;
   public static applicationId: string;
 

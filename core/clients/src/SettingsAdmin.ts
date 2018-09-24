@@ -101,7 +101,7 @@ export interface SettingsAdmin {
    */
   getSetting(namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  /** Deletes a user-specific settings object from the settings service.
+  /** Deletes a non-user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param authToken The authorization token return from logging in.

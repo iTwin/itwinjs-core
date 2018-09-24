@@ -16,5 +16,6 @@ The `imodeljs-frontend` npm package contains code that *always* runs inside a we
 * Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
+* Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
 
 <!-- TODO - add browser compatibility list -->

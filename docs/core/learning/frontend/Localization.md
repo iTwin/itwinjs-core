@@ -4,9 +4,9 @@ Presenting information to the user in their preferred locale (language, date and
 
 ## Language translation
 
-String localization is handled in a straightforward way. Rather than specifying strings directly, a "key" is passed to the IModelApp.i18n.translate method, which retrieves the corresponding string for the current locale for presentation to the user.
+String localization is handled in a conventional way. Rather than specifying strings directly, a "key" is passed to the IModelApp.i18n.translate method, which retrieves the corresponding string for the current locale for presentation to the user.
 
-Of course, that doesn't happen by magic. The localization system needs a dictionary of key-to-string substitutions for each expected locale. That dictionary is spread over a number of JSON files that are placed into a locale-specific directory in the applications "public" folder on the server. The key consists of a namespace (which identifies the specific JSON file in the locale directory, and thus must be unique across all packages in use), followed by a semicolon, followed by a period delimited tag that identifies the object within the JSON file.
+For that to work, the localization system needs a dictionary of key-to-string substitutions for each expected locale. That dictionary is spread over a number of JSON files that are placed into a locale-specific directory in the application's "public" folder on the server. The key consists of a namespace (which identifies the specific JSON file in the locale directory, and thus must be unique across all packages in use), followed by a semicolon, followed by a period delimited tag that identifies the object within the JSON file.
 
 For example, suppose you are developing an application called SafetyBase and you want to group information, warning, and error messages into a localization namespace. Name the JSON file SafetyBaseMessages.json, put it into the public/locales/en directory, and put the following JSON in it:
 
