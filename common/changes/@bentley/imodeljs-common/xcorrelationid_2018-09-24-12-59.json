@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Renamed X-CorrelationId to X-Correlation-Id in HTTP headers to comply with standards. ",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ramanujam.Raman@bentley.com"
+}

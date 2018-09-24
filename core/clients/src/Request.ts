@@ -14,7 +14,7 @@ import * as https from "https";
 export const loggingCategory = "imodeljs-clients.Request";
 export const loggingCategoryFullUrl = "imodeljs-clients.Url";
 
-export const requestIdHeaderName = "X-CorrelationId";
+export const requestIdHeaderName = "X-Correlation-Id";
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
