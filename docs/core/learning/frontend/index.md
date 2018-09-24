@@ -28,6 +28,7 @@ These packages provide the following functions that a frontend requires:
 * Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
+* Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
 
 ## Web browser compatibility
 
