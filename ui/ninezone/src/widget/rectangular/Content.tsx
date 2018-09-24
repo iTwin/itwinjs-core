@@ -6,13 +6,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
-import { Anchor } from "../Stacked";
+import { HorizontalAnchor } from "../Stacked";
 import "./Content.scss";
 
 /** Properties of [[WidgetContent]] component. */
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
   /** Describes to which side the widget of this content is anchored. */
-  anchor?: Anchor;
+  anchor: HorizontalAnchor;
   /** Actual content. */
   content?: React.ReactNode;
 }
@@ -22,7 +22,7 @@ export default class WidgetContent extends React.Component<WidgetContentProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-content",
-      this.props.anchor === Anchor.Left && "nz-left-anchor",
+      this.props.anchor === HorizontalAnchor.Left && "nz-left-anchor",
       this.props.className);
 
     return (

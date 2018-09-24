@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.122.0",
-  "description": "iModelJs backend components",
+  "version": "0.131.0",
+  "description": "iModel.js backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
   "license": "MIT",
@@ -14,16 +14,19 @@
     "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration --invert",
+    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep \"#integration|#WebGLPerformance\" --invert",
     "cover:integration": "nyc mocha --timeout 60000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
     "lint": "tslint --project . 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
-    "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep #integration --invert",
+    "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "keywords": [
     "Bentley",
     "BIM",
@@ -34,26 +37,27 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0",
-    "@bentley/geometry-core": "0.122.0",
-    "@bentley/imodeljs-clients": "0.122.0",
-    "@bentley/imodeljs-common": "0.122.0"
+    "@bentley/bentleyjs-core": "0.131.0",
+    "@bentley/geometry-core": "0.131.0",
+    "@bentley/imodeljs-clients": "0.131.0",
+    "@bentley/imodeljs-common": "0.131.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.122.0",
-    "@bentley/bentleyjs-tools": "0.122.0",
-    "@bentley/geometry-core": "0.122.0",
-    "@bentley/imodeljs-clients": "0.122.0",
-    "@bentley/imodeljs-common": "0.122.0",
+    "@bentley/bentleyjs-core": "0.131.0",
+    "@bentley/bentleyjs-tools": "0.131.0",
+    "@bentley/geometry-core": "0.131.0",
+    "@bentley/imodeljs-clients": "0.131.0",
+    "@bentley/imodeljs-common": "0.131.0",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
+    "@types/node": "^10.5.5",
     "@types/semver": "5.5.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
@@ -71,7 +75,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~31.0.0",
+    "@bentley/imodeljs-native-platform-api": "~0.52.1",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

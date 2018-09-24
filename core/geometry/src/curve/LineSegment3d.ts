@@ -4,7 +4,7 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions } from "../Geometry";
+import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
@@ -160,7 +160,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     return Geometry.isSmallMetricDistance(plane.altitude(this._point0))
       && Geometry.isSmallMetricDistance(plane.altitude(this._point1));
   }
-  public appendPlaneIntersectionPoints(plane: Plane3dByOriginAndUnitNormal, result: CurveLocationDetail[]): number {
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const h0 = plane.altitude(this._point0);
     const h1 = plane.altitude(this._point1);
     const fraction = Order2Bezier.solveCoffs(h0, h1);

@@ -261,19 +261,18 @@ export class AccuDraw {
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** A subclass of IModelApp can implement onStartup to return a subclass of AccuDraw that implements this method to set focus to the AccuDraw UI. */
+  /** Implement this method to set focus to the AccuDraw UI. */
   public grabInputFocus() { }
 
   public activate(): void {
-    // Upgrade state to inactive so OnBeginDynamics knows it is ok to move to active...
+    // Upgrade state to inactive so upgradeToActiveState knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
       this.currentState = CurrentState.Inactive;
-
-    this.onBeginDynamics();
+    this.upgradeToActiveState();
   }
 
   public deactivate() {
-    this.onEndDynamics();
+    this.downgradeInactiveState();
     // Don't allow compass to come back until user re-enables it...
     if (CurrentState.Inactive === this.currentState)
       this.currentState = CurrentState.Deactivated;
@@ -411,8 +410,7 @@ export class AccuDraw {
       const lastPt = this.point.clone();
       this.fixPoint(pointActive, vp);
       pointChanged = !lastPt.isExactEqual(this.point);
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
       handled = true;
     } else {
       this.currentView = vp; // Keep view up to date...
@@ -544,7 +542,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         rMatrix.getRow(whichVec, vecP);
         break;
 
@@ -562,7 +560,7 @@ export class AccuDraw {
   }
 
   private getBestViewedRotationFromXVector(rotation: ThreeAxes, vp: Viewport): void {
-    const viewZ = vp.rotMatrix.getRow(2);
+    const viewZ = vp.rotation.getRow(2);
     const vec1 = this.getStandardVector(2);
     const vec2 = this.getStandardVector(1);
     const vec3 = this.getStandardVector(0);
@@ -675,7 +673,7 @@ export class AccuDraw {
         break;
 
       case RotationMode.View:
-        rMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        rMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         newRotation.fromMatrix3d(rMatrix);
         this.flags.lockedRotation = false;
         break;
@@ -1081,7 +1079,7 @@ export class AccuDraw {
       return true;
     }
 
-    const viewNormal = vp.rotMatrix.getRow(2);
+    const viewNormal = vp.rotation.getRow(2);
     const yVec = viewNormal.crossProduct(inVec);
 
     if (!yVec.normalizeInPlace()) {
@@ -1236,7 +1234,7 @@ export class AccuDraw {
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
     const rotation = out ? out : new Matrix3d();
-    const viewZ = vp.rotMatrix.rowZ();
+    const viewZ = vp.rotation.rowZ();
     const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
 
     if (undefined !== snapLoc) {
@@ -1254,7 +1252,7 @@ export class AccuDraw {
       let yVec = xVec.unitCrossProduct(zVec);
 
       if (undefined !== yVec) {
-        const viewX = vp.rotMatrix.rowX();
+        const viewX = vp.rotation.rowX();
         if (snap.primitive instanceof LineString3d) {
           if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX))) {
             const tVec = xVec;
@@ -1322,7 +1320,7 @@ export class AccuDraw {
     if (checkACS && useVp.isContextRotationRequired)
       return useVp.getAuxCoordRotation(rMatrix);
 
-    return useVp.rotMatrix;
+    return useVp.rotation;
   }
 
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
@@ -1494,7 +1492,7 @@ export class AccuDraw {
       }
 
       case RotationMode.View: {
-        baseRMatrix = vp ? vp.rotMatrix : Matrix3d.createIdentity();
+        baseRMatrix = vp ? vp.rotation : Matrix3d.createIdentity();
         break;
       }
 
@@ -2008,7 +2006,7 @@ export class AccuDraw {
     if (!vp || vp.isCameraOn)
       return;
 
-    const viewZRoot = vp.rotMatrix.getRow(2);
+    const viewZRoot = vp.rotation.getRow(2);
     if (!this.axes.z.isPerpendicularTo(viewZRoot))
       return;
 
@@ -2104,7 +2102,7 @@ export class AccuDraw {
         fromPtP = cameraPos;
         fromPtP.vectorTo(inPtP, projectionVector).normalizeInPlace();
       } else {
-        const rMatrix = vp.rotMatrix;
+        const rMatrix = vp.rotation;
         fromPtP = inPtP;
         rMatrix.getRow(2, projectionVector);
       }
@@ -2137,7 +2135,7 @@ export class AccuDraw {
       return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA);
     }
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.rotation.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
       return false;
@@ -2153,7 +2151,7 @@ export class AccuDraw {
     }
 
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, isSnap)) {
-      const viewNormal = vp.rotMatrix.getRow(2);
+      const viewNormal = vp.rotation.getRow(2);
       this.constructionPlane(outPtP, inPtP, pointOnPlaneP, viewNormal, vp, false);
       this.constructionPlane(outPtP, outPtP, pointOnPlaneP, normalVectorP, vp, true);
     }
@@ -2590,10 +2588,7 @@ export class AccuDraw {
     if (this.isInactive || this.isDeactivated) {
       this.point.setFrom(pointActive);
       this.currentView = vp;
-
-      if (this.published.flags)
-        this.processHints();
-
+      this.processHints();
       return;
     }
     if (this.isActive) {
@@ -2624,7 +2619,12 @@ export class AccuDraw {
     }
   }
 
+  /** @hidden */
   public refreshDecorationsAndDynamics(): void {
+    // Immediately process hints and show dynamics using adjusted point when not called from button down...
+    if (!this.flags.inDataPoint)
+      this.processHints();
+
     // Make sure AccuDraw updates its decorations...
     if (undefined !== this.currentView)
       this.currentView.invalidateDecorations();
@@ -2633,7 +2633,8 @@ export class AccuDraw {
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
-  public onBeginDynamics(): boolean {
+  /** @hidden */
+  public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
 
@@ -2680,7 +2681,8 @@ export class AccuDraw {
     return false;
   }
 
-  public onEndDynamics(): boolean {
+  /** @hidden */
+  public downgradeInactiveState(): boolean {
     if (!this.isEnabled)
       return false;
     this.onEventCommon();
@@ -2690,6 +2692,9 @@ export class AccuDraw {
     this.currentState = CurrentState.Inactive;
     return false;
   }
+
+  public onBeginDynamics(): boolean { return this.upgradeToActiveState(); }
+  public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
@@ -2734,9 +2739,7 @@ export class AccuDraw {
       }
 
       this.saveLockedCoords();
-
-      if (this.published.flags)
-        this.processHints();
+      this.processHints();
 
       if (this.currentState >= CurrentState.Inactive)
         this.updateRotation();
@@ -2813,7 +2816,7 @@ export class AccuDraw {
     vector0.scaleToLength(radius, vector0);
     vector90.scaleToLength(radius, vector90);
     const cpArc = Arc3d.create(center, vector0, vector90);
-    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance contraint with apparent intersection in XY.
+    this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance constraint with apparent intersection in XY.
   }
 
   public onSnap(snap: SnapDetail): boolean {
@@ -2884,7 +2887,6 @@ export class AccuDraw {
   }
 
   private doProcessHints(): void {
-
     if (!this.floatingOrigin) {
       if (this.published.flags & AccuDrawFlags.SetOrigin)
         this.unlockAllFields();

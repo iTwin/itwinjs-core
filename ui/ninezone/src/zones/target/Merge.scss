@@ -1,42 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/colors";
+@import "../../_geometry";
+
 .nz-zones-target-merge {
-  $grid-color: #FFF;
-  $border-width: 1px;
-  $outline-width: 2 * $border-width;
+  > .nz-arrow {
+    transform: translate3d( 0, 0, 1px);
+  }
 
-  > .nz-grid {
-    display: grid;
-    width: 50%;
-    height: 30%;
-
-    .nz-cell {
-      background-color: $grid-color;
-    }
-
-    > .nz-left-border {
-      border-left: $border-width solid $grid-color;
-    }
-
-    > .nz-top-border {
-      border-top: $border-width solid $grid-color;
-    }
-
-    > .nz-left-outline {
-      border-left: $outline-width solid $grid-color;
-    }
-
-    > .nz-top-outline {
-      border-top: $outline-width solid $grid-color;
-    }
-
-    > .nz-right-outline {
-      border-right: $outline-width solid $grid-color;
-    }
-
-    > .nz-bottom-outline {
-      border-bottom: $outline-width solid $grid-color;
-    }
+  > .nz-mirrored {
+    transform: rotateZ(180deg) translate3d( 0, 0, 1px);
   }
 }

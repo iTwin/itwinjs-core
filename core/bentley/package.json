@@ -1,11 +1,14 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.122.0",
+  "version": "0.131.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
   "license": "MIT",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
@@ -25,9 +28,10 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.122.0",
+    "@bentley/bentleyjs-tools": "0.131.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
+    "@types/node": "^10.5.5",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",

@@ -12,7 +12,7 @@ import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
-import NineZoneStateManagement from "@bentley/ui-ninezone/lib/zones/state/Management";
+import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -29,15 +29,15 @@ export interface FrontstageActivatedEventArgs {
  */
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> { }
 
-/** Modal Frontstage Stack Changed Event Args class.
+/** Modal Frontstage Changed Event Args class.
  */
-export interface ModalFrontstageStackChangedEventArgs {
-  modalFrontstageStackDepth: number;
+export interface ModalFrontstageChangedEventArgs {
+  modalFrontstageCount: number;
 }
 
 /** Modal Frontstage Stack Changed Event class.
  */
-export class ModalFrontstageStackChangedEvent extends UiEvent<ModalFrontstageStackChangedEventArgs> { }
+export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> { }
 
 /** Tool Activated Event Args class.
  */
@@ -64,7 +64,8 @@ export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedE
 /** ControlControl Activated Event Args class.
  */
 export interface ContentControlActivatedEventArgs {
-  contentControl?: ContentControl;
+  activeContentControl: ContentControl;
+  oldContentControl?: ContentControl;
 }
 
 /** ContentControl Activated Event class.
@@ -107,23 +108,21 @@ export interface ModalFrontstageInfo {
 /** Frontstage Manager class.
  */
 export class FrontstageManager {
-  private static _activeFrontstageDef: FrontstageDef;
+  private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
   private static _frontstageDefs = new Map<string, FrontstageDef>();
 
   private static _frontstageActivatedEvent: FrontstageActivatedEvent = new FrontstageActivatedEvent();
-  private static _modalFrontstageStackChangedEvent: ModalFrontstageStackChangedEvent = new ModalFrontstageStackChangedEvent();
+  private static _modalFrontstageChangedEvent: ModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
   private static _toolActivatedEvent: ToolActivatedEvent = new ToolActivatedEvent();
   private static _contentLayoutActivatedEvent: ContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
   private static _contentControlActivatedEvent: ContentControlActivatedEvent = new ContentControlActivatedEvent();
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  private static _nineZoneStateManagement: NineZoneStateManagement = new NineZoneStateManagement();
-
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
 
-  public static get onModalFrontstageStackChangedEvent(): ModalFrontstageStackChangedEvent { return this._modalFrontstageStackChangedEvent; }
+  public static get onModalFrontstageChangedEvent(): ModalFrontstageChangedEvent { return this._modalFrontstageChangedEvent; }
 
   public static get onToolActivatedEvent(): ToolActivatedEvent { return this._toolActivatedEvent; }
 
@@ -135,7 +134,7 @@ export class FrontstageManager {
 
   public static get onWidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
 
-  public static get NineZoneStateManagement(): NineZoneStateManagement { return this._nineZoneStateManagement; }
+  public static get NineZoneStateManager() { return NineZoneStateManager; }
 
   public static loadFrontstages(frontstagePropsList: FrontstageProps[]) {
     frontstagePropsList.map((frontstageProps, _index) => {
@@ -163,7 +162,8 @@ export class FrontstageManager {
     return undefined;
   }
 
-  public static get activeFrontstageDef(): FrontstageDef {
+  /** Gets the active FrontstageDef. If a Frontstage is not active, undefined is returned. */
+  public static get activeFrontstageDef(): FrontstageDef | undefined {
     return this._activeFrontstageDef;
   }
 
@@ -174,8 +174,8 @@ export class FrontstageManager {
 
   // TODO - connect to Redux
   public static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): void {
+    this._activeFrontstageDef = frontstageDef;
     if (frontstageDef) {
-      this._activeFrontstageDef = frontstageDef;
       frontstageDef.onActivated();
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
     }
@@ -187,7 +187,7 @@ export class FrontstageManager {
   }
 
   public static get activeToolSettingsNode(): React.ReactNode | undefined {
-    const activeToolItem = this.activeFrontstageDef.activeToolItem;
+    const activeToolItem = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolItem : undefined;
     const toolUiProvider = (activeToolItem) ? activeToolItem.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
@@ -197,7 +197,7 @@ export class FrontstageManager {
   }
 
   public static get activeToolAssistanceNode(): React.ReactNode | undefined {
-    const activeToolItem = this.activeFrontstageDef.activeToolItem;
+    const activeToolItem = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolItem : undefined;
     const toolUiProvider = (activeToolItem) ? activeToolItem.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolAssistanceNode)
@@ -212,7 +212,7 @@ export class FrontstageManager {
 
   private static pushModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
     this._modalFrontstages.push(modalFrontstage);
-    this.emitModalFrontstageStackChangedEvent();
+    this.emitModalFrontstageChangedEvent();
   }
 
   public static closeModalFrontstage(): void {
@@ -221,15 +221,15 @@ export class FrontstageManager {
 
   private static popModalFrontstage(): void {
     this._modalFrontstages.pop();
-    this.emitModalFrontstageStackChangedEvent();
+    this.emitModalFrontstageChangedEvent();
   }
 
-  private static emitModalFrontstageStackChangedEvent(): void {
-    this.onModalFrontstageStackChangedEvent.emit({ modalFrontstageStackDepth: this.modalFrontstageStackDepth });
+  private static emitModalFrontstageChangedEvent(): void {
+    this.onModalFrontstageChangedEvent.emit({ modalFrontstageCount: this.modalFrontstageCount });
   }
 
   public static updateModalFrontstage(): void {
-    this.emitModalFrontstageStackChangedEvent();
+    this.emitModalFrontstageChangedEvent();
   }
 
   public static get activeModalFrontstage(): ModalFrontstageInfo | undefined {
@@ -239,7 +239,7 @@ export class FrontstageManager {
     return undefined;
   }
 
-  public static get modalFrontstageStackDepth(): number {
+  public static get modalFrontstageCount(): number {
     return this._modalFrontstages.length;
   }
 

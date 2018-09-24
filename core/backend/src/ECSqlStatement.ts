@@ -43,8 +43,8 @@ export class ECSqlInsertResult {
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  *
  * See also
- * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModelJs API.
- * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModelJs API for executing and working with ECSQL
+ * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModel.js API.
+ * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModel.js API for executing and working with ECSQL
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NativeECSqlStatement | undefined;
@@ -201,8 +201,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
    *
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModelJs types to be used for the different ECSQL parameter types.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
    *
    * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
    */
@@ -633,7 +633,7 @@ class ECSqlBindingHelper {
 
   /** Binds the specified value to the specified binder
    * @param binder Parameter Binder to bind to
-   * @param val Value to be bound. (See [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
+   * @param val Value to be bound. (See [iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
    * @throws IModelError in case of errors
    */
   public static bindValue(binder: ECSqlBinder, val: any): void {

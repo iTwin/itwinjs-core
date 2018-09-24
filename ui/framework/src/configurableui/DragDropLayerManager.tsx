@@ -27,7 +27,7 @@ export class DragDropLayerManager {
   private static _layers: { [type: string]: React.ComponentType<DragLayerProps> } = {};
   private static _dragDropLayerChangedEvent: DragDropLayerChangedEvent = new DragDropLayerChangedEvent();
 
-  public static get DragDropLayerChangedEvent(): DragDropLayerChangedEvent { return this._dragDropLayerChangedEvent; }
+  public static get onDragDropLayerChangedEvent(): DragDropLayerChangedEvent { return this._dragDropLayerChangedEvent; }
 
   /**
    * Gets the currently active drag type.

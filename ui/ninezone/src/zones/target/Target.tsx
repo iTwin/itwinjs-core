@@ -5,14 +5,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import CommonProps from "../../utilities/Props";
 import "./Target.scss";
 
+/** Properties of [[Target]] component. */
 export interface TargetProps extends CommonProps {
+  /** Function called when is targeted state of the target changes. */
   onTargetChanged?: (isTargeted: boolean) => void;
 }
 
+/**
+ * Basic target component used in merge zone interactions.
+ * @note Available targets: [[Back]], [[Merge]]
+ */
 export default class Target extends React.Component<TargetProps> {
   private _isTargeted = false;
 

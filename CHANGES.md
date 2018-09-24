@@ -1,2 +1,2 @@
 
-# iModelJs Change Log
+# iModel.js Change Log

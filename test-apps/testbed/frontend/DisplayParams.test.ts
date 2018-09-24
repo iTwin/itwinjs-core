@@ -4,8 +4,7 @@
 
 import { expect } from "chai";
 import { GraphicParams, ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
-import { LineCode, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
-LineCode; // Needs investigation! Webpack skips the rendering import without this :-(
+import { DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }

@@ -1,6 +1,6 @@
-# Localization in iModelJs
+# Localization in iModel.js
 
-Presenting information to the user in their preferred locale (language, date and time formatting, number formatting, etc.) is an important consideration for every computer program. iModelJs provides localization capabilities through the IModelApp.i18n object.
+Presenting information to the user in their preferred locale (language, date and time formatting, number formatting, etc.) is an important consideration for every computer program. iModel.js provides localization capabilities through the [IModelApp.i18n]($frontend) object.
 
 ## Language translation
 
@@ -45,13 +45,13 @@ if (this.notLoggedIn) {
 
 In the example above, we start by registering the namespace with IModelApp. That starts the process of retrieving the SafetyBaseMessages.json file in the directory corresponding to the current locale (in this case, "en") from the server. Since that might take a little while, before the first use of a namespace, we await on the readFinished property of the I18NNamespace, which is a Promise that is fulfilled when the file is retrieved and ready to be accessed by the translate method. If not logged in, we use the simple form of the translate method to display the string "You are not currently logged in to Bentley Connect." to the console. If the user is logged in, the message "You are logged in to Bentley Connect as xxx.", is displayed on the console, where xxx is replaced by this.loginName. This demonstrates passing additional argument to the translate method, which substitutes the value of the arguments for the corresponding variables specified in the {{ }} formulas in the translation string. That substitution is called "interpolation" in internationalization terminology.
 
-Behind the scenes, iModelJs uses the [i18Next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example above. iModelJs initializes i18next with a set of options that are usually fine for all applications. If you want different options, you can use i18next directly from your application, or instantiate an instance of iModelJs' I18N class, which provides some convenience methods for waiting for the read to finish, etc.
+Behind the scenes, iModel.js uses the [i18Next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example above. iModel.js initializes i18next with a set of options that are usually fine for all applications. If you want different options, you can use i18next directly from your application, or instantiate an instance of iModel.js' I18N class, which provides some convenience methods for waiting for the read to finish, etc.
 
 If you are using React for user interface development, please note that you should not put HTML markup in your localized strings for inclusion as text in your React controls. Such strings are not processed by the React transpiler, and thus the HTML tags will display verbatim rather than being processed as HTML.
 
 ## Tool Localization
 
-The primary way of initiating actions in iModelJs applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *nameSpace* argument that specifies the I18NNamespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
+The primary way of initiating actions in iModel.js applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *nameSpace* argument that specifies the I18NNamespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
 
 The keys for each of those properties are synthesized from the Tool's namespace and toolId. For example, the translation key for the keyin property is \<Namespace\>:tools.\<toolId\>.keyin. Now suppose you author a PlaceSprinkler command in the SafetyBase application. Your Tool class might look like this:
 

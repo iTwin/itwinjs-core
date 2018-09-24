@@ -16,12 +16,11 @@ import {
   StrokesPrimitiveList,
   PolyfacePrimitiveList,
   PolyfacePrimitive,
-  System,
   GeometryAccumulator,
   GeometryOptions,
   RenderGraphic,
-  Branch,
 } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";

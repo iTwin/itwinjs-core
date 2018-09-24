@@ -13,9 +13,9 @@ import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
 import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
 import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/Settings";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import NZ_ZoneState from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 
 /** State for the ToolSettingsZone content.
  */
@@ -36,7 +36,7 @@ export interface ToolSettingsZoneState {
  */
 export interface ToolSettingsZoneProps extends CommonProps {
   zoneDef?: ZoneDef;
-  reactZoneState: NZ_ZoneState;
+  bounds: RectangleProps;
 }
 
 /** Tool Settings Zone React component.
@@ -60,7 +60,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
       return (
         <NZ_Zone
-          bounds={this.props.reactZoneState.bounds}
+          bounds={this.props.bounds}
         >
           <div style={divStyle} >
             {this.getToolSettingsWidget()}

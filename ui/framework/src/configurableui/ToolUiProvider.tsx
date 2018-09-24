@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
 
-import { Configurable, ConfigurableCreateInfo } from "./ConfigurableUiControl";
+import { ConfigurableBase, ConfigurableCreateInfo, ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { ToolItemDef } from "./Item";
 
 // -----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ export interface ToolUiProviderProps {
 
 /** ToolUiProvider base class for ConfigurableUi.
  */
-export class ToolUiProvider extends Configurable {
+export class ToolUiProvider extends ConfigurableBase {
   private _toolItem!: ToolItemDef;
   private _toolSettingsNode: React.ReactNode;
   private _toolAssistanceNode: React.ReactNode;
@@ -33,8 +33,10 @@ export class ToolUiProvider extends Configurable {
   public get toolAssistanceNode(): React.ReactNode { return this._toolAssistanceNode; }
   public set toolAssistanceNode(r: React.ReactNode) { this._toolAssistanceNode = r; }
 
-  public get toolItem() { return this._toolItem; }
+  public get toolItem(): ToolItemDef { return this._toolItem; }
   public set toolItem(v: ToolItemDef) { this._toolItem = v; }
+
+  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
 }
 
 export default ToolUiProvider;

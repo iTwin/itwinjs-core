@@ -7,6 +7,8 @@ import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Configuration properties for [[TemporaryStorage]]
+ *
+ * @hidden
  */
 export interface Props<T> {
   /** A factory method that creates a stored value given it's identifier */
@@ -42,6 +44,8 @@ interface TemporaryValue<T> {
 /**
  * Storage for values that get removed from it after being unused (not-requested
  * for a specified amount of time).
+ *
+ * @hidden
  */
 export default class TemporaryStorage<T> implements IDisposable {
 

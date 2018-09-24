@@ -1,4 +1,4 @@
-# Consuming the iModelJs Presentation Library
+# Consuming the iModel.js Presentation Library
 
 Below are instructions for library consumers on how install and setup
 the library:

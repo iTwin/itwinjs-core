@@ -4,6 +4,6 @@
 @import "_variables";
 
 .nz-backstage-separator {
-  height: 5px;
-  background-color: rgba(#000000, 0.88);
+  height: $nz-backstage-divider-height;
+  background-color: $nz-backstage-divider-color;
 }

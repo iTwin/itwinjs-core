@@ -113,7 +113,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high = Point3d.create(highx, highy, highz);
   }
 
-  /** @returns Returns true if this and other have equal low and high point x,y,z parts */
+  /** Returns true if this and other have equal low and high point x,y,z parts */
   public isAlmostEqual(other: Range3d): boolean {
     return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
       || (this.isNull && other.isNull);
@@ -176,7 +176,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     result.setDirect(this.low.x, this.low.y, this.low.z, this.high.x, this.high.y, this.high.z, false);
     return result;
   }
-  /** @returns Return a range initialized to have no content. */
+  /** Return a range initialized to have no content. */
   public static createNull(result?: Range3d): Range3d {
     result = result ? result : new Range3d();
     result.setNull();
@@ -356,44 +356,44 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       && this.high.z === this.low.z;
   }
 
-  /** @returns Return the length of the box in the x direction */
+  /**  Return the length of the box in the x direction */
   public xLength(): number { const a = this.high.x - this.low.x; return a > 0.0 ? a : 0.0; }
 
-  /** @returns Return the length of the box in the y direction */
+  /**  Return the length of the box in the y direction */
   public yLength(): number { const a = this.high.y - this.low.y; return a > 0.0 ? a : 0.0; }
 
-  /** @returns Return the length of the box in the z direction */
+  /**  Return the length of the box in the z direction */
   public zLength(): number { const a = this.high.z - this.low.z; return a > 0.0 ? a : 0.0; }
 
-  /** @returns Return the largest of the x,y, z lengths of the range. */
+  /**  Return the largest of the x,y, z lengths of the range. */
   public maxLength(): number { return Math.max(this.xLength(), this.yLength(), this.zLength()); }
   /** return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonal(result?: Vector3d): Vector3d { return this.low.vectorTo(this.high, result); }
 
-  /** @returns Return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
+  /**  Return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d { return this.low.interpolate(fraction, this.high, result); }
 
-  /** @returns Return a point given by fractional positions on the XYZ axes. This is done with no check for isNull !!! */
+  /**  Return a point given by fractional positions on the XYZ axes. This is done with no check for isNull !!! */
   public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d {
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 
-  /** @returns Return a point given by fractional positions on the XYZ axes.
-   * * Returns undefined if the range is null.
+  /**  Return a point given by fractional positions on the XYZ axes.
+   *  Returns undefined if the range is null.
    */
   public localXYZToWorld(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d | undefined {
     if (this.isNull) return undefined;
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 
-  /** @returns Return a point given by fractional positions on the XYZ axes.
+  /** Return a point given by fractional positions on the XYZ axes.
    * * Returns undefined if the range is null.
    */
   public localToWorld(xyz: XYAndZ, result?: Point3d): Point3d | undefined {
     return this.localXYZToWorld(xyz.x, xyz.y, xyz.z, result);
   }
   /** Replace fractional coordinates by world coordinates.
-   * @return false if null range.
+   * @returns false if null range.
    */
   public localToWorldArrayInPlace(points: Point3d[]): boolean {
     if (this.isNull) return false;
@@ -429,7 +429,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     return true;
   }
 
-  /** @returns Return an array with the 8 corners on order wth "x varies fastest, then y, then z" */
+  /** Return an array with the 8 corners on order wth "x varies fastest, then y, then z" */
   public corners(): Point3d[] {
     return [
       Point3d.create(this.low.x, this.low.y, this.low.z),
@@ -441,18 +441,18 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       Point3d.create(this.low.x, this.high.y, this.high.z),
       Point3d.create(this.high.x, this.high.y, this.high.z)];
   }
-  /** @returns Return the largest absolute value among any coordinates in the box corners. */
+  /** Return the largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
     if (this.isNull)
       return 0.0;
     return Math.max(this.low.maxAbs(), this.high.maxAbs());
   }
 
-  /** @returns true if the x direction size is nearly zero */
+  /** returns true if the x direction size is nearly zero */
   public get isAlmostZeroX(): boolean { return Geometry.isSmallMetricDistance(this.xLength()); }
-  /** @returns true if the y direction size is nearly zero */
+  /** returns true if the y direction size is nearly zero */
   public get isAlmostZeroY(): boolean { return Geometry.isSmallMetricDistance(this.yLength()); }
-  /** @returns true if the z direction size is nearly zero */
+  /** returns true if the z direction size is nearly zero */
   public get isAlmostZeroZ(): boolean { return Geometry.isSmallMetricDistance(this.zLength()); }
 
   /** Test if a point given as x,y,z is within the range. */
@@ -508,7 +508,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       RangeBase._EXTREME_POSITIVE);
   }
 
-  /** @returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
+  /** returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
   public distanceToRange(other: Range3d): number {
     return Math.min(
       Geometry.hypotenuseXYZ(
@@ -655,7 +655,7 @@ export class Range1d extends RangeBase {
     this.low = low; this.high = high; // duplicates set_direct, but compiler is not convinced they are set.
     this.set_direct(low, high);
   }
-  /** @returns Returns true if this and other have equal low and high parts */
+  /** Returns true if this and other have equal low and high parts */
   public isAlmostEqual(other: Range1d): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
       || (this.isNull && other.isNull);
@@ -794,7 +794,7 @@ export class Range1d extends RangeBase {
     return this.high === this.low;
   }
 
-  /** @returns Return the length of the range in the x direction */
+  /** Return the length of the range in the x direction */
   public length(): number { const a = this.high - this.low; return a > 0.0 ? a : 0.0; }
 
   /** return a point given by fractional positions within the range. This is done with no check for isNull !!! */
@@ -802,7 +802,7 @@ export class Range1d extends RangeBase {
     return Geometry.interpolate(this.low, fraction, this.high);
   }
 
-  /** @returns Return the largest absolute value among the box limits. */
+  /** Return the largest absolute value among the box limits. */
   public maxAbs(): number {
     if (this.isNull)
       return 0.0;
@@ -829,7 +829,7 @@ export class Range1d extends RangeBase {
     return !(this.low > other.high || other.low > this.high);
   }
 
-  /** @returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
+  /** returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
   public distanceToRange(other: Range1d): number {
     return RangeBase.rangeToRangeAbsoluteDistance(this.low, this.high, other.low, other.high);
   }
@@ -995,7 +995,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
         this.setNull();
     }
   }
-  /** @returns return a clone of this range (or copy to optional result) */
+  /** return a clone of this range (or copy to optional result) */
   public clone(result?: Range2d) {
     result = result ? result : new Range2d();
     result.setDirect(this.low.x, this.low.y, this.high.x, this.high.y, false);

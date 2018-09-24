@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d, LowAndHighXYZ, LowAndHighXY,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
@@ -396,6 +396,7 @@ export abstract class ViewState extends ElementState {
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
   }
+  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
   public decorate(context: DecorateContext): void {
@@ -776,7 +777,7 @@ export abstract class ViewState extends ElementState {
         const centerWorld = Point3d.create(0.5, 0.5, 0.5);
         vp.npcToWorld(centerWorld, centerWorld);
 
-        rMatrix.setFrom(vp.rotMatrix);
+        rMatrix.setFrom(vp.rotation);
         rMatrix.multiplyXYZtoXYZ(origin, origin);
         origin.z = centerWorld.z;
         rMatrix.multiplyTransposeVectorInPlace(origin);
@@ -814,7 +815,7 @@ export abstract class ViewState extends ElementState {
   }
   /**
    * Change the volume that this view displays, keeping its current rotation.
-   * @param worldVolume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
+   * @param volume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
    * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
    * result in a much larger volume than worldVolume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
@@ -823,8 +824,8 @@ export abstract class ViewState extends ElementState {
    * of space shown in the view.) If undefined, no additional white space is added.
    * @note for 2d views, only the X and Y values of volume are used.
    */
-  public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
-    const rangeBox = volume.corners();
+  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent) {
+    const rangeBox = Frustum.fromRange(volume).points;
     this.getRotation().multiplyVectorArrayInPlace(rangeBox);
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
   }
@@ -923,6 +924,20 @@ export abstract class ViewState extends ElementState {
     model.loadTileTree();
     if (undefined !== model.tileTree) {
       model.tileTree.drawScene(context);
+    }
+  }
+  private addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
+    if (model.jsonProperties.classifiers === undefined)
+      return;
+    for (const classifier of model.jsonProperties.classifiers) {
+      if (classifier.isActive) {
+        const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
+        if (undefined !== classifierModel) {
+          classifierModel.loadTileTree(true, classifier.expand);
+          if (undefined !== classifierModel.classifierTileTree)
+            classifierModel.classifierTileTree.drawScene(context);
+        }
+      }
     }
   }
 
@@ -1398,7 +1413,7 @@ export abstract class ViewState3d extends ViewState {
     const elevation = this.getGroundElevation();
 
     if (undefined !== vp) {
-      const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
       const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
 
       // first determine whether the ground plane is displayed in the view

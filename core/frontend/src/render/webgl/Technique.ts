@@ -169,28 +169,31 @@ export abstract class VariedTechnique implements Technique {
 class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
-  private static readonly _kFeature = 2;
+  private static readonly _kAnimated = 2;
+  private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(SurfaceTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
-    super((numFeatureVariants(2) + numHiliteVariants));
+    super((numFeatureVariants(4) + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
     this.addHiliteShader(gl, createSurfaceHiliter);
-    for (const featureMode of featureModes) {
-      flags.reset(featureMode);
-      const builder = createSurfaceBuilder(featureMode);
-      addMonochrome(builder.frag);
-      addMaterial(builder.frag);
+    for (let iAnimate = 0; iAnimate < 2; iAnimate++) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode);
+        flags.isAnimated = iAnimate !== 0;
+        const builder = createSurfaceBuilder(featureMode, flags.isAnimated);
+        addMonochrome(builder.frag);
+        addMaterial(builder.frag);
 
-      addSurfaceDiscardByAlpha(builder.frag);
-      this.addShader(builder, flags, gl);
+        addSurfaceDiscardByAlpha(builder.frag);
+        this.addShader(builder, flags, gl);
 
-      builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-      this.addTranslucentShader(builder, flags, gl);
+        builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+        this.addTranslucentShader(builder, flags, gl);
+      }
     }
   }
-
   protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
@@ -201,6 +204,9 @@ class SurfaceTechnique extends VariedTechnique {
 
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kFeature * flags.featureMode;
+    if (flags.isAnimated)
+      index += SurfaceTechnique._kAnimated;
+
     return index;
   }
 }
@@ -255,33 +261,37 @@ class PolylineTechnique extends VariedTechnique {
 class EdgeTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
-  private static readonly _kFeature = 2;
+  private static readonly _kAnimated = 2;
+  private static readonly _kFeature = 4;
   private readonly _isSilhouette: boolean;
 
   public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
-    super(numFeatureVariants(2));
+    super(numFeatureVariants(4));
     this._isSilhouette = isSilhouette;
 
     const flags = scratchTechniqueFlags;
-    for (const featureMode of featureModes) {
-      flags.reset(featureMode);
-      const builder = createEdgeBuilder(isSilhouette);
-      addMonochrome(builder.frag);
+    for (let iAnimate = 0; iAnimate < 2; iAnimate++) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode);
+        flags.isAnimated = iAnimate !== 0;
+        const builder = createEdgeBuilder(isSilhouette, flags.isAnimated);
+        addMonochrome(builder.frag);
 
-      // The translucent shaders do not need the element IDs.
-      const builderTrans = createEdgeBuilder(isSilhouette);
-      addMonochrome(builderTrans.frag);
-      if (FeatureMode.Overrides === featureMode) {
-        addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
-        addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
-        this.addTranslucentShader(builderTrans, flags, gl);
-      } else {
-        this.addTranslucentShader(builderTrans, flags, gl);
-        addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        // The translucent shaders do not need the element IDs.
+        const builderTrans = createEdgeBuilder(isSilhouette, flags.isAnimated);
+        addMonochrome(builderTrans.frag);
+        if (FeatureMode.Overrides === featureMode) {
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
+          this.addTranslucentShader(builderTrans, flags, gl);
+        } else {
+          this.addTranslucentShader(builderTrans, flags, gl);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        }
+        this.addElementId(builder, featureMode);
+        flags.reset(featureMode);
+        this.addShader(builder, flags, gl);
       }
-      this.addElementId(builder, featureMode);
-      flags.reset(featureMode);
-      this.addShader(builder, flags, gl);
     }
   }
 
@@ -290,6 +300,9 @@ class EdgeTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
     index += EdgeTechnique._kFeature * flags.featureMode;
+    if (flags.isAnimated)
+      index += EdgeTechnique._kAnimated;
+
     return index;
   }
 }
@@ -415,7 +428,7 @@ export class Techniques implements IDisposable {
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
-          flags.init(target, renderPass);
+          flags.init(target, renderPass, command.hasAnimation);
           const tech = this.getTechnique(techniqueId);
           const program = tech.getShader(flags);
           if (executor.setProgram(program)) {
@@ -429,6 +442,53 @@ export class Techniques implements IDisposable {
 
         command.postExecute(executor);
       }
+    });
+  }
+
+  /** Execute the commands for a single given classification primitive */
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+    assert(RenderPass.None !== renderPass, "invalid render pass");
+    // There should be 3 commands per classifier in the cmdsByIndex array.
+    index *= 3;
+    if (index < 0 || index > cmdsByIndex.length - 3)
+      return; // index out of range
+
+    const pushCmd = cmdsByIndex[index];
+    const primCmd = cmdsByIndex[index + 1];
+    const popCmd = cmdsByIndex[index + 2];
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+
+      // First execute the push.
+      pushCmd.preExecute(executor);
+      let techniqueId = pushCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
+      pushCmd.execute(executor);
+      pushCmd.postExecute(executor);
+
+      // Execute the command for the given classification primitive.
+      primCmd.preExecute(executor);
+      techniqueId = primCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid !== techniqueId);
+      // A primitive command.
+      assert(primCmd.isPrimitiveCommand, "expected primitive command");
+      flags.init(target, renderPass, primCmd.hasAnimation);
+      const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
+      const program = tech.getShader(flags);
+      if (executor.setProgram(program)) {
+        primCmd.execute(executor);
+      }
+      primCmd.postExecute(executor);
+
+      // Execute the batch pop.
+      popCmd.preExecute(executor);
+      techniqueId = popCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
+      popCmd.execute(executor);
+      popCmd.postExecute(executor);
     });
   }
 

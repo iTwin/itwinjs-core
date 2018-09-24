@@ -22,7 +22,9 @@ export class BunyanLoggerConfig {
   // Generate metadata for a bunyan record. If nothing else, it must contain the message category.
   // Also make sure that Logger gets a change to add its required metadata.
   private static makeBunyanMetaData(category: string, getMetaData?: GetMetaDataFunction) {
-    const mdata = Logger.makeMetaData(getMetaData);
+    let mdata = Logger.makeMetaData(getMetaData);
+    if (!mdata)
+      mdata = {};
     if (!mdata.hasOwnProperty("loggerCategory"))      // (don't use the name "category". That could mean something (else) in the caller's metadata.)
       mdata.loggerCategory = category;
     return mdata;
@@ -41,7 +43,7 @@ export class BunyanLoggerConfig {
 
   /** Initialize the logger streams to the specified bunyan logger. */
   public static logToBunyan(blgr: any) {
-    // Map between iModelJs LogFunction signature and bunyan logger
+    // Map between iModel.js LogFunction signature and bunyan logger
     const errorLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.error(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);
     const warningLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.warn(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);
     const infoLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.info(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);

@@ -55,7 +55,32 @@ export const enum AxisScaleSelect {
   NonUniformRangeContainment = 2,
 }
 export interface TrigValues { c: number; s: number; radians: number; }
+/**
+ * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
+ *
+ * Specific implementors are
+ * * Plane3dByOriginAndUnitNormal
+ * * Point4d (used for homogeneous plane coefficients)
+ */
+export interface PlaneAltitudeEvaluator {
+  /**
+   * Return the altitude of the point from the plane.
+   * @param point point for evaluation
+   */
+  altitude(point: Point3d): number;
+  /**
+   * Return the derivative of altitude wrt motion along a vector.
+   * @param point point for evaluation
+   */
+  velocity(vector: Vector3d): number;
 
+  /**
+   * Return the derivative of altitude wrt motion along a vector given by components
+   * @param point point for evaluation
+   */
+  velocityXYZ(x: number, y: number, z: number): number;
+
+}
 export interface BeJSONFunctions {
   /**
    * Set content from a JSON object.
@@ -286,6 +311,37 @@ export class Geometry {
       + uy * (vz * wx - vx * wz)
       + uz * (vx * wy - vy * wx);
   }
+
+    /**
+   * @returns Returns curvature magnitude from a first and second derivative vector.
+   * @param ux  first derivative x component
+   * @param uy first derivative y component
+   * @param uz first derivative z component
+   * @param vx second derivative x component
+   * @param vy second derivative y component
+   * @param vz second derivative z component
+   */
+  public static curvatureMagnitude (
+    ux: number, uy: number, uz: number,
+    vx: number, vy: number, vz: number): number {
+    let q = uy * vz - uz * vy;
+    let sum = q * q;
+    q = uz * vx - ux * vz;
+    sum += q * q;
+    q = ux * vy - uy * vx;
+    sum += q * q;
+    const a = Math.sqrt (ux * ux + uy * uy + uz * uz);
+    const b = Math.sqrt (sum);
+    // (sum and a are both nonnegative)
+    const aaa = a * a * a;
+    // radius of curvature = aaa / b;
+    // curvature = b/aaa
+    const tol = Geometry.smallAngleRadians;
+    if (aaa > tol * b)
+      return b / aaa;
+    return 0; // hm.. maybe should be infinte?
+  }
+
   /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.
    *
    */
@@ -338,6 +394,8 @@ export class Geometry {
       return b;
     return x;
   }
+
+  public static clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
 
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {

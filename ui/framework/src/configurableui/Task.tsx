@@ -33,11 +33,11 @@ export class Task extends ItemDefBase {
   public taskId: string;
   public primaryStageId: string;
 
-  constructor(taskDef: TaskProps) {
-    super(taskDef);
+  constructor(taskProps: TaskProps) {
+    super(taskProps);
 
-    this.taskId = taskDef.id;
-    this.primaryStageId = taskDef.primaryStageId;
+    this.taskId = taskProps.id;
+    this.primaryStageId = taskProps.primaryStageId;
   }
 
   public get id(): string {
@@ -74,7 +74,7 @@ export class Task extends ItemDefBase {
 /** Task Manager class.
  */
 export class TaskManager {
-  private static _tasks: { [taskId: string]: Task } = {};
+  private static _tasks: Map<string, Task> = new Map<string, Task>();
 
   public static loadTasks(taskListDef: TaskPropsList) {
     this.loadTaskDefs(taskListDef.tasks);
@@ -91,12 +91,12 @@ export class TaskManager {
     this.addTask(taskDef.id, task);
   }
 
-  public static findTask(taskId: string): Task {
-    return this._tasks[taskId];
+  public static findTask(taskId: string): Task | undefined {
+    return this._tasks.get(taskId);
   }
 
   public static addTask(taskId: string, task: Task) {
-    this._tasks[taskId] = task;
+    this._tasks.set(taskId, task);
   }
 }
 

@@ -3,7 +3,7 @@
 .nz-footer-message-content-dialog-content-buttons {
   height: 100%;
   display: grid;
-  grid-auto-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
 
   > .nz-content {
     overflow: hidden;

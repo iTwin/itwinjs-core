@@ -7,6 +7,7 @@ import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** RealityData */
 @ECJsonTypeMap.classToJson("wsg", "TileDataAccess.InstanceData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -58,8 +59,8 @@ export class TileDataAccessClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns an array of RealityData
    */
-  public async getPropertyData(token: AccessToken, dataId: string, elemId: string): Promise<InstanceData[]> {
-    return this.getInstances<InstanceData>(InstanceData, token, `/Repositories/BentleyCONNECT--${dataId}/TileDataAccess/InstanceData/${elemId}`);
+  public async getPropertyData(alctx: ActivityLoggingContext, token: AccessToken, dataId: string, elemId: string): Promise<InstanceData[]> {
+    return this.getInstances<InstanceData>(alctx, InstanceData, token, `/Repositories/BentleyCONNECT--${dataId}/TileDataAccess/InstanceData/${elemId}`);
   }
 
 }

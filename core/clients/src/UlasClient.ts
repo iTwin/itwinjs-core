@@ -5,7 +5,7 @@ import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, Response } from "./Request";
-import { Logger, BentleyStatus, Guid, GuidProps, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "./UserProfile";
 
 const loggingCategory: string = "imodeljs-clients.Ulas";
@@ -200,9 +200,10 @@ export class UlasClient extends Client {
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
+    alctx.enter();
     const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(authorizationToken);
+    return await imsClient.getToken(alctx, authorizationToken);
   }
 
   /**
@@ -211,9 +212,10 @@ export class UlasClient extends Client {
    * @param entry Usage log entry.
    * @returns Response from the service.
    */
-  public async logUsage(token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
+  public async logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
+    alctx.enter();
     const entryJson: any = UlasLogEntryLogConverter.toUsageLogJson(token, entry, this._policyIds);
-    return await this.logEntry(token, entryJson, false);
+    return await this.logEntry(alctx, token, entryJson, false);
   }
 
   /**
@@ -222,16 +224,19 @@ export class UlasClient extends Client {
    * @param entries One or more feature log entries.
    * @returns Response from the service.
    */
-  public async logFeature(token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+  public async logFeature(alctx: ActivityLoggingContext, token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+    alctx.enter();
     if (entries.length === 0)
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
     const entriesJson: any = UlasLogEntryLogConverter.toFeatureLogJson(token, entries, this._policyIds);
-    return await this.logEntry(token, entriesJson, true);
+    return await this.logEntry(alctx, token, entriesJson, true);
   }
 
-  private async logEntry(token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
-    let postUrl: string = (await this.getUrl());
+  private async logEntry(alctx: ActivityLoggingContext, token: AccessToken, entryJson: any, isFeatureEntry: boolean): Promise<LogPostingResponse> {
+    alctx.enter();
+    let postUrl: string = (await this.getUrl(alctx));
+    alctx.enter();
     if (isFeatureEntry)
       postUrl += "/featureLog";
 
@@ -242,12 +247,12 @@ export class UlasClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-
+    alctx.enter();
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
 
-    const resp: Response = await request(postUrl, options);
-
+    const resp: Response = await request(alctx, postUrl, options);
+    alctx.enter();
     const requestDetails = { url: postUrl, body: entryJson, response: resp };
     if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
       Logger.logTrace(loggingCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
@@ -277,16 +282,13 @@ class UlasLogEntryLogConverter {
     const fstr: string = "";
 
     const userProfile: UserProfile = token.getUserProfile()!;
-    const ultId: number = parseInt(userProfile.ultimateId, 10);
+    const ultID: number = parseInt(userProfile.ultimateSite, 10);
     const imsID: string = userProfile.userId;
     // WIP: must be replaced by pulling from policy file. For now we use imsID.
     const pid: string = imsID;
 
     const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
-    const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
-
     const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
-    const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
 
     const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
     const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
@@ -309,7 +311,7 @@ class UlasLogEntryLogConverter {
 
     const uType: string = UlasLogEntryLogConverter.usageTypeToString(entry.usageType);
     return {
-      ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+      ultID, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
       evTimeZ, lVer, lSrc, country, uType,
     };
   }
@@ -326,16 +328,13 @@ class UlasLogEntryLogConverter {
       const fstr: string = "";
 
       const userProfile: UserProfile = token.getUserProfile()!;
-      const ultId: number = parseInt(userProfile.ultimateId, 10);
+      const ultID: number = parseInt(userProfile.ultimateSite, 10);
       const imsID: string = userProfile.userId;
       // WIP: must be replaced by pulling from policy file. For now we use imsID.
       const pid: string = imsID;
 
       const hID: string = UlasLogEntryLogConverter.prepareMachineName(entry.hostName);
-      const cSID: string = hID.length > 0 ? UlasLogEntryLogConverter.computeHash(hID) : "";
-
       const uID: string = UlasLogEntryLogConverter.prepareUserName(entry.hostUserName, entry.hostName);
-      const uSID: string = uID.length > 0 ? UlasLogEntryLogConverter.computeHash(uID) : "";
 
       const polID: string = UlasLogEntryLogConverter.guidToString(policyIds.policyFileId);
       const secID: string = UlasLogEntryLogConverter.guidToString(policyIds.securableId);
@@ -382,7 +381,7 @@ class UlasLogEntryLogConverter {
       }
 
       json.push({
-        ultId, pid, imsID, hID, cSID, uID, uSID, polID, secID, prdid, fstr, ver, projID, corID,
+        ultID, pid, imsID, hID, uID, polID, secID, prdid, fstr, ver, projID, corID,
         evTimeZ, lVer, lSrc, country, uType, ftrID, sDateZ, eDateZ, uData,
       });
     }
@@ -437,19 +436,6 @@ class UlasLogEntryLogConverter {
       preparedUserName = `${machineName.toLowerCase()}\\${preparedUserName}`;
 
     return preparedUserName;
-  }
-
-  private static computeHash(preparedName: string): string {
-    /* if (!preparedName || preparedName.length === 0)
-      return "";
-
-    const sha1 = require("sha.js").sha1;
-    let hash: string = preparedName;
-    for (let i = 0; i < 17; i++) {
-      hash = sha1.update(hash).digest("ascii");
-    }
-    return hash; */
-    return preparedName;
   }
 
   private static logPostingSourceToString(val: LogPostingSource): string {

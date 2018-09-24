@@ -40,8 +40,8 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 export default class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
-  private static store: Store<RootState>;
-  private static rootReducer: any;
+  private static _store: Store<RootState>;
+  private static _rootReducer: any;
 
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
@@ -57,14 +57,14 @@ export default class TestUtils {
       // This is required by our I18n module (specifically the i18next package).
       (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
-      this.rootReducer = combineReducers<RootState>({
+      this._rootReducer = combineReducers<RootState>({
         sampleAppState: SampleAppReducer,
       });
 
-      this.store = createStore(this.rootReducer,
+      this._store = createStore(this._rootReducer,
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
-      await UiFramework.initialize(this.store, TestUtils.i18n);
+      await UiFramework.initialize(this._store, TestUtils.i18n);
       await UiComponents.initialize(TestUtils.i18n);
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;

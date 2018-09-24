@@ -1,18 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module iModelBank */
-
-import { IModelBankClient } from "./IModelBankClient";
-import { IModelClient } from "../IModelClient";
-import { IModelAccessContext } from "../IModelAccessContext";
 import { DeploymentEnv } from "../Client";
-import { FileHandler } from "../FileHandler";
 import { assert } from "@bentley/bentleyjs-core";
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-
-/** Format of the imodel.json file found in an iModel directory of an iModel file system. */
+/* Format of the imodel.json file found in an iModel directory of an iModel file system. */
 export interface IModelFileSystemIModelProps {
   name: string;
   description: string;
@@ -20,7 +12,7 @@ export interface IModelFileSystemIModelProps {
   seedFile?: string;
 }
 
-/** Format of the imodelfs.json file found in the root directory of an iModel file system. */
+/* Format of the imodelfs.json file found in the root directory of an iModel file system. */
 export interface IModelFileSystemProps {
   name: string;
   id: string;
@@ -28,7 +20,7 @@ export interface IModelFileSystemProps {
   iModels: IModelFileSystemIModelProps[];
 }
 
-/** The externalize format of an IModelAccessContext */
+/* The externalize format of an IModelAccessContext */
 export interface IModelAccessContextProps {
   imodeljsCoreClientsIModelBankAccessContext: {
     iModelId: string;
@@ -37,12 +29,12 @@ export interface IModelAccessContextProps {
   };
 }
 
-/** The externalized format of an IModelAccessContext that has been assigned a name. */
+/* The externalized format of an IModelAccessContext that has been assigned a name. */
 export interface NamedIModelAccessContextProps extends IModelAccessContextProps {
   name: string;
 }
 
-/** The externalized format of a group of named IModelBankAccessContexts */
+/* The externalized format of a group of named IModelBankAccessContexts */
 export interface IModelBankAccessContextGroupProps {
   iModelBankProjectAccessContextGroup: {
     id: string;
@@ -78,7 +70,7 @@ export class IModelBankAccessContextGroup {
 }
 */
 
-/** All information needed to contact and use an iModelBank server that provides access to a given iModel.  */
+/* All information needed to contact and use an iModelBank server that provides access to a given iModel.
 export class IModelBankAccessContext extends IModelAccessContext {
   private _client: IModelBankClient;
   private _iModelId: string;
@@ -95,7 +87,6 @@ export class IModelBankAccessContext extends IModelAccessContext {
 
   public get client(): IModelClient | undefined { return this._client; }
 
-  /** @hidden */
   public toJson(): IModelAccessContextProps {
     return {
       imodeljsCoreClientsIModelBankAccessContext: {
@@ -111,12 +102,10 @@ export class IModelBankAccessContext extends IModelAccessContext {
     return new IModelBankAccessContext(props.iModelId, props.url, props.env, handler);
   }
 
-  /** Store the definition of this context as a string that can be used as the contextId property of an IModelToken */
   public toIModelTokenContextId(): string {
     return JSON.stringify(this.toJson());
   }
 
-  /** Create a IModelBankAccessContext from the contextId property of an IModelToken. This is a backend-only method. BriefcaseManager should call this. */
   public static fromIModelTokenContextId(contextStr: string, iModelId: string, handler: FileHandler): IModelBankAccessContext | undefined {
     if (contextStr.startsWith("{\"imodeljsCoreClientsIModelBankAccessContext\":"))
       return this.fromJson(JSON.parse(contextStr), handler);
@@ -130,37 +119,37 @@ export class IModelBankAccessContext extends IModelAccessContext {
     }
     return undefined;
   }
+*/
 
-  public static makeNamedIModelAccessContextPropsFromFileSystem(iModel: IModelFileSystemIModelProps): NamedIModelAccessContextProps {
-    return {
-      name: iModel.name,
-      imodeljsCoreClientsIModelBankAccessContext: {
-        iModelId: iModel.id,
-        url: "",
-        env: "PROD",
-      },
-    };
+export function makeNamedIModelAccessContextPropsFromFileSystem(iModel: IModelFileSystemIModelProps): NamedIModelAccessContextProps {
+  return {
+    name: iModel.name,
+    imodeljsCoreClientsIModelBankAccessContext: {
+      iModelId: iModel.id,
+      url: "",
+      env: "PROD",
+    },
+  };
+}
+
+export function makeIModelBankAccessContextGroupPropsFromFileSystem(fs: IModelFileSystemProps): IModelBankAccessContextGroupProps {
+  assert("name" in fs);
+  assert("id" in fs);
+  assert("iModels" in fs);
+
+  const group: IModelBankAccessContextGroupProps = {
+    iModelBankProjectAccessContextGroup: {
+      id: fs.id,
+      name: fs.name,
+      contexts: [],
+    },
+  };
+
+  for (const iModel of fs.iModels) {
+    assert("name" in iModel);
+    assert("id" in iModel);
+    group.iModelBankProjectAccessContextGroup.contexts.push(makeNamedIModelAccessContextPropsFromFileSystem(iModel));
   }
 
-  public static makeIModelBankAccessContextGroupPropsFromFileSystem(fs: IModelFileSystemProps): IModelBankAccessContextGroupProps {
-    assert("name" in fs);
-    assert("id" in fs);
-    assert("iModels" in fs);
-
-    const group: IModelBankAccessContextGroupProps = {
-      iModelBankProjectAccessContextGroup: {
-        id: fs.id,
-        name: fs.name,
-        contexts: [],
-      },
-    };
-
-    for (const iModel of fs.iModels) {
-      assert("name" in iModel);
-      assert("id" in iModel);
-      group.iModelBankProjectAccessContextGroup.contexts.push(this.makeNamedIModelAccessContextPropsFromFileSystem(iModel));
-    }
-
-    return group;
-  }
+  return group;
 }

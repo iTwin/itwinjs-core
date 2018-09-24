@@ -5,9 +5,9 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { createRandomECInstanceNodeKey, createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
-import { RelatedElementProps } from "@bentley/imodeljs-common/lib/common";
 import { PersistenceHelper } from "../lib/index";
 
 describe("PersistenceHelper", () => {
@@ -27,16 +27,18 @@ describe("PersistenceHelper", () => {
       const nodeKey = createRandomECInstanceNodeKey();
       // set up the mock
       const modelsMock = moq.Mock.ofType<IModelConnection.Models>();
-      modelsMock.setup((x) => x.getProps(moq.It.isValue([modelKey.id]))).returns(() => Promise.resolve([{
+      modelsMock.setup((x) => x.getProps([modelKey.id])).returns(async () => [{
         modeledElement: { id: new Id64("0x1") } as RelatedElementProps,
         classFullName: modelKey.className,
         id: modelKey.id,
-      }])).verifiable();
+      } as ModelProps]).verifiable();
       const elementsMock = moq.Mock.ofType<IModelConnection.Elements>();
-      elementsMock.setup((x) => x.getProps(moq.It.isValue([elementKey.id]))).returns(() => Promise.resolve([{
+      elementsMock.setup((x) => x.getProps([elementKey.id])).returns(async () => [{
         classFullName: elementKey.className,
         id: elementKey.id,
-      }])).verifiable();
+        code: Code.createEmpty(),
+        model: modelKey.id,
+      } as ElementProps]).verifiable();
       const imodelMock = moq.Mock.ofType<IModelConnection>();
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
       imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
@@ -80,8 +82,8 @@ describe("PersistenceHelper", () => {
       const nodeKey = createRandomECInstanceNodeKey();
       // set up the mock
       const imodelMock = moq.Mock.ofType<IModelConnection>();
-      imodelMock.setup((x) => x.executeQuery(moq.It.isAnyString(), moq.It.isValue([modelKey.className, elementKey.className])))
-        .returns(() => Promise.resolve([{ fullClassName: modelKey.className }]))
+      imodelMock.setup((x) => x.executeQuery(moq.It.isAnyString(), [modelKey.className, elementKey.className]))
+        .returns(async () => [{ fullClassName: modelKey.className }])
         .verifiable();
       const imodel = imodelMock.object;
 

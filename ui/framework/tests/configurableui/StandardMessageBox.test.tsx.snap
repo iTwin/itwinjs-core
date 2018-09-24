@@ -1,0 +1,126 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StandardMessageBox MediumAlert & Question 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "ok",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "cancel",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={false}
+  severity={3}
+  title="My Title"
+  width="512px"
+/>
+`;
+
+exports[`StandardMessageBox OK button & NoSymbol 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "ok",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={false}
+  severity={0}
+  title="My Title"
+  width="512px"
+/>
+`;
+
+exports[`StandardMessageBox OK/Cancel buttons & Information 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "ok",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "cancel",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={false}
+  severity={1}
+  title="My Title"
+  width="512px"
+/>
+`;
+
+exports[`StandardMessageBox Yes/No buttons & Question 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "yes",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "no",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={false}
+  severity={2}
+  title="My Title"
+  width="512px"
+/>
+`;
+
+exports[`StandardMessageBox YesNoCancel & Critical 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "yes",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "no",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "cancel",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={false}
+  severity={4}
+  title="My Title"
+  width="512px"
+/>
+`;

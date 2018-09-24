@@ -9,7 +9,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
 /**
  * Point type converter.
  */
-export class BasePointTypeConverter extends TypeConverter {
+export abstract class BasePointTypeConverter extends TypeConverter {
   public async convertToString(value: any): Promise<string> {
     if (!value || !Array.isArray(value))
       return "";
@@ -19,11 +19,11 @@ export class BasePointTypeConverter extends TypeConverter {
     return stringValue;
   }
   public async convertFromString(value: string): Promise<any> {
-    if (!value)
+    if (null === value || undefined === value)
       return undefined;
     return this.constructPoint(value.split(","));
   }
-  protected constructPoint(_values: string[]): object | undefined { throw new Error("Not implemented"); }
+  protected abstract constructPoint(_values: string[]): object | undefined;
 }
 
 /**
@@ -31,7 +31,7 @@ export class BasePointTypeConverter extends TypeConverter {
  */
 export class Point2dTypeConverter extends BasePointTypeConverter {
   protected constructPoint(values: string[]): object | undefined {
-    return (values.length === 2) ? { x: values[0], y: values[1] } : undefined;
+    return (values.length === 2) ? { x: values[0].trim(), y: values[1].trim() } : undefined;
   }
 }
 TypeConverterManager.registerConverter("point2d", Point2dTypeConverter);
@@ -40,8 +40,8 @@ TypeConverterManager.registerConverter("point2d", Point2dTypeConverter);
  * Point3d type converter.
  */
 export class Point3dTypeConverter extends BasePointTypeConverter {
-  protected constructPoint(values: any[]): object | undefined {
-    return (values.length === 3) ? { x: values[0], y: values[1], z: values[2] } : undefined;
+  protected constructPoint(values: string[]): object | undefined {
+    return (values.length === 3) ? { x: values[0].trim(), y: values[1].trim(), z: values[2].trim() } : undefined;
   }
 }
 TypeConverterManager.registerConverter("point3d", Point3dTypeConverter);

@@ -120,7 +120,7 @@ export default class ScrollableArea extends React.Component<ScrollableAreaProps,
       const time = Date.now();
       const timeFraction = Math.max(0, Math.min(1, (time - startTime) / duration));
       const top = from + timeFraction * offset;
-      content.scrollTo({ top });
+      content.scrollTop = top;
 
       if (timeFraction < 1)
         window.requestAnimationFrame(scrollStep);

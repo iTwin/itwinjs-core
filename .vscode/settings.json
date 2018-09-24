@@ -80,6 +80,7 @@
     "exton",
     "forgeable",
     "fract",
+    "framebuffers",
     "frontends",
     "frontplane",
     "frust",
@@ -146,5 +147,24 @@
   "files.associations": {
     "*.snap": "javascript",
     ".nycrc": "json"
-  }
+  },
+  "cSpell.enabledLanguageIds": [
+    "c",
+    "cpp",
+    "csharp",
+    "go",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "latex",
+    "markdown",
+    "php",
+    "plaintext",
+    "python",
+    "text",
+    "typescript",
+    "typescriptreact",
+    "xml",
+    "yml"
+  ]
 }

@@ -9,21 +9,22 @@ import { UiEvent } from "@bentley/ui-core";
 
 /** Modal Dialog Stack Changed Event Args class.
  */
-export interface ModalDialogStackChangedEventArgs {
-  modalDialogStackDepth: number;
+export interface ModalDialogChangedEventArgs {
+  modalDialogCount: number;
+  activeModalDialog: React.ReactNode | undefined;
 }
 
-/** Modal Dialog Stack Changed Event class.
+/** Modal Dialog Changed Event class.
  */
-export class ModalDialogStackChangedEvent extends UiEvent<ModalDialogStackChangedEventArgs> { }
+export class ModalDialogChangedEvent extends UiEvent<ModalDialogChangedEventArgs> { }
 
 /** Modal Dialog Manager class.
  */
 export class ModalDialogManager {
   private static _modalDialogs: React.ReactNode[] = new Array<React.ReactNode>();
-  private static _modalDialogStackChangedEvent: ModalDialogStackChangedEvent = new ModalDialogStackChangedEvent();
+  private static _modalDialogStackChangedEvent: ModalDialogChangedEvent = new ModalDialogChangedEvent();
 
-  public static get ModalDialogStackChangedEvent(): ModalDialogStackChangedEvent { return this._modalDialogStackChangedEvent; }
+  public static get onModalDialogChangedEvent(): ModalDialogChangedEvent { return this._modalDialogStackChangedEvent; }
 
   public static get modalDialogs(): Readonly<React.ReactNode[]> { return this._modalDialogs; }
 
@@ -33,7 +34,7 @@ export class ModalDialogManager {
 
   private static pushModalDialog(modalDialog: React.ReactNode): void {
     this._modalDialogs.push(modalDialog);
-    this.emitModalDialogStackChangedEvent();
+    this.emitModalDialogChangedEvent();
   }
 
   public static closeModalDialog(): void {
@@ -42,15 +43,15 @@ export class ModalDialogManager {
 
   private static popModalDialog(): void {
     this._modalDialogs.pop();
-    this.emitModalDialogStackChangedEvent();
+    this.emitModalDialogChangedEvent();
   }
 
-  private static emitModalDialogStackChangedEvent(): void {
-    this.ModalDialogStackChangedEvent.emit({ modalDialogStackDepth: this.ModalDialogStackDepth });
+  private static emitModalDialogChangedEvent(): void {
+    this.onModalDialogChangedEvent.emit({ modalDialogCount: this.modalDialogCount, activeModalDialog: this.activeModalDialog });
   }
 
   public static updateModalDialog(): void {
-    this.emitModalDialogStackChangedEvent();
+    this.emitModalDialogChangedEvent();
   }
 
   public static get activeModalDialog(): React.ReactNode | undefined {
@@ -60,7 +61,7 @@ export class ModalDialogManager {
     return undefined;
   }
 
-  public static get ModalDialogStackDepth(): number {
+  public static get modalDialogCount(): number {
     return this._modalDialogs.length;
   }
 
@@ -76,7 +77,7 @@ export interface ModalDialogRendererProps {
 /** State for the ModalDialogRenderer component.
  */
 export interface ModalDialogRendererState {
-  modalDialogStackDepth: number;
+  modalDialogCount: number;
 }
 
 /** ModalDialogRenderer React component.
@@ -104,17 +105,17 @@ export class ModalDialogRenderer extends React.Component<ModalDialogRendererProp
   }
 
   public componentDidMount(): void {
-    ModalDialogManager.ModalDialogStackChangedEvent.addListener(this._handleModalDialogStackChangedEvent);
+    ModalDialogManager.onModalDialogChangedEvent.addListener(this._handleModalDialogChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    ModalDialogManager.ModalDialogStackChangedEvent.removeListener(this._handleModalDialogStackChangedEvent);
+    ModalDialogManager.onModalDialogChangedEvent.removeListener(this._handleModalDialogChangedEvent);
   }
 
-  private _handleModalDialogStackChangedEvent = (_args: ModalDialogStackChangedEventArgs) => {
+  private _handleModalDialogChangedEvent = (_args: ModalDialogChangedEventArgs) => {
     this.setState((_prevState) => {
       return {
-        modalDialogStackDepth: ModalDialogManager.ModalDialogStackDepth,
+        modalDialogCount: ModalDialogManager.modalDialogCount,
       };
     });
   }

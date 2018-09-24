@@ -82,7 +82,7 @@ Property | Description
 ECInstanceId | Is the unique identifier for an ECInstance.
 ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
 
-> In iModelJs the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iModel.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
 
 ### Example
 

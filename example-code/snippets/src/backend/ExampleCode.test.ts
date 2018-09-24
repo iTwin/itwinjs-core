@@ -1,17 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
+import { BisCore, ConcurrencyControl, Element, ElementUniqueAspect, ElementMultiAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: IModelDb;
   let accessToken: AccessToken;
+  const activityContext = new ActivityLoggingContext("");
 
   before(async () => {
     iModel = IModelTestUtils.openIModel("test.bim");
@@ -23,18 +24,18 @@ describe("Example Code", () => {
   });
 
   // __PUBLISH_EXTRACT_START__ IModelDb.Models.createModel.example-code
-  function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
+  function createNewModel(parentSubject: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
-    const outputImodel = parentElement.iModel;
+    const outputImodel = parentSubject.iModel;
 
     // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(outputImodel, parentElement.id, modelName);
+    const modelCode = InformationPartitionElement.createCode(outputImodel, parentSubject.id, modelName);
 
     //  The modeled element
     const modeledElementProps: ElementProps = {
-      classFullName: "BisCore:PhysicalPartition",
+      classFullName: PhysicalPartition.classFullName,
       iModel: outputImodel,
-      parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: { id: parentSubject.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: IModel.repositoryModelId,
       code: modelCode,
     };
@@ -44,13 +45,78 @@ describe("Example Code", () => {
     const modeledElementRef = new RelatedElement({ id: modeledElementId });
 
     // The model
-    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
+    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
     assert.isTrue(newModelId.isValid);
 
     return modeledElementId;
   }
   // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback
+  //                                  Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
+  async function asyncFunctionCallsAsync(context: ActivityLoggingContext): Promise<void> {
+    context.enter();        // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+        Logger.logTrace("cat", "callback invoked");
+        resolve();
+      }, 1);
+    });
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback2
+  function synchronousFunctionCallsAsync() {
+    // This is an example of the rare case where a synchronous function invokes an async function and
+    // the async callback emits logging messages. In this case, because the caller is synchronous, it must
+    // access the current ActivityLoggingContext and assign it to a local variable.
+    const context = ActivityLoggingContext.current;        // Must hold a local reference for callback to use.
+    setTimeout(() => {
+      context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+      Logger.logTrace("cat", "callback invoked");
+    }, 1);
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  async function someAsync(_context: ActivityLoggingContext): Promise<void> { }
+  // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncMethod
+
+  //                                Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
+  async function asyncMethodExample(context: ActivityLoggingContext): Promise<void> {
+    context.enter();
+
+    try {
+      await someAsync(context); // Rule: Pass the ActivityLoggingContext to Promise-returning methods
+      context.enter();        // Rule: Enter the ActivityLoggingContext on the line after an await
+      Logger.logTrace("cat", "promise resolved");
+    } catch (_err) {
+      context.enter();        // Rule: Enter the ActivityLoggingContext in an async rejection
+      Logger.logTrace("cat", "promise rejected");
+    }
+
+    // The same rules, using .then.catch instead of await + try/catch.
+    someAsync(context)          // Rule: Pass the ActivityLoggingContext to Promise-returning methods
+      .then(() => {
+        context.enter();    // Rule: Enter the ActivityLoggingContext on the line of .then callback
+        Logger.logTrace("cat", "promise resolved");
+      })
+      .catch((_err) => {
+        context.enter();    // Rule: Enter the ActivityLoggingContext in .catch callback
+        Logger.logTrace("cat", "promise rejected");
+      });
+
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  it("should handle ActivityLoggingContext in async callbacks", async () => {
+    await asyncFunctionCallsAsync(new ActivityLoggingContext("abc"));
+    await synchronousFunctionCallsAsync();
+    await asyncMethodExample(new ActivityLoggingContext("abc"));
+  });
 
   it("should update the imodel project extents", async () => {
     // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
@@ -85,7 +151,7 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
-      await iModel.concurrencyControl.codes.reserve(accessToken);
+      await iModel.concurrencyControl.codes.reserve(activityContext, accessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
         // Do something about err.unavailableCodes ...
@@ -100,7 +166,7 @@ describe("Example Code", () => {
     // Now acquire all locks and reserve all codes needed.
     // This is a *perquisite* to saving local changes.
     try {
-      await iModel.concurrencyControl.request(accessToken);
+      await iModel.concurrencyControl.request(activityContext, accessToken);
     } catch (err) {
       // If we can't get *all* of the locks and codes that are needed,
       // then we can't go on with this transaction as is.
@@ -152,19 +218,17 @@ describe("Example Code", () => {
 
   });
 
-  it("should get elements by id and code", () => {
-    // __PUBLISH_EXTRACT_START__ Elements.getRootSubject
-    const root = iModel.elements.getRootSubject();
+  it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
+    const elementId = new Id64();
+    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
+    // __PUBLISH_EXTRACT_START__ Elements.getUniqueAspect
+    const elementAspect: ElementUniqueAspect = iModel.elements.getUniqueAspect(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
-    // __PUBLISH_EXTRACT_START__ Elements.getElement
-    const el = iModel.elements.getElement(root.id);
-    assert.deepEqual(el.id, root.id);
-
-    const el2 = iModel.elements.getElement(root.code);
-    assert.deepEqual(el2.id, root.id);
-    assert.deepEqual(el2.code, root.code);
+    elementAspect;
+    // __PUBLISH_EXTRACT_START__ Elements.getMultiAspects
+    const elementAspects: ElementMultiAspect[] = iModel.elements.getMultiAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
-
+    elementAspects;
   });
 
 });

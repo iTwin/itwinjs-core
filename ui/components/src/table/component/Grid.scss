@@ -1,4 +1,9 @@
-div.react-data-grid-wrapper {
+/*---------------------------------------------------------------------------------------------
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+ div.react-data-grid-wrapper {
   /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
@@ -52,7 +57,7 @@ div.react-data-grid-wrapper {
 }
 
 .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
-  background: #a6d7f5 !important;
+  background: #a6d7f5;
 }
 
 .react-grid-Cell {
@@ -140,6 +145,8 @@ div.react-data-grid-wrapper {
   left:0px;
   background-color: #F9F9F9;
   user-select: none;
+  display: flex;
+  align-items: center;
 }
 
 .cell.is-selected {
@@ -159,4 +166,11 @@ div.react-data-grid-wrapper {
 .icon {
   padding-left: 0px;
   background: inherit;
+}
+
+.cell-editor {
+  border: $bwc-blue solid 2px;
+  background: #F9F9F9 !important;
+  box-sizing: border-box;
+  height: 100%;
 }

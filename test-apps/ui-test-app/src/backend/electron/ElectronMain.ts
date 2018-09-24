@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import * as semver from "semver";
 import { app, protocol, BrowserWindow } from "electron";
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
@@ -34,7 +35,7 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
   /**
    * Creates the "main" electron BrowserWindow with the application's frontend.
    */
-  function createWindow() {
+  async function createWindow() {
     // in dev builds (npm start), we don't copy the public folder to lib/public,
     // so we'll need to access the original public dir for our app icon
     const isDevBuild = (process.env.NODE_ENV === "development");
@@ -47,9 +48,16 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
     });
     mainWindow.on("closed", () => mainWindow = undefined);
 
-    // install some devtools extensions for easier react and redux debugging
-    installExtension(REACT_DEVELOPER_TOOLS);
-    installExtension(REDUX_DEVTOOLS);
+    if (isDevBuild) {
+      // install some devtools extensions for easier react and redux debugging
+      await installExtension(REACT_DEVELOPER_TOOLS);
+      await installExtension(REDUX_DEVTOOLS);
+
+      // NEEDSWORK: older versions of the redux devtools have been causing the frontend to crash, so just make sure we have a new enough version
+      const reduxDevtoolsInfo = (BrowserWindow.getDevToolsExtensions() as any)["Redux DevTools"];
+      if (!reduxDevtoolsInfo || semver.gt("2.15.3", reduxDevtoolsInfo.version))
+        await installExtension(REDUX_DEVTOOLS, true);
+    }
 
     // load the frontend
     //    in development builds, the frontend assets are served by the webpack devserver

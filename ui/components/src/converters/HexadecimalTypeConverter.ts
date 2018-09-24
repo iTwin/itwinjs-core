@@ -19,7 +19,7 @@ export class HexadecimalTypeConverter extends TypeConverter {
 
   public async convertFromString(value: string): Promise<any> {
     if (null === value || undefined === value)
-      return null;
+      return undefined;
 
     if (value[1] === "x")
       return parseInt(value.substr(2), 16);

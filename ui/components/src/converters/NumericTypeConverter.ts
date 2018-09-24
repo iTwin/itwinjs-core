@@ -9,7 +9,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
 /**
  * Base Numeric Type Converter.
  */
-export class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
+export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
   public get isLessGreaterType(): boolean { return true; }
 
   public isLessThan(a: any, b: any): boolean {
@@ -47,7 +47,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
 
   public async convertFromString(value: string): Promise<any> {
     if (null === value || undefined === value)
-      return null;
+      return undefined;
 
     return parseFloat(value);
   }
@@ -71,7 +71,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
 
   public async convertFromString(value: string): Promise<any> {
     if (null === value || undefined === value)
-      return null;
+      return undefined;
 
     // tslint:disable-next-line:radix
     return parseInt(value);

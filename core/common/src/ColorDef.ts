@@ -12,6 +12,7 @@
  */
 export enum ColorByName {
   aliceBlue = 0xFFF8F0,
+  amber = 0x00BFFF,
   antiqueWhite = 0xD7EBFA,
   aqua = 0xFFFF00,
   aquamarine = 0xD4FF7F,
@@ -240,7 +241,7 @@ export type ColorDefProps = number | ColorDef;
  *  1. The order the Red, Green, Blue bytes
  *  2. Whether to specify transparency or opacity (sometimes referred to as "alpha")
  *
- * Generally, iModelJs prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte), but this class provides methods
+ * Generally, iModel.js prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte), but this class provides methods
  * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
  *
  * The constructor also accepts strings in the common HTML formats.
@@ -419,6 +420,9 @@ export class ColorDef {
     c.b += (color.b - c.b) * weight;
     return ColorDef.from(c.r, c.g, c.b, c.t, result);
   }
+
+  /** Create a new ColorDef that is the inverse (all colors set to 255 - this) of this color. */
+  public invert(): ColorDef { const colors = this.colors; return ColorDef.from(255 - colors.r, 255 - colors.g, 255 - colors.b); }
 
   /** Create a ColorDef from hue, saturation, lightness values */
   public static fromHSL(h: number, s: number, l: number, out?: ColorDef): ColorDef {

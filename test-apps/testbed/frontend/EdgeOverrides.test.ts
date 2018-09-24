@@ -4,7 +4,7 @@
 
 import { expect } from "chai";
 import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
-import { LineCode, EdgeOverrides, FloatPreMulRgba, OvrFlags } from "@bentley/imodeljs-frontend/lib/rendering";
+import { LineCode, EdgeOverrides, FloatPreMulRgba, OvrFlags } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {

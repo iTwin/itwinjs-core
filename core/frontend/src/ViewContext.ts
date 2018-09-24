@@ -3,18 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Viewport, ScreenViewport } from "./Viewport";
-import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Vector2d, LineSegment3d, CurveLocationDetail, XAndY, Geometry, ConvexClipPlaneSet } from "@bentley/geometry-core";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
-import { ViewFlags, Npc, Frustum, FrustumPlanes, LinePixels, ColorDef } from "@bentley/imodeljs-common";
-import { TileRequests } from "./tile/TileTree";
-import { Decorations, RenderGraphic, RenderTarget, GraphicBranch, RenderClipVolume, GraphicList } from "./render/System";
-import { ViewState3d } from "./ViewState";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
+import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget } from "./render/System";
+import { TileRequests } from "./tile/TileTree";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewState3d } from "./ViewState";
 
-const gridConstants = { maxGridPoints: 50, maxGridRefs: 25, maxGridDotsInRow: 250, maxHorizonGrids: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225 };
+const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
 export class ViewContext {
   public readonly viewFlags: ViewFlags;
@@ -55,6 +55,7 @@ export class DynamicsContext extends RenderContext {
   public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
 }
 
+/** Object passed to [[Decorator]]s to supply the context of the frame to be rendered. */
 export class DecorateContext extends RenderContext {
   public decorationDiv: HTMLDivElement;
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
@@ -170,6 +171,18 @@ export class DecorateContext extends RenderContext {
     }
   }
 
+  /** Add a [[CanvasDecoration] to the current frame. */
+  public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
+    if (undefined === this._decorations.canvasDecorations)
+      this._decorations.canvasDecorations = [];
+
+    const list = this._decorations.canvasDecorations;
+    if (0 === list.length || true === atFront)
+      list.push(decoration);
+    else
+      list.unshift(decoration);
+  }
+
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
   /** @private */
@@ -180,7 +193,7 @@ export class DecorateContext extends RenderContext {
     const xVec = rMatrix.rowX(),
       yVec = rMatrix.rowY(),
       zVec = rMatrix.rowZ(),
-      viewZ = vp.rotMatrix.getRow(2);
+      viewZ = vp.rotation.getRow(2);
 
     if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
@@ -223,8 +236,8 @@ export class DecorateContext extends RenderContext {
 
     const testPt = gridOrg.plus2Scaled(gridX, repetitions.x / 2.0, gridY, repetitions.y / 2.0);
 
-    let maxGridPts = gridConstants.maxGridPoints;
-    let maxGridRefs = gridConstants.maxGridRefs;
+    let maxGridPts = gridConstants.maxPoints;
+    let maxGridRefs = gridConstants.maxRefs;
 
     if (maxGridPts < 10)
       maxGridPts = 10;
@@ -272,14 +285,14 @@ export class DecorateContext extends RenderContext {
     const lineColor = color.clone();
     const dotColor = color.clone();
     const planeColor = color.clone();
-    lineColor.setTransparency(gridConstants.gridLineTransparency);
-    dotColor.setTransparency(gridConstants.gridDotTransparency);
-    planeColor.setTransparency(gridConstants.gridPlaneTransparency);
+    lineColor.setTransparency(gridConstants.lineTransparency);
+    dotColor.setTransparency(gridConstants.dotTransparency);
+    planeColor.setTransparency(gridConstants.planeTransparency);
     let linePat = LinePixels.Solid;
 
     if (viewZ.dotProduct(zVec) < 0.0) {   // Provide visual indication that grid is being viewed from the back (grid z not towards eye)...
       planeColor.setFrom(ColorDef.red);
-      planeColor.setTransparency(gridConstants.gridPlaneTransparency);
+      planeColor.setTransparency(gridConstants.planeTransparency);
       linePat = LinePixels.Code2;
     }
 
@@ -368,9 +381,9 @@ export class DecorateContext extends RenderContext {
     if (cameraOn) {
       const view = vp.view as ViewState3d;
       const camera = view.camera;
-      const sizeLimit = gridConstants.maxHorizonGrids * colSpacing / vp.viewDelta.x;
+      const sizeLimit = gridConstants.maxHorizon * colSpacing / vp.viewDelta.x;
 
-      vp.rotMatrix.rowZ(viewZ);
+      vp.rotation.rowZ(viewZ);
       zCamera = viewZ.dotProduct(camera.getEyePoint());
       zCameraLimit = zCamera - camera.focusDist * sizeLimit;
     }
@@ -400,7 +413,7 @@ export class DecorateContext extends RenderContext {
         jMax = jMax > colRepetitions ? colRepetitions : jMax;
 
         const isoOffset = doIsoGrid && (i & 1) ? 0.5 : 0.0;
-        for (let j = jMin; j <= jMax && nToDisplay < gridConstants.maxGridDotsInRow; j++) {
+        for (let j = jMin; j <= jMax && nToDisplay < gridConstants.maxDotsInRow; j++) {
           if (0 !== refSpacing && 0 === (j % refSpacing))
             continue;
           const point = dotOrigin.plusScaled(colVec, j + isoOffset);
@@ -431,7 +444,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Display skyBox (cube) graphic which encompasses entire scene and rotates with camera. See RenderSystem.createSkyBox(). */
+  /** Display skyBox (cube) graphic that encompasses entire scene and rotates with camera. See RenderSystem.createSkyBox(). */
   public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */

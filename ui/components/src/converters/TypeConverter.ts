@@ -6,6 +6,7 @@
 import { PropertyDescription } from "../properties/Description";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValue, PropertyValueFormat, PrimitiveValue } from "../properties/Value";
+import { OutputMessagePriority, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
 
 /**
  * StandardTypeConverterTypeNames.
@@ -48,6 +49,22 @@ export interface NullableOperatorProcessor {
   isNotNull(value: any): boolean;
 }
 
+export interface AsyncErrorMsg {
+  briefMsg: string;
+  detailedMsg?: string;
+  priority?: OutputMessagePriority;
+  msgType?: OutputMessageType;
+  localizationNamespace?: string;   // If this is defined, the detailed and brief properties are keys used along with the namespace to look up localized strings.
+  alertType?: OutputMessageAlert;
+  displayTime?: number;
+}
+
+export interface AsyncValueProcessingResult {
+  returnValue?: PropertyValue;
+  encounteredError: boolean;
+  errorMsg?: AsyncErrorMsg;
+}
+
 /**
  * Type Converter base class.
  */
@@ -58,14 +75,14 @@ export class TypeConverter implements SortComparer, OperatorProcessor {
     return value.toString();
   }
 
+  public async convertFromString(_value: string): Promise<any> {
+    return undefined;
+  }
+
   public async convertPropertyToString(_propertyDescription: PropertyDescription, value: any): Promise<string> {
     if (null === value || undefined === value)
       return "";
     return this.convertToString(value);
-  }
-
-  public async convertFromString(_value: string): Promise<any> {
-    return undefined;
   }
 
   public async convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue> {

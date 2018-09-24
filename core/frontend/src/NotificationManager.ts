@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Notifications */
-import { Viewport } from "./Viewport";
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -84,11 +83,12 @@ export const enum MessageBoxValue {
 
 export interface ToolTipOptions {
   duration?: BeDuration;
+  placement?: string;
 }
 
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
-  public viewport?: Viewport;
+  public viewport?: HTMLElement;
   public displayPoint?: Point2d;
   public relativePosition = RelativePosition.TopRight;
 
@@ -106,7 +106,7 @@ export class NotifyMessageDetails {
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
    */
-  public setPointerTypeDetails(viewport: Viewport, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
+  public setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
     this.viewport = viewport;
     this.displayPoint = Point2d.fromJSON(displayPoint);
     this.relativePosition = relativePosition;
@@ -189,11 +189,24 @@ export class NotificationManager {
   /** Clear the ToolTip if it is current open. If not open, does nothing. */
   public clearToolTip(): void { }
 
+  public readonly toolTipLocation = new Point2d();
   /** Show a ToolTip window.
-   * @param _htmlElement The HTMLElement that that anchors the toolTip.
-   * @param _message The message to display inside the ToolTip
-   * @param _location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
-   * @param _options Options that supply additional information about how the ToolTip should function.
+   * @param htmlElement The HTMLElement that that anchors the toolTip.
+   * @param message The message to display inside the ToolTip. May include HTML.
+   * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
+   * @param options Options that supply additional information about how the ToolTip should function.
    */
-  public showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+  public openToolTip(_htmlElement: HTMLElement, message: string, location?: XAndY, options?: ToolTipOptions): void {
+    this.toolTipLocation.setFrom(location);
+    this._showToolTip(_htmlElement, message, location, options);
+  }
+
+  protected _showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+
+  /** Hides the Pointer message. */
+  public closePointerMessage(): void {
+    this._hidePointerMessage();
+  }
+
+  protected _hidePointerMessage(): void { }
 }

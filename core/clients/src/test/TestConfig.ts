@@ -4,19 +4,20 @@
 import { DeploymentEnv } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { Version, IModelRepository, VersionQuery, IModelQuery } from "../imodelhub";
+import { Version, HubIModel, VersionQuery, IModelQuery } from "../imodelhub";
 import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 import { loggingCategoryFullUrl } from "../Request";
 import * as fs from "fs";
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 export const whitelistPath = "./lib/test/assets/whitelist.txt";
 export const logPath = "./lib/test/iModelClientsTests.log";
 
 const fileStream = fs.createWriteStream(logPath, { flags: "a" });
+const actx = new ActivityLoggingContext("");
 
 // Initialize logger to file
 Logger.initialize(
@@ -67,32 +68,32 @@ export class TestConfig {
     if (TestConfig.deploymentEnv === "DEV" || TestConfig.deploymentEnv === "PERF")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
-    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient(env)).getToken(user.email, user.password);
+    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient(env)).getToken(actx, user.email, user.password);
     expect(authToken);
 
     return authToken;
   }
 
   /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModelRepository, version?: Version }> {
+  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: HubIModel, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
     const imodelHubClient: IModelClient = new IModelHubClient(deploymentEnv);
 
-    const project: Project | undefined = await connectClient.getProject(accessToken, {
+    const project: Project | undefined = await connectClient.getProject(actx, accessToken, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
     expect(project);
 
-    let iModel: IModelRepository | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let iModel: HubIModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     if (iModelName) {
-      const iModels = await imodelHubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(iModelName));
+      const iModels = await imodelHubClient.IModels().get(actx, accessToken, project.wsgId, new IModelQuery().byName(iModelName));
       expect(iModels.length === 1);
       iModel = iModels[0];
 
       if (versionName) {
-        version = (await imodelHubClient.Versions().get(accessToken, iModel.wsgId, new VersionQuery().byName(versionName)))[0];
+        version = (await imodelHubClient.Versions().get(actx, accessToken, iModel.wsgId, new VersionQuery().byName(versionName)))[0];
         expect(version);
       }
     }

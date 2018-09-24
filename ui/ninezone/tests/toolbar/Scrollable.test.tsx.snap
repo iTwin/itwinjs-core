@@ -15,10 +15,10 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
   className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
   items={
     <UNDEFINED>
-      <div />
-      <div />
-      <div />
-      <div />
+      <Item />
+      <Item />
+      <Item />
+      <Item />
     </UNDEFINED>
   }
   renderHistoryItems={[Function]}
@@ -33,10 +33,10 @@ exports[`<Scrollable /> renders vertical with overflow scrolled right most corre
   className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
   items={
     <UNDEFINED>
-      <div />
-      <div />
-      <div />
-      <div />
+      <Item />
+      <Item />
+      <Item />
+      <Item />
     </UNDEFINED>
   }
   renderHistoryItems={[Function]}

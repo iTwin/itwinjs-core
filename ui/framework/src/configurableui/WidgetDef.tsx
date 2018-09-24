@@ -9,6 +9,7 @@ import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -161,9 +162,17 @@ export class WidgetDef {
   public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
 
   public get widgetControl(): WidgetControl | undefined {
+    return this.getWidgetControl(ConfigurableUiControlType.Widget);
+  }
+
+  public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
     // TODO - should call getConfigurable if widget is sharable
     if (!this._widgetControl) {
-      this._widgetControl = ConfigurableUiManager.createConfigurable(this.classId, this.id, this.applicationData) as WidgetControl;
+      this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
+      if (this._widgetControl.getType() !== type) {
+        throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
+      }
+
       if (this._widgetControl) {
         this._widgetControl.widgetDef = this;
       }
@@ -174,7 +183,7 @@ export class WidgetDef {
 
   public get reactElement(): React.ReactNode {
     if (!this._widgetReactNode) {
-      const widgetControl = this.widgetControl;
+      const widgetControl = this.getWidgetControl(ConfigurableUiControlType.Widget);
 
       if (widgetControl && widgetControl.reactElement)
         this._widgetReactNode = widgetControl.reactElement;

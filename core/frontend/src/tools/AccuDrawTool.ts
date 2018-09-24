@@ -53,7 +53,6 @@ export class AccuDrawShortcuts {
     accudraw.flags.lockedRotation = false;
 
     accudraw.updateRotation();
-    accudraw.refreshDecorationsAndDynamics();
 
     // Always want index line to display for x-Axis...changing rotation clears this...so it flashes...
     accudraw.indexed |= LockedStates.X_BM;
@@ -70,7 +69,7 @@ export class AccuDrawShortcuts {
     acs.setOrigin(points[0]);
     switch (points.length) {
       case 1:
-        acs.setRotation(vp.rotMatrix);
+        acs.setRotation(vp.rotation);
         if (!isDynamics) {
           accudraw.published.origin.setFrom(points[0]);
           accudraw.published.flags = AccuDrawFlags.SetOrigin;
@@ -318,7 +317,7 @@ export class AccuDrawShortcuts {
       // If AccuSnap is active use adjusted snap point, otherwise use last data point...
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (undefined !== snap) {
-        accudraw.published.origin.setFrom(snap.adjustedPoint);
+        accudraw.published.origin.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
         accudraw.flags.haveValidOrigin = true;
       } else {
         const ev = new BeButtonEvent();
@@ -671,10 +670,10 @@ export class AccuDrawShortcuts {
       return;
 
     const newMatrix = accudraw.getRotation();
-    if (newMatrix.isExactEqual(vp.rotMatrix))
+    if (newMatrix.isExactEqual(vp.rotation))
       return;
 
-    const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.rotMatrix);
+    const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.rotation);
     const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
     const startFrustum = vp.getFrustum();
     const newFrustum = startFrustum.clone();
@@ -831,6 +830,7 @@ export class AccuDrawShortcuts {
       (CompassMode.Polar !== accudraw.compassMode && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))) {
       if (AccuDrawShortcuts.rotateAxesByPoint(true, aboutCurrentZ)) {
         AccuDrawShortcuts.itemFieldUnlockAll();
+        accudraw.refreshDecorationsAndDynamics();
         return;
       }
     }

@@ -1,14 +1,14 @@
 @import "_variables";
 
 .nz-toolbar-item-expandable-group-tool-expander {
-  .nz-expansion-indicator {
+  > .nz-expansion-indicator {
     margin-left: -$space-after-label + 10px;
     margin-right: $space-after-label;
     filter: $shadow;
   }
 
-  &:active {
-    .nz-expansion-indicator {
+  &:active:not(.nz-is-disabled) {
+    > .nz-expansion-indicator {
       filter: $no-shadow;
     }
   }

@@ -44,9 +44,9 @@ export interface NavigationValue {
 
 /** An ECSqlTypedString is used to decorate a string value with type information.
  *  This is necessary, when binding parameters to an ECSQL statement so that
- *  iModelJs can figure out the right EC type from the string value.
+ *  iModel.js can figure out the right EC type from the string value.
  *
- *  See also [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes).
+ *  See also [iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes).
  */
 export interface ECSqlTypedString {
   type: ECSqlStringType;
@@ -131,13 +131,13 @@ export enum ECSqlSystemProperty {
   PointZ,
 }
 
-/** Utility to format ECProperty names according to the iModelJs formatting rules.
+/** Utility to format ECProperty names according to the iModel.js formatting rules.
  *
  *  See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
  */
 export class ECJsNames {
 
-  /** Formats the specified ECProperty name according to the iModelJs formatting rules.
+  /** Formats the specified ECProperty name according to the iModel.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    *
@@ -217,7 +217,7 @@ export class ECJsNames {
   }
 
   /** Returns the name of the specified ECSQL system property according to the
-   *  iModelJs formatting rules.
+   *  iModel.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    * @param systemPropertyType System property type

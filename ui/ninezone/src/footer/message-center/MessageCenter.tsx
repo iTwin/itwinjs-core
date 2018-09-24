@@ -5,7 +5,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
+import withContainInViewport from "../../base/WithContainInViewport";
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import Direction from "../../utilities/Direction";
 import Popover from "../../popup/popover/Triangle";
@@ -15,6 +15,9 @@ import Title from "../message/content/dialog/Title";
 export { DialogButton as MessageCenterButton } from "../message/content/dialog/Button";
 import Content from "./Content";
 import "./MessageCenter.scss";
+
+// tslint:disable-next-line:variable-name
+const DialogWithContainIn = withContainInViewport(Dialog);
 
 /** Properties of [[MessageCenter]] component. */
 export interface MessageCenterProps extends CommonProps, NoChildrenProps {
@@ -26,6 +29,8 @@ export interface MessageCenterProps extends CommonProps, NoChildrenProps {
   tabs?: React.ReactNode;
   /** Messages of message center. I.e. [[Message]] */
   messages?: React.ReactNode;
+  /* Optional prompt when no messages are present */
+  prompt?: string;
 }
 
 /** Message center dialog used in [[MessageCenterIndicator]] component. */
@@ -41,7 +46,8 @@ export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (prop
       style={props.style}
       direction={Direction.Top}
       content={
-        <Dialog
+        <DialogWithContainIn
+          noVerticalContainment
           titleBar={
             <TitleBar
               title={
@@ -51,9 +57,10 @@ export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (prop
             />
           }
           content={
-            <Content
-              tabs={props.tabs}
-              messages={props.messages}
+          <Content
+            tabs={props.tabs}
+            messages={props.messages}
+            prompt={props.prompt}
             />
           }
         />

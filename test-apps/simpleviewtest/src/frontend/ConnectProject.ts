@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, IModelRepository, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, HubIModel, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 import { ProjectAbstraction } from "./ProjectAbstraction";
@@ -33,6 +33,7 @@ class ProjectApi {
   }
 
   public static async getProjectByName(accessToken: AccessToken, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
 
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
@@ -42,7 +43,7 @@ class ProjectApi {
 
     let projectList: Project[] = [];
     if (projectScope === ProjectScope.Invited) {
-      projectList = await ProjectApi._connectClient.getInvitedProjects(accessToken, queryOptions);
+      projectList = await ProjectApi._connectClient.getInvitedProjects(alctx, accessToken, queryOptions);
     }
 
     if (projectScope === ProjectScope.Favorites) {
@@ -51,7 +52,7 @@ class ProjectApi {
       queryOptions.isMRU = true;
     }
 
-    projectList = await ProjectApi._connectClient.getProjects(accessToken, queryOptions);
+    projectList = await ProjectApi._connectClient.getProjects(alctx, accessToken, queryOptions);
 
     for (const thisProject of projectList) {
       if (thisProject.name === projectName)
@@ -70,15 +71,16 @@ class IModelApi {
   }
 
   /** Get all iModels in a project */
-  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
+  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: IModelRepository[] = await IModelApi._imodelClient.IModels().get(accessToken, projectId, queryOptions);
+    const iModels: HubIModel[] = await IModelApi._imodelClient.IModels().get(alctx, accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
       if (thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi._imodelClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApi._imodelClient.Versions().get(alctx, accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -147,14 +149,16 @@ export class ConnectProject extends ProjectAbstraction {
 
   // log in to connect
   private static async loginToConnect(state: SimpleViewState, userName: string, password: string) {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
+    alctx.enter();
     // tslint:disable-next-line:no-console
     console.log("Attempting login with userName", userName, "password", password);
 
     const authClient = new ImsActiveSecureTokenClient("QA");
     const accessClient = new ImsDelegationSecureTokenClient("QA");
 
-    const authToken: AuthorizationToken = await authClient.getToken(userName, password);
-    state.accessToken = await accessClient.getToken(authToken);
+    const authToken: AuthorizationToken = await authClient.getToken(alctx, userName, password);
+    state.accessToken = await accessClient.getToken(alctx, authToken);
   }
 
   // opens the configured project

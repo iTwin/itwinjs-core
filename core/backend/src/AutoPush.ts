@@ -5,7 +5,7 @@
 
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, Logger, BeEvent, IModelStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
@@ -39,6 +39,8 @@ export interface AutoPushParams {
   pushIntervalSecondsMax: number;
   /** Should AutoPush automatically schedule pushes? If not, the app must call [[AutoPush#scheduleNextPush]] */
   autoSchedule: boolean;
+  /** The ActivityContext in iModelServer operations are to be carried out */
+  activityContext: ActivityLoggingContext;
 }
 
 /** Identifies the current state of an AutoPush object. */
@@ -63,7 +65,8 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * create an AutoPush object, specifying the IModelDb that should be monitored.
  * The instance registers itself to react to events and timers. Often, backend will start
  * auto-pushing when an IModelDb is opened for read-write.
- * Example:
+ *
+ * *Example:*
  * ``` ts
  * [[include:IModelDb.onOpened]]
  * ```
@@ -101,6 +104,7 @@ export class AutoPush {
   private _activityMonitor: AppActivityMonitor;
   private _lastPushError: any;
   private _pendingTimeout: any | undefined;
+  private _activityContext: ActivityLoggingContext;
   /** Events raised by AutoPush. See [[AutoPushEventType]] */
   public event: BeEvent<AutoPushEventHandler>;
 
@@ -117,6 +121,7 @@ export class AutoPush {
     this._pushIntervalMillisMax = params.pushIntervalSecondsMax * 1000;
     this._endOfPushMillis = Date.now(); // not true, but this sets the mark for detecting when we reach the max
     this._startOfPushMillis = this._endOfPushMillis + 1; // initialize to invalid duration
+    this._activityContext = params.activityContext;
     this._lastPushError = undefined;
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
@@ -195,7 +200,7 @@ export class AutoPush {
   }
 
   public reserveCodes(): Promise<void> {
-    return this._iModel.concurrencyControl.request(this.getAccessToken());
+    return this._iModel.concurrencyControl.request(this._activityContext, this.getAccessToken());
   }
 
   /** Callback invoked just before auto-pushing */
@@ -275,7 +280,7 @@ export class AutoPush {
 
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
-    this.iModel.pushChanges(this.getAccessToken()).then(() => this.onPushEnd()).catch((reason) => this.onPushEndWithError(reason));
+    this.iModel.pushChanges(this._activityContext, this.getAccessToken()).then(() => this.onPushEnd()).catch((reason) => this.onPushEndWithError(reason));
     // Note that pushChanges is async. We don't await it or even return it. That is because, doAutoPush is always called on a timer. That is,
     // the caller is node, and so the caller won't await it or otherwise deal with the Promise. That's fine, we just want to kick
     // off the push and let it run concurrently, as the service gets back to doing other things.

@@ -235,19 +235,31 @@
     content: "\eb0a";
 }
 .bim-icon-measure-tool:before {
-      content: "\e9b4"
+      content: "\e9b4";
 }
 .bim-icon-undo:before {
-      content: "\e982"
+      content: "\e982";
 }
 .bim-icon-redo:before {
-      content: "\e983"
+      content: "\e983";
 }
 .bim-icon-model:before {
-      content: "\e90b"
+      content: "\e90b";
 }
 .bim-icon-model:categories {
-      content: "\e901"
+      content: "\e901";
+}
+.bim-icon-animation:before {
+      content: "\e931";
+}
+.bim-icon-play:before {
+      content: "\ea32";
+}
+.bim-icon-pause:before {
+      content: "\ea33";
+}
+.bim-icon-stop:before {
+      content: "\ea34";
 }
 
 .toolMenu {
@@ -285,18 +297,19 @@
 .tooltip {
   background: rgb(255, 252, 216);
   color: black;
-  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  font-size: 0.9em;
+  font-family:  'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.8em;
   font-weight: normal;
+  line-height: 110%;
   text-decoration: none;
   text-align: left;
-  padding: 0.6em 0.75rem;
+  padding: 3px 3px;
   border-radius: 4px;
-  transition: opacity 0.4s;
+  transition: opacity 1.4s;
   white-space: nowrap;
   box-shadow: 0 0.5rem 1rem -0.5rem black;
   z-index: 1000;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .popper .popper__arrow,
@@ -408,8 +421,15 @@
   width: 100px;
 }
 
-#standardRotationMenu .simpleicon {
+#standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {
   float:left;
+}
+#animationSlider {
+  width:250px;
+  display:block;
+}
+#animationState {
+  text-align:right;
 }
 #renderModeToggle {
   width: 100%;

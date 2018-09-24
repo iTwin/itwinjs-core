@@ -7,9 +7,25 @@
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d, XYZ, XYAndZ } from "../PointVector";
 import { Matrix3d, Transform } from "../Transform";
+import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 
 export type Point4dProps = number[];
 export type Matrix4dProps = Point4dProps[];
+
+/**
+ *
+ * @param ddg numerator second derivative
+ * @param dh denominator derivative
+ * @param ddh denominator second derivative
+ * @param f primary function (g/h)
+ * @param df derivative of (g/h)
+ * @param divh = (1/h)
+ * @param dgdivh previously computed first derivative of (g/h)
+ */
+function quotientDerivative2(ddg: number, dh: number, ddh: number,
+  f: number, df: number, divh: number): number {
+  return divh * (ddg - 2.0 * df * dh - f * ddh);
+}
 
 /** 4 Dimensional point (x,y,z,w) used in perspective calculations.
  * * the coordinates are stored in a Float64Array of length 4.
@@ -179,15 +195,27 @@ export class Point4d implements BeJSONFunctions {
   }
   public static createZero(): Point4d { return new Point4d(0, 0, 0, 0); }
   /**
+   * Create plane coefficients for the plane containing pointA, pointB, and 0010.
+   * @param pointA first point
+   * @param pointB second point
+   */
+  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d) {
+    return Point4d.create(
+      pointA.y * pointB.w - pointA.w * pointB.y,
+      pointA.w * pointB.x - pointA.x * pointB.w,
+      0.0,
+      pointA.x * pointB.y - pointA.y * pointB.x);
+  }
+  /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
    */
-  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0): Point4d {
-    return new Point4d(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3]);
+  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
+    return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
   }
 
-  public static createFromPointAndWeight(xyz: XYZ, w: number): Point4d {
+  public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
 
@@ -265,6 +293,20 @@ export class Point4d implements BeJSONFunctions {
   public dotProductXYZW(x: number, y: number, z: number, w: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w;
   }
+  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  public altitude(point: Point3d): number {
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
+  }
+
+  /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocity(vector: Vector3d): number {
+    return this.xyzw[0] * vector.x + this.xyzw[1] * vector.y + this.xyzw[2] * vector.z;
+  }
+
+  /** dotProduct with (x,y,z, 0).  Used in PlaneAltitudeEvaluator interface */
+  public velocityXYZ(x: number, y: number, z: number): number {
+    return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z;
+  }
 
   /** unit X vector */
   public static unitX(): Point4d { return new Point4d(1, 0, 0, 0); }
@@ -304,22 +346,109 @@ export class Point4d implements BeJSONFunctions {
     return result;
   }
 
+  /**
+   * If `this.w` is nonzero, return a 4d point `(x/w,y/w,z/w, 1)`
+   * If `this.w` is zero, return undefined.
+   * @param result optional result
+   */
   public normalizeWeight(result?: Point4d): Point4d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
   }
-
+  /**
+   * If `this.w` is nonzero, return a 3d point `(x/w,y/w,z/w)`
+   * If `this.w` is zero, return undefined.
+   * @param result optional result
+   */
   public realPoint(result?: Point3d): Point3d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     if (mag === 0.0)
       return undefined;
-    result = result ? result : new Point3d();
-    const a = 1.0 / mag;
-    result.set(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a);
-    return result;
+    const a = 1.0 / mag;    // in zero case everything multiplies right back to true zero.
+    return Point3d.create(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a, result);
+  }
+  /**
+   * * If w is nonzero, return Point3d with x/w,y/w,z/w.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param result optional result
+   */
+  public static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    return Point3d.create(x * a, y * a, z * a, result);
   }
 
+  /**
+   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param dx x coordinate of derivative
+   * @param dy y coordinate of derivative
+   * @param dz z coordinate of derivative
+   * @param dw w coordinate of derivative
+   * @param result optional result
+   */
+  public static createRealDerivativeRay3dDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, result?: Ray3d): Ray3d {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    // real point is X/w.
+    // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    const aa = a * a;
+    return Ray3d.createXYZUVW(x * a, y * a, z * a,
+      (dx * w - dw * x) * aa,
+      (dy * w - dw * y) * aa,
+      (dz * w - dw * z) * aa,
+      result);
+  }
+  /**
+   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is zero, return 000
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   * @param w w coordinate
+   * @param dx x coordinate of derivative
+   * @param dy y coordinate of derivative
+   * @param dz z coordinate of derivative
+   * @param dw w coordinate of derivative
+   * @param result optional result
+   */
+  public static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number,
+    dx: number, dy: number, dz: number, dw: number,
+    ddx: number, ddy: number, ddz: number, ddw: number,
+    result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const mag = Geometry.correctSmallMetricDistance(w);
+    // real point is X/w.
+    // real derivative is (X' * w - X *w) / ww, and weight is always 0 by cross products.
+    const a = mag === 0 ? 0.0 : (1.0 / mag);    // in zero case everything multiplies right back to true zero.
+    const aa = a * a;
+    const fx = x * a;
+    const fy = y * a;
+    const fz = z * a;
+    const dfx = (dx * w - dw * x) * aa;
+    const dfy = (dy * w - dw * y) * aa;
+    const dfz = (dz * w - dw * z) * aa;
+    return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
+      fx, fy, fz,
+      dfx, dfy, dfz,
+      quotientDerivative2(ddx, dw, ddw, fx, dfx, a),
+      quotientDerivative2(ddy, dw, ddw, fy, dfy, a),
+      quotientDerivative2(ddz, dw, ddw, fz, dfz, a),
+      result);
+  }
+
+  /**
+   * * If this.w is nonzero, return Point3d with x/w,y/w,z/w.
+   * * If this.w is zero, return 000
+   */
   public realPointDefault000(result?: Point3d): Point3d {
     const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
     if (mag === 0.0)
@@ -646,6 +775,24 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w,
       this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w);
   }
+  /** multiply matrix times column vectors [x,y,z,w] where [x,y,z,w] appear in blocks in an array.
+   * replace the xyzw in the block
+   */
+  public multiplyBlockedFloat64ArrayInPlace(data: Float64Array) {
+    const n = data.length;
+    let x, y, z, w;
+    for (let i = 0; i + 3 < n; i += 4) {
+      x = data[i];
+      y = data[i + 1];
+      z = data[i + 2];
+      w = data[i + 3];
+      data[i] = this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w;
+      data[i + 1] = this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w;
+      data[i + 2] = this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w;
+      data[i + 3] = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
+    }
+  }
+
   /** multiply matrix times XYAndZ  and w. return as Point4d  (And the returned value is NOT normalized down to unit w) */
   public multiplyPoint3d(pt: XYAndZ, w: number, result?: Point4d): Point4d {
     return this.multiplyXYZW(pt.x, pt.y, pt.z, w, result);
@@ -951,9 +1098,8 @@ export class Map4d implements BeJSONFunctions {
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab)
       return undefined;
-    const worldToSlabMap = Map4d.createTransform(worldToSlab, slabToWorld);
-    if (undefined === worldToSlab)
-      return undefined;
+
+    const worldToSlabMap = new Map4d(Matrix4d.createTransform(worldToSlab), Matrix4d.createTransform(slabToWorld));
 
     const slabToNPCMap = new Map4d(
       Matrix4d.createRowValues(
@@ -966,8 +1112,7 @@ export class Map4d implements BeJSONFunctions {
         0, 1, 0, 0,
         0, 0, 1.0 / fraction, 0,
         0, 0, (1.0 - fraction) / fraction, 1));
-    if (undefined === worldToSlabMap)
-      return undefined;
+
     const result = slabToNPCMap.multiplyMapMap(worldToSlabMap);
     /*
     let numIdentity = 0;

@@ -3,10 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ElementProps, RelatedElement } from "@bentley/imodeljs-common";
-import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
+import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
 
 export interface IModelTestUtilsOpenOptions {
     copyFilename?: string;
@@ -27,6 +28,10 @@ export class TestUsers {
     public static readonly regular: UserCredentials = {
         email: "Regular.IModelJsTestUser@mailinator.com",
         password: "Regular@iMJs",
+    };
+    public static readonly superManager: UserCredentials = {
+        email: "SuperManager.IModelJsTestUser@mailinator.com",
+        password: "SuperManager@iMJs",
     };
 }
 
@@ -55,6 +60,16 @@ export class IModelTestUtils {
         }
         return stat;
     }
+
+    // __PUBLISH_EXTRACT_START__ Bridge.getAccessToken.example-code
+    public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
+        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(activityContext, userCredentials.email, userCredentials.password);
+        assert(authToken);
+        const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(activityContext, authToken!);
+        assert(accessToken);
+        return accessToken;
+    }
+    // __PUBLISH_EXTRACT_END__
 
     public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
         const destPath = KnownTestLocations.outputDir;

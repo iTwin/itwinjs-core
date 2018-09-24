@@ -221,7 +221,7 @@ export class ClipMaskVolume implements RenderClipVolume {
 
       } else if (clippedPolygon.length > 4) {
         // Clipped polygon must be triangulated before appending
-        const triangulatedPolygonGraph = Triangulator.earcutFromPoints(clippedPolygon);
+        const triangulatedPolygonGraph = Triangulator.earcutSingleLoop(clippedPolygon);
         Triangulator.cleanupTriangulation(triangulatedPolygonGraph);
         polyfaceBuilder.addGraph(triangulatedPolygonGraph, false);
       }

@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, DbResult } from "@bentley/bentleyjs-core";
+import { Id64, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { IModelRepository, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
+import { HubIModel, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
 import * as utils from "./../../../../clients/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/lib/test/ResponseBuilder";
@@ -26,6 +26,7 @@ describe("PushRetry", () => {
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
   const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const actx = new ActivityLoggingContext("");
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
@@ -36,14 +37,14 @@ describe("PushRetry", () => {
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
-      await testIModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(changeSetId));
+      await testIModel.pullAndMergeChanges(actx, accessToken, IModelVersion.asOfChangeSet(changeSetId));
     }
 
     // Extract summary information about the current (or latest change set) of the briefcase/iModel into the change cache
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, testIModel, { currentVersionOnly: true });
+    await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, testIModel, { currentVersionOnly: true });
 
     // Attach a change cache file to the iModel
     ChangeSummaryManager.attachChangeCache(testIModel);
@@ -128,12 +129,12 @@ describe("PushRetry", () => {
     let actualVersionCount: number = 0;
 
     // Subscribe to change set and version events
-    const changeSetSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(accessToken, testIModelId, ["ChangeSetPostPushEvent"]);
-    const deleteChangeSetListener = BriefcaseManager.imodelClient.Events().createListener(async () => accessToken, changeSetSubscription.wsgId, testIModelId, async (_receivedEvent: ChangeSetPostPushEvent) => {
+    const changeSetSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(actx, accessToken, testIModelId, ["ChangeSetPostPushEvent"]);
+    const deleteChangeSetListener = BriefcaseManager.imodelClient.Events().createListener(actx, async () => accessToken, changeSetSubscription.wsgId, testIModelId, async (_receivedEvent: ChangeSetPostPushEvent) => {
       actualChangeSetCount++;
     });
-    const namedVersionSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(accessToken, testIModelId, ["VersionEvent"]);
-    const deleteNamedVersionListener = BriefcaseManager.imodelClient.Events().createListener(async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
+    const namedVersionSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(actx, accessToken, testIModelId, ["VersionEvent"]);
+    const deleteNamedVersionListener = BriefcaseManager.imodelClient.Events().createListener(actx, async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
       actualVersionCount++;
       extractChangeSummary(receivedEvent.changeSetId!);
     });
@@ -150,12 +151,12 @@ describe("PushRetry", () => {
   });
 
   it.skip("should retry to push changes (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const pushRetryIModel: IModelDb = await IModelDb.create(actx, accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
@@ -185,18 +186,18 @@ describe("PushRetry", () => {
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
-    await pushRetryIModel.pushChanges(accessToken);
+    await pushRetryIModel.pushChanges(actx, accessToken);
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
   });
 
   it.skip("should fail to push and not retry again (#integration)", async () => {
-    const iModels: IModelRepository[] = await BriefcaseManager.imodelClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const pushRetryIModel: IModelDb = await IModelDb.create(actx, accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
@@ -211,13 +212,13 @@ describe("PushRetry", () => {
       response, 5, undefined, undefined, 409);
 
     try {
-      await pushRetryIModel.pushChanges(accessToken);
+      await pushRetryIModel.pushChanges(actx, accessToken);
     } catch (error) {
       assert.exists(error);
       assert.equal(error.name, "UnknownPushError");
     }
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
   });
 
 });

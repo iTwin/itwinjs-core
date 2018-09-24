@@ -7,7 +7,7 @@ import { request, RequestOptions } from "../Request";
 import { Config } from "../Config";
 import { DefaultRequestOptionsProvider } from "../Client";
 import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";
 import { IModelBaseHandler } from "./BaseHandler";
 
@@ -64,10 +64,10 @@ export abstract class IModelHubBaseEvent {
    * Remove a single event from queue.
    * @returns true if operation succeeded, false otherwise.
    */
-  public async delete(): Promise<boolean> {
+  public async delete(alctx: ActivityLoggingContext): Promise<boolean> {
     if (this._handler && this._lockUrl && this._sasToken) {
       const options = getEventBaseOperationRequestOptions(this._handler, ModifyEventOperationToRequestType.Delete, this._sasToken);
-      const result = await request(this._lockUrl, options);
+      const result = await request(alctx, this._lockUrl, options);
 
       if (result.status === 200)
         return Promise.resolve(true);

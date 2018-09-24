@@ -11,7 +11,7 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelTileRpcInterface,
   ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap} from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 
@@ -25,6 +25,9 @@ import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./appui/AppBackstage";
 import "./index.scss";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
+import { MeasurePointsTool } from "./tools/MeasurePoints";
+
+import { AppToolFormatsProvider } from "./utils/ToolFormatsProvider";
 
 // @ts-ignore
 import { createAction, Action, ActionsUnion, ActionWithPayload, DeepReadonlyObject, DeepReadonly } from "./utils/redux-ts";
@@ -110,6 +113,7 @@ export class SampleAppIModelApp extends IModelApp {
   protected static onStartup() {
     IModelApp.notifications = new AppNotificationManager();
     IModelApp.accuSnap = new SampleAppAccuSnap();
+    IModelApp.quantityFormatManager.toolFormatsProvider = new AppToolFormatsProvider();
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
@@ -136,6 +140,7 @@ export class SampleAppIModelApp extends IModelApp {
     BackstageShow.register(this.sampleAppNamespace);
     BackstageHide.register(this.sampleAppNamespace);
     BackstageToggle.register(this.sampleAppNamespace);
+    MeasurePointsTool.register(this.sampleAppNamespace);
   }
 
   public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]): void {

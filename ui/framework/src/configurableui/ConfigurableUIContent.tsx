@@ -9,6 +9,7 @@ import { connect } from "react-redux";
 import { ModalDialogRenderer } from "./ModalDialogManager";
 import { FrontstageComposer } from "./FrontstageComposer";
 import { ElementTooltip } from "./ElementTooltip";
+import PointerMessage from "../messages/Pointer";
 
 /** Props for [[ConfigurableUIContent]] */
 export interface ConfigurableUIContentProps {
@@ -40,6 +41,7 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentPr
       top: "0px",
       height: "100%",
       zIndex: 0,
+      overflow: "hidden",
     };
     return (
       <div className="App" style={{ height: "100%" }} >
@@ -48,6 +50,7 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentPr
           <FrontstageComposer style={{ position: "relative", height: "100%" }} />
           <ModalDialogRenderer />
           <ElementTooltip />
+          <PointerMessage />
         </div>
       </div>
     );

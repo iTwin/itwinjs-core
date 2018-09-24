@@ -537,13 +537,13 @@ export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
   private static _activeLayout?: ContentLayoutDef;
 
-  public static loadContentLayouts(layoutPropsList: ContentLayoutProps[]) {
+  public static loadLayouts(layoutPropsList: ContentLayoutProps[]) {
     layoutPropsList.map((layoutProps, _index) => {
-      ContentLayoutManager.loadLayoutProps(layoutProps);
+      ContentLayoutManager.loadLayout(layoutProps);
     });
   }
 
-  public static loadLayoutProps(layoutProps: ContentLayoutProps) {
+  public static loadLayout(layoutProps: ContentLayoutProps) {
     const layout = new ContentLayoutDef(layoutProps);
     if (layoutProps.id)
       ContentLayoutManager.addLayout(layoutProps.id, layout);

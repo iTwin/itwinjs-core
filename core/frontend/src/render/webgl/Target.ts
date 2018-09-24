@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, Matrix4d, Point2d } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, BeDuration, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType } from "../System";
+import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
+import { BeTimePoint, assert, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -119,8 +119,8 @@ export class Clips {
 }
 
 export class PerformanceMetrics {
-  public frameTimes: BeTimePoint[] = [];
-  public curFrameTimeIndex = 0;
+  private _lastTimePoint = BeTimePoint.now();
+  public frameTimings = new Map<string, number>();
   public gatherGlFinish = false;
   public gatherCurPerformanceMetrics = false;
   public curSpfTimeIndex = 0;
@@ -137,13 +137,38 @@ export class PerformanceMetrics {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
   }
+
+  public startNewFrame(sceneTime: number = 0) {
+    this.frameTimings = new Map<string, number>();
+    this.frameTimings.set("Scene Time", sceneTime);
+    this._lastTimePoint = BeTimePoint.now();
+  }
+
+  public recordTime(operationName: string) {
+    const newTimePoint = BeTimePoint.now();
+    this.frameTimings.set(operationName, (newTimePoint.milliseconds - this._lastTimePoint.milliseconds));
+    this._lastTimePoint = BeTimePoint.now();
+  }
+
+  public endFrame(operationName?: string) {
+    const newTimePoint = BeTimePoint.now();
+    let sum = 0;
+    this.frameTimings.forEach((value) => {
+      sum += value;
+    });
+    this.frameTimings.set("Total RenderFrame Time", sum);
+    const gpuTime = (newTimePoint.milliseconds - this._lastTimePoint.milliseconds);
+    this.frameTimings.set(operationName ? operationName : "Finish GPU Queue", gpuTime);
+    this.frameTimings.set("Total Time w/ GPU", sum + gpuTime);
+    this._lastTimePoint = BeTimePoint.now();
+  }
 }
 
 export abstract class Target extends RenderTarget {
+  protected _decorations?: Decorations;
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
-  private _decorations?: Decorations;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -327,24 +352,6 @@ export abstract class Target extends RenderTarget {
     const index = this._batches.indexOf(batch);
     assert(index > -1);
     this._batches.splice(index, 1);
-  }
-
-  public setFrameTime(sceneTime?: number) {
-    if (this.performanceMetrics) {
-      if (sceneTime !== undefined) {
-        this.performanceMetrics.frameTimes[1] = BeTimePoint.now();
-        this.performanceMetrics.frameTimes[0] = this.performanceMetrics.frameTimes[1].minus(BeDuration.fromMilliseconds(sceneTime));
-        this.performanceMetrics.curFrameTimeIndex = 2;
-      } else if (this.performanceMetrics.curFrameTimeIndex < 14)
-        this.performanceMetrics.frameTimes[this.performanceMetrics.curFrameTimeIndex++] = BeTimePoint.now();
-    }
-  }
-  public get frameTimings(): number[] {
-    if (this.performanceMetrics === undefined) return [];
-    const timings: number[] = [];
-    for (let i = 0; i < 13; ++i)
-      timings[i] = (this.performanceMetrics.frameTimes[i + 1].milliseconds - this.performanceMetrics.frameTimes[i].milliseconds);
-    return timings;
   }
 
   // ---- Implementation of RenderTarget interface ---- //
@@ -573,8 +580,11 @@ export abstract class Target extends RenderTarget {
     }
 
     this.paintScene(sceneMilSecElapsed);
+    this.drawOverlayDecorations();
     assert(System.instance.frameBufferStack.isEmpty);
   }
+
+  protected drawOverlayDecorations(): void { }
 
   public queueReset(): void {
     this.reset();
@@ -620,7 +630,7 @@ export abstract class Target extends RenderTarget {
   }
   public get edgeColor(): ColorInfo {
     assert(this.isEdgeColorOverridden);
-    return new ColorInfo(this._visibleEdgeOverrides.color!);
+    return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
   private _doDebugPaint: boolean = false;
@@ -636,7 +646,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.setFrameTime(sceneMilSecElapsed);
+    if (this.performanceMetrics) this.performanceMetrics.startNewFrame(sceneMilSecElapsed);
     this._beginPaint();
 
     const gl = System.instance.context;
@@ -646,6 +656,7 @@ export abstract class Target extends RenderTarget {
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     const drawForReadPixels = false;
     if (drawForReadPixels) {
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
       vf.textures = false;
@@ -663,26 +674,28 @@ export abstract class Target extends RenderTarget {
       this.pushState(state);
 
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
 
       this._stack.pop();
     } else {
-      this.setFrameTime();
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
-      this.setFrameTime();
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
-      this.setFrameTime();
       this._stack.pushState(this.decorationState);
       this.drawPass(RenderPass.WorldOverlay);
       this.drawPass(RenderPass.ViewOverlay);
       this._stack.pop();
 
-      this.setFrameTime();
+      if (this.performanceMetrics) this.performanceMetrics.recordTime("Overlay Draws");
     }
 
     this._endPaint();
+    if (this.performanceMetrics) this.performanceMetrics.recordTime("End Paint");
 
     if (this.performanceMetrics) {
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {
@@ -692,7 +705,10 @@ export abstract class Target extends RenderTarget {
         perfMet.spfSum += fpsTimerElapsed;
         perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
 
-        const renderTimeElapsed = (perfMet.frameTimes[11].milliseconds - perfMet.frameTimes[0].milliseconds);
+        let renderTimeElapsed = 0;
+        perfMet.frameTimings.forEach((val) => {
+          renderTimeElapsed += val;
+        });
         if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
         perfMet.renderSpfSum += renderTimeElapsed;
         perfMet.renderSpfTimes[perfMet.curSpfTimeIndex] = renderTimeElapsed;
@@ -712,7 +728,7 @@ export abstract class Target extends RenderTarget {
         System.instance.frameBufferStack.execute(this._fbo!, true, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
-        this.setFrameTime();
+        if (this.performanceMetrics) this.performanceMetrics.endFrame("Finish GPU Queue");
       }
     }
   }
@@ -763,10 +779,11 @@ export abstract class Target extends RenderTarget {
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
+    // Temporarily turn off lighting to speed things up.
+    // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
     vf.transparency = false;
-    vf.textures = false;
+    vf.textures = true; // false;
     vf.sourceLights = false;
     vf.cameraLights = false;
     vf.solarLight = false;
@@ -932,11 +949,12 @@ export abstract class Target extends RenderTarget {
   protected abstract _endPaint(): void;
 }
 
-/** A Target which renders to a canvas on the screen */
+/** A Target that renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
-  private _prevViewRect: ViewRect = new ViewRect();
+  private readonly _prevViewRect = new ViewRect();
+  private _animationFraction: number = 0;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -948,6 +966,9 @@ export class OnScreenTarget extends Target {
     this._blitGeom = dispose(this._blitGeom);
     super.dispose();
   }
+
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
     this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
@@ -1000,7 +1021,7 @@ export class OnScreenTarget extends Target {
       // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
       this._canvas.width = viewRect.width;
       this._canvas.height = viewRect.height;
-      this._prevViewRect = new ViewRect(0, 0, viewRect.width, viewRect.height);
+      this._prevViewRect.setFrom(viewRect);
       return true;
     }
     return false;
@@ -1045,6 +1066,34 @@ export class OnScreenTarget extends Target {
     onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
+
+  protected drawOverlayDecorations(): void {
+    if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
+      const ctx = this._canvas.getContext("2d")!;
+      for (const overlay of this._decorations.canvasDecorations) {
+        ctx.save();
+        if (overlay.position)
+          ctx.translate(overlay.position.x, overlay.position.y);
+        overlay.drawDecoration(ctx);
+        ctx.restore();
+      }
+    }
+  }
+
+  public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
+    let overlays: CanvasDecoration[] | undefined;
+    if (undefined === this._decorations || undefined === (overlays = this._decorations.canvasDecorations))
+      return undefined;
+
+    // loop over array backwards, because later entries are drawn on top.
+    for (let i = overlays.length - 1; i >= 0; --i) {
+      const overlay = overlays[i];
+      if (undefined !== overlay.pick && overlay.pick(pt))
+        return overlay;
+    }
+    return undefined;
+  }
+
   public onResized(): void {
     this._dcAssigned = false;
     dispose(this._fbo);
@@ -1053,20 +1102,25 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
+  private _animationFraction: number = 0;
+
   public constructor(rect: ViewRect) {
     super(rect);
   }
 
+  public get animationFraction(): number { return this._animationFraction; }
+  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+
   public get viewRect(): ViewRect { return this.renderRect; }
 
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public updateViewRect(): boolean { return false; } // offscreen target does not dynmaically resize the view rect
+  public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
     if (this.renderRect.equals(rect))
       return;
 
-    this.renderRect.copyFrom(rect);
+    this.renderRect.setFrom(rect);
     if (temporary) {
       // Temporarily adjust view rect in order to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures

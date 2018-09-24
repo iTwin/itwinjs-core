@@ -5,14 +5,12 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
-  ChangesType, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, IModelRepository, IModelAccessContext,
+  ChangesType, Briefcase, HubCode, IModelHubError,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
-import { IModelBankAccessContext } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankAccessContext";
-import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
@@ -215,51 +213,19 @@ class BriefcaseCache {
 export class BriefcaseManager {
   private static _cache: BriefcaseCache = new BriefcaseCache();
   private static _isCacheInitialized?: boolean;
-  private static _defaultHubClient?: IModelHubClient;
   private static _imodelClient?: IModelClient;
-  private static _lastIModelClientContext: string | undefined; // Used to optimize IModelClient context-switching. See setClientFromIModelTokenContext
 
   /** IModel Server Client to be used for all briefcase operations */
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
-      if (!this._defaultHubClient) {
-        if (!IModelHost.configuration)
-          throw new Error("IModelHost.startup() should be called before any backend operations");
-        // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-        this._defaultHubClient = new IModelHubClient(IModelHost.configuration.hubDeploymentEnv, new AzureFileHandler(false));
-      }
-      this._imodelClient = this._defaultHubClient!;
+      // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
+      this._imodelClient = new IModelHubClient(IModelHost.configuration ? IModelHost.configuration.hubDeploymentEnv : "PROD", new AzureFileHandler(false));
     }
     return this._imodelClient;
   }
 
-  /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
-  private static setClientFromAccessContext(context: IModelAccessContext | undefined) {
-    if (context !== undefined && context.client !== undefined) {
-      // This context requires a custom handler. Force a switch to a new IModelHubClient that is based on this handler.
-      this._imodelClient = context.client;
-    } else {
-      // This context requires the standard iModelHub handler. Force a switch to a new IModelHubClient that is based on iModelHub.
-      this._imodelClient = this._defaultHubClient!;
-    }
-  }
-
-  /** Make sure that BriefcaseManager is configured to access iModels in the specified context.
-   * For now, there are only two cases: the default iModelHub client or a specific iModelBank client.
-   * In the case of iModelHub, contextId will be a Connect project GUID. That means use _defaultHubClient.
-   * In the case of iModelBank, contextId will be a JSON-encoded object that contains the iModelBankClient parameters that should be used.
-   */
-  public static setClientFromIModelTokenContext(contextId: string | undefined, iModelId: string) {
-    if (this._lastIModelClientContext === contextId)
-      return;
-    this._lastIModelClientContext = contextId;
-    const iModelBankAccessContext = contextId ? IModelBankAccessContext.fromIModelTokenContextId(contextId, iModelId, new UrlFileHandler()) : undefined;
-    this.setClientFromAccessContext(iModelBankAccessContext);
-  }
-
-  /** Make sure that BriefcaseManager is configured to access the specified iModel in the appropriate context. */
-  public static setClientForBriefcase(briefcase: BriefcaseEntry) {
-    this.setClientFromIModelTokenContext(briefcase.imodelClientContext, briefcase.iModelId);
+  public static set imodelClient(cli: IModelClient) {
+    this._imodelClient = cli;
   }
 
   private static _connectClient?: ConnectClient;
@@ -334,7 +300,8 @@ export class BriefcaseManager {
   }
 
   /** Get information on a briefcase on disk by opening it, and querying the IModelServer */
-  private static async addBriefcaseToCache(accessToken: AccessToken, briefcaseDir: string, iModelId: string) {
+  private static async addBriefcaseToCache(actx: ActivityLoggingContext, accessToken: AccessToken, briefcaseDir: string, iModelId: string) {
+    actx.enter();
     const fileNames = IModelJsFs.readdirSync(briefcaseDir);
     if (fileNames.length !== 1)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain exactly one briefcase`);
@@ -345,11 +312,13 @@ export class BriefcaseManager {
 
     try {
       // Append information from the IModelServer
-      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, briefcase.changeSetId);
+      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, briefcase.changeSetId);
+      actx.enter();
       if (briefcase.reversedChangeSetId)
-        briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, briefcase.reversedChangeSetId);
+        briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, briefcase.reversedChangeSetId);
+      actx.enter();
       if (briefcase.briefcaseId !== BriefcaseId.Standalone) {
-        const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+        const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
         if (hubBriefcases.length === 0)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase ${briefcase.briefcaseId}:${briefcase.pathname} on the Hub (for the current user)`);
         briefcase.userId = hubBriefcases[0].userId;
@@ -361,12 +330,13 @@ export class BriefcaseManager {
       // are exclusive, but at the moment we don't have a way of differentiating exclusive and shared briefcases when opening them the
       // first time. We could consider caching that information also. see findCachedBriefcaseToOpen()
       if (briefcase.reversedChangeSetId) {
-        await BriefcaseManager.reinstateChanges(accessToken, briefcase);
+        await BriefcaseManager.reinstateChanges(actx, accessToken, briefcase);
         assert(!briefcase.reversedChangeSetId && !briefcase.nativeDb.getReversedChangeSetId(), "Error with reinstating reversed changes");
       }
     } catch (error) {
       throw error;
     } finally {
+      actx.enter();
       if (briefcase && briefcase.isOpen)
         BriefcaseManager.closeBriefcase(briefcase);
     }
@@ -375,7 +345,8 @@ export class BriefcaseManager {
   }
 
   /** Get basic information on all briefcases on disk under the specified path */
-  private static async initCacheForIModel(accessToken: AccessToken, iModelId: string) {
+  private static async initCacheForIModel(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string) {
+    actx.enter();
     const basePath = BriefcaseManager.getBriefcasesPath(iModelId);
     if (!IModelJsFs.existsSync(basePath))
       return;
@@ -386,7 +357,8 @@ export class BriefcaseManager {
     for (const subDirName of subDirs) {
       const briefcaseDir = path.join(basePath, subDirName);
       try {
-        await BriefcaseManager.addBriefcaseToCache(accessToken, briefcaseDir, iModelId);
+        await BriefcaseManager.addBriefcaseToCache(actx, accessToken, briefcaseDir, iModelId);
+        actx.enter();
       } catch (error) {
         Logger.logWarning(loggingCategory, `Deleting briefcase in ${briefcaseDir} from cache`);
         BriefcaseManager.deleteFolderRecursive(briefcaseDir);
@@ -447,7 +419,8 @@ export class BriefcaseManager {
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary).
    * Note: Callers should use memoizedInitCache() instead
    */
-  private static async initCache(accessToken?: AccessToken): Promise<void> {
+  private static async initCache(actx: ActivityLoggingContext, accessToken?: AccessToken): Promise<void> {
+    actx.enter();
     if (BriefcaseManager._isCacheInitialized)
       return;
 
@@ -460,7 +433,7 @@ export class BriefcaseManager {
 
     const perfLogger = new PerfLogger("BriefcaseManager.initCache");
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
-      await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
+      await BriefcaseManager.initCacheForIModel(actx, accessToken, iModelId);
     }
     perfLogger.dispose();
 
@@ -469,10 +442,10 @@ export class BriefcaseManager {
 
   private static _memoizedInitCache?: Promise<void>;
   /** Memoized initCache - avoids race condition caused by two async calls to briefcase manager */
-  private static async memoizedInitCache(accessToken?: AccessToken) {
+  private static async memoizedInitCache(actx: ActivityLoggingContext, accessToken?: AccessToken) {
     // NEEDS_WORK: initCache() is to be made synchronous and independent of the accessToken passed in.
     if (!BriefcaseManager._memoizedInitCache)
-      BriefcaseManager._memoizedInitCache = BriefcaseManager.initCache(accessToken);
+      BriefcaseManager._memoizedInitCache = BriefcaseManager.initCache(actx, accessToken);
     try {
       await BriefcaseManager._memoizedInitCache;
     } finally {
@@ -481,11 +454,12 @@ export class BriefcaseManager {
   }
 
   /** Get the index of the change set from its id */
-  private static async getChangeSetIndexFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number> {
+  private static async getChangeSetIndexFromId(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number> {
+    actx.enter();
     if (changeSetId === "")
       return 0; // the first version
     try {
-      const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
+      const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
       return +changeSet.index!;
     } catch (err) {
       assert(false, "Could not determine index of change set");
@@ -494,20 +468,22 @@ export class BriefcaseManager {
   }
 
   /** Open a briefcase */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
-    await BriefcaseManager.memoizedInitCache(accessToken);
+  public static async open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
+    await BriefcaseManager.memoizedInitCache(actx, accessToken);
 
-    this.setClientFromIModelTokenContext(contextId, iModelId);
+    actx.enter();
 
     assert(!!BriefcaseManager.imodelClient);
 
     let perfLogger = new PerfLogger("IModelDb.open, evaluating change set");
-    const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.imodelClient);
+    const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, BriefcaseManager.imodelClient);
+    actx.enter();
     let changeSetIndex: number;
     if (changeSetId === "") {
       changeSetIndex = 0; // First version
     } else {
-      const changeSet: ChangeSet = await BriefcaseManager.getChangeSetFromId(accessToken, iModelId, changeSetId);
+      const changeSet: ChangeSet = await BriefcaseManager.getChangeSetFromId(actx, accessToken, iModelId, changeSetId);
+      actx.enter();
       changeSetIndex = changeSet ? +changeSet.index! : 0;
     }
     perfLogger.dispose();
@@ -528,7 +504,8 @@ export class BriefcaseManager {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} after upgrades (if necessary)`);
       BriefcaseManager.reopenBriefcase(accessToken, briefcase, tempOpenParams);
     } else {
-      briefcase = await BriefcaseManager.createBriefcase(accessToken, contextId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
+      briefcase = await BriefcaseManager.createBriefcase(actx, accessToken, contextId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
+      actx.enter();
       isNewBriefcase = true;
     }
 
@@ -538,7 +515,8 @@ export class BriefcaseManager {
     } else if (changeSetIndex < briefcase.changeSetIndex!) {
       if (openParams.syncMode === SyncMode.PullAndPush) {
         Logger.logWarning(loggingCategory, `No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase ${briefcase.iModelId}:${briefcase.briefcaseId}.`);
-        await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+        actx.enter();
         return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes"));
       }
       changeSetApplyOption = ChangeSetApplyOption.Reverse;
@@ -547,10 +525,12 @@ export class BriefcaseManager {
     if (changeSetApplyOption) {
       assert(briefcase.isOpen && briefcase.openParams!.openMode === OpenMode.ReadWrite); // Briefcase must be opened ReadWrite first to allow applying change sets
       try {
-        await BriefcaseManager.applyChangeSets(accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId), changeSetApplyOption);
+        await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId), changeSetApplyOption);
+        actx.enter();
       } catch (error) {
+        actx.enter();
         Logger.logWarning(loggingCategory, `Error applying changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
-        await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
         return Promise.reject(error);
       }
     }
@@ -572,20 +552,24 @@ export class BriefcaseManager {
   }
 
   /** Close a briefcase */
-  public static async close(accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
+  public static async close(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
+    actx.enter();
     assert(!briefcase.isStandalone, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
     briefcase.onBeforeClose.raiseEvent(briefcase);
     BriefcaseManager.closeBriefcase(briefcase);
-    if (keepBriefcase === KeepBriefcase.No)
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+    if (keepBriefcase === KeepBriefcase.No) {
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+    }
   }
 
   /** Get the change set from the specified id */
-  private static async getChangeSetFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId));
+  private static async getChangeSetFromId(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<ChangeSet> {
+    actx.enter();
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, new ChangeSetQuery().byId(changeSetId));
     if (changeSets.length > 0)
       return changeSets[0];
 
+    actx.enter();
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound, changeSetId));
   }
 
@@ -687,10 +671,10 @@ export class BriefcaseManager {
   }
 
   /** Create a briefcase */
-  private static async createBriefcase(accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
-    this.setClientFromIModelTokenContext(contextId, iModelId);
+  private static async createBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams): Promise<BriefcaseEntry> {
+    actx.enter();
 
-    const iModel: IModelRepository = (await BriefcaseManager.imodelClient.IModels().get(accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: HubIModel = (await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, contextId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
@@ -700,24 +684,26 @@ export class BriefcaseManager {
       /* FixedVersion, PullOnly => Create standalone briefcase */
       briefcase.pathname = BriefcaseManager.buildStandalonePathname(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
-      await BriefcaseManager.downloadSeedFile(accessToken, iModelId, briefcase.pathname);
+      await BriefcaseManager.downloadSeedFile(actx, accessToken, iModelId, briefcase.pathname);
+      actx.enter();
       briefcase.changeSetId = "";
       briefcase.changeSetIndex = 0;
     } else {
       /* PullAndPush => Acquire a briefcase from the hub */
-      const hubBriefcase: HubBriefcase = await BriefcaseManager.acquireBriefcase(accessToken, iModelId);
+      const hubBriefcase: HubBriefcase = await BriefcaseManager.acquireBriefcase(actx, accessToken, iModelId);
       briefcase.pathname = BriefcaseManager.buildAcquiredPathname(iModelId, +hubBriefcase.briefcaseId!, iModel.name!);
       briefcase.briefcaseId = hubBriefcase.briefcaseId!;
       briefcase.fileId = hubBriefcase.fileId;
-      await BriefcaseManager.downloadBriefcase(hubBriefcase, briefcase.pathname);
+      await BriefcaseManager.downloadBriefcase(actx, hubBriefcase, briefcase.pathname);
       briefcase.changeSetId = hubBriefcase.mergedChangeSetId!;
-      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
+      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, iModelId, briefcase.changeSetId);
     }
 
     const res: DbResult = BriefcaseManager.setupBriefcase(briefcase, openParams);
     if (DbResult.BE_SQLITE_OK !== res) {
       Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+      actx.enter();
       throw new IModelError(res, briefcase.pathname);
     }
 
@@ -727,8 +713,10 @@ export class BriefcaseManager {
   }
 
   /** Acquire a briefcase */
-  private static async acquireBriefcase(accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
-    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(accessToken, iModelId);
+  private static async acquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string): Promise<HubBriefcase> {
+    actx.enter();
+    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, iModelId);
+    actx.enter();
     if (!briefcase) {
       Logger.logError(loggingCategory, "Could not acquire briefcase"); // Could well be that the current user does not have the appropriate access
       return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
@@ -737,23 +725,27 @@ export class BriefcaseManager {
   }
 
   /** Downloads the briefcase file */
-  private static async downloadBriefcase(briefcase: Briefcase, seedPathname: string): Promise<void> {
+  private static async downloadBriefcase(actx: ActivityLoggingContext, briefcase: Briefcase, seedPathname: string): Promise<void> {
+    actx.enter();
     if (IModelJsFs.existsSync(seedPathname))
       return;
-    return BriefcaseManager.imodelClient.Briefcases().download(briefcase, seedPathname)
+    return BriefcaseManager.imodelClient.Briefcases().download(actx, briefcase, seedPathname)
       .catch(() => {
+        actx.enter();
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
   }
 
   /** Downloads the briefcase seed file */
-  private static async downloadSeedFile(accessToken: AccessToken, imodelId: string, seedPathname: string): Promise<void> {
+  private static async downloadSeedFile(actx: ActivityLoggingContext, accessToken: AccessToken, imodelId: string, seedPathname: string): Promise<void> {
+    actx.enter();
     if (IModelJsFs.existsSync(seedPathname))
       return;
 
     const perfLogger = new PerfLogger("BriefcaseManager.downloadSeedFile");
-    await BriefcaseManager.imodelClient.IModels().download(accessToken, imodelId, seedPathname)
+    await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, imodelId, seedPathname)
       .catch(() => {
+        actx.enter();
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
       });
     perfLogger.dispose();
@@ -766,21 +758,23 @@ export class BriefcaseManager {
   }
 
   /** Deletes a briefcase from the IModelServer (if it exists) */
-  private static async deleteBriefcaseFromServer(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+  private static async deleteBriefcaseFromServer(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     assert(!!briefcase.iModelId);
     if (briefcase.briefcaseId === BriefcaseId.Standalone)
       return;
 
-    this.setClientForBriefcase(briefcase);
+    actx.enter();
 
     try {
-      await BriefcaseManager.imodelClient.Briefcases().get(accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+      await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
     } catch (err) {
       return; // Briefcase does not exist on the hub, or cannot be accessed
     }
+    actx.enter();
 
-    await BriefcaseManager.imodelClient.Briefcases().delete(accessToken, briefcase.iModelId, briefcase.briefcaseId)
+    await BriefcaseManager.imodelClient.Briefcases().delete(actx, accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
+        actx.enter();
         Logger.logError(loggingCategory, "Could not delete the acquired briefcase"); // Could well be that the current user does not have the appropriate access
       });
   }
@@ -794,9 +788,11 @@ export class BriefcaseManager {
   }
 
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
-  private static async deleteBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+  private static async deleteBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+    actx.enter();
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
-    await BriefcaseManager.deleteBriefcaseFromServer(accessToken, briefcase);
+    await BriefcaseManager.deleteBriefcaseFromServer(actx, accessToken, briefcase);
+    actx.enter();
     BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
   }
 
@@ -804,7 +800,8 @@ export class BriefcaseManager {
    *  * Gets change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
    *  * If the ids are the same returns an empty array
    */
-  private static async getChangeSets(accessToken: AccessToken, iModelId: string, includeDownloadLink: boolean, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
+  private static async getChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, includeDownloadLink: boolean, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
+    actx.enter();
     if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>();
 
@@ -813,7 +810,8 @@ export class BriefcaseManager {
       query.fromId(fromChangeSetId);
     if (includeDownloadLink)
       query.selectDownloadUrl();
-    const allChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, iModelId, query);
+    const allChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
+    actx.enter();
 
     const changeSets = new Array<ChangeSet>();
     for (const changeSet of allChangeSets) {
@@ -825,7 +823,8 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
-  private static async downloadChangeSetsInternal(iModelId: string, changeSets: ChangeSet[]) {
+  private static async downloadChangeSetsInternal(actx: ActivityLoggingContext, iModelId: string, changeSets: ChangeSet[]) {
+    actx.enter();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
 
     const changeSetsToDownload = new Array<ChangeSet>();
@@ -838,8 +837,9 @@ export class BriefcaseManager {
     // download
     if (changeSetsToDownload.length > 0) {
       const perfLogger = new PerfLogger("BriefcaseManager.downloadChangeSets");
-      await BriefcaseManager.imodelClient.ChangeSets().download(changeSetsToDownload, changeSetsPath)
+      await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSetsToDownload, changeSetsPath)
         .catch(() => {
+          actx.enter();
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
         });
       perfLogger.dispose();
@@ -850,12 +850,12 @@ export class BriefcaseManager {
    *  * Downloads change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
    *  * If the ids are the same returns an empty array.
    */
-  public static async downloadChangeSets(accessToken: AccessToken, iModelId: string, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
-    const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, true /*includeDownloadLink*/, fromChangeSetId, toChangeSetId);
+  public static async downloadChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
+    const changeSets = await BriefcaseManager.getChangeSets(actx, accessToken, iModelId, true /*includeDownloadLink*/, fromChangeSetId, toChangeSetId);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
-    await BriefcaseManager.downloadChangeSetsInternal(iModelId, changeSets);
+    await BriefcaseManager.downloadChangeSetsInternal(actx, iModelId, changeSets);
 
     return changeSets;
   }
@@ -931,12 +931,12 @@ export class BriefcaseManager {
   }
 
   /** Delete closed briefcases */
-  public static async deleteClosed(accessToken: AccessToken) {
-    await BriefcaseManager.memoizedInitCache(accessToken);
+  public static async deleteClosed(actx: ActivityLoggingContext, accessToken: AccessToken) {
+    await BriefcaseManager.memoizedInitCache(actx, accessToken);
 
     const briefcases = BriefcaseManager._cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => !briefcase.isOpen);
     for (const briefcase of briefcases) {
-      await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
     }
   }
 
@@ -973,15 +973,17 @@ export class BriefcaseManager {
    *  releases any briefcases acquired from the hub, and deletes the cache
    *  directory.
    */
-  public static async purgeCache(accessToken: AccessToken) {
-    await BriefcaseManager.memoizedInitCache(accessToken);
+  public static async purgeCache(actx: ActivityLoggingContext, accessToken: AccessToken) {
+    await BriefcaseManager.memoizedInitCache(actx, accessToken);
+    actx.enter();
 
     const briefcases = BriefcaseManager._cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => briefcase.isOpen);
     for (const briefcase of briefcases) {
-      await briefcase.iModelDb!.close(accessToken, KeepBriefcase.Yes);
+      await briefcase.iModelDb!.close(actx, accessToken, KeepBriefcase.Yes);
     }
 
-    await this.deleteClosed(accessToken);
+    await this.deleteClosed(actx, accessToken);
+    actx.enter();
     BriefcaseManager.clearCache();
   }
 
@@ -1041,16 +1043,17 @@ export class BriefcaseManager {
     briefcase.isOpen = true;
   }
 
-  private static async applyChangeSets(accessToken: AccessToken, briefcase: BriefcaseEntry, targetVersion: IModelVersion, processOption: ChangeSetApplyOption): Promise<void> {
+  private static async applyChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, targetVersion: IModelVersion, processOption: ChangeSetApplyOption): Promise<void> {
+    actx.enter();
     assert(!!briefcase.nativeDb && briefcase.isOpen);
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
-    this.setClientForBriefcase(briefcase);
 
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
 
-    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(accessToken, briefcase.iModelId, BriefcaseManager.imodelClient);
-    const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(accessToken, briefcase.iModelId, targetChangeSetId);
+    const targetChangeSetId: string = await targetVersion.evaluateChangeSet(actx, accessToken, briefcase.iModelId, BriefcaseManager.imodelClient);
+    const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, targetChangeSetId);
+    actx.enter();
     if (targetChangeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Could not determine change set information from the Hub"));
 
@@ -1091,7 +1094,8 @@ export class BriefcaseManager {
     }
 
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(actx, accessToken, briefcase.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
+    actx.enter();
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
       changeSets.reverse();
@@ -1152,13 +1156,13 @@ export class BriefcaseManager {
     }
   }
 
-  public static async reverseChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
-    return BriefcaseManager.applyChangeSets(accessToken, briefcase, reverseToVersion, ChangeSetApplyOption.Reverse);
+  public static async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
+    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reverseToVersion, ChangeSetApplyOption.Reverse);
   }
 
-  public static async reinstateChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
+  public static async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(briefcase.changeSetId);
-    return BriefcaseManager.applyChangeSets(accessToken, briefcase, targetVersion, ChangeSetApplyOption.Reinstate);
+    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, targetVersion, ChangeSetApplyOption.Reinstate);
   }
 
   /**
@@ -1167,9 +1171,9 @@ export class BriefcaseManager {
    * @param briefcase Local briefcase
    * @param mergeToVersion Version of the iModel to merge until.
    */
-  public static async pullAndMergeChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.updatePendingChangeSets(accessToken, briefcase);
-    return BriefcaseManager.applyChangeSets(accessToken, briefcase, mergeToVersion, ChangeSetApplyOption.Merge);
+  public static async pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.updatePendingChangeSets(actx, accessToken, briefcase);
+    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, mergeToVersion, ChangeSetApplyOption.Merge);
   }
 
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
@@ -1212,8 +1216,8 @@ export class BriefcaseManager {
   }
 
   /** Update codes for all pending ChangeSets */
-  private static async updatePendingChangeSets(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
-    this.setClientForBriefcase(briefcase);
+  private static async updatePendingChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
+    actx.enter();
 
     let pendingChangeSets = BriefcaseManager.getPendingChangeSets(briefcase);
     if (pendingChangeSets.length === 0)
@@ -1222,16 +1226,18 @@ export class BriefcaseManager {
     pendingChangeSets = pendingChangeSets.slice(0, 100);
 
     const query = new ChangeSetQuery().filter(`$id+in+[${pendingChangeSets.map((value: string) => `'${value}'`).join(",")}]`).selectDownloadUrl();
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(accessToken, briefcase.iModelId, query);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, briefcase.iModelId, query);
 
-    await BriefcaseManager.downloadChangeSetsInternal(briefcase.iModelId, changeSets);
+    await BriefcaseManager.downloadChangeSetsInternal(actx, briefcase.iModelId, changeSets);
+    actx.enter();
 
     const changeSetTokens: ChangeSetToken[] = BriefcaseManager.buildChangeSetTokens(changeSets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
 
     for (const token of changeSetTokens) {
       try {
         const codes = BriefcaseManager.extractCodesFromFile(briefcase, [token]);
-        await BriefcaseManager.imodelClient.Codes().update(accessToken, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
+        await BriefcaseManager.imodelClient.Codes().update(actx, accessToken, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
+        actx.enter();
         BriefcaseManager.removePendingChangeSet(briefcase, token.id);
       } catch (error) {
         if (error instanceof ConflictingCodesError) {
@@ -1243,24 +1249,24 @@ export class BriefcaseManager {
   }
 
   /** Parse Code array from json */
-  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): Code[] {
+  private static parseCodesFromJson(briefcase: BriefcaseEntry, json: string): HubCode[] {
     return JSON.parse(json, (key: any, value: any) => {
       if (key === "state") {
         return (value as number);
       }
       // If the key is a number, it is an array member.
       if (!Number.isNaN(Number.parseInt(key, 10))) {
-        const code = new Code();
+        const code = new HubCode();
         Object.assign(code, value);
         code.briefcaseId = briefcase.briefcaseId;
         return code;
       }
       return value;
-    }) as Code[];
+    }) as HubCode[];
   }
 
   /** Extracts codes from current ChangeSet */
-  private static extractCodes(briefcase: BriefcaseEntry): Code[] {
+  private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
       throw new IModelError(res.error.status);
@@ -1268,7 +1274,7 @@ export class BriefcaseManager {
   }
 
   /** Extracts codes from ChangeSet file */
-  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): Code[] {
+  private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status);
@@ -1276,14 +1282,17 @@ export class BriefcaseManager {
   }
 
   /** Attempt to update codes without rejecting so pull wouldn't fail */
-  private static async tryUpdatingCodes(accessToken: AccessToken, briefcase: BriefcaseEntry, changeSet: ChangeSet, relinquishCodesLocks: boolean): Promise<void> {
+  private static async tryUpdatingCodes(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, changeSet: ChangeSet, relinquishCodesLocks: boolean): Promise<void> {
+    actx.enter();
     // Add ChangeSet id, in case updating failed due to something else than conflicts
     BriefcaseManager.addPendingChangeSet(briefcase, changeSet.id!);
 
     let failedUpdating = false;
     try {
-      await BriefcaseManager.imodelClient.Codes().update(accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), { deniedCodes: true, continueOnConflict: true });
+      await BriefcaseManager.imodelClient.Codes().update(actx, accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), { deniedCodes: true, continueOnConflict: true });
+      actx.enter();
     } catch (error) {
+      actx.enter();
       if (error instanceof ConflictingCodesError) {
         const msg = `Found conflicting codes when pushing briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} changes.`;
         Logger.logError(loggingCategory, msg);
@@ -1296,10 +1305,12 @@ export class BriefcaseManager {
     // Cannot retry relinquishing later, ignore error
     try {
       if (relinquishCodesLocks) {
-        await BriefcaseManager.imodelClient.Codes().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
-        await BriefcaseManager.imodelClient.Locks().deleteAll(accessToken, briefcase.iModelId, briefcase.briefcaseId);
+        await BriefcaseManager.imodelClient.Codes().deleteAll(actx, accessToken, briefcase.iModelId, briefcase.briefcaseId);
+        await BriefcaseManager.imodelClient.Locks().deleteAll(actx, accessToken, briefcase.iModelId, briefcase.briefcaseId);
+        actx.enter();
       }
     } catch (error) {
+      actx.enter();
       const msg = `Relinquishing codes or locks has failed with: ${error}`;
       Logger.logError(loggingCategory, msg);
     }
@@ -1337,7 +1348,8 @@ export class BriefcaseManager {
   }
 
   /** Attempt to push a ChangeSet to iModel Hub */
-  private static async pushChangeSet(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
+  private static async pushChangeSet(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
+    actx.enter();
     if (briefcase.openParams!.syncMode !== SyncMode.PullAndPush) {
       throw new IModelError(BriefcaseStatus.CannotUpload, "Cannot push from an IModelDb that's opened PullOnly");
     }
@@ -1358,7 +1370,7 @@ export class BriefcaseManager {
 
     let postedChangeSet: ChangeSet | undefined;
     try {
-      postedChangeSet = await BriefcaseManager.imodelClient.ChangeSets().create(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
+      postedChangeSet = await BriefcaseManager.imodelClient.ChangeSets().create(actx, accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
     } catch (error) {
       // If ChangeSet already exists, updating codes and locks might have timed out.
       if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
@@ -1366,16 +1378,18 @@ export class BriefcaseManager {
       }
     }
 
-    await BriefcaseManager.tryUpdatingCodes(accessToken, briefcase, changeSet, relinquishCodesLocks);
+    await BriefcaseManager.tryUpdatingCodes(actx, accessToken, briefcase, changeSet, relinquishCodesLocks);
+    actx.enter();
 
     BriefcaseManager.finishCreateChangeSet(briefcase);
     BriefcaseManager.updateBriefcaseVersion(briefcase, postedChangeSet!.wsgId, +postedChangeSet!.index!);
   }
 
   /** Attempt to pull merge and push once */
-  private static async pushChangesOnce(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
-    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
-    await BriefcaseManager.pushChangeSet(accessToken, briefcase, description, relinquishCodesLocks).catch((err) => {
+  private static async pushChangesOnce(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
+    await BriefcaseManager.pullAndMergeChanges(actx, accessToken, briefcase, IModelVersion.latest());
+    await BriefcaseManager.pushChangeSet(actx, accessToken, briefcase, description, relinquishCodesLocks).catch((err) => {
+      actx.enter();
       BriefcaseManager.abandonCreateChangeSet(briefcase);
       return Promise.reject(err);
     });
@@ -1388,7 +1402,7 @@ export class BriefcaseManager {
         case IModelHubStatus.AnotherUserPushing:
         case IModelHubStatus.PullIsRequired:
         case IModelHubStatus.DatabaseTemporarilyLocked:
-        case IModelHubStatus.iModelHubOperationFailed:
+        case IModelHubStatus.OperationFailed:
           return true;
       }
     }
@@ -1401,11 +1415,11 @@ export class BriefcaseManager {
    * @param description a description of the changeset that is to be pushed.
    * @param relinquishCodesLocks release locks held and codes reserved (but not used) after pushing?
    */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean = true): Promise<void> {
+  public static async pushChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean = true): Promise<void> {
     for (let i = 0; i < 5; ++i) {
       let pushed: boolean = false;
       let error: any;
-      await BriefcaseManager.pushChangesOnce(accessToken, briefcase, description, relinquishCodesLocks || false).then(() => {
+      await BriefcaseManager.pushChangesOnce(actx, accessToken, briefcase, description, relinquishCodesLocks || false).then(() => {
         pushed = true;
       }).catch((err) => {
         error = err;
@@ -1426,11 +1440,13 @@ export class BriefcaseManager {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
+  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
     assert(!this.isUsingIModelBankClient(), "This is a Hub-only operation");
 
-    await BriefcaseManager.memoizedInitCache(accessToken);
+    await BriefcaseManager.memoizedInitCache(actx, accessToken);
     assert(!!BriefcaseManager.imodelClient);
+
+    actx.enter();
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
@@ -1452,29 +1468,33 @@ export class BriefcaseManager {
 
     nativeDb.closeIModel();
 
-    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, fileName, hubName, args.rootSubject.description);
+    const iModelId: string = await BriefcaseManager.upload(actx, accessToken, projectId, fileName, hubName, args.rootSubject.description);
     return iModelId;
   }
 
   /** Pushes a new iModel to the Hub */
-  private static async upload(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
+  private static async upload(actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     assert(!this.isUsingIModelBankClient(), "This is a Hub-only operation");
 
     hubName = hubName || path.basename(pathname, ".bim");
 
-    const iModel: IModelRepository = await BriefcaseManager.imodelClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
+    actx.enter();
+    const iModel: HubIModel = await BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
+
     return iModel.wsgId;
   }
 
   /** @hidden */
   // TODO: This should take contextId as an argument, so that we know which server (iModelHub or iModelBank) to use.
-  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+  public static async deleteAllBriefcases(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string) {
     if (BriefcaseManager.imodelClient === undefined)
       return;
+    actx.enter();
     const promises = new Array<Promise<void>>();
-    const briefcases = await BriefcaseManager.imodelClient.Briefcases().get(accessToken, iModelId);
+    const briefcases = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
+    actx.enter();
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(BriefcaseManager.imodelClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+      promises.push(BriefcaseManager.imodelClient.Briefcases().delete(actx, accessToken, iModelId, briefcase.briefcaseId!));
     });
     return Promise.all(promises);
   }

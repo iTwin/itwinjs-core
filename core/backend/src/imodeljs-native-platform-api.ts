@@ -232,6 +232,12 @@ export declare class NativeDgnDb {
   public importSchema(schemaPathname: string): DbResult;
 
   /**
+   * Import the schema for the Functional domain. Also updates the dgn_Domain and dgn_Handler tables for the Functional domain handlers.
+   * @return Non-zero error status if the operation failed.
+   */
+  public importFunctionalSchema(): DbResult;
+
+  /**
    * Get an element's properties
    * @param opts Identifies the element
    * @returns In case of success, the result property of the returned object will be the element's properties.
@@ -255,17 +261,17 @@ export declare class NativeDgnDb {
   /**
    * Get the properties of a tile tree
    * @param id Identifies the tile tree
-   * @returns In case of success, the result property of the returned object will be the tile tree's properties in stringified JSON format.
+   * @param callback Function invoked with result of the call. In case of success, the result property will be the tile tree's properties in JSON format.
    */
-  public getTileTree(id: string): ErrorStatusOrResult<IModelStatus, string>;
+  public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
 
   /**
-   * Get the properties of a set of tiles belonging to a single tile tree
+   * Get the content (geometry) of a tile as a base-64-encoded string
    * @param treeId The ID of the tile tree
-   * @param tileIds The IDs of the tiles to retrieve
-   * @returns In case of success, the result property will be a stringified JSON array of tile properties.
+   * @param tileId The ID of the tile
+   * @param callback Function invoked with result of the call. In case of success, the result property will be the binary tile content.
    */
-  public getTiles(treeId: string, tileIds: string[]): ErrorStatusOrResult<IModelStatus, any>;
+  public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
 
   /**
    * Insert an element.
@@ -1034,6 +1040,7 @@ export declare class NativeECSchemaXmlContext {
   public readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
 }
 
+/** @hidden */
 export declare class SnapRequest {
   constructor();
   public doSnap(db: NativeDgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
@@ -1041,7 +1048,7 @@ export declare class SnapRequest {
 }
 
 /**
- * Helper class for iModelJs tests to disable native assertions
+ * Helper class for iModel.js tests to disable native assertions
  * @hidden
  */
 export declare class DisableNativeAssertions implements IDisposable {

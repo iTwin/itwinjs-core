@@ -26,6 +26,8 @@ export * from "./TileProps";
 export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
+export * from "./domains/FunctionalElementProps";
+export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";
@@ -74,7 +76,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description iModels
- * Classes for working with [iModels]($docs/overview/IModels.md) in both the frontend and backend
+ * Classes for working with [iModels]($docs/learning/IModels.md) in both the frontend and backend
  */
 /**
  * @docs-group-description RpcInterface

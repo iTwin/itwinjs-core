@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";

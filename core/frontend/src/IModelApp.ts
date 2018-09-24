@@ -3,29 +3,29 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { DeploymentEnv, IModelHubClient, IModelClient } from "@bentley/imodeljs-clients";
-import { ViewManager } from "./ViewManager";
-import { ToolAdmin } from "./tools/ToolAdmin";
-import { SettingsAdmin, ConnectSettingsClient } from "@bentley/imodeljs-clients";
+import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { ConnectSettingsClient, DeploymentEnv, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
-import { TentativePoint } from "./TentativePoint";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { ToolRegistry } from "./tools/Tool";
-import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";
-import { System } from "./render/webgl/System";
+import { QuantityFormatManager } from "./QuantityFormatManager";
 import { RenderSystem } from "./render/System";
-import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { System } from "./render/webgl/System";
+import { TentativePoint } from "./TentativePoint";
+import { ToolRegistry } from "./tools/Tool";
+import { ToolAdmin } from "./tools/ToolAdmin";
+import { ViewManager } from "./ViewManager";
 
+import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
-import * as idleTool from "./tools/IdleTool";
 
 /**
  * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
- * It connects the user interface with the iModelJs services. There can be only one IModelApp active in a session.
+ * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
  *
  * Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different
  * implementations of them.
@@ -38,6 +38,7 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
+  public static quantityFormatManager: QuantityFormatManager;
   public static toolAdmin: ToolAdmin;
   public static accuDraw: AccuDraw;
   public static accuSnap: AccuSnap;
@@ -57,7 +58,7 @@ export class IModelApp {
   protected static _imodelClient?: IModelClient;
   public static get initialized() { return IModelApp._initialized; }
 
-  /** IModel Server Client to be used for all frontend operations */
+  /** IModelClient to be used for all frontend operations */
   public static get iModelClient(): IModelClient {
     if (!this._imodelClient)
       this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);
@@ -70,14 +71,14 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
-   * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
+   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {
    *  . . .
    * }
    * ```
-   * in your source somewhere before you use any iModelJs services, call:
+   * in your source somewhere before you use any iModel.js services, call:
    * ``` ts
    * MyApp.startup();
    * ```
@@ -100,17 +101,13 @@ export class IModelApp {
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
 
+    IModelApp.quantityFormatManager = new QuantityFormatManager(); // create before onStartup, so app can set format provider
+
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
-    // make sure the applicationId is set to something.
-    if (!IModelApp.applicationId) {
-      IModelApp.applicationId = "IModelJsApp";
-    }
-    if (!IModelApp.settingsAdmin) {
-      IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
-    }
-
     // the startup function may have already allocated any of these members, so first test whether they're present
+    if (!IModelApp.applicationId) IModelApp.applicationId = "IModelJsApp";
+    if (!IModelApp.settingsAdmin) IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();

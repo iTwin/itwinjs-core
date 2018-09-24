@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { GL, BufferHandle } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GL, BufferHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 

@@ -1,0 +1,23 @@
+@import "@bentley/ui-core/lib/colors";
+@import "../_z-index";
+@import "_variables";
+
+.nz-footer-text {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: $text-font-size;
+  overflow: hidden;
+
+  &.nz-is-in-footer-mode {
+    padding-left: $nz-footer-horizontal-padding;
+    padding-right: $nz-footer-horizontal-padding;
+    width: $nz-footer-prompt-width;
+  }
+
+  &:not(.nz-is-in-footer-mode) {
+    padding-left: $nz-footer-open-horizontal-padding;
+    padding-right: $nz-footer-open-horizontal-padding;
+    width: $nz-footer-open-prompt-width;
+  }
+}

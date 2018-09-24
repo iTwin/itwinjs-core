@@ -1,20 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Item /> renders correctly 1`] = `
-<div
+<li
   className="nz-backstage-item"
 >
-  <div
-    className="nz-icon"
-  />
-  <div
-    className="nz-label"
-  />
-</div>
+  <span />
+</li>
 `;
 
 exports[`<Item /> should apply style 1`] = `
-<div
+<li
   className="nz-backstage-item"
   style={
     Object {
@@ -22,24 +17,14 @@ exports[`<Item /> should apply style 1`] = `
     }
   }
 >
-  <div
-    className="nz-icon"
-  />
-  <div
-    className="nz-label"
-  />
-</div>
+  <span />
+</li>
 `;
 
 exports[`<Item /> should set is-active class 1`] = `
-<div
+<li
   className="nz-backstage-item nz-is-active"
 >
-  <div
-    className="nz-icon"
-  />
-  <div
-    className="nz-label"
-  />
-</div>
+  <span />
+</li>
 `;

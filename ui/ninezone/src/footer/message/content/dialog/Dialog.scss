@@ -11,7 +11,7 @@
   background-color: $background-2;
   overflow: hidden;
   display: grid;
-  grid-auto-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   position: relative;
 
   > .nz-resize-handle {

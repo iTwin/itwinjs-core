@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { IModelError, TileTreeProps, TileProps, TileId } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { Id64Props, Id64, BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
-import { SpatialModelState } from "../ModelState";
-import { TileTree, Tile, TileLoader, MissingNodes } from "./TileTree";
+import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
+/** @hidden */
 class CesiumUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
@@ -38,70 +38,77 @@ class CesiumUtils {
   }
 }
 
+/** @hidden */
 class RealityModelTileTreeProps implements TileTreeProps {
-  public id: Id64Props = "";
+  public id: string = "";
   public rootTile: TileProps;
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
   constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform) {
     this.tilesetJson = json.root;
-    this.id = new Id64();
-    this.rootTile = new RealityModelTileProps(json.root, "", this);
+    this.rootTile = new RealityModelTileProps(json.root, "");
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
   }
 }
 
+/** @hidden */
 class RealityModelTileProps implements TileProps {
-  public id: TileId;
-  public range: Range3dProps;
-  public contentRange?: Range3dProps;
-  public maximumSize: number;
-  public childIds: string[];
+  public readonly contentId: string;
+  public readonly range: Range3dProps;
+  public readonly contentRange?: Range3dProps;
+  public readonly maximumSize: number;
+  public readonly isLeaf: boolean;
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
-  constructor(json: any, thisId: string, public tree: RealityModelTileTreeProps) {
-    this.id = new TileId(new Id64(), thisId);
+  constructor(json: any, thisId: string) {
+    this.contentId = thisId;
     this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
-    this.maximumSize = 0.0; // nonzero only if content present.   CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
-    this.childIds = [];
-    const prefix = thisId.length ? thisId + "_" : "";
-    if (Array.isArray(json.children))
-      for (let i = 0; i < json.children.length; i++)
-        this.childIds.push(prefix + i);
-
+    this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.hasContents = undefined !== json.content && undefined !== json.content.url;
-
     if (this.hasContents) {
       this.contentRange = json.content.boundingVolume && CesiumUtils.rangeFromBoundingVolume(json.content.boundingVolume);
       this.maximumSize = CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
+    } else {
+      this.maximumSize = 0.0;
     }
   }
 }
+
+/** @hidden */
 class FindChildResult {
   constructor(public id: string, public json: any) { }
 }
+
+/** @hidden */
 class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  public async getTileProps(tileIds: string[]): Promise<TileProps[]> {
+  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
-    tileIds.map(async (tileId) => {
-      const foundChild = this.findTileInJson(this._tree.tilesetJson, tileId, "");
-      if (foundChild !== undefined)
-        props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree));
-    });
+    const thisId = parent.contentId;
+    const prefix = thisId.length ? thisId + "_" : "";
+    const json = await this.findTileInJson(this._tree.tilesetJson, thisId, "");
+    if (undefined !== json && Array.isArray(json.json.children)) {
+      for (let i = 0; i < json.json.children.length; i++) {
+        const childId = prefix + i;
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "");
+        if (undefined !== foundChild)
+          props.push(new RealityModelTileProps(foundChild.json, foundChild.id));
+      }
+    }
+
     return props;
   }
-  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-    const missingArray = missingTiles.extractArray();
+  public async loadTileContents(missingArray: Tile[]): Promise<void> {
     await Promise.all(missingArray.map(async (missingTile) => {
+      assert(missingTile.isNotLoaded);
       if (missingTile.isNotLoaded) {
-        const foundChild = this.findTileInJson(this._tree.tilesetJson, missingTile.id, "");
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
         if (foundChild !== undefined) {
           missingTile.setIsQueued();
           const content = await this._tree.client.getTileContent(foundChild.json.content.url);
@@ -113,7 +120,7 @@ class RealityModelTileLoader extends TileLoader {
     }));
   }
 
-  private findTileInJson(tilesetJson: any, id: string, parentId: string): FindChildResult | undefined {
+  private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<FindChildResult | undefined> {
     if (id.length === 0)
       return new FindChildResult(id, tilesetJson);    // Root.
     const separatorIndex = id.indexOf("_");
@@ -127,12 +134,11 @@ class RealityModelTileLoader extends TileLoader {
 
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
-    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (separatorIndex >= 0) { return await this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
-      this._tree.client.getTileJson(foundChild.content.url).then((subTree: any) => {
-        foundChild = subTree.root;
-        tilesetJson.children[childIndex] = subTree.root;
-      });
+      const subTree = await this._tree.client.getTileJson(foundChild.content.url);
+      foundChild = subTree.root;
+      tilesetJson.children[childIndex] = subTree.root;
     }
     return new FindChildResult(thisParentId, foundChild);
   }
@@ -140,30 +146,31 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @hidden */
 export class RealityModelTileTree {
-  public static loadRealityModelTileTree(url: string, modelState: SpatialModelState): void {
+  public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState): void {
 
-    this.getTileTreeProps(url, modelState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
-      modelState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
+    this.getTileTreeProps(url, tilesetToDb, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
+      tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
       IModelApp.viewManager.onNewTilesReady();
-    }).catch((_err) => modelState.loadStatus = TileTree.LoadStatus.NotFound);
+    }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }
 
-  private static async getTileTreeProps(url: string, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+  private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
     if (undefined !== url) {
       await RealityModelTileClient.setToken(); // ###TODO we should not set the token here in the future!
       const tileClient = new RealityModelTileClient(url);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
       const rootTransform: Transform = CesiumUtils.transformFromJson(json.root.transform);
-      let tileToDb = Transform.createIdentity();
+      let tilesetToDb = Transform.createIdentity();
 
-      if (ecefLocation !== undefined) {
+      if (undefined !== tilesetToDbJson) {
+        tilesetToDb.setFromJSON(tilesetToDbJson);
+      } else if (ecefLocation !== undefined) {
         const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
-        const ecefToDb = dbToEcef.inverse() as Transform;
-        tileToDb.setMultiplyTransformTransform(ecefToDb, rootTransform);
-      } else {
-        tileToDb = rootTransform;
+        tilesetToDb = dbToEcef.inverse() as Transform;
       }
+      const tileToDb = Transform.createIdentity();
+      tileToDb.setMultiplyTransformTransform(tilesetToDb, rootTransform);
       return new RealityModelTileTreeProps(json, tileClient, tileToDb);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
@@ -176,7 +183,10 @@ interface RDSClientProps {
   tilesId: string;
 }
 
-// ##TODO temporarly here for testing, needs to be moved to the clients repo
+/**
+ * ###TODO temporarly here for testing, needs to be moved to the clients repo
+ * @hidden
+ */
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
@@ -217,8 +227,9 @@ class RealityModelTileClient {
       RealityModelTileClient._token = token;
     } else if (undefined === RealityModelTileClient._token) {
       // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
-      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken("Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
-      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(authToken);
+      const alctx = new ActivityLoggingContext(Guid.createValue());
+      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(alctx, "Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
+      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(alctx, authToken);
     }
     if (undefined === RealityModelTileClient._onCloseListener)
       RealityModelTileClient._onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
@@ -237,28 +248,31 @@ class RealityModelTileClient {
   }
 
   public async getRootDocument(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getRootDocumentJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+      return RealityModelTileClient._client.getRootDocumentJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
     this.setBaseUrl(url);
-    return getJson(url);
+    return getJson(alctx, url);
   }
 
   public async getTileContent(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileContent(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+      return RealityModelTileClient._client.getTileContent(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
-      return getArrayBuffer(tileUrl);
+      return getArrayBuffer(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
 
   public async getTileJson(url: string): Promise<any> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileJson(RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+      return RealityModelTileClient._client.getTileJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
-      return getJson(tileUrl);
+      return getJson(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
   }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Tree */
 
 import * as React from "react";
 import { Subtract } from "@bentley/presentation-common";

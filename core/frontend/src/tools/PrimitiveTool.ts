@@ -4,13 +4,13 @@
 /** @module Tools */
 
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { BeButtonEvent, BeCursor, InteractiveTool, BeButton } from "./Tool";
+import { BeButtonEvent, InteractiveTool, BeButton } from "./Tool";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { LocateResponse } from "../ElementLocateManager";
+import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 
 export const enum ModifyElementSource {
@@ -142,7 +142,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return false;
   }
 
-  public getCursor(): BeCursor { return BeCursor.Arrow; }
+  public getCursor(): string { return "default"; }
 
   /** Called on data button down event to lock the tool to its current target model. */
   public autoLockTarget(): void { if (undefined !== this.targetView) return; this.targetIsLocked = true; }
@@ -154,9 +154,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public requireWriteableTarget(): boolean { return true; }
 
   /** Invoked to allow tools to filter which elements can be located.
-   * return true to reject hit (fill out response with reason, if it is defined)
+   * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
    */
-  public onPostLocate(_hit: HitDetail, _out?: LocateResponse): boolean { return false; }
+  public filterHit(_hit: HitDetail, _out?: LocateResponse): LocateFilterStatus { return LocateFilterStatus.Accept; }
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.

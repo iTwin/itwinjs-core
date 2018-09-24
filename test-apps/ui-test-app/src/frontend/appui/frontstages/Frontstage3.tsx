@@ -7,11 +7,10 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 
 import { FrontstageProps } from "@bentley/ui-framework";
 import { GroupButton } from "@bentley/ui-framework";
-import { MessageButton, PageButton, ToolButton, ToolItemDef, CommandItemDef } from "@bentley/ui-framework";
+import { ToolButton, ToolItemDef, CommandItemDef } from "@bentley/ui-framework";
 import { ToolWidget } from "@bentley/ui-framework";
 import { ZoneState } from "@bentley/ui-framework";
 import { WidgetState } from "@bentley/ui-framework";
-import { MessageDirection } from "@bentley/ui-framework";
 import { NavigationWidget } from "@bentley/ui-framework";
 import { ContentLayoutDef } from "@bentley/ui-framework";
 import { ContentGroup } from "@bentley/ui-framework";
@@ -113,7 +112,7 @@ export class Frontstage3 {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "zone7Widget",
+            classId: "TableDemoWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -179,8 +178,6 @@ export class Frontstage3 {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <PageButton pageId="my-page" iconClass="icon-placeholder" />
-            <MessageButton messageId="my-message" iconClass="icon-placeholder" direction={MessageDirection.UI} />
             <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
             <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
             <GroupButton
@@ -228,7 +225,6 @@ export class Frontstage3 {
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
       },
     });
@@ -237,7 +233,6 @@ export class Frontstage3 {
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
       },
     });
@@ -246,7 +241,6 @@ export class Frontstage3 {
       iconClass: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
       commandHandler: {
-        messageId: "", parameters: null,
         execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
       },
     });

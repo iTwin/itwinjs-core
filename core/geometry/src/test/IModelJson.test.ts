@@ -76,6 +76,23 @@ function savePropertiesAsSeparateFiles(folderPath: string, prefix: string, data:
 }
 
 const allIModelJsonSamples: { [key: string]: any } = {};
+// if geometry, apply dx,dy,dz.
+// If array, apply dy and multiple of x shift to each member
+function applyShifts(g: any, dx: number, dy: number): any {
+  if (Array.isArray(g)) {
+    let i = 0;
+    for (const g1 of g) {
+      applyShifts(g1, i * dx, dy);
+      i++;
+    }
+    return g;
+  }
+
+  if (g instanceof GeometryQuery) {
+    g.tryTranslateInPlace(dx, dy, 0);
+  }
+  return g;
+}
 function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy: boolean = false) {
   if (Array.isArray(g)) {
     for (const g1 of g)
@@ -160,7 +177,8 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createSimpleRotationalSweeps(), true, false);
     exerciseIModelJSon(ck, Sample.createRuledSweeps(), true, false);
 
-    exerciseIModelJSon(ck, Sample.createBsplineCurves(), true, false);
+    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(), 10, 0), true, false);
+    exerciseIModelJSon(ck, applyShifts(Sample.createBspline3dHCurves(), 10, 10), true, false);
     exerciseIModelJSon(ck, Sample.createXYGridBsplineSurface(4, 3, 3, 2)!, true, false);
     exerciseIModelJSon(ck, Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!, true, false);
     exerciseIModelJSon(ck, Sample.createSimpleIndexedPolyfaces(1), true, false);

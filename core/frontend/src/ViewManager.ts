@@ -2,36 +2,45 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { ScreenViewport } from "./Viewport";
-import { BeCursor } from "./tools/Tool";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { EventController } from "./tools/EventController";
+import { BentleyStatus, BeUiEvent } from "@bentley/bentleyjs-core";
+import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { DrawingModelState, SectionDrawingModelState, SheetModelState, SpatialModelState } from "./ModelState";
+import { EventController } from "./tools/EventController";
+import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { SpatialModelState, DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
-import { OrthographicViewState, SpatialViewState, DrawingViewState, SheetViewState } from "./ViewState";
-import { HitDetail } from "./HitDetail";
+import { ScreenViewport } from "./Viewport";
+import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "./ViewState";
 
-/** Interface for drawing "decorations" into, or on top of, the active views. */
+/** Interface for drawing "decorations" into, or on top of, the active views.
+ * Decorators generate Decorations.
+ */
 export interface Decorator {
-  /** Implement this method to draw decorations into the supplied DecorateContext */
+  /** Implement this method to add Decorations into the supplied DecorateContext. */
   decorate(context: DecorateContext): void;
 
-  /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator. Optional.
+  /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
    * @param id The Id of the currently selected pickable graphics.
    * @returns true if 'id' belongs to this Decorator
    */
   testDecorationHit?(id: string): boolean;
 
-  /** If the [[testDecorationHit] returned true, implement this method to return the tooltip message for this Decorator. Optional.
+  /** If [[testDecorationHit]] returned true, implement this method to return the tooltip message for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
    * @returns A promise with the string with the tooltip message. May contain HTML.
    */
   getDecorationToolTip?(hit: HitDetail): Promise<string>;
+
+  /** If [[testDecorationHit]] returned true, implement this method to handle a button event for this Decorator.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @param ev The BeButtonEvent that identified this decoration.
+   * @returns  A Promise that resolves to Yes if event completely handled by decoration and event should not be processed by the calling tool.
+   */
+  onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
 }
 
+/** Argument for [[ViewManager.onSelectedViewportChanged]] */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
   previous?: ScreenViewport;
@@ -45,7 +54,7 @@ export interface SelectedViewportChangedArgs {
  */
 export class ViewManager {
   public inDynamicsMode = false;
-  public cursor?: BeCursor;
+  public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
   public readonly decorators: Decorator[] = [];
   private _selectedView?: ScreenViewport;
@@ -69,6 +78,7 @@ export class ViewManager {
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
+    this.cursor = "default";
   }
 
   /** @hidden */
@@ -76,7 +86,6 @@ export class ViewManager {
     this._viewports.length = 0;
     this.decorators.length = 0;
     this._selectedView = undefined;
-    this.cursor = undefined;
   }
 
   /** Called after the selected view changes.
@@ -85,13 +94,15 @@ export class ViewManager {
    */
   public readonly onSelectedViewportChanged = new BeUiEvent<SelectedViewportChangedArgs>();
 
-  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
+  /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a new view. */
   public readonly onViewOpen = new BeUiEvent<ScreenViewport>();
 
   /** Called after a view is closed. This can happen when the iModel is closed or when a user closes an open view. */
   public readonly onViewClose = new BeUiEvent<ScreenViewport>();
 
-  /** Called after a view is suspended. This can happen when the application is minimized. */
+  /** Called after a view is suspended. This happens when the application is minimized or, on a tablet, when the application
+   * is moved to the background.
+   */
   public readonly onViewSuspend = new BeUiEvent<ScreenViewport>();
 
   /**
@@ -106,7 +117,7 @@ export class ViewManager {
 
     this.inDynamicsMode = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
       cursorVp.changeDynamics(undefined);
 
@@ -116,8 +127,9 @@ export class ViewManager {
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  public doesHostHaveFocus(): boolean { return document.hasFocus(); }
+  public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
 
+  /** Set the selected view to undefined. */
   public clearSelectedView(): void {
     const previousVp = this.selectedView;
     this._selectedView = undefined;
@@ -209,13 +221,12 @@ export class ViewManager {
   public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
   public invalidateScenes(): void { this._invalidateScenes = true; }
+  public get sceneInvalidated(): boolean { return this._invalidateScenes; }
   public onNewTilesReady(): void { this.invalidateScenes(); }
 
   // Invoked by ToolAdmin event loop.
   public renderLoop(): void {
-    if (0 === this._viewports.length)
-      return;
-
+    if (0 === this._viewports.length) return;
     if (this._skipSceneCreation)
       this.validateViewportScenes();
     else if (this._invalidateScenes)
@@ -223,18 +234,12 @@ export class ViewManager {
 
     this._invalidateScenes = false;
 
-    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const cursorVp = IModelApp.toolAdmin.cursorView;
 
     if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame())
           break;
-
-    this.processIdle();
-  }
-
-  private processIdle(): void {
-    // ###TODO: pre-compile shaders?
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.
@@ -275,10 +280,21 @@ export class ViewManager {
     return "";
   }
 
+  /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
+   *  @hidden
+   */
+  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.onDecorationButtonEvent && decorator.testDecorationHit(hit.sourceId))
+        return decorator.onDecorationButtonEvent(hit, ev);
+    }
+    return EventHandled.No;
+  }
+
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.
    */
-  public setViewCursor(cursor: BeCursor | undefined) {
+  public setViewCursor(cursor: string = "default") {
     if (cursor === this.cursor)
       return;
 

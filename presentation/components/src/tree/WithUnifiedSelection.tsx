@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module UnifiedSelection */
 
 import * as React from "react";
 import { Keys, Subtract } from "@bentley/presentation-common";

@@ -47,7 +47,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
     const categoryCount = this.categories.length;
 
     for (let i = 0; i < categoryCount; i++) {
-      for (let iVolume = 0; iVolume < 40; iVolume++) {
+      for (let iVolume = 0; iVolume < 10; iVolume++) {
 
         const enumPropertyRecord = new SamplePropertyRecord("Enum", iVolume, 0, "", "enum");
         enumPropertyRecord.property.enum = { choices: [], isStrict: false };

@@ -17,7 +17,9 @@ import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
+
 import "./Grid.scss";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
 /**
  * Specifies table selection target.
@@ -58,6 +60,9 @@ export interface TableProps {
 
   dragProps?: DragSourceProps;
   dropProps?: TableDropTargetProps;
+
+  /** Callback for when properties are updated */
+  onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
 }
 
 /** Properties for the Table's DropTarget. */
@@ -68,6 +73,7 @@ export interface TableDropTargetProps extends DropTargetProps {
 
 export interface CellProps {
   item: CellItem;
+  displayValue: string;
   render: () => React.ReactNode;
 }
 
@@ -84,19 +90,30 @@ interface RowsLoadResult {
   selectedCellKeys: CellKey[];
 }
 
+export interface CellEditorState {
+  active: boolean;
+  rowIndex?: number;
+  colIndex?: number;
+  cellKey?: string;
+}
+
 export interface TableState {
   columns: ReactDataGridColumn[];
   rows: RowProps[];
   rowsCount: number;
+  cellEditorState: CellEditorState;
 }
 
-export interface ReactDataGridColumn {
-  key: string;
-  name: string;
-  formatter?: any;
-  width?: number;
-  resizable?: boolean;
-  sortable?: boolean;
+/** Enumeration for the RowUpdated Action */
+export enum RowUpdatedAction {
+  CellUpdate,
+  CellDrag,
+  ColumnFill,
+  CopyPaste,
+}
+
+/** ReactDataGrid.Column with additional properties */
+export interface ReactDataGridColumn extends ReactDataGrid.Column {
   icon?: boolean;
 }
 
@@ -104,11 +121,25 @@ const initialState: TableState = {
   columns: [],
   rows: [],
   rowsCount: 0,
+  cellEditorState: { active: false },
 };
 
 interface CellKey {
   rowIndex: number;
   columnKey: string;
+}
+
+/** TableRowRenderer props. */
+interface TableRowRendererProps {
+  rowRendererCreator: () => any;
+}
+
+/** ReactDataGrid requires a class component for the RowRenderer because it sets a ref to it. */
+class TableRowRenderer extends React.Component<TableRowRendererProps> {
+  public render() {
+    const creatorFn = this.props.rowRendererCreator();
+    return creatorFn(this.props);
+  }
 }
 
 /**
@@ -126,6 +157,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _selectedCellKeys: Map<string, Set<number>> = new Map(); // column keys -> rowIndices
   private _rowItemSelectionHandlers?: Array<SingleSelectionHandler<number>>;
   private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
+  private _pressedItemSelected: boolean = false;
+
   public readonly state: Readonly<TableState> = initialState;
 
   constructor(props: TableProps, context?: any) {
@@ -225,7 +258,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     this._isMounted = true;
     this.update();
   }
@@ -240,7 +273,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    const columns = columnDescriptions.map(this.columnDescriptionToReactDataGridColumn);
+    const columns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     this.setState(() => {
       return {
         columns,
@@ -314,14 +347,25 @@ export class Table extends React.Component<TableProps, TableState> {
     this.forceUpdate();
   }
 
-  private columnDescriptionToReactDataGridColumn(columnDescription: ColumnDescription): ReactDataGridColumn {
-    return {
+  private _columnDescriptionToReactDataGridColumn = (columnDescription: ColumnDescription): ReactDataGridColumn => {
+
+    const editable = (columnDescription.editable !== undefined ? columnDescription.editable : false);
+
+    const column: ReactDataGridColumn = {
       key: columnDescription.key,
       name: columnDescription.label,
       icon: columnDescription.icon,
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
     };
+
+    if (editable) {
+      column.events = {
+        onClick: this.cellEditOnClick.bind(this, column),
+      };
+    }
+
+    return column;
   }
 
   private _getCellItem = (row: RowItem, columnKey: string): CellItem => {
@@ -356,10 +400,14 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowItemSelectionHandler(rowIndex: number): SingleSelectionHandler<number> {
     return {
+      preselect: () => {
+        this._pressedItemSelected = this._selectedRowIndices.has(rowIndex);
+      },
       select: () => {
         if (!this._selectedRowIndices.has(rowIndex)) {
           this._selectedRowIndices.add(rowIndex);
-          this.forceUpdate();
+          if (!this._pressedItemSelected)
+            this.forceUpdate();
         }
       },
       deselect: () => {
@@ -374,7 +422,13 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private _rowComponentSelectionHandler: MultiSelectionHandler<number> = {
-    deselectAll: () => { this._selectedRowIndices = new Set(); this.forceUpdate(); },
+    deselectAll: () => {
+      this._selectedRowIndices = new Set();
+      if (!this._pressedItemSelected) {
+        this._deactivateCellEditor();
+        this.forceUpdate();
+      }
+    },
     selectBetween: (rowIndex1: number, rowIndex2: number) => {
       const selections = [];
       const lowerNumber = rowIndex1 < rowIndex2 ? rowIndex1 : rowIndex2;
@@ -406,6 +460,9 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createCellItemSelectionHandler(cellKey: CellKey): SingleSelectionHandler<CellKey> {
     return {
+      preselect: () => {
+        this._pressedItemSelected = this.isCellSelected(cellKey);
+      },
       select: () => {
         this.selectCells([cellKey]);
         this.forceUpdate();
@@ -511,22 +568,30 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   });
 
-  private async createCellRenderer(cellItem: CellItem, column: ReactDataGridColumn): Promise<() => React.ReactNode> {
+  private async createCellRenderer(cellItem: CellItem, column: ReactDataGridColumn, displayValue: string): Promise<() => React.ReactNode> {
     if (!cellItem.record)
       return () => undefined;
-    const displayValue = await cellItem.record.getDisplayValue();
     if (column.icon)
       return () => <IconCell value={displayValue} />;
     return () => displayValue;
+  }
+
+  private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
+    if (!cellItem.record)
+      return "";
+    const displayValue = await cellItem.record.getDisplayValue();
+    return displayValue;
   }
 
   private async createPropsForRowItem(item: RowItem, index: number): Promise<RowProps> {
     const cellProps: { [key: string]: CellProps } = {};
     for (const column of this.state.columns) {
       const cellItem = this._getCellItem(item, column.key);
+      const displayValue = await this.getCellDisplayValue(cellItem);
       cellProps[column.key] = {
         item: cellItem,
-        render: await this.createCellRenderer(cellItem, column),
+        displayValue,
+        render: await this.createCellRenderer(cellItem, column, displayValue),
       };
     }
     return {
@@ -633,12 +698,15 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
+    let columnIndex = -1;
     for (const column of this.state.columns) {
+      columnIndex++;
       const cellProps = rowProps.cells[column.key];
       if (!cellProps) {
         continue;
       }
       const cell = cellProps.render();
+      const editorCell = this.state.cellEditorState.active && this.state.cellEditorState.rowIndex === rowProps.index && this.state.cellEditorState.colIndex === columnIndex;
       if (this._tableSelectionTarget === TableSelectionTarget.Cell) {
         const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
         const selectionHandler = this.createCellItemSelectionHandler(cellKey);
@@ -648,7 +716,7 @@ export class Table extends React.Component<TableProps, TableState> {
         const onMouseDown = () => {
           this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
         };
-        const className = classnames("cell", this.isCellSelected(cellKey) && "is-selected", "is-hover-enabled");
+        const className = classnames("cell", this.isCellSelected(cellKey) ? "is-selected" : "is-hover-enabled");
         cells[column.key] = <div
           className={className}
           onClick={onClick}
@@ -657,7 +725,10 @@ export class Table extends React.Component<TableProps, TableState> {
           {cell}
         </div>;
       } else {
-        cells[column.key] = <div className={"cell"}>{cell}</div>;
+        if (editorCell) {
+          cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCommitCancel={this._deactivateCellEditor} />;
+        } else
+          cells[column.key] = <div className={"cell"} title={cellProps.displayValue}>{cell}</div>;
       }
     }
     return cells;
@@ -679,10 +750,11 @@ export class Table extends React.Component<TableProps, TableState> {
           if (e.buttons === 1)
             this._rowSelectionHandler.updateDragAction(props.row.index);
         };
-        const row = dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells, isSelected: this._selectedRowIndices.has(props.row.index) }) :
-          <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} isSelected={this._selectedRowIndices.has(props.row.index)} />;
+        const isSelected = this._selectedRowIndices.has(props.row.index);
+        const row = dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells, isSelected }) :
+          <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} isSelected={isSelected} />;
         return <div
-          className={classnames("row", "is-hover-enabled")}
+          className={classnames("row", !isSelected && "is-hover-enabled")}
           onClickCapture={onClick}
           onMouseMove={onMouseMove}
           onMouseDown={onMouseDown}>
@@ -701,14 +773,76 @@ export class Table extends React.Component<TableProps, TableState> {
       {...props}
     />;
   }
+
   private _onMouseUp = () => {
     if (this._tableSelectionTarget === TableSelectionTarget.Row)
       this._rowSelectionHandler.completeDragAction();
     else
       this._cellSelectionHandler.completeDragAction();
   }
+
   private _onMouseDown = () => {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
+  }
+
+  private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: { rowIdx: number, idx: number, name: string }): void {
+    let activate = false;
+
+    const isSelected = this._selectedRowIndices.has(args.rowIdx);
+    if (isSelected && this._pressedItemSelected)
+      activate = true;
+
+    if (activate)
+      this.activateCellEditor(args.rowIdx, args.idx, column.key);
+    else
+      this._deactivateCellEditor();
+  }
+
+  private activateCellEditor(rowIndex: number, colIndex: number, cellKey: string): void {
+    const cellEditorState = { active: true, rowIndex, colIndex, cellKey };
+    if (cellEditorState !== this.state.cellEditorState) {
+      this.setState({ cellEditorState });
+    }
+  }
+
+  private _deactivateCellEditor = (): void => {
+    if (this.state.cellEditorState.active)
+      this.setState({ cellEditorState: { active: false } });
+  }
+
+  public shouldComponentUpdate(_props: TableProps): boolean {
+    return true;
+  }
+
+  private getRowItem(rowIndex: number): RowItem | undefined {
+    const row = this.state.rows[rowIndex];
+    return row ? row.item : undefined;
+  }
+
+  private updateRowItem(rowIndex: number, rowItem: RowItem): void {
+    const row = this.state.rows[rowIndex];
+    if (row)
+      row.item = rowItem;
+  }
+
+  private _onCellCommit = async (args: PropertyUpdatedArgs) => {
+    if (this.props.onPropertyUpdated) {
+      const allowed = await this.props.onPropertyUpdated(args);
+      if (allowed && this.state.cellEditorState.rowIndex !== undefined && this.state.cellEditorState.rowIndex >= 0) {
+        const rowItem = this.getRowItem(this.state.cellEditorState.rowIndex);
+        if (rowItem) {
+          const cellItem = rowItem.cells.find((cell) => cell.key === this.state.cellEditorState.cellKey);
+          if (cellItem) {
+            cellItem.record = args.propertyRecord;
+            this.updateRowItem(this.state.cellEditorState.rowIndex, rowItem);
+            this._deactivateCellEditor();
+            await this.updateRows();
+          }
+        }
+      } else {
+        this._deactivateCellEditor();
+      }
+    }
   }
 
   public render() {
@@ -788,6 +922,9 @@ export class Table extends React.Component<TableProps, TableState> {
           return "";
         };
       }
+
+      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer(dropProps, dragProps)} />;
+
       return (
         <DragDropWrapper
           dropStyle={{
@@ -798,7 +935,7 @@ export class Table extends React.Component<TableProps, TableState> {
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
-            rowRenderer={this._createRowRenderer(dropProps, dragProps)}
+            rowRenderer={rowRenderer}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
@@ -808,13 +945,15 @@ export class Table extends React.Component<TableProps, TableState> {
           />
         </DragDropWrapper>
       );
-    } else
+    } else {
+      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
+
       return (
         <div className={wrapperName} onMouseDown={this._onMouseDown}>
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
-            rowRenderer={this._createRowRenderer()}
+            rowRenderer={rowRenderer}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
@@ -824,6 +963,7 @@ export class Table extends React.Component<TableProps, TableState> {
           />
         </div>
       );
+    }
   }
 }
 

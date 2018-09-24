@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelHubClient, AccessToken, IModelRepository, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
+import { IModelHubClient, AccessToken, HubIModel, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
 import { ProjectApi } from "./ProjectApi";
 import { IModelVersion } from "@bentley/imodeljs-common";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class IModelApi {
   private static _hubClient: IModelHubClient;
@@ -18,15 +19,16 @@ export class IModelApi {
   }
 
   /** Get all iModels in a project */
-  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
+  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
+    const alctx = new ActivityLoggingContext(Guid.createValue());
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: IModelRepository[] = await IModelApi._hubClient.IModels().get(accessToken, projectId, queryOptions);
+    const iModels: HubIModel[] = await IModelApi._hubClient.IModels().get(alctx, accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
       if (thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi._hubClient.Versions().get(accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApi._hubClient.Versions().get(alctx, accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

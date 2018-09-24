@@ -7,6 +7,7 @@ import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { request, RequestQueryOptions, Response } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Connect project */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -66,6 +67,12 @@ export class Project extends WsgInstance {
 /** RBAC project */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RbacProject extends WsgInstance {
+  // Empty!
+}
+
+/** RBAC user */
+@ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class RbacUser extends WsgInstance {
   // Empty!
 }
 
@@ -144,13 +151,25 @@ export class RbacClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
    */
-  public async getProjects(token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]> {
+  public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]> {
     const userProfile = token.getUserProfile();
     if (!userProfile)
       return Promise.reject(new Error("Invalid access token"));
 
     const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
-    return this.getInstances<RbacProject>(RbacProject, token, url, queryOptions);
+    return this.getInstances<RbacProject>(alctx, RbacProject, token, url, queryOptions);
+  }
+
+  /**
+   * Gets all users in a project
+   * @param token Delegation token of the authorized user
+   * @param projectId Id of the project we want to get users for
+   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not TypeScript property names.
+   * @returns Resolves to an array of users
+   */
+  public async getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions) {
+    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/Project/" + projectId + "/User";
+    return this.getInstances<RbacUser>(alctx, RbacUser, token, url, queryOptions);
   }
 
   /**
@@ -158,13 +177,15 @@ export class RbacClient extends WsgClient {
    * @param token Delegation token of the authorized user.
    * @param projectId Id of the specified project.
    */
-  public async getIModelHubPermissions(token: AccessToken, projectId: string): Promise<IModelHubPermissions> {
+  public async getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions> {
+    alctx.enter();
     const userProfile = token.getUserProfile();
     if (!userProfile)
       return Promise.reject(new Error("Invalid access token"));
 
     const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
-    const url: string = await this.getUrl() + relativeUrlPath;
+    const url: string = await this.getUrl(alctx) + relativeUrlPath;
+    alctx.enter();
 
     const iModelHubServiceGPRId = 2485;
     const filterStr = `$id+eq+'${projectId}'+and+Permission.ServiceGPRId+eq+${iModelHubServiceGPRId}`;
@@ -179,7 +200,8 @@ export class RbacClient extends WsgClient {
 
     await this.setupOptionDefaults(options);
 
-    const res: Response = await request(url, options);
+    const res: Response = await request(alctx, url, options);
+    alctx.enter();
 
     if (!res.body || !res.body.hasOwnProperty("instances"))
       return Promise.reject(new Error("Expected an array of instances to be returned"));
@@ -221,10 +243,10 @@ export class ConnectClient extends WsgClient {
   private readonly _rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
 
   private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-wsg20-eus.cloudapp.net",
-    QA: "https://qa-connect-wsg20.bentley.com",
+    DEV: "https://dev-connect-contextregistry.bentley.com",
+    QA: "https://qa-connect-contextregistry.bentley.com",
     PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-wsg20-eus.cloudapp.net",
+    PERF: "https://perf-connect-contextregistry.bentley.com",
   };
 
   public constructor(public deploymentEnv: DeploymentEnv) {
@@ -253,8 +275,8 @@ export class ConnectClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
    */
-  public async getProjects(token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    return this.getInstances<Project>(Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+  public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
   /**
@@ -263,8 +285,8 @@ export class ConnectClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
-  public async getProject(token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
-    return this.getProjects(token, queryOptions)
+  public async getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
+    return this.getProjects(alctx, token, queryOptions)
       .then((projects: Project[]) => {
         if (projects.length === 0) {
           return Promise.reject(new Error("Could not find a project with the specified criteria"));
@@ -280,14 +302,14 @@ export class ConnectClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of invited projects.
    */
-  public async getInvitedProjects(token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+  public async getInvitedProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
     const rbacQueryOptions: RbacRequestQueryOptions = {
       $top: queryOptions ? queryOptions.$top : undefined,
       $skip: queryOptions ? queryOptions.$skip : undefined,
       $filter: "rbaconly+eq+true",
     };
 
-    const invitedProjectIds: string[] = await this._rbacClient.getProjects(token, rbacQueryOptions)
+    const invitedProjectIds: string[] = await this._rbacClient.getProjects(alctx, token, rbacQueryOptions)
       .then((invitedProjects: RbacProject[]) => invitedProjects.map((val: RbacProject) => val.wsgId));
 
     const filterStr = "$id+in+[" + invitedProjectIds.reduce((sum: string, value: string) => {
@@ -297,7 +319,7 @@ export class ConnectClient extends WsgClient {
 
     const newQueryOptions: ConnectRequestQueryOptions = queryOptions || {};
     newQueryOptions.$filter = (queryOptions && queryOptions.$filter) ? queryOptions.$filter + "+and+" + filterStr : filterStr;
-    return this.getProjects(token, newQueryOptions);
+    return this.getProjects(alctx, token, newQueryOptions);
   }
 
 }

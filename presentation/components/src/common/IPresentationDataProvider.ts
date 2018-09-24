@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @module Core */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+
 /**
  * Presentation data provider
  */

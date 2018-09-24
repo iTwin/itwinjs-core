@@ -239,7 +239,7 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 > --- | --- | ---
 > 10 | 62.8 | 314.15
 
-Using **aliases** is also helpful when working with the iModelJs API. The API returns query results as JavaScript object literals where
+Using **aliases** is also helpful when working with the iModel.js API. The API returns query results as JavaScript object literals where
 each expression of the SELECT clause becomes the member of the object.
 
 If you, for example, used the [Element Count example](#element-count) with the iModeljs API, you would get this JavaScript object literal:
@@ -273,7 +273,7 @@ Now the result can be consumed in TypeScript as desired:
 
 ## Parametrizing the ECSQL
 
-To reuse the same ECSQL statement with different values, parameters can be used. Reusing ECSQL statements should always be considered because preparing an ECSQL statement can be costly. See the [ECSQL Reference](../ECSQL.md#ecsql-parameters) for details and some examples. Values for the parameters are bound to the statement via the iModelJs API.
+To reuse the same ECSQL statement with different values, parameters can be used. Reusing ECSQL statements should always be considered because preparing an ECSQL statement can be costly. See the [ECSQL Reference](../ECSQL.md#ecsql-parameters) for details and some examples. Values for the parameters are bound to the statement via the iModel.js API.
 
 **Not binding a value to a parameter is like binding NULL to it.**
 
@@ -317,7 +317,7 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 
 ## SQL Functions
 
-Any SQL function can be used in ECSQL. This includes functions built into SQLite (see [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html)) or functions built into iModelJs, like the [geometry functions](../GeometrySqlFuncs.md) which you can use for [spatial queries](../SpatialQueries.md).
+Any SQL function can be used in ECSQL. This includes functions built into SQLite (see [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html)) or functions built into iModel.js, like the [geometry functions](../GeometrySqlFuncs.md) which you can use for [spatial queries](../SpatialQueries.md).
 
 > **Try it yourself**
 >

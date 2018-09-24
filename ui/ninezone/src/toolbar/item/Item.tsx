@@ -14,6 +14,8 @@ export interface ItemProps extends CommonProps {
   children?: React.ReactNode;
   /** Describes if item is active. */
   isActive?: boolean;
+  /** Describes if the item is disabled. */
+  isDisabled?: boolean;
   /** Function called when the item is clicked. */
   onClick?: () => void;
 }
@@ -24,11 +26,12 @@ export default class Item extends React.Component<ItemProps> {
     const className = classnames(
       "nz-toolbar-item-item",
       this.props.isActive && "nz-is-active",
+      this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
     return (
       <div
-        onClickCapture={this.props.onClick}
+        onClick={this._handleClick}
         className={className}
         style={this.props.style}
       >
@@ -36,5 +39,12 @@ export default class Item extends React.Component<ItemProps> {
         {this.props.children}
       </div>
     );
+  }
+
+  private _handleClick = () => {
+    if (this.props.isDisabled)
+      return;
+
+    this.props.onClick && this.props.onClick();
   }
 }

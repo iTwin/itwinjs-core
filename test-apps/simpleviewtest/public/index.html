@@ -45,7 +45,7 @@
       </select>
       <div class="simpleicon" id="startToggleModel">
         <i class="bim-icon-model"></i>
-        <div class="toolMenu" id="toggleModelMenu">
+        <div class="scrollingToolMenu" id="toggleModelMenu">
         </div>
       </div>
       <div class="simpleicon" id="startCategorySelection">
@@ -53,24 +53,10 @@
         <div class="scrollingToolMenu" id="categorySelectionMenu">
         </div>
       </div>
+      <img class="simpleicon" src="zoom.svg" id="startSelect" />
       <img class="simpleicon" src="toggle-camera.svg" id="startToggleCamera" />
       <img class="simpleicon" src="fit-to-view.svg" id="startFit" />
       <img class="simpleicon" src="window-area.svg" id="startWindowArea" />
-      <img class="simpleicon" src="zoom.svg" id="startSelect" />
-      <div class="simpleicon" id="startMeasurePoints">
-        <div id="snapModeToggle">
-          <i class="rd-icon-measure-distance"></i>
-        </div>
-        <div class="toolMenu" id="changeSnapModeMenu">
-          <select id="snapModeList">
-            <option>Keypoint</option>
-            <option>Nearest</option>
-            <option>Center</option>
-            <option>Origin</option>
-            <option>Intersection</option>
-          </select>
-        </div>
-      </div>
       <img class="simpleicon" src="walk.svg" id="startWalk" />
       <img class="simpleicon" src="rotate-left.svg" id="startRotateView" />
       <div class="simpleicon" id="switchStandardRotation">
@@ -173,6 +159,53 @@
       </div>
       <div class="simpleicon" id="doRedo">
         <i class="bim-icon-redo"></i>
+      </div>
+      <div class="simpleicon" id="startMeasurePoints">
+        <div id="snapModeToggle">
+          <i class="rd-icon-measure-distance"></i>
+        </div>
+        <div class="toolMenu" id="changeSnapModeMenu">
+          <select id="snapModeList">
+            <option>Keypoint</option>
+            <option>Nearest</option>
+            <option>Center</option>
+            <option>Origin</option>
+            <option>Intersection</option>
+          </select>
+        </div>
+      </div>
+      <div class="simpleicon" id="debugTools">
+        <i class="bim-icon-appicon"></i>
+        <div class="toolMenu" id="debugToolsMenu">
+          <div class="simpleicon" id="showAnimationMenu">
+            <i class="bim-icon-animation"></i>
+            <div class="toolMenu" id="animationMenu">
+              <div id="animimationDurationDiv">
+                Duration:
+                <input type="number" min="0" step="0.1" value="10" style="width: 4em" id="animationDuration"> second(s)
+              </div>
+              <div id="animationLoopDiv">
+                <input id="animationLoop" type="checkbox"> Loop</div>
+              <hr>
+              <input type="range" min="0" max="1000" value="0" class="slider" id="animationSlider">
+              <div class="simpleicon" id="animationPlay">
+                <i class="bim-icon-play"></i>
+              </div>
+              <div class="simpleicon" id="animationPause">
+                <i class="bim-icon-pause"></i>
+              </div>
+              <div class="simpleicon" id="animationStop">
+                <i class="bim-icon-stop"></i>
+              </div>
+              <br>
+              <div id="animationState">Stopped.</div>
+            </div>
+          </div>
+          <img class="simpleicon" src="Warning_sign.svg" id="incidentMarkers" />
+          <div class="simpleicon" id="projectExtents">
+            <i class="bim-icon-viewbottom"></i>
+          </div>
+        </div>
       </div>
       <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
         <br />Scene Time (ms): ----</span>

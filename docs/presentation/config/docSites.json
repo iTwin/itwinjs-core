@@ -21,6 +21,8 @@
   },
   "metadata": {
     "home": "learning",
+    "logo": "learning/imodeljs.ico",
+    "favicon": "learning/imodeljs.ico",
     "headerTabs": {
       "Home": {
         "docSite": "learning"
@@ -38,6 +40,18 @@
         "docSite": "releases"
       }
     },
-    "docSiteOrder": ["learning", "consume", "reference", "contribute", "releases"]
+    "packageAliases": {
+      "backend": "presentation-backend",
+      "common": "presentation-common",
+      "components": "presentation-components",
+      "frontend": "presentation-frontend"
+    },
+    "docSiteOrder": [
+      "learning",
+      "consume",
+      "reference",
+      "contribute",
+      "releases"
+    ]
   }
 }

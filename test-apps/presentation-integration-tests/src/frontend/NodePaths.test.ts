@@ -43,7 +43,7 @@ describe("NodesPaths", () => {
     });
   });
 
-  it("gets node paths", async () => {
+  it.skip("gets node paths", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/NodePaths/getNodePaths");
     /*
     [BisCore:RepositoryModel] 0x1

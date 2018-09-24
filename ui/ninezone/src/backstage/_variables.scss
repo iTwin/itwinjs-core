@@ -1,1 +1,33 @@
-$nz-tiny-separator-height: 1px;
+@import "@bentley/bwc/lib/mixins";
+
+// backstage common values
+$nz-backstage-width: 300px;
+$nz-backstage-overlay-background: #222;
+$nz-backstage-item-font-size: 16px;
+$nz-backstage-item-spacing: 24px;
+$nz-backstage-icon-spacing-left: 24px;
+$nz-backstage-icon-spacing-right: 16px;
+$nz-backstage-highlight-bar-width: 2px;
+$nz-backstage-highlight-bar-spacing-left: 2px;
+$nz-backstage-divider-height: 1px;
+$nz-backstage-user-profile-size: 48px;
+$nz-backstage-user-profile-label-spacing-left: 6px;
+$nz-backstage-user-profile-label-spacing-right: 6px;
+$nz-backstage-user-profile-spacing: 14px; // top & bottom
+$nz-backstage-user-profile-divider-height: 2px;
+
+// light theme
+$nz-backstage-background: $bwc-gray-c;
+$nz-backstage-item-color: #000;
+$nz-backstage-item-active-background: #fff;
+$nz-backstage-highlight-bar-background: $bwc-blue;
+$nz-backstage-divider-color: $bwc-gray-9;
+
+// dark theme
+/*
+$nz-backstage-background: #4F5D65;
+$nz-backstage-item-color: #fff;
+$nz-backstage-item-active-background: #5A6973;
+$nz-backstage-highlight-bar-background: #A5D7F5;
+$nz-backstage-divider-color: #2D373C;
+*/

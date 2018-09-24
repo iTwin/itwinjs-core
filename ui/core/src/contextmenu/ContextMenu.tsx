@@ -4,30 +4,30 @@
 /** @module ContextMenu */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 
 import "./ContextMenu.scss";
 
 /** Enum to specify where a ContextMenu should anchor to it's parent element */
 export enum ContextMenuDirection {
-  Left = 1, Right,
-  Mid,
-  Top, Bottom,
+    None = "",
+    TopLeft = "top left", Top = "top", TopRight = "top right",
+    Left = "left", Center = "center", Right = "right",
+    BottomLeft = "bottom left", Bottom = "bottom", BottomRight = "bottom right",
 }
 
 /** Property interface for Context Menu */
 export interface ContextMenuProps {
+  /**
+   * Whether ContextMenu is currently opened.
+   */
   opened: boolean;
   /**
-   * Which direction the menu opens in the horizontal direction
-   * Default: ContextMenuDirection.Right
+   * Which direction the menu opens
+   * Default: ContextMenuDirection.BottomRight
    */
-  directionX?: ContextMenuDirection;
-  /**
-   * Which direction the menu opens in the vertical direction
-   * Default: ContextMenuDirection.Bottom
-   */
-  directionY?: ContextMenuDirection;
+  direction?: ContextMenuDirection;
   /** When Menu, and all submenus, are unfocused */
   onBlur?: (event: any) => any;
   /** When list item or submenu is selected */
@@ -81,8 +81,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   private _length: number = 0;
 
   public static defaultProps: Partial<ContextMenuProps> = {
-    directionX: ContextMenuDirection.Right,
-    directionY: ContextMenuDirection.Bottom,
+    direction: ContextMenuDirection.BottomRight,
     parentWidth: 0,
     parentHeight: 0,
     autoflip: true,
@@ -96,48 +95,74 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     selected: this.props.selected!,
   };
 
+  public static directionToXY = (direction: ContextMenuDirection): {x: number, y: number} => {
+    switch (direction) {
+      case ContextMenuDirection.TopLeft:
+        return {x: -1, y: -1};
+      case ContextMenuDirection.Top:
+        return {x: 0, y: -1};
+      case ContextMenuDirection.TopRight:
+        return {x: 1, y: -1};
+      case ContextMenuDirection.Left:
+        return {x: -1, y: 0};
+      case ContextMenuDirection.Center:
+        return {x: 0, y: 0};
+      case ContextMenuDirection.Right:
+        return {x: 1, y: 0};
+      case ContextMenuDirection.BottomLeft:
+        return {x: -1, y: 1};
+      case ContextMenuDirection.Bottom:
+        return {x: 0, y: 1};
+      case ContextMenuDirection.BottomRight:
+        return {x: 1, y: 1};
+    }
+    return {x: 0, y: 0};
+  }
+
   public render(): JSX.Element {
-    const menuStyle: React.CSSProperties = { left: 0, top: 0 };
-    let dirX = this.props.directionX!, dirY = this.props.directionY!;
+    const { opened, direction, parentWidth, parentHeight } = this.props;
+    // const menuStyle: React.CSSProperties = { left: 0, top: 0 };
+    let {x: dirX, y: dirY} = ContextMenu.directionToXY(direction!);
     if (this._rootElement && this._menuElement) {
       const containerRect = this._rootElement.getBoundingClientRect();
       const menuRect = this._menuElement.getBoundingClientRect();
 
       // check if menu should flip
       if (this.props.autoflip) {
-        if (dirX === ContextMenuDirection.Right
-          && containerRect.left + menuRect.width + this.props.parentWidth! > window.innerWidth) {
-          dirX = ContextMenuDirection.Left;
+        if (dirX === 1
+          && containerRect.left + menuRect.width + parentWidth! > window.innerWidth) {
+          dirX = -1;
         }
-        if (dirX === ContextMenuDirection.Left
+        if (dirX === -1
           && containerRect.left - menuRect.width < 0) {
-          dirX = ContextMenuDirection.Right;
+          dirX = 1;
         }
-
-        if (dirY === ContextMenuDirection.Bottom
-          && containerRect.top + menuRect.height + this.props.parentHeight! > window.innerHeight) {
-          dirY = ContextMenuDirection.Top;
+        if (dirY === 1
+          && containerRect.top + menuRect.height + parentHeight! > window.innerHeight) {
+          dirY = -1;
         }
-        if (dirY === ContextMenuDirection.Top
+        if (dirY === -1
           && containerRect.top - menuRect.height < 0) {
-          dirY = ContextMenuDirection.Bottom;
+          dirY = 1;
         }
       }
+    }
 
+      /*
       // generate position based on menu direction
       let left: number = 0, top: number = 0;
-      if (dirX === ContextMenuDirection.Right) {
+      if (dirX === 1) {
         left = (containerRect.left + this.props.parentWidth!);
-      } else if (dirX === ContextMenuDirection.Left) {
+      } else if (dirX === -1) {
         left = containerRect.left - menuRect.width;
-      } else if (dirX === ContextMenuDirection.Mid) {
+      } else if (dirX === 0) {
         left = containerRect.left + (this.props.parentWidth! - menuRect.width) / 2;
       }
-      if (dirY === ContextMenuDirection.Bottom) {
+      if (dirY === 1) {
         top = (containerRect.top + this.props.parentHeight!);
-      } else if (dirY === ContextMenuDirection.Top) {
+      } else if (dirY === -1) {
         top = containerRect.top - menuRect.height;
-      } else if (dirY === ContextMenuDirection.Mid) {
+      } else if (dirY === 0) {
         top = containerRect.top + (this.props.parentHeight! - menuRect.height) / 2;
       }
       if (this.props.edgeLimit) {
@@ -163,7 +188,9 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
       }
       if (this.props.style && this.props.style.width)
         menuStyle.width = this.props.style.width;
-    }
+    }*/
+    // menuStyle.left = left;
+    // menuStyle.top = top;
 
     let index = 0;
     // add inheritance data to submenu children
@@ -205,17 +232,25 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     });
     this._length = index;
 
+    const pos = {
+        center: dirX === 0 && dirY === 0,
+        left: dirX === -1,
+        right: dirX === 1,
+        top: dirY === -1,
+        bottom: dirY === 1,
+    };
+
     return (
       <div style={this.props.style}
-        className={"context-menu"}
+        className="context-menu"
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
         ref={(el) => { this._rootElement = el; }}>
         <div
           ref={(el) => { this._menuElement = el; }}
           tabIndex={0}
-          className={classnames("context-menu-container", { opened: this.props.opened })}
-          style={menuStyle}>
+          className={classnames("context-menu-container", { opened }, pos)}
+          >
           {children}
         </div>
       </div>
@@ -302,6 +337,88 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
 }
 
 export default ContextMenu;
+
+export interface GlobalContextMenuProps {
+  /**
+   * Whether ContextMenu is currently opened.
+   */
+  opened: boolean;
+  /**
+   * Unique identifier, to distinguish from other GlobalContextMenu components
+   */
+  identifier: string;
+  /**
+   * Specifies the x/horizontal position on the viewport
+   */
+  x: number | string;
+  /**
+   * Specifies the y/vertical position on the viewport
+   */
+  y: number | string;
+  /**
+   * Which direction the menu opens
+   * Default: ContextMenuDirection.BottomRight
+   */
+  direction?: ContextMenuDirection;
+  /** When Menu, and all submenus, are unfocused */
+  onBlur?: (event: any) => any;
+  /** When list item or submenu is selected */
+  onSelect?: (event: any) => any;
+  /** when Escape button is pressed */
+  onEsc?: (data: any) => any;
+  style?: React.CSSProperties;
+  /**
+   * Whether menu flips directions based on screen edge
+   * Default: true
+   */
+  autoflip?: boolean;
+  /**
+   * Whether menu hugs screen edge when autoflip is off.
+   * Default: true
+   */
+  edgeLimit?: boolean;
+  /**
+   * starting menu item selected index
+   * Default: -1
+   */
+  selected?: number;
+}
+
+export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
+  private _container: HTMLDivElement;
+  constructor (props: GlobalContextMenuProps) {
+    super(props);
+    this._container = document.createElement("div");
+    this._container.id = `context-menu-${props.identifier}`;
+    let rt = document.getElementById("context-menu-root") as HTMLDivElement;
+    if (!rt) {
+      rt = document.createElement("div");
+      rt.id = "context-menu-root";
+      document.body.appendChild(rt);
+    }
+    if (rt) {
+      rt.appendChild(this._container);
+    }
+  }
+  public componentWillUnmount() {
+    if (this._container.parentElement) { // cleanup
+      this._container.parentElement.removeChild(this._container);
+    }
+  }
+  public render(): React.ReactNode {
+    const { x, y, identifier, ...props } = this.props;
+    const positioningStyle: React.CSSProperties = {
+      left: x,
+      top: y,
+    };
+    return ReactDOM.createPortal(
+      <div className="context-menu-global" style={positioningStyle}>
+        <ContextMenu
+          {...props} />
+      </div>
+      , this._container);
+  }
+}
 
 /** Property interface for Context Menu Item */
 export interface ContextMenuItemProps {
@@ -415,15 +532,10 @@ export interface ContextSubMenuProps {
    */
   autoflip?: boolean;
   /**
-   * Which direction the menu opens in the horizontal direction
+   * Which direction the menu opens
    * Default: inherit
    */
-  directionX?: ContextMenuDirection;
-  /**
-   * Which direction the menu opens in the vertical direction
-   * Default: inherit
-   */
-  directionY?: ContextMenuDirection;
+  direction?: ContextMenuDirection;
   /** Used by hover highlighting */
   onHover?: () => any;
   /** Used by hover highlighting */
@@ -448,8 +560,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   public static defaultProps: Partial<ContextSubMenuProps> = {
     disabled: false,
     autoflip: true,
-    directionX: ContextMenuDirection.Right,
-    directionY: ContextMenuDirection.Bottom,
+    direction: ContextMenuDirection.BottomRight,
     selected: false,
   };
 
@@ -465,7 +576,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       parentHeight = -rect.height;
     }
     return (
-      <div className={"context-submenu"}
+      <div className={classnames("context-submenu", this.props.direction)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}>
         <div
@@ -481,8 +592,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
           ref={(el) => { this._menuElement = el; }}
           opened={this.state.opened}
           selected={0}
-          directionX={this.props.directionX}
-          directionY={this.props.directionY}
+          direction={this.props.direction}
           parent={this.props.parent}
           parentSubmenu={this}
           parentWidth={parentWidth}
