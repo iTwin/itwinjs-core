@@ -41,35 +41,34 @@ export class IdleTool extends InteractiveTool {
 
     if (tp.isSnapped) {
       IModelApp.toolAdmin.adjustSnapPoint();
-    } else {
-      if (IModelApp.accuDraw.isActive) {
-        const point = tp.point;
-        const vp = ev.viewport!;
-        if (vp.isSnapAdjustmentRequired) {
-          IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-          const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
-          const snap = new SnapDetail(hit);
-          tp.setCurrSnap(snap);
-          IModelApp.toolAdmin.adjustSnapPoint();
-          tp.point.setFrom(tp.point);
-          tp.setCurrSnap(undefined);
-        } else {
-          IModelApp.accuDraw.adjustPoint(point, vp, false);
-          const savePoint = point.clone();
-          IModelApp.toolAdmin.adjustPointToGrid(point, vp);
-          if (!point.isExactEqual(savePoint))
-            IModelApp.accuDraw.adjustPoint(point, vp, false);
-          tp.point.setFrom(point);
-        }
+    } else if (IModelApp.accuDraw.isActive) {
+      const point = tp.getPoint().clone();
+      const vp = ev.viewport!;
+      if (vp.isSnapAdjustmentRequired) {
+        IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
+        const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
+        const snap = new SnapDetail(hit);
+        tp.setCurrSnap(snap);
+        IModelApp.toolAdmin.adjustSnapPoint();
+        tp.setPoint(tp.getPoint());
       } else {
-        IModelApp.toolAdmin.adjustPoint(tp.point, ev.viewport!);
+        IModelApp.accuDraw.adjustPoint(point, vp, false);
+        const savePoint = point.clone();
+        IModelApp.toolAdmin.adjustPointToGrid(point, vp);
+        if (!point.isExactEqual(savePoint))
+          IModelApp.accuDraw.adjustPoint(point, vp, false);
+        tp.setPoint(point);
       }
+    } else {
+      IModelApp.toolAdmin.adjustPoint(tp.getPoint(), ev.viewport!);
     }
 
     IModelApp.accuDraw.onTentative();
 
     if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
       currTool.updateTargetCenter(); // Change target center to tentative location...
+    else
+      IModelApp.toolAdmin.updateDynamics(); // Don't wait for motion to update tool dynamics...
   }
 
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {

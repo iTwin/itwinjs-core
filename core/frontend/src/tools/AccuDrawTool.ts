@@ -5,7 +5,7 @@
 
 import { AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
 import { CoordinateLockOverrides } from "./ToolAdmin";
-import { TentativeOrAccuSnap } from "../AccuSnap";
+import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
 import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -1091,7 +1091,7 @@ class RotateElementTool extends AccuDrawTool {
 
       // Turn hit into nearest snap when shortcut was started without AccuSnap being user enabled...
       if (undefined !== hitDetail)
-        snapDetail = await accuSnap.requestSnap(hitDetail, SnapMode.Nearest, IModelApp.locateManager.apertureInches);
+        snapDetail = await AccuSnap.requestSnap(hitDetail, [SnapMode.Nearest], IModelApp.locateManager.apertureInches, 1);
     }
 
     if (undefined !== snapDetail && !this.updateOrientation(snapDetail, vp))

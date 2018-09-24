@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.132.0",
+      "tag": "@bentley/presentation-components_v0.132.0",
+      "date": "Mon, 24 Sep 2018 18:55:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.131.0",
       "tag": "@bentley/presentation-components_v0.131.0",
       "date": "Sun, 23 Sep 2018 17:07:30 GMT",

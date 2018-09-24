@@ -220,7 +220,7 @@ export class CurrentInputState {
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
-        uorPt.setFrom(IModelApp.tentativePoint.point);
+        uorPt.setFrom(IModelApp.tentativePoint.getPoint());
         vp = IModelApp.tentativePoint.viewport;
       }
     }

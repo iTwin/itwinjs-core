@@ -9,6 +9,7 @@ import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorateContext } from "./ViewContext";
 import { GraphicType } from "./render/GraphicBuilder";
+import { LinePixels } from "@bentley/imodeljs-common";
 
 export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
   Nearest = 1,
@@ -51,6 +52,18 @@ export const enum HitGeomType {
   Curve = 3,
   Arc = 4,
   Surface = 5,
+}
+
+/**
+ * Classification of GeometricPrimitive that generated the Hit.
+ */
+export const enum HitParentGeomType {
+  None = 0,
+  Wire = 1,
+  Sheet = 2,
+  Solid = 3,
+  Mesh = 4,
+  Text = 5,
 }
 
 export const enum HitPriority {
@@ -143,6 +156,8 @@ export class SnapDetail extends HitDetail {
   public normal?: Vector3d;
   /** The HitGeomType of this SnapDetail */
   public geomType?: HitGeomType;
+  /** The HitGeomType of this SnapDetail */
+  public parentGeomType?: HitParentGeomType;
 
   /** Constructor for SnapDetail.
    * @param from The HitDetail that created this snap
@@ -204,6 +219,7 @@ export class SnapDetail extends HitDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
     val.geomType = this.geomType;
+    val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
       val.primitive = this.primitive.clone() as CurvePrimitive;
@@ -274,6 +290,19 @@ export class SnapDetail extends HitDetail {
 
 export class IntersectDetail extends SnapDetail {
   public secondHit?: SnapDetail;
+
+  public draw(context: DecorateContext) {
+    if (undefined !== this.primitive && undefined !== this.secondHit && undefined !== this.secondHit.primitive) {
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
+      builder.addPath(Path.create(this.primitive));
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2, LinePixels.Code2);
+      builder.addPath(Path.create(this.secondHit.primitive));
+      context.addDecorationFromBuilder(builder);
+      return;
+    }
+    super.draw(context);
+  }
 }
 
 /**

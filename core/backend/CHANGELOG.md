@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Sun, 23 Sep 2018 17:07:30 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Sep 2018 18:55:46 GMT and should not be manually modified.
+
+## 0.132.0
+Mon, 24 Sep 2018 18:55:46 GMT
+
+### Updates
+
+- Support center snap as part of multi-snap when interiors aren't pickable (open path or wireframe view)
 
 ## 0.131.0
 Sun, 23 Sep 2018 17:07:30 GMT
