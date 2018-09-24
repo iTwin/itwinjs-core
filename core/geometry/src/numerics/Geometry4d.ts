@@ -1098,9 +1098,8 @@ export class Map4d implements BeJSONFunctions {
     const worldToSlab = slabToWorld.inverse();
     if (!worldToSlab)
       return undefined;
-    const worldToSlabMap = Map4d.createTransform(worldToSlab, slabToWorld);
-    if (undefined === worldToSlab)
-      return undefined;
+
+    const worldToSlabMap = new Map4d(Matrix4d.createTransform(worldToSlab), Matrix4d.createTransform(slabToWorld));
 
     const slabToNPCMap = new Map4d(
       Matrix4d.createRowValues(
@@ -1113,8 +1112,7 @@ export class Map4d implements BeJSONFunctions {
         0, 1, 0, 0,
         0, 0, 1.0 / fraction, 0,
         0, 0, (1.0 - fraction) / fraction, 1));
-    if (undefined === worldToSlabMap)
-      return undefined;
+
     const result = slabToNPCMap.multiplyMapMap(worldToSlabMap);
     /*
     let numIdentity = 0;
