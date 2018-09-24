@@ -1,6 +1,23 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+This log was last generated on Sun, 23 Sep 2018 17:07:30 GMT and should not be manually modified.
+
+## 0.131.0
+Sun, 23 Sep 2018 17:07:30 GMT
+
+*Version update only*
+
+## 0.130.0
+Sun, 23 Sep 2018 01:19:16 GMT
+
+*Version update only*
+
+## 0.129.0
+Fri, 21 Sep 2018 23:16:13 GMT
+
+### Updates
+
+- Add missing documentation for rules' `condition` parameter
 
 ## 0.128.0
 Fri, 14 Sep 2018 17:08:05 GMT

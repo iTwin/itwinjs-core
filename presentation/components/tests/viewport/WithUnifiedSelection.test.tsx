@@ -15,7 +15,7 @@ import {
 } from "@bentley/presentation-common/tests/_helpers/random";
 import { PromiseContainer } from "@bentley/presentation-common/tests/_helpers/Promises";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/presentation-common";
 import {
@@ -209,9 +209,11 @@ describe("ViewportSelectionHandler", () => {
   });
 
   const createElementProps = (ids: Id64Arg): ElementProps[] => {
-    return [...Id64.toIdSet(ids)].map((id: string) => ({
+    return [...Id64.toIdSet(ids)].map((id: string): ElementProps => ({
       id: new Id64(id),
       classFullName: `class_name_${id}`,
+      code: Code.createEmpty(),
+      model: new Id64(id),
     }));
   };
 

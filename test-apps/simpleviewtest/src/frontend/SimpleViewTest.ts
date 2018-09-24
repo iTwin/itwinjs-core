@@ -157,7 +157,7 @@ async function buildModelMenu(state: SimpleViewState) {
   const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
   curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
   curModelPropIndices = [];
-  modelMenu.innerHTML = "";
+  modelMenu.innerHTML = '<input id="cbxModelToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
   // ###TODO: Load models on demand when they are enabled in the dialog - not all up front like this...super-inefficient...
   let i = 0;
@@ -183,9 +183,13 @@ async function buildModelMenu(state: SimpleViewState) {
   }
 
   curNumModels = i;
+  let allEnabled: boolean = true;
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
     const enabled = spatialView.modelSelector.has(curModelProps[c].id!.toString());
+    if (!enabled)
+      allEnabled = false;
+
     updateCheckboxToggleState(cbxName, enabled);
     addModelToggleHandler(cbxName);
 
@@ -202,6 +206,9 @@ async function buildModelMenu(state: SimpleViewState) {
       }
     }
   }
+
+  updateCheckboxToggleState("cbxModelToggleAll", allEnabled);
+  addModelToggleAllHandler();
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
@@ -256,14 +263,19 @@ function applyModelToggleChange(_cbxModel: string) {
 
   view.clearViewedModels();
 
+  let allEnabled: boolean = true;
   for (let c = 0; c < curNumModels; c++) {
     const cbxName = "cbxModel" + c;
     const isChecked = getCheckboxToggleState(cbxName);
     if (isChecked)
       view.addViewedModel(curModelProps[curModelPropIndices[c]].id!);
+    else
+      allEnabled = false;
   }
 
   theViewport!.sync.invalidateScene();
+
+  updateCheckboxToggleState("cbxModelToggleAll", allEnabled);
 
   const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
@@ -337,9 +349,36 @@ function applyCategoryToggleAllChange() {
   menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
 }
 
+function applyModelToggleAllChange() {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+
+  const view = theViewport!.view as SpatialViewState;
+  view.clearViewedModels();
+
+  const isChecked = getCheckboxToggleState("cbxModelToggleAll");
+  for (let c = 0; c < curNumModels; c++) {
+    const cbxName = "cbxModel" + c;
+    (document.getElementById(cbxName)! as HTMLInputElement).checked = isChecked;
+    if (isChecked) {
+      const id = curModelProps[curModelPropIndices[c]].id!;
+      view.addViewedModel(id);
+    }
+  }
+
+  theViewport!.sync.invalidateScene();
+
+  const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+}
+
 // add a click handler to model checkbox
 function addModelToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
+}
+
+function addModelToggleAllHandler() {
+  document.getElementById("cbxModelToggleAll")!.addEventListener("click", () => applyModelToggleAllChange());
 }
 
 // add a click handler to classifier checkbox

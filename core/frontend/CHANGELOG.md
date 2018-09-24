@@ -1,6 +1,33 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+This log was last generated on Sun, 23 Sep 2018 17:07:30 GMT and should not be manually modified.
+
+## 0.131.0
+Sun, 23 Sep 2018 17:07:30 GMT
+
+*Version update only*
+
+## 0.130.0
+Sun, 23 Sep 2018 01:19:16 GMT
+
+### Updates
+
+- WIP: fix for multiple classifiers
+
+## 0.129.0
+Fri, 21 Sep 2018 23:16:13 GMT
+
+### Updates
+
+- Added customized pointer messages to ViewsFrontstage
+- Rework animation data to pack values and simplify extraction.
+- Fix assertions when loading map tiles.
+- Exclude contents of /frontend/render/webgl/ from SDK docs.
+- WIP #34205 - Selection of classifiers for reality data.
+- Initial implementation of quantity formatting package, tests, and example usage in IModelApp.
+- Increase darkening of unclassified geometry.  Don't flash reality models. (For Bob Mankowsky YII)
+- WIP - Classification darkening of outside.
+- WIP #34200 and #34205 - Add select and flash to classified reality data.
 
 ## 0.128.0
 Fri, 14 Sep 2018 17:08:05 GMT

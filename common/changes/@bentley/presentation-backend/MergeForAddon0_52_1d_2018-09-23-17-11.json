@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "jeff.marker@bentley.com"
+}

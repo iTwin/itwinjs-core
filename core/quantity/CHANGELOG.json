@@ -1,0 +1,29 @@
+{
+  "name": "@bentley/imodeljs-quantity",
+  "entries": [
+    {
+      "version": "0.131.0",
+      "tag": "@bentley/imodeljs-quantity_v0.131.0",
+      "date": "Sun, 23 Sep 2018 17:07:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.130.0",
+      "tag": "@bentley/imodeljs-quantity_v0.130.0",
+      "date": "Sun, 23 Sep 2018 01:19:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.129.0",
+      "tag": "@bentley/imodeljs-quantity_v0.129.0",
+      "date": "Fri, 21 Sep 2018 23:16:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial implementation of quantity formatting package, tests, and example usage in IModelApp."
+          }
+        ]
+      }
+    }
+  ]
+}

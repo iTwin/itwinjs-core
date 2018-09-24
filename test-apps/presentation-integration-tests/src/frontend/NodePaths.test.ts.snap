@@ -6,6 +6,10 @@ Array [
     "children": Array [
       Object {
         "children": Array [],
+        "filteringData": Object {
+          "childrenOccurances": 0,
+          "occurances": 1,
+        },
         "index": 0,
         "isMarked": false,
         "node": Object {
@@ -36,6 +40,10 @@ Array [
         "children": Array [
           Object {
             "children": Array [],
+            "filteringData": Object {
+              "childrenOccurances": 0,
+              "occurances": 1,
+            },
             "index": 0,
             "isMarked": false,
             "node": Object {
@@ -64,6 +72,10 @@ Array [
             },
           },
         ],
+        "filteringData": Object {
+          "childrenOccurances": 1,
+          "occurances": 0,
+        },
         "index": 1,
         "isMarked": false,
         "node": Object {
@@ -91,6 +103,10 @@ Array [
         },
       },
     ],
+    "filteringData": Object {
+      "childrenOccurances": 2,
+      "occurances": 1,
+    },
     "index": 0,
     "isMarked": false,
     "node": Object {
@@ -120,6 +136,10 @@ Array [
     "children": Array [
       Object {
         "children": Array [],
+        "filteringData": Object {
+          "childrenOccurances": 0,
+          "occurances": 1,
+        },
         "index": 0,
         "isMarked": false,
         "node": Object {
@@ -147,6 +167,10 @@ Array [
         },
       },
     ],
+    "filteringData": Object {
+      "childrenOccurances": 1,
+      "occurances": 0,
+    },
     "index": 1,
     "isMarked": false,
     "node": Object {
