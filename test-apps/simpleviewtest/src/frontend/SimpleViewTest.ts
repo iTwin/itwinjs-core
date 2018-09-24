@@ -115,6 +115,16 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
   const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
+  if (undefined === config.viewName) {
+    const defaultViewId = (await state.iModelConnection!.views.queryDefaultViewId()).toString();
+    for (const spec of viewSpecs) {
+      if (spec.id.toString() === defaultViewId) {
+        config.viewName = spec.name;
+        break;
+      }
+    }
+  }
+
   for (const viewSpec of viewSpecs) {
     const option = document.createElement("option");
     option.text = viewSpec.name;
@@ -122,6 +132,7 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
     viewMap.set(viewSpec.name, viewSpec);
     if (undefined === config.viewName)
       config.viewName = viewSpec.name;
+
     if (viewSpec.name === config.viewName) {
       viewList!.value = viewSpec.name;
       const viewState = await state.iModelConnection!.views.load(viewSpec.id);

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to query iModel's default view ID.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

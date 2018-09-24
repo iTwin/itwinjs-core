@@ -540,6 +540,15 @@ export namespace IModelConnection {
       return views;
     }
 
+    /**
+     * Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
+     * within a view selection dialog, or similar purposes.
+     * @returns the ID of the default view, or an invalid ID if no default view is defined.
+     */
+    public async queryDefaultViewId(): Promise<Id64> {
+      return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken);
+    }
+
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
       const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);

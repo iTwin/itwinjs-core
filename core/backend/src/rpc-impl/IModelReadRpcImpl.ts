@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64Set, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set, Id64, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
@@ -209,5 +209,18 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 8 bytes.
     new Uint8Array(val.buffer, 8).set(thumbnail.image); // put the image data at offset 8 after metadata
     return val;
+  }
+
+  public async getDefaultViewId(iModelToken: IModelToken): Promise<Id64> {
+    const context = ActivityLoggingContext.current;
+    context.enter();
+
+    const spec = { namespace: "dgn_View", name: "DefaultView" };
+    const blob = IModelDb.find(iModelToken).queryFilePropertyBlob(spec);
+    if (undefined === blob || 8 !== blob.length)
+      return Id64.invalidId;
+
+    const view = new Uint32Array(blob.buffer);
+    return Id64.fromUint32Pair(view[0], view[1]);
   }
 }

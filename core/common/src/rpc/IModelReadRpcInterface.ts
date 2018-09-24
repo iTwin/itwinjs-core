@@ -73,4 +73,5 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
   public getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward.apply(this, arguments); }
   public getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
+  public getDefaultViewId(_iModelToken: IModelToken): Promise<Id64> { return this.forward.apply(this, arguments); }
 }
