@@ -96,7 +96,10 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description SQLite
- * Classes for working with SQLite.
+ * Classes for executing SQLite SQL queries. Use them only for exceptional cases. Prefer [ECSQL]($docs/learning/ECSQL.md) when reading
+ * the content of iModels. Prefer the [iModel APIs]($docs/learning/backend/IModelDbReadwrite.md) when modifying the content of iModels.
+ *
+ * *Note:* Executing data modifying SQL statements is a way to corrupt the local copy of an iModel.
  */
 /**
  * @docs-group-description Portability
