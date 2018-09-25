@@ -9,7 +9,7 @@
     "build": "tsc 1>&2 && npm run copy:public",
     "clean": "rimraf lib package-deps.json",
     "copy:public": "cpx ./src/public/**/* ./lib/public",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
@@ -40,7 +40,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.133.0",
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@bentley/geometry-core": "0.133.0",
     "@bentley/imodeljs-clients": "0.133.0",
     "@bentley/imodeljs-common": "0.133.0",

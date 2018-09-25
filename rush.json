@@ -17,8 +17,8 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/bentleyjs-tools",
-      "projectFolder": "tools/bentley",
+      "packageName": "@bentley/build-tools",
+      "projectFolder": "tools/build",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

@@ -1,7 +1,7 @@
-﻿bentleyjs-tools
+﻿build-tools
 ==========
 
-bentleyjs-tools is a package for Bentley developers to consolidate the steps for building TypeScript-based packages. The tools contained in this package are written in either Typescript or Javascript within the src/ directory, and compiled for use into the lib/ directory. As a developer package, this package has only dependencies, no devDependencies. Generally, it should minimize the number of devDependencies your package requires, but you will still need devDependencies on:
+build-tools is a package for Bentley developers to consolidate the steps for building TypeScript-based packages. The tools contained in this package are written in either Typescript or Javascript within the src/ directory, and compiled for use into the lib/ directory. As a developer package, this package has only dependencies, no devDependencies. Generally, it should minimize the number of devDependencies your package requires, but you will still need devDependencies on:
 
 - gulp
 - mocha
@@ -104,10 +104,6 @@ This script is similar to the test.js command, but looks for the TypeScript test
 
 - testDir - specifies the test TypeScript source folder (instead of the test JavaScript output folder)
 - tscPaths - adds the --require tsconfig-paths/register arguments to the mocha command, in order to resolve paths in the typescript source files to run them with ts-node (needed for multi-package repos like imodeljs-core)
-
-### Others
-
-compile.js, copyassets.js and copytestassets.js will likely be deprecated due to being wrappers for short, simple commands.
 
 ## Coding Guidelines
 

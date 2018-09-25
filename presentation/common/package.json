@@ -25,8 +25,8 @@
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-common",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
-    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
+    "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/rules/**/*.ts -- ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
@@ -40,7 +40,7 @@
     "@bentley/imodeljs-common": "0.133.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@bentley/bentleyjs-core": "0.133.0",
     "@bentley/imodeljs-common": "0.133.0",
     "@types/chai": "^4.1.4",

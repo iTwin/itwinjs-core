@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/bentleyjs-tools",
+  "name": "@bentley/build-tools",
   "version": "0.133.0",
   "description": "Bentley build tools",
   "license": "MIT",

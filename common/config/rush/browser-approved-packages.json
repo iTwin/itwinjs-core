@@ -11,6 +11,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/build-tools",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/bwc",
       "allowedCategories": [ "frontend", "internal" ]
     },

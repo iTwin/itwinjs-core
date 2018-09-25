@@ -15,10 +15,10 @@
     "copy:public": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
-    "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.test.{ts,tsx}",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
@@ -47,7 +47,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@bentley/bentleyjs-core": "0.133.0",
     "@bentley/geometry-core": "0.133.0",
     "@bentley/imodeljs-i18n": "0.133.0",

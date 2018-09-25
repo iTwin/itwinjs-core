@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
@@ -34,7 +34,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.133.0",
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",

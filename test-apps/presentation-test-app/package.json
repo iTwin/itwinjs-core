@@ -15,7 +15,7 @@
     "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
     "docs": "",
-    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start",
     "test": ""
@@ -42,7 +42,7 @@
     "react-dom": "^16.4.2"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@bentley/bwc": "^6.0.1",
     "@bentley/webpack-tools": "0.133.0",
     "@types/body-parser": "^1.17.0",

@@ -12,10 +12,10 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "cover:docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
+    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
   },
   "keywords": [
@@ -28,7 +28,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.5",

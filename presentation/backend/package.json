@@ -27,11 +27,11 @@
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
-    "docs:reference": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
-    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
+    "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
-    "pseudolocalize": "node ./node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts tests/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.133.0",
-    "@bentley/bentleyjs-tools": "0.133.0",
+    "@bentley/build-tools": "0.133.0",
     "@bentley/imodeljs-common": "0.133.0",
     "@bentley/imodeljs-backend": "0.133.0",
     "@bentley/presentation-common": "0.133.0",
