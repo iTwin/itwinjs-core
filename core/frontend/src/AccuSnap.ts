@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY, Transform, Vector3d, CurveCurve } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Vector3d, CurveCurve } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
@@ -437,21 +437,15 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const intersect = new IntersectDetail(tpSnap, SnapMode.Intersection, SnapHeat.InRange, detail.dataA[closeIndex].point); // Should be ok to share hit detail with tentative...
-
-    second.primitive = segment; // Just save single segment that was intersected for line strings/shapes...
-    intersect.secondHit = second;
-    intersect.primitive = tpSegment;
-    intersect.geomType = HitGeomType.None;
-    intersect.normal = tpSnap.normal; // Preserve normal at tentative snap location for AccuDraw smart rotation...better than nothing...
+    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail.dataA[closeIndex].point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
+    intersect.primitive = tpSegment; // Just save single segment that was intersected for line strings/shapes...
 
     return intersect;
   }
 
-  // ###TODO pass optional HitList for intersect snap...
-  public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, out?: LocateResponse): Promise<SnapDetail | undefined> {
+  public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     const requestProps: SnapRequestProps = {
-      id: thisHit.sourceId, // ###TODO check !isElementHit
+      id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
       closePoint: thisHit.hitPoint,
       worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
@@ -459,7 +453,20 @@ export class AccuSnap implements Decorator {
       snapModes,
       snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
-    }; // ### TODO offSubCategories...
+    }; // ### TODO offSubCategories and !isElementHit
+
+    if (undefined !== hitList && snapModes.includes(SnapMode.Intersection)) {
+      for (const hit of hitList.hits) {
+        if (thisHit.sourceId === hit.sourceId)
+          continue;
+        if (undefined === requestProps.intersectCandidates)
+          requestProps.intersectCandidates = [];
+        requestProps.intersectCandidates.push(hit.sourceId);
+        if (3 === requestProps.intersectCandidates.length)
+          break; // Search for intersection with a few of the next best hits...
+      }
+    }
+
     const result = await thisHit.viewport.iModel.requestSnap(requestProps);
 
     if (out) out.snapStatus = result.status;
@@ -467,7 +474,7 @@ export class AccuSnap implements Decorator {
       return undefined;
 
     const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
-    snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined !== result.localToWorld ? Transform.fromJSON(result.localToWorld) : undefined, result.geomType);
+    snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined, result.geomType);
     if (undefined !== result.parentGeomType)
       snap.parentGeomType = result.parentGeomType;
     if (undefined !== result.hitPoint)
@@ -475,7 +482,18 @@ export class AccuSnap implements Decorator {
     if (undefined !== result.normal)
       snap.normal = Vector3d.fromJSON(result.normal);
 
-    return snap;
+    if (SnapMode.Intersection !== snap.snapMode)
+      return snap;
+
+    if (undefined === result.intersectId)
+      return undefined;
+
+    const otherPrimitive = (undefined !== result.intersectCurve ? GeomJson.Reader.parse(result.intersectCurve) : undefined);
+    if (undefined === otherPrimitive)
+      return undefined;
+
+    const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
+    return intersect;
   }
 
   private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {
@@ -492,7 +510,7 @@ export class AccuSnap implements Decorator {
     }
 
     this.explanation = "";
-    const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, this.keypointDivisor, out);
+    const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, this.keypointDivisor, hitList, out);
     if (undefined === thisSnap)
       return undefined;
 
