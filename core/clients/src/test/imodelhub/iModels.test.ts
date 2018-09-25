@@ -380,14 +380,14 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  // ###TODO Vilius Kazlauskas please fix - test fails.
-  it.skip("should update iModel name and description", async () => {
+  it("should update iModel name and description", async () => {
     mockGetIModelByName(projectId, imodelName);
     const imodel: HubIModel = (await iModelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(imodel.name).to.be.equal(imodelName);
 
     const newName = imodel.name + "_updated";
     const newDescription = "Description_updated";
+    await utils.deleteIModelByName(accessToken, projectId, newName);
     imodel.name = newName;
     imodel.description = newDescription;
     mockUpdateiModel(projectId, imodel);
@@ -397,8 +397,10 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
-    mockGetIModelByName(projectId, newName, newDescription);
+    mockGetIModelByName(projectId, newName, newDescription, imodel.wsgId);
     updatediModel = (await iModelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(newName)))[0];
+
+    await utils.deleteIModelByName(accessToken, projectId, newName);
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
