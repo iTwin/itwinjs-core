@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
-import { UnitProps, QuantityProps } from "../Interfaces";
 import { QuantityStatus, QuantityError } from "../Exception";
-import { Format } from "./Format";
+import { FormatterSpec } from "./Format";
 import { FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits } from "./FormatEnums";
 
 const FPV_MINTHRESHOLD = 1.0e-14;       // format parameter default values
@@ -87,23 +86,16 @@ class FractionalNumeric {
   }
 }
 
-/** A class used to format quantity values. */
+/** A helper class that contains methods used to format quantity values based on a format that are defined via the Format class. */
 export class Formatter {
-  private _roundFactor: number = 0.0;
-
-  public get roundFactor(): number { return this._roundFactor; }
-  public set roundFactor(factor: number) { this._roundFactor = factor; }
-
-  private getEffectiveRoundFactor(roundFactor: number): number { return this.isIgnored(roundFactor) ? this._roundFactor : roundFactor; }
-  private isNegligible(value: number): boolean { return (Math.abs(value) < FPV_MINTHRESHOLD); }
-  private isIgnored(value: number): boolean { return (value < 0.0 || Math.abs(value) < FPV_MINTHRESHOLD); }
+  private static isNegligible(value: number): boolean { return (Math.abs(value) < FPV_MINTHRESHOLD); }
 
   /** Return floating point value rounded by specific rounding factor.
    *  @param value    Value to be rounded.
    *  @param roundTo  Rounding factor.
    */
-  private roundDouble(value: number, roundTo: number): number {
-    if (this.isNegligible(roundTo))
+  private static roundDouble(value: number, roundTo: number): number {
+    if (Formatter.isNegligible(roundTo))
       return value;
 
     roundTo = Math.abs(roundTo);
@@ -116,11 +108,11 @@ export class Formatter {
   /** Generate a formatted text string integer value insert 1000 separators if appropriate.
    *  @param wholePart    Integer value to be formatted.
    */
-  private integerPartToText(wholePart: number, format: Format): string {
+  private static integerPartToText(wholePart: number, spec: FormatterSpec): string {
     // build invariant string represent wholePart
     let formattedValue = wholePart.toFixed(0);
 
-    if ((formattedValue.length > 3) && (format.hasFormatTraitSet(FormatTraits.Use1000Separator) && (format.thousandSeparator.length > 0))) {
+    if ((formattedValue.length > 3) && (spec.format.hasFormatTraitSet(FormatTraits.Use1000Separator) && (spec.format.thousandSeparator.length > 0))) {
       let numSeparators = Math.floor(formattedValue.length / 3);
       let groupLength = formattedValue.length % 3;
 
@@ -132,7 +124,7 @@ export class Formatter {
       let outString = formattedValue.substr(0, groupLength);
 
       for (let i = 1; i <= numSeparators; i += 1) {
-        outString = outString + format.thousandSeparator + formattedValue.substr(groupLength, 3);
+        outString = outString + spec.format.thousandSeparator + formattedValue.substr(groupLength, 3);
         groupLength = groupLength + 3;
       }
 
@@ -145,7 +137,7 @@ export class Formatter {
   /** Trim trailing "0" from the text that represent the fractional part of a floating point value.
    *  @param strVal   The value string.
    */
-  private trimTrailingZeroes(strVal: string): string {
+  private static trimTrailingZeroes(strVal: string): string {
     let lastNonZeroCharIndex = -1;
     for (let i = strVal.length - 1; i >= 0; i--) {
       if (strVal.charCodeAt(i) !== QuantityConstants.CHAR_DIGIT_ZERO) {
@@ -163,16 +155,16 @@ export class Formatter {
    *  @param isLastPart       If false the composite value should be a whole value, if true then the value should be formatted as a floating point value.
    *  @param label            Label for this part of the composite. This will be either the default unit label or a custom label specified the format specification.
    */
-  private formatCompositePart(compositeValue: number, isLastPart: boolean, label: string, format: Format): string {
+  private static formatCompositePart(compositeValue: number, isLastPart: boolean, label: string, spec: FormatterSpec): string {
     let componentText = "";
     if (!isLastPart) {
-      componentText = this.integerPartToText(compositeValue, format);
+      componentText = Formatter.integerPartToText(compositeValue, spec);
     } else {
-      componentText = this.formatMagnitude(compositeValue, format);
+      componentText = Formatter.formatMagnitude(compositeValue, spec);
     }
 
-    if (format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
-      componentText = componentText + format.uomSeparator + label;
+    if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
+      componentText = componentText + spec.format.uomSeparator + label;
     } else {
       if (!isLastPart) componentText = componentText + ":";
     }
@@ -184,61 +176,57 @@ export class Formatter {
    *  @param magnitude   quantity value
    *  @param fromUnit    quantity unit
    */
-  private async formatComposite(magnitude: number, fromUnit: UnitProps, format: Format): Promise<string> {
+  private static formatComposite(magnitude: number, spec: FormatterSpec): string {
     const compositeStrings: string[] = [];
 
     // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
     let posMagnitude = Math.abs(magnitude);
 
-    if ((Math.abs(posMagnitude) < 0.0001) && format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return Promise.resolve("");
+    if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
 
     // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < format.units!.length; i++) {
-      const currentUnit = format.units![i][0];
-      const currentLabel = format.units![i][1] ? format.units![i][1]! : currentUnit.label;
-      const unitConversion = await format.unitsProvider.getConversion(fromUnit, currentUnit);
+    for (let i = 0; i < spec.unitConversions.length; i++) {
+      const currentLabel = spec.unitConversions[i].label;
+      const unitConversion = spec.unitConversions[i].conversion;
 
       if (unitConversion.factor < 1.0)
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${format.name} has a invalid unit specification..`);
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
       if (i > 0 && unitConversion.offset !== 0)
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${format.name} has a invalid unit specification..`);
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
       const unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset; // offset should only ever be defined for major unit
-      if (i < format.units!.length - 1) {
+      if (i < spec.format.units!.length - 1) {
         const wholePart = Math.floor(unitValue);
-        const componentText = this.formatCompositePart(wholePart, false, currentLabel, format);
+        const componentText = Formatter.formatCompositePart(wholePart, false, currentLabel, spec);
         posMagnitude = unitValue - wholePart;
         compositeStrings.push(componentText);
       } else {
-        const componentText = this.formatCompositePart(unitValue, true, currentLabel, format);
+        const componentText = Formatter.formatCompositePart(unitValue, true, currentLabel, spec);
         compositeStrings.push(componentText);
       }
-      // now convert from current unit to next composite unit
-      fromUnit = currentUnit;
     }
 
-    const formattedValue = compositeStrings.join(format.spacer ? format.spacer : "");
-    return Promise.resolve(formattedValue);
+    return compositeStrings.join(spec.format.spacer ? spec.format.spacer : "");
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
    *  @param magnitude   quantity value
    */
-  private formatMagnitude(magnitude: number, format: Format): string {
+  private static formatMagnitude(magnitude: number, spec: FormatterSpec): string {
     let posMagnitude = Math.abs(magnitude);
-    if ((Math.abs(posMagnitude) < 0.0001) && format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
+    if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
 
-    if (format.hasFormatTraitSet(FormatTraits.ApplyRounding))
-      posMagnitude = Math.abs(this.roundDouble(magnitude, this.getEffectiveRoundFactor(format.roundFactor)));
+    if (spec.format.hasFormatTraitSet(FormatTraits.ApplyRounding))
+      posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
 
-    const isSci = ((posMagnitude > 1.0e12) || format.type === FormatType.Scientific);
-    const isDecimal = (isSci || format.type === FormatType.Decimal);
-    const isFractional = (!isDecimal && format.type === FormatType.Fractional);
-    /*const usesStops = format.type === FormatType.Station;*/
-    const isPrecisionZero = format.precision === DecimalPrecision.Zero;
-    const isKeepSingleZero = format.hasFormatTraitSet(FormatTraits.KeepSingleZero);
-    const precisionScale = Math.pow(10.0, format.precision);
-    const isKeepTrailingZeroes = format.hasFormatTraitSet(FormatTraits.TrailZeroes);
+    const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
+    const isDecimal = (isSci || spec.format.type === FormatType.Decimal);
+    const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
+    /*const usesStops = spec.format.type === FormatType.Station;*/
+    const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
+    const isKeepSingleZero = spec.format.hasFormatTraitSet(FormatTraits.KeepSingleZero);
+    const precisionScale = Math.pow(10.0, spec.format.precision);
+    const isKeepTrailingZeroes = spec.format.hasFormatTraitSet(FormatTraits.TrailZeroes);
     let expInt = 0.0;
 
     if (isSci && (posMagnitude !== 0.0)) {
@@ -250,9 +238,9 @@ export class Formatter {
       }
 
       expInt = Math.floor(exp);
-      if (format.type === FormatType.Scientific) {
-        if (format.scientificType === ScientificType.ZeroNormalized && posMagnitude > 1.0) expInt += 1.0;
-        else if (format.scientificType === ScientificType.Normalized && posMagnitude < 1.0) expInt += 1.0;
+      if (spec.format.type === FormatType.Scientific) {
+        if (spec.format.scientificType === ScientificType.ZeroNormalized && posMagnitude > 1.0) expInt += 1.0;
+        else if (spec.format.scientificType === ScientificType.Normalized && posMagnitude < 1.0) expInt += 1.0;
         if (negativeExp) expInt = -expInt;
       }
       const factor = Math.pow(10.0, -expInt);
@@ -272,22 +260,22 @@ export class Formatter {
         }
       }
 
-      formattedValue = this.integerPartToText(wholePart, format);
+      formattedValue = Formatter.integerPartToText(wholePart, spec);
       if (isPrecisionZero) {
         if (isKeepSingleZero) {
-          formattedValue = formattedValue + format.decimalSeparator + "0";
+          formattedValue = formattedValue + spec.format.decimalSeparator + "0";
         }
       } else {
         fractionPart = Math.floor(fractionPart) / precisionScale;
-        let fractionString = fractionPart.toFixed(format.precision);
+        let fractionString = fractionPart.toFixed(spec.format.precision);
         // remove leading "0."
-        fractionString = fractionString.substr(2).padEnd(format.precision, "0");
-        if (!isKeepTrailingZeroes) fractionString = this.trimTrailingZeroes(fractionString);
+        fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
+        if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
         if (fractionString.length > 0)
-          formattedValue = formattedValue + format.decimalSeparator + fractionString;
+          formattedValue = formattedValue + spec.format.decimalSeparator + fractionString;
         else {
-          if (format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint))
-            formattedValue = formattedValue + format.decimalSeparator;
+          if (spec.format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint))
+            formattedValue = formattedValue + spec.format.decimalSeparator;
         }
       }
 
@@ -296,33 +284,33 @@ export class Formatter {
         formattedValue = formattedValue + expString;
       }
     } else if (isFractional) {
-      const fn = new FractionalNumeric(posMagnitude, format.precision as FractionalPrecision, true);
+      const fn = new FractionalNumeric(posMagnitude, spec.format.precision as FractionalPrecision, true);
       formattedValue = fn.getIntegralString();
 
       if (!fn.isZero && fn.hasFractionPart) {
-        const wholeFractionSeparator = format.hasFormatTraitSet(FormatTraits.FractionDash) ? "-" : " ";
+        const wholeFractionSeparator = spec.format.hasFormatTraitSet(FormatTraits.FractionDash) ? "-" : " ";
         const fractionString = fn.getNumeratorString() + "/" + fn.getDenominatorString();
         formattedValue = formattedValue + wholeFractionSeparator + fractionString;
       }
     } else /* if (usesStops)*/ {
       // we assume that stopping value is always positive
-      const denominator = (Math.pow(10, format.stationOffsetSize!));
+      const denominator = (Math.pow(10, spec.format.stationOffsetSize!));
       const tVal = Math.floor(posMagnitude); // this is the integer part only
       const hiPart = Math.floor(tVal / denominator);
       const lowPart = tVal - hiPart * denominator;
       const fract = posMagnitude - tVal;
       const fractionPart = Math.floor(0.5 + fract * precisionScale);
-      const stationString = hiPart.toFixed(0) + format.stationSeparator + lowPart.toFixed(0).padStart(format.stationOffsetSize!, "0");
+      const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(spec.format.stationOffsetSize!, "0");
       let fractionString = "";
       if (fractionPart > 0) {
-        fractionString = fractionPart.toFixed(0).padEnd(format.precision, "0");
-        if (!isKeepTrailingZeroes) fractionString = this.trimTrailingZeroes(fractionString);
-        formattedValue = stationString + format.decimalSeparator + fractionString;
+        fractionString = fractionPart.toFixed(0).padEnd(spec.format.precision, "0");
+        if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
+        formattedValue = stationString + spec.format.decimalSeparator + fractionString;
       } else {
         if (isKeepTrailingZeroes)
-          fractionString = format.decimalSeparator + "".padEnd(format.precision, "0");
-        else if (format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint))
-          fractionString = format.decimalSeparator;
+          fractionString = spec.format.decimalSeparator + "".padEnd(spec.format.precision, "0");
+        else if (spec.format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint))
+          fractionString = spec.format.decimalSeparator;
         formattedValue = stationString + fractionString;
       }
     }
@@ -330,14 +318,15 @@ export class Formatter {
   }
 
   /** Format a quantity value into a single text string based on the current format specification of this class.
-   *  @param quantity   A QuantityProps object the defines the magnitude and unit of the quantity to format.
+   *  @param magnitude   defines the value to spec.format.
+   *  @param spec      A FormatterSpec object the defines specification for the magnitude and unit conversions for the formatter.
    */
-  public async formatQuantity(quantity: QuantityProps, format: Format): Promise<string> {
-    const valueIsNegative = quantity.magnitude < 0.0;
+  public static formatQuantity(magnitude: number, spec: FormatterSpec): string {
+    const valueIsNegative = magnitude < 0.0;
     let prefix = "";
     let suffix = "";
     let formattedValue = "";
-    switch (format.showSignOption) {
+    switch (spec.format.showSignOption) {
       case ShowSignOption.NegativeParentheses:
         if (valueIsNegative) {
           prefix = "(";
@@ -361,16 +350,18 @@ export class Formatter {
 
     let formattedMagnitude = "";
 
-    if (format.hasComposite) {
-      formattedMagnitude = await this.formatComposite(quantity.magnitude, quantity.unit, format);
+    if (spec.format.hasUnits) {
+      formattedMagnitude = Formatter.formatComposite(magnitude, spec);
     } else {
-      formattedMagnitude = this.formatMagnitude(quantity.magnitude, format);
-      if (formattedMagnitude.length > 0 && format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
-        if (format.hasFormatTraitSet(FormatTraits.PrependUnitLabel))
-          formattedMagnitude = quantity.unit.label + format.uomSeparator + formattedMagnitude;
+      // unitless quantity
+      formattedMagnitude = Formatter.formatMagnitude(magnitude, spec);
+      if (formattedMagnitude.length > 0 && spec.unitConversions.length > 0 && spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
+        if (spec.format.hasFormatTraitSet(FormatTraits.PrependUnitLabel))
+          formattedMagnitude = spec.unitConversions[0].label + spec.format.uomSeparator + formattedMagnitude;
         else
-          formattedMagnitude = formattedMagnitude + format.uomSeparator + quantity.unit.label;
+          formattedMagnitude = formattedMagnitude + spec.format.uomSeparator + spec.unitConversions[0].label;
       }
+
     }
     // add Sign prefix and suffix as necessary
     if ((prefix.length > 0 || suffix.length > 0) && formattedMagnitude.length > 0)
@@ -378,10 +369,10 @@ export class Formatter {
     else
       formattedValue = formattedMagnitude;
 
-    if (format.minWidth && format.minWidth < formattedValue.length)
-      formattedValue.padStart(format.minWidth, " ");
+    if (spec.format.minWidth && spec.format.minWidth < formattedValue.length)
+      formattedValue.padStart(spec.format.minWidth, " ");
 
-    return Promise.resolve(formattedValue);
+    return formattedValue;
   }
 
 }

@@ -33,7 +33,6 @@ import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
-import { AppToolFormatsProvider } from "../../../frontend/utils/ToolFormatsProvider";
 
 import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
 
@@ -318,7 +317,7 @@ export class ViewsFrontstage {
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       commandHandler: {
         execute: () => {
-          (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(false);
+          IModelApp.quantityFormatter.useImperialFormats = false;
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
         },
       },
@@ -330,7 +329,7 @@ export class ViewsFrontstage {
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       commandHandler: {
         execute: () => {
-          (IModelApp.quantityFormatManager.toolFormatsProvider as AppToolFormatsProvider).useImperialFormats(true);
+          IModelApp.quantityFormatter.useImperialFormats = true;
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
         },
       },

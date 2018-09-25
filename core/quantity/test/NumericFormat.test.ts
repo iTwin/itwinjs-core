@@ -3,8 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { TestUnitsProvider, Unit } from "./TestUtils/TestHelper";
-import { Quantity } from "../src/Quantity";
-import { Format } from "../src/Formatter/Format";
+import { Format, FormatterSpec } from "../src/Formatter/Format";
 import { Formatter } from "../src/Formatter/Formatter";
 
 describe("Numeric Formats tests:", () => {
@@ -20,15 +19,9 @@ describe("Numeric Formats tests:", () => {
       decimalSeparator: ".",
     };
 
-    const formatter = new Formatter();
-    const defaultRoundFactor = formatter.roundFactor;
-    formatter.roundFactor = 0.5;
-    assert.isTrue(formatter.roundFactor === 0.5);
-    formatter.roundFactor = defaultRoundFactor;
-
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.5417 ft" },
@@ -42,8 +35,9 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -60,10 +54,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-ft 13" },
@@ -75,8 +68,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -94,10 +87,9 @@ describe("Numeric Formats tests:", () => {
       showSignOption: "negativeParentheses",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "(ft 13)" },
@@ -109,8 +101,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -128,10 +120,9 @@ describe("Numeric Formats tests:", () => {
       showSignOption: "signAlways",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.542 ft" },
@@ -144,8 +135,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -163,10 +154,9 @@ describe("Numeric Formats tests:", () => {
       showSignOption: "noSign",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.542 ft" },
@@ -178,8 +168,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -196,10 +186,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-13.0 ft" },
@@ -211,8 +200,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -229,10 +218,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.54 ft" },
@@ -244,8 +232,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -262,10 +250,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.54 ft" },
@@ -277,8 +264,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -296,10 +283,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.54 ft" },
@@ -311,8 +297,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -330,10 +316,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.541e5, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-0.1254e7 ft" },
@@ -345,8 +330,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       //console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -364,10 +349,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.541e5, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-1.2541e6 ft" },
@@ -379,8 +363,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -397,10 +381,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -1.01e12, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-1.01e12 ft" },
@@ -409,8 +392,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       //console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -429,10 +412,9 @@ describe("Numeric Formats tests:", () => {
       type: "Station",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: 123.456, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1+23.46" },
@@ -443,8 +425,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -462,10 +444,9 @@ describe("Numeric Formats tests:", () => {
       type: "Station",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: 123.456, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0+123.46" },
@@ -476,8 +457,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -495,10 +476,9 @@ describe("Numeric Formats tests:", () => {
       type: "Station",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: 123.456, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0+123.46" },
@@ -509,8 +489,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
@@ -527,10 +507,9 @@ describe("Numeric Formats tests:", () => {
       uomSeparator: " ",
     };
 
-    const formatter = new Formatter();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
       { magnitude: -12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12-1/8 ft" },
@@ -544,8 +523,8 @@ describe("Numeric Formats tests:", () => {
 
     for (const testEntry of testQuantityData) {
       const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const quantity = new Quantity(unit, testEntry.magnitude);
-      const formattedValue = await formatter.formatQuantity(quantity, format);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);

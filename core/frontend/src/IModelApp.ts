@@ -11,7 +11,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatManager } from "./QuantityFormatManager";
+import { QuantityFormatter } from "./QuantityFormatter";
 import { RenderSystem } from "./render/System";
 import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
@@ -38,7 +38,7 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
-  public static quantityFormatManager: QuantityFormatManager;
+  public static quantityFormatter: QuantityFormatter;
   public static toolAdmin: ToolAdmin;
   public static accuDraw: AccuDraw;
   public static accuSnap: AccuSnap;
@@ -101,8 +101,6 @@ export class IModelApp {
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
 
-    IModelApp.quantityFormatManager = new QuantityFormatManager(); // create before onStartup, so app can set format provider
-
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
@@ -116,6 +114,7 @@ export class IModelApp {
     if (!IModelApp.accuSnap) IModelApp.accuSnap = new AccuSnap();
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
+    if (!IModelApp.quantityFormatter) IModelApp.quantityFormatter = new QuantityFormatter();
 
     IModelApp._renderSystem.onInitialized();
     IModelApp.viewManager.onInitialized();

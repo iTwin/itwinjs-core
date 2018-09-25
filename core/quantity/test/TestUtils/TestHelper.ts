@@ -6,14 +6,14 @@ import { UnitProps, UnitsProvider, UnitConversion, BadUnit } from "../../src/Int
 export class Unit implements UnitProps {
   public name = "";
   public label = "";
-  public unitGroup = "";
+  public unitFamily = "";
   public isValid = false;
 
-  constructor(name: string, label: string, unitGroup: string) {
-    if (name && name.length > 0 && label && label.length > 0 && unitGroup && unitGroup.length > 0) {
+  constructor(name: string, label: string, unitFamily: string) {
+    if (name && name.length > 0 && label && label.length > 0 && unitFamily && unitFamily.length > 0) {
       this.name = name;
       this.label = label;
-      this.unitGroup = unitGroup;
+      this.unitFamily = unitFamily;
       this.isValid = true;
     }
   }
@@ -27,7 +27,7 @@ interface ConversionDef {
 
 interface UnitDefinition {
   readonly name: string;
-  readonly unitGroup: string;
+  readonly unitFamily: string;
   readonly displayLabel: string;
   readonly altDisplayLabels: string[];
   readonly conversion: ConversionDef;
@@ -35,36 +35,36 @@ interface UnitDefinition {
 
 const unitData: UnitDefinition[] = [
   // Angles ( base unit radian )
-  { name: "Units.RAD", unitGroup: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
+  { name: "Units.RAD", unitFamily: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
   // 1 rad = 180.0/PI °
-  { name: "Units.ARC_DEG", unitGroup: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg"] },
-  { name: "Units.ARC_MINUTE", unitGroup: "Units.ANGLE", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
-  { name: "Units.ARC_SECOND", unitGroup: "Units.ANGLE", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
-  { name: "Units.GRAD", unitGroup: "Units.ANGLE", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
+  { name: "Units.ARC_DEG", unitFamily: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg"] },
+  { name: "Units.ARC_MINUTE", unitFamily: "Units.ANGLE", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
+  { name: "Units.ARC_SECOND", unitFamily: "Units.ANGLE", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
+  { name: "Units.GRAD", unitFamily: "Units.ANGLE", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
   // Time ( base unit second )
-  { name: "Units.S", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s", altDisplayLabels: ["sec"] },
-  { name: "Units.MIN", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min", altDisplayLabels: [] },
-  { name: "Units.HR", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 3600.0, offset: 0.0 }, displayLabel: "h", altDisplayLabels: ["hr"] },
-  { name: "Units.DAY", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 86400.0, offset: 0.0 }, displayLabel: "days", altDisplayLabels: ["day"] },
-  { name: "Units.WEEK", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 604800.0, offset: 0.0 }, displayLabel: "weeks", altDisplayLabels: ["week"] },
+  { name: "Units.S", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s", altDisplayLabels: ["sec"] },
+  { name: "Units.MIN", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min", altDisplayLabels: [] },
+  { name: "Units.HR", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 3600.0, offset: 0.0 }, displayLabel: "h", altDisplayLabels: ["hr"] },
+  { name: "Units.DAY", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 86400.0, offset: 0.0 }, displayLabel: "days", altDisplayLabels: ["day"] },
+  { name: "Units.WEEK", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 604800.0, offset: 0.0 }, displayLabel: "weeks", altDisplayLabels: ["week"] },
   // 1 sec = 1/31536000.0 yr
-  { name: "Units.YR", unitGroup: "Units.TIME", conversion: { numerator: 1.0, denominator: 31536000.0, offset: 0.0 }, displayLabel: "years", altDisplayLabels: ["year"] },
+  { name: "Units.YR", unitFamily: "Units.TIME", conversion: { numerator: 1.0, denominator: 31536000.0, offset: 0.0 }, displayLabel: "years", altDisplayLabels: ["year"] },
   // Length( base unit length )
-  { name: "Units.M", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m", altDisplayLabels: ["meter"] },
-  { name: "Units.MM", unitGroup: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "mm", altDisplayLabels: ["MM"] },
-  { name: "Units.CM", unitGroup: "Units.LENGTH", conversion: { numerator: 100.0, denominator: 1.0, offset: 0.0 }, displayLabel: "cm", altDisplayLabels: ["CM"] },
-  { name: "Units.DM", unitGroup: "Units.LENGTH", conversion: { numerator: 10.0, denominator: 1.0, offset: 0.0 }, displayLabel: "dm", altDisplayLabels: ["DM"] },
-  { name: "Units.KM", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1000.0, offset: 0.0 }, displayLabel: "km", altDisplayLabels: ["KM"] },
-  { name: "Units.UM", unitGroup: "Units.LENGTH", conversion: { numerator: 1000000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "µm", altDisplayLabels: [] },
-  { name: "Units.MILLIINCH", unitGroup: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "mil", altDisplayLabels: [] },
-  { name: "Units.MICROINCH", unitGroup: "Units.LENGTH", conversion: { numerator: 1000000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "µin", altDisplayLabels: [] },
-  { name: "Units.MILLIFOOT", unitGroup: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "mft", altDisplayLabels: [] },
+  { name: "Units.M", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m", altDisplayLabels: ["meter"] },
+  { name: "Units.MM", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "mm", altDisplayLabels: ["MM"] },
+  { name: "Units.CM", unitFamily: "Units.LENGTH", conversion: { numerator: 100.0, denominator: 1.0, offset: 0.0 }, displayLabel: "cm", altDisplayLabels: ["CM"] },
+  { name: "Units.DM", unitFamily: "Units.LENGTH", conversion: { numerator: 10.0, denominator: 1.0, offset: 0.0 }, displayLabel: "dm", altDisplayLabels: ["DM"] },
+  { name: "Units.KM", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1000.0, offset: 0.0 }, displayLabel: "km", altDisplayLabels: ["KM"] },
+  { name: "Units.UM", unitFamily: "Units.LENGTH", conversion: { numerator: 1000000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "µm", altDisplayLabels: [] },
+  { name: "Units.MILLIINCH", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "mil", altDisplayLabels: [] },
+  { name: "Units.MICROINCH", unitFamily: "Units.LENGTH", conversion: { numerator: 1000000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "µin", altDisplayLabels: [] },
+  { name: "Units.MILLIFOOT", unitFamily: "Units.LENGTH", conversion: { numerator: 1000.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "mft", altDisplayLabels: [] },
   // 1 m = 1/0.0254 "
-  { name: "Units.IN", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "in", altDisplayLabels: ["IN", "\""] },
-  { name: "Units.FT", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "ft", altDisplayLabels: ["F", "FT", "'"] },
-  { name: "Units.YRD", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.9144, offset: 0.0 }, displayLabel: "yd", altDisplayLabels: ["YRD", "yrd"] },
-  { name: "Units.MILE", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1609.344, offset: 0.0 }, displayLabel: "mi", altDisplayLabels: ["mile", "Miles", "Mile"] },
-  { name: "Units.BOGUS.IN", unitGroup: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.025 }, displayLabel: "bi", altDisplayLabels: [] },
+  { name: "Units.IN", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "in", altDisplayLabels: ["IN", "\""] },
+  { name: "Units.FT", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "ft", altDisplayLabels: ["F", "FT", "'"] },
+  { name: "Units.YRD", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.9144, offset: 0.0 }, displayLabel: "yd", altDisplayLabels: ["YRD", "yrd"] },
+  { name: "Units.MILE", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1609.344, offset: 0.0 }, displayLabel: "mi", altDisplayLabels: ["mile", "Miles", "Mile"] },
+  { name: "Units.BOGUS.IN", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.025 }, displayLabel: "bi", altDisplayLabels: [] },
 ];
 
 export class ConversionData implements UnitConversion {
@@ -77,20 +77,20 @@ export class TestUnitsProvider extends UnitsProvider {
     super();
   }
 
-  public findUnit(unitLabel: string, unitGroup?: string): Promise<UnitProps> {
+  public findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
     for (const entry of unitData) {
-      if (unitGroup) {
-        if (entry.unitGroup !== unitGroup)
+      if (unitFamily) {
+        if (entry.unitFamily !== unitFamily)
           continue;
       }
       if (entry.displayLabel === unitLabel || entry.name === unitLabel) {
-        const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitGroup);
+        const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitFamily);
         return Promise.resolve(unitProps);
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref === unitLabel) !== -1) {
-          const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitGroup);
+          const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitFamily);
           return Promise.resolve(unitProps);
         }
       }
@@ -102,7 +102,7 @@ export class TestUnitsProvider extends UnitsProvider {
   public findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return Promise.resolve(new Unit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitGroup));
+      return Promise.resolve(new Unit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily));
     }
     return Promise.resolve(new BadUnit());
   }

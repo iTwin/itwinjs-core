@@ -2,19 +2,20 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { FormatProps } from "./Interfaces";
-import { UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitProps, UnitsProvider, UnitConversion } from "../Interfaces";
 import { QuantityStatus, QuantityError } from "../Exception";
 import { QuantityConstants } from "../Constants";
 import {
   FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
-  parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, formatTypeToString,
-  showSignOptionToString, formatTraitsToArray, scientificTypeToString,
 } from "./FormatEnums";
 
-/** A class use to both define the specifications for formatting a quantity values and the methods to do the formatting. */
+// cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
+// cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
+
+/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting. */
 export class Format implements FormatProps {
   private _name = "";
-  private _unitsProvider: UnitsProvider;
+
   protected _roundFactor: number = 0.0;
   protected _type: FormatType = FormatType.Decimal; // required; options are decimal, fractional, scientific, station
   protected _precision: number = DecimalPrecision.Six; // required
@@ -33,11 +34,9 @@ export class Format implements FormatProps {
 
   /** Constructor
    *  @param name     The name of a format specification. TODO: make optional or remove
-   *  @param unitsProvider   A class that will lookup units by their unique name and provide conversion between units.
    */
-  constructor(name: string, unitsProvider: UnitsProvider) {
+  constructor(name: string) {
     this._name = name;
-    this._unitsProvider = unitsProvider;
   }
 
   get name(): string { return this._name; }
@@ -56,21 +55,230 @@ export class Format implements FormatProps {
   get spacer(): string | undefined { return this._spacer; }
   get includeZero(): boolean | undefined { return this._includeZero; }
   get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  get unitsProvider(): UnitsProvider { return this._unitsProvider; }
-  get hasComposite(): boolean { return this._units !== undefined && this._units.length > 0; }
+  get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+
+  // parse and toString methods
+  public static scientificTypeToString(scientificType: ScientificType): string {
+    if (scientificType === ScientificType.Normalized)
+      return "Normalized";
+    else
+      return "ZeroNormalized";
+  }
+
+  /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid ScientificType. Throws exception if not valid. */
+  public static parseScientificType(scientificType: string, formatName: string): ScientificType {
+    switch (scientificType) {
+      case "normalized":
+        return ScientificType.Normalized;
+      case "zeronormalized":
+        return ScientificType.ZeroNormalized;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'SCIENTIFIC_TYPE' attribute.`);
+    }
+  }
+
+  /** Method used when generating a JSON object that represents this Format. */
+  public static showSignOptionToString(showSign: ShowSignOption): string {
+    switch (showSign) {
+      case ShowSignOption.NegativeParentheses:
+        return "NegativeParentheses";
+      case ShowSignOption.NoSign:
+        return "NoSign";
+      case ShowSignOption.OnlyNegative:
+        return "OnlyNegative";
+      case ShowSignOption.SignAlways:
+        return "SignAlways";
+    }
+  }
+
+  /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid ShowSignOption. Throws exception if not valid. */
+  public static parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
+    switch (showSignOption.toLowerCase()) {
+      case "nosign":
+        return ShowSignOption.NoSign;
+      case "onlynegative":
+        return ShowSignOption.OnlyNegative;
+      case "signalways":
+        return ShowSignOption.SignAlways;
+      case "negativeparentheses":
+        return ShowSignOption.NegativeParentheses;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
+    }
+  }
+
+  /** Method used when generating a JSON object that represents this Format. */
+  public static formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
+    const formatTraitsArr = Array<string>();
+    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push("trailZeroes");
+    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push("keepSingleZero");
+    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push("zeroEmpty");
+    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push("keepDecimalPoint");
+    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push("applyRounding");
+    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push("fractionDash");
+    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push("showUnitLabel");
+    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push("prependUnitLabel");
+    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push("use1000Separator");
+    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push("exponentOnlyNegative");
+
+    return formatTraitsArr;
+  }
+
+  /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatTrait. Throws exception if not valid. */
+  public static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits {
+    let formatTrait = currentFormatTrait;
+    switch (stringToCheck.toLowerCase()) {
+      case "trailzeroes":
+        formatTrait = currentFormatTrait | FormatTraits.TrailZeroes;
+        break;
+      case "keepsinglezero":
+        formatTrait = currentFormatTrait | FormatTraits.KeepSingleZero;
+        break;
+      case "zeroempty":
+        formatTrait = currentFormatTrait | FormatTraits.ZeroEmpty;
+        break;
+      case "keepdecimalpoint":
+        formatTrait = currentFormatTrait | FormatTraits.KeepDecimalPoint;
+        break;
+      case "applyrounding":
+        formatTrait = currentFormatTrait | FormatTraits.ApplyRounding;
+        break;
+      case "fractiondash":
+        formatTrait = currentFormatTrait | FormatTraits.FractionDash;
+        break;
+      case "showunitlabel":
+        formatTrait = currentFormatTrait | FormatTraits.ShowUnitLabel;
+        break;
+      case "prependunitlabel":
+        formatTrait = currentFormatTrait | FormatTraits.PrependUnitLabel;
+        break;
+      case "use1000separator":
+        formatTrait = currentFormatTrait | FormatTraits.Use1000Separator;
+        break;
+      case "exponentonlynegative":
+        formatTrait = currentFormatTrait | FormatTraits.ExponentOnlyNegative;
+        break;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);
+    }
+    return formatTrait;
+  }
+
+  /** Method used when generating a JSON object that represents this Format. */
+  public static formatTypeToString(type: FormatType): string {
+    switch (type) {
+      case FormatType.Decimal:
+        return "Decimal";
+      case FormatType.Scientific:
+        return "Scientific";
+      case FormatType.Station:
+        return "Station";
+      case FormatType.Fractional:
+        return "Fractional";
+    }
+  }
+
+  /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
+  public static parseFormatType(jsonObjType: string, formatName: string): FormatType {
+    switch (jsonObjType.toLowerCase()) {
+      case "decimal":
+        return FormatType.Decimal;
+      case "scientific":
+        return FormatType.Scientific;
+      case "station":
+        return FormatType.Station;
+      case "fractional":
+        return FormatType.Fractional;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
+    }
+  }
+
+  /** This method validates the input value, that is typically extracted for persisted JSON data, is a valid DecimalPrecision. Throws exception if not valid. */
+  public static parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision {
+    switch (jsonObjPrecision) {
+      case 0:
+        return DecimalPrecision.Zero;
+      case 1:
+        return DecimalPrecision.One;
+      case 2:
+        return DecimalPrecision.Two;
+      case 3:
+        return DecimalPrecision.Three;
+      case 4:
+        return DecimalPrecision.Four;
+      case 5:
+        return DecimalPrecision.Five;
+      case 6:
+        return DecimalPrecision.Six;
+      case 7:
+        return DecimalPrecision.Seven;
+      case 8:
+        return DecimalPrecision.Eight;
+      case 9:
+        return DecimalPrecision.Nine;
+      case 10:
+        return DecimalPrecision.Ten;
+      case 11:
+        return DecimalPrecision.Eleven;
+      case 12:
+        return DecimalPrecision.Twelve;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `The 'precision' attribute must be an integer in the range 0-12.`);
+    }
+  }
+
+  /** This method validates the input value, that is typically extracted for persisted JSON data, is a valid FractionalPrecision. Throws exception if not valid. */
+  public static parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision {
+    switch (jsonObjPrecision) {
+      case 1:
+        return FractionalPrecision.One;
+      case 2:
+        return FractionalPrecision.Two;
+      case 4:
+        return FractionalPrecision.Four;
+      case 8:
+        return FractionalPrecision.Eight;
+      case 16:
+        return FractionalPrecision.Sixteen;
+      case 32:
+        return FractionalPrecision.ThirtyTwo;
+      case 64:
+        return FractionalPrecision.SixtyFour;
+      case 128:
+        return FractionalPrecision.OneHundredTwentyEight;
+      case 256:
+        return FractionalPrecision.TwoHundredFiftySix;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
+    }
+  }
+
+  /** This method validates the input value, that is typically extracted for persisted JSON data, is a valid DecimalPrecision or FractionalPrecision. Throws exception if not valid. */
+  public static parsePrecision(precision: number, formatName: string, type: FormatType): DecimalPrecision | FractionalPrecision {
+    switch (type) { // type must be decimal, fractional, scientific, or station
+      case FormatType.Decimal:
+      case FormatType.Scientific:
+      case FormatType.Station:
+        return Format.parseDecimalPrecision(precision);
+      case FormatType.Fractional:
+        return Format.parseFractionalPrecision(precision, formatName);
+    }
+  }
 
   private verifyFormatTraitsOptions(formatTraitsFromJson: string | string[]) {
     const formatTraits = (Array.isArray(formatTraitsFromJson)) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
     formatTraits.forEach((formatTraitsString: string) => { // for each element in the string array
-      this._formatTraits = parseFormatTrait(formatTraitsString.toLowerCase(), this.formatTraits);
+      this._formatTraits = Format.parseFormatTrait(formatTraitsString, this.formatTraits);
     });
   }
 
+  /** This method returns true if the formatTrait is set in this Format object. */
   public hasFormatTraitSet(formatTrait: FormatTraits): boolean {
     return (this._formatTraits & formatTrait) === formatTrait;
   }
 
-  private async createUnit(name: string, label?: string): Promise<void> {
+  private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
     let newUnit: UnitProps | undefined;
     if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
       return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`));
@@ -79,7 +287,7 @@ export class Format implements FormatProps {
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
         return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`));
     }
-    newUnit = await this.unitsProvider.findUnit(name);
+    newUnit = await unitsProvider.findUnit(name);
     if (!newUnit || !newUnit.isValid)
       return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`));
     this.units!.push([newUnit, label]);
@@ -90,7 +298,7 @@ export class Format implements FormatProps {
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-    this._type = parseFormatType(jsonObj.type.toLowerCase(), this.name);
+    this._type = Format.parseFormatType(jsonObj.type, this.name);
 
     if (undefined === jsonObj.precision) // precision is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'precision' attribute.`);
@@ -98,14 +306,14 @@ export class Format implements FormatProps {
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
     else if (!Number.isInteger(jsonObj.precision)) // must be an integer
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`);
-    this._precision = parsePrecision(jsonObj.precision, this.name, this._type as FormatType);
+    this._precision = Format.parsePrecision(jsonObj.precision, this.name, this._type as FormatType);
 
     if (this.type === FormatType.Scientific) {
       if (undefined === jsonObj.scientificType) // if format type is scientific and scientific type is undefined, throw
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has type 'Scientific' therefore attribute 'scientificType' is required.`);
       if (typeof (jsonObj.scientificType) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
-      this._scientificType = parseScientificType(jsonObj.scientificType.toLowerCase(), this.name);
+      this._scientificType = Format.parseScientificType(jsonObj.scientificType.toLowerCase(), this.name);
     }
 
     if (this.type === FormatType.Station) {
@@ -136,7 +344,7 @@ export class Format implements FormatProps {
     if (undefined !== jsonObj.showSignOption) { // optional; default is "onlyNegative"
       if (typeof (jsonObj.showSignOption) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
-      this._showSignOption = parseShowSignOption(jsonObj.showSignOption.toLowerCase(), this.name);
+      this._showSignOption = Format.parseShowSignOption(jsonObj.showSignOption, this.name);
     }
 
     if (undefined !== jsonObj.formatTraits && jsonObj.formatTraits.length !== 0) { // FormatTraits is optional
@@ -181,7 +389,7 @@ export class Format implements FormatProps {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJson(jsonObj: any): Promise<void> {
+  public async fromJson(unitsProvider: UnitsProvider, jsonObj: any): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (undefined !== jsonObj.composite) { // optional
@@ -205,7 +413,7 @@ export class Format implements FormatProps {
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           try {
             for (const unit of jsonObj.composite.units) {
-              await this.createUnit(unit.name, unit.label); // create the unit
+              await this.createUnit(unitsProvider, unit.name, unit.label); // create the unit
             }
           } catch (e) {
             return Promise.reject(e);
@@ -222,16 +430,16 @@ export class Format implements FormatProps {
    */
   public toJson() {
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.type = formatTypeToString(this.type!);
+    schemaJson.type = Format.formatTypeToString(this.type!);
     schemaJson.precision = this.precision;
     schemaJson.roundFactor = this.roundFactor;
     if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;
-    schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
-    schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    schemaJson.showSignOption = Format.showSignOptionToString(this.showSignOption);
+    schemaJson.formatTraits = Format.formatTraitsToArray(this.formatTraits);
     schemaJson.decimalSeparator = this.decimalSeparator;
     schemaJson.thousandSeparator = this.thousandSeparator;
     schemaJson.uomSeparator = this.uomSeparator;
-    if (undefined !== this.scientificType) schemaJson.scientificType = scientificTypeToString(this.scientificType);
+    if (undefined !== this.scientificType) schemaJson.scientificType = Format.scientificTypeToString(this.scientificType);
     if (undefined !== this.stationOffsetSize) schemaJson.stationOffsetSize = this.stationOffsetSize;
     schemaJson.stationSeparator = this.stationSeparator;
     if (undefined !== this.units) {
@@ -254,5 +462,71 @@ export class Format implements FormatProps {
     } else { }
 
     return schemaJson;
+  }
+}
+
+/** Interface the defines the format of the data needed to convert a quantity from one unit to another. */
+export interface UnitConversionSpec {
+  name: string;
+  label: string;
+  conversion: UnitConversion;
+}
+
+/** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format. */
+export class FormatterSpec {
+  private _name = "";
+  private _conversions: UnitConversionSpec[] = [];  // max four entries
+  private _format: Format;
+
+  /** Constructor
+   *  @param name     The name of a format specification.
+   *  @param format   Defines the output format for the quantity value.
+   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
+   */
+  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
+    this._name = name;
+    this._format = format;
+    if (conversions) this._conversions = conversions;
+  }
+
+  get name(): string { return this._name; }
+  /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
+  get unitConversions(): UnitConversionSpec[] { return this._conversions; }
+  get format(): Format { return this._format; }
+
+  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
+   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
+   * async calls to lookup unit definitions.
+   *  @param name     The name of a format specification.
+   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
+   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   */
+  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
+    const conversions: UnitConversionSpec[] = [];
+
+    if (format.units) {
+      let convertFromUnit = inputUnit;
+      for (const unit of format.units) {
+        let unitConversion: UnitConversion;
+        if (convertFromUnit) {
+          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
+        } else {
+          unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
+        }
+        const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
+        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion }) as UnitConversionSpec;
+
+        conversions.push(spec);
+        convertFromUnit = unit[0];
+      }
+    } else {
+      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
+      if (inputUnit) {
+        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, conversion: { factor: 1.0, offset: 0.0 } };
+        conversions.push(spec);
+      }
+    }
+
+    return Promise.resolve(new FormatterSpec(name, format, conversions));
   }
 }

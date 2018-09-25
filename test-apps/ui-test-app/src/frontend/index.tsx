@@ -27,8 +27,6 @@ import "./index.scss";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
 
-import { AppToolFormatsProvider } from "./utils/ToolFormatsProvider";
-
 // @ts-ignore
 import { createAction, Action, ActionsUnion, ActionWithPayload, DeepReadonlyObject, DeepReadonly } from "./utils/redux-ts";
 
@@ -113,7 +111,6 @@ export class SampleAppIModelApp extends IModelApp {
   protected static onStartup() {
     IModelApp.notifications = new AppNotificationManager();
     IModelApp.accuSnap = new SampleAppAccuSnap();
-    IModelApp.quantityFormatManager.toolFormatsProvider = new AppToolFormatsProvider();
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.

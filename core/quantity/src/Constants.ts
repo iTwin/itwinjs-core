@@ -3,12 +3,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 export class QuantityConstants {
-  // cSpell:ignore ZERONORMALIZED
-  public static readonly SCIENTIFIC_TYPE_NORMALIZED: string = "Normalized";
-  public static readonly SCIENTIFIC_TYPE_ZERONORMALIZED: string = "ZeroNormalized";
-  public static readonly SCIENTIFIC_TYPE_UPPER_NORMALIZED: string = "NORMALIZED";
-  public static readonly SCIENTIFIC_TYPE_UPPER_ZERONORMALIZED: string = "ZERONORMALIZED";
-
   public static readonly CHAR_COMMA = 44;
   public static readonly CHAR_SPACE = 32;
   public static readonly CHAR_NUMBER = 35;
@@ -28,6 +22,7 @@ export class QuantityConstants {
   private static _LOCALE_DECIMAL_SEPARATOR = "";
   private static _LOCALE_THOUSAND_SEPARATOR = "";
 
+  /** Return the decimal separator for the current locale. */
   public static get LocaleSpecificDecimalSeparator(): string {
     if (QuantityConstants._LOCALE_DECIMAL_SEPARATOR.length > 0)
       return QuantityConstants._LOCALE_DECIMAL_SEPARATOR;
@@ -40,6 +35,7 @@ export class QuantityConstants {
     return QuantityConstants._LOCALE_DECIMAL_SEPARATOR;
   }
 
+  /** Return the thousand separator for the current locale. */
   public static get LocaleSpecificThousandSeparator(): string {
     if (QuantityConstants._LOCALE_THOUSAND_SEPARATOR.length > 0)
       return QuantityConstants._LOCALE_THOUSAND_SEPARATOR;

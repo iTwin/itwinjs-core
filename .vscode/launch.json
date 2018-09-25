@@ -367,7 +367,7 @@
       ]
     },
     {
-      "name": "UI Test - Browser (frontend)",
+      "name": "ui-test-app - Browser (frontend)",
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000/",

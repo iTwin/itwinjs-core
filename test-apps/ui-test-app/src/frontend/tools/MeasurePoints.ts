@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, ToolFormatType,
+  IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, QuantityType,
   BeButtonEvent, EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext,
 } from "@bentley/imodeljs-frontend";
 import { GraphicType, CanvasDecoration } from "@bentley/imodeljs-frontend/lib/rendering";
@@ -112,19 +112,16 @@ export class MeasurePointsTool extends PrimitiveTool {
 
     const distance = tmpPoints[tmpPoints.length - 1].distance(tmpPoints[tmpPoints.length - 2]);
     if (distance !== 0.0) {
-      const me = this;
+      const formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, QuantityType.Length);
+      if (formattedValue) {
+        // for now only show marker a cursor, but tool is set up to also allow marker a each point
+        if (this._measurements.length === 0)
+          this._measurements.push(new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue));
+        else
+          this._measurements[0] = new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue);
+      }
 
-      IModelApp.quantityFormatManager.formatToolQuantity(distance, ToolFormatType.Length).then((formattedValue: string) => {
-        if (me.points.length > 0) {
-          if (me._measurements.length === 0)
-            me._measurements.push(new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue));
-          else
-            me._measurements[0] = new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue);
-          // IModelApp.notifications.outputPrompt("Measure Distance> distance=" + formattedValue);
-        }
-      });
     }
-
     const builder = context.createGraphicBuilder(GraphicType.Scene);
 
     builder.setSymbology(ColorDef.white, ColorDef.white, 1);
@@ -236,8 +233,6 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 
   public onRestartTool(): void {
-    this.points.length = 0;  // clear array to stop onDynamicFrame processing
-    IModelApp.notifications.outputPrompt("");
     const tool = new MeasurePointsTool();
     if (!tool.run())
       this.exitTool();

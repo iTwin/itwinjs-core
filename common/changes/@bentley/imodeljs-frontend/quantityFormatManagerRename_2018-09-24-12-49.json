@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow QuantityFormatter to format quantities without requiring async calls.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

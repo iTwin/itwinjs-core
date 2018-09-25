@@ -13,7 +13,7 @@ describe("Parsing tests:", () => {
     let testUnit: UnitProps = new BadUnit();
     assert.isTrue(testUnit.name.length === 0);
     assert.isTrue(testUnit.label.length === 0);
-    assert.isTrue(testUnit.unitGroup.length === 0);
+    assert.isTrue(testUnit.unitFamily.length === 0);
     assert.isTrue(testUnit.isValid === false);
   });
 
@@ -51,7 +51,7 @@ describe("Parsing tests:", () => {
       const unitContext = tstVal.unitContext.length > 0 ? tstVal.unitContext : undefined;
       const fromUnit = await unitsProvider.findUnit(tstVal.label, unitContext);
       for (const toVal of tstVal.cvtTo) {
-        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitGroup);
+        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitFamily);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
         assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
       }
@@ -61,8 +61,7 @@ describe("Parsing tests:", () => {
 
   it("Generate Parse Tokens", async () => {
 
-    const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test", unitsProvider);
+    const format = new Format("test");
     const testStrings = ["", "0/1", "1/0", "1/2", "-1/2", "+1/2", "2 /", "1.616252eggs", "1.616252E-35eggs", "-1.616252E-35eggs", "756345.345", "12,345.345", "3.6252e3 Miles", "-1 1/2 FT", "+1 1/2 FT", "-135°11'30.5\"", "-2FT 6IN", "135°11'30.5\"", "2FT 6IN", "1 1/2 FT"];
 
     const expectedTokens = [
@@ -139,7 +138,7 @@ describe("Parsing tests:", () => {
       const unitContext = tstVal.unitContext.length > 0 ? tstVal.unitContext : undefined;
       const fromUnit = await unitsProvider.findUnit(tstVal.label, unitContext);
       for (const toVal of tstVal.cvtTo) {
-        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitGroup);
+        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitFamily);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
         assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
       }
@@ -177,12 +176,12 @@ describe("Parsing tests:", () => {
     ];
 
     const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
-      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format);
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
@@ -217,12 +216,12 @@ describe("Parsing tests:", () => {
     ];
 
     const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
-      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format);
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
@@ -256,12 +255,12 @@ describe("Parsing tests:", () => {
     ];
 
 
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
-      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format);
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
@@ -299,12 +298,12 @@ describe("Parsing tests:", () => {
     ];
 
     const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
-      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format);
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
@@ -325,12 +324,12 @@ describe("Parsing tests:", () => {
     ];
 
     const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test", unitsProvider);
-    await format.fromJson(formatData).catch(() => { });
-    assert.isTrue(!format.hasComposite);
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
 
     for (const testEntry of testData) {
-      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format);
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }

@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "./Constants";
-import { QuantityProps } from "./Interfaces";
+import { QuantityProps, UnitsProvider } from "./Interfaces";
 import { Quantity } from "./Quantity";
 import { Format } from "./Formatter/Format";
 import { FormatType, FormatTraits } from "./Formatter/FormatEnums";
 
 /** A ParseToken holds either a numeric or string toke extracted from a string that represents a quantity value. */
-export class ParseToken {
+class ParseToken {
   public value: number | string;
 
   constructor(value: string | number) {
@@ -248,7 +248,7 @@ export class Parser {
     return tokens;
   }
 
-  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format): Promise<QuantityProps> {
+  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
 
     // common case where single value is supplied
@@ -257,7 +257,7 @@ export class Parser {
         return Promise.resolve(new Quantity(defaultUnit, tokens[0].value as number));
       } else {
         try {
-          const unit = await format.unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitGroup : undefined);
+          const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
           return Promise.resolve(new Quantity(unit));
         } catch (err) { }
       }
@@ -266,11 +266,11 @@ export class Parser {
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
       if (tokens[0].isNumber && tokens[1].isString) {
-        const unit = await format.unitsProvider.findUnit(tokens[1].value as string, defaultUnit ? defaultUnit.unitGroup : undefined);
+        const unit = await unitsProvider.findUnit(tokens[1].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
         return Promise.resolve(new Quantity(unit, tokens[0].value as number));
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
-          const unit = await format.unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitGroup : undefined);
+          const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
           return Promise.resolve(new Quantity(unit, tokens[1].value as number));
         }
       }
@@ -283,13 +283,13 @@ export class Parser {
       for (let i = 0; i < tokens.length; i = i + 2) {
         if (tokens[i].isNumber && tokens[i + 1].isString) {
           const value = tokens[i].value as number;
-          const unit = await format.unitsProvider.findUnit(tokens[i + 1].value as string, defaultUnit ? defaultUnit.unitGroup : undefined);
+          const unit = await unitsProvider.findUnit(tokens[i + 1].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
           if (0 === i) {
             masterUnit = unit;
             mag = mag + value;
           } else {
             if (masterUnit) {
-              const conversion = await format.unitsProvider.getConversion(unit, masterUnit);
+              const conversion = await unitsProvider.getConversion(unit, masterUnit);
               if (mag < 0.0)
                 mag = mag - ((value * conversion.factor)) + conversion.offset;
               else
@@ -304,11 +304,16 @@ export class Parser {
     return Promise.resolve(new Quantity(defaultUnit));
   }
 
-  public static parseIntoQuantity(inString: string, format: Format): Promise<QuantityProps> {
+  /** Async method to generate a Quantity given a string that represents a quantity value and likely a unit label.
+   *  @param inString A string that contains text represent a quantity.
+   *  @param format   Defines the likely format of inString.
+   *  @param unitsProvider required to look up units that may be specified in inString
+   */
+  public static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return Promise.resolve(new Quantity());
 
-    return Parser.createQuantityFromParseTokens(tokens, format);
+    return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider);
   }
 }
