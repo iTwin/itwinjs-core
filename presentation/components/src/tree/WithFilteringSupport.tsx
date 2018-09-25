@@ -22,6 +22,14 @@ export interface Props {
    * Called once filter is applied.
    */
   onFilterApplied?: (filter?: string) => void;
+  /**
+   * Called once FilteredDataProvider counts how many results there are
+   */
+  onHighlightedCounted?: (count: number) => void;
+  /**
+   * Index of current active highlighted node in a filtered tree
+   */
+  activeHighlightedIndex?: number;
 }
 
 interface State {
@@ -92,6 +100,10 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
         return;
 
       const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
+
+      if (this.props.onHighlightedCounted)
+        this.props.onHighlightedCounted(filteredDataProvider.countFilteringResults(nodePaths));
+
       this.setState({ filteredDataProvider });
     }
 
@@ -132,7 +144,12 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
             expandedNodes={this.state.filteredDataProvider ? this.state.filteredDataProvider.getAllNodeIds() : []}
-            highlightString={filter}
+            nodeHighlightingProps={{
+              searchText: this.props.filter,
+              activeResultNode: this.state.filteredDataProvider && this.props.activeHighlightedIndex ?
+                this.state.filteredDataProvider.getActiveResultNode(this.props.activeHighlightedIndex!) :
+                undefined,
+            }}
             {...props}
           />
           {overlay}

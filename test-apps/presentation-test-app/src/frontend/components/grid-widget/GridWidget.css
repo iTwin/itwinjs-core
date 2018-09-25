@@ -1,11 +1,12 @@
-.GridWidget {
+.gridwidget {
   height: 100%;
 }
 
-.GridWidget h3 {
+.gridwidget h3 {
   margin: 0;
+  height: 25px;
 }
 
-.GridWidget .ContentContainer {
-  height: 100%;
+.gridwidget-content {
+  height: calc(100% - 25px);
 }

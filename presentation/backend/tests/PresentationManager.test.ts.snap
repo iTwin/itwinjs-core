@@ -361,6 +361,10 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
+    "filteringData": Object {
+      "childrenOccurances": 0,
+      "occurances": 0,
+    },
     "index": 789,
     "isMarked": true,
     "node": Object {
@@ -397,6 +401,10 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
+    "filteringData": Object {
+      "childrenOccurances": 0,
+      "occurances": 0,
+    },
     "index": 209,
     "isMarked": false,
     "node": Object {

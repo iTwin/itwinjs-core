@@ -15,7 +15,8 @@ import {
     Presentation,
     SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
-import { Tree, TreeNodeItem } from "@bentley/ui-components";
+import { Tree, TreeNodeItem, UiComponents } from "@bentley/ui-components";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
 import IUnifiedSelectionComponent from "../../lib/common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "../../lib/tree";
@@ -24,6 +25,10 @@ import { IPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } 
 const PresentationTree = withUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
+    before(async () => {
+        const i18n = new I18N([], "");
+        await UiComponents.initialize(i18n);
+    });
 
     let testRulesetId: string;
     const imodelMock = moq.Mock.ofType<IModelConnection>();

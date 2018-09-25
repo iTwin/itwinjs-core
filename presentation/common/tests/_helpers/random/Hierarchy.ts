@@ -80,6 +80,7 @@ export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElem
     index: faker.random.number(999),
     isMarked: faker.random.boolean(),
     children: [],
+    filteringData: { occurances: 0, childrenOccurances: 0 },
   };
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });

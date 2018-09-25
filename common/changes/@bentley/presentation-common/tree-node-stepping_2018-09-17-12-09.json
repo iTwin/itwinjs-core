@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "NodePathElement got additional field - FilteringData",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "elonas.seviakovas@bentley.com"
+}

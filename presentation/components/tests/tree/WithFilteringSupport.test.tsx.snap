@@ -12,7 +12,36 @@ exports[`Tree withFilteringSupport render passes expanded nodes 1`] = `
         "Focused",
       ]
     }
-    highlightString="filter"
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with full highlightingProps 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    activeHighlightedIndex={6}
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": Object {
+          "id": "test",
+          "index": 0,
+        },
+        "searchText": "filter",
+      }
+    }
   />
   <div
     className="filteredTreeOverlay"
@@ -27,7 +56,12 @@ exports[`Tree withFilteringSupport render renders with overlay if connection is 
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
-    highlightString="filter"
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
   />
   <div
     className="filteredTreeOverlay"
@@ -42,7 +76,12 @@ exports[`Tree withFilteringSupport render renders with overlay if filter is diff
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
-    highlightString="filter"
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
   />
   <div
     className="filteredTreeOverlay"
@@ -57,7 +96,12 @@ exports[`Tree withFilteringSupport render renders with overlay if rulesetId is d
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
-    highlightString="filter"
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
   />
   <div
     className="filteredTreeOverlay"
@@ -72,7 +116,12 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is e
   <DataTree
     dataProvider={null}
     expandedNodes={Array []}
-    highlightString=""
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "",
+      }
+    }
   />
 </div>
 `;
@@ -84,7 +133,12 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is u
   <DataTree
     dataProvider={null}
     expandedNodes={Array []}
-    highlightString={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": undefined,
+      }
+    }
   />
 </div>
 `;
@@ -96,7 +150,12 @@ exports[`Tree withFilteringSupport render renders without overlay if nothing is 
   <DataTree
     dataProvider={null}
     expandedNodes={undefined}
-    highlightString="filter"
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
   />
 </div>
 `;

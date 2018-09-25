@@ -1,11 +1,6 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-.ui-components-tree {
-  height: 100%;
-}
-
-.ui-components-tree-errormessage {
-  padding-left: "10px"
-}
+/** @module Filtering  */
+export * from "./FilteringInput";
+export * from "./ResultSelector";

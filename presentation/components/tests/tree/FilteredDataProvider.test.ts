@@ -166,4 +166,58 @@ describe("FilteredTreeDataProvider", () => {
 
     });
 
+    describe("", () => {
+        const constantFilter = "test";
+        const filteredNodePaths: NodePathElement[] = [];
+
+        filteredNodePaths[0] = createRandomNodePathElement();
+        filteredNodePaths[0].node.label = "A-1";
+        filteredNodePaths[0].filteringData = { occurances: 0, childrenOccurances: 1 };
+
+        filteredNodePaths[0].children = [];
+        filteredNodePaths[0].children[0] = createRandomNodePathElement();
+        filteredNodePaths[0].children[0].node.label = "A-1-1 test";
+        filteredNodePaths[0].children[0].filteringData = { occurances: 1, childrenOccurances: 0 };
+
+        filteredNodePaths[1] = createRandomNodePathElement();
+        filteredNodePaths[1].node.label = "A-2 test";
+        filteredNodePaths[1].filteringData = { occurances: 1, childrenOccurances: 0 };
+
+        filteredNodePaths[1].children = [];
+        filteredNodePaths[1].children[0] = createRandomNodePathElement();
+        filteredNodePaths[1].children[0].node.label = "A-2-1";
+        filteredNodePaths[1].children[0].filteringData = { occurances: 0, childrenOccurances: 0 };
+
+        filteredNodePaths[1].children[1] = createRandomNodePathElement();
+        filteredNodePaths[1].children[1].node.label = "A-2-2";
+        filteredNodePaths[1].children[1].filteringData = { occurances: 0, childrenOccurances: 0 };
+
+        describe("countFilteringResults", () => {
+            it("all occurances get counted", () => {
+                expect(provider.countFilteringResults(filteredNodePaths)).to.be.eq(2);
+            });
+
+            it("Doesn't count if nodePaths don't have filtering data", () => {
+                expect(provider.countFilteringResults(nodePaths)).to.be.eq(0);
+            });
+        });
+
+        describe("getActiveResultNode", () => {
+            it("returns correct active node", () => {
+                provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
+                const activeResultNode = provider.getActiveResultNode(2);
+
+                expect(activeResultNode).to.not.be.undefined;
+                expect(activeResultNode!.id).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
+                expect(activeResultNode!.index).to.be.eq(0);
+            });
+
+            it("returns undefined when index is 0 or lower", () => {
+                provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
+                const activeResultNode = provider.getActiveResultNode(0);
+
+                expect(activeResultNode).to.be.undefined;
+            });
+        });
+    });
 });

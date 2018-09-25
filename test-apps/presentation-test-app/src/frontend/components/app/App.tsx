@@ -46,20 +46,18 @@ export default class App extends React.Component<{}, State> {
 
   private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64Props) {
     return (
-      <div className="Content">
-        <div className="top-left">
-          <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
-        </div>
-        <div className="right">
-          <div className="top">
-            <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+      <div className="app-content">
+        <div className="content-left">
+          <div className="content-left-top">
+            <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
           </div>
-          <div className="bottom">
-            <PropertiesWidget imodel={imodel} rulesetId={rulesetId} />
+          <div className="content-left-bottom">
+            <GridWidget imodel={imodel} rulesetId={rulesetId} />
           </div>
         </div>
-        <div className="bottom">
-          <GridWidget imodel={imodel} rulesetId={rulesetId} />
+        <div className="content-right">
+          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} />
         </div>
       </div>
     );
@@ -71,8 +69,8 @@ export default class App extends React.Component<{}, State> {
       imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId);
 
     return (
-      <div className="App">
-        <div className="Header">
+      <div className="app">
+        <div className="app-header">
           <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />

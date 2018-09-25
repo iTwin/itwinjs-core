@@ -5,6 +5,14 @@
 
 import { default as Node, NodeJSON, fromJSON as nodeFromJson } from "./Node";
 
+/** Data related to node hierachy filtering */
+export interface NodePathFilteringData {
+  /** FilterText occurances in a node label */
+  occurances: number;
+  /** FilterText occurances in all of node children */
+  childrenOccurances: number;
+}
+
 /**
  * Describes a single step in the nodes path.
  */
@@ -13,6 +21,7 @@ export default interface NodePathElement {
   index: number;
   isMarked: boolean;
   children: NodePathElement[];
+  filteringData?: NodePathFilteringData;
 }
 
 /** Serialized [[NodePathElement]] JSON representation. */
@@ -21,6 +30,7 @@ export interface NodePathElementJSON {
   index: number;
   isMarked: boolean;
   children: NodePathElementJSON[];
+  filteringData?: NodePathFilteringData;
 }
 
 /**

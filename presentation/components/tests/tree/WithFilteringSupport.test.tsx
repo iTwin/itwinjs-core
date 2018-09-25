@@ -217,7 +217,6 @@ describe("Tree withFilteringSupport", () => {
     });
 
     describe("loadDataProvider", () => {
-
         it("does not set state if filter changed while loading provider", async () => {
             const anotherDataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
             anotherDataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString()))
@@ -231,6 +230,15 @@ describe("Tree withFilteringSupport", () => {
             expect(treeInstance.state.filteredDataProvider).to.be.undefined;
         });
 
+        it("calls onHighlightedCounted if it's given through props", async () => {
+            let functionCalled = false;
+            tree.setProps({ onHighlightedCounted: () => { functionCalled = true; } });
+
+            if (treeInstance.componentDidMount)
+                await treeInstance.componentDidMount();
+
+            expect(functionCalled).to.be.true;
+        });
     });
 
     describe("render", () => {
@@ -305,6 +313,15 @@ describe("Tree withFilteringSupport", () => {
             expect(treeInstance.render()).to.matchSnapshot();
         });
 
+        it("renders with full highlightingProps", async () => {
+            const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
+            filteredDataProviderMock.setup((x) => x.getActiveResultNode(moq.It.isAny())).returns(() => ({ id: "test", index: 0 }));
+
+            tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
+            tree.setProps({ activeHighlightedIndex: 6 });
+
+            expect(treeInstance.render()).to.matchSnapshot();
+        });
     });
 
 });
