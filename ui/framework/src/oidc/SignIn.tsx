@@ -3,11 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { OpenIModelActions } from "../openimodel/state";
-import { UiFramework } from "../UiFramework";
 import * as classnames from "classnames";
 import { OverallContentPage, OverallContentActions } from "../overallcontent/state";
+import { UiFramework } from "../UiFramework";
 import "./SignIn.scss";
 
 /************************************************************************
@@ -19,54 +17,31 @@ import "./SignIn.scss";
  ***********************************************************************/
 
 export interface SignInProps {
-  loggedIn: boolean;
   setOverallPage: (page: OverallContentPage | number) => any;
-  setLoggedIn: (loggedIn: boolean, accessToken: AccessToken) => any;
 }
 
 interface SignInState {
   isSigningIn: boolean;
 }
 
-function mapStateToProps(state: any) {
-  return {
-    loggedIn: state.frameworkState.openIModelState.loggedIn,
-  };
+function mapStateToProps(_state: any) {
+  return {};
 }
 
 const mapDispatch = {
-  setLoggedIn: OpenIModelActions.setLoggedIn,
   setOverallPage: OverallContentActions.setOverallPage,
 };
 
 class SignInPageComponent extends React.Component<SignInProps, SignInState> {
-  // tslint:disable-next-line:naming-convention
-  private defaultUsername: string = "Regular.IModelJsTestUser@mailinator.com";
-  // tslint:disable-next-line:naming-convention
-  private defaultPassword: string = "Regular@iMJs";
-
   constructor(props: SignInProps, context?: any) {
     super(props, context);
     this.state = { isSigningIn: false };
   }
 
-  private async attemptSignIn(username: string, password: string) {
+  private onSignInClick(e: Event) {
+    e.preventDefault();
     this.setState(Object.assign({}, this.state, { isSigningIn: true }));
-    // tslint:disable-next-line:no-console
-    console.log("Attempting login with userName", username, "password", password);
-    try {
-      const accessToken: AccessToken = await UiFramework.loginServices.imsLogin(username, password);
-      this.props.setLoggedIn(true, accessToken);
-      // if (this.props.onSuccess) {
-      //  this.props.onSuccess (accessToken);
-    } catch (e) {
-      alert(JSON.stringify(e));
-      this.setState(Object.assign({}, this.state, { isSigningIn: false }));
-    }
-  }
-
-  private onSignInClick() {
-    this.attemptSignIn(this.defaultUsername, this.defaultPassword);
+    UiFramework.userManager.signinRedirect();
   }
 
   private onOfflineClick() {

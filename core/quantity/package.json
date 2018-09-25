@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "0.132.0",
+  "version": "0.133.0",
   "description": "Quantity formatting and parsing concepts in typescript",
   "license": "MIT",
   "main": "lib/index.js",
@@ -26,8 +26,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.132.0",
-    "@bentley/bentleyjs-tools": "0.132.0",
+    "@bentley/bentleyjs-core": "0.133.0",
+    "@bentley/bentleyjs-tools": "0.133.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -45,7 +45,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.132.0"
+    "@bentley/bentleyjs-core": "0.133.0"
   },
   "nyc": {
     "include": [

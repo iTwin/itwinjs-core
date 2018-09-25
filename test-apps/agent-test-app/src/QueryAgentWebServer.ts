@@ -116,7 +116,7 @@ export class QueryAgentWebServer {
 
         const startParams = {
             redirect_uri: "http://localhost:3000/signin-oidc",
-            scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service offline_access",
+            scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service offline_access https://dev-wsg20-eus.cloudapp.net https://qa-connect-wsg20.bentley.com",
             response_type: "code id_token",
             response_mode: "form_post",
             response: ["userinfo"],

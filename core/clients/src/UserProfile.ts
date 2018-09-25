@@ -17,4 +17,7 @@ export class UserProfile {
     public usageCountryIso: string,
   ) { }
 
+  public static fromJson(jsonObj: any): UserProfile {
+    return new UserProfile(jsonObj.firstName, jsonObj.lastName, jsonObj.email, jsonObj.userId, jsonObj.organization, jsonObj.organizationId, jsonObj.ultimateSite, jsonObj.usageCountryIso);
+  }
 }

@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.133.0",
+      "tag": "@bentley/imodeljs-frontend_v0.133.0",
+      "date": "Tue, 25 Sep 2018 16:41:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow QuantityFormatter to format quantities without requiring async calls."
+          },
+          {
+            "comment": "Add ability to query the iModel's default view ID from the front-end."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.132.0",
       "tag": "@bentley/imodeljs-frontend_v0.132.0",
       "date": "Mon, 24 Sep 2018 18:55:46 GMT",

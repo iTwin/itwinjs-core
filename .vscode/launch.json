@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [{
+
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Integration)",
@@ -367,7 +368,7 @@
       ]
     },
     {
-      "name": "ui-test-app - Browser (frontend)",
+      "name": "ui-test-app (frontend)",
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000/",
@@ -385,6 +386,21 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "ui-test-app (backend)",
+      "program": "${workspaceFolder}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js",
+      "cwd": "${workspaceFolder}/test-apps/ui-test-app",
+      "args": [
+        "start-backend",
+        "--debug=9229"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "timeout": 100000,
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run ConnectSettings Tests (Online)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
@@ -394,6 +410,20 @@
         "--recursive",
         "--grep",
         "Setting",
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Quantity Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/quantity",
+      "args": [
+        "--testDir=${workspaceFolder}/core/quantity/test",
+        "--debug"
       ],
       "port": 9229,
       "protocol": "inspector",

@@ -311,6 +311,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "immutable",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "imports-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -419,6 +423,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "oidc-client",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "openid-client",
       "allowedCategories": [ "internal" ]
     },
@@ -520,6 +528,10 @@
     },
     {
       "name": "redux",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "redux-oidc",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {

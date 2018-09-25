@@ -1,6 +1,16 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 24 Sep 2018 18:55:46 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Sep 2018 16:41:02 GMT and should not be manually modified.
+
+## 0.133.0
+Tue, 25 Sep 2018 16:41:02 GMT
+
+### Updates
+
+- Split highlighting logic from Tree to HighlightingEngine.
+- "highlightingString" prop changed to "nodeHighlightingProps" in Tree and DataTree.
+- Added a FilteringInput component (input field with various buttons).
+- Added a ResultSelector component which allows stepping through results.
 
 ## 0.132.0
 Mon, 24 Sep 2018 18:55:46 GMT

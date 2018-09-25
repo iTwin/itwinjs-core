@@ -164,6 +164,11 @@ export class AccessToken extends Token {
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {
+    if (jsonObj._jwt) {
+      const userProfile = UserProfile.fromJson(jsonObj._userProfile);
+      return AccessToken.fromJsonWebTokenString(jsonObj._jwt, userProfile, jsonObj._startsAt, jsonObj._expiresAt);
+    }
+
     const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj._samlAssertion);
     if (foreignTok !== undefined)
       return foreignTok;

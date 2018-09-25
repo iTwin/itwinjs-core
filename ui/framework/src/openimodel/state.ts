@@ -4,12 +4,11 @@
 /** @module OpenIModel */
 
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
+import { ProjectInfo } from "../clientservices/ProjectServices";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Id64Props } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../UiFramework";
 
 // @ts-ignore
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -18,15 +17,13 @@ import { createAction, ActionsUnion, Action, ActionWithPayload, DeepReadonly, De
 
 /** The content that is displayed in the UI while in the process of selecting an iModel for opening. */
 export enum OpenIModelPage {
-  LoginPage = -2,
   SelectIModelPage = -1,
 }
 
 /** An object with a function that creates each OpenIModelAction that can be handled by our reducer. */  // tslint:disable-next-line:variable-name
 export const OpenIModelActions = {
   setIModelPage: (newPage: OpenIModelPage) => createAction("OpenIModel:SETPAGE", newPage),
-  setAccessToken: (loggedIn: boolean, accessToken: AccessToken) => createAction("OpenIModel:SETACCESSTOKEN", { loggedIn, accessToken }),
-  setLoggedIn: (loggedIn: boolean, accessToken: AccessToken) => createAction("OpenIModel:SETLOGGEDIN", { loggedIn, accessToken }),
+  setLoggedIn: (accessToken: AccessToken) => createAction("OpenIModel:SETLOGGEDIN", accessToken),
   setProjects: (projects: ProjectInfo[]) => createAction("OpenIModel:SETPROJECTS", projects),
   setRecentProjects: (projects: ProjectInfo[]) => createAction("OpenIModel:SETRECENTPROJECTS", projects),
   setCurrentProject: (newProject: ProjectInfo) => createAction("OpenIModel:SETCURRENTPROJECT", newProject),
@@ -43,8 +40,6 @@ export type OpenIModelActionsUnion = ActionsUnion<typeof OpenIModelActions>;
 /** The portion of state managed by the OpenIModelReducer. */
 export interface OpenIModelState {
   currentPage: OpenIModelPage;
-  loggedIn: boolean;
-  accessToken?: AccessToken;
   overlaySearchProjectList: boolean;
   projects?: ProjectInfo[];
   recentProjects?: ProjectInfo[];
@@ -57,42 +52,16 @@ export interface OpenIModelState {
 }
 
 const initialState: OpenIModelState = {
-  currentPage: OpenIModelPage.LoginPage,
-  loggedIn: false,
+  currentPage: OpenIModelPage.SelectIModelPage,
   overlaySearchProjectList: false,
   showRecentProjects: false,
 };
-
-function getRecentProjects(state: OpenIModelState) {
-  UiFramework.projectServices.getProjects(state.accessToken!, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => {
-    UiFramework.store.dispatch({ type: "OpenIModel:SETRECENTPROJECTS", payload: projectInfos });
-    console.log("Done retrieving recentProjects", projectInfos); // tslint:disable-line:no-console
-  });
-}
 
 /** Handles the OpenIModelState portion of our state object. */
 export function OpenIModelReducer(state: OpenIModelState = initialState, action: OpenIModelActionsUnion): OpenIModelState {
   switch (action.type) {
     case "OpenIModel:SETPAGE": {
       return { ...state, currentPage: action.payload };
-    }
-    case "OpenIModel:SETACCESSTOKEN": {
-      const newState: OpenIModelState = {
-        ...state,
-        loggedIn: action.payload.loggedIn,
-        accessToken: action.payload.accessToken as AccessToken,
-      };
-      return newState;
-    }
-    case "OpenIModel:SETLOGGEDIN": {
-      const newState: OpenIModelState = {
-        ...state,
-        currentPage: action.payload.loggedIn ? OpenIModelPage.SelectIModelPage : state.currentPage,
-        loggedIn: action.payload.loggedIn,
-        accessToken: action.payload.accessToken as AccessToken,
-      };
-      getRecentProjects(newState);
-      return newState;
     }
     case "OpenIModel:SETRECENTPROJECTS": {
       const projects = action.payload;

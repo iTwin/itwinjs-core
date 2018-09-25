@@ -1,6 +1,11 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Mon, 24 Sep 2018 18:55:46 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Sep 2018 16:41:00 GMT and should not be manually modified.
+
+## 0.133.0
+Tue, 25 Sep 2018 16:41:00 GMT
+
+*Version update only*
 
 ## 0.132.0
 Mon, 24 Sep 2018 18:55:46 GMT

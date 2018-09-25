@@ -87,7 +87,7 @@ class AppBackstage extends React.Component<AppBackstageProps> {
   public render(): React.ReactNode {
 
     return (
-      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.openIModelState.accessToken} >
+      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconClass="icon icon-user" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconClass="icon icon-folder-opened" />
         <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconClass="icon icon-graph" />

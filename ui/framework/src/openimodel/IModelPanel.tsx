@@ -64,7 +64,7 @@ interface IModelPanelState {
 function mapStateToProps(state: any) {
   const openIModelState: OpenIModelState = state.frameworkState.openIModelState as OpenIModelState;
   return {
-    accessToken: openIModelState.accessToken!,
+    accessToken: state.overallContentState.accessToken,
     overlaySearchProjectsComponent: openIModelState.overlaySearchProjectList,
     iModels: openIModelState.iModels!,
     currentProject: openIModelState.currentProject,
