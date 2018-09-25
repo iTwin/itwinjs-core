@@ -233,7 +233,7 @@ const defaultsFormats = {
 /**
  * The QuantityFormatter provide the ability to generate formatted strings for quantity values.
  */
-export class QuantityFormatter extends UnitsProvider {
+export class QuantityFormatter implements UnitsProvider {
   protected _activeSystemIsImperial = true;
   protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
   protected _imperialFormatsByType = new Map<QuantityType, Format>();
@@ -242,7 +242,7 @@ export class QuantityFormatter extends UnitsProvider {
   protected _metricFormatSpecsByType = new Map<QuantityType, FormatterSpec>();
 
   /** Find a unit given the unitLabel. */
-  public findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
     for (const entry of unitData) {
       if (unitFamily) {
         if (entry.unitFamily !== unitFamily)
@@ -274,7 +274,7 @@ export class QuantityFormatter extends UnitsProvider {
   }
 
   /** Find a unit given the unit's unique name. */
-  public findUnitByName(unitName: string): Promise<UnitProps> {
+  public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
       return Promise.resolve(new Unit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily));
@@ -283,7 +283,7 @@ export class QuantityFormatter extends UnitsProvider {
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same unitFamily. */
-  public getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 
@@ -302,7 +302,7 @@ export class QuantityFormatter extends UnitsProvider {
   }
 
   /** method used to load format for KOQ into cache */
-  protected loadKoqFormatSpecs(koq: string): Promise<void> {
+  protected async loadKoqFormatSpecs(koq: string): Promise<void> {
     if (koq.length === 0)
       return Promise.reject(new Error("bad koq specification"));
 
@@ -314,7 +314,7 @@ export class QuantityFormatter extends UnitsProvider {
   }
 
   /** Async method to return the array of presentation formats for the specified KOQ */
-  protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined> {
+  protected async getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined> {
     if (koq.length === 0 && useImperial)
       return Promise.reject(new Error("bad koq specification"));
 
@@ -386,7 +386,7 @@ export class QuantityFormatter extends UnitsProvider {
   }
 
   /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
+  protected async getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
     switch (type) {
       case QuantityType.Angle:
         return this.findUnitByName("Units.RAD");
@@ -420,11 +420,10 @@ export class QuantityFormatter extends UnitsProvider {
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     activeMap.clear();
 
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < typeArray.length; i++) {
-      const quantityType = typeArray[i];
-      const format = await this.getFormatByQuantityType(quantityType, useImperial);
-      const unit = await this.getUnitByQuantityType(quantityType);
+    for (const quantityType of typeArray) {
+      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+      const unitPromise = this.getUnitByQuantityType(quantityType);
+      const [format, unit] = await Promise.all([formatPromise, unitPromise]);
       const spec = await FormatterSpec.create(format.name, format, this, unit);
       activeMap.set(quantityType, spec);
     }

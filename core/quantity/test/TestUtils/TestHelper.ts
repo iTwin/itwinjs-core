@@ -33,6 +33,7 @@ interface UnitDefinition {
   readonly conversion: ConversionDef;
 }
 
+// cSpell:ignore MILLIINCH, MICROINCH, MILLIFOOT
 const unitData: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", unitFamily: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
@@ -72,11 +73,7 @@ export class ConversionData implements UnitConversion {
   public offset: number = 0.0;
 }
 
-export class TestUnitsProvider extends UnitsProvider {
-  constructor() {
-    super();
-  }
-
+export class TestUnitsProvider implements UnitsProvider {
   public findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
     for (const entry of unitData) {
       if (unitFamily) {

@@ -31,13 +31,13 @@ export interface UnitConversion {
   offset: number;
 }
 
-/** This abstract class must be implemented and passed into methods that require locating a Unit by name or label or require converting values between units.
+/** This interface is implemented by the class that is responsible for locating units by name or label and providing conversion values between units.
  * The methods to be implemented are async allowing the UnitsProvider to query the backend when necessary to look up unit definition and conversion rules.
  */
-export abstract class UnitsProvider {
-  public abstract findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
-  public abstract findUnitByName(unitName: string): Promise<UnitProps>;
-  public abstract getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+export interface UnitsProvider {
+  findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+  findUnitByName(unitName: string): Promise<UnitProps>;
+  getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
 }
 
 /** This class is a convenience class that can be returned when a valid Unit cannot be determined.

@@ -412,9 +412,12 @@ export class Format implements FormatProps {
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           try {
+            const createUnitPromises: Array<Promise<void>> = [];
             for (const unit of jsonObj.composite.units) {
-              await this.createUnit(unitsProvider, unit.name, unit.label); // create the unit
+              createUnitPromises.push(this.createUnit(unitsProvider, unit.name, unit.label));
             }
+
+            await Promise.all(createUnitPromises);
           } catch (e) {
             return Promise.reject(e);
           }
