@@ -90,7 +90,9 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       pattern: /.*/,
       includeUndefined: true,
       includePackagesWithoutLicense: true,
-      unacceptablePattern: /^(GPL|.*[^L]GPL)/i,
+      unacceptablePattern: /^L?GPL/i,
+      licenseFileOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseFileOverrides,
+      licenseTypeOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseTypeOverrides,
     }),
   ],
 });
