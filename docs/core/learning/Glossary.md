@@ -10,7 +10,7 @@ tableRowAnchors: true
 |**Backend**|The part of an iModel.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The *base* BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
-|**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](./backend/IModelDb.md).
+|**Briefcase**|A file holding a *copy of* an iModel. It contains data from [ChangeSets](#changeset) as well as local changes. See [IModelDb](./backend/IModelDb.md).
 |**Cartographic Coordinates**| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
@@ -54,11 +54,14 @@ tableRowAnchors: true
 |**IModelApp**|The *administrator* class for frontend applications. By subclassing IModelApp, applications can control the behavior of the frontend services.
 |**IModelConnection**|A TypeScript class in the frontend that represents the connection to the iModel on the backend.
 |**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iModel.js applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
+|**Lock**|The right to modify a specific type of data (e.g. [Elements](#element), [Models](#model)). See [pessimistic concurrency control]($docs/learning/backend/ConcurrencyControl.md#pessimistic-concurrency-control).
 |**L10N**|An abbreviation for [Localization](https://en.wikipedia.org/wiki/Internationalization_and_localization).
 |**LineStyle**|A named pattern that is repeated along a path when it is displayed to represent the meaning of the path.
+|**Merge**|Process of applying changes from a [ChangeSet](#changeset) file to a [Briefcase](#briefcase).
 |**Model**|A set of Elements used to describe another Element (its *ModeledElement*) in more detail. Every Element is *contained in* one and only one Model via a ModelContainsElements relationship. In this manner, Models form a hierarchy of Elements. There are many subclasses of Model (e.g. PhysicalModel, FunctionalModel, etc.)
 |**ModeledElement**|An Element that is *broken down in more detail* by a Model. Note that the *name* of a Model **is** the name of its ModeledElement, and the *ParentModel* of a Model **is** the Model of its ModeledElement.
 |**ModelSelector**|A named set of Models that are visible in a View. Many ViewDefinitions may point to the same ModelSelector.
+|**NamedVersion**|A version that is given a name on iModelHub to distinguish it amongst other versions due to its significants (e.g. a milestone, a review version).
 |**Node.js**|A [runtime for JavaScript](https://nodejs.org) outside a web browser.
 |**NPC**|**N**ormalized **P**lane **C**oordinates. A coordinate system for Frustums where each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0 inside the Frustum. In NPC, [0,0,0] is the left-bottom-rear and [1,1,1] is the right-top-front of the Frustum.
 |**Npm**|[Node Package Manager](https://www.npmjs.com/). A tool for distributing JavaScript packages.
@@ -66,6 +69,8 @@ tableRowAnchors: true
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.
 |**Project Extents**|The *volume of interest* for an iModel's Spatial Coordinate System. All spatial elements in an iModel must be completely inside its Project Extents.
 |**Props**|iModel.js uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
+|**Pull**|Process of downloading [ChangeSets](#changeset) for a [Briefcase](#briefcase) that are newer than the last ChangeSet [*merged*](#merge) into that Briefcase.
+|**Push**|Process of uploading local changes from a [Briefcase](#briefcase) to [iModelHub](#imodelhub) in a form of a [ChangeSet](#changeset) file. It is required that user [pulls](#pull) and [merges](#merge) before attempting a push.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**RPC**|Remote procedure call. Allows a client to invoke an operation in a service. Web apps use HTTP to implement RPC calls, while desktop apps use pipes.
 |**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../learning/RpcInterface.md) for more information.
@@ -83,6 +88,7 @@ tableRowAnchors: true
 |**Tool**|A TypeScript class in the frontend that associates a ToolId with an action. Subclasses of [Tool]($frontend) can react to user input.
 |**ToolId**|A short **string** that unambiguously identifies a Tool.
 |**UserLabel**|An optional string that holds a user-assigned *alias* for an Element. UserLabels are **not** enforced to be unique.
+|**Version**|An immutable state of [iModel](#imodel) as of a specific [ChangeSet](#changeset). It contains data from all ChangeSets up to specified one and contains no local changes. See [Briefcase](#briefcase) for comparison.
 |**View**|An abstract concept that forms a relationship between a rectangular region on a screen and content in an iModel. All of the classes involved in that mapping are collectively referred to as a View.
 |**ViewDefinition**|A subclass of DefinitionElement that holds the persistent state of a View. There is also an eponymous Typescript class in the backend.
 |**Viewport**|A TypeScript class in the frontend that connects an HTMLCanvasElement to a ViewState.

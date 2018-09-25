@@ -32,7 +32,7 @@ With the [iModel.js Software architecture](./SoftwareArchitecture.md), from the 
 
 ## iModel.js vs. iModelHub
 
-It is important to understand that iModel.js applications do not *run on [iModelHub](./imodelhub)*. Instead, they can run *anywhere else*. iModel.js applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
+It is important to understand that iModel.js applications do not *run on [iModelHub](./iModelHub/index)*. Instead, they can run *anywhere else*. iModel.js applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
 
 iModel.js applications can be:
 
@@ -55,6 +55,7 @@ The iModel.js library requires a JavaScript engine with es2017 support.
 * [App frontend development](./frontend/index)
 * [App backend development](./backend/index)
 * [Classes packages by both frontends and backends](./common/index)
+* [iModelHub](./iModelHub/index)
 * [ECSQL](./ECSQL.md)
 * [Change Summaries](./ChangeSummaries.md)
 * [Remote Procedure Call (RPC) Interfaces](./RpcInterface)

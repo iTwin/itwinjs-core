@@ -60,7 +60,7 @@ describe("iModelHub VersionHandler", () => {
     iModelClient = await utils.getClient(iModelId);
     briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
     if (!TestConfig.enableMocks) {
-      iModelClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      iModelClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
       const changeSetCount = (await iModelClient.ChangeSets().get(actx, accessToken, iModelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
@@ -95,7 +95,7 @@ describe("iModelHub VersionHandler", () => {
   after(() => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      iModelClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      iModelClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

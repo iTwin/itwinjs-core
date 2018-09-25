@@ -78,7 +78,7 @@ function getImodelHubClient() {
     return _imodelHubClient;
   _imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   if (!TestConfig.enableMocks) {
-    _imodelHubClient.CustomRequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+    _imodelHubClient.RequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
   return _imodelHubClient;
 }

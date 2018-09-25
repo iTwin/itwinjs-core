@@ -30,11 +30,7 @@ export type EventType =
   "AllCodesDeletedEvent" |
   /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
   "BriefcaseDeletedEvent" |
-  /** Sent when a seed file is replaced. See [[SeedFileReplacedEvent]]. */
-  "SeedFileReplacedEvent" |
-  /** Sent when iModel is locked or unlocked. See [[iModelLockEvent]]. */
-  "iModelLockEvent" |
-  /** Sent when iModel is deleted. See [[iModelDeletedEvent]]. */
+  /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
   "iModelDeletedEvent" |
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   "VersionEvent";
@@ -155,43 +151,7 @@ export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
 /**
- * Sent when a seed file is replaced. Seed file replacement is deprecated and this event should no longer occur.
- */
-export class SeedFileReplacedEvent extends IModelHubEvent {
-  /** Id of the new file. */
-  public fileId?: string;
-
-  /**
-   * Construct this event from object instance.
-   * @hidden
-   * @param obj Object instance.
-   */
-  public fromJson(obj: any) {
-    super.fromJson(obj);
-    this.fileId = obj.FileId;
-  }
-}
-
-/**
- * Sent when iModel is locked or unlocked. When iModel is locked, no other requests can be sent to it.
- */
-export class IModelLockEvent extends IModelHubEvent {
-  /** True if iModel is now locked, false if it's unlocked. */
-  public locked?: boolean;
-
-  /**
-   * Construct this event from object instance.
-   * @hidden
-   * @param obj Object instance.
-   */
-  public fromJson(obj: any) {
-    super.fromJson(obj);
-    this.locked = obj.Locked;
-  }
-}
-
-/**
- * Sent when iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
+ * Sent when an iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
  */
 export class IModelDeletedEvent extends IModelHubEvent {
 }
@@ -238,10 +198,6 @@ function ConstructorFromEventType(type: EventType): EventConstructor {
       return AllCodesDeletedEvent;
     case "BriefcaseDeletedEvent":
       return BriefcaseDeletedEvent;
-    case "SeedFileReplacedEvent":
-      return SeedFileReplacedEvent;
-    case "iModelLockEvent":
-      return IModelLockEvent;
     case "iModelDeletedEvent":
       return IModelDeletedEvent;
     case "VersionEvent":

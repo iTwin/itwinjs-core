@@ -130,7 +130,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
-      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
 
     projectId = await utils.getProjectId(accessToken);
@@ -147,7 +147,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

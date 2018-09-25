@@ -8,7 +8,8 @@
 &nbsp;
 ### Helpful links
 - [ECSQL](./ECSQL.md)
+- [iModelHub](./iModelHub/index.md)
 - [Wire Format](./WireFormat.md)
-- [Frequently asked Questions](./faq.md)
+- [Frequently Asked Questions](./faq.md)
 - [Guidelines and Tips](./guidelines/index.md)
 - [iModel.js Glossary](./Glossary.md)

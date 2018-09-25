@@ -43,7 +43,7 @@ export class HubIModel extends WsgInstance {
     public initialized?: boolean;
 }
 
-/** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. If [[IModelHandler.create]] has timed out, querying InitializationState can show if the seed file initialization has completed. */
+/** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md). */
 export enum InitializationState {
     /** Initialization was successful. */
     Successful = 0,
@@ -55,7 +55,7 @@ export enum InitializationState {
     Failed = 3,
     /** Initialization failed due to file having outdated schemas. */
     OutdatedFile = 4,
-    /** Initialization failed due to file having [Code]($common) values that are too long. */
+    /** Initialization failed due to file having [[Code]] values that are too long. */
     CodeTooLong = 5,
     /**
      * Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend).
@@ -367,7 +367,7 @@ export class IModelHandler {
     }
 
     /**
-     * Get the [[InitializationState]] for the specified iModel. See [[IModelHandler.create]].
+     * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * @param token Delegation token of the authorized user.
      * @param imodelId Id of the iModel. See [[HubIModel]].
      * @returns State of the seed file initialization.
@@ -384,11 +384,7 @@ export class IModelHandler {
     }
 
     /**
-     * Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead.
-     *
-     * This method creates an iModel and uploads a seed file to it. That seed file will need to be initialized by the iModelHub. Until the file is initialized, iModel will be unavailable for other requests.
-     *
-     * If file is not initialized by the timeOutInMilliseconds, this task will be rejected, but it could still get initialized in the future. You can use [[IModelHandler.getInitializationState]] to check whether the file initialization hasn't completed ([[InitializationState.Scheduled]]), or the initialization has completed. If initialization has failed with [[InitializationState.Failed]], it's possible, that deleting and creating new iModel with the same seed file could succeed.
+     * Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      *
      * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
      * @param token Delegation token of the authorized user.
@@ -402,7 +398,7 @@ export class IModelHandler {
      */
     public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
         description?: string, progressCallback?: (progress: ProgressInfo) => void,
-        timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<HubIModel> {
+        timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Creating iModel in project ${contextId}`);
         ArgumentCheck.defined("token", token);

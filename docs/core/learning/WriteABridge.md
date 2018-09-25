@@ -9,15 +9,15 @@ Specificaly, a bridge must:
 * [Open a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 * Import or Update Schema
   * Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
-  * Push the results to the iModelServer.
+  * [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelServer.
 * Convert Changed Data
   * Connect to the data source.
   * Detect changes to the source data.
   * [Transform](../learning/imodel-bridges.md#data-alignment) the new or changed source data into the target BIS schema.
   * Write the resulting BIS data to the local briefcase.
   * Remove BIS data corresponding to deleted source data.
-  * Obtain required Locks and Codes from the iModel server and/or code server.
-  * Push changes to the iModel server.
+  * Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and/or code server.
+  * [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
 
 ## Writing a bridge
 
@@ -59,7 +59,7 @@ Here is a simple example of a fictitious source data format and the logic to con
 ## Detecting and pushing changes
 
 Rather than starting over when the source data changes, a bridge should be able to detect and convert only the changes. That makes for compact, meaningful ChangeSets, which are added to the iModel's
-[timeline](../learning/IModelHub.md#the-timeline-of-changes-to-an-imodel).
+[timeline](../learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
 

@@ -38,7 +38,7 @@ export abstract class IModelClient {
   }
 
   /**
-   * Get the handler for [[IModel]]s.
+   * Get the handler for [[HubIModel]] instances.
    */
   public IModels(): IModelHandler {
     return new IModelHandler(this._handler, this._fileHandler);
@@ -110,7 +110,7 @@ export abstract class IModelClient {
   /**
    * Get the [CustomRequestOptions]($clients) object for controlling future request options.
    */
-  public CustomRequestOptions(): CustomRequestOptions {
+  public RequestOptions(): CustomRequestOptions {
     return this._handler.getCustomRequestOptions();
   }
 }
