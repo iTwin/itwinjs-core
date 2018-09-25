@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64Props } from "@bentley/bentleyjs-core";
-import { XYZProps, Matrix4dProps, TransformProps } from "@bentley/geometry-core";
+import { Id64Props, Id64Array } from "@bentley/bentleyjs-core";
+import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 
 /**
  * Information required to request a *snap* to an element from the front end to the back end.
@@ -19,7 +19,8 @@ export interface SnapRequestProps {
   snapModes?: number[];
   snapAperture?: number;
   snapDivisor?: number;
-  offSubCategories?: string[];
+  offSubCategories?: Id64Array;
+  intersectCandidates?: Id64Array;
 }
 
 /**
@@ -36,5 +37,6 @@ export interface SnapResponseProps {
   snapPoint?: XYZProps;
   normal?: XYZProps;
   curve?: any;
-  localToWorld?: TransformProps;
+  intersectCurve?: any;
+  intersectId?: string;
 }
