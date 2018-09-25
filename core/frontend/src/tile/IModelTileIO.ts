@@ -25,13 +25,11 @@ import {
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, RenderGraphic } from "../render/System";
+import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
 import { ImageUtil } from "../ImageUtil";
 import {
-  Feature,
   FeatureTable,
   ElementAlignedBox3d,
-  GeometryClass,
   FillFlags,
   ColorDef,
   LinePixels,
@@ -88,6 +86,8 @@ export namespace IModelTileIO {
       const count = stream.nextUint32;
       return stream.isPastTheEnd ? undefined : new FeatureTableHeader(length, maxFeatures, count);
     }
+
+    public static sizeInBytes = 12;
 
     private constructor(public readonly length: number,
       public readonly maxFeatures: number,
@@ -321,24 +321,19 @@ export namespace IModelTileIO {
     protected readFeatureTable(): FeatureTable | undefined {
       const startPos = this._buffer.curPos;
       const header = FeatureTableHeader.readFrom(this._buffer);
-      if (undefined === header)
+      if (undefined === header || 0 !== header.length % 4)
         return undefined;
 
-      const featureTable = new FeatureTable(header.maxFeatures, this._modelId);
-      for (let i = 0; i < header.count; i++) {
-        const elementId = this._buffer.nextId64;
-        const subCategoryId = this._buffer.nextId64;
-        const geometryClass = this._buffer.nextUint32 as GeometryClass;
-        const index = this._buffer.nextUint32;
+      // NB: We make a copy of the sub-array because we don't want to pin the entire data array in memory.
+      const numUint32s = (header.length - FeatureTableHeader.sizeInBytes) / 4;
+      const packedFeatureArray = new Uint32Array(this._buffer.nextUint32s(numUint32s));
+      if (this._buffer.isPastTheEnd)
+        return undefined;
 
-        if (this._buffer.isPastTheEnd)
-          return undefined;
-
-        featureTable.insertWithIndex(new Feature(elementId, subCategoryId, geometryClass), index);
-      }
+      const packedFeatureTable = new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures);
 
       this._buffer.curPos = startPos + header.length;
-      return featureTable;
+      return packedFeatureTable.unpack();
     }
 
     private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
