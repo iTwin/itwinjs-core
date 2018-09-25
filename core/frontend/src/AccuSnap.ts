@@ -437,13 +437,8 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const intersect = new IntersectDetail(tpSnap, SnapMode.Intersection, SnapHeat.InRange, detail.dataA[closeIndex].point); // Should be ok to share hit detail with tentative...
-
-    second.primitive = segment; // Just save single segment that was intersected for line strings/shapes...
-    intersect.secondHit = second;
-    intersect.primitive = tpSegment;
-    intersect.geomType = HitGeomType.None;
-    intersect.normal = tpSnap.normal; // Preserve normal at tentative snap location for AccuDraw smart rotation...
+    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail.dataA[closeIndex].point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
+    intersect.primitive = tpSegment; // Just save single segment that was intersected for line strings/shapes...
 
     return intersect;
   }
@@ -493,16 +488,11 @@ export class AccuSnap implements Decorator {
     if (undefined === result.intersectId)
       return undefined;
 
-    const secondHit = new HitDetail(thisHit.testPoint, thisHit.viewport, thisHit.hitSource, thisHit.hitPoint, result.intersectId, thisHit.priority, thisHit.distXY, thisHit.distFraction);
-    const secondSnap = new SnapDetail(secondHit, SnapMode.Nearest, snap.heat, snap.snapPoint);
-    secondSnap.setCurvePrimitive(undefined !== result.intersectCurve ? GeomJson.Reader.parse(result.intersectCurve) : undefined); // Intersect curve returned in world coordinates...
+    const otherPrimitive = (undefined !== result.intersectCurve ? GeomJson.Reader.parse(result.intersectCurve) : undefined);
+    if (undefined === otherPrimitive)
+      return undefined;
 
-    const intersect = new IntersectDetail(snap, SnapMode.Intersection, snap.heat, snap.snapPoint);
-    intersect.secondHit = secondSnap;
-    intersect.primitive = snap.primitive;
-    intersect.geomType = HitGeomType.None;
-    intersect.normal = snap.normal; // Preserve normal from nearest snap location for AccuDraw smart rotation...
-
+    const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
     return intersect;
   }
 

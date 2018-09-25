@@ -287,15 +287,19 @@ export class SnapDetail extends HitDetail {
 }
 
 export class IntersectDetail extends SnapDetail {
-  public secondHit?: SnapDetail;
+  public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
+    super(from, SnapMode.Intersection, heat, snapPoint);
+    this.primitive = from.primitive;
+    this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
+  }
 
   public draw(context: DecorateContext) {
-    if (undefined !== this.primitive && undefined !== this.secondHit && undefined !== this.secondHit.primitive) {
+    if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
       builder.addPath(Path.create(this.primitive));
       builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2, LinePixels.Code2);
-      builder.addPath(Path.create(this.secondHit.primitive));
+      builder.addPath(Path.create(this.otherPrimitive));
       context.addDecorationFromBuilder(builder);
       return;
     }
