@@ -17,6 +17,7 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
+  Feature,
   FeatureTable,
   Gradient,
   ElementAlignedBox3d,
@@ -264,6 +265,101 @@ export namespace Pixel {
   export interface Buffer {
     /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
     getPixel(x: number, y: number): Data;
+  }
+}
+
+/**
+ * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
+ * wherein each feature occupies 3 32-bit integers.
+ */
+export class PackedFeatureTable {
+  private readonly _data: Uint32Array;
+  public readonly modelId: Id64;
+  public readonly maxFeatures: number;
+  public readonly numFeatures: number;
+
+  /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a [[Tile]] serialized in iMdl format. */
+  public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number) {
+    this._data = data;
+    this.modelId = modelId;
+    this.maxFeatures = maxFeatures;
+    this.numFeatures = numFeatures;
+
+    assert(this._data.length >= this._subCategoriesOffset);
+    assert(this.maxFeatures >= this.numFeatures);
+  }
+
+  /** Create a packed feature table from a [[FeatureTable]]. */
+  public static pack(featureTable: FeatureTable): PackedFeatureTable {
+    // We must determine how many subcategories we have ahead of time in order to compute the size of the Uint32Array, as
+    // the array cannot be resized after it is created.
+    // We are not too worried about this as FeatureTables created on the front-end will contain few if any features; those obtained from the
+    // back-end arrive within tiles already in the packed format.
+    const subcategories = new Map<string, number>();
+    for (const iv of featureTable.getArray()) {
+      const found = subcategories.get(iv.value.subCategoryId.toString());
+      if (undefined === found)
+        subcategories.set(iv.value.subCategoryId, subcategories.size);
+    }
+
+    // We need 3 32-bit integers per feature, plus 2 32-bit integers per subcategory.
+    const subCategoriesOffset = 3 * featureTable.length;
+    const nUint32s = subCategoriesOffset + 2 * subcategories.size;
+    const uint32s = new Uint32Array(nUint32s);
+
+    for (const iv of featureTable.getArray()) {
+      const feature = iv.value;
+      const index = iv.index * 3;
+
+      let subCategoryIndex = subcategories.get(feature.subCategoryId)!;
+      assert(undefined !== subCategoryIndex); // we inserted it above...
+      subCategoryIndex |= (feature.geometryClass << 24);
+
+      uint32s[index + 0] = Id64.getLowUint32(feature.elementId);
+      uint32s[index + 1] = Id64.getHighUint32(feature.elementId);
+      uint32s[index + 2] = subCategoryIndex;
+    }
+
+    subcategories.forEach((index: number, id: string, _map) => {
+      const index32 = subCategoriesOffset + 2 * index;
+      uint32s[index32 + 0] = Id64.getLowUint32(id);
+      uint32s[index32 + 1] = Id64.getHighUint32(id);
+    });
+
+    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures);
+  }
+
+  /** Retrieve the Feature associated with the specified index. */
+  public getFeature(featureIndex: number): Feature {
+    assert(featureIndex < this.numFeatures);
+
+    const index32 = 3 * featureIndex;
+    const elemId = this.readId(index32);
+
+    const subCatIndexAndClass = this._data[index32 + 2];
+    const geomClass = (subCatIndexAndClass >>> 24) & 0xff;
+
+    const subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
+    const subCatId = this.readId(subCatIndex * 2 + this._subCategoriesOffset);
+
+    return new Feature(elemId, subCatId, geomClass);
+  }
+
+  /** Unpack the features into a [[FeatureTable]]. */
+  public unpack(): FeatureTable {
+    const table = new FeatureTable(this.maxFeatures, this.modelId);
+    for (let i = 0; i < this.numFeatures; i++) {
+      const feature = this.getFeature(i);
+      table.insertWithIndex(feature, i);
+    }
+
+    return table;
+  }
+
+  private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
+
+  private readId(offset32: number): Id64 {
+    return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
   }
 }
 
