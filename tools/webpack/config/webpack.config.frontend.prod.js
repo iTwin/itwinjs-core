@@ -41,6 +41,11 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   },
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        loader: path.join(__dirname, "strip-assert-loader.js"),
+        enforce: "pre",
+      },
       // "postcss" loader applies autoprefixer to our CSS.
       // "css" loader resolves paths in CSS and adds assets as dependencies.
       // `MiniCSSExtractPlugin` extracts styles into CSS files.

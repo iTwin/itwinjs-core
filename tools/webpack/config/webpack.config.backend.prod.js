@@ -39,6 +39,11 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   devtool: "source-map",
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        loader: path.join(__dirname, "strip-assert-loader.js"),
+        enforce: "pre",
+      },
       // Exclude web backend source in an electron build; electron backend source in a web build
       {
         test: /\.(t|j)sx?$/,
