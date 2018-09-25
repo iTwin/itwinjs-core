@@ -42,10 +42,10 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
       <>
         <div className={"modal-frontstage" + openClass}>
           <div className="app-bar">
-            <BackButton
+            <BackButton className="nz-toolbar-button-app"
               onClick={this._onGoBack}
               icon={
-                <i className="icon icon-progress-backward-2" />
+                <i className="icon icon-progress-backward" />
               }
             />
             <span className="bwc-text-headline">{this.props.title}</span>

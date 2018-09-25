@@ -13,8 +13,9 @@ import {
   TableSelectionTarget, TableProps, ColumnDescription,
 } from "../../../src/table";
 import { SelectionMode } from "../../../src/common";
-import { PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription } from "../../../src";
+import { PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs } from "../../../src";
 import { waitForSpy } from "../../test-helpers/misc";
+import { EditorContainer } from "../../../src";
 
 describe("Table", () => {
   const rowClassName = "div.row";
@@ -51,13 +52,28 @@ describe("Table", () => {
     return new PropertyRecord(v, pd);
   };
 
-  const columns = [
-    { label: "label0", key: "key0" },
+  const columns: ColumnDescription[] = [
+    { label: "label0", key: "key0", sortable: true },
     { label: "label1", key: "key1" },
-    { label: "label2", key: "key2" },
+    { label: "label2", key: "key2", editable: true },
   ];
 
+  const newPropertyValue = "My new value";
+  const handlePropertyUpdated = async (args: PropertyUpdatedArgs): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      expect(args.newValue).to.eq(newPropertyValue);
+      args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
+      updated = true;
+    }
+
+    return updated;
+  };
+
   const onRowsLoaded = sinon.spy();
+  const onPropertyEditing = sinon.spy();
+  const onPropertyUpdated = sinon.spy(handlePropertyUpdated);
 
   const verifyRowIterator = async (expectedItemKeys: string[], iterator?: AsyncIterableIterator<RowItem>): Promise<void> => {
     expect(iterator, "row iterator").to.not.be.undefined;
@@ -120,6 +136,8 @@ describe("Table", () => {
     dataProviderMock.setup((x) => x.getRow(moq.It.isAnyNumber())).returns(async (index) => createRowItem(index));
     dataProviderMock.setup((x) => x.getColumns()).returns(async () => columns);
     onRowsLoaded.resetHistory();
+    onPropertyEditing.resetHistory();
+    onPropertyUpdated.resetHistory();
     table = enzyme.mount(<Table
       dataProvider={dataProviderMock.object}
       onRowsSelected={onRowsSelectedCallbackMock.object}
@@ -127,6 +145,8 @@ describe("Table", () => {
       onCellsSelected={onCellsSelectedCallbackMock.object}
       onCellsDeselected={onCellsDeselectedCallbackMock.object}
       onRowsLoaded={onRowsLoaded}
+      onPropertyEditing={onPropertyEditing}
+      onPropertyUpdated={onPropertyUpdated}
     />);
     await waitForSpy(table, onRowsLoaded);
   });
@@ -659,6 +679,54 @@ describe("Table", () => {
       table.update();
       const selectedRows = table.find(selectedRowClassName);
       expect(selectedRows.length).to.be.equal(0);
+    });
+
+  });
+
+  describe("sort", () => {
+
+    it("clicking on a sortable column heading should sort", async () => {
+      // Simulate clicking on the header for sort
+      const headerCellDiv = table.find("div.react-grid-HeaderCell-sortable");
+      headerCellDiv.simulate("click");  // Ascending
+      headerCellDiv.simulate("click");  // Descending
+      headerCellDiv.simulate("click");  // Nosort
+    });
+
+  });
+
+  describe("cell editing", async () => {
+
+    it("clicking on an editor cell after selection should start editing", async () => {
+      // Simulate clicking on the cell to edit
+      table.update();
+      table.setState({ cellEditorState: { active: false } });
+
+      let row = table.find(rowClassName).first();
+      row.simulate("click");
+      expect(table.find(selectedRowClassName).length).to.be.equal(1);
+
+      // Click 3rd cell in row (marked as editable)
+      const cellDiv = row.find(cellClassName).at(2);
+      cellDiv.simulate("click");
+
+      expect(onPropertyEditing.calledOnce).to.be.true;
+
+      table.update();
+      row = table.find(rowClassName).first();
+
+      const editorContainer = row.find(EditorContainer);
+      expect(editorContainer.length).to.equal(1);
+
+      const inputNode = editorContainer.find("input");
+      expect(inputNode.length).to.eq(1);
+
+      inputNode.simulate("change", { target: { value: newPropertyValue } });
+      inputNode.simulate("keyDown", { key: "Enter" });
+
+      setImmediate(() => {
+        expect(onPropertyUpdated.calledOnce).to.be.true;
+      });
     });
 
   });

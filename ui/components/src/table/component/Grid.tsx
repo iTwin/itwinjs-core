@@ -13,24 +13,26 @@ export interface GridProps {
   rows: any[];
 }
 
-interface State {
-  selectedRow?: any;
+interface GridState {
+  selectedRow: any;
 }
 
 /**
  * Grid React component
  */
-export class Grid extends React.Component<GridProps, State> {
+export class Grid extends React.Component<GridProps, GridState> {
 
-  public readonly state: Readonly<State> = {};
+  public readonly state: Readonly<GridState> = {
+    selectedRow: undefined,
+  };
 
   public rowGetter(i: number) {
     return this.props.rows[i];
   }
 
-  private _onRowClick = (rowIdx: any, _row: any) => {
+  private _onRowClick = (rowIdx: number | undefined, _row: any) => {
     if (this.state.selectedRow === rowIdx)
-      this.setState({ selectedRow: null });
+      this.setState({ selectedRow: undefined });
     else
       this.setState({ selectedRow: rowIdx });
   }

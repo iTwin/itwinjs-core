@@ -66,13 +66,12 @@ describe("<TextEditor />", () => {
     const textEditor = wrapper.instance() as TextEditor;
     const inputNode = wrapper.find("input");
 
-    expect(inputNode).to.not.be.null;
+    expect(inputNode.length).to.eq(1);
     if (inputNode) {
-      inputNode.simulate("change", { target: { value: "My new value" } });
+      const testValue = "My new value";
+      inputNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(textEditor.getValue()).to.equal("My new value");
+      expect(textEditor.getValue()).to.equal(testValue);
     }
-
-    wrapper.update();
   });
 });

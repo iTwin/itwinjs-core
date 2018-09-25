@@ -81,17 +81,5 @@
 
 .modal-frontstage .app-bar > :first-child  {
   display: inline-block;
-  border: solid 3px #FFF;
-  fill: #FFF !important;
-  color: #FFF;
-  transition: all .125s ease;
-}
-
-.modal-frontstage .app-bar > :first-child svg {
-  filter: none !important;
-}
-
-.modal-frontstage .app-bar > :first-child:hover:not(.is-pressed) {
-  border-color: $bwc-blue !important;
-  fill: #008be1 !important;
+  border-radius: 0;   // Turn off circular border from Back.scss in ui-ninezone
 }

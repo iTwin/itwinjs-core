@@ -61,6 +61,8 @@ export interface TableProps {
   dragProps?: DragSourceProps;
   dropProps?: TableDropTargetProps;
 
+  /** Callback for when properties are being edited */
+  onPropertyEditing?: (args: CellEditorState) => void;
   /** Callback for when properties are updated */
   onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
 }
@@ -801,7 +803,13 @@ export class Table extends React.Component<TableProps, TableState> {
   private activateCellEditor(rowIndex: number, colIndex: number, cellKey: string): void {
     const cellEditorState = { active: true, rowIndex, colIndex, cellKey };
     if (cellEditorState !== this.state.cellEditorState) {
-      this.setState({ cellEditorState });
+      this.setState(
+        { cellEditorState },
+        () => {
+          if (this.props.onPropertyEditing)
+            this.props.onPropertyEditing(cellEditorState);
+        },
+      );
     }
   }
 
