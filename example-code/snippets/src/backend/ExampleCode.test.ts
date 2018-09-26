@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, ConcurrencyControl, Element, ElementUniqueAspect, ElementMultiAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
+import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
 import { Id64, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
@@ -222,11 +222,11 @@ describe("Example Code", () => {
     const elementId = new Id64();
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getUniqueAspect
-    const elementAspect: ElementUniqueAspect = iModel.elements.getUniqueAspect(elementId, elementAspectClassFullName);
+    const elementAspect: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspect;
     // __PUBLISH_EXTRACT_START__ Elements.getMultiAspects
-    const elementAspects: ElementMultiAspect[] = iModel.elements.getMultiAspects(elementId, elementAspectClassFullName);
+    const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
   });

@@ -259,7 +259,7 @@ export class TentativePoint {
       return undefined;
 
     const snapModes = IModelApp.accuSnap.getActiveSnapModes(); // Get the list of point snap modes to consider
-    const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, IModelApp.accuSnap.keypointDivisor);
+    const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, IModelApp.accuSnap.keypointDivisor, this.tpHits);
 
     if (undefined !== thisSnap)
       IModelApp.accuDraw.onSnap(thisSnap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...

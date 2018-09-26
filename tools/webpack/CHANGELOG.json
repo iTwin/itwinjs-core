@@ -2,6 +2,21 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.134.0",
+      "tag": "@bentley/webpack-tools_v0.134.0",
+      "date": "Wed, 26 Sep 2018 00:50:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed warnings about banned and multiple license types and added option to configure overrides for particular packages."
+          },
+          {
+            "comment": "Added custom loader to remove bentleyjs-core asserts."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.133.0",
       "tag": "@bentley/webpack-tools_v0.133.0",
       "date": "Tue, 25 Sep 2018 16:41:02 GMT",

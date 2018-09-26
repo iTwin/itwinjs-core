@@ -1,6 +1,14 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Tue, 25 Sep 2018 16:41:02 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Sep 2018 00:50:11 GMT and should not be manually modified.
+
+## 0.134.0
+Wed, 26 Sep 2018 00:50:11 GMT
+
+### Updates
+
+- Fixed warnings about banned and multiple license types and added option to configure overrides for particular packages.
+- Added custom loader to remove bentleyjs-core asserts.
 
 ## 0.133.0
 Tue, 25 Sep 2018 16:41:02 GMT
