@@ -171,9 +171,9 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
       const sp = this.primitive as SurfacePrimitive;
       if (undefined !== sp.meshData.features && sp.meshData.features.isUniform) {
         const fi = sp.meshData.features.uniform!;
-        const feature = this._batch.featureTable.findFeature(fi);
-        if (undefined !== feature) {
-          return feature.elementId === flashedId.toString();
+        const featureElementId = this._batch.featureTable.findElementId(fi);
+        if (undefined !== featureElementId) {
+          return featureElementId.toString() === flashedId.toString();
         }
       }
     }

@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface, XAndY } from "@bentley/geometry-core";
-import { Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import {
   AntiAliasPref,
   SceneLights,
@@ -377,6 +377,11 @@ export class PackedFeatureTable {
     return new Feature(elemId, subCatId, geomClass);
   }
 
+  /** Returns the Feature associated with the specified index, or undefined if the index is out of range. */
+  public findFeature(featureIndex: number): Feature | undefined {
+    return featureIndex < this.numFeatures ? this.getFeature(featureIndex) : undefined;
+  }
+
   /** @hidden */
   public getElementIdParts(featureIndex: number): { low: number, high: number } {
     assert(featureIndex < this.numFeatures);
@@ -385,6 +390,14 @@ export class PackedFeatureTable {
       low: this._data[offset],
       high: this._data[offset + 1],
     };
+  }
+
+  /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
+  public findElementId(featureIndex: number): Id64 | undefined {
+    if (featureIndex >= this.numFeatures)
+      return undefined;
+    else
+      return this.readId(3 * featureIndex);
   }
 
   /** Return true if this table contains exactly 1 feature. */
