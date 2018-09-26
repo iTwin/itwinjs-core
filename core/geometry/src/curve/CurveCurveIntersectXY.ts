@@ -18,10 +18,41 @@ import { Matrix4d, Point4d } from "../numerics/Geometry4d";
 import { Transform, Matrix3d } from "../Transform";
 import { Arc3d } from "./Arc3d";
 import { GrowableFloat64Array } from "../GrowableArray";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3dH } from "../bspline/BezierCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
+import { BezierCurve3dH, BezierCurveBase } from "../bspline/BezierCurve";
 import { Bezier } from "../numerics/BezierPolynomials";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { Range3d } from "../Range";
+import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
+import { Ray3d } from "../AnalyticGeometry";
+
+/**
+ * * Private class for refining bezier-bezier intersections.
+ * * The inputs are assumed pre-transoformed so that the target condition is to match x and y coordinates.
+ */
+class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
+  private _curveA: BezierCurveBase;
+  private _curveB: BezierCurveBase;
+  constructor(curveA: BezierCurveBase, curveB: BezierCurveBase) {
+    super();
+    this._curveA = curveA;
+    this._curveB = curveB;
+    this._rayA = Ray3d.createZero();
+    this._rayB = Ray3d.createZero();
+
+  }
+  private _rayA: Ray3d;
+  private _rayB: Ray3d;
+  public evaluate(fractionA: number, fractionB: number): boolean {
+    this._curveA.fractionToPointAndDerivative(fractionA, this._rayA);
+    this._curveB.fractionToPointAndDerivative(fractionB, this._rayB);
+    this.currentF.setOriginAndVectorsXYZ(
+      this._rayB.origin.x - this._rayA.origin.x, this._rayB.origin.y - this._rayA.origin.y, 0.0,
+      -this._rayA.direction.x, -this._rayA.direction.y, 0.0,
+      this._rayB.direction.x, this._rayB.direction.y, 0.0);
+    return true;
+  }
+}
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
@@ -344,6 +375,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       for (let i = 0; i < ellipseRadians.length; i++) {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
         const fractionB = cpA.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
+        // hm .. do we really need to check the fractions?  We know they are internal to the beziers
         if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1,
             fractionB, cpB, 0, 1, reversed);
@@ -458,6 +490,142 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       }
     }
   }
+  /** apply the transformation to bezier curves. optionally construct ranges.
+   *
+   */
+  private transformBeziers(beziers: BezierCurve3dH[]) {
+    if (this._worldToLocalAffine) {
+      for (const bezier of beziers) bezier.tryTransformInPlace(this._worldToLocalAffine);
+    } else if (this._worldToLocalPerspective) {
+      for (const bezier of beziers) bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
+    }
+  }
+  private getRanges(beziers: BezierCurveBase[]): Range3d[] {
+    const ranges: Range3d[] = [];
+    ranges.length = 0;
+    for (const b of beziers) {
+      ranges.push(b.range());
+    }
+    return ranges;
+  }
+  private _xyzwA0?: Point4d;
+  private _xyzwA1?: Point4d;
+  private _xyzwPlane?: Point4d;
+  private _xyzwB?: Point4d;
+
+  private dispatchBezierBezierStrokeFirst(
+    bezierA: BezierCurve3dH,
+    bcurveA: BSplineCurve3dBase,
+    strokeCountA: number,
+    bezierB: BezierCurve3dH,
+    bcurveB: BSplineCurve3dBase,
+    _strokeCOuntB: number,
+    univariateBezierB: Bezier,  // caller-allocated for univariate coefficients.
+    reversed: boolean) {
+    if (!this._xyzwA0) this._xyzwA0 = Point4d.create();
+    if (!this._xyzwA1) this._xyzwA1 = Point4d.create();
+    if (!this._xyzwPlane) this._xyzwPlane = Point4d.create();
+    if (!this._xyzwB) this._xyzwB = Point4d.create();
+    /*
+
+              const roots = univariateBezierG.roots(0.0, true);
+              if (roots) {
+                for (const root of roots) {
+                  const fractionB = bezier.fractionToParentFraction(root);
+                  // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
+                  const bcurvePoint4d = bezier.fractionToPoint4d(root);
+                  const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
+                  const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
+                  const arcFraction = cpA.sweep.radiansToSignedPeriodicFraction(Math.atan2(s, c));
+                  if (this.acceptFraction(extendA, arcFraction, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
+                    this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1,
+                      fractionB, cpB, 0, 1, reversed);
+                  }
+                }
+    */
+    bezierA.fractionToPoint4d(0.0, this._xyzwA0);
+    let f0 = 0.0;
+    let f1 = 1.0;
+    const df = 1.0 / strokeCountA;
+    for (let i = 1; i <= strokeCountA; i++ , f0 = f1, this._xyzwA0.setFrom(this._xyzwA1)) {
+      f1 = i * df;
+      bezierA.fractionToPoint4d(f1, this._xyzwA1);
+      Point4d.createPlanePointPointZ(this._xyzwA0, this._xyzwA1, this._xyzwPlane);
+      bezierB.poleProductsXYZW(univariateBezierB.coffs, this._xyzwPlane.x, this._xyzwPlane.y, this._xyzwPlane.z, this._xyzwPlane.w);
+      let errors = 0;
+      const roots = univariateBezierB.roots(0.0, true);
+      if (roots)
+        for (const r of roots) {
+          let bezierBFraction = r;
+          bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
+          const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(this._xyzwA0, this._xyzwA1, this._xyzwB);
+          if (segmentAFraction && Geometry.isIn01(segmentAFraction)) {
+            let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
+            const xyMatchingFunction = new BezierBezierIntersectionXYRRToRRD(bezierA, bezierB);
+            const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
+            newtonSearcher.setUV(bezierAFraction, bezierBFraction);
+            if (newtonSearcher.runIterations()) {
+              bezierAFraction = newtonSearcher.getU();
+              bezierBFraction = newtonSearcher.getV();
+            }
+            // We have a near intersection at fractions on the two beziers !!!
+            // Iterate on the curves for a true intersection ....
+            // NEEDS WORK -- just accept . . .
+            const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
+            const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
+            const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
+            const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
+            const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
+            const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
+            if (!xyzA0.isAlmostEqualXY(xyzA1))
+              errors++;
+            if (!xyzB0.isAlmostEqualXY(xyzB1))
+              errors++;
+            if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
+              errors++;
+            if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
+              errors++;
+            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
+              this.recordPointWithLocalFractions(bcurveAFraction, bcurveA, 0, 1,
+                bcurveBFraction, bcurveB, 0, 1, reversed);
+            }
+          }
+        }
+    }
+  }
+  // Caller accesses data from two arcs.
+  // Selects the best conditioned arc (in xy parts) as "circle after inversion"
+  // Solves the arc-arc equations
+  private dispatchBSplineCurve3dBSplineCurve3d(
+    bcurveA: BSplineCurve3dBase,
+    bcurveB: BSplineCurve3dBase,
+    _reversed: boolean) {
+    const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
+    const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
+    const numA = bezierSpanA.length;
+    const numB = bezierSpanB.length;
+    this.transformBeziers(bezierSpanA);
+    this.transformBeziers(bezierSpanB);
+    const rangeA = this.getRanges(bezierSpanA);
+    const rangeB = this.getRanges(bezierSpanB);
+    const orderA = bcurveA.order;
+    const orderB = bcurveB.order;
+    const univariateCoffsA = new Bezier(orderA);
+    const univairateCoffsB = new Bezier(orderB);
+    for (let a = 0; a < numA; a++) {
+      for (let b = 0; b < numB; b++) {
+        if (rangeA[a].intersectsRangeXY(rangeB[b])) {
+          const strokeCountA = bezierSpanA[a].strokeCount();
+          const strokeCountB = bezierSpanB[b].strokeCount();
+          if (strokeCountA < strokeCountB)
+            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univairateCoffsB, !_reversed);
+          else
+            this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, _reversed);
+        }
+      }
+    }
+  }
+
   /**
    * Apply the projection transform (if any) to (xyz, w)
    * @param xyz xyz parts of input point.
@@ -692,6 +860,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
+    } else if (this._geometryB instanceof BSplineCurve3dBase) {
+      this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
     }
     return undefined;
   }

@@ -18,7 +18,8 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { KnotVector } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../PointHelpers";
-import { BezierCurve3d, BezierCurve3dH } from "./BezierCurve";
+import { BezierCurve3d, BezierCurve3dH, BezierCurveBase } from "./BezierCurve";
+
 /** Bspline knots and poles for 1d-to-Nd. */
 export class BSpline1dNd {
   public knots: KnotVector;
@@ -224,6 +225,27 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   public startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
   public endPoint(): Point3d { return this.evaluatePointInSpan(this.numSpan - 1, 1.0); }
   public reverseInPlace(): void { this._bcurve.reverseInPlace(); }
+  /**
+   * Return an array with this curve's bezier fragments.
+   */
+  public collectBezierSpans(prefer3dH: boolean): BezierCurveBase[] {
+    const result: BezierCurveBase[] = [];
+    const numSpans = this.numSpan;
+    for (let i = 0; i < numSpans; i++) {
+      const span = this.getSaturatedBezierSpan3dOr3dH(i, prefer3dH);
+      if (span)
+        result.push(span);
+    }
+    return result;
+  }
+  /**
+    * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCuve3d or BezierCurve3dH according to the instance type and the prefer3dH parameter.
+    * @param spanIndex
+    * @param prefer3dH true to force promotion to homogeneous.
+    * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
+    */
+  public abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
+
 }
 
 export class BSplineCurve3d extends BSplineCurve3dBase {
@@ -423,11 +445,22 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return true;
   }
   /**
+   * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCuve3d or BezierCurve3dH according to this type.
+   * @param spanIndex
+   * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
+   */
+  public getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined {
+    if (prefer3dH)
+      return this.getSaturatedBezierSpan3dH(spanIndex, result);
+    return this.getSaturatedBezierSpan3d(spanIndex, result);
+  }
+
+  /**
    * Return a CurvePrimitive (which is a BezierCurve3d) for a specified span of this curve.
    * @param spanIndex
    * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
    */
-  public getSaturagedBezierSpan3d(spanIndex: number, result?: CurvePrimitive): CurvePrimitive | undefined {
+  public getSaturatedBezierSpan3d(spanIndex: number, result?: BezierCurveBase): BezierCurveBase | undefined {
     if (spanIndex < 0 || spanIndex >= this.numSpan)
       return undefined;
 
@@ -444,17 +477,17 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param spanIndex
    * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
    */
-  public getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurve3dH): BezierCurve3dH | undefined {
+  public getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurveBase): BezierCurve3dH | undefined {
     if (spanIndex < 0 || spanIndex >= this.numSpan)
       return undefined;
 
     const order = this.order;
-    if (result === undefined || !(result instanceof BezierCurve3d) || result.order !== order)
+    if (result === undefined || !(result instanceof BezierCurve3dH) || result.order !== order)
       result = BezierCurve3dH.createOrder(order);
     const bezier = result as BezierCurve3dH;
     bezier.loadSpan3dPolesWithWeight(this._bcurve.packedData, spanIndex, 1.0);
     bezier.saturateInPlace(this._bcurve.knots, spanIndex);
-    return result;
+    return bezier;
   }
 
   /**

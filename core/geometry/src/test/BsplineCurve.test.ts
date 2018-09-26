@@ -10,8 +10,8 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3d } from "../bspline/BezierCurve";
-import { GeometryQuery, CurvePrimitive } from "../curve/CurvePrimitive";
+import { BezierCurve3d, BezierCurveBase } from "../bspline/BezierCurve";
+import { GeometryQuery } from "../curve/CurvePrimitive";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../Transform";
@@ -195,9 +195,9 @@ describe("BsplineCurve", () => {
         transform.multiplyPoint3dArrayInPlace(allPoints);
         for (let degree = 1; degree < 6; degree++) {
           const bcurve = BSplineCurve3d.createUniformKnots(allPoints, degree + 1)!;
-          let cp: CurvePrimitive | undefined;
+          let cp: BezierCurveBase | undefined;
           for (let spanIndex = 0; ; spanIndex++) {
-            cp = bcurve.getSaturagedBezierSpan3d(spanIndex, cp);
+            cp = bcurve.getSaturatedBezierSpan3d(spanIndex, cp);
             if (!cp) break;
             const bezier = cp as BezierCurve3d;
             const poles = bezier.copyPointsAsLineString();

@@ -199,12 +199,12 @@ export class Point4d implements BeJSONFunctions {
    * @param pointA first point
    * @param pointB second point
    */
-  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d) {
+  public static createPlanePointPointZ(pointA: Point4d, pointB: Point4d, result?: Point4d) {
     return Point4d.create(
       pointA.y * pointB.w - pointA.w * pointB.y,
       pointA.w * pointB.x - pointA.x * pointB.w,
       0.0,
-      pointA.x * pointB.y - pointA.y * pointB.x);
+      pointA.x * pointB.y - pointA.y * pointB.x, result);
   }
   /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.

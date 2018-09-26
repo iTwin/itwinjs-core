@@ -19,7 +19,7 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { KnotVector } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray, Point4dArray } from "../PointHelpers";
-import { BezierCurve3d, BezierCurve3dH } from "./BezierCurve";
+import { BezierCurve3d, BezierCurve3dH, BezierCurveBase } from "./BezierCurve";
 import { BSplineCurve3dBase } from "./BSplineCurve";
 
 /**
@@ -212,7 +212,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    * @param spanIndex
    * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
    */
-  public getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurve3dH): BezierCurve3dH | undefined {
+  public getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurveBase): BezierCurveBase | undefined {
     if (spanIndex < 0 || spanIndex >= this.numSpan)
       return undefined;
 
@@ -223,6 +223,15 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     bezier.loadSpan3dPolesWithWeight(this._bcurve.packedData, spanIndex, 1.0);
     bezier.saturateInPlace(this._bcurve.knots, spanIndex);
     return result;
+  }
+
+  /**
+   * Return a BezierCurveBase for this curve.  Because BSplineCurve3dH is homogeneous, the returned BezierCurveBase is always homogeneous.
+   * @param spanIndex
+   * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
+   */
+  public getSaturatedBezierSpan3dOr3dH(spanIndex: number, _prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined {
+    return this.getSaturatedBezierSpan3dH(spanIndex, result);
   }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

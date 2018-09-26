@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implement bspline-bspline case in curveCurveIntersectXY",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@Bentley.com"
+}

@@ -13,7 +13,7 @@ import { Transform } from "../Transform";
 import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
+import { Geometry, Angle } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 
@@ -24,16 +24,19 @@ import { KnotVector } from "./KnotVector";
 import { BSplineCurve3d } from "./BSplineCurve";
 /**
  * Implements a multidimensional bezier curve of fixed order.
+ * BezierCurve3d implements with blockSize 3.
+ * BezierCurve3dH implements with blockSize 4.
  */
 export class Bezier1dNd {
   private _packedData: Float64Array;
+
   private _order: number;   // bezier order.   probably low
-  private _dimension: number; // expected to be 1 to 4
+  private _blockSize: number; // expected to be 1 to 4
   private _basis: BezierCoffs;  // server for basis queries.  It carries coefficients that we don't use.
   // constructor CAPTURES the control points array.
-  public constructor(dimension: number, polygon: Float64Array) {
-    this._dimension = dimension;
-    this._order = polygon.length / dimension;   // This should be an integer!!!
+  public constructor(blockSize: number, polygon: Float64Array) {
+    this._blockSize = blockSize;
+    this._order = polygon.length / blockSize;   // This should be an integer!!!
     this._packedData = polygon;
     this._basis = new Bezier(this._order);
   }
@@ -84,21 +87,25 @@ export class Bezier1dNd {
     }
     return undefined;
   }
-  /** Return the curve value at bezier fraction `s` */
+  /** Return the curve value at bezier fraction `s`
+   * @return buffer of length `blockSize`.
+  */
   public evaluate(s: number, buffer?: Float64Array): Float64Array {
-    return this._basis.sumBasisFunctions(s, this._packedData, this._dimension, buffer);
+    return this._basis.sumBasisFunctions(s, this._packedData, this._blockSize, buffer);
   }
-  /** Return the curve derivative value at bezier fraction `s` */
+  /** Return the curve derivative value at bezier fraction `s`
+  * @return buffer of length `blockSize`.
+  */
   public evaluateDerivative(s: number, buffer?: Float64Array): Float64Array {
-    return this._basis.sumBasisFunctionDerivatives(s, this._packedData, this._dimension, buffer);
+    return this._basis.sumBasisFunctionDerivatives(s, this._packedData, this._blockSize, buffer);
   }
 
   /** get a single point of the polygon as a simple array.  */
   public getPolygonPoint(i: number, buffer?: Float64Array): Float64Array | undefined {
-    if (!buffer) buffer = new Float64Array(this._dimension);
+    if (!buffer) buffer = new Float64Array(this._blockSize);
     if (i >= 0 && i < this._order) {
-      const k0 = this._dimension * i;
-      for (let k = 0; k < this._dimension; k++)
+      const k0 = this._blockSize * i;
+      for (let k = 0; k < this._blockSize; k++)
         buffer[k] = this._packedData[k0 + k];
       return buffer;
     }
@@ -107,8 +114,8 @@ export class Bezier1dNd {
   /** set a single point of the polygon as a simple array.  */
   public setPolygonPoint(i: number, buffer: Float64Array) {
     if (i >= 0 && i < this._order) {
-      const k0 = this._dimension * i;
-      for (let k = 0; k < this._dimension; k++)
+      const k0 = this._blockSize * i;
+      for (let k = 0; k < this._blockSize; k++)
         this._packedData[k0 + k] = buffer[k];
     }
   }
@@ -117,7 +124,7 @@ export class Bezier1dNd {
    * @param spanIndex block index in data.
    */
   public loadSpanPoles(data: Float64Array, spanIndex: number) {
-    let k = spanIndex * this._dimension;
+    let k = spanIndex * this._blockSize;
     for (let i = 0; i < this._packedData.length; i++)
       this._packedData[i] = data[k++];
   }
@@ -146,7 +153,7 @@ export class Bezier1dNd {
   /** equality test with usual metric tolerances */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof Bezier1dNd) {
-      if (this._dimension !== other._dimension) return false;
+      if (this._blockSize !== other._blockSize) return false;
       if (this._order !== other._order) return false;
       if (this._packedData.length !== other._packedData.length) return false;
       for (let i = 0; i < this._packedData.length; i++) {
@@ -160,7 +167,7 @@ export class Bezier1dNd {
 
   /** block-by-block reversal */
   public reverseInPlace() {
-    const m = this._dimension;
+    const m = this._blockSize;
     const n = this._order;
     let i, j;
     let a;
@@ -181,10 +188,10 @@ export class Bezier1dNd {
    * @param poleIndexB second pole index
    */
   public interpolatePoleInPlace(poleIndexA: number, fraction: number, poleIndexB: number) {
-    let i0 = poleIndexA * this._dimension;
-    let i1 = poleIndexB * this._dimension;
+    let i0 = poleIndexA * this._blockSize;
+    let i1 = poleIndexB * this._blockSize;
     const data = this._packedData;
-    for (let i = 0; i < this._dimension; i++ , i0++ , i1++) {
+    for (let i = 0; i < this._blockSize; i++ , i0++ , i1++) {
       data[i0] += fraction * (data[i1] - data[i0]);
     }
   }
@@ -245,13 +252,32 @@ export class Bezier1dNd {
 // ================================================================================================================
 /**
  * Base class for CurvePrimitve (necessarily 3D) with _polygon.
- * This has a Bezier1dNd polygon as a member, and implements dimension-indendent methods
+ * * This has a Bezier1dNd polygon as a member, and implements dimension-indendent methods
+ * * This exists to support BezeierCurve3d and BezierCurve3dH.
+ * * The implementations of "pure 3d" queries is based on calling `getPolePoint3d`.
+ * * This has the subtle failure difference that `getPolePoint3d` call with a valid index on on a 3d curve always succeeds, but on 3dH curve fails when weight is zero.
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
   protected _polygon: Bezier1dNd;
-  protected constructor(dimension: number, data: Float64Array) {
+  /** data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
+  protected _workData0: Float64Array;
+  protected _workData1: Float64Array;
+  /**
+   * *_workPoint0 and _workPoint1 are conventional 3d points
+   * * create by constructor
+   * * accessbile by derived classes
+   * */
+  protected _workPoint0: Point3d;
+  protected _workPoint1: Point3d;
+
+  protected constructor(blockSize: number, data: Float64Array) {
     super();
-    this._polygon = new Bezier1dNd(dimension, data);
+    this._polygon = new Bezier1dNd(blockSize, data);
+    this._workPoint0 = Point3d.create();
+    this._workPoint1 = Point3d.create();
+    this._workData0 = new Float64Array(blockSize);
+    this._workData1 = new Float64Array(blockSize);
+
   }
   /** reverse the poles in place */
   public reverseInPlace(): void { this._polygon.reverseInPlace(); }
@@ -260,10 +286,90 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   public get degree(): number { return this._polygon.order - 1; }
   public get order(): number { return this._polygon.order; }
   public get numPoles(): number { return this._polygon.order; }
+  /** Get pole `i` as a Point3d.
+   * * For 3d curve, this is simple a pole access, and only fails (return `undefined`) for invalid index
+   * * For 4d curve, this deweights the homogeneous pole and can fail due to 0 weight.
+   */
+  public abstract getPolePoint3d(i: number, point?: Point3d): Point3d | undefined;
+
+  /** Get pole `i` as a Point4d.
+   * * For 3d curve, this accesses the simple pole and returns with weight 1.
+   * * For 4d curve, this accesses the (weighted) pole.
+   */
+  public abstract getPolePoint4d(i: number, point?: Point4d): Point4d | undefined;
 
   public setInterval(a: number, b: number) { this._polygon.setInterval(a, b); }
   public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
+  /** Return a stroke count appropriate for given stroke options. */
+  public abstract strokeCount(options?: StrokeOptions): number;
+
+  /** append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class*/
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
+    const numPerSpan = this.strokeCount(options);
+    const fractionStep = 1.0 / numPerSpan;
+    for (let i = 0; i <= numPerSpan; i++) {
+      const fraction = i * fractionStep;
+      this.fractionToPoint(fraction, this._workPoint0);
+      dest.appendStrokePoint(this._workPoint0);
+    }
+  }
+  /** announce intervals with stroke counts */
+  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
+    const numPerSpan = this.strokeCount(_options);
+    handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
+  }
+  /** return true if all poles are on a plane. */
+  public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
+    let point: Point3d | undefined = this._workPoint0;
+    for (let i = 0; ; i++) {
+      point = this.getPolePoint3d(i, point);
+      if (!point)
+        return true;
+      if (!plane.isPointInPlane(point))
+        return false;
+    }
+    return false;
+  }
+  public polygonLength(): number {
+    if (!this.getPolePoint3d(0, this._workPoint0))
+      return 0.0;
+    let i = 0;
+    let sum = 0.0;
+    while (this.getPolePoint3d(++i, this._workPoint1)) {
+      sum += this._workPoint0.distance(this._workPoint1);
+      this._workPoint0.setFrom(this._workPoint1);
+    }
+    return sum;
+  }
+
+  public startPoint(): Point3d {
+    const result = this.getPolePoint3d(0);
+    if (!result) return Point3d.createZero();
+    return result;
+  }
+  public endPoint(): Point3d {
+    const result = this.getPolePoint3d(this.order - 1);
+    if (!result) return Point3d.createZero();
+    return result;
+  }
+
+  public quickLength(): number { return this.polygonLength(); }
+  /** Extend range by all poles.  */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    let i = 0;
+    if (transform) {
+      while (this.getPolePoint3d(i++, this._workPoint0)) {
+        rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
+      }
+    } else {
+      while (this.getPolePoint3d(i++, this._workPoint0)) {
+        rangeToExtend.extend(this._workPoint0);
+      }
+    }
+  }
+
 }
+
 // ================================================================================================================
 // ================================================================================================================
 /** 3d curve with homogeneous weights. */
@@ -274,7 +380,7 @@ export class BezierCurve3dH extends BezierCurveBase {
    * @param transform
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    const data = this._workData;
+    const data = this._workData0;
     for (let i = 0; i < this._polygon.order; i++) {
       this._polygon.getPolygonPoint(i, data);
       transform.multiplyXYZWToFloat64Array(data[0], data[1], data[2], data[3], data);
@@ -290,23 +396,19 @@ export class BezierCurve3dH extends BezierCurveBase {
     matrix.multiplyBlockedFloat64ArrayInPlace(this._polygon.packedData);
   }
 
-  private _workData: Float64Array;
-  private _workData1: Float64Array;
-  private _workPoint: Point3d;
-  private _workPoint1: Point3d;
   private _workRay0: Ray3d;
   private _workRay1: Ray3d;
   /** Return a specific pole as a full `[x,y,z,x] Point4d` */
-  public getPole(i: number, result?: Point4d): Point4d | undefined {
-    const data = this._polygon.getPolygonPoint(i, this._workData);
+  public getPolePoint4d(i: number, result?: Point4d): Point4d | undefined {
+    const data = this._polygon.getPolygonPoint(i, this._workData0);
     if (data)
       return Point4d.create(data[0], data[1], data[2], data[3], result);
     return undefined;
   }
   /** Return a specific pole normalized to weight 1
    * */
-  public getRealPole(i: number, result?: Point3d): Point3d | undefined {
-    const data = this._polygon.getPolygonPoint(i, this._workData);
+  public getPolePoint3d(i: number, result?: Point3d): Point3d | undefined {
+    const data = this._polygon.getPolygonPoint(i, this._workData0);
     if (data)
       return Point3d.createFromPackedXYZW(data, 0, result);
     return undefined;
@@ -317,10 +419,6 @@ export class BezierCurve3dH extends BezierCurveBase {
    */
   private constructor(polygon: Float64Array) {
     super(4, polygon);
-    this._workData = new Float64Array(4);
-    this._workData1 = new Float64Array(4);
-    this._workPoint = Point3d.create();
-    this._workPoint1 = Point3d.create();
     this._workRay0 = Ray3d.createXAxis();
     this._workRay1 = Ray3d.createXAxis();
   }
@@ -393,21 +491,21 @@ export class BezierCurve3dH extends BezierCurveBase {
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
-    this._polygon.evaluate(fraction, this._workData);
-    result = Point3d.createFromPackedXYZW(this._workData, 0, result);
+    this._polygon.evaluate(fraction, this._workData0);
+    result = Point3d.createFromPackedXYZW(this._workData0, 0, result);
     return result ? result : Point3d.createZero();
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint4d(fraction: number, result?: Point4d): Point4d {
-    this._polygon.evaluate(fraction, this._workData);
-    return Point4d.createFromPackedXYZW(this._workData, 0, result);
+    this._polygon.evaluate(fraction, this._workData0);
+    return Point4d.createFromPackedXYZW(this._workData0, 0, result);
   }
 
   /** Return the cartesian point and derivative vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
-    this._polygon.evaluate(fraction, this._workData);
+    this._polygon.evaluate(fraction, this._workData0);
     this._polygon.evaluateDerivative(fraction, this._workData1);
-    result = Ray3d.createWeightedDerivative(this._workData, this._workData1, result);
+    result = Ray3d.createWeightedDerivative(this._workData0, this._workData1, result);
     if (result)
       return result;
     // Bad. Very Bad.  Return origin and x axis.   Should be undefined, but usual cartesian typs do not allow that
@@ -442,68 +540,40 @@ export class BezierCurve3dH extends BezierCurveBase {
     }
     return false;
   }
-  public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    let point: Point3d | undefined = this._workPoint;
-    for (let i = 0; ; i++) {
-      point = this.getRealPole(i, point);
-      if (!point)
-        return true;
-      if (!plane.isPointInPlane(point))
-        return false;
-    }
-    return false;
-  }
-  public polygonLength(): number {
-    if (!this.getRealPole(0, this._workPoint))
-      return 0.0;
-    let i = 0;
-    let sum = 0.0;
-    while (this.getRealPole(++i, this._workPoint1)) {
-      sum += this._workPoint.distance(this._workPoint1);
-      this._workPoint.setFrom(this._workPoint1);
-    }
-    return sum;
-  }
 
-  public startPoint(): Point3d {
-    const result = this.getRealPole(0);
-    if (!result) return Point3d.createZero();
-    return result;
-  }
-  public endPoint(): Point3d {
-    const result = this.getRealPole(this.order - 1);
-    if (!result) return Point3d.createZero();
-    return result;
-  }
-
-  public quickLength(): number { return this.polygonLength(); }
-  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
-    const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
-    handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
-  }
-
-  public emitStrokes(dest: LineString3d, _options?: StrokeOptions): void {
-    const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
-    const fractionStep = 1.0 / numPerSpan;
-    for (let i = 0; i <= numPerSpan; i++) {
-      const fraction = i * fractionStep;
-      this.fractionToPoint(fraction, this._workPoint);
-      dest.appendStrokePoint(this._workPoint);
-    }
-  }
-
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    let i = 0;
-    if (transform) {
-      while (this.getRealPole(i++, this._workPoint)) {
-        rangeToExtend.extendTransformedPoint(transform, this._workPoint);
+  /**
+   * Assess legnth and turn to determine a stroke count.
+   * @param options stroke options structure.
+   */
+  public strokeCount(options?: StrokeOptions): number {
+    // ugh.   for pure 3d case, local dx,dy,dz vars worked efficiently.
+    // managing the weights is tricky, so just do the easy code with temporary point vars.
+    this.getPolePoint3d(0, this._workPoint0);
+    this.getPolePoint3d(1, this._workPoint1);
+    let numStrokes = 1;
+    if (this._workPoint0 && this._workPoint1) {
+      let dx0 = this._workPoint1.x - this._workPoint0.x;
+      let dy0 = this._workPoint1.y - this._workPoint0.y;
+      let dz0 = this._workPoint1.z - this._workPoint0.z;
+      let dx1, dy1, dz1;    // first differences of leading edge
+      let sweepRadians = 0.0;
+      let sumLength = Geometry.hypotenuseXYZ(dx0, dy0, dz0);
+      this._workPoint1.setFromPoint3d(this._workPoint0);
+      for (let i = 2; this.getPolePoint3d(i, this._workPoint1); i++) {
+        dx1 = this._workPoint1.x - this._workPoint0.x;
+        dy1 = this._workPoint1.y - this._workPoint0.y;
+        dz1 = this._workPoint1.z - this._workPoint0.z;
+        sweepRadians += Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
+        sumLength += Geometry.hypotenuseXYZ(dx1, dy1, dz1);
+        dx0 = dx1; dy0 = dy1; dz0 = dz1;
+        this._workPoint0.setFrom(this._workPoint1);
       }
-    } else {
-      while (this.getRealPole(i++, this._workPoint)) {
-        rangeToExtend.extend(this._workPoint);
-      }
+      numStrokes = StrokeOptions.applyAngleTol(options,
+        StrokeOptions.applyMaxEdgeLength(options, 1, sumLength), sweepRadians, 0.1);
     }
+    return numStrokes;
   }
+
   public dispatchToGeometryHandler(_handler: GeometryHandler): any {
     // NEEDS WORK
   }
@@ -531,7 +601,7 @@ export class BezierCurve3dH extends BezierCurveBase {
 export class BezierCurve3d extends BezierCurveBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3d; }
   public tryTransformInPlace(transform: Transform): boolean {
-    const data = this._workData;
+    const data = this._workData0;
     for (let i = 0; i < this._polygon.order; i++) {
       this._polygon.getPolygonPoint(i, data);
       transform.multiplyXYZToFloat64Array(data[0], data[1], data[2], data);
@@ -539,48 +609,42 @@ export class BezierCurve3d extends BezierCurveBase {
     }
     return true;
   }
-  private _workData: Float64Array;
-  private _workData1: Float64Array;
-  private _workPoint: Point3d;
-  private _workPoint1: Point3d;
   private _workRay0: Ray3d;
   private _workRay1: Ray3d;
 
-  /** Return a specific pole as a full `[x,y,z,x] Point3d` */
-  public getPole(i: number, result?: Point3d): Point3d | undefined {
-    const data = this._polygon.getPolygonPoint(i, this._workData);
+  /** Return a specific pole as a full `[x,y,z] Point3d` */
+  public getPolePoint3d(i: number, result?: Point3d): Point3d | undefined {
+    const data = this._polygon.getPolygonPoint(i, this._workData0);
     if (data)
       return Point3d.create(data[0], data[1], data[2], result);
     return undefined;
   }
+
+  /** Return a specific pole as a full `[w*x,w*y,w*z, w] Point4d` */
+  public getPolePoint4d(i: number, result?: Point4d): Point4d | undefined {
+    const data = this._polygon.getPolygonPoint(i, this._workData0);
+    if (data)
+      return Point4d.create(data[0], data[1], data[2], data[3], result);
+    return undefined;
+  }
+
   /**
    * Capture a polygon as the data for a new `BezierCurve3d`
    * @param polygon complete packed data and order.
    */
   private constructor(polygon: Float64Array) {
     super(3, polygon);
-    this._workData = new Float64Array(3);
-    this._workData1 = new Float64Array(3);
-    this._workPoint = Point3d.create();
-    this._workPoint1 = Point3d.create();
     this._workRay0 = Ray3d.createXAxis();
     this._workRay1 = Ray3d.createXAxis();
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z],[x,y,z],..]` */
   public copyPolesAsJsonArray(): any[] { return this._polygon.unpackToJsonArrays(); }
-  /** Return a simple array of Point3d
-  public copyPointsAsPoint3dArrays(): Point3d[] {
-    const result = [];
-    for (let i = 0; i < this._polygon.order; i++)
-      result.push(this.getPole(i)!);
-    return result;
-  }
 
   /** Return poles as a linestring */
   public copyPointsAsLineString(): LineString3d {
     const result = LineString3d.create();
     for (let i = 0; i < this._polygon.order; i++)
-      result.addPoint(this.getPole(i)!);
+      result.addPoint(this.getPolePoint3d(i)!);
     return result;
   }
 
@@ -635,15 +699,15 @@ export class BezierCurve3d extends BezierCurveBase {
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
-    this._polygon.evaluate(fraction, this._workData);
-    return Point3d.create(this._workData[0], this._workData[1], this._workData[2], result);
+    this._polygon.evaluate(fraction, this._workData0);
+    return Point3d.create(this._workData0[0], this._workData0[1], this._workData0[2], result);
   }
 
   /** Return the cartesian point and derivative vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
-    this._polygon.evaluate(fraction, this._workData);
+    this._polygon.evaluate(fraction, this._workData0);
     this._polygon.evaluateDerivative(fraction, this._workData1);
-    return Ray3d.createXYZUVW(this._workData[0], this._workData[1], this._workData[2], this._workData1[0], this._workData1[1], this._workData1[2], result);
+    return Ray3d.createXYZUVW(this._workData0[0], this._workData0[1], this._workData0[2], this._workData1[0], this._workData1[1], this._workData1[2], result);
   }
 
   /** Construct a plane with
@@ -674,95 +738,37 @@ export class BezierCurve3d extends BezierCurveBase {
     }
     return false;
   }
-  public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    let point: Point3d | undefined = this._workPoint;
-    for (let i = 0; ; i++) {
-      point = this.getPole(i, point);
-      if (!point)
-        return true;
-      if (!plane.isPointInPlane(point))
-        return false;
+
+  /**
+   * Assess legnth and turn to determine a stroke count.
+   * @param options stroke options structure.
+   */
+  public strokeCount(options?: StrokeOptions): number {
+
+    const data = this._polygon.packedData;
+    let dx0 = data[3] - data[0];
+    let dy0 = data[4] - data[1];
+    let dz0 = data[5] - data[2];
+    let dx1, dy1, dz1;    // first differences of leading edge
+    // let ex, ey, ez; // second differences.
+    let sweepRadians = 0.0;
+    let sumLength = Geometry.hypotenuseXYZ(dx0, dy0, dz0);
+    const n = data.length;
+    for (let i = 6; i + 2 < n; i += 3) {
+      dx1 = data[i] - data[i - 3];
+      dy1 = data[i + 1] - data[i - 2];
+      dz1 = data[i + 2] - data[i - 1];
+      //        ex = dx1 - dx0; ey = dy1 - dy0; ez = dz1 - dz0;
+      sweepRadians += Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
+      sumLength += Geometry.hypotenuseXYZ(dx1, dy1, dz1);
+      dx0 = dx1; dy0 = dy1; dz0 = dz1;
     }
-    return false;
-  }
-  public polygonLength(): number {
-    if (!this.getPole(0, this._workPoint))
-      return 0.0;
-    let i = 0;
-    let sum = 0.0;
-    while (this.getPole(++i, this._workPoint1)) {
-      sum += this._workPoint.distance(this._workPoint1);
-      this._workPoint.setFrom(this._workPoint1);
-    }
-    return sum;
+    const numPerSpan = StrokeOptions.applyAngleTol(options,
+      StrokeOptions.applyMaxEdgeLength(options, 1, sumLength), sweepRadians, 0.2);
+
+    return numPerSpan;
   }
 
-  public startPoint(): Point3d {
-    const result = this.getPole(0);
-    if (!result) return Point3d.createZero();
-    return result;
-  }
-  public endPoint(): Point3d {
-    const result = this.getPole(this.order - 1);
-    if (!result) return Point3d.createZero();
-    return result;
-  }
-
-  public quickLength(): number { return this.polygonLength(); }
-  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
-    const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
-    handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
-  }
-
-  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    let numPerSpan = 1;
-    const order = this.order;
-    if (order >= 3) {
-      const data = this._polygon.packedData;
-      let dx0 = data[3] - data[0];
-      let dy0 = data[4] - data[1];
-      let dz0 = data[5] - data[2];
-      let dx1, dy1, dz1;    // first differences of leading edge
-      let ex, ey, ez; // second differences.
-
-      let kMax = 0.0;
-      let sumLength = Geometry.hypotenuseXYZ(dx0, dy0, dy0);
-      const n = data.length;
-      for (let i = 6; i + 2 < n; i++) {
-        dx1 = data[i] - data[i - 3];
-        dy1 = data[i + 1] - data[i - 2];
-        dz1 = data[i + 2] - data[i - 1];
-        ex = dx1 - dx0; ey = dy1 - dy0; ez = dz1 - dz0;
-        kMax = Math.max(kMax, Geometry.curvatureMagnitude(dx0, dy0, dz0, ex, ey, ez),
-          Geometry.curvatureMagnitude(dx1, dy1, dz1, ex, ey, ez));
-        sumLength += Geometry.hypotenuseXYZ(dx1, dy1, dz1);
-        dx0 = dx1; dy0 = dy1; dz0 = dz1;
-      }
-      const d = this.degree;
-      const factor = d * d; // usual factor applied to derivatives.
-      const sweepRadians = (sumLength / factor) * kMax;  // sweep for a circle circumference at highest curvature.
-      numPerSpan = StrokeOptions.applyAngleTol(options, 1, sweepRadians, 0.2);
-    }
-    const fractionStep = 1.0 / numPerSpan;
-    for (let i = 0; i <= numPerSpan; i++) {
-      const fraction = i * fractionStep;
-      this.fractionToPoint(fraction, this._workPoint);
-      dest.appendStrokePoint(this._workPoint);
-    }
-  }
-
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    let i = 0;
-    if (transform) {
-      while (this.getPole(i++, this._workPoint)) {
-        rangeToExtend.extendTransformedPoint(transform, this._workPoint);
-      }
-    } else {
-      while (this.getPole(i++, this._workPoint)) {
-        rangeToExtend.extend(this._workPoint);
-      }
-    }
-  }
   /**
    * convert to bspline curve and dispatch to handler
    * @param handler handelr to receive strongly typed geometry
@@ -772,7 +778,7 @@ export class BezierCurve3d extends BezierCurveBase {
     const poles3d: Point3d[] = [];
     const order = this.order;
     for (let i = 0; i < order; i++) {
-      poles3d.push(this.getPole(i)!);
+      poles3d.push(this.getPolePoint3d(i)!);
     }
     const bspline = BSplineCurve3d.createUniformKnots(poles3d, this.order);
     if (bspline)

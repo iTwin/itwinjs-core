@@ -155,6 +155,14 @@ export class XYZ implements XYAndZ {
       this.x = other[0]; this.y = other[1]; this.z = other[2];
     }
   }
+  /**
+   * Set the x,y,z parts from a Point3d.
+   * This is the same effect as `setFrom(other)` with no pretesting of variant input type
+   */
+  public setFromPoint3d(other: Point3d) {
+    this.x = other.x; this.y = other.y; this.z = other.z;
+  }
+
   /** Returns true if this and other have equal x,y,z parts within Geometry.smallMetricDistance.
    * @param other The other XYAndZ to compare
    * @param tol The tolerance for the comparison. If undefined, use [[Geometry.smallMetricDistance]]
