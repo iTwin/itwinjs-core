@@ -65,7 +65,9 @@ export class ToolItemDef extends ItemDefBase {
 
     return (
       <ToolbarIcon
+        className={!this.isVisible ? "item-hidden" : undefined}
         isActive={FrontstageManager.activeToolId === this.toolId}
+        isDisabled={!this.isEnabled}
         key={key}
         onClick={this.execute}
         icon={
@@ -122,6 +124,8 @@ export class CommandItemDef extends ItemDefBase {
 
     return (
       <ToolbarIcon
+        className={!this.isVisible ? "item-hidden" : undefined}
+        isDisabled={!this.isEnabled}
         key={key}
         onClick={this.execute}
         icon={

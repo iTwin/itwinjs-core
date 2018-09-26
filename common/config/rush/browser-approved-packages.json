@@ -584,7 +584,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "sw-precache-webpack-plugin",

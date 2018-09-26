@@ -7,7 +7,7 @@ exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`
       iconInfo={
         Object {
           "iconClass": "icon-placeholder",
-          "iconSrc": undefined,
+          "iconElement": undefined,
         }
       }
     />
@@ -25,7 +25,7 @@ exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly
       iconInfo={
         Object {
           "iconClass": "icon-placeholder",
-          "iconSrc": undefined,
+          "iconElement": undefined,
         }
       }
     />
@@ -51,7 +51,7 @@ exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] =
       iconInfo={
         Object {
           "iconClass": "icon-placeholder",
-          "iconSrc": undefined,
+          "iconElement": undefined,
         }
       }
     />

@@ -11,7 +11,7 @@ import { UiFramework } from "../UiFramework";
  */
 export interface IconLabelProps {
   iconClass?: string;
-  iconSrc?: string;
+  iconElement?: React.ReactNode;
   labelKey?: string;
   labelExpr?: string;
   tooltipKey?: string;
@@ -22,8 +22,8 @@ export interface IconLabelProps {
 export interface IconInfo {
   /** CSS class name for icon */
   iconClass?: string;
-  /** Src location for icon */
-  iconSrc?: string;
+  /** React element for icon */
+  iconElement?: React.ReactNode;
 }
 
 /** Provides support for icons, labels & tooltips.
@@ -31,7 +31,7 @@ export interface IconInfo {
  */
 export class IconLabelSupport {
   public iconClass?: string;
-  public iconSrc?: string;
+  public iconElement?: React.ReactNode;
   public label: string = "";
   public tooltip: string = "";
 
@@ -39,8 +39,8 @@ export class IconLabelSupport {
     if (iconLabelDef) {
       if (iconLabelDef.iconClass !== undefined)
         this.iconClass = iconLabelDef.iconClass;
-      if (iconLabelDef.iconSrc !== undefined)
-        this.iconSrc = iconLabelDef.iconSrc;
+      if (iconLabelDef.iconElement !== undefined)
+        this.iconElement = iconLabelDef.iconElement;
 
       this.label = (iconLabelDef.labelKey !== undefined) ? UiFramework.i18n.translate(iconLabelDef.labelKey) : "";
       // labelExpr?: string;
@@ -51,7 +51,7 @@ export class IconLabelSupport {
   }
 
   public get iconInfo(): IconInfo {
-    return { iconClass: this.iconClass, iconSrc: this.iconSrc };
+    return { iconClass: this.iconClass, iconElement: this.iconElement };
   }
 }
 
@@ -68,9 +68,12 @@ export class Icon extends React.Component<IconProps> {
       return (
         <i className={className} />
       );
-    } else if (this.props.iconInfo.iconSrc) {
-      // TODO
-      return <i />;
+    } else if (this.props.iconInfo.iconElement) {
+      return (
+        <i className="icon item-svg-icon">
+          {this.props.iconInfo.iconElement}
+        </i>
+      );
     }
 
     return null;

@@ -36,6 +36,9 @@ import { SampleAppIModelApp } from "../../../frontend/index";
 
 import ViewSelector from "@bentley/ui-framework/lib/pickers/ViewSelector";
 
+import rotateIcon from "../icons/rotate.svg";
+import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
+
 export class ViewsFrontstage {
 
   constructor(public viewIds: Id64Props[], private _iModelConnection: IModelConnection) {
@@ -294,6 +297,12 @@ export class ViewsFrontstage {
     document.removeEventListener("mousemove", this._handleTool4Dismiss);
   }
 
+  private rotateSvgIcon(): React.ReactNode {
+    return (
+      <SvgSprite src={rotateIcon} />
+    );
+  }
+
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
@@ -338,7 +347,7 @@ export class ViewsFrontstage {
             <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this._windowAreaCommand} />
             <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this._toggleCameraCommand} />
             <ToolButton toolId="walk" iconClass="icon-walk" execute={this._walkCommand} />
-            <ToolButton toolId="rotate" iconClass="icon-rotate-left" execute={this._rotateCommand} />
+            <ToolButton toolId="rotate" iconElement={this.rotateSvgIcon()} execute={this._rotateCommand} />
             <ToolButton toolId="measure" iconClass="icon-measure-distance" execute={this._measurePointsCommand} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
@@ -357,10 +366,10 @@ export class ViewsFrontstage {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
-            <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
-            <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" execute={this._tool4} />
+            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" isEnabled={false} execute={this._tool1} />
+            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" isEnabled={false} execute={this._tool2} />
+            <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isVisible={false} execute={this._tool3} />
+            <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
