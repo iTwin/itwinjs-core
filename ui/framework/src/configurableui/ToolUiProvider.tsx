@@ -7,10 +7,10 @@ import { ConfigurableBase, ConfigurableCreateInfo, ConfigurableUiControlType } f
 import { ToolItemDef } from "./Item";
 
 // -----------------------------------------------------------------------------
-// Configurable Ui Widget Control
+// Configurable Ui ToolUiProvider
 // -----------------------------------------------------------------------------
 
-/** Props for a Tool Settings & Tool Assistance React component.
+/** Properties for the [[ToolUiProvider]] component.
  */
 export interface ToolUiProviderProps {
   toolUiProvider: ToolUiProvider;

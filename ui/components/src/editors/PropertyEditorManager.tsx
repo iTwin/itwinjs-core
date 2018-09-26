@@ -20,7 +20,7 @@ export interface DataController {
 
 /** PropertyEditor is the base class for all property editors.
  */
-export abstract class PropertyEditor implements DataController {
+export abstract class PropertyEditorBase implements DataController {
   public customDataController: DataController | undefined = undefined;
 
   public abstract get reactElement(): React.ReactNode;
@@ -43,6 +43,8 @@ export abstract class PropertyEditor implements DataController {
 
 }
 
+/** DataControllerBase is the base class for all Data Controllers.
+ */
 export abstract class DataControllerBase implements DataController {
   public commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     return Promise.resolve({ encounteredError: false });
@@ -59,7 +61,7 @@ export class PropertyEditorManager {
   private static _editors: { [index: string]: (any) } = {};
   private static _dataControllers: { [index: string]: (any) } = {};
 
-  public static registerEditor(editType: string, editor: typeof PropertyEditor, editorName?: string): void {
+  public static registerEditor(editType: string, editor: typeof PropertyEditorBase, editorName?: string): void {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;
@@ -78,12 +80,12 @@ export class PropertyEditorManager {
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
-  public static createEditor(editType: string, editorName?: string, dataContollerName?: string): PropertyEditor | null {
+  public static createEditor(editType: string, editorName?: string, dataContollerName?: string): PropertyEditorBase | null {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;
 
-    let editor: PropertyEditor;
+    let editor: PropertyEditorBase;
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName))
       editor = new PropertyEditorManager._editors[fullEditorName]();
     else if (PropertyEditorManager._editors.hasOwnProperty(editType))
@@ -105,7 +107,8 @@ export class PropertyEditorManager {
   }
 }
 
-export class BasicPropertyEditor extends PropertyEditor {
+/** BasicPropertyEditor React component that uses the [[TextEditor]] property editor. */
+export class BasicPropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {
     return <TextEditor />;

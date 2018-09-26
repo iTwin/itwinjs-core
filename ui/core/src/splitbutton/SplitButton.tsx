@@ -28,7 +28,7 @@ export interface SplitButtonProps {
   icon?: string;
 }
 
-export interface SplitButtonState {
+interface SplitButtonState {
   expanded: boolean;
 }
 

@@ -73,12 +73,14 @@ export interface TableDropTargetProps extends DropTargetProps {
   canDropOn?: boolean;
 }
 
+/** Properties for a Table cell */
 export interface CellProps {
   item: CellItem;
   displayValue: string;
   render: () => React.ReactNode;
 }
 
+/** Properties for a Table row */
 export interface RowProps {
   index: number;
   item: RowItem;
@@ -92,6 +94,7 @@ interface RowsLoadResult {
   selectedCellKeys: CellKey[];
 }
 
+/** Cell/Property Editor state */
 export interface CellEditorState {
   active: boolean;
   rowIndex?: number;
@@ -99,19 +102,12 @@ export interface CellEditorState {
   cellKey?: string;
 }
 
+/** State for the [[Table]] component */
 export interface TableState {
   columns: ReactDataGridColumn[];
   rows: RowProps[];
   rowsCount: number;
   cellEditorState: CellEditorState;
-}
-
-/** Enumeration for the RowUpdated Action */
-export enum RowUpdatedAction {
-  CellUpdate,
-  CellDrag,
-  ColumnFill,
-  CopyPaste,
 }
 
 /** ReactDataGrid.Column with additional properties */
@@ -975,6 +971,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 }
 
+/** Properties for the [[IconCell]] component  */
 export interface IconCellProps {
   /** Icon name */
   value: string;

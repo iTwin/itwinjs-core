@@ -92,7 +92,8 @@ export class ConfigurableUiManager {
    * [[ContentControl]],
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
-   * [[ToolUiProvider]] or
+   * [[ToolUiProvider]]
+   * or
    * [[WidgetControl]].
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register

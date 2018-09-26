@@ -9,17 +9,19 @@ import { CSSProperties } from "react";
 import { CommonProps } from "../Props";
 import "./Toggle.scss";
 
-enum ButtonType {
+/** Toggle Button Type enum */
+export enum ToggleButtonType {
   Primary,
   Blue,
 }
 
+/** Properties for [[Toggle]] component */
 export interface ToggleProps extends CommonProps {
   disabled?: boolean;
   isOn?: boolean;
   rounded?: boolean;
   showCheckmark: boolean;
-  buttonType?: ButtonType;
+  buttonType?: ToggleButtonType;
   onChange?: (checked: boolean) => any;
 }
 
@@ -29,6 +31,9 @@ interface ToggleState {
   checked: boolean;
 }
 
+/**
+ * Toggle React component
+ */
 export class Toggle extends React.Component<ToggleProps, ToggleState> {
   private _padding: number = 2;
 
@@ -42,7 +47,7 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     rounded: true,
     isOn: false,
     showCheckmark: true,
-    buttonType: ButtonType.Blue,
+    buttonType: ToggleButtonType.Blue,
   };
 
   private _handleChange = () => {
@@ -61,25 +66,25 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
 
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
-    const checkmarkClassName = classnames ("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible" );
+    const checkmarkClassName = classnames("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
     const toggleStyle: CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
-    const toggleClassName = classnames (
-            "toggle",
-            this.props.buttonType === ButtonType.Primary && "toggle-primary",
-            this.props.rounded && "rounded",
-            {disabled: this.props.disabled},
-            this.props.className);
+    const toggleClassName = classnames(
+      "toggle",
+      this.props.buttonType === ToggleButtonType.Primary && "toggle-primary",
+      this.props.rounded && "rounded",
+      { disabled: this.props.disabled },
+      this.props.className);
     const toggleHandleStyle: CSSProperties = {
-            width: this.state.height - (this._padding * 2),
-            transform: "translateX(" + this._getOffset() + "px)",
-            top: this._padding,
-            bottom: this._padding,
-            left: this._padding,
+      width: this.state.height - (this._padding * 2),
+      transform: "translateX(" + this._getOffset() + "px)",
+      top: this._padding,
+      bottom: this._padding,
+      left: this._padding,
     };
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
         <input defaultChecked={this.props.isOn} className="toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} />
-        <span className="toggle-label"/>
+        <span className="toggle-label" />
         <span className={checkmarkClassName} />
         <span className="toggle-handle" style={toggleHandleStyle} />
       </label>

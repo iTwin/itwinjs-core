@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Popup */
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
@@ -8,6 +10,7 @@ import Timer from "../utils/Timer";
 import { CommonProps } from "../Props";
 import "./Popup.scss";
 
+/** Enum for Popup position  */
 export enum Position {
   TopLeft,
   TopRight,
@@ -19,6 +22,7 @@ export enum Position {
   Right,
 }
 
+/** Properties for the [[Popup]] component */
 export interface PopupProps extends CommonProps {
   showShadow: boolean; // show or hide the box shadow
   showArrow: boolean; // show or hide the arrow
@@ -37,7 +41,7 @@ interface PopupState {
   position: Position;
 }
 
-/** Popup component */
+/** Popup React component */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _ref: HTMLElement | undefined;
   private _targetRef: HTMLElement | null = null; // target element owning the popup
