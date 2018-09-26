@@ -2,6 +2,12 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "0.135.0",
+      "tag": "@bentley/build-tools_v0.135.0",
+      "date": "Wed, 26 Sep 2018 19:16:30 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.134.0",
       "tag": "@bentley/build-tools_v0.134.0",
       "date": "Wed, 26 Sep 2018 00:50:11 GMT",
