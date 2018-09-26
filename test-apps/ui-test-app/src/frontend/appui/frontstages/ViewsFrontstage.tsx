@@ -34,7 +34,7 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
-import ViewListWidget from "@bentley/ui-framework/lib/pickers/ViewList";
+import ViewSelector from "@bentley/ui-framework/lib/pickers/ViewSelector";
 
 export class ViewsFrontstage {
 
@@ -122,13 +122,6 @@ export class ViewsFrontstage {
             classId: "ModelSelectorWidget",
             defaultState: WidgetState.Open,
             iconClass: "icon-3d-cube",
-            labelKey: "SampleApp:Test.my-label",
-            applicationData: { iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection },
-          },
-          {
-            classId: "CategorySelectorWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-layers",
             labelKey: "SampleApp:Test.my-label",
             applicationData: { iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection },
           },
@@ -405,7 +398,7 @@ export class ViewsFrontstage {
           <>
             <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
             <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-            <ViewListWidget imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+            <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
           </>
         }
       />;

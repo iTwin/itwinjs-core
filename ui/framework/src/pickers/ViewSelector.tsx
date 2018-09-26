@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+/** @module Picker */
+
 import * as React from "react";
 import ListPicker, { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
@@ -5,7 +10,8 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
-export default class ViewListWidget extends React.Component<any, any> {
+export default class ViewSelector extends React.Component<any, any> {
+  /** Creates a ViewSelector */
   constructor(props: any) {
     super(props);
 
@@ -68,18 +74,34 @@ export default class ViewListWidget extends React.Component<any, any> {
     });
   }
 
+  /**
+   * Determines if given class is a spatial view.
+   * @param classname Name of class to check
+   */
   public static isSpatial(classname: string): boolean {
     return classname === "SpatialViewDefinition" || classname === "OrthographicViewDefinition";
   }
 
+  /**
+   * Determines if given class is a drawing view.
+   * @param classname Name of class to check
+   */
   public static isDrawing(classname: string): boolean {
     return classname === "DrawingViewDefinition";
   }
 
+  /**
+   * Determines if given class is a sheet view.
+   * @param classname Name of class to check
+   */
   public static isSheet(classname: string): boolean {
     return classname === "SheetViewDefinition";
   }
 
+  /**
+   * Fetches ViewDefinitionProps for a model.
+   * @param imodel Model to query from props
+   */
   public async queryViewProps(imodel: IModelConnection): Promise<ViewDefinitionProps[]> {
     const params: ViewQueryParams = {};
     params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
@@ -88,7 +110,9 @@ export default class ViewListWidget extends React.Component<any, any> {
     return viewProps as ViewDefinitionProps[];
   }
 
-  // Query the views and set the initial state with the iModel's views
+  /**
+   * Query the views and set the initial state with the iModel's views.
+   */
   public async loadViews() {
     // Query views and add them to state
     const views3d: ListItem[] = [];
@@ -103,11 +127,11 @@ export default class ViewListWidget extends React.Component<any, any> {
         enabled: false,
         type: ListItemType.Item,
       };
-      if (ViewListWidget.isSpatial(viewProp.bisBaseClass!))
+      if (ViewSelector.isSpatial(viewProp.bisBaseClass!))
         views3d.push(viewItem);
-      else if (ViewListWidget.isDrawing(viewProp.bisBaseClass!))
+      else if (ViewSelector.isDrawing(viewProp.bisBaseClass!))
         views2d.push(viewItem);
-      else if (ViewListWidget.isSheet(viewProp.bisBaseClass!))
+      else if (ViewSelector.isSheet(viewProp.bisBaseClass!))
         sheets.push(viewItem);
       else
         unknown.push(viewItem);
@@ -116,7 +140,10 @@ export default class ViewListWidget extends React.Component<any, any> {
     this.setStateContainers(views3d, views2d, sheets, unknown);
   }
 
-  // Update state of the entries in the widget
+  /**
+   * Update state of the entries in the widget.
+   * @param viewId Identifier for the relevant view
+   */
   public async updateState(viewId?: any) {
     // Wait for initialization finished
     if (!this.state.initialized)
@@ -138,7 +165,9 @@ export default class ViewListWidget extends React.Component<any, any> {
     this.setStateContainers(views3d.map(updateChildren), views2d.map(updateChildren), sheets.map(updateChildren), unknown.map(updateChildren));
   }
 
-  // Render component
+  /**
+   *  Renders ViewSelector component
+   */
   public render() {
     if (!this.state.initialized)
       this.updateState(this.state.selectedViewId);

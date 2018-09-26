@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Picker */
+
 import * as React from "react";
 import * as classnames from "classnames";
-import { ListItem, ListItemType } from "./ListPickerWidget";
+import { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
 import { UiFramework } from "../UiFramework";
@@ -14,7 +16,7 @@ import { CheckListBox, CheckListBoxItem } from "@bentley/ui-core";
 import { SearchBox } from "@bentley/ui-core";
 import "./ModelSelector.scss";
 import { Group } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Group";
-import { Popup, Position} from "@bentley/ui-core";
+import { Popup, Position } from "@bentley/ui-core";
 
 export interface Group {
   id: string;
@@ -48,7 +50,7 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     super(props);
 
     this._initGroups();
-    this.state = {expand: false, activeGroup: this._groups[0], showOptions: false};
+    this.state = { expand: false, activeGroup: this._groups[0], showOptions: false };
     this.updateState();
   }
 
@@ -84,38 +86,38 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
   // Update viewed models on selected viewport changed
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
-      alert ("Clearing");
+      alert("Clearing");
       this._initGroups();
       this.updateState();
     }
   }
 
   private _handleSearchValueChanged = (value: string): void => {
-    alert ("search " + value);
+    alert("search " + value);
   }
 
   // expand the selected group
   private _onExpand = (group: Group) => {
-    this.setState({activeGroup: group, expand: true});
+    this.setState({ activeGroup: group, expand: true });
   }
 
   // collapse
   private _onCollapse = () => {
-    this.setState({expand: false});
+    this.setState({ expand: false });
   }
 
   private _onShowOptions = (show: boolean) => {
-    this.setState({showOptions: show});
+    this.setState({ showOptions: show });
   }
 
   // enable or disable a single item
   private _onCheckboxClick = (item: ListItem) => {
     item.enabled = !item.enabled;
-    this.state.activeGroup.setEnabled (item, item.enabled);
+    this.state.activeGroup.setEnabled(item, item.enabled);
     // force an update to set the new state in CheckListBoxItem
     // Note: or should we call activeGroup.updateState()?
     // this.forceUpdate();
-    this.setState({activeGroup: this.state.activeGroup});
+    this.setState({ activeGroup: this.state.activeGroup });
   }
 
   // enable or disable all items
@@ -264,8 +266,8 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
   //  <SearchBox  placeholder="search..." onValueChanged={this._handleSearchValueChanged} />
 
   public render() {
-    const groupsClassName = classnames ("widget-groups", this.state.expand && "hide");
-    const listClassName = classnames ("fw-modelselector", this.state.expand && "show");
+    const groupsClassName = classnames("widget-groups", this.state.expand && "hide");
+    const listClassName = classnames("fw-modelselector", this.state.expand && "show");
     return (
       <div className="widget-picker">
         <div className={groupsClassName}>
@@ -273,21 +275,21 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
             <div key={group.id} className="widget-picker-group" onClick={this._onExpand.bind(this, group)}>
               {group.label}
               <span className="group-count">{group.items.length}</span>
-              <span className="icon icon-chevron-right"/>
+              <span className="icon icon-chevron-right" />
             </div>
           ))}
         </div>
         <div className={listClassName}>
           <div className="fw-modelselector-header" >
-            <div className="fw-modelselector-back"  onClick={this._onCollapse}>
-              <span className="icon icon-chevron-left"/>
+            <div className="fw-modelselector-back" onClick={this._onCollapse}>
+              <span className="icon icon-chevron-left" />
               <div className="ms-title">{this.state.activeGroup.label}</div>
             </div>
             <div className="options" >
               <span className="icon icon-more-vertical-2" onClick={this._onShowOptions.bind(this, !this.state.showOptions)}></span>
               <Popup isShown={this.state.showOptions} position={Position.BottomRight} onClose={this._onShowOptions.bind(this, false)}>
                 <ul>
-                  <li><span className="icon icon-visibility"/>Manage...</li>
+                  <li><span className="icon icon-visibility" />Manage...</li>
                 </ul>
               </Popup>
             </div>
