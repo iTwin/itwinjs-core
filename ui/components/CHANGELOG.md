@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 25 Sep 2018 16:41:02 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Sep 2018 00:50:11 GMT and should not be manually modified.
+
+## 0.134.0
+Wed, 26 Sep 2018 00:50:11 GMT
+
+### Updates
+
+- Added more ui-components unit tests
 
 ## 0.133.0
 Tue, 25 Sep 2018 16:41:02 GMT

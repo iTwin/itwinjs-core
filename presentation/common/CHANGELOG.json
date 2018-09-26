@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "0.134.0",
+      "tag": "@bentley/presentation-common_v0.134.0",
+      "date": "Wed, 26 Sep 2018 00:50:11 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.133.0",
       "tag": "@bentley/presentation-common_v0.133.0",
       "date": "Tue, 25 Sep 2018 16:41:02 GMT",
