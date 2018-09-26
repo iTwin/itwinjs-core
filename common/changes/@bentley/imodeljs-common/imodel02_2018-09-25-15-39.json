@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Simplify IntersectDetail, just second CurvePrimitive and sourceId.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}

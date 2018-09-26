@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64Props, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code,
@@ -43,7 +43,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { ElementAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
@@ -1183,8 +1183,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
-      const name = aspectClassName.split(":");
-      const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
+      const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
         throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
 
@@ -1192,33 +1191,49 @@ export namespace IModelDb {
       for (const row of rows) {
         const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
         aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
-        aspectProps.iModel = this._iModel; // add in property required by EntityProps
-        aspectProps.element = elementId; // add in property required by ElementAspectProps
-        aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
+        aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
 
         const entity = this._iModel.constructEntity(aspectProps);
         const aspect = entity as ElementAspect;
         aspects.push(aspect);
       }
-
       return aspects;
     }
 
-    /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
+    /**
+     * Get the ElementAspect instances (by class name) that are related to the specified element.
      * @throws [[IModelError]]
      */
-    public getUniqueAspect(elementId: Id64, aspectClassName: string): ElementUniqueAspect {
-      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
-      assert(aspects[0] instanceof ElementUniqueAspect);
-      return aspects[0];
-    }
-
-    /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
-     * @throws [[IModelError]]
-     */
-    public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
+    public getAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
       const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
       return aspects;
+    }
+
+    /**
+     * Insert a new ElementAspect into the iModel.
+     * @param aspectProps The properties of the new ElementAspect.
+     * @throws [[IModelError]] if unable to insert the ElementAspect.
+     */
+    public insertAspect(aspectProps: ElementAspectProps): void {
+      if (!this._iModel.briefcase)
+        throw this._iModel.newNotOpenError();
+
+      const status: IModelStatus = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      if (status !== IModelStatus.Success)
+        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggingCategory);
+    }
+
+    /**
+     * Delete one or more ElementAspects from this iModel.
+     * @param ids The set of Ids of the element(s) to be deleted
+     * @throws [[IModelError]]
+     */
+    public deleteAspect(ids: Id64Arg): void {
+      Id64.toIdSet(ids).forEach((id) => {
+        const status: IModelStatus = this._iModel.nativeDb.deleteElementAspect(id);
+        if (status !== IModelStatus.Success)
+          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggingCategory);
+      });
     }
   }
 

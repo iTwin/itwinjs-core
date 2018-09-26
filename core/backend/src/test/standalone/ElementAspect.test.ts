@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { PhysicalElement } from "../../Element";
-import { ElementMultiAspect, ElementUniqueAspect } from "../../ElementAspect";
+import { ElementAspectProps } from "@bentley/imodeljs-common";
+import { Element, PhysicalElement } from "../../Element";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "../../ElementAspect";
 import { IModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -26,21 +27,21 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    const aspect1 = iModel.elements.getUniqueAspect(element.id, "DgnPlatformTest:TestUniqueAspectNoHandler");
+    const aspect1: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspectNoHandler")[0];
     assert.exists(aspect1);
     assert.isTrue(aspect1 instanceof ElementUniqueAspect);
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.length, 1);
 
-    const aspect2 = iModel.elements.getUniqueAspect(element.id, "DgnPlatformTest:TestUniqueAspect");
+    const aspect2: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspect")[0];
     assert.exists(aspect2);
     assert.isTrue(aspect2 instanceof ElementUniqueAspect);
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.length);
 
-    const multiAspectsA: ElementMultiAspect[] = iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
+    const multiAspectsA: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
     assert.exists(multiAspectsA);
     assert.isArray(multiAspectsA);
     assert.equal(multiAspectsA.length, 2);
@@ -51,7 +52,7 @@ describe("ElementAspect", () => {
       assert.exists(aspect.testMultiAspectProperty);
     });
 
-    const multiAspectsB: ElementMultiAspect[] = iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspect");
+    const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");
     assert.exists(multiAspectsB);
     assert.isArray(multiAspectsB);
     assert.equal(multiAspectsB.length, 2);
@@ -66,7 +67,7 @@ describe("ElementAspect", () => {
     const rootSubject = iModel.elements.getRootSubject();
 
     try {
-      iModel.elements.getUniqueAspect(rootSubject.id, "DgnPlatformTest:TestUniqueAspect");
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect");
       assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       numErrorsCaught++;
@@ -74,7 +75,7 @@ describe("ElementAspect", () => {
     }
 
     try {
-      iModel.elements.getMultiAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect");
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect");
       assert.isTrue(false, "Expected this line to be skipped");
     } catch (error) {
       numErrorsCaught++;
@@ -82,5 +83,50 @@ describe("ElementAspect", () => {
     }
 
     assert.equal(numErrorsCaught, 2);
+  });
+
+  it("should be able to insert and delete MultiAspects", () => {
+    const element: Element = iModel.elements.getElement(new Id64("0x17"));
+    assert.exists(element);
+    assert.isTrue(element instanceof PhysicalElement);
+
+    const aspectProps: ElementAspectProps = {
+      classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
+      element: { id: element.id },
+      testMultiAspectProperty: "MultiAspectInsertTest1",
+    };
+    iModel.elements.insertAspect(aspectProps);
+
+    let aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
+    assert.isAtLeast(aspects.length, 1);
+    const numAspects = aspects.length;
+
+    iModel.elements.deleteAspect(aspects[0].id);
+    aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
+    assert.isTrue(numAspects === aspects.length + 1);
+  });
+
+  it("should be able to insert and delete UniqueAspects", () => {
+    const element: Element = iModel.elements.getElement(new Id64("0x17"));
+    assert.exists(element);
+    assert.isTrue(element instanceof PhysicalElement);
+
+    const aspectProps: ElementAspectProps = {
+      classFullName: "DgnPlatformTest:TestUniqueAspectNoHandler",
+      element: { id: element.id },
+      testMultiAspectProperty: "UniqueAspectInsertTest1",
+    };
+    iModel.elements.insertAspect(aspectProps);
+
+    const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
+    assert.isTrue(aspects.length === 1);
+
+    iModel.elements.deleteAspect(aspects[0].id);
+    try {
+      iModel.elements.getAspects(element.id, aspectProps.classFullName);
+      assert.isTrue(false, "Expected this line to be skipped");
+    } catch (error) {
+      assert.isTrue(error instanceof Error);
+    }
   });
 });
