@@ -10,7 +10,7 @@ import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { ViewContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic } from "../../System";
+import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
@@ -163,7 +163,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
       const range = new ElementAlignedBox3d(); // ###TODO compute range...
-      graphic = this.accum.system.createBatch(graphic, featureTable, range);
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
     }
 
     return graphic;

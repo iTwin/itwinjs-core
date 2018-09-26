@@ -28,7 +28,6 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
 import { ImageUtil } from "../ImageUtil";
 import {
-  FeatureTable,
   ElementAlignedBox3d,
   FillFlags,
   ColorDef,
@@ -318,7 +317,7 @@ export namespace IModelTileIO {
       });
     }
 
-    protected readFeatureTable(): FeatureTable | undefined {
+    protected readFeatureTable(): PackedFeatureTable | undefined {
       const startPos = this._buffer.curPos;
       const header = FeatureTableHeader.readFrom(this._buffer);
       if (undefined === header || 0 !== header.length % 4)
@@ -330,10 +329,9 @@ export namespace IModelTileIO {
       if (this._buffer.isPastTheEnd)
         return undefined;
 
-      const packedFeatureTable = new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures);
-
       this._buffer.curPos = startPos + header.length;
-      return packedFeatureTable.unpack();
+
+      return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures);
     }
 
     private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
@@ -608,7 +606,7 @@ export namespace IModelTileIO {
       return this._system.createMesh(params);
     }
 
-    private finishRead(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       const graphics: RenderGraphic[] = [];
 
       for (const meshKey of Object.keys(this._meshes)) {

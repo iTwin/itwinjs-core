@@ -277,6 +277,7 @@ export class PackedFeatureTable {
   public readonly modelId: Id64;
   public readonly maxFeatures: number;
   public readonly numFeatures: number;
+  public readonly anyDefined: boolean;
 
   /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a [[Tile]] serialized in iMdl format. */
   public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number) {
@@ -284,6 +285,18 @@ export class PackedFeatureTable {
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
     this.numFeatures = numFeatures;
+
+    switch (this.numFeatures) {
+      case 0:
+        this.anyDefined = false;
+        break;
+      case 1:
+        this.anyDefined = this.getFeature(0).isDefined;
+        break;
+      default:
+        this.anyDefined = true;
+        break;
+    }
 
     assert(this._data.length >= this._subCategoriesOffset);
     assert(this.maxFeatures >= this.numFeatures);
@@ -344,6 +357,22 @@ export class PackedFeatureTable {
 
     return new Feature(elemId, subCatId, geomClass);
   }
+
+  /** @hidden */
+  public getElementIdParts(featureIndex: number): { low: number, high: number } {
+    assert(featureIndex < this.numFeatures);
+    const offset = 3 * featureIndex;
+    return {
+      low: this._data[offset],
+      high: this._data[offset + 1],
+    };
+  }
+
+  /** Return true if this table contains exactly 1 feature. */
+  public get isUniform(): boolean { return 1 === this.numFeatures; }
+
+  /** If this table contains exactly 1 feature, return it. */
+  public get uniform(): Feature | undefined { return this.isUniform ? this.getFeature(0) : undefined; }
 
   /** Unpack the features into a [[FeatureTable]]. */
   public unpack(): FeatureTable {
@@ -528,7 +557,7 @@ export abstract class RenderSystem implements IDisposable {
   // public abstract getMaxFeaturesPerBatch(): number;
 
   /** Create a RenderGraphic consisting of batched Features. */
-  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
   /** Locate a previously-created Texture given its key. */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }

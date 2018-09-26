@@ -5,7 +5,7 @@
 import { TileIO } from "./TileIO";
 import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable } from "@bentley/imodeljs-common";
 import { Id64, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, RenderGraphic, GraphicBranch } from "../render/System";
+import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -71,7 +71,7 @@ export namespace PntsTileIO {
     features.add(new Feature(modelId), 1);
 
     let renderGraphic = system.createPointCloud(new PointCloudArgs(qPoints, qParams, colors, features), iModel);
-    renderGraphic = system.createBatch(renderGraphic!, featureTable, range);
+    renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
 
     if (yAxisUp) {
       const branch = new GraphicBranch();

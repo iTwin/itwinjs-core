@@ -54,9 +54,11 @@ describe("FeatureOverrides tests", () => {
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
-    const tbl = new FeatureTable(1);
-    tbl.insertWithIndex(new Feature(new Id64("0x1")), 0);
-    ovr.initFromMap(tbl);
+    const features = new FeatureTable(1);
+    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
+
+    const table = PackedFeatureTable.pack(features);
+    ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -66,7 +68,7 @@ describe("FeatureOverrides tests", () => {
     expect(ovr.anyHilited).to.be.false;
     const hls = new Set<string>(); hls.add("0x1");
     vp.target.setHiliteSet(hls);
-    ovr.update(tbl);
+    ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
   });
 
@@ -79,10 +81,12 @@ describe("FeatureOverrides tests", () => {
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
-    const tbl = new FeatureTable(2);
-    tbl.insertWithIndex(new Feature(new Id64("0x1")), 0);
-    tbl.insertWithIndex(new Feature(new Id64("0x2")), 1);
-    ovr.initFromMap(tbl);
+    const features = new FeatureTable(2);
+    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
+    features.insertWithIndex(new Feature(new Id64("0x2")), 1);
+
+    const table = PackedFeatureTable.pack(features);
+    ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -92,7 +96,7 @@ describe("FeatureOverrides tests", () => {
     expect(ovr.anyHilited).to.be.false;
     const hls = new Set<string>(); hls.add("0x1");
     vp.target.setHiliteSet(hls);
-    ovr.update(tbl);
+    ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
   });
 });
