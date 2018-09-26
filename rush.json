@@ -15,7 +15,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/bentleyjs-tools",
       "projectFolder": "tools/bentley",
       "reviewCategory": "tools",
@@ -186,6 +187,12 @@
     {
       "packageName": "agent-test-app",
       "projectFolder": "test-apps/agent-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "analysis-importer",
+      "projectFolder": "test-apps/analysis-importer",
       "reviewCategory": "internal",
       "shouldPublish": false
     }
