@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support for intersect snap.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}

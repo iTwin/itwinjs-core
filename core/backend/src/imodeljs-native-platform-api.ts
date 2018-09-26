@@ -295,6 +295,20 @@ export declare class NativeDgnDb {
   public deleteElement(elemIdJson: string): IModelStatus;
 
   /**
+   * Insert an ElementAspect.
+   * @param aspectProps The ElementAspect's properties, in stringified JSON format.
+   * @return non-zero error status if the operation failed.
+   */
+  public insertElementAspect(aspectProps: string): IModelStatus;
+
+  /**
+   * Delete an ElementAspect from this iModel.
+   * @param aspectIdJson The ElementAspect's ECInstanceId, in stringified JSON format
+   * @return non-zero error status if the operation failed.
+   */
+  public deleteElementAspect(aspectIdJson: string): IModelStatus;
+
+  /**
    * Insert a LinkTableRelationship.
    * @param props The linkTableRelationship's properties, in stringified JSON format.
    * @return In case of success, the result property of the returned object will be the ID of the new LinkTableRelationship instance (as a hex string)
