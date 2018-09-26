@@ -20,4 +20,3 @@ iModelHub API covers basic calls to iModelHub that are part of larger workflows.
 ## Working through clients package
 * [Named Versions](./Versions)
 * [Events](./Events)
-* [Global Events](./GlobalEvents)

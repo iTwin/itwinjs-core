@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelBank */
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 import { assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { FileHandler } from "..";

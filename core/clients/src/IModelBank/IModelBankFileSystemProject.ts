@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModelBank */
 import { IModelBankAccessContextGroupProps, IModelFileSystemProps, NamedIModelAccessContextProps, makeIModelBankAccessContextGroupPropsFromFileSystem } from "./IModelBankAccessContext";
 import { AccessToken } from "../Token";
 import { HubIModel, IModelQuery } from "../imodelhub/iModels";

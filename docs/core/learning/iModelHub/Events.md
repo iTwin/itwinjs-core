@@ -8,7 +8,7 @@ To receive events, the user has to:
 
 Instead of repeating steps 2 and 3, it's possible to [create a listener](#creating-events-listener) that continuously receives events from a subscription.
 
-# Event Types
+## Event Types
 When a user [subscribes to events](#creating-events-subscription), they have to provide [EventType]($clients)s of [IModelHubEvent]($clients)s they want to receive. iModelHub sends these events:
 
 | Type | Description |
@@ -25,7 +25,7 @@ When a user [subscribes to events](#creating-events-subscription), they have to 
 
 > [CodeEvent]($clients) and [LockEvent]($clients) includes every updated [HubCode]($clients) or [Lock]($clients) value, so it tends to be quite chatty. It's recommended to not subscribe to these events, unless they are necessary for your workflow.
 
-# Creating Events Subscription
+## Creating Events Subscription
 To receive [IModelHubEvent]($clients)s, user has to create an [EventSubscription]($clients). Creating a subscription requires the user to specify an array of [event types](#event-types) they want to receive.
 
 Creating subscription requires user to have an [access token]($docs/learning/common/AccessToken.md) and have a valid [iModel id](./imodels/GetiModel.md).
@@ -39,7 +39,7 @@ After creating the subscription, ``subscription.wsgId`` can be used when subscri
 
 Each subscription contains its own queue of events. Subscriptions expire after an hour of inactivity.
 
-# Getting events
+## Getting events
 First user has to get an [EventSAS]($clients) token.
 ```ts
 [[include:EventHandler.getSASToken.example-code]]
@@ -54,7 +54,7 @@ If [EventHandler.getEvent]($clients) is called with a timeout duration specified
 
 [EventHandler.getEvent]($clients) can fail because [EventSAS]($clients) has expired. It can also return undefined if no events have been found.
 
-# Creating Events Listener
+## Creating Events Listener
 [EventHandler.createListener]($clients) can be used to handle repeated calls to [EventHandler.getEvent]($clients) and [EventHandler.getSASToken]($clients).
 
 Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AuthorizationToken]($clients) could be retrieved from credentials stored somewhere else or refreshed before it expires.

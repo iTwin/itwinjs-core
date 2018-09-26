@@ -10,7 +10,7 @@ To receive events, the service has to:
 
 Instead of repeating steps 2 and 3, it's possible to [create a listener](#create-a-global-events-listener) that continuously receives events from a subscription.
 
-# Global Event Types
+## Global Event Types
 When a user [subscribes to global events](#creating-global-events-subscription), they have to provide [GlobalEventType]($clients)s of [IModelHubGlobalEvent]($clients)s they want to receive. iModelHub sends these global events:
 
 | Type | Description |
@@ -21,7 +21,7 @@ When a user [subscribes to global events](#creating-global-events-subscription),
 | [NamedVersionCreatedEvent]($clients) | Named [Version]($clients) was created. |
 | [SoftiModelDeleteEvent]($clients) | iModel was deleted and placed into archive. |
 
-# Creating Global Events Subscription
+## Creating Global Events Subscription
 To receive [IModelHubGlobalEvent]($clients)s, service has to create a [GlobalEventSubscription]($clients). Creating a subscription requires the service to specify an array of [global event types](#global-event-types) it wants to receive.
 
 Creating subscription requires service to have an [access token]($docs/learning/common/AccessToken.md). Service has to specify an Guid identifier that service would have stored securely. It can be used later to retrieve same subscription.
@@ -69,7 +69,7 @@ Then after processing the event, service has to delete it:
 [[include:GlobalEventHandler.getEvent.delete.example-code]]
 ```
 
-# Create a Global Events Listener
+## Create a Global Events Listener
 [GlobalEventHandler.createListener]($clients) can be used to handle repeated calls to [GlobalEventHandler.getEvent]($clients) and [GlobalEventHandler.getSASToken]($clients). Listener will use always delete events when retrieving them. If you want to use non-destructive [GlobalEventHandler.getEvent]($clients), see [getting events](#getting-global-events).
 
 Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AuthorizationToken]($clients) could be retrieved from credentials stored somewhere else or refreshed before it expires.
