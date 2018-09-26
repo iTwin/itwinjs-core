@@ -14,7 +14,7 @@ import { CurveCollection } from "../curve/CurveChain";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { Transform } from "../Transform";
 import { Path, Loop, ParityRegion, UnionRegion, BagOfCurves } from "../curve/CurveChain";
-import { IndexedPolyface } from "../polyface/Polyface";
+import { IndexedPolyface, PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../polyface/Polyface";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { Sphere } from "../solid/Sphere";
@@ -690,6 +690,25 @@ export namespace IModelJson {
         }
       }
     }
+    public static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined {
+
+      if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
+        return undefined;
+
+      const outChannels: AuxChannel[] = [];
+      for (const inChannel of data.channels) {
+        if (Array.isArray(inChannel.data) && inChannel.hasOwnProperty("dataType")) {
+          const outChannelData: AuxChannelData[] = [];
+          for (const inChannelData of inChannel.data) {
+            if (inChannelData.hasOwnProperty("input") && Array.isArray(inChannelData.values))
+              outChannelData.push(new AuxChannelData(inChannelData.input, inChannelData.values));
+          }
+          outChannels.push(new AuxChannel(outChannelData, inChannel.dataType as AuxChannelDataType, inChannel.name, inChannel.inputName));
+        }
+      }
+      return new PolyfaceAuxData(outChannels, data.indices);
+    }
+
     public static parseIndexedMesh(data?: any): any | undefined {
       // {Coord:[[x,y,z],. . . ],   -- simple xyz for each ponit
       // CoordIndex[1,2,3,0]    -- zero-terminated, one based !!!
@@ -738,6 +757,8 @@ export namespace IModelJson {
           Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex,
             (x: number) => { polyface.addColorIndex(x); });
         }
+        if (data.hasOwnProperty("auxData"))
+          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
 
         return polyface;
       }
@@ -1346,6 +1367,29 @@ export namespace IModelJson {
       return out;
     }
 
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData): any {
+      const contents: { [k: string]: any } = {};
+
+      contents.indices = auxData.indices.slice(0);
+      contents.channels = [];
+      for (const inChannel of auxData.channels) {
+        const outChannel: { [k: string]: any } = {};
+        outChannel.dataType = inChannel.dataType;
+        outChannel.name = inChannel.name;
+        outChannel.inputName = inChannel.inputName;
+        outChannel.data = [];
+        for (const inData of inChannel.data) {
+          const outData: { [k: string]: any } = {};
+          outData.input = inData.input;
+          outData.values = inData.values.slice(0);
+          outChannel.data.push(outData);
+        }
+
+        contents.channels.push(outChannel);
+      }
+      return contents;
+    }
+
     public handleIndexedPolyface(pf: IndexedPolyface): any {
       const points = [];
       const pointIndex: number[] = [];
@@ -1402,6 +1446,9 @@ export namespace IModelJson {
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
+
+      if (pf.data.auxData)
+        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData);
 
       if (pf.data.color) contents.color = colors;
       if (pf.data.colorIndex) contents.colorIndex = colorIndex;

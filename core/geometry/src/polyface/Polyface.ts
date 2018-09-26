@@ -235,13 +235,53 @@ export class FacetFaceData {
     return true;
   }
 }
+export enum AuxChannelDataType {
+  Scalar = 0,
+  Distance = 1,
+  Vector = 2,
+  Normal = 3,
+  Point = 4,
+}
+export class AuxChannelData {
+  public input: number;
+  public values: number[];
 
+  constructor(input: number, values: number[]) {
+    this.input = input;
+    this.values = values;
+  }
+}
+
+export class AuxChannel {
+  public data: AuxChannelData[];
+  public dataType: AuxChannelDataType;
+  public name?: string;
+  public inputName?: string;
+
+  public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
+    this.data = data;
+    this.dataType = dataType;
+    this.name = name;
+    this.inputName = inputName;
+  }
+
+}
+export class PolyfaceAuxData {
+  public channels: AuxChannel[];
+  public indices: number[];
+
+  public constructor(channels: AuxChannel[], indices: number[]) {
+    this.channels = channels;
+    this.indices = indices;
+  }
+}
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
  * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
  */
+
 export class PolyfaceData {
   // <ul
   // <li>optional arrays (normal, uv, color) must be indicated at constructor time.
@@ -267,6 +307,7 @@ export class PolyfaceData {
   public colorIndex: number[] | undefined;
   /** Face data will remain empty until a face is specified. */
   public face: FacetFaceData[];
+  public auxData: PolyfaceAuxData | undefined;
 
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
     this.point = new GrowableXYZArray();
