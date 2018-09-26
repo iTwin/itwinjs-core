@@ -16,7 +16,7 @@ describe("<Backstage />", () => {
   });
 
   it("should set is-open class", () => {
-    shallow(<Backstage isOpen />).should.matchSnapshot();
+    shallow(<Backstage isOpen={true} />).should.matchSnapshot();
   });
 
   it("should handle overlay click events", () => {
@@ -33,5 +33,20 @@ describe("<Backstage />", () => {
     const component = mount(<Backstage onClose={handler} />);
     const items = component.find(".nz-items");
     items.should.exist;
+  });
+
+  it("should handle escape key down close event", () => {
+    const handler = sinon.spy();
+    mount(<Backstage isOpen={true} onClose={handler} />);
+
+    handler.should.not.have.been.called;
+
+    document.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+
+    // component.simulate("keyDown", { keyCode: "Escape" });
+    // document.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 }));
+
+    // handler.should.not.have.been.called;
+   // handler.calledOnce.should.true;
   });
 });

@@ -12,14 +12,14 @@ import { ProjectInfo } from "../clientservices/ProjectServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
-import { UserProfileButton } from "./UserProfile";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { OpenIModelActions, OpenIModelState } from "../openimodel/state";
 import { Id64Props } from "@bentley/bentleyjs-core";
-import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
 import "./IModelOpen.scss";
 import "./Common.scss";
+
+export type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]) => void;
 
 export interface IModelOpenProps {
   accessToken: AccessToken;
@@ -154,7 +154,6 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
               <ProjectDropdown accessToken={this.props.accessToken} currentProject={this.state.currentProject} recentProjects={this.props.recentProjects} onProjectClicked={this.selectProject.bind(this)} />
             </div>
           </div>
-          <div className="user-profile"><UserProfileButton accessToken={this.props.accessToken} /></div>
         </div>
         <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
           <NavigationItem label="Recent" icon="icon-history" />

@@ -7,8 +7,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { OpenIModelPage, OpenIModelActions } from "./state";
-import { IModelViewsSelectedFunc } from "./IModelPanel";
-import { IModelOpenPanel } from "../open/IModelOpen";
+import { IModelOpenPanel, IModelViewsSelectedFunc } from "./IModelOpen";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
 

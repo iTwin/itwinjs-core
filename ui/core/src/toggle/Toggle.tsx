@@ -9,19 +9,27 @@ import { CSSProperties } from "react";
 import { CommonProps } from "../Props";
 import "./Toggle.scss";
 
-/** Toggle Button Type enum */
+/** Toggle display types */
 export enum ToggleButtonType {
+  /** Primary (green) background */
   Primary,
+  /** Blue background */
   Blue,
 }
 
 /** Properties for [[Toggle]] component */
 export interface ToggleProps extends CommonProps {
+  /** Determine if the toggle is disabled or not */
   disabled?: boolean;
+  /** Determine if the toggle is "on" or "off" */
   isOn?: boolean;
+  /** Show the toggle rounded or square (rounded is default) */
   rounded?: boolean;
+  /** Show a check mark icon when the toggle is "on" */
   showCheckmark: boolean;
+  /** Button type, either Primary or Blue */
   buttonType?: ToggleButtonType;
+  /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;
 }
 
@@ -33,6 +41,7 @@ interface ToggleState {
 
 /**
  * Toggle React component
+ * Component to show an "on" or "off state
  */
 export class Toggle extends React.Component<ToggleProps, ToggleState> {
   private _padding: number = 2;

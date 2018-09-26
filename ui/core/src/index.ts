@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export { default as UiCore } from "./UiCore";
 export { CommonProps } from "./Props";
+export * from "./checklistbox";
 export * from "./enums";
 export * from "./expandable";
 export * from "./base";

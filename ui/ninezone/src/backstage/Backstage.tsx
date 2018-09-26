@@ -20,7 +20,7 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
   header?: React.ReactNode;
   /** Optional footer content */
   footer?: React.ReactNode;
-  /** Function called when overlay is clicked. */
+  /** Function called when backstage is closed. */
   onClose?: () => void;
 }
 
@@ -56,20 +56,23 @@ export default class Backstage extends React.Component<BackstageProps> {
   public render() {
     const overlayClassName = classnames("nz-backstage-backstage_Overlay", this.props.isOpen && "nz-open", this.props.showOverlay && "nz-show");
     const backstageClassName = classnames("nz-backstage-backstage", this.props.isOpen && "nz-open", this.props.className);
-    const headerClassName = classnames("nz-header", this.props.header && "nz-show");
     return (
       <>
         <div className={overlayClassName} onClick={this._onClose}/>
         <div className={backstageClassName}>
-          <div className={headerClassName}>
-            {this.props.header}
-          </div>
+          {this.props.header &&
+            <div className="nz-header">
+              {this.props.header}
+            </div>
+          }
           <ul>
             {this.props.items}
           </ul>
-          <div className="nz-footer">
-            {this.props.footer}
-          </div>
+          {this.props.footer &&
+            <div className="nz-footer">
+              {this.props.footer}
+            </div>
+          }
         </div>
       </>
     );

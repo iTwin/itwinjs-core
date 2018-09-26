@@ -9,7 +9,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Id64Props } from "@bentley/bentleyjs-core";
-import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
+import { IModelViewsSelectedFunc } from "./IModelOpen";
 import { ProjectDialog } from "./ProjectDialog";
 import { ViewSelector } from "./ViewSelector";
 import { SearchBox, Toggle } from "@bentley/ui-core";
