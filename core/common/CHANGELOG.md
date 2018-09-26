@@ -1,6 +1,48 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Sep 2018 00:50:11 GMT and should not be manually modified.
+
+## 0.134.0
+Wed, 26 Sep 2018 00:50:11 GMT
+
+### Updates
+
+- Support for intersect snap.
+- Simplify IntersectDetail, just second CurvePrimitive and sourceId.
+- ElementAspectProps.element is now of type RelatedElementProps
+
+## 0.133.0
+Tue, 25 Sep 2018 16:41:00 GMT
+
+*Version update only*
+
+## 0.132.0
+Mon, 24 Sep 2018 18:55:46 GMT
+
+### Updates
+
+- Support center snap as part of multi-snap when interiors aren't pickable (open path or wireframe view)
+- documentation
+- Renamed X-CorrelationId to X-Correlation-Id in HTTP headers to comply with standards. 
+
+## 0.131.0
+Sun, 23 Sep 2018 17:07:30 GMT
+
+*Version update only*
+
+## 0.130.0
+Sun, 23 Sep 2018 01:19:16 GMT
+
+*Version update only*
+
+## 0.129.0
+Fri, 21 Sep 2018 23:16:13 GMT
+
+### Updates
+
+- Add initial support for the Generic domain.
+- ElementAspectProps now inherits "id" from EntityProps
+- Get rid of RpcInvocation.current.context - use ActivityLoggingContext.current instead
 
 ## 0.128.0
 Fri, 14 Sep 2018 17:08:05 GMT

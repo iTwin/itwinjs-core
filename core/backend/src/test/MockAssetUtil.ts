@@ -5,7 +5,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModelRepository, Briefcase, SeedFile, InitializationState,
+  Response, ChangeSet, HubIModel, Briefcase, SeedFile, InitializationState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
   ConnectRequestQueryOptions,
@@ -36,7 +36,7 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
 export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
   public getUserProfile(): UserProfile | undefined {
-    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley", "1004144426", "US");
+    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley", "fefac5b-bcad-488b-aed2-df27bffe5786", "1004144426", "US");
   }
   public toTokenString() { return ""; }
 }
@@ -113,7 +113,7 @@ export class MockAssetUtil {
         if (iModelAsset.substring(0, iModelAsset.indexOf(".")) === iModelAssetFolder && iModelAsset.substring(iModelAsset.indexOf(".")) === ".json") {
           const buff = IModelJsFs.readFileSync(path.join(iModelFolderPath, iModelAsset));
           const jsonObj = JSON.parse(buff.toString())[0];
-          const iModelObj = getTypedInstance<IModelRepository>(IModelRepository, jsonObj);
+          const iModelObj = getTypedInstance<HubIModel>(HubIModel, jsonObj);
           iModelName = iModelAsset.substring(0, iModelAsset.indexOf("."));
           this._iModelMap.set(iModelObj.wsgId.toString(), iModelName);
         }
@@ -215,7 +215,7 @@ export class MockAssetUtil {
             const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
             const buff = IModelJsFs.readFileSync(sampleIModelPath);
             const jsonObj = JSON.parse(buff.toString())[0];
-            return Promise.resolve(getTypedInstance<IModelRepository>(IModelRepository, jsonObj));
+            return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
           }
         }
         return Promise.reject(`No matching asset found for iModel with name: ${hubName}`);
@@ -245,7 +245,7 @@ export class MockAssetUtil {
         if (iModelPath !== "") {
           const buff = IModelJsFs.readFileSync(iModelPath);
           const jsonObj = JSON.parse(buff.toString());
-          return Promise.resolve(getTypedInstances<IModelRepository>(IModelRepository, jsonObj));
+          return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
         }
         return Promise.reject(`No matching asset found for iModel with id: ${query.getId()}`);
       });

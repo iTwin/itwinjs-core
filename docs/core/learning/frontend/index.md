@@ -1,12 +1,24 @@
-# The @bentley/imodeljs-frontend package
+# The App Frontend
 
-The `imodeljs-frontend` npm package contains code that *always* runs inside a web browser:
+The frontend of an app is concerned mainly with data display and user interaction. Frontend code:
+* Always runs in a web browser.
+* Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
 
-* When used with a backend service via HTTP, it can run in any modern web browser (see compatibility list.)
-* When used with a desktop apps, it runs inside the Electron frontend process in Chrome.
-* When used in a mobile app, it runs inside the Safari built-in browser on iOS and the Chrome browser for Android.
+The following app configurations are supported:
+* [Web app](../App.md#web-apps) - See [browser compatibility](#web-browser-compatibility)
+* [Desktop app](../App.md#desktop-apps)
+* [Mobile app](../App.md#mobile-apps)
 
-## Frontend Services
+See the [app architecture overview](../../learning/SoftwareArchitecture.md) for more on app structure.
+
+An app's frontend always implements its own frontend script and resources.
+
+An app's frontend will often depend on npm packages to help implement the its GUI.
+
+An app's frontend script requires the `@bentley/imodeljs-frontend` npm package.
+The [common packages](..\common\index.md) will also be required.
+
+These packages provide the following functions that a frontend requires:
 
 * [Login and obtain AccessTokens](../common/AccessToken.md)
 * [Open a "connection" to an iModel](./IModelConnection.md)
@@ -16,5 +28,20 @@ The `imodeljs-frontend` npm package contains code that *always* runs inside a we
 * Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
+* Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
 
-<!-- TODO - add browser compatibility list -->
+## Web browser compatibility
+
+> Note: The quality of the web browser's WebGL implementation has a big impact on display performance.
+
+### Supported
+
+* Chrome (recommended for development)
+* Firefox
+* Safari
+* Edge
+* Opera
+
+### Not supported
+
+* Internet Explorer

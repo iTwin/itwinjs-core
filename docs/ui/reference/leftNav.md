@@ -1,4 +1,4 @@
-## iModelJs UI Packages
+## iModel.js UI Packages
 
 ---
 

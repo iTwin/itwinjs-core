@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelBankAccessContextGroupProps, IModelFileSystemProps, NamedIModelAccessContextProps, makeIModelBankAccessContextGroupPropsFromFileSystem } from "./IModelBankAccessContext";
 import { AccessToken } from "../Token";
-import { IModelRepository, IModelQuery } from "../imodelhub/iModels";
+import { HubIModel, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
 import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
@@ -21,30 +21,31 @@ function unQuote(str: string): string {
   return !isQuoted(str) ? str : str.replace(/\'/g, "");
 }
 
-/** The format of a config file that imodel-bank's runWebServer program will read
+/*
+ * The format of a config file that imodel-bank's runWebServer program will read
  * in order to get the information needed to set up and run an iModelBank server.
  */
 export interface IModelBankServerConfig {
-  /** The protocol and hostname of the server. E.g., "https://localhost".
+  /* The protocol and hostname of the server. E.g., "https://localhost".
    * baseUrl will be used to form the upload and download URLs returned by the server to the client for
    * briefcase, seedfile, and changeset upload/download.
    */
   baseUrl: string;
-  /** The port where the server should listen */
+  /* The port where the server should listen */
   port: number;
-  /** The path to the .key file to be used by https. Path may be relative to the server config file.  */
+  /* The path to the .key file to be used by https. Path may be relative to the server config file.  */
   keyFile: string;
-  /** The path to the .crt file to be used by https. Path may be relative to the server config file. */
+  /* The path to the .crt file to be used by https. Path may be relative to the server config file. */
   certFile: string;
-  /** Access control URL - a server that performs the permissions check */
+  /* Access control URL - a server that performs the permissions check */
   accessControlUrl: string | undefined;
-  /** admin user name - for ULAS */
+  /* admin user name - for ULAS */
   adminConnectUserName: string;
-  /** admin user's password - for ULAS */
+  /* admin user's password - for ULAS */
   adminConnectUserPassword: string;
 }
 
-/** The format of a config file that contains logging configuration information.
+/* The format of a config file that contains logging configuration information.
  * The following macros may be used:
  * * IMODEL-BANK-DEFAULT-LOG-LEVEL  - default log level for all categories
  * * IMODEL-BANK-IMODEL-BANK-LOG-LEVEL - log level for the iModelBank logging category
@@ -54,9 +55,9 @@ export interface IModelBankServerConfig {
  * * IMODEL-BANK-SEQ-PORT - the port of the SEQ logging client
  */
 export interface IModelBankLoggingConfig {
-  /** Log levels */
+  /* Log levels */
   loggerConfig?: LoggerLevelsConfig;
-  /** SEQ logging configuration - must use the SeqConfig format. See @bentleyjs-core/SeqLoggerConfig */
+  /* SEQ logging configuration - must use the SeqConfig format. See @bentleyjs-core/SeqLoggerConfig */
   seq?: any; // SeqConfig
 }
 
@@ -68,20 +69,20 @@ export interface IModelBankFileSystemProjectOptions {
   createIfNotExist?: boolean;
 }
 
-/** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
+/* Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
  */
 export class IModelBankPermissionDummy implements IModelAuthorizationClient {
   public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
     if (!userProfile)
-      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateId: "", usageCountryIso: "" };
+      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", organizationId: "", ultimateSite: "", usageCountryIso: "" };
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
     return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
   }
 }
 
-/** Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
+/* Implements the project abstraction by managing directories and files to represent projects and imodel definitions. */
 export class IModelBankFileSystemProject extends IModelProjectClient {
   public group: IModelBankAccessContextGroupProps;
   public fsAdmin: IModelBankFileSystemAdmin;
@@ -149,13 +150,13 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     return (query !== undefined) && (query.getId() !== undefined);
   }
 
-  private toRepo(props: NamedIModelAccessContextProps): IModelRepository {
+  private toRepo(props: NamedIModelAccessContextProps): HubIModel {
     const id = props.imodeljsCoreClientsIModelBankAccessContext.iModelId;
     const name = props.name;
     return { wsgId: id, ecId: id, name };
   }
 
-  public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
+  public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     if (projectId !== undefined) {
       if (projectId === "")
         return Promise.reject(new IModelHubClientError(IModelHubStatus.UndefinedArgumentError));
@@ -163,7 +164,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
         return Promise.reject(new IModelHubClientError(IModelHubStatus.InvalidArgumentError));
     }
 
-    const repos: IModelRepository[] = [];
+    const repos: HubIModel[] = [];
     for (const context of this.group.iModelBankProjectAccessContextGroup.contexts) {
       if (this.matchesFilter(context, query))
         repos.push(this.toRepo(context));
@@ -176,7 +177,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     return Promise.resolve(repos);
   }
 
-  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, params: IModelProjectIModelCreateParams): Promise<HubIModel> {
     const existing = await this.queryIModels(alctx, _accessToken, _projectId, new IModelQuery().byName(params.name));
     alctx.enter();
     if (existing.length !== 0)

@@ -25,6 +25,7 @@ import { OpenIModelState, OpenIModelReducer, OpenIModelPage } from "./openimodel
 import { ConfigurableUIState, ConfigurableUIReducer } from "./configurableui/state";
 // @ts-ignore
 import { combineReducers, DeepReadonlyObject, DeepReadonlyArray, Action, ActionWithPayload } from "./utils/redux-ts";
+import { reducer as OidcReducer } from "redux-oidc";
 
 // interface combining all the state Framework state interfaces.
 export interface FrameworkState {
@@ -39,4 +40,5 @@ export const FrameworkReducer = combineReducers({
   overallContentState: OverallContentReducer,
   openIModelState: OpenIModelReducer,
   configurableUIState: ConfigurableUIReducer,
+  oidcState: OidcReducer,
 });

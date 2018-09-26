@@ -1,9 +1,10 @@
-# Using Views in iModelJs
+# Using Views in iModel.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications
-can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModel.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
-Multiple Views may be simultaneously visible on the same web page, and are coordinated via the [ViewManager]($frontend) class.
+Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
+
+Multiple Views may be simultaneously visible on the same web page, each with their own HTMLDivElement, and are coordinated by the ViewManager.
 
 ## ViewDefinition Elements
 
@@ -59,20 +60,22 @@ Once a view is selected from the list, it may be loaded with:
 
 ## Using Viewports
 
-`ViewState` objects hold the state of a `ViewDefinition` (*what* is shown in a View) in the frontend.
+[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
 
-To connect a ViewState to a rectangular region on a web page, you create instances of the [Viewport]($frontend) class. The constructor of Viewport takes an `HTMLCanvasElement` and a
-(fully loaded) ViewState. In this manner, Viewports form the connection between a rectangular region on your web page and a set of
-Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, and the iModelJs rendering system.
+[Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
 
-> Note: before creating a Viewport, be sure to call [IModelApp.startup]($frontend).
+To connect a ViewState to a rectangular region on a web page , you create instances of the [ScreenViewport]($frontend) class. The method [ScreenViewport.create]($frontend) takes an `HTMLDivElement` and a
+(fully loaded) ViewState. In this manner, ScreenViewport form the connection between a rectangular region on your web page (a "div") and a set of
+Models in an iModel, a display [Frustum]($common), a DisplayStyle, and the rendering system.
+
+> Note: before creating a ScreenViewport, be sure to call [IModelApp.startup]($frontend).
 
 ## ViewManager
 
 The Viewport class is responsible for displaying a View, as defined by its ViewState. However, typically the objective of showing a View is to allow users
 to modify the View itself, or to interact with its contents.
 
-To facilitate that, we need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
+To facilitate that, you need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
 
 ``` ts
 [[include:ViewManager.addViewport]]
@@ -84,9 +87,14 @@ If there is more than one Viewport visible, the ViewManager keeps track of the *
 
 ## Viewing Tools
 
-The iModelJs library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
-supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [ViewWalkTool]($frontend), [RotateTool]($frontend), etc.) or create your own subclasses for
+The iModel.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
+supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [WalkViewTool]($frontend), [RotateViewTool]($frontend), etc.) or create your own subclasses for
 special viewing operations.
+
+## View Decorators
+
+The Viewport class is responsible for displaying the *persistent* data (e.g. Models, reality data, maps, etc.) in your view. Often, however, Tools wish to show
+additional, non-persistent, information to convey context or call attention to items or areas of interest. That is accomplished via [View Decorators](./ViewDecorations)
 
 ## DisplayStyles
 
@@ -182,16 +190,16 @@ Every view may have a thumbnail that shows an approximation of what it contains.
   {Z cross Y}                         : +X
   ```
 
-  these three vectors form the rows of the view's [RotMatrix]($geometry)
+  these three vectors form the rows of the view's [Matrix3d]($geometry)
 
 * Objects in space in front of the front plane or behind the back plane are not displayed.
 
-* The focus plane is not necessarily centered between the front plane and back plane (though it often is).
+* The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
 It should generally be between the front plane and the back plane.
 
-* targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[RotMatrix]` and `focusDist`.
+* targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
 
-* The view volume is completely specified by: `{origin}<delta>[RotMatrix]`
+* The view volume is specified by: `{origin}<delta>[Matrix3d]`
 
 * Perspective is determined by `{eyePoint}`, which is independent of the view volume. Sometimes the eyepoint is not
  on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view

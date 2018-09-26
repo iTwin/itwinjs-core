@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.128.0",
+  "version": "0.134.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -10,9 +10,10 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/build-tools": "0.134.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
+    "@types/node": "^10.5.5",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
@@ -31,10 +32,10 @@
     "build": "tsc 1>&2",
     "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
-    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "cover:docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
+    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
   },
   "keywords": [

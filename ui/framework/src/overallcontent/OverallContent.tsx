@@ -5,13 +5,19 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import { User } from "oidc-client";
+import { OidcProvider } from "redux-oidc";
+import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { OpenIModel } from "../openimodel/OpenIModel";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
 import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
-
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
+import { SignInPage } from "../oidc/SignIn";
+import { CallbackPage } from "../oidc/Callback";
+import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
+import { UiFramework } from "../UiFramework";
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -22,17 +28,23 @@ export interface OverallContentProps {
   appBackstage?: React.ReactNode;
   currentPage: OverallContentPage | number;
   onIModelViewsSelected: IModelViewsSelectedFunc;
+  user: User;
+  accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
+  setAccessToken: (accessToken: AccessToken) => any;
 }
 
 function mapStateToProps(state: any) {
   return {
     currentPage: state.frameworkState.overallContentState.currentPage,
+    user: state.frameworkState.oidcState.user,
+    accessToken: state.frameworkState.overallContentState.accessToken,
   };
 }
 
 const mapDispatch = {
   setOverallPage: OverallContentActions.setOverallPage,
+  setAccessToken: OverallContentActions.setAccessToken,
 };
 
 /**
@@ -45,30 +57,57 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     super(props);
   }
 
+  public componentDidMount() {
+    const user = this.props.user;
+    if (!user || user.expired)
+      return;
+
+    const startsAt: Date = new Date(user.expires_at - user.expires_in!);
+    const expiresAt: Date = new Date(user.expires_at);
+    const userProfile = new UserProfile(user.profile.given_name, user.profile.family_name, user.profile.email!, user.profile.sub, user.profile.org_name!, user.profile.org!, user.profile.ultimate_site!, user.profile.usage_country_iso!);
+
+    const accessToken: AccessToken = AccessToken.fromJsonWebTokenString(user.access_token, userProfile, startsAt, expiresAt);
+    this.props.setAccessToken(accessToken);
+  }
+
   public render(): JSX.Element | undefined {
-    const openIModelProps = {
-      appHeaderIcon: this.props.appHeaderIcon,
-      appHeaderMessage: this.props.appHeaderMessage,
-      appHeaderClassName: this.props.appHeaderClassName,
-      appMessageClassName: this.props.appMessageClassName,
-      onIModelViewsSelected: this.props.onIModelViewsSelected,
-    };
-    const configurableUiContentProps = {
-      appBackstage: this.props.appBackstage,
-    };
     let element: JSX.Element | undefined;
-    if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
+    if (window.location.pathname === "/signin-oidc") {
+      element = <CallbackPage />;
+    } else if (!this.props.accessToken) {
+      const appHeaderProps: ApplicationHeaderProps = {
+        icon: this.props.appHeaderIcon,
+        message: this.props.appHeaderMessage,
+        headerClassName: this.props.appHeaderClassName,
+        messageClassName: this.props.appMessageClassName,
+      };
+      element = (
+        <React.Fragment>
+          <ApplicationHeader {...appHeaderProps} />
+          <SignInPage />
+        </React.Fragment>
+      );
+    } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
+      const openIModelProps = {
+        onIModelViewsSelected: this.props.onIModelViewsSelected,
+      };
       element = <OpenIModel {...openIModelProps} />;
     } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage) {
-      element =  <ConfigurableUIContent {...configurableUiContentProps} />;
+      const configurableUiContentProps = {
+        appBackstage: this.props.appBackstage,
+      };
+      element = <ConfigurableUIContent {...configurableUiContentProps} />;
     } else if (React.Children.count(this.props.children) > this.props.currentPage) {
-      element =  React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
+      element = React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }
+
     return (
-      <BeDragDropContext>
-        {element}
-        <DragDropLayerRenderer />
-      </BeDragDropContext>
+      <OidcProvider userManager={UiFramework.userManager} store={UiFramework.store}>
+        <BeDragDropContext>
+          {element}
+          <DragDropLayerRenderer />
+        </BeDragDropContext>
+      </OidcProvider>
     );
   }
 }

@@ -76,7 +76,7 @@ Represents an array of values of embedded instances of an ECStructClass, polymor
 
 Represents a property whose value is a reference to an instance related to the current instance. Only valid on classes which can be relationship endpoints: ECEntityClass, ECMixinClass and ECRelationshipClass.
 
-This reference may be as simple as the ID of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
+This reference may be as simple as the Id of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
 
 Rules for using navigation properties:
 - May only point to a singular endpoint. That is, it must point to an endpoint whose multiplicity has a max limit of 1.

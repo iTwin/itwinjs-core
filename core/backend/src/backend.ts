@@ -28,20 +28,24 @@ export * from "./ViewDefinition";
 export * from "./BisCore";
 export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
+export * from "./domains/Generic";
+export * from "./domains/GenericElements";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
- * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels. - see [learning about backends]($docs/learning/backend/index.md).
+ * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels.
  */
 /**
  * @docs-group-description IModelHost
  * Classes for configuring and administering the backend [host]($docs/learning/backend/IModelHost.md).
+ * See [the learning article]($docs/learning/backend/IModelHost.md)
  */
 /**
  * @docs-group-description iModels
- * Classes for working with [iModels]($docs/overview/iModels.md)
+ * Classes for working with [iModels]($docs/learning/iModels.md)
+ * See [the learning article]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Schema
@@ -50,14 +54,17 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Models
  * Subclasses of [Models]($docs/BIS/intro/model-fundamentals.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Elements
  * Subclasses of [Elements]($docs/BIS/intro/element-fundamentals.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description Codes
  * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ * See [the learning articles]($docs/learning/backend/index.md)
  */
 /**
  * @docs-group-description ViewDefinitions
@@ -86,6 +93,13 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
+ */
+/**
+ * @docs-group-description SQLite
+ * Classes for executing SQLite SQL queries. Use them only for exceptional cases. Prefer [ECSQL]($docs/learning/ECSQL.md) when reading
+ * the content of iModels. Prefer the [iModel APIs]($docs/learning/backend/IModelDbReadwrite.md) when modifying the content of iModels.
+ *
+ * *Note:* Executing data modifying SQL statements is a way to corrupt the local copy of an iModel.
  */
 /**
  * @docs-group-description Portability

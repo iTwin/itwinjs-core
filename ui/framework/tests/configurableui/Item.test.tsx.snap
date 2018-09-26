@@ -28,9 +28,43 @@ exports[`GroupButton <GroupButton /> renders correctly 1`] = `
         "tooltip": "",
       },
       "_itemList": ItemList {
-        "_items": Array [],
+        "_items": Array [
+          ToolItemDef {
+            "_iconLabelSupport": IconLabelSupport {
+              "iconClass": "icon-placeholder",
+              "label": "buttons.tool2",
+              "tooltip": "",
+            },
+            "execute": [Function],
+            "featureId": "",
+            "isEnabled": true,
+            "isEnabledExpr": "",
+            "isPressed": false,
+            "isVisible": true,
+            "isVisibleExpr": "",
+            "itemSyncMsg": "",
+            "toolId": "tool2",
+          },
+        ],
       },
-      "_itemMap": Map {},
+      "_itemMap": Map {
+        "tool2" => ToolItemDef {
+          "_iconLabelSupport": IconLabelSupport {
+            "iconClass": "icon-placeholder",
+            "label": "buttons.tool2",
+            "tooltip": "",
+          },
+          "execute": [Function],
+          "featureId": "",
+          "isEnabled": true,
+          "isEnabledExpr": "",
+          "isPressed": false,
+          "isVisible": true,
+          "isVisibleExpr": "",
+          "itemSyncMsg": "",
+          "toolId": "tool2",
+        },
+      },
       "_items": Array [
         "test1",
         "tool2",

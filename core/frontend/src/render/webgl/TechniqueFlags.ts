@@ -43,7 +43,7 @@ export class TechniqueFlags {
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
   public init(target: Target, pass: RenderPass, isAnimated: boolean = false): void {
-    if (RenderPass.Hilite === pass) {
+    if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass) {
       this.initForHilite(target.clipDef);
     } else {
       this._isHilite = false;

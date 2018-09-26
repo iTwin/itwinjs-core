@@ -7,7 +7,7 @@ import { Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 import { AccessToken, IModelClient } from "../../";
 import {
-  IModelRepository, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType,
 } from "../../";
@@ -110,7 +110,7 @@ function mockGetGlobalEventSASToken() {
     ["sasToken", "12345"],
     ["baseAddress", `${utils.defaultUrl}/sv1.1/Repositories/Global--Global/GlobalScope`]]));
   const requestResponse = ResponseBuilder.generatePostResponse<GlobalEventSAS>(responseObject);
-  const postBody = ResponseBuilder.generatePostBody<IModelRepository>(ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS));
+  const postBody = ResponseBuilder.generatePostBody<HubIModel>(ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
@@ -130,7 +130,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
-      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
 
     projectId = await utils.getProjectId(accessToken);
@@ -147,7 +147,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      imodelHubClient.CustomRequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 

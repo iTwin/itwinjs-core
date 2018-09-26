@@ -1054,6 +1054,7 @@ export declare class NativeECSchemaXmlContext {
   public readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
 }
 
+/** @hidden */
 export declare class SnapRequest {
   constructor();
   public doSnap(db: NativeDgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
@@ -1061,7 +1062,7 @@ export declare class SnapRequest {
 }
 
 /**
- * Helper class for iModelJs tests to disable native assertions
+ * Helper class for iModel.js tests to disable native assertions
  * @hidden
  */
 export declare class DisableNativeAssertions implements IDisposable {

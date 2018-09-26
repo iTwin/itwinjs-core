@@ -12,6 +12,7 @@ import { IModelDb } from "./IModelDb";
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDB.
+ * See [Creating models]($docs/learning/backend/CreateModels.md)
  */
 export class Model extends Entity implements ModelProps {
   public readonly modeledElement: RelatedElement;
@@ -21,6 +22,7 @@ export class Model extends Entity implements ModelProps {
   public isPrivate: boolean;
   public isTemplate: boolean;
 
+  /** @hidden */
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
@@ -32,7 +34,9 @@ export class Model extends Entity implements ModelProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  /** Add all custom-handled properties of a Model to a json object. */
+  /** Add all custom-handled properties of a Model to a json object.
+   * @hidden
+   */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.id = this.id;

@@ -17,8 +17,8 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/bentleyjs-tools",
-      "projectFolder": "tools/bentley",
+      "packageName": "@bentley/build-tools",
+      "projectFolder": "tools/build",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -54,6 +54,13 @@
     {
       "packageName": "@bentley/imodeljs-clients",
       "projectFolder": "core/clients",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-quantity",
+      "projectFolder": "core/quantity",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -181,6 +188,12 @@
     {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "agent-test-app",
+      "projectFolder": "test-apps/agent-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     }

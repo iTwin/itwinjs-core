@@ -2,6 +2,108 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.134.0",
+      "tag": "@bentley/imodeljs-frontend_v0.134.0",
+      "date": "Wed, 26 Sep 2018 00:50:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support for intersect snap."
+          },
+          {
+            "comment": "Simplify IntersectDetail, just second CurvePrimitive and sourceId."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.133.0",
+      "tag": "@bentley/imodeljs-frontend_v0.133.0",
+      "date": "Tue, 25 Sep 2018 16:41:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow QuantityFormatter to format quantities without requiring async calls."
+          },
+          {
+            "comment": "Add ability to query the iModel's default view ID from the front-end."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.132.0",
+      "tag": "@bentley/imodeljs-frontend_v0.132.0",
+      "date": "Mon, 24 Sep 2018 18:55:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Work on multi-snap support and snap to extended intersections."
+          },
+          {
+            "comment": "Support center snap as part of multi-snap when interiors aren't pickable (open path or wireframe view)"
+          },
+          {
+            "comment": "documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.131.0",
+      "tag": "@bentley/imodeljs-frontend_v0.131.0",
+      "date": "Sun, 23 Sep 2018 17:07:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.130.0",
+      "tag": "@bentley/imodeljs-frontend_v0.130.0",
+      "date": "Sun, 23 Sep 2018 01:19:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: fix for multiple classifiers"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.129.0",
+      "tag": "@bentley/imodeljs-frontend_v0.129.0",
+      "date": "Fri, 21 Sep 2018 23:16:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added customized pointer messages to ViewsFrontstage"
+          },
+          {
+            "comment": "Rework animation data to pack values and simplify extraction."
+          },
+          {
+            "comment": "Fix assertions when loading map tiles."
+          },
+          {
+            "comment": "Exclude contents of /frontend/render/webgl/ from SDK docs."
+          },
+          {
+            "comment": "WIP #34205 - Selection of classifiers for reality data."
+          },
+          {
+            "comment": "Initial implementation of quantity formatting package, tests, and example usage in IModelApp."
+          },
+          {
+            "comment": "Increase darkening of unclassified geometry.  Don't flash reality models. (For Bob Mankowsky YII)"
+          },
+          {
+            "comment": "WIP - Classification darkening of outside."
+          },
+          {
+            "comment": "WIP #34200 and #34205 - Add select and flash to classified reality data."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.128.0",
       "tag": "@bentley/imodeljs-frontend_v0.128.0",
       "date": "Fri, 14 Sep 2018 17:08:05 GMT",

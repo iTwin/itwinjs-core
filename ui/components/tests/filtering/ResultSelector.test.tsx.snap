@@ -1,0 +1,93 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ResultSelector content is '0 of 0' and buttons are disabled when result count is 0 1`] = `
+<ResultSelector
+  onSelectedChanged={[Function]}
+  resultCount={0}
+>
+  <span
+    className="result-selector"
+  >
+    <button
+      className="result-selector-button icon icon-chevron-left"
+      disabled={true}
+      onClick={[Function]}
+    />
+    <span
+      className="result-selector-current-result"
+      onClick={[Function]}
+      style={
+        Object {
+          "pointerEvents": "none",
+        }
+      }
+    >
+      0
+      <span
+        style={
+          Object {
+            "marginLeft": "5px",
+            "marginRight": "5px",
+          }
+        }
+      >
+        of
+      </span>
+      <span>
+        0
+      </span>
+    </span>
+    <button
+      className="result-selector-button icon icon-chevron-right"
+      disabled={true}
+      onClick={[Function]}
+    />
+  </span>
+</ResultSelector>
+`;
+
+exports[`ResultSelector content is '1 of X' and buttons are not disabled when result count is higher than 0 1`] = `
+<ResultSelector
+  onSelectedChanged={[Function]}
+  resultCount={10}
+>
+  <span
+    className="result-selector"
+  >
+    <button
+      className="result-selector-button icon icon-chevron-left"
+      disabled={false}
+      onClick={[Function]}
+    />
+    <span
+      className="result-selector-current-result"
+      onClick={[Function]}
+      style={
+        Object {
+          "pointerEvents": "auto",
+        }
+      }
+    >
+      1
+      <span
+        style={
+          Object {
+            "marginLeft": "5px",
+            "marginRight": "5px",
+          }
+        }
+      >
+        of
+      </span>
+      <span>
+        10
+      </span>
+    </span>
+    <button
+      className="result-selector-button icon icon-chevron-right"
+      disabled={false}
+      onClick={[Function]}
+    />
+  </span>
+</ResultSelector>
+`;

@@ -12,6 +12,7 @@ import {
   NotificationManager,
   NotifyMessageDetails,
   ToolTipOptions,
+  OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";
@@ -19,10 +20,11 @@ import { XAndY } from "@bentley/geometry-core";
 import { MessageManager } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 import { ElementTooltip } from "./ElementTooltip";
+import PointerMessage from "../messages/Pointer";
 
 /**
  * The AppNotificationManager class is a subclass of NotificationManager. This implementation uses
- * the iModelJs UI library to display alerts, messages, prompts and tooltips.
+ * the iModel.js UI library to display alerts, messages, prompts and tooltips.
  *
  * The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
  * Implementations of the NotificationManager may present the information in different ways. For example, in
@@ -42,6 +44,8 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
+    if (message.msgType === OutputMessageType.Pointer)
+      this._showPointerMessage(message);
     MessageManager.addMessage(message);
   }
 
@@ -86,6 +90,7 @@ export class AppNotificationManager extends NotificationManager {
       case (ActivityMessageEndReason.Cancelled):
         return MessageManager.endActivityMessage(false);
     }
+    return false;
   }
 
   protected toolTipIsOpen(): boolean {
@@ -106,5 +111,18 @@ export class AppNotificationManager extends NotificationManager {
    */
   protected _showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip.showTooltip(el, message, pt, options);
+  }
+
+  /**
+   * Show a Pointer message.
+   * @param _message  Text to display in message.
+   * @param _location The place to display the message.
+   */
+  protected _showPointerMessage(message: NotifyMessageDetails): void {
+    PointerMessage.showMessage(message);
+  }
+
+  protected _hidePointerMessage(): void {
+    PointerMessage.hideMessage();
   }
 }

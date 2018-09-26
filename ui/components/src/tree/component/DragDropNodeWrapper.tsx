@@ -8,7 +8,7 @@ import classnames from "classnames";
 import { TreeNode, NodeProps } from "@bentley/ui-core";
 import { withDragSource, withDropTarget } from "../../dragdrop";
 
-import "./Tree.scss";
+import "./DragDropNodeWrapper.scss";
 
 /** Props for the TreeNode React component */
 /** @hidden */

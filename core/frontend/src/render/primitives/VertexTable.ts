@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Range1d, Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   ColorIndex,
@@ -101,60 +101,61 @@ const scratchColorDef = new ColorDef();
 
 /** Describes a auxilliary channel */
 export interface AuxChannelProps {
-  readonly index: number;
   readonly name: string;
   readonly qOrigin: number[];
   readonly qScale: number[];
   readonly inputs: number[];
+  readonly indices: number[];
 }
-export class AuxDisplacement {
-  public readonly index: number;
+export interface AuxChannelBaseProps {
+  readonly name: string;
+  readonly inputs: number[];
+  readonly indices: number[];
+}
+export class AuxChannelBase {
   public readonly name: string;
+  public readonly inputs: number[];
+  public readonly indices: number[];
+
+  public constructor(props: AuxChannelBaseProps) {
+    this.name = props.name;
+    this.inputs = props.inputs;
+    this.indices = props.indices;
+  }
+}
+export class AuxDisplacement extends AuxChannelBase {
+
   public readonly qOrigin: Float32Array;
   public readonly qScale: Float32Array;
-  public readonly inputs: number[];
 
   public constructor(props: AuxChannelProps) {
-    this.index = props.index;
-    this.name = props.name;
+    super(props);
     this.qOrigin = new Float32Array(3);
     this.qScale = new Float32Array(3);
     for (let i = 0; i < 3; i++) {
       this.qOrigin[i] = props.qOrigin[i];
       this.qScale[i] = props.qScale[i];
     }
-    this.inputs = props.inputs;
   }
 }
-export class AuxParam {
-  public readonly index: number;
-  public readonly name: string;
+export class AuxParam extends AuxChannelBase {
   public readonly qOrigin: number;
   public readonly qScale: number;
-  public readonly inputs: number[];
 
   public constructor(props: AuxChannelProps) {
-    this.index = props.index;
-    this.name = props.name;
+    super(props);
     this.qOrigin = props.qOrigin[0];
     this.qScale = props.qScale[0];
-    this.inputs = props.inputs;
   }
 }
 export interface AuxNormalProps {
-  readonly index: number;
   readonly name: string;
   readonly inputs: number[];
+  readonly indices: number[];
 }
-export class AuxNormal {
-  public readonly index: number;
-  public readonly name: string;
-  public readonly inputs: number[];
-
+export class AuxNormal extends AuxChannelBase {
   public constructor(props: AuxNormalProps) {
-    this.index = props.index;
-    this.name = props.name;
-    this.inputs = props.inputs;
+    super(props);
   }
 }
 /** Describes a VertexTable. */
@@ -547,6 +548,7 @@ export interface SurfaceParams {
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
   readonly material?: RenderMaterial;
+  readonly thematicRange?: Range1d;
 }
 
 /**

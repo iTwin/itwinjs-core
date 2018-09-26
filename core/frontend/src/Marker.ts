@@ -16,8 +16,9 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 /**
- * A Marker is an [[CanvasDecoration]], whose position follows a fixed location in world space.
- *
+ * A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
+ * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
+ * see [Markers]($docs/learning/frontend/Markers)
  */
 export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
@@ -77,7 +78,7 @@ export class Marker implements CanvasDecoration {
     if (this.title)
       ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
-
+  /** Called when a mouse button is pressed over this Marker. */
   public onMouseButton?(_ev: BeButtonEvent): boolean;
 
   /** Determine whether the point is within this Marker.  */

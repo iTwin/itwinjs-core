@@ -548,7 +548,7 @@ describe("PresentationManager", () => {
                 name: faker.random.word(),
                 label: faker.random.words(),
                 persistenceUnit: faker.random.word(),
-                currentFusId: faker.random.uuid(),
+                currentFormatId: faker.random.uuid(),
               } as KindOfQuantityInfo,
             } as PropertyInfoJSON,
             relatedClassPath: [],

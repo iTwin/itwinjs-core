@@ -4,7 +4,7 @@
 import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, DeploymentEnv } from "../..";
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
-import { IModelRepository } from "../../imodelhub";
+import { HubIModel } from "../../imodelhub";
 import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
@@ -17,7 +17,7 @@ class TestIModelHubProject extends IModelProjectClient {
     const client = await new ConnectClient(TestConfig.deploymentEnv);
     return client.getProject(alctx, accessToken, query);
   }
-  public async createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<IModelRepository> {
+  public async createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<HubIModel> {
     const client = getDefaultClient();
     return client.IModels().create(alctx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
@@ -25,7 +25,7 @@ class TestIModelHubProject extends IModelProjectClient {
     const client = getDefaultClient();
     return client.IModels().delete(alctx, accessToken, projectId, iModelId);
   }
-  public async queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<IModelRepository[]> {
+  public async queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = getDefaultClient();
     return client.IModels().get(alctx, accessToken, projectId, query);
   }

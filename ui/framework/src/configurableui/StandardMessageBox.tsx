@@ -97,14 +97,6 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
     );
   }
 
-  public static getDerivedStateFromProps(newProps: StandardMessageBoxProps, state: StandardMessageBoxState): StandardMessageBoxState | null {
-    if (newProps.opened !== state.opened) {
-      return { opened: newProps.opened };
-    }
-
-    return null;
-  }
-
   private _handleButton = (buttonType: MessageBoxValue) => {
     this._closeDialog(() => {
       if (this.props.onResult)

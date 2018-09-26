@@ -30,6 +30,9 @@ export interface ViewportProps {
 
   /** Id of a default view definition to load as a starting point */
   viewDefinitionId: Id64Props;
+
+  /** @hidden */
+  onContextMenu?: (e: React.MouseEvent) => boolean;
 }
 
 /**
@@ -109,10 +112,19 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     ViewRotationCube.setViewMatrix(vp);
   }
 
+  private _handleContextMenu = (e: React.MouseEvent): boolean => {
+    e.preventDefault();
+    if (this.props.onContextMenu)
+    this.props.onContextMenu(e);
+    return false;
+  }
+
   public render() {
     return (
-      <div ref={this._viewportDiv} style={{ height: "100%", width: "100%" }}
-        onContextMenu={(e) => { e.preventDefault(); return false; }}
+      <div
+        ref={this._viewportDiv}
+        style={{ height: "100%", width: "100%" }}
+        onContextMenu={this._handleContextMenu}
       />
     );
   }

@@ -11,25 +11,35 @@ import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
-/** Properties of an ECNavigationProperty. */
+/** Properties of a NavigationProperty. */
 export interface RelatedElementProps {
+  /** The Id of the element to which this element is related. */
   id: Id64Props;
+  /** The full className of the relationship class. */
   relClassName?: string;
 }
 
 /** Properties of an [Element]($docs/bis/intro/element-fundamentals) */
 export interface ElementProps extends EntityProps {
-  model?: Id64Props | RelatedElementProps;
-  code?: CodeProps;
+  /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  model: Id64Props;
+  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  code: CodeProps;
+  /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
+  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   federationGuid?: GuidProps;
+  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
+  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
   jsonProperties?: any;
 }
 
 /** The Id and relationship class of an Element that is somehow related to another Element */
 export class RelatedElement implements RelatedElementProps {
+  /** The Id of the element to which this element is related. */
   public readonly id: Id64;
+  /** The full className of the relationship class. */
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
@@ -52,6 +62,7 @@ export class TypeDefinition extends RelatedElement {
 
 /** Properties of a [GeometricElement]($backend) */
 export interface GeometricElementProps extends ElementProps {
+  /** The id of the category for this geometric element. */
   category: Id64Props;
   geom?: GeometryStreamProps;
 }

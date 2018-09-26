@@ -8,12 +8,14 @@ import { withDropTarget, DropTargetArguments, DragSourceArguments, DropTargetPro
 import { DragDropTreeNode } from "./DragDropNodeWrapper";
 import { Tree as TreeBase, TreeBranch, TreeNode } from "@bentley/ui-core";
 import { BeInspireTree, InspireTreeNode, InspireTreeDataProvider, NodePredicate } from "./BeInspireTree";
-import Highlighter from "react-highlight-words";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
+import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
+import UiComponents from "../../UiComponents";
+import "./Tree.scss";
 
 // tslint:disable-next-line:variable-name
 const DropTree = withDropTarget(TreeBase);
@@ -34,6 +36,8 @@ export interface TreeEvents {
 
 export interface TreeState {
   rootNodes: InspireTreeNode[];
+  /** @hidden */
+  highlightingEngine?: HighlightingEngine;
 }
 
 /** Props for the Tree React component  */
@@ -46,7 +50,7 @@ export interface TreeProps {
   selectedNodes?: string[] | NodePredicate;
   selectionMode?: SelectionMode;
   expandedNodes?: ReadonlyArray<string>;
-  highlightString?: string;
+  nodeHighlightingProps?: HighlightableTreeProps;
   key?: any;
 }
 
@@ -60,6 +64,7 @@ export type Props = TreeProps & Partial<TreeEvents>;
 export default class Tree extends React.Component<Props, TreeState> {
 
   private _tree: BeInspireTree;
+  private _treeComponent: React.RefObject<TreeBase> = React.createRef();
   private _nodeRenderFunc: (data: InspireTreeNode, children?: React.ReactNode, index?: number) => React.ReactNode;
   private _isMounted = false;
   private _selectionHandler: SelectionHandler<InspireTreeNode>;
@@ -118,7 +123,23 @@ export default class Tree extends React.Component<Props, TreeState> {
 
     if (this.props.onTreeReloaded)
       this.props.onTreeReloaded();
+
+    // Move to getDeriveStateFromProps when merge with Grigas' refactoring happens
+    if (props.nodeHighlightingProps) {
+      this.setState({ highlightingEngine: new HighlightingEngine(props.nodeHighlightingProps) });
+    } else if (!props.nodeHighlightingProps) {
+      this.setState({ highlightingEngine: undefined });
+    }
   }
+
+  // public static getDerivedStateFromProps(props: Props) {
+  //   if (props.nodeHighlightingProps) {
+  //     return { highlightingEngine: new HighlightingEngine(props.nodeHighlightingProps) };
+  //   } else if (!props.nodeHighlightingProps) {
+  //     return { highlightingEngine: undefined };
+  //   }
+  //   return null;
+  // }
 
   public componentWillMount() {
     this._isMounted = true;
@@ -163,17 +184,11 @@ export default class Tree extends React.Component<Props, TreeState> {
     this.setState({ rootNodes });
   }
 
-  private _getLabelComponent = (text: string) => {
-    if (this.props.highlightString) {
-      return (
-        <Highlighter
-          searchWords={[this.props.highlightString]}
-          autoEscape={true}
-          textToHighlight={text}
-        />
-      );
+  private _getNodeLabelComponent = (node: InspireTreeNode) => {
+    if (this.state.highlightingEngine) {
+      return this.state.highlightingEngine.getNodeLabelComponent(node);
     }
-    return text;
+    return node.text;
   }
 
   private _defaultRenderNode = (data: InspireTreeNode, children?: React.ReactNode, index?: number): React.ReactNode => {
@@ -262,7 +277,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           isSelected={data.selected()}
           isLoading={data.loading()}
           isLeaf={!data.hasOrWillHaveChildren()}
-          label={this._getLabelComponent(data.text ? data.text : "")}
+          label={this._getNodeLabelComponent(data)}
           icon={<span className={data.icon} />}
           onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
           onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}
@@ -280,7 +295,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           isSelected={data.selected()}
           isLoading={data.loading()}
           isLeaf={!data.hasOrWillHaveChildren()}
-          label={this._getLabelComponent(data.text ? data.text : "")}
+          label={this._getNodeLabelComponent(data)}
           icon={<span className={data.icon} />}
           onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
           onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}
@@ -334,6 +349,23 @@ export default class Tree extends React.Component<Props, TreeState> {
       <TreeBranch>{items}</TreeBranch>);
   }
 
+  private renderTree(nodes: InspireTreeNode[] | undefined) {
+    if (nodes && nodes.length)
+      return this.renderBranch(nodes);
+    return (
+      <p className="ui-components-tree-errormessage">
+        {this.props.nodeHighlightingProps ?
+          UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+          UiComponents.i18n.translate("UiComponents:general.noData")}
+      </p>
+    );
+  }
+
+  public componentDidUpdate() {
+    if (this.state.highlightingEngine && this._treeComponent.current)
+      this.state.highlightingEngine.scrollToActiveNode(this._treeComponent.current);
+  }
+
   // Renders the wrapping div and root branch
   public render() {
     if (this.props.dropProps) {
@@ -363,13 +395,13 @@ export default class Tree extends React.Component<Props, TreeState> {
           dropProps={dropProps}
           shallow={true}
         >
-          {this.renderBranch(this.state.rootNodes)}
+          {this.renderTree(this.state.rootNodes)}
         </DropTree>
       );
     } else
       return (
-        <div onMouseDown={this._onMouseDown}>
-          <TreeBase>{this.renderBranch(this.state.rootNodes)}</TreeBase>
+        <div className="ui-components-tree" onMouseDown={this._onMouseDown}>
+          <TreeBase ref={this._treeComponent}>{this.renderTree(this.state.rootNodes)}</TreeBase>
         </div>
       );
   }

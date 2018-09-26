@@ -95,9 +95,8 @@ function createCommon(animated: boolean): ProgramBuilder {
   const builder = new ProgramBuilder(true, animated);
   const vert = builder.vert;
 
-  const animateNormal = false; // WIP...
   if (animated)
-    addAnimation(vert, true, animateNormal);
+    addAnimation(vert, true, true);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -189,11 +188,9 @@ const computeNormal = `
 `;
 
 const computeAnimatedNormal = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-    return vec3(0.0);
-
-  return normalize(u_nmx * computeAnimationNormal(u_animParams.z, u_animParams.w));
-`;
+  if (u_animNormalParams.x >= 0.0)
+    return normalize(u_nmx * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
+` + computeNormal;
 
 const applyBackgroundColor = `
   if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
@@ -211,11 +208,9 @@ const computeTexCoord = `
   return unquantize2d(qcoords, u_qTexCoordParams);
 `;
 const computeAnimatedTexCoord = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
-    return vec2(0.0);
-
-  return computeAnimationParam(u_qAnimScalarParams.x, u_qAnimScalarParams.y, u_qAnimScalarParams.z, u_qAnimScalarParams.w);
-`;
+  if (u_animScalarQParams.x >= 0.0)
+    return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_animScalarQParams.y);
+` + computeTexCoord;
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -262,27 +257,25 @@ function addNormal(builder: ProgramBuilder, animated: boolean) {
   addNormalMatrix(builder.vert);
 
   builder.vert.addFunction(octDecodeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", false && animated ? computeAnimatedNormal : computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
 }
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
-  if (!animated) {
-    builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
-      prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-        const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-        const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
-        if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-          const uvQParams = surfGeom.lut.uvQParams;
-          if (undefined !== uvQParams) {
-            uniform.setUniform4fv(uvQParams);
-          }
+  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        const uvQParams = surfGeom.lut.uvQParams;
+        if (undefined !== uvQParams) {
+          uniform.setUniform4fv(uvQParams);
         }
-      });
+      }
     });
-  }
+  });
 
   builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);

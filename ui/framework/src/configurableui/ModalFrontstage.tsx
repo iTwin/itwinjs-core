@@ -4,7 +4,6 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 
 import BackButton from "@bentley/ui-ninezone/lib/toolbar/button/Back";
 import "./ModalFrontstage.scss";
@@ -37,24 +36,18 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
   }
 
   public render() {
-    const smokedGlassStyle: CSSProperties = {
-      position: "absolute",
-      left: "0px",
-      width: "100%",
-      top: "0px",
-      height: "100%",
-      opacity: 0.85,
-      background: "#111111",
-      zIndex: 590, // behind the modal frontstage.
-    };
-
     const openClass = (this.props.isOpen) ? " open" : "";
 
     return (
       <>
         <div className={"modal-frontstage" + openClass}>
           <div className="app-bar">
-            <BackButton onClick={this._onGoBack} />
+            <BackButton className="nz-toolbar-button-app"
+              onClick={this._onGoBack}
+              icon={
+                <i className="icon icon-progress-backward" />
+              }
+            />
             <span className="bwc-text-headline">{this.props.title}</span>
             {this.props.appBarRight &&
               <span className="app-bar-right">{this.props.appBarRight}</span>
@@ -64,7 +57,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
             {this.props.children}
           </div>
         </div>
-        <div style={smokedGlassStyle} />
+        <div className="modal-frontstage-overlay" />
       </>
     );
   }

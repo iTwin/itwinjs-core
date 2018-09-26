@@ -8,9 +8,10 @@ import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeState, Tile, TileLoader, MissingNodes } from "./TileTree";
+import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
+/** @hidden */
 class CesiumUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d {
     const box: number[] = boundingVolume.box;
@@ -37,6 +38,7 @@ class CesiumUtils {
   }
 }
 
+/** @hidden */
 class RealityModelTileTreeProps implements TileTreeProps {
   public id: string = "";
   public rootTile: TileProps;
@@ -52,6 +54,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
   }
 }
 
+/** @hidden */
 class RealityModelTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -73,9 +76,13 @@ class RealityModelTileProps implements TileProps {
     }
   }
 }
+
+/** @hidden */
 class FindChildResult {
   constructor(public id: string, public json: any) { }
 }
+
+/** @hidden */
 class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
@@ -97,9 +104,9 @@ class RealityModelTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
-    const missingArray = missingTiles.extractArray();
+  public async loadTileContents(missingArray: Tile[]): Promise<void> {
     await Promise.all(missingArray.map(async (missingTile) => {
+      assert(missingTile.isNotLoaded);
       if (missingTile.isNotLoaded) {
         const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
         if (foundChild !== undefined) {
@@ -176,7 +183,10 @@ interface RDSClientProps {
   tilesId: string;
 }
 
-// ##TODO temporarly here for testing, needs to be moved to the clients repo
+/**
+ * ###TODO temporarly here for testing, needs to be moved to the clients repo
+ * @hidden
+ */
 class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private _baseUrl: string = "";

@@ -14,6 +14,7 @@ import { IModelDb } from "./IModelDb";
 export class ElementAspect extends Entity implements ElementAspectProps {
   public element: RelatedElement;
 
+  /** @hidden */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.element = RelatedElement.fromJSON(props.element)!;

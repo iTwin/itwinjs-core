@@ -1,0 +1,67 @@
+{
+  "name": "@bentley/imodeljs-quantity",
+  "version": "0.134.0",
+  "description": "Quantity formatting and parsing concepts in typescript",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "repository": {},
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib package-deps.json .nyc_output",
+    "lint": "tslint --project . 1>&2",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/quantity/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/*.test.ts",
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel",
+    "iModelJs",
+    "Quantity"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.134.0",
+    "@bentley/build-tools": "0.134.0",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/glob": "^5.0.35",
+    "@types/mocha": "^5.2.5",
+    "@types/sinon": "^5.0.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "mocha": "^5.2.0",
+    "nyc": "^13.0.1",
+    "rimraf": "^2.6.2",
+    "sinon": "^6.1.4",
+    "ts-node": "^7.0.1",
+    "typedoc": "^0.11.1",
+    "typescript": "~3.0.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "0.134.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov",
+      "cobertura"
+    ],
+    "report-dir": "./lib/test/coverage"
+  }
+}

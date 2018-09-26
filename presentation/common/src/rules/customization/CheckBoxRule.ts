@@ -16,6 +16,13 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
   ruleType: RuleTypes.CheckBox;
 
   /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
+  /**
    * Name of boolean type ECProperty which is bound with the check box state. When set,
    * property value gets bound to checkbox state.
    *

@@ -344,6 +344,9 @@ export class AccuSnap implements Decorator {
     if (!hit)
       return false;
 
+    if (hit.isModelHit)
+      return false;       // Avoid annoying flashing of reality models.
+
     const snap = AccuSnap.toSnapDetail(hit);
     return !snap || snap.isHot || this._settings.hiliteColdHits;
   }

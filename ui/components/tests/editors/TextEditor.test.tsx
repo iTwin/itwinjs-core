@@ -7,9 +7,6 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import { TextEditor } from "../../src/editors/TextEditor";
 import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "../../src/properties";
-// import * as moq from "typemoq";
-// import * as enzyme from "enzyme";
-// import * as sinon from "sinon";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -50,6 +47,8 @@ describe("<TextEditor />", () => {
     setImmediate(() => {
       const textEditor = wrapper.instance() as TextEditor;
       expect(textEditor.getValue()).to.equal("MyValue");
+
+      wrapper.unmount();
       done();
     }, 0);
   });
@@ -58,6 +57,7 @@ describe("<TextEditor />", () => {
     const wrapper = mount(<TextEditor />);
     const textEditor = wrapper.instance() as TextEditor;
     expect(textEditor.getInputNode()).to.not.be.null;
+    wrapper.unmount();
   });
 
   it("HTML input onChange updates value", () => {
@@ -65,11 +65,13 @@ describe("<TextEditor />", () => {
     const wrapper = mount(<TextEditor value={propertyRecord} />);
     const textEditor = wrapper.instance() as TextEditor;
     const inputNode = wrapper.find("input");
-    expect(inputNode).to.not.be.null;
+
+    expect(inputNode.length).to.eq(1);
     if (inputNode) {
-      inputNode.simulate("change", { target: { value: "My new value" } });
+      const testValue = "My new value";
+      inputNode.simulate("change", { target: { value: testValue } });
       wrapper.update();
-      expect(textEditor.getValue()).to.equal("My new value");
+      expect(textEditor.getValue()).to.equal(testValue);
     }
   });
 });

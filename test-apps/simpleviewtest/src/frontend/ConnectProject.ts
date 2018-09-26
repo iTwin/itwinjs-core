@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, IModelRepository, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, HubIModel, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
 import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
@@ -71,11 +71,11 @@ class IModelApi {
   }
 
   /** Get all iModels in a project */
-  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<IModelRepository | undefined> {
+  public static async getIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: IModelRepository[] = await IModelApi._imodelClient.IModels().get(alctx, accessToken, projectId, queryOptions);
+    const iModels: HubIModel[] = await IModelApi._imodelClient.IModels().get(alctx, accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {

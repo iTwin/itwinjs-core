@@ -142,7 +142,7 @@ export class UserStatisticsHandler {
   /**
    * Get relative url for UserStatistics requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
   private getRelativeUrl(imodelId: string, userId?: string) {
@@ -152,7 +152,7 @@ export class UserStatisticsHandler {
   /**
    * Get [[UserStatistics]].
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[UserStatistics]] or select different data from them.
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -244,7 +244,7 @@ export class UserInfoHandler {
   /**
    * Get relative url for UserInfo requests.
    * @hidden
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
   private getRelativeUrl(imodelId: string, userId?: string) {
@@ -254,7 +254,7 @@ export class UserInfoHandler {
   /**
    * Get the information on users who have accessed the iModel.
    * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[IModelRepository]].
+   * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */

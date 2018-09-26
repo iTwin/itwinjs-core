@@ -26,14 +26,14 @@ interface TableExampleState {
   selectedIndexes: any[];
 }
 
-const createPropertyRecord = (value: string, column: ColumnDescription) => {
+const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {
   const v: PropertyValue = {
     valueFormat: PropertyValueFormat.Primitive,
     value,
     displayValue: value,
   };
   const pd: PropertyDescription = {
-    typename: "text",
+    typename,
     name: column.key,
     displayLabel: column.label,
   };
@@ -74,15 +74,15 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
         key: "id",
-        record: createPropertyRecord(i.toString(), columns[0]),
+        record: createPropertyRecord(i, columns[0], "int"),
       });
       row.cells.push({
         key: "title",
-        record: createPropertyRecord("Title " + i, columns[1]),
+        record: createPropertyRecord("Title " + i, columns[1], "text"),
       });
       row.cells.push({
         key: "more",
-        record: createPropertyRecord("More Data - " + i, columns[2]),
+        record: createPropertyRecord("More Data - " + i, columns[2], "text"),
       });
       rows.push(row);
     }
@@ -123,7 +123,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
   }
 
-  private _handlePropertyUpdated = (args: PropertyUpdatedArgs): Promise<boolean> => {
+  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs): Promise<boolean> => {
     let updated = false;
 
     if (args.propertyRecord) {
@@ -131,7 +131,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       updated = true;
     }
 
-    return Promise.resolve(updated);
+    return updated;
   }
 
   public render(): React.ReactNode {

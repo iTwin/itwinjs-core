@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+ .node-drop-target {
+   &.above {
+     border-top: solid black 1px;
+   }
+   &.on {
+     background-color: $bwc-blue-8;
+   }
+   &.below {
+     border-bottom: solid black 1px;
+   }
+   &.dragging {
+     .contents {
+       color: $bwc-gray;
+     }
+   }
+ }

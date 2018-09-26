@@ -17,6 +17,13 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
   ruleType: RuleTypes.LabelOverride;
 
   /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
+  /**
    * Defines the label that should be used for node. This is
    * an [ECExpression]($docs/learning/customization/ECExpressions.md), so label
    * can be defined/formatted dynamically based on the context - for example

@@ -1,4 +1,4 @@
-### [The iModelJs Library](./index.md)
+### [The iModel.js Library](./index.md)
 - [Frontend](./frontend/index.md)
 - [Backend](./backend/index.md)
 - [Common](./common/index.md)
@@ -8,7 +8,8 @@
 &nbsp;
 ### Helpful links
 - [ECSQL](./ECSQL.md)
+- [iModelHub](./iModelHub/index.md)
 - [Wire Format](./WireFormat.md)
-- [Frequently asked Questions](./faq.md)
+- [Frequently Asked Questions](./faq.md)
 - [Guidelines and Tips](./guidelines/index.md)
-- [iModelJs Glossary](./Glossary.md)
+- [iModel.js Glossary](./Glossary.md)

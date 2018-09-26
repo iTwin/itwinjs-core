@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.128.0",
-  "description": "iModelJs localization code",
+  "version": "0.134.0",
+  "description": "iModel.js localization code",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
@@ -26,18 +26,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.128.0"
+    "@bentley/bentleyjs-core": "0.134.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.128.0",
-    "@bentley/bentleyjs-tools": "0.128.0",
+    "@bentley/bentleyjs-core": "0.134.0",
+    "@bentley/build-tools": "0.134.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
+    "@types/node": "^10.5.5",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",

@@ -115,6 +115,16 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
   const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
+  if (undefined === config.viewName) {
+    const defaultViewId = (await state.iModelConnection!.views.queryDefaultViewId()).toString();
+    for (const spec of viewSpecs) {
+      if (spec.id.toString() === defaultViewId) {
+        config.viewName = spec.name;
+        break;
+      }
+    }
+  }
+
   for (const viewSpec of viewSpecs) {
     const option = document.createElement("option");
     option.text = viewSpec.name;
@@ -122,6 +132,7 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
     viewMap.set(viewSpec.name, viewSpec);
     if (undefined === config.viewName)
       config.viewName = viewSpec.name;
+
     if (viewSpec.name === config.viewName) {
       viewList!.value = viewSpec.name;
       const viewState = await state.iModelConnection!.views.load(viewSpec.id);
@@ -1403,6 +1414,11 @@ function addRenderModeHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
 }
 
+function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool menu
+  const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1453,6 +1469,7 @@ function wireIconsToFunctions() {
   // debug tool handlers
   document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
   document.getElementById("projectExtents")!.addEventListener("click", () => ProjectExtentsDecoration.toggle());
+  document.getElementById("debugToolsMenu")!.addEventListener("click", () => { keepOpenDebugToolsMenu(); });
 
   // standard view rotation handlers
   document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));

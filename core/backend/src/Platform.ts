@@ -32,7 +32,7 @@ export class Platform {
   /** Query if this is a mobile configuration */
   public static get isMobile(): boolean { return Platform.imodeljsMobile !== undefined; }
 
-  /** Query if this is running in nodejs  */
+  /** Query if this is running in Node.js  */
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 }
 

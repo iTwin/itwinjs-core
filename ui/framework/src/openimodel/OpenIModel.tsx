@@ -5,31 +5,32 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { OpenIModelPage, OpenIModelActions } from "./state";
-import { ApplicationHeader, ApplicationHeaderProps } from "./ApplicationHeader";
 import { IModelViewsSelectedFunc } from "./IModelPanel";
 import { IModelOpenPanel } from "../open/IModelOpen";
-import { SignInPage } from "../open/SignIn";
+import { UiFramework } from "../UiFramework";
+import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
 
 /** Properties for the OpenIModel component */
 export interface OpenIModelProps {
-  appHeaderIcon: React.ReactNode;
-  appHeaderMessage: string;
-  appHeaderClassName?: string;
-  appMessageClassName?: string;
+  accessToken: AccessToken;
   currentPage: OpenIModelPage;
   onIModelViewsSelected: IModelViewsSelectedFunc;
   setIModelPage: (page: OpenIModelPage) => any;
+  setRecentProjects: (projects: ProjectInfo[]) => any;
 }
 
 function mapStateToProps(state: any) {
   return {
     currentPage: state.frameworkState.openIModelState.currentPage,
+    accessToken: state.frameworkState.overallContentState.accessToken,
   };
 }
 
 const mapDispatch = {
   setIModelPage: OpenIModelActions.setIModelPage,
+  setRecentProjects: OpenIModelActions.setRecentProjects,
 };
 
 /**
@@ -42,29 +43,25 @@ class OpenIModelComponent extends React.Component<OpenIModelProps> {
     super(props);
   }
 
+  public componentDidMount() {
+    if (this.props.accessToken) {
+      UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => {
+        console.log("Done retrieving recentProjects", projectInfos); // tslint:disable-line:no-console
+        this.props.setRecentProjects(projectInfos);
+      });
+    }
+  }
+
   public render(): JSX.Element | undefined {
-    const appHeaderProps: ApplicationHeaderProps = {
-      icon: this.props.appHeaderIcon,
-      message: this.props.appHeaderMessage,
-      headerClassName: this.props.appHeaderClassName,
-      messageClassName: this.props.appMessageClassName,
-    };
     const iModelPanelProps = {
       onIModelViewsSelected: this.props.onIModelViewsSelected,
     };
-    if (OpenIModelPage.LoginPage === this.props.currentPage) {
-      return (
-        <React.Fragment>
-          <ApplicationHeader {...appHeaderProps} />
-          <SignInPage />
-        </React.Fragment>
-      );
-    } else
-      return (
-        <React.Fragment>
-          <IModelOpenPanel {...iModelPanelProps} />
-        </React.Fragment>
-      );
+
+    return (
+      <React.Fragment>
+        <IModelOpenPanel {...iModelPanelProps} />
+      </React.Fragment>
+    );
   }
 }
 

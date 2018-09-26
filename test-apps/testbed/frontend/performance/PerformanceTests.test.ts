@@ -1,82 +1,352 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ViewState, ScreenViewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common"; // tslint:disable-line
-import { AccessToken, Project, IModelRepository } from "@bentley/imodeljs-clients"; // @ts-ignore
-import { PerformanceWriterClient } from "./PerformanceWriterClient";
-import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend"; // @ts-ignore
-import { Target, PerformanceMetrics } from "@bentley/imodeljs-frontend/lib/webgl";
-import { IModelApi } from "./IModelApi"; // @ts-ignore
-import { ProjectApi } from "./ProjectApi"; // @ts-ignore
-import { CONSTANTS } from "../../common/Testbed";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
+import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients"; // @ts-ignore
+import { StopWatch } from "@bentley/bentleyjs-core";
+import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/webgl";
+import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
+import { IModelApi } from "./IModelApi";
+import { ProjectApi } from "./ProjectApi";
+import { assert } from "chai";
+import * as fs from "fs";
 import * as path from "path";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "test-apps/testbed/frontend/performance/imodels/");
+// Full path of the json file; will use the default json file instead if this file cannot be found
+const jsonFilePath = "";
 
-function createWindow() {
-  const canv = document.createElement("canvas");
-  canv.id = "imodelview";
-  document.body.appendChild(canv);
+const wantConsoleOutput: boolean = false;
+function debugPrint(msg: string): void {
+  if (wantConsoleOutput)
+    console.log(msg); // tslint:disable-line
 }
 
-class PerformanceEntryData {
-  public tileLoadingTime = 999999;
-  public scene = 999999;
-  public garbageExecute = 999999; // This is mostly the begin paint now.
-  public initCommands = 999999;
-  public backgroundDraw = 999999; // This is from the beginning of the draw command until after renderBackground has completed
-  public setClips = 999999;
-  public opaqueDraw = 999999;
-  public translucentDraw = 999999;
-  public hiliteDraw = 999999;
-  public compositeDraw = 999999;
-  public overlayDraw = 999999; // The world and view overlay draw passes
-  public renderFrameTime = 999999;
-  public glFinish = 999999; // This includes end paint and glFinish
-  public totalTime = 999999;
+function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
 }
 
-class PerformanceEntry {
-  public imodelName = "unknown";
-  public viewName = "unknown";
-  public viewFlags = "unknown";
-  public data = new PerformanceEntryData();
+function removeFilesFromDir(startPath: string, filter: string) {
+  if (!fs.existsSync(startPath))
+    return;
+  const files = fs.readdirSync(startPath);
+  files.forEach((file) => {
+    const filename = path.join(startPath, file);
+    if (fs.lstatSync(filename).isDirectory()) {
+      removeFilesFromDir(filename, filter); // recurse
+    } else if (filename.indexOf(filter) >= 0) {
+      debugPrint("deleting file " + filename);
+      fs.unlinkSync(filename); // Delete file
+    }
+  });
+}
 
-  public constructor(frameTimes: number[], imodelName?: string, viewName?: string, viewFlags?: string) {
-    let sumOfTimes = 0;
-    for (let i = 0; i < 10; i++)
-      sumOfTimes += frameTimes[i];
+function readJsonFile() {
+  let jsonStr = "";
+  const defaultJsonFile = "frontend\\performance\\DefaultConfig.json";
+  if (fs.existsSync(jsonFilePath))
+    jsonStr = fs.readFileSync(jsonFilePath).toString();
+  else if (fs.existsSync(defaultJsonFile))
+    jsonStr = fs.readFileSync(defaultJsonFile).toString();
+  return JSON.parse(jsonStr);
+}
 
-    const data = this.data;
-    data.scene = frameTimes[0];
-    data.garbageExecute = frameTimes[1]; // This is mostly the begin paint now.
-    data.initCommands = frameTimes[2];
-    data.backgroundDraw = frameTimes[3]; // This is from the begining of the draw command until after renderBackground has completed
-    data.setClips = frameTimes[4];
-    data.opaqueDraw = frameTimes[5];
-    data.translucentDraw = frameTimes[6];
-    data.hiliteDraw = frameTimes[7];
-    data.compositeDraw = frameTimes[8];
-    data.overlayDraw = frameTimes[9]; // The world and view overlay draw passes and the end paint
-    data.renderFrameTime = sumOfTimes;
-    data.glFinish = frameTimes[10];
-    data.totalTime = sumOfTimes + frameTimes[10];
+function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
+  if (!vfo) vfo = new ViewFlag.Overrides();
+  if (vf) {
+    if (vf.hasOwnProperty("dimensions"))
+      vfo.setShowDimensions(vf.dimensions);
+    if (vf.hasOwnProperty("patterns"))
+      vfo.setShowPatterns(vf.patterns);
+    if (vf.hasOwnProperty("weights"))
+      vfo.setShowWeights(vf.weights);
+    if (vf.hasOwnProperty("styles"))
+      vfo.setShowStyles(vf.styles);
+    if (vf.hasOwnProperty("transparency"))
+      vfo.setShowTransparency(vf.transparency);
+    if (vf.hasOwnProperty("fill"))
+      vfo.setShowFill(vf.fill);
+    if (vf.hasOwnProperty("textures"))
+      vfo.setShowTextures(vf.textures);
+    if (vf.hasOwnProperty("materials"))
+      vfo.setShowMaterials(vf.materials);
+    if (vf.hasOwnProperty("visibleEdges"))
+      vfo.setShowVisibleEdges(vf.visibleEdges);
+    if (vf.hasOwnProperty("hiddenEdges"))
+      vfo.setShowHiddenEdges(vf.hiddenEdges);
+    if (vf.hasOwnProperty("sourceLights"))
+      vfo.setShowSourceLights(vf.sourceLights);
+    if (vf.hasOwnProperty("cameraLights"))
+      vfo.setShowCameraLights(vf.cameraLights);
+    if (vf.hasOwnProperty("solarLights"))
+      vfo.setShowSolarLight(vf.solarLights);
+    if (vf.hasOwnProperty("shadows"))
+      vfo.setShowShadows(vf.shadows);
+    if (vf.hasOwnProperty("clipVolume"))
+      vfo.setShowClipVolume(vf.clipVolume);
+    if (vf.hasOwnProperty("constructions"))
+      vfo.setShowConstructions(vf.constructions);
+    if (vf.hasOwnProperty("monochrome"))
+      vfo.setMonochrome(vf.monochrome);
+    if (vf.hasOwnProperty("noGeometryMap"))
+      vfo.setIgnoreGeometryMap(vf.noGeometryMap);
+    if (vf.hasOwnProperty("backgroundMap"))
+      vfo.setShowBackgroundMap(vf.backgroundMap);
+    if (vf.hasOwnProperty("hLineMaterialColors"))
+      vfo.setUseHlineMaterialColors(vf.hLineMaterialColors);
+    if (vf.hasOwnProperty("edgeMask"))
+      vfo.setEdgeMask(Number(vf.edgeMask));
 
-    if (imodelName) this.imodelName = imodelName;
-    if (viewName) this.viewName = viewName;
-    if (viewFlags) this.viewFlags = viewFlags;
+    if (vf.hasOwnProperty("renderMode")) {
+      const rm: string = vf.renderMode.toString();
+      switch (rm.toLowerCase().trim()) {
+        case "wireframe":
+          vfo.setRenderMode(RenderMode.Wireframe);
+          break;
+        case "hiddenline":
+          vfo.setRenderMode(RenderMode.HiddenLine);
+          break;
+        case "solidfill":
+          vfo.setRenderMode(RenderMode.SolidFill);
+          break;
+        case "smoothshade":
+          vfo.setRenderMode(RenderMode.SmoothShade);
+          break;
+        case "0":
+          vfo.setRenderMode(RenderMode.Wireframe);
+          break;
+        case "3":
+          vfo.setRenderMode(RenderMode.HiddenLine);
+          break;
+        case "4":
+          vfo.setRenderMode(RenderMode.SolidFill);
+          break;
+        case "6":
+          vfo.setRenderMode(RenderMode.SmoothShade);
+          break;
+      }
+    }
+  }
+  return vfo;
+}
+
+function getRenderMode(): string {
+  switch (activeViewState.viewState!.displayStyle.viewFlags.renderMode) {
+    case 0: return "Wireframe";
+    case 3: return "HiddenLine";
+    case 4: return "SolidFill";
+    case 6: return "SmoothShade";
+    default: return "";
   }
 }
 
-async function printResults(frameTimes: number[]) {
-  await PerformanceWriterClient.addEntry(new PerformanceEntry(frameTimes, configuration.iModelName, configuration.viewName));
+function getViewFlagsString(): string {
+  const vf = activeViewState.viewState!.displayStyle.viewFlags;
+  let vfString = "";
+  if (!vf.dimensions) vfString += "-dim";
+  if (!vf.patterns) vfString += "-pat";
+  if (!vf.weights) vfString += "-wt";
+  if (!vf.styles) vfString += "-sty";
+  if (!vf.transparency) vfString += "-trn";
+  if (!vf.fill) vfString += "-fll";
+  if (!vf.textures) vfString += "-txt";
+  if (!vf.materials) vfString += "-mat";
+  if (vf.visibleEdges) vfString += "+vsE";
+  if (vf.hiddenEdges) vfString += "+hdE";
+  if (vf.sourceLights) vfString += "+scL";
+  if (vf.cameraLights) vfString += "+cmL";
+  if (vf.solarLight) vfString += "+slL";
+  if (vf.shadows) vfString += "+shd";
+  if (!vf.clipVolume) vfString += "-clp";
+  if (vf.constructions) vfString += "+con";
+  if (vf.monochrome) vfString += "+mno";
+  if (vf.noGeometryMap) vfString += "+noG";
+  if (vf.backgroundMap) vfString += "+bkg";
+  if (vf.hLineMaterialColors) vfString += "+hln";
+  if (vf.edgeMask === 1) vfString += "+genM";
+  if (vf.edgeMask === 2) vfString += "+useM";
+  return vfString;
+}
+
+function createWindow() {
+  const div = document.createElement("div");
+  div.id = "imodelview";
+  document.body.appendChild(div);
+}
+
+async function waitForTilesToLoad(modelLocation?: string) {
+  if (modelLocation) {
+    removeFilesFromDir(modelLocation, ".Tiles");
+    removeFilesFromDir(modelLocation, ".TileCache");
+  }
+
+  theViewport!.continuousRendering = false;
+
+  // Start timer for tile loading time
+  const timer = new StopWatch(undefined, true);
+  let haveNewTiles = true;
+  while (haveNewTiles) {
+    theViewport!.sync.setRedrawPending;
+    theViewport!.sync.invalidateScene();
+    theViewport!.renderFrame();
+
+    const requests = new TileRequests();
+    const sceneContext = new SceneContext(theViewport!, requests);
+    activeViewState.viewState!.createScene(sceneContext);
+    requests.requestMissing();
+
+    // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
+    // debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
+
+    await resolveAfterXMilSeconds(100);
+  }
+  theViewport!.continuousRendering = false;
+  theViewport!.renderFrame();
+  timer.stop();
+  curTileLoadingTime = timer.current.milliseconds;
+}
+
+function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: DefaultConfigs): Map<string, number | string> {
+  const rowData = new Map<string, number | string>();
+  rowData.set("iModel", configs.iModelName!);
+  rowData.set("View", configs.viewName!);
+  rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
+  rowData.set("Render Mode", getRenderMode());
+  rowData.set("View Flags", " " + getViewFlagsString());
+  rowData.set("Tile Loading Time", curTileLoadingTime);
+
+  // Calculate average timings
+  for (const colName of finalFrameTimings[0].keys()) {
+    let sum = 0;
+    finalFrameTimings.forEach((timing) => {
+      const data = timing!.get(colName);
+      sum += data ? data : 0;
+    });
+    rowData.set(colName, sum / finalFrameTimings.length);
+  }
+  return rowData;
+}
+
+function printResults(configs: DefaultConfigs, rowData: Map<string, number | string>) {
+  debugPrint("outputFile: " + configs.outputFile);
+  if (fs.existsSync(configs.outputFile!)) {
+    addColumnsToCsvFile(configs.outputFile!, rowData);
+    debugPrint("outputFile: " + configs.outputFile);
+  } else {
+    debugPrint("outputPath: " + configs.outputPath);
+    debugPrint("outputName: " + configs.outputName);
+    createNewCsvFile(configs.outputPath!, configs.outputName!, rowData);
+  }
+  addDataToCsvFile(configs.outputFile!, rowData);
+}
+
+function getImageString(configs: DefaultConfigs): string {
+  let output = configs.outputPath ? configs.outputPath : "";
+  const lastChar = output[output.length - 1];
+  if (lastChar !== "/" && lastChar !== "\\")
+    output += "\\";
+  output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  output += configs.viewName ? "_" + configs.viewName : "";
+  output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  output += getRenderMode() ? "_" + getRenderMode() : "";
+  output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  output += ".png";
+  return output;
+}
+
+function savePng(fileName: string) {
+  if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+  const img = System.instance.canvas.toDataURL("image/png");
+  const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
+  const buf = new Buffer(data, "base64");
+  fs.writeFileSync(fileName, buf);
+}
+
+class ViewSize {
+  public width: number;
+  public height: number;
+
+  constructor(w = 0, h = 0) { this.width = w; this.height = h; }
+}
+
+class DefaultConfigs {
+  public view?: ViewSize;
+  public outputName?: string;
+  public outputPath?: string;
+  public iModelLocation?: string;
+  public iModelName?: string;
+  public viewName?: string;
+  public displayStyle?: string;
+  public viewFlags?: ViewFlag.Overrides;
+
+  public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
+    if (useDefaults) {
+      this.view = new ViewSize(1000, 1000);
+      this.outputName = "performanceResults.csv";
+      this.outputPath = "D:\\output\\performanceData\\";
+      this.iModelLocation = "D:\\models\\TimingTests\\";
+      this.iModelName = "Wraith.ibim";
+      this.viewName = "V0";
+    }
+    if (prevConfigs !== undefined) {
+      if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
+      if (prevConfigs.outputName) this.outputName = prevConfigs.outputName;
+      if (prevConfigs.outputPath) this.outputPath = prevConfigs.outputPath;
+      if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
+      if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
+      if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
+      if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
+      if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
+    }
+    if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
+    if (jsonData.outputName) this.outputName = jsonData.outputName;
+    if (jsonData.outputPath) this.outputPath = jsonData.outputPath;
+    if (jsonData.iModelLocation) this.iModelLocation = jsonData.iModelLocation;
+    if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
+    if (jsonData.viewName) this.viewName = jsonData.viewName;
+    if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
+    if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
+
+    debugPrint("view: " + this.view ? (this.view!.width + "X" + this.view!.height) : "undefined");
+    debugPrint("outputFile: " + this.outputFile);
+    debugPrint("outputName: " + this.outputName);
+    debugPrint("outputPath: " + this.outputPath);
+    debugPrint("iModelFile: " + this.iModelFile);
+    debugPrint("iModelLocation: " + this.iModelLocation);
+    debugPrint("iModelName: " + this.iModelName);
+    debugPrint("viewName: " + this.viewName);
+    debugPrint("displayStyle: " + this.displayStyle);
+    debugPrint("viewFlags: " + this.viewFlags);
+  }
+
+  private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
+    if (fileName === undefined)
+      return undefined;
+    if (filePath === undefined)
+      return fileName;
+    else {
+      let output = filePath;
+      const lastChar = output[output.length - 1];
+      debugPrint("lastChar: " + lastChar);
+      if (lastChar !== "/" && lastChar !== "\\")
+        output += "\\";
+      return output + fileName;
+    }
+  }
+  public get iModelFile() { return this.createFullFilePath(this.iModelLocation, this.iModelName); }
+  public get outputFile() { return this.createFullFilePath(this.outputPath, this.outputName); }
 }
 
 class SimpleViewState {
   public accessToken?: AccessToken;
   public project?: Project;
-  public iModel?: IModelRepository;
+  public iModel?: HubIModel;
   public iModelConnection?: IModelConnection;
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;
@@ -84,573 +354,188 @@ class SimpleViewState {
   constructor() { }
 }
 
-let configuration: SVTConfiguration;
 let theViewport: ScreenViewport | undefined;
 let activeViewState: SimpleViewState = new SimpleViewState();
+let curTileLoadingTime = 0;
 
 async function _changeView(view: ViewState) {
-  await theViewport!.changeView(view);
+  theViewport!.changeView(view);
   activeViewState.viewState = view;
-  // await buildModelMenu(activeViewState);
-  // buildCategoryMenu(activeViewState);
-  // updateRenderModeOptionsMap();
 }
-// opens the view and connects it to the HTML canvas element.
-async function openView(state: SimpleViewState) {
-  // find the view div element.
-  const htmlViewDiv: HTMLDivElement = document.getElementById("imodelview") as HTMLDivElement; // await document.createElement("htmlViewDiv") as HTMLCanvasElement; // document.getElementById("imodelview") as HTMLCanvasElement;
-  htmlViewDiv!.style.width = htmlViewDiv!.style.height = "400px";
-  await document.body.appendChild(htmlViewDiv!);
 
-  if (htmlViewDiv) {
-    console.log("openView - htmlViewDiv exists"); // tslint:disable-line
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("htmlViewDiv: " + htmlViewDiv); // tslint:disable-line
-    // console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    theViewport = ScreenViewport.create(htmlViewDiv, state.viewState!);
+// opens the view and connects it to the HTML canvas element.
+async function openView(state: SimpleViewState, viewSize: ViewSize) {
+  // find the canvas.
+  const div: HTMLDivElement = document.getElementById("imodelview") as HTMLDivElement;
+  // htmlCanvas!.width = viewSize.width;
+  // htmlCanvas!.height = viewSize.height;
+  // document.body.appendChild(htmlCanvas!);
+
+  if (div) {
+    // theViewport = new Viewport(htmlCanvas, state.viewState!);
+    theViewport = ScreenViewport.create(div, state.viewState!);
+    debugPrint("theViewport: " + theViewport);
+    const canvas = theViewport.canvas; // document.getElementById("canvas") as HTMLCanvasElement;
+    debugPrint("canvas: " + canvas);
+    canvas.width = viewSize.width;
+    canvas.height = viewSize.height;
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("state.viewState: " + state.viewState); // tslint:disable-line
     await _changeView(state.viewState!);
-    console.log("theViewport: " + theViewport); // tslint:disable-line
-    console.log("theViewport.view: " + theViewport!.view); // tslint:disable-line
-    console.log("iModel: " + theViewport.iModel === undefined); // tslint:disable-line
-    console.log("_changeView Finished"); // tslint:disable-line
-    console.log("viewManager: " + IModelApp.viewManager); // tslint:disable-line
-    console.log("iModel: " + theViewport.iModel); // tslint:disable-line
-    IModelApp.viewManager.addViewport(theViewport);
   }
 }
+
+async function loadIModel(testConfig: DefaultConfigs) {
+  // Start the backend
+  createWindow();
+
+  // start the app.
+  IModelApp.startup();
+
+  // initialize the Project and IModel Api
+  await ProjectApi.init();
+  await IModelApi.init();
+
+  activeViewState = new SimpleViewState();
+  activeViewState.viewState;
+
+  await openStandaloneIModel(activeViewState, testConfig.iModelFile!);
+
+  // open the specified view
+  await loadView(activeViewState, testConfig.viewName!);
+
+  // now connect the view to the canvas
+  await openView(activeViewState, testConfig.view!);
+  assert(theViewport !== undefined, "ERROR: theViewport is undefined");
+
+  // Set the display style
+  const iModCon = activeViewState.iModelConnection;
+  if (iModCon && testConfig.displayStyle) {
+    const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
+    if (displayStyleProps.length >= 1)
+      theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
+  }
+
+  // Set the viewFlags (including the render mode)
+  if (activeViewState.viewState !== undefined && testConfig.viewFlags)
+    testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
+
+  // Load all tiles
+  await waitForTilesToLoad(testConfig.iModelLocation!);
+}
+
+async function closeIModel() {
+  if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
+  IModelApp.shutdown();
+}
+
+async function outputSavedView(testConfig: DefaultConfigs) {
+  // Open and finish loading model
+  await loadIModel(testConfig);
+
+  savePng(getImageString(testConfig));
+
+  // Close the imodel
+  await closeIModel();
+}
+
+async function timeSavedView(testConfig: DefaultConfigs) {
+  // Open and finish loading model
+  await loadIModel(testConfig);
+
+  // Throw away the first n renderFrame times, until it's more consistent
+  for (let i = 0; i < 15; ++i) {
+    theViewport!.sync.setRedrawPending();
+    theViewport!.renderFrame();
+  }
+
+  // Add a pause so that user can start the GPU Performance Capture program
+  // await resolveAfterXMilSeconds(7000);
+
+  const finalFrameTimings: Array<Map<string, number>> = [];
+  const timer = new StopWatch(undefined, true);
+  const numToRender = 50;
+  for (let i = 0; i < numToRender; ++i) {
+    theViewport!.sync.setRedrawPending();
+    theViewport!.renderFrame();
+    finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+  }
+  timer.stop();
+  debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+  debugPrint("Tile Loading Time: " + curTileLoadingTime);
+  for (const t of finalFrameTimings) {
+    let timingsString = "[";
+    t.forEach((val) => {
+      timingsString += val + ", ";
+    });
+    debugPrint(timingsString + "]");
+  }
+
+  printResults(testConfig, getRowData(finalFrameTimings, testConfig));
+
+  // Close the imodel
+  await closeIModel();
+}
+
 // selects the configured view.
-async function buildViewList(state: SimpleViewState, configurations?: { viewName?: string }) {
-  const config = undefined !== configurations ? configurations : {};
-  // const viewList = document.getElementById("viewList") as HTMLSelectElement;
-  const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-  const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
-  console.log("config.viewName: " + config.viewName); // tslint:disable-line
-  for (const viewSpec of viewSpecs) {
-    console.log("----------\nviewSpec: " + viewSpec); // tslint:disable-line
-    console.log("viewSpec.name: " + viewSpec.name); // tslint:disable-line
-    if (viewSpec.name === config.viewName) {
-      console.log("viewSpec.name: " + viewSpec.name); // tslint:disable-line
-      // viewList!.value = viewSpec.name;
-      const viewState = await state.iModelConnection!.views.load(viewSpec.id);
-      // viewMap.set(viewSpec.name, viewState);
-      state.viewState = viewState;
-    }
-  }
+async function loadView(state: SimpleViewState, viewName: string) {
+  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.sqlName, where: "CodeValue = '" + viewName + "'" });
+  if (1 === viewIds.size)
+    state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
+
+  if (undefined === state.viewState)
+    debugPrint("Error: failed to load view by name");
 }
+
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   try {
-    configuration.standalone = true;
-    console.log("Filename: " + filename); // tslint:disable-line
     state.iModelConnection = await IModelConnection.openStandalone(filename);
-    console.log("openStandalone succeeded"); // tslint:disable-line
-    console.log("88888888888888configuration.iModelName: " + configuration.iModelName); // tslint:disable-line
-    // configuration.iModelName = state.iModelConnection.name;
-    console.log("99999999999999configuration.iModelName: " + configuration.iModelName); // tslint:disable-line
   } catch (err) {
-    console.log("openStandaloneIModel failed: " + err); // tslint:disable-line
+    debugPrint("openStandaloneIModel failed: " + err.toString());
     throw err;
   }
 }
-interface SVTConfiguration {
-  filename: string;
-  userName: string;
-  password: string;
-  projectName: string;
-  iModelName: string;
-  standalone: boolean;
-  viewName?: string;
+
+async function testModel(configs: DefaultConfigs, modelData: any) {
+  // Create DefaultModelConfigs
+  const modConfigs = new DefaultConfigs(modelData, configs);
+
+  // Perform all tests for this model
+  for (const testData of modelData.tests) {
+    if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
+    if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
+
+    // Create DefaultTestConfigs
+    const testConfig = new DefaultConfigs(testData, modConfigs, true);
+
+    // Ensure imodel file exists
+    if (!fs.existsSync(testConfig.iModelFile!))
+      break;
+
+    if (testData.testType === "image")
+      await outputSavedView(testConfig);
+    else
+      await timeSavedView(testConfig);
+  }
+  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
+  if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
 }
 
-describe("PerformanceTests - 1", () => {
-  // let imodel: IModelConnection;
-  // let spatialView: SpatialViewState;
+describe("Performance Tests (#WebGLPerformance)", () => {
+  // Create DefaultConfigs
+  const jsonData = readJsonFile();
+  const configs = new DefaultConfigs(jsonData);
 
-  // before(async () => {
-  //   PerformanceWriterClient.startup();
-  // });
-  // after(async () => {
-  //   console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-  //   PerformanceWriterClient.finishSeries();
-  //   IModelApp.shutdown();
-  //   // WebGLTestContext.shutdown();
-  //   // TestApp.shutdown();
-  //   console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
-  // });
-
-  it("Test 1 - Wraith Model - W0", async () => {
-    await PerformanceWriterClient.startup();
-
-    // this is the default configuration
-    configuration = {
-      userName: "bistroDEV_pmadm1@mailinator.com",
-      password: "pmadm1",
-      iModelName: path.join(iModelLocation, "Wraith.ibim"), // path.join("../../", __dirname, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-      viewName: "W0", // "Physical-Tag",
-    } as SVTConfiguration;
-    // override anything that's in the configuration
-    // retrieveConfigurationOverrides(configuration);
-    // applyConfigurationOverrides(configuration);
-
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
-
-    // Start the backend
-    // const config = new IModelHostConfiguration();
-    // config.hubDeploymentEnv = "QA";
-    // await IModelHost.startup(config);
-    console.log("Starting create Window"); // tslint:disable-line
-
-    await createWindow();
-
-    // start the app.
-    await IModelApp.startup();
-    console.log("IModelApp Started up"); // tslint:disable-line
-
-    // initialize the Project and IModel Api
-    console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-    await ProjectApi.init();
-    await IModelApi.init();
-    console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
-
-    activeViewState = new SimpleViewState();
-
-    // showStatus("Opening", configuration.iModelName);
-    console.log("Opening standaloneImodel"); // tslint:disable-line
-    await openStandaloneIModel(activeViewState, configuration.iModelName);
-
-    // open the specified view
-    // showStatus("opening View", configuration.viewName);
-    console.log("Build the view list"); // tslint:disable-line
-    await buildViewList(activeViewState, configuration);
-
-    // now connect the view to the canvas
-    console.log("Open the view"); // tslint:disable-line
-    await openView(activeViewState);
-    console.log("This is from frontend/main"); // tslint:disable-line
-
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-
-    await printResults(frameTimes);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    theViewport!.sync.setRedrawPending;
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-
-    console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-    if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-    await IModelApp.shutdown();
-    await PerformanceWriterClient.finishSeries();
-    // WebGLTestContext.shutdown();
-    // TestApp.shutdown();
-    console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
+  jsonData.modelSet.forEach((modelData: any) => {
+    it("Test " + modelData.iModelName, (done) => {
+      testModel(configs, modelData).then((_result) => {
+        done();
+      }).catch((error) => {
+        assert(false, "Exception in testModel: " + error.toString());
+        debugPrint("Exception in testModel: " + error.toString());
+      });
+    });
   });
-
-  it("Test 1 - Wraith Model - W1", async () => {
-    await PerformanceWriterClient.startup();
-
-    // this is the default configuration
-    configuration = {
-      userName: "bistroDEV_pmadm1@mailinator.com",
-      password: "pmadm1",
-      iModelName: path.join(iModelLocation, "Wraith.ibim"), // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "D:\\models\\ibim_bim0200dev\\Wraith.ibim", // "atp_10K.bim", // "D:/models/ibim_bim0200dev/Wraith.ibim", // "atp_10K.bim",
-      viewName: "W1", // "Physical-Tag",
-    } as SVTConfiguration;
-    // override anything that's in the configuration
-    // retrieveConfigurationOverrides(configuration);
-    // applyConfigurationOverrides(configuration);
-
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line
-
-    // Start the backend
-    // const config = new IModelHostConfiguration();
-    // config.hubDeploymentEnv = "QA";
-    // await IModelHost.startup(config);
-    console.log("Starting create Window"); // tslint:disable-line
-
-    await createWindow();
-
-    // start the app.
-    await IModelApp.startup();
-    console.log("IModelApp Started up"); // tslint:disable-line
-
-    // initialize the Project and IModel Api
-    console.log("Initialize ProjectApi and ImodelApi"); // tslint:disable-line
-    await ProjectApi.init();
-    await IModelApi.init();
-    console.log("Finished Initializing ProjectApi and ImodelApi"); // tslint:disable-line
-
-    activeViewState = new SimpleViewState();
-
-    // showStatus("Opening", configuration.iModelName);
-    console.log("Opening standaloneImodel"); // tslint:disable-line
-    await openStandaloneIModel(activeViewState, configuration.iModelName);
-
-    // open the specified view
-    // showStatus("opening View", configuration.viewName);
-    console.log("Build the view list"); // tslint:disable-line
-    await buildViewList(activeViewState, configuration);
-
-    // now connect the view to the canvas
-    console.log("Open the view"); // tslint:disable-line
-    await openView(activeViewState);
-    console.log("This is from frontend/main"); // tslint:disable-line
-
-    await theViewport!.renderFrame();
-    const target = (theViewport!.target as Target);
-    const frameTimes = target.frameTimings;
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-
-    await printResults(frameTimes);
-    await theViewport!.renderFrame();
-    for (let i = 0; i < 11 && frameTimes.length; ++i)
-      console.log("frameTimes[" + i + "]: " + frameTimes[i]); // tslint:disable-line
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-    await theViewport!.renderFrame();
-    await printResults((theViewport!.target as Target).frameTimings);
-
-    console.log("/////////////////////////////////  -- b4 shutdown"); // tslint:disable-line
-    if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
-    await IModelApp.shutdown();
-    await PerformanceWriterClient.finishSeries();
-    // WebGLTestContext.shutdown();
-    // TestApp.shutdown();
-    console.log("/////////////////////////////////  -- after shutdown"); // tslint:disable-line
-
-  });
-
 });
-
-// /*---------------------------------------------------------------------------------------------
-// |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
-//  *--------------------------------------------------------------------------------------------*/
-// import { WebGLTestContext } from "../WebGLTestContext";
-// import { PerformanceWriterClient } from "./PerformanceWriterClient";
-
-// describe("PerformanceTests", () => {
-//   before(() => {
-//     WebGLTestContext.startup();
-//   });
-//   after(() => WebGLTestContext.shutdown());
-
-//   it("/////////////////////////////////////////////////////////////////", () => {
-//     if (WebGLTestContext.isInitialized) {
-//       // testCreateGeometry();
-//     }
-//     // const fileName = "C:\\Files\\test.xlsx";
-//     // const sheetName = "Sheet1";
-//     // const app = Sys.OleObject("Excel.Application")
-//     // app.Visible = "True";
-
-//     // const excel = new ActiveXObject("Excel.Application");
-//     // excel.Visible = true;
-//     // excel.Workbooks.Open("test.xlsx");
-//   });
-// });
-
-// import { assert, expect } from "chai";
-// import { ColorMap } from "@bentley/imodeljs-frontend/lib/rendering";
-// import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
-
-// describe("ColorMap", () => {
-//   it("create a new ColorMap", async () => {
-//     // console.log(response); //tslint:disable-line
-//     async function run() {
-//       try {
-//         await PerformanceWriterClient.startup();
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 1,
-//             scene: 2,
-//             garbageExecute: 3,
-//             initCommands: 4,
-//             backgroundDraw: 5,
-//             setClips: 6,
-//             opaqueDraw: 7,
-//             translucentDraw: 8,
-//             hiliteDraw: 9,
-//             compositeDraw: 10,
-//             overlayDraw: 11,
-//             renderFrameTime: 12,
-//             glFinish: 13,
-//             totalTime: 14,
-//           },
-//         });
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 11,
-//             scene: 12,
-//             garbageExecute: 13,
-//             initCommands: 14,
-//             backgroundDraw: 15,
-//             setClips: 16,
-//             opaqueDraw: 17,
-//             translucentDraw: 18,
-//             hiliteDraw: 19,
-//             compositeDraw: 110,
-//             overlayDraw: 111,
-//             renderFrameTime: 112,
-//             glFinish: 113,
-//             totalTime: 1411,
-//           },
-//         });
-//         await PerformanceWriterClient.addEntry({
-//           imodelName: "test",
-//           viewName: "test",
-//           viewFlags: "test",
-//           data: {
-//             tileLoadingTime: 21,
-//             scene: 22,
-//             garbageExecute: 23,
-//             initCommands: 24,
-//             backgroundDraw: 25,
-//             setClips: 26,
-//             opaqueDraw: 27,
-//             translucentDraw: 28,
-//             hiliteDraw: 29,
-//             compositeDraw: 20,
-//             overlayDraw: 121,
-//             renderFrameTime: 122,
-//             glFinish: 213,
-//             totalTime: 124,
-//           },
-//         });
-//       } catch (ex) {
-//         console.log(ex); // tslint:disable-line
-//       }
-
-//       await PerformanceWriterClient.finishSeries();
-//     }
-
-//     await run();
-
-//     /** Test creating a ColorMap */
-//     const a: ColorMap = new ColorMap();
-//     expect(a.length).to.equal(0);
-//     expect(a.hasTransparency).to.be.false;
-//   });
-
-//   it("test insert function", () => {
-//     /** Test static getMaxIndex function */
-//     const a: ColorMap = new ColorMap();
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 1);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 2);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFFFFFF) === 2);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0x0000FF) === 1);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFF0000) === 0);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//     assert.isTrue(a.insert(0xFFFFFF) === 2);
-//     assert.isTrue(a.length === 3);
-//     assert.isFalse(a.hasTransparency);
-//   });
-
-//   it("test simple return functions", () => {
-//     /** Test hasTransparency function */
-//     let a: ColorMap = new ColorMap();
-//     assert.isFalse(a.hasTransparency);
-//     a.insert(0x01000000);
-//     assert.isTrue(a.hasTransparency);
-//     a.insert(0xFF000000);
-//     assert.isTrue(a.hasTransparency);
-//     a.insert(0x7FFFFFFF);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0xFF000000);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x7FFFFFFF);
-//     assert.isTrue(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x00000000);
-//     assert.isFalse(a.hasTransparency);
-//     a = new ColorMap();
-//     a.insert(0x00FFFFFF);
-//     assert.isFalse(a.hasTransparency);
-//     let inserted = false;
-//     try { // try to insert a translucent color into a table which does not have transparency.
-//       a.insert(0x0F000000);
-//       inserted = true;
-//     } catch (err) {
-//       expect(err).is.not.undefined;
-//     }
-//     expect(inserted).to.be.false;
-
-//     /** Test isUniform function */
-//     a = new ColorMap();
-//     assert.isFalse(a.isUniform);
-//     a.insert(0xFF0000);
-//     assert.isTrue(a.isUniform);
-//     a.insert(0x00FF00);
-//     assert.isFalse(a.isUniform);
-//     a.insert(0x0000FF);
-//     assert.isFalse(a.isUniform);
-
-//     /** Test isFull function */
-//     a = new ColorMap();
-//     assert.isFalse(a.isFull);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isFalse(a.isFull);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-//     assert.isTrue(a.isFull);
-
-//     /** Test getNumIndices function */
-//     a = new ColorMap();
-//     assert.isTrue(a.length === 0);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isTrue(a.length === i);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-
-//     /** Test size function */
-//     a = new ColorMap();
-//     assert.isTrue(a.length === 0);
-//     for (let i = 0; a.length !== 0xffff; i++) {
-//       assert.isTrue(a.length === i);
-//       a.insert(i);
-//     }
-//     assert.isTrue(a.length === 0xffff);
-
-//     /** Test empty function */
-//     a = new ColorMap();
-//     assert.isTrue(a.isEmpty);
-//     a.insert(0x00FFFF);
-//     assert.isFalse(a.isEmpty);
-//     a.insert(0xFFFF00);
-//     assert.isFalse(a.isEmpty);
-//     a.insert(0xFFFFFF);
-//     assert.isFalse(a.isEmpty);
-//   });
-
-//   it("test toColorIndex function", () => {
-//     /** Test toColorIndex function */
-//     let a: ColorMap = new ColorMap();
-//     const uint16: Uint16Array = new Uint16Array(2);
-//     let colorIndex = new ColorIndex();
-
-//     a.insert(0xFFFFFF);
-//     a.toColorIndex(colorIndex, uint16);
-//     expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
-//     assert.isTrue(colorIndex.numColors === 1);
-
-//     a = new ColorMap();
-//     colorIndex = new ColorIndex();
-//     expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.insert(0x0000FFFF);
-//     a.toColorIndex(colorIndex, uint16);
-//     expect(colorIndex.isUniform).to.equal(true);
-//     assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF);
-//     assert.isTrue(colorIndex.numColors === 1);
-
-//     a = new ColorMap();
-//     a.insert(0x0000FFFF);
-//     a.insert(0x000000FF);
-//     colorIndex = new ColorIndex();
-//     colorIndex.initUniform(0x00FF00FF);
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.toColorIndex(colorIndex, uint16);
-//     assert.isFalse(colorIndex.isUniform);
-//     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2);
-//     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-//     assert.isTrue(values && values.next().value === 0x0000FFFF);
-//     assert.isTrue(values && values.next().value === 0x000000FF);
-//     assert.isTrue(values && values.next().done);
-//     assert.isTrue(colorIndex.numColors === 2);
-
-//     a = new ColorMap();
-//     a.insert(0x00000000);
-//     a.insert(0x0000FFFF);
-//     a.insert(0x000000FF);
-//     colorIndex = new ColorIndex();
-//     assert.isTrue(colorIndex.numColors === 1);
-//     a.toColorIndex(colorIndex, uint16);
-//     assert.isFalse(colorIndex.isUniform);
-//     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3);
-//     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-//     assert.isTrue(values && values.next().value === 0x00000000);
-//     assert.isTrue(values && values.next().value === 0x0000FFFF);
-//     assert.isTrue(values && values.next().value === 0x000000FF);
-//     assert.isTrue(values && values.next().done);
-//     assert.isTrue(colorIndex.numColors === 3);
-//   });
-// });

@@ -213,6 +213,14 @@ export class KnotVector {
       let gCarry = 0.0;
       let dgCarry = 0.0;
       let ddgCarry = 0.0;
+      // f, df, ddf, are each row vectors with product of `step` ilnear terms.
+      // f is multiplied on the right by matrix V.  Each row has 2 nonzero entries (which sum to 1)  (0,0,1-fraction, fraction,0,0,0)
+      //    Each row of the derivative dV is two entries (0,0, -1/h, 1/h,0,0,0)
+      // Hence fnew = f * V
+      //      dfnew = df * V + f * dV
+      //      ddfnew = ddf * V + df*dV + df * dV + f * ddV
+      // but ddV is zero so
+      //      ddfnew = ddf * V + 2 * df * dV
       for (let step = 0; step <= depth; step++) {
         const tLeft = this.knots[kLeft++];
         const tRight = this.knots[kRight++];
@@ -223,13 +231,14 @@ export class KnotVector {
         const g0 = f[step] * fraction1;
         const dg1 = df[step] * fraction + f[step] * ah;
         const dg0 = df[step] * fraction1 - f[step] * ah;
+        const dfSave = 2.0 * df[step] * ah;
         f[step] = gCarry + g0;
         df[step] = dgCarry + dg0;
         gCarry = g1;
         dgCarry = dg1;
-        if (ddf) {
-          const ddg1 = ddf[step] * fraction + 2.0 * df[step] * ah;
-          const ddg0 = ddf[step] * fraction1 - 2.0 * df[step] * ah;
+        if (ddf) {  // do the backward reference to df before rewriting df !!!
+          const ddg1 = ddf[step] * fraction + dfSave;
+          const ddg0 = ddf[step] * fraction1 - dfSave;
           ddf[step] = ddgCarry + ddg0;
           ddgCarry = ddg1;
         }

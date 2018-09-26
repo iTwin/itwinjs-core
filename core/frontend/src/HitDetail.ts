@@ -115,6 +115,8 @@ export class HitDetail {
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
   public get isElementHit(): boolean { return !Id64.isInvalidId(this.sourceId) && !Id64.isTransientId(this.sourceId); }
+  // return whether the sourceId is for a model (reality models etc.)
+  public get isModelHit(): boolean { return this.viewport.iModel.models.getLoaded(this.sourceId) !== undefined; }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
 

@@ -9,7 +9,7 @@ import { IModelDb, ViewDefinition, DrawingViewDefinition, DisplayStyle } from "@
 /**
  * Return an array of all views of a specified drawing model.
  * @param iModel The IModelDb in which to query
- * @param drawingModelId The ID of the DrawingModel of interest
+ * @param drawingModelId The Id of the DrawingModel of interest
  * @param includePrivate Whether or not to include views marked as 'private'
  * @return An array of all of the views which are configured to view the specified drawing model.
  */

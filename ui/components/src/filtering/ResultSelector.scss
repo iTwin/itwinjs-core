@@ -1,0 +1,67 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+.result-selector {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+
+  @include bwc-font-family;
+  color: $bwc-text-color;
+}
+
+.result-selector-current-result {
+  margin: 0 2px;
+  padding-top: 2px;
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+  input[type="number"]{
+    -moz-appearance:textfield;
+    display: inline-block;
+    text-align: center;
+    font-size: 12px;
+    padding: 0px;
+    min-width: 2em;
+  }
+}
+
+.result-selector-current-result:hover {
+  cursor: pointer;
+}
+
+.result-selector-button {
+  @include bwc-buttons-hollow;
+  font-size: 12px;
+  height: 20px;
+  width: 20px;
+  border-style: none;
+  color: $bwc-gray-5;
+  margin: 0 4px;
+}
+
+.result-selector-button:hover {
+  background-color: $bwc-gray-b;
+  border-radius: 2px;
+}
+
+/* Overriding bwc-buttons-hollow defaults */
+.result-selector-button,
+.result-selector-button:active,
+.result-selector-button:focus,
+.result-selector-button:disabled,
+.result-selector-button[disabled]:hover {
+  border-style: none;
+  padding: 0px;
+}
+
+.result-selector-button:disabled,
+.result-selector-button[disabled]:hover {
+  background-color: $bwc-gray-9;
+  cursor: default;
+}

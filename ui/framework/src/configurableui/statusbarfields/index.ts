@@ -5,3 +5,4 @@
 export * from "./ActivityCenter";
 export * from "./MessageCenter";
 export * from "./SnapMode";
+export * from "./PromptField";

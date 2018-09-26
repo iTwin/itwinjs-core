@@ -6,7 +6,7 @@ import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { FrontstageManager } from "@bentley/ui-framework";
 import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
-import { ItemPropsList, MessageDirection, GroupItemProps } from "@bentley/ui-framework";
+import { ItemPropsList, GroupItemProps } from "@bentley/ui-framework";
 import { TaskPropsList } from "@bentley/ui-framework";
 import { WorkflowPropsList } from "@bentley/ui-framework";
 import { ContentLayoutProps } from "@bentley/ui-framework";
@@ -103,13 +103,6 @@ export class AppUi {
     const commonItemsList: ItemPropsList = {
       items: [
         {
-          messageId: "my-message",
-          direction: MessageDirection.UI,
-        },
-        {
-          pageId: "my-page",
-        },
-        {
           toolId: "tool2",
           iconClass: "icon-placeholder",
           labelKey: "SampleApp:buttons.tool2",
@@ -147,10 +140,6 @@ export class AppUi {
           toolId: "item8",
           iconClass: "icon-placeholder",
           labelKey: "SampleApp:buttons.item8",
-        },
-        {
-          messageId: "my-navigation-aid",
-          iconClass: "icon-placeholder",
         },
       ],
     };

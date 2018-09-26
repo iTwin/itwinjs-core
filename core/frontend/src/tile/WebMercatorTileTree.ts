@@ -7,7 +7,7 @@ import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile, TileRequests, MissingNodes } from "./TileTree";
+import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { ImageUtil } from "../ImageUtil";
@@ -106,6 +106,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
     this.location = Transform.createIdentity();
   }
 }
+
 class WebMercatorTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -121,6 +122,7 @@ class WebMercatorTileProps implements TileProps {
     this.maximumSize = (0 === quadId.level) ? 0.0 : 256;
   }
 }
+
 class WebMercatorTileLoader extends TileLoader {
   private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
@@ -161,7 +163,11 @@ class WebMercatorTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingTiles: MissingNodes): Promise<void> {
+  public async loadTileContents(missingArray: Tile[]): Promise<void> {
+    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
+    for (const tile of missingArray)
+      tile.setIsQueued();
+
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)
         this._providerInitializing = this._imageryProvider.initialize();
@@ -170,23 +176,20 @@ class WebMercatorTileLoader extends TileLoader {
       this._providerInitializing = undefined;
     }
 
-    const missingArray = missingTiles.extractArray();
     await Promise.all(missingArray.map(async (missingTile) => {
-      if (missingTile.isNotLoaded) {
-        missingTile.setIsQueued();
+      assert(missingTile.isQueued);
 
-        const quadId = new QuadId(missingTile.contentId);
-        const corners = quadId.getCorners(this.mercatorToDb);
-        const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-        if (undefined === imageSource) {
-          missingTile.setNotFound();
-        } else {
-          const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
-          textureLoad.catch((_err) => missingTile.setNotFound());
-          textureLoad.then((result) => {
-            missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-          });
-        }
+      const quadId = new QuadId(missingTile.contentId);
+      const corners = quadId.getCorners(this.mercatorToDb);
+      const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+      if (undefined === imageSource) {
+        missingTile.setNotFound();
+      } else {
+        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
+        textureLoad.catch((_err) => missingTile.setNotFound());
+        textureLoad.then((result) => {
+          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
+        });
       }
     }));
   }

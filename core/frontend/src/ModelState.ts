@@ -55,7 +55,9 @@ export class ModelState extends EntityState implements ModelProps {
 
 /** The state of a geometric model */
 export abstract class GeometricModelState extends ModelState {
+  /** @hidden */
   protected _tileTreeState: TileTreeState = new TileTreeState(this);
+  /** @hidden */
   protected _classifierTileTreeState: TileTreeState = new TileTreeState(this);
 
   public abstract get is3d(): boolean;
@@ -66,6 +68,7 @@ export abstract class GeometricModelState extends ModelState {
   public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
   /** @hidden */
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  /** @hidden */
   public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
   /** Override of ModelState method, returns true */
   public get isGeometricModel(): boolean { return true; }

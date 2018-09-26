@@ -23,11 +23,11 @@ class BanImportsPlugin {
       if (this.bannedRegex.test(request.path) || request.path.startsWith(this.bannedDir)) {
         const actualRequest = request.__innerRequest_request.replace(/^\.[\/\\]/, ""); // not sure why __innerRequest_request always starts with ./
         const errorMessage = chalk.red("You are importing ") + chalk.yellow(actualRequest) + chalk.red(".  ")
-        + chalk.red.bold(this.bannedName) + chalk.red(" code should not be included in the ") 
-        + chalk.red.bold(this.bundleName) + chalk.red(" bundle.");
+          + chalk.red.bold(this.bannedName) + chalk.red(" code should not be included in the ")
+          + chalk.red.bold(this.bundleName) + chalk.red(" bundle.");
         return callback(new Error(errorMessage), request);
       }
-      
+
       return callback();
     });
   }
@@ -69,7 +69,7 @@ function copyPackage(pkgName, parentPath) {
 }
 
 class CopyNativeAddonsPlugin {
-  constructor(options) {}
+  constructor(options) { }
 
   apply(compiler) {
     compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
@@ -78,12 +78,12 @@ class CopyNativeAddonsPlugin {
       // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
       const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native-platform-api"]);
       let packagesToCopy = [];
-      
+
       // Copy any modules excluded from the bundle via the "externals" webpack config option
       const externals = compiler.options.externals;
-      if (typeof(externals) === "object") {
+      if (typeof (externals) === "object") {
         if (Array.isArray(externals))
-          packagesToCopy = externals.filter((ext) => typeof(ext) === "string");
+          packagesToCopy = externals.filter((ext) => typeof (ext) === "string");
         else
           packagesToCopy = Object.keys(externals);
       }
@@ -93,7 +93,7 @@ class CopyNativeAddonsPlugin {
         const pkgName = pathToPackageName(pkg);
         if (copiedPackages.has(pkgName) || !appDependencies.has(pkgName))
           continue;
-          
+
         const packageJsonPath = copyPackage(pkgName);
         if (!packageJsonPath)
           continue;
@@ -116,12 +116,12 @@ class CopyNativeAddonsPlugin {
   }
 }
 
-function isDirectory (directoryName) {
-  return (fs.statSync(path.resolve (this.bentleyDir, directoryName)).isDirectory());
+function isDirectory(directoryName) {
+  return (fs.statSync(path.resolve(this.bentleyDir, directoryName)).isDirectory());
 }
 function tryCopyDirectoryContents(source, target) {
   if (!fs.existsSync(source))
-    return;  
+    return;
   const copyOptions = { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: false };
   try {
     if (fs.statSync(source).isDirectory() && fs.existsSync(target) && fs.statSync(target).isDirectory()) {
@@ -186,14 +186,15 @@ class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
     super.apply(compiler);
 
     compiler.hooks.afterEmit.tap("PrettyLicenseWebpackPlugin", (compilation) => {
-      const formattedErrors = [];
+      const missingNotices = [];
+      const otherWarnings = [];
       for (const e of this.errors) {
-        const regex = /license-webpack-plugin: Could not find a license file for (.*?)(, defaulting to license name found in package.json: (.*))?$/
-        const groups = e.message.match(regex);
+        e.message = e.message.replace("license-webpack-plugin: ", "");
+        let groups = e.message.match(/^Could not find a license file for (.*?)(, defaulting to license name found in package.json: (.*))?$/);
         if (groups) {
           if (groups[1].startsWith("@bentley"))
             continue;
-          
+
           let formatted = "   " + chalk.bold.magenta(groups[1]);
           if (groups[3]) {
             formatted += chalk.gray(` (should have a notice for `) + chalk.bold(chalk.gray(groups[3])) + chalk.gray(` license according to its package.json)`);
@@ -201,17 +202,35 @@ class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
             formatted += chalk.gray(` (no license is specified in its package.json)`);
           }
 
-          formattedErrors.push(formatted)
+          missingNotices.push(formatted)
+        } else if (groups = e.message.match(/^Package (.*?) contains an unacceptable license: (.*?)$/)) {
+          let formatted = chalk.yellow("Package ");
+          formatted += chalk.bold.magenta(groups[1]);
+          formatted += chalk.yellow(" contains an unacceptable license: ");
+          formatted += chalk.bold.magenta(groups[2]);
+          otherWarnings.push(formatted);
+        } else if (groups = e.message.match(/^Package (.*?) contains multiple licenses, defaulting to first one: (.*?). Use the licenseTypeOverrides option to specify a specific license for this module.$/)) {
+          let formatted = chalk.yellow("Package ");
+          formatted += chalk.bold.magenta(groups[1]);
+          formatted += chalk.yellow(" contains multiple licenses, defaulting to first one: ");
+          formatted += chalk.bold.magenta(groups[2]);
+          formatted += chalk.gray("\n   You can use set the buildConfig.licenseTypeOverrides option in your package.json to specify a specific license for this package.")
+          formatted += chalk.gray("\n   This licenseTypeOverrides option should be an object whose keys are package names and values are license types.")
+          otherWarnings.push(formatted);
         } else {
-          e.message = e.message.replace("license-webpack-plugin:", chalk.underline.red("LicenseWarning:"));
-          compilation.warnings.push(e);
+          otherWarnings.push(e.message);
         }
       }
 
-      if (formattedErrors.length > 0) {
-        console.log(`${chalk.bold.yellow("WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
-        formattedErrors.sort().forEach((e) => console.log(e));
-        console.log(chalk.yellow("Don't worry, this warning will not be treated as an error in CI builds (yet)."));
+      if (otherWarnings.length > 0) {
+        for (const w of otherWarnings) {
+          console.log(`${chalk.bold.yellow("LICENSE WARNING:")} ${chalk.yellow(w)}`);
+        }
+      }
+      if (missingNotices.length > 0) {
+        console.log(`${chalk.bold.yellow("LICENSE WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
+        missingNotices.sort().forEach((e) => console.log(e));
+        console.log(chalk.yellow("Don't worry, these license warnings will not be treated as errors in CI builds (yet)."));
         console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices."));
       }
     });
@@ -222,7 +241,7 @@ class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
 // This monkey patch should make sure that we're looking for notices for ALL dependencies, not just those with known licenses.
 const LicenseExtractor = require("license-webpack-plugin/dist/LicenseExtractor").LicenseExtractor;
 const baseGetLicenseText = LicenseExtractor.prototype.getLicenseText;
-LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  modulePrefix) {
+LicenseExtractor.prototype.getLicenseText = function (packageJson, licenseName, modulePrefix) {
   if (licenseName === LicenseExtractor.UNKNOWN_LICENSE) {
     const licenseFilename = this.getLicenseFilename(packageJson, licenseName, modulePrefix);
     if (!licenseFilename) {
@@ -238,7 +257,7 @@ LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  
       .replace(/\r\n/g, '\n');
   }
 
-  return baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
+  return baseGetLicenseText.call(this, packageJson, licenseName, modulePrefix);
 }
 
 class WatchBackendPlugin {
@@ -253,7 +272,7 @@ class WatchBackendPlugin {
       const didBackendChange = this.prevTimestamp < (newTimestamp || -Infinity);
       if (didBackendChange) {
         this.prevTimestamp = newTimestamp;
-        compilation.modifyHash(newTimestamp+"");
+        compilation.modifyHash(newTimestamp + "");
         return true;
       }
     });

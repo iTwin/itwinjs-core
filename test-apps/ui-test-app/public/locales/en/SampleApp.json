@@ -88,6 +88,14 @@
     "warningMessageBox": "Warning",
     "errorMessageBox": "Error",
     "alertMessageBox": "Alert",
-    "openMessageBox": "Open Message Box"
+    "openMessageBox": "Open Message Box",
+    "setLengthFormatMetric": "Set Format Metric",
+    "setLengthFormatImperial": "Set Format Imperial"
+  },
+  "MeasureByPoints": {
+    "Prompt": {
+      "FirstPoint": "Enter first point",
+      "NextPoint": "Select next point"
+    }
   }
 }

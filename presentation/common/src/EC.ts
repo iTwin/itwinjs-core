@@ -65,7 +65,7 @@ export interface KindOfQuantityInfo {
   name: string;
   label: string;
   persistenceUnit: string;
-  currentFusId: string;
+  currentFormatId: string;
 }
 
 /** A structure that describes an ECProperty */

@@ -1,3 +1,0 @@
-# Locks
-
-## Handling conflicts

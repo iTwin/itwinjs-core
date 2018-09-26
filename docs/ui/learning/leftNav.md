@@ -1,4 +1,4 @@
-### [The iModelJs UI Library](./index.md)
+### [The iModel.js UI Library](./index.md)
 
 - [Core](./core/index)
 - [Components](./components/index)
@@ -9,4 +9,4 @@
 &nbsp;
 ### Helpful links
 
-- [iModelJs UI Glossary](./Glossary.md)
+- [iModel.js UI Glossary](./Glossary.md)

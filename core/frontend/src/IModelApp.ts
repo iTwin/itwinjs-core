@@ -11,6 +11,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
+import { QuantityFormatter } from "./QuantityFormatter";
 import { RenderSystem } from "./render/System";
 import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
@@ -24,7 +25,7 @@ import * as viewTool from "./tools/ViewTool";
 
 /**
  * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
- * It connects the user interface with the iModelJs services. There can be only one IModelApp active in a session.
+ * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
  *
  * Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different
  * implementations of them.
@@ -37,12 +38,15 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
+  public static quantityFormatter: QuantityFormatter;
   public static toolAdmin: ToolAdmin;
   public static accuDraw: AccuDraw;
   public static accuSnap: AccuSnap;
   public static locateManager: ElementLocateManager;
   public static tentativePoint: TentativePoint;
+  /** Instance of an I18N used to access the iModelJs localization services. */
   public static i18n: I18N;
+  /** Instance of an object implementing the SettingsAdmin interface, used to access the iModelJs Settings services. */
   public static settingsAdmin: SettingsAdmin;
   public static applicationId: string;
 
@@ -54,7 +58,7 @@ export class IModelApp {
   protected static _imodelClient?: IModelClient;
   public static get initialized() { return IModelApp._initialized; }
 
-  /** IModel Server Client to be used for all frontend operations */
+  /** IModelClient to be used for all frontend operations */
   public static get iModelClient(): IModelClient {
     if (!this._imodelClient)
       this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);
@@ -67,14 +71,14 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
-   * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
+   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {
    *  . . .
    * }
    * ```
-   * in your source somewhere before you use any iModelJs services, call:
+   * in your source somewhere before you use any iModel.js services, call:
    * ``` ts
    * MyApp.startup();
    * ```
@@ -110,6 +114,7 @@ export class IModelApp {
     if (!IModelApp.accuSnap) IModelApp.accuSnap = new AccuSnap();
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
+    if (!IModelApp.quantityFormatter) IModelApp.quantityFormatter = new QuantityFormatter();
 
     IModelApp._renderSystem.onInitialized();
     IModelApp.viewManager.onInitialized();

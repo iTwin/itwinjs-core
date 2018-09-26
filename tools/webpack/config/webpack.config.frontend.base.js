@@ -21,7 +21,11 @@ const helpers = require("./helpers");
 // Instead of forking node-sass, I'm just going to add this monkey patch for now:
 const backup = require("sass-loader/lib/normalizeOptions");
 require.cache[require.resolve("sass-loader/lib/normalizeOptions")] = {
-  exports: (...args) => { const opts = backup(...args); delete opts.importer; return opts; }
+  exports: (...args) => {
+    const opts = backup(...args);
+    delete opts.importer;
+    return opts;
+  }
 };
 
 //======================================================================================================================================
@@ -78,7 +82,11 @@ module.exports = (publicPath) => {
       strictExportPresence: true,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
-        { parser: { requireEnsure: false } },
+        {
+          parser: {
+            requireEnsure: false
+          }
+        },
 
         // First, run the linter.
         // It's important to do this before Typescript runs.
@@ -147,16 +155,16 @@ module.exports = (publicPath) => {
             // Inline SVG icons
             {
               test: /\.svg$/,
-              issuer: { exclude: /\.css$/ },
-              use: [
-                {
-                  loader: require.resolve("svg-sprite-loader"),
-                  options: {
-                    runtimeCompat: true,
-                    spriteFilename: "sprite-[hash:6].svg"
-                  },
-                }
-              ]
+              issuer: {
+                exclude: /\.css$/
+              },
+              use: [{
+                loader: require.resolve("svg-sprite-loader"),
+                options: {
+                  runtimeCompat: true,
+                  spriteFilename: "sprite-[hash:6].svg"
+                },
+              }]
             },
             // "file" loader makes sure assets end up in the `lib` folder.
             // When you `import` an asset, you get its filename.
@@ -188,7 +196,7 @@ module.exports = (publicPath) => {
       dgram: "empty",
       fs: "empty",
       net: "empty",
-      tls: "empty",
+      tls: "empty"
     },
 
     optimization: {

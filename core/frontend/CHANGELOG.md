@@ -1,6 +1,58 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 14 Sep 2018 17:08:05 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Sep 2018 00:50:11 GMT and should not be manually modified.
+
+## 0.134.0
+Wed, 26 Sep 2018 00:50:11 GMT
+
+### Updates
+
+- Support for intersect snap.
+- Simplify IntersectDetail, just second CurvePrimitive and sourceId.
+
+## 0.133.0
+Tue, 25 Sep 2018 16:41:00 GMT
+
+### Updates
+
+- Allow QuantityFormatter to format quantities without requiring async calls.
+- Add ability to query the iModel's default view ID from the front-end.
+
+## 0.132.0
+Mon, 24 Sep 2018 18:55:46 GMT
+
+### Updates
+
+- Work on multi-snap support and snap to extended intersections.
+- Support center snap as part of multi-snap when interiors aren't pickable (open path or wireframe view)
+- documentation
+
+## 0.131.0
+Sun, 23 Sep 2018 17:07:30 GMT
+
+*Version update only*
+
+## 0.130.0
+Sun, 23 Sep 2018 01:19:16 GMT
+
+### Updates
+
+- WIP: fix for multiple classifiers
+
+## 0.129.0
+Fri, 21 Sep 2018 23:16:13 GMT
+
+### Updates
+
+- Added customized pointer messages to ViewsFrontstage
+- Rework animation data to pack values and simplify extraction.
+- Fix assertions when loading map tiles.
+- Exclude contents of /frontend/render/webgl/ from SDK docs.
+- WIP #34205 - Selection of classifiers for reality data.
+- Initial implementation of quantity formatting package, tests, and example usage in IModelApp.
+- Increase darkening of unclassified geometry.  Don't flash reality models. (For Bob Mankowsky YII)
+- WIP - Classification darkening of outside.
+- WIP #34200 and #34205 - Add select and flash to classified reality data.
 
 ## 0.128.0
 Fri, 14 Sep 2018 17:08:05 GMT

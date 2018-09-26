@@ -3,12 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
-import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl, IConfigurable } from "./ConfigurableUiControl";
+import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "./ConfigurableUiControl";
 
 /** The base class for Frontstage content controls.
  */
 export class ContentControl extends ConfigurableUiControl {
-  private _defaultLayoutIndex: number = 0;
   private _reactElement: React.ReactNode;
 
   /** Creates an instance of ConfigurableUiContentControl.
@@ -22,37 +21,24 @@ export class ContentControl extends ConfigurableUiControl {
    */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-
-    if (options)
-      this._defaultLayoutIndex = options.defaultLayoutIndex;
   }
 
-  public getDefaultLayoutIndex(): number { return this._defaultLayoutIndex; }
+  // protected _canAdopt(other: ConfigurableUiElement): boolean {
+  //   if (!super._canAdopt(other))
+  //     return false;
 
-  protected _canAdopt(other: IConfigurable): boolean {
-    if (!super._canAdopt(other))
-      return false;
+  //   const otherContentControl = other as ContentControl;
+  //   return this.getConfigurableUiControlId() === otherContentControl.getConfigurableUiControlId();
+  // }
 
-    const otherContentControl = other as ContentControl;
-    return this.getConfigurableUiControlId() === otherContentControl.getConfigurableUiControlId();
-  }
+  // protected _adopt(other: ConfigurableUiElement): void {
+  //   super._adopt(other);
 
-  protected _adopt(other: IConfigurable): void {
-    super._adopt(other);
-
-    const otherContentControl = other as ContentControl;
-    // update the layout index of the shelved control to match that specified by the input control
-    // this way the order specified in the UIConfig file for the current stage is honored.
-    this._defaultLayoutIndex = otherContentControl._defaultLayoutIndex;
-  }
-
-  protected _onActivated(): void {
-    this.onActivated();
-  }
-
-  protected _onDeactivated(): void {
-    this.onDeactivated();
-  }
+  //   const otherContentControl = other as ContentControl;
+  //   // update the layout index of the shelved control to match that specified by the input control
+  //   // this way the order specified in the UIConfig file for the current stage is honored.
+  //   this._defaultLayoutIndex = otherContentControl._defaultLayoutIndex;
+  // }
 
   public onActivated(): void {
   }

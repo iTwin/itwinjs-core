@@ -19,7 +19,7 @@ const DivWithContainIn = withContainInViewport(Div);
 export interface SnapModeDialogProps extends CommonProps, NoChildrenProps {
   /** Dialog title. */
   title?: string;
-  /** Actual snap rows. See [[Snap]] component. */
+  /** Actual snap rows. See Snap component. */
   snaps?: React.ReactNode;
 }
 

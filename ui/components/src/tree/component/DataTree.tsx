@@ -5,6 +5,7 @@
 
 import * as React from "react";
 import Tree from "./Tree";
+import { HighlightableTreeProps } from "../HighlightingEngine";
 import { InspireTreeNode, InspireTreeNodeData } from "./BeInspireTree";
 import { TreeDataProvider, TreeNodeItem } from "../TreeDataProvider";
 import { SelectionMode } from "../../common/selection/SelectionModes";
@@ -28,7 +29,7 @@ export interface DataTreeProps {
   onNodesDeselected?: (nodes: TreeNodeItem[]) => void;
   dragProps?: DragSourceProps;
   dropProps?: DropTargetProps;
-  highlightString?: string;
+  nodeHighlightingProps?: HighlightableTreeProps;
 }
 
 interface InspireTreeNavNodeData extends InspireTreeNodeData {
@@ -197,7 +198,7 @@ export default class DataTree extends React.Component<DataTreeProps> {
         dragProps={dragProps}
         dropProps={dropProps}
         expandedNodes={this.props.expandedNodes}
-        highlightString={this.props.highlightString}
+        nodeHighlightingProps={this.props.nodeHighlightingProps}
         selectionMode={this.props.selectionMode}
       />
     );

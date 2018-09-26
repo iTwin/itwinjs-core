@@ -1,3 +1,79 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ContentLayout <ContentLayout /> renders correctly 1`] = `""`;
+exports[`ContentLayout <ContentLayout /> renders correctly 1`] = `
+<div
+  className="contentlayout-footer-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SingleContentContainer
+    content={<div />}
+  />
+</div>
+`;
+
+exports[`ContentLayout SingleContent renders correctly 1`] = `
+<div
+  className="contentlayout-footer-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SingleContentContainer
+    content={<div />}
+  />
+</div>
+`;
+
+exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
+<div
+  className="contentlayout-open-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SplitContainer
+    contentA={
+      <ContentWrapper
+        content={<div />}
+      />
+    }
+    contentB={
+      <ContentWrapper
+        content={<div />}
+      />
+    }
+    orientation={0}
+    percentage={0.5}
+    resizable={true}
+    splitterStateId="TwoHalvesHorizontal.HorizontalSplit"
+  />
+</div>
+`;
+
+exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
+<div
+  className="contentlayout-footer-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SplitContainer
+    contentA={
+      <ContentWrapper
+        content={<div />}
+      />
+    }
+    contentB={
+      <ContentWrapper
+        content={<div />}
+      />
+    }
+    orientation={1}
+    percentage={0.5}
+    resizable={true}
+    splitterStateId="TwoHalvesVertical.VerticalSplit"
+  />
+</div>
+`;

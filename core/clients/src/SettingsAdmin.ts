@@ -40,7 +40,7 @@ export class SettingsResult {
   }
 }
 
-/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, IModel, and User */
+/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User */
 export interface SettingsAdmin {
 
   /** Saves a user-specific settings object to the settings service.
@@ -102,7 +102,7 @@ export interface SettingsAdmin {
    */
   getSetting(alctx: ActivityLoggingContext, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
-  /** Deletes a user-specific settings object from the settings service.
+  /** Deletes a non-user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param authToken The authorization token return from logging in.

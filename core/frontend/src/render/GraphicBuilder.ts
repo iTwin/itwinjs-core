@@ -52,11 +52,12 @@ export const enum GraphicType {
   ViewOverlay,
 }
 
-/** Exposes methods for constructing a RenderGraphic from geometric primitives. */
+/** Provides methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
   private readonly _placement: Transform;
   public readonly type: GraphicType;
   public readonly viewport: Viewport;
+  /** The Id for the graphic when creating a pickable decoration. */
   public pickId?: string;
 
   public get placement(): Transform { return this._placement; }
@@ -76,14 +77,14 @@ export abstract class GraphicBuilder {
       this.pickId = pickId.toString();
   }
 
-  /** IFacetOptions => StrokeOptions */
   public wantStrokeLineStyle(_symb: LineStyle.Info, _facetOptions: StrokeOptions): boolean { return true; }
-
   public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
-  // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  protected abstract _finish(): RenderGraphic;
-  public finish(): RenderGraphic { return this._finish(); }
+  /**
+   * Processes the accumulated symbology and geometry to produce a renderable graphic.
+   * This function consumes the GraphicBuilder and therefore should only be invoked once on a given GraphicBuilder.
+   */
+  public abstract finish(): RenderGraphic;
 
   /**
    * Set a GraphicParams to be the "active" GraphicParams for this RenderGraphic.

@@ -8,8 +8,10 @@ import { NodePathElement, NodeKey } from "@bentley/presentation-common";
 import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "@bentley/ui-components/lib/tree/SimpleTreeDataProvider";
 import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
+import { ActiveResultNode } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import { createTreeNodeItem } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
+import { memoize } from "lodash";
 
 /**
  * @hidden
@@ -19,13 +21,14 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
   private _filteredDataProvider: SimpleTreeDataProvider;
   private _allNodeIds: string[];
   private _filter: string;
+  private _filteredResultsOccurances: Array<{ id: string, occurances: number }> = [];
 
   public constructor(parentDataProvider: IPresentationTreeDataProvider, filter: string, paths: ReadonlyArray<Readonly<NodePathElement>>) {
     this._parentDataProvider = parentDataProvider;
     this._filter = filter;
     this._allNodeIds = [];
     const hierarchy: SimpleTreeDataProviderHierarchy = new Map<string | undefined, TreeNodeItem[]>();
-    FilteredPresentationTreeDataProvider.createHierarchy(paths, hierarchy, this._allNodeIds);
+    this.createHierarchy(paths, hierarchy, this._allNodeIds);
     this._filteredDataProvider = new SimpleTreeDataProvider(hierarchy);
   }
 
@@ -35,12 +38,16 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
 
   public get filter(): string { return this._filter; }
 
-  private static createHierarchy(paths: ReadonlyArray<Readonly<NodePathElement>>, hierarchy: SimpleTreeDataProviderHierarchy, allNodeIds: string[], parentId?: string) {
+  private createHierarchy(paths: ReadonlyArray<Readonly<NodePathElement>>, hierarchy: SimpleTreeDataProviderHierarchy, allNodeIds: string[], parentId?: string) {
     const treeNodes: TreeNodeItem[] = [];
     for (let i = 0; i < paths.length; i++) {
       const node = createTreeNodeItem(paths[i].node, parentId);
+
+      if (paths[i].filteringData && paths[i].filteringData!.occurances)
+        this._filteredResultsOccurances.push({ id: node.id, occurances: paths[i].filteringData!.occurances });
+
       if (paths[i].children.length !== 0) {
-        FilteredPresentationTreeDataProvider.createHierarchy(paths[i].children, hierarchy, allNodeIds, node.id);
+        this.createHierarchy(paths[i].children, hierarchy, allNodeIds, node.id);
         node.hasChildren = true;
       } else
         node.hasChildren = false;
@@ -49,6 +56,39 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
       treeNodes[i] = node;
     }
     hierarchy.set(parentId, treeNodes);
+  }
+
+  public getActiveResultNode: (index: number) => ActiveResultNode | undefined = memoize((index: number): ActiveResultNode | undefined => {
+    let activeNode: ActiveResultNode | undefined;
+    if (index <= 0)
+      return undefined;
+
+    let i = 1;
+    for (const node of this._filteredResultsOccurances) {
+      if (index < i + node.occurances) {
+        activeNode = {
+          id: node.id,
+          index: index - i,
+        };
+        break;
+      }
+
+      i += node.occurances;
+    }
+    return activeNode;
+  });
+
+  /** Count filtering results. Including multiple possible matches within node labels */
+  public countFilteringResults(nodePaths: ReadonlyArray<Readonly<NodePathElement>>): number {
+    let resultCount = 0;
+
+    // Loops through root level only
+    for (const path of nodePaths) {
+      if (path.filteringData)
+        resultCount += path.filteringData.occurances + path.filteringData.childrenOccurances;
+    }
+
+    return resultCount;
   }
 
   public async getRootNodes(pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {

@@ -11,17 +11,29 @@ import { InspireTreeNode } from "../../../src/tree/component/BeInspireTree";
 import { SelectionMode } from "../../../src/common";
 import { ExpansionToggle } from "@bentley/ui-core/lib/tree";
 import { waitForSpy } from "../../test-helpers/Misc";
-import InspireTree from "inspire-tree";
+import TestUtils from "../../TestUtils";
 
 describe("Tree", () => {
-  it("Expect highlighted words to be wrapped in <mark> tag", () => {
-    const highlightedString = "test";
+  before(() => {
+    TestUtils.initializeUiComponents();
+  });
 
-    const treeComponent = enzyme.shallow(<Tree dataProvider={[]} highlightString={highlightedString} />);
-    // TreeComponent nodes are only set when an event fires, so we force the update by setting state manually
-    treeComponent.setState({ rootNodes: new InspireTree({ data: [{ text: "This is a test" }] as any }) });
+  describe("renderTree", () => {
+    it("Expect 'The tree is empty' when tree is empty", () => {
+      const treeComponent = enzyme.mount(<Tree dataProvider={[]} />);
 
-    expect(treeComponent.render().find("Mark").text()).to.be.equal(highlightedString);
+      expect(treeComponent.find(".nz-tree-tree").first().childAt(0).text()).to.be.equal(TestUtils.i18n.translate("Components:general.noData"));
+    });
+
+    it("Expect '0 matches found for x' when tree is empty and highlighting props contain a search word", () => {
+      const searchText = "test";
+
+      const treeComponent = enzyme.mount(<Tree dataProvider={[]} />);
+
+      treeComponent.setProps({ nodeHighlightingProps: { activeResultNode: { id: "", index: 0 }, searchText } });
+      expect(treeComponent.find(".nz-tree-tree").first().childAt(0).text()).to.be.equal(
+        TestUtils.i18n.translate("Components:tree.noResultsForFilter", { searchText }));
+    });
   });
 
   const onTreeReloaded = sinon.spy();

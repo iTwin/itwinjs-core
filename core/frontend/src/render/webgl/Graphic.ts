@@ -18,6 +18,7 @@ import { OvrFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { RenderPass } from "./RenderFlags";
 
 class OvrUniform {
   public floatFlags: number = 0;
@@ -408,7 +409,7 @@ function createPickTable(features: PackedFeatureTable): PickTable {
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
-  public addHiliteCommands(_commands: RenderCommands, _batch: Batch): void { assert(false); }
+  public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
@@ -507,7 +508,7 @@ export class Branch extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch): void { commands.addHiliteBranch(this, batch); }
+  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
 
   public assignUniformFeatureIndices(index: number): void {
     for (const entry of this.branch.entries) {
@@ -542,9 +543,9 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch): void {
+  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
     for (const graphic of this.graphics) {
-      (graphic as Graphic).addHiliteCommands(commands, batch);
+      (graphic as Graphic).addHiliteCommands(commands, batch, pass);
     }
   }
 

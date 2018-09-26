@@ -184,7 +184,7 @@ Descriptor {
               "name": "Berkshire",
             },
             "kindOfQuantity": Object {
-              "currentFusId": "9e046c59-575a-434a-9b36-5f76a0244ac9",
+              "currentFormatId": "9e046c59-575a-434a-9b36-5f76a0244ac9",
               "label": "Gardens circuit",
               "name": "user-centric",
               "persistenceUnit": "Steel",
@@ -361,6 +361,10 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
+    "filteringData": Object {
+      "childrenOccurances": 0,
+      "occurances": 0,
+    },
     "index": 789,
     "isMarked": true,
     "node": Object {
@@ -397,6 +401,10 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
+    "filteringData": Object {
+      "childrenOccurances": 0,
+      "occurances": 0,
+    },
     "index": 209,
     "isMarked": false,
     "node": Object {

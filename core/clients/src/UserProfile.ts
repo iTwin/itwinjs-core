@@ -12,8 +12,12 @@ export class UserProfile {
     public email: string,
     public userId: string,
     public organization: string,
-    public ultimateId: string,
+    public organizationId: string,
+    public ultimateSite: string,
     public usageCountryIso: string,
   ) { }
 
+  public static fromJson(jsonObj: any): UserProfile {
+    return new UserProfile(jsonObj.firstName, jsonObj.lastName, jsonObj.email, jsonObj.userId, jsonObj.organization, jsonObj.organizationId, jsonObj.ultimateSite, jsonObj.usageCountryIso);
+  }
 }

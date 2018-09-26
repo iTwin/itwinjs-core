@@ -6,6 +6,8 @@ export * from "./breadcrumb";
 export * from "./common";
 export * from "./converters";
 export * from "./dragdrop";
+export * from "./editors";
+export * from "./filtering";
 export * from "./properties";
 export * from "./propertygrid";
 export * from "./table";
@@ -29,8 +31,16 @@ export * from "./viewport";
  * Classes and Higher Order Components for working with the DragDrop API.
  */
 /**
+ * @docs-group-description Filtering
+ * Classes for working with filtering.
+ */
+/**
  * @docs-group-description Properties
  * Classes for working with Properties.
+ */
+/**
+ * @docs-group-description PropertyEditors
+ * Classes for property editors.
  */
 /**
  * @docs-group-description PropertyGrid

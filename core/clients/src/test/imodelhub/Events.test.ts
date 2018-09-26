@@ -9,8 +9,8 @@ import { Guid, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyj
 import { AccessToken, IModelClient } from "../../";
 import {
   LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
-  CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, SeedFileReplacedEvent, IModelLockEvent,
-  IModelDeletedEvent, VersionEvent, EventSubscription, EventSAS, EventType, IModelHubEvent,
+  CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, IModelDeletedEvent, VersionEvent,
+  EventSubscription, EventSAS, EventType, IModelHubEvent,
 } from "../../";
 
 import { TestConfig } from "../TestConfig";
@@ -290,28 +290,6 @@ describe("iModelHub EventHandler", () => {
 
     const event = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(BriefcaseDeletedEvent);
-  });
-
-  it("should receive SeedFileReplacedEvent", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
-    const eventBody = `{"EventTopic":"123","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","FileId":"789"}`;
-    mockGetEvent(iModelId, subscription.wsgId, JSON.parse(eventBody), "SeedFileReplacedEvent");
-
-    const event = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
-    chai.expect(event).to.be.instanceof(SeedFileReplacedEvent);
-  });
-
-  it("should receive IModelLockEvent", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
-    const eventBody = `{"EventTopic":"123","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","Locked":true}`;
-    mockGetEvent(iModelId, subscription.wsgId, JSON.parse(eventBody), "iModelLockEvent");
-
-    const event = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
-    chai.expect(event).to.be.instanceof(IModelLockEvent);
   });
 
   it("should receive IModelDeletedEvent", async function (this: Mocha.ITestCallbackContext) {

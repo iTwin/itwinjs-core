@@ -9,7 +9,7 @@ import { Guid, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyj
 
 import { AccessToken, WsgError, IModelQuery, IModelClient } from "../../";
 import {
-  IModelHubClient, IModelRepository, SeedFile, IModelHubError,
+  IModelHubClient, HubIModel, SeedFile, IModelHubError,
   IModelHubClientError,
 } from "../../";
 
@@ -25,7 +25,7 @@ function mockGetIModelByName(projectId: string, name: string, description = "", 
   imodelId = imodelId || Guid.createValue();
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId,
     "iModel", `?$filter=Name+eq+%27${encodeURIComponent(name)}%27`);
-  const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+  const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
     new Map<string, any>([
       ["name", name],
       ["description", description],
@@ -37,13 +37,13 @@ function mockGetIModelByName(projectId: string, name: string, description = "", 
 
 function mockPostiModel(projectId: string, imodelId: string, imodelName: string, description: string) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-  const postBody = ResponseBuilder.generatePostBody<IModelRepository>(
-    ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+  const postBody = ResponseBuilder.generatePostBody<HubIModel>(
+    ResponseBuilder.generateObject<HubIModel>(HubIModel,
       new Map<string, any>([
         ["name", imodelName],
         ["description", description],
       ])));
-  const requestResponse = ResponseBuilder.generatePostResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+  const requestResponse = ResponseBuilder.generatePostResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
     new Map<string, any>([
       ["wsgId", imodelId],
       ["name", imodelName],
@@ -130,13 +130,13 @@ function mockDeleteiModel(projectId: string, imodelId: string) {
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
 }
 
-function mockUpdateiModel(projectId: string, imodel: IModelRepository) {
+function mockUpdateiModel(projectId: string, imodel: HubIModel) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", imodel.wsgId);
-  const postBody = ResponseBuilder.generatePostBody<IModelRepository>(imodel);
-  const requestResponse = ResponseBuilder.generatePostResponse<IModelRepository>(imodel);
+  const postBody = ResponseBuilder.generatePostBody<HubIModel>(imodel);
+  const requestResponse = ResponseBuilder.generatePostResponse<HubIModel>(imodel);
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
@@ -175,19 +175,19 @@ describe("iModelHub iModelHandler", () => {
   it("should get list of IModels", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+      const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
         new Map<string, any>([["name", imodelName]])));
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
-    let imodels: IModelRepository[];
+    let imodels: HubIModel[];
     imodels = await imodelProject.queryIModels(alctx, accessToken, projectId, undefined);
     chai.expect(imodels.length).to.be.greaterThan(0);
   });
 
   it("should get a specific IModel", async () => {
     mockGetIModelByName(projectId, imodelName);
-    const iModel: IModelRepository = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    const iModel: HubIModel = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(iModel.name).to.be.equal(imodelName);
   });
 
@@ -199,7 +199,7 @@ describe("iModelHub iModelHandler", () => {
     const names = ["22_LargePlant.166.i"];
     for (const name of names) {
       mockGetIModelByName(projectId, name);
-      const iModel: IModelRepository = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byName(name)))[0];
+      const iModel: HubIModel = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byName(name)))[0];
       chai.expect(iModel.name).to.be.equal(name);
       mockDeleteiModel(projectId, iModel.wsgId);
       await imodelProject.deleteIModel(alctx, accessToken, projectId, iModel.wsgId);
@@ -209,12 +209,12 @@ describe("iModelHub iModelHandler", () => {
   it("should retrieve an iModel by its id", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", iModelId);
-      const requestResponse = ResponseBuilder.generateGetResponse<IModelRepository>(ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+      const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
         new Map<string, any>([["wsgId", iModelId]])));
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
-    const iModel: IModelRepository = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
+    const iModel: HubIModel = (await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
 
     chai.expect(iModel.wsgId).to.be.equal(iModelId);
   });
@@ -292,8 +292,8 @@ describe("iModelHub iModelHandler", () => {
     const filePath = utils.getMockSeedFilePath();
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const postBody = ResponseBuilder.generatePostBody<IModelRepository>(
-        ResponseBuilder.generateObject<IModelRepository>(IModelRepository,
+      const postBody = ResponseBuilder.generatePostBody<HubIModel>(
+        ResponseBuilder.generateObject<HubIModel>(HubIModel,
           new Map<string, any>([["name", imodelName]])));
       const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
         new Map<string, any>([["iModelInitialized", false]]));
@@ -380,14 +380,14 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  // ###TODO Vilius Kazlauskas please fix - test fails.
-  it.skip("should update iModel name and description", async () => {
+  it("should update iModel name and description", async () => {
     mockGetIModelByName(projectId, imodelName);
-    const imodel: IModelRepository = (await iModelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    const imodel: HubIModel = (await iModelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(imodel.name).to.be.equal(imodelName);
 
     const newName = imodel.name + "_updated";
     const newDescription = "Description_updated";
+    await utils.deleteIModelByName(accessToken, projectId, newName);
     imodel.name = newName;
     imodel.description = newDescription;
     mockUpdateiModel(projectId, imodel);
@@ -397,8 +397,10 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
-    mockGetIModelByName(projectId, newName, newDescription);
+    mockGetIModelByName(projectId, newName, newDescription, imodel.wsgId);
     updatediModel = (await iModelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(newName)))[0];
+
+    await utils.deleteIModelByName(accessToken, projectId, newName);
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);

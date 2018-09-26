@@ -10,6 +10,9 @@ exports[`<Content /> renders correctly 1`] = `
   <div
     className="nz-messages"
   />
+  <span
+    className="nz-message-prompt"
+  />
   <div
     className="nz-gradient"
   />

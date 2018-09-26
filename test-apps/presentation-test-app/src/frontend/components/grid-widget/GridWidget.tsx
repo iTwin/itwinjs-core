@@ -19,9 +19,9 @@ export default class GridWidget extends React.Component<Props> {
   }
   public render() {
     return (
-      <div className="GridWidget">
+      <div className="gridwidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
-        <div className="ContentContainer">
+        <div className="gridwidget-content">
           <SampleTable dataProvider={new PresentationTableDataProvider(this.props.imodel, this.props.rulesetId)} />
         </div>
       </div>

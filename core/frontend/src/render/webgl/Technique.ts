@@ -445,6 +445,53 @@ export class Techniques implements IDisposable {
     });
   }
 
+  /** Execute the commands for a single given classification primitive */
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
+    assert(RenderPass.None !== renderPass, "invalid render pass");
+    // There should be 3 commands per classifier in the cmdsByIndex array.
+    index *= 3;
+    if (index < 0 || index > cmdsByIndex.length - 3)
+      return; // index out of range
+
+    const pushCmd = cmdsByIndex[index];
+    const primCmd = cmdsByIndex[index + 1];
+    const popCmd = cmdsByIndex[index + 2];
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+
+      // First execute the push.
+      pushCmd.preExecute(executor);
+      let techniqueId = pushCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
+      pushCmd.execute(executor);
+      pushCmd.postExecute(executor);
+
+      // Execute the command for the given classification primitive.
+      primCmd.preExecute(executor);
+      techniqueId = primCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid !== techniqueId);
+      // A primitive command.
+      assert(primCmd.isPrimitiveCommand, "expected primitive command");
+      flags.init(target, renderPass, primCmd.hasAnimation);
+      const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
+      const program = tech.getShader(flags);
+      if (executor.setProgram(program)) {
+        primCmd.execute(executor);
+      }
+      primCmd.postExecute(executor);
+
+      // Execute the batch pop.
+      popCmd.preExecute(executor);
+      techniqueId = popCmd.getTechniqueId(target);
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
+      popCmd.execute(executor);
+      popCmd.postExecute(executor);
+    });
+  }
+
   /** Draw a single primitive. Usually used for special-purpose rendering techniques. */
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));

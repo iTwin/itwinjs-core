@@ -50,4 +50,4 @@ The *relationships* must ultimately be persisted in a relational database and/or
 
 ## ECRelationshipInstances and InstanceIds
 
-Though ECRelationshipInstances have InstanceId, generally, stable InstanceIds on relationship instances *cannot* be supported. Imagine the case where the relationship is persisted as a simple foreign-key relationship in the database… there is no place to store a stable ID for the relationship instance itself. Concatenating IDs from the source and target will not work, because a relationship ID may change when one of its endpoints is changed.
+Though ECRelationshipInstances have InstanceId, generally, stable InstanceIds on relationship instances *cannot* be supported. Imagine the case where the relationship is persisted as a simple foreign-key relationship in the database… there is no place to store a stable Id for the relationship instance itself. Concatenating IDs from the source and target will not work, because a relationship Id may change when one of its endpoints is changed.

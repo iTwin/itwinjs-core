@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { IModelHubClient, AccessToken, IModelRepository, Version, UserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
+import { IModelHubClient, AccessToken, HubIModel, Version, UserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
@@ -53,7 +53,7 @@ export class DefaultIModelServices implements IModelServices {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: IModelRepository[] = await this._hubClient.IModels().get(alctx, accessToken, projectInfo.wsgId, queryOptions);
+      const iModels: HubIModel[] = await this._hubClient.IModels().get(alctx, accessToken, projectInfo.wsgId, queryOptions);
       for (const imodel of iModels) {
         const versions: Version[] = await this._hubClient.Versions().get(alctx, accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
@@ -158,7 +158,7 @@ export class DefaultIModelServices implements IModelServices {
     return userInfos;
   }
 
-  private createIModelInfo(thisIModel: IModelRepository, thisProjectInfo: ProjectInfo): IModelInfo {
+  private createIModelInfo(thisIModel: HubIModel, thisProjectInfo: ProjectInfo): IModelInfo {
     const createDate: Date = new Date(thisIModel.createdDate!);
     console.log("Working on iModel", thisIModel.name); // tslint:disable-line:no-console
     const thisIModelInfo: IModelInfo = new IModelInfoImpl(thisIModel.name!, thisIModel.description!, thisIModel.wsgId, createDate, thisProjectInfo, "", thisIModel.thumbnail);

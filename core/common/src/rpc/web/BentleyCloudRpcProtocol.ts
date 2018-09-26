@@ -20,7 +20,7 @@ enum AppMode {
 /** An http protocol for Bentley cloud RPC interface deployments. */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   /** The name of the HTTP request header  */
-  public requestIdHeaderName = "X-CorrelationId";
+  public requestIdHeaderName = "X-Correlation-Id";
 
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {

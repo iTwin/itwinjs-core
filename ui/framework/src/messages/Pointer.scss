@@ -1,0 +1,33 @@
+@import "@bentley/ui-core/lib/colors";
+@import "@bentley/bwc/lib/mixins";
+
+.nz-popup-message-pointer {
+  background-color: $background-1;
+  padding: 5px 15px;
+  border-radius: 15px;
+  box-shadow: 1px 1px 5px 1px $background-5;
+  color: $text-dark;
+}
+
+.tooltip {
+  text-decoration:none;
+  position:relative;
+}
+
+.tooltip span {
+  display:none;
+}
+
+.tooltip:hover span {
+  display:block;
+  position:fixed;
+  overflow:visible;
+}
+
+.popup-message-brief {
+  @include bwc-text(body);
+}
+
+.popup-message-detailed {
+  @include bwc-text(small);
+}

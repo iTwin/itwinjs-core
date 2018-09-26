@@ -92,9 +92,9 @@ export abstract class CachedGeometry implements IDisposable {
     return weight;
   }
   // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
-  public wantMixHiliteColorForFlash(vf: ViewFlags): boolean {
+  public wantMixHiliteColorForFlash(vf: ViewFlags, target: Target): boolean {
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
-    if (this.hasBakedLighting)
+    if (this.hasBakedLighting || RenderPass.Classification === this.getRenderPass(target))
       return true;
     else if (!this.isLitSurface)
       return false;
@@ -115,7 +115,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements; }
+  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements || undefined !== this.lut.auxParams || undefined !== this.lut.auxNormals; }
 
   protected constructor() { super(); }
 }

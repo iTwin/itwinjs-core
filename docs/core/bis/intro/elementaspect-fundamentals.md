@@ -6,7 +6,7 @@
 
 ElementAspects have a special relationship with Elements. Every ElementAspect instance is associated (through an EC relationship) to exactly one Element instance. ElementAspect instances are never shared among Element instances. An Element *owns* its ElementAspects; if the Element is deleted its ElementAspects are also deleted.
 
-TODO: add figure
+<!-- TODO: add figure -->
 
 ## Core ElementAspect Types
 

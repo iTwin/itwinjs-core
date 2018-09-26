@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTreeDataProvider, withFilteringSupport, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
-import { Tree } from "@bentley/ui-components";
+import { Tree, FilteringInput } from "@bentley/ui-components";
 import "./TreeWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -16,16 +16,23 @@ export interface State {
   filter: string;
   filtering: boolean;
   prevProps: Props;
+  highlightedCount: number;
+  activeHighlightedIndex: number;
 }
+
 export default class TreeWidget extends React.Component<Props, State> {
-  private _filterTextBox: React.RefObject<HTMLInputElement>;
   private _dataProvider: PresentationTreeDataProvider;
 
   constructor(props: Props) {
     super(props);
     this._dataProvider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
-    this.state = { filter: "", filtering: false, prevProps: props };
-    this._filterTextBox = React.createRef();
+    this.state = {
+      filter: "",
+      filtering: false,
+      prevProps: props,
+      activeHighlightedIndex: 0,
+      highlightedCount: 0,
+    };
   }
 
   public static getDerivedStateFromProps(nextProps: Props, state: State) {
@@ -34,39 +41,55 @@ export default class TreeWidget extends React.Component<Props, State> {
     return state;
   }
 
-  private _onFilterButtonClick = (_e: React.MouseEvent<HTMLButtonElement>): void => {
-    this.setFilter();
-  }
-
-  private _onFilterKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.keyCode === 13)
-      this.setFilter();
-  }
-
-  private setFilter(): void {
-    const text = this._filterTextBox.current!.value;
-    this.setState({ filter: text, filtering: true });
-  }
-
   // tslint:disable-next-line:naming-convention
   private onFilterApplied = (_filter?: string): void => {
     if (this.state.filtering)
       this.setState({ filtering: false });
   }
 
+  private _onFilterStart = (filter: string) => {
+    this.setState({ filter, filtering: true });
+  }
+
+  private _onFilterCancel = () => {
+    this.setState({ filter: "", filtering: false });
+  }
+
+  private _onFilterClear = () => {
+    this.setState({ filter: "", filtering: false });
+  }
+
+  private _onHighlightedCounted = (count: number) => {
+    if (count !== this.state.highlightedCount)
+      this.setState({ highlightedCount: count });
+  }
+
+  private _onFilteringInputSelectedChanged = (index: number) => {
+    this.setState({ activeHighlightedIndex: index });
+  }
+
   public render() {
     if (this.props.imodel !== this.state.prevProps.imodel || this.props.rulesetId !== this.state.prevProps.rulesetId)
       this._dataProvider = new PresentationTreeDataProvider(this.props.imodel, this.props.rulesetId);
 
-    const loader = this.state.filtering === true ? <div className="treeWidgetLoader" /> : undefined;
     return (
-      <div className="TreeWidget">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
-        <input type="text" ref={this._filterTextBox} onKeyDown={this._onFilterKeyDown} />
-        <button onClick={this._onFilterButtonClick}>Filter</button>
-        {loader}
+      <div className="treewidget">
+        <div className="treewidget-header">
+          <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
+          <FilteringInput
+            filteringInProgress={this.state.filtering}
+            onFilterCancel={this._onFilterCancel}
+            onFilterClear={this._onFilterClear}
+            onFilterStart={this._onFilterStart}
+            resultSelectorProps={{
+              onSelectedChanged: this._onFilteringInputSelectedChanged,
+              resultCount: this.state.highlightedCount,
+            }} />
+        </div>
         <SampleTree dataProvider={this._dataProvider} filter={this.state.filter}
-          onFilterApplied={this.onFilterApplied} />
+          onFilterApplied={this.onFilterApplied}
+          onHighlightedCounted={this._onHighlightedCounted}
+          activeHighlightedIndex={this.state.activeHighlightedIndex} />
       </div>
     );
   }

@@ -37,7 +37,7 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of [[Tile]]s for this IModelConnection. */
+  /** The set of Tiles for this IModelConnection. */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
@@ -261,8 +261,8 @@ export class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModelJs types to be used for the different ECSQL parameter types.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
@@ -540,6 +540,15 @@ export namespace IModelConnection {
       return views;
     }
 
+    /**
+     * Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
+     * within a view selection dialog, or similar purposes.
+     * @returns the ID of the default view, or an invalid ID if no default view is defined.
+     */
+    public async queryDefaultViewId(): Promise<Id64> {
+      return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken);
+    }
+
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
       const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
@@ -585,10 +594,14 @@ export namespace IModelConnection {
     }
   }
 
-  /** @hidden */
+  /** Provides access to tiles associated with an IModelConnection */
   export class Tiles {
+    /** @hidden */
     private _iModel: IModelConnection;
+
+    /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
+
     public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
     public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
   }

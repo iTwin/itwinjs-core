@@ -5,6 +5,7 @@
 
 import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping, RenderTexture } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";
+import { Range1d } from "@bentley/geometry-core";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
@@ -26,9 +27,10 @@ export class DisplayParams {
   public readonly linePixels: LinePixels; // linear and mesh (edges)
   public readonly fillFlags: FillFlags; // meshes only
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
+  public readonly thematicRange?: Range1d;
 
   public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false, textureMapping?: TextureMapping) {
+    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false, textureMapping?: TextureMapping, thematicRange?: Range1d) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
@@ -39,6 +41,7 @@ export class DisplayParams {
     this.fillFlags = fillFlags;
     this.ignoreLighting = ignoreLighting;
     this._textureMapping = textureMapping;
+    this.thematicRange = thematicRange;
 
     assert(undefined === material || undefined === textureMapping);
   }

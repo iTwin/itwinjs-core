@@ -1,0 +1,52 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+.filtering-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px;
+}
+
+// Input wrapper
+.filtering-input-input{
+  position: relative;
+  flex: 1;
+
+  // The input itself
+  input{
+    @include bwc-inputs-input;
+    box-sizing:border-box;
+  }
+}
+
+.filtering-input-input-components{
+  display: flex;
+  position: absolute;
+  right: 8px;
+  top: 1px;
+  bottom: 0px;
+}
+
+@mixin filtering-button-base {
+  @include bwc-buttons-hollow;
+  margin-left: 6px;
+}
+
+.filtering-input-button{
+  @include filtering-button-base;
+}
+
+.filtering-input-clear{
+  @include filtering-button-base;
+  color: $bwc-gray-5;
+  font-size: "12px";
+}
+
+.filtering-input-loader {
+  @include bwc-loaders-medium;
+  margin-bottom: auto;
+  margin-top: auto;
+}

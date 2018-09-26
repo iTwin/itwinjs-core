@@ -4,7 +4,7 @@
 /** @module iModels */
 
 import { Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, Code as HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
+import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
