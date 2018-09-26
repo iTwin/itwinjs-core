@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module StatusBarText */
+/** @module Footer */
 
 import * as classnames from "classnames";
 import * as React from "react";
 import CommonProps, { NoChildrenProps } from "../utilities/Props";
 import "./StatusBarText.scss";
 
-/** Properties of [[StatusBarText]] component.  */
+/** Properties of StatusBarText component.  */
 export interface StatusBarTextProps extends CommonProps, NoChildrenProps {
   /** Describes if the snap row is active. */
   isInFooterMode?: boolean;
@@ -16,7 +16,7 @@ export interface StatusBarTextProps extends CommonProps, NoChildrenProps {
   label?: string;
 }
 
-/** Generic Text used in [[StatusBar]] component. */
+/** Generic Text that can be used in StatusBar component. */
 export default class Snap extends React.Component<StatusBarTextProps> {
   public render() {
     const combinedClassName = classnames(

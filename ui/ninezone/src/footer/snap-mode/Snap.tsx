@@ -8,7 +8,7 @@ import * as React from "react";
 import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Snap.scss";
 
-/** Properties of [[Snap]] component.  */
+/** Properties of Snap component.  */
 export interface SnapProps extends CommonProps, NoChildrenProps {
   /** Icon of snap row. I.e. [[SnapModeIcon]] */
   icon?: React.ReactNode;
