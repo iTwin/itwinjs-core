@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Check for subcategory appearance invisible and dontSnap.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}

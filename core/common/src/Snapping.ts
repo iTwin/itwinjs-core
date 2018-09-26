@@ -32,6 +32,7 @@ export interface SnapResponseProps {
   heat?: number;
   geomType?: number;
   parentGeomType?: number;
+  category?: string;
   subCategory?: string;
   hitPoint?: XYZProps;
   snapPoint?: XYZProps;
