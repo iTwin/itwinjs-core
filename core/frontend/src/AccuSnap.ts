@@ -12,7 +12,7 @@ import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitPriority, IntersectDetail, SnapHeat, HitGeomType } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration, Id64 } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
 
@@ -456,7 +456,7 @@ export class AccuSnap implements Decorator {
       snapModes,
       snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
-    }; // ### TODO offSubCategories and !isElementHit
+    };
 
     if (undefined !== hitList && snapModes.includes(SnapMode.Intersection)) {
       for (const hit of hitList.hits) {
@@ -465,16 +465,56 @@ export class AccuSnap implements Decorator {
         if (undefined === requestProps.intersectCandidates)
           requestProps.intersectCandidates = [];
         requestProps.intersectCandidates.push(hit.sourceId);
-        if (3 === requestProps.intersectCandidates.length)
+        if (5 === requestProps.intersectCandidates.length)
           break; // Search for intersection with a few of the next best hits...
       }
     }
 
-    const result = await thisHit.viewport.iModel.requestSnap(requestProps);
+    let result = await thisHit.viewport.iModel.requestSnap(requestProps);
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)
       return undefined;
+
+    if (undefined !== result.category && undefined !== result.subCategory) {
+      const viewState = thisHit.viewport.view;
+      const appearance = viewState.getSubCategoryAppearance(new Id64(result.subCategory));
+
+      if (appearance.invisible) {
+        const subCategories = viewState.subCategories.getSubCategories(result.category);
+        if (undefined !== subCategories) {
+          requestProps.offSubCategories = [];
+          requestProps.offSubCategories.push(result.subCategory);
+          for (const thisSub of subCategories) {
+            if (thisSub !== result.subCategory && viewState.getSubCategoryAppearance(new Id64(thisSub)).invisible)
+              requestProps.offSubCategories.push(thisSub);
+          }
+        }
+
+        if (undefined === requestProps.offSubCategories) {
+          if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+          return undefined;
+        }
+
+        result = await thisHit.viewport.iModel.requestSnap(requestProps); // Retry snap with list of unacceptable subcategories...
+
+        if (result.status === SnapStatus.Success) {
+          const appearanceRetry = viewState.getSubCategoryAppearance(new Id64(result.subCategory));
+          if (appearanceRetry.invisible)
+            result.status = SnapStatus.NoSnapPossible;
+          else if (appearanceRetry.dontSnap)
+            result.status = SnapStatus.NotSnappable;
+        }
+
+        if (out) out.snapStatus = result.status;
+        if (result.status !== SnapStatus.Success)
+          return undefined;
+
+      } else if (appearance.dontSnap) {
+        if (out) out.snapStatus = SnapStatus.NotSnappable;
+        return undefined;
+      }
+    }
 
     const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
     snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined, result.geomType);

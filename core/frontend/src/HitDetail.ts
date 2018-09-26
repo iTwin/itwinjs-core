@@ -11,7 +11,7 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicType } from "./render/GraphicBuilder";
 import { LinePixels } from "@bentley/imodeljs-common";
 
-export const enum SnapMode { // TODO: Don't intend to use this as a mask, maybe remove in favor of using KeypointType native equivalent...
+export const enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
   MidPoint = 1 << 2,
@@ -251,7 +251,7 @@ export class SnapDetail extends HitDetail {
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2);
 
       let singleSegment = false;
       switch (this.snapMode) {
@@ -298,7 +298,7 @@ export class IntersectDetail extends SnapDetail {
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2); // ### TODO Get weight from SnapResponse + SubCategory Appearance...
+      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2);
       builder.addPath(Path.create(this.primitive));
       builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2, LinePixels.Code2);
       builder.addPath(Path.create(this.otherPrimitive));
