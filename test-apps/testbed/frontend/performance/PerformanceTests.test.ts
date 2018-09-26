@@ -6,7 +6,7 @@ import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@b
 import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients"; // @ts-ignore
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import { addColumnsToCsvFile, addDataToCsvFile, createNewCsvFile } from "./CsvWriter";
+import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
 import { assert } from "chai";
@@ -248,6 +248,7 @@ function printResults(configs: DefaultConfigs, rowData: Map<string, number | str
 
 function getImageString(configs: DefaultConfigs): string {
   let output = configs.outputPath ? configs.outputPath : "";
+  createFilePath(output);
   const lastChar = output[output.length - 1];
   if (lastChar !== "/" && lastChar !== "\\")
     output += "\\";
@@ -282,6 +283,7 @@ class DefaultConfigs {
   public iModelLocation?: string;
   public iModelName?: string;
   public viewName?: string;
+  public testType?: string;
   public displayStyle?: string;
   public viewFlags?: ViewFlag.Overrides;
 
@@ -293,6 +295,7 @@ class DefaultConfigs {
       this.iModelLocation = "D:\\models\\TimingTests\\";
       this.iModelName = "Wraith.ibim";
       this.viewName = "V0";
+      this.testType = "timing";
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -301,6 +304,7 @@ class DefaultConfigs {
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
+      if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
     }
@@ -310,6 +314,7 @@ class DefaultConfigs {
     if (jsonData.iModelLocation) this.iModelLocation = jsonData.iModelLocation;
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.viewName) this.viewName = jsonData.viewName;
+    if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
     if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
 
@@ -321,6 +326,7 @@ class DefaultConfigs {
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
     debugPrint("viewName: " + this.viewName);
+    debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
     debugPrint("viewFlags: " + this.viewFlags);
   }
@@ -413,6 +419,11 @@ async function loadIModel(testConfig: DefaultConfigs) {
   const iModCon = activeViewState.iModelConnection;
   if (iModCon && testConfig.displayStyle) {
     const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
+    // const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName });
+    // for (const prop of displayStyleProps) {
+    //   debugPrint("code: " + prop.code);
+    //   debugPrint("value: " + prop.code!.value);
+    // }
     if (displayStyleProps.length >= 1)
       theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
   }
@@ -426,8 +437,10 @@ async function loadIModel(testConfig: DefaultConfigs) {
 }
 
 async function closeIModel() {
+  debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
   IModelApp.shutdown();
+  debugPrint("end closeIModel");
 }
 
 async function outputSavedView(testConfig: DefaultConfigs) {
@@ -514,7 +527,10 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
     if (!fs.existsSync(testConfig.iModelFile!))
       break;
 
-    if (testData.testType === "image")
+    if (testConfig.testType === "both") {
+      await outputSavedView(testConfig);
+      await timeSavedView(testConfig);
+    } else if (testConfig.testType === "image")
       await outputSavedView(testConfig);
     else
       await timeSavedView(testConfig);
@@ -528,8 +544,9 @@ describe("Performance Tests (#WebGLPerformance)", () => {
   const jsonData = readJsonFile();
   const configs = new DefaultConfigs(jsonData);
 
-  jsonData.modelSet.forEach((modelData: any) => {
-    it("Test " + modelData.iModelName, (done) => {
+  jsonData.testSet.forEach((modelData: any) => {
+    const testName = modelData.testName ? modelData.testName : "Test " + modelData.iModelName;
+    it(testName, (done) => {
       testModel(configs, modelData).then((_result) => {
         done();
       }).catch((error) => {
