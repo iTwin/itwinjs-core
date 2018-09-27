@@ -19,7 +19,7 @@ This article assumes that you already know that:
 * An iModel is a multi-user database
 * An app works with a [briefcase](../Glossary.md#Briefcase) using the [IModelDb]($backend) class.
 * A briefcase has a unique identity that is issued and tracked by [iModelHub]($docs/learning/IModelHub/index.md).
-* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSet).
+* Changes are captured and distributed in the form of [ChangeSets]($docs/learning/IModelHub/briefcases.md).
 * ChangeSets are ordered in a sequence that is called the [timeline]($docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel.
 * ChangeSets are stored in iModelHub
 * A [Code](../Glossary.md#Code) is an identifier that is assigned to an element and is managed by a central Code Service.
