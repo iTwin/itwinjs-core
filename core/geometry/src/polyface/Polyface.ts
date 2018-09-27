@@ -8,7 +8,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Geometry } from "./Geometry";
 import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Range3d, Range2d } from "../Range";
+import { Range3d, Range2d, Range1d } from "../Range";
 import { Transform } from "../Transform";
 import { NumberArray, Vector3dArray, Point2dArray } from "../PointHelpers";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
@@ -264,7 +264,16 @@ export class AuxChannel {
     this.name = name;
     this.inputName = inputName;
   }
+  get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
+  get scalarRange(): Range1d | undefined {
+    if (!this.isScalar) return undefined;
 
+    const range = Range1d.createNull();
+    for (const data of this.data) {
+      range.extendArray(data.values);
+    }
+    return range;
+  }
 }
 export class PolyfaceAuxData {
   public channels: AuxChannel[];
