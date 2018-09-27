@@ -190,6 +190,9 @@ class ExerciseCurve {
     const options = StrokeOptions.createForCurves();
     const theta = Angle.createDegrees(10);
 
+    const directRange = curve.range();
+    const extendRange = Range3d.create();
+    curve.extendRange(extendRange);
     options.minStrokesPerPrimitive = 2;
     options.angleTol = theta;
     const chordFraction = Math.cos(theta.radians);
@@ -197,6 +200,10 @@ class ExerciseCurve {
     ck.testCoordinateOrder(2, strokes.points.length, "Non-trivial strokes");
     const curveLength = curve.curveLength();
     const strokeLength = strokes.curveLength();
+    const strokeRange = strokes.range();
+    ck.testTrue(directRange.containsRange(strokeRange), "range from curve contains range of strokes");
+    ck.testTrue(extendRange.containsRange(strokeRange), "range from curve by extend contains range of strokes");
+
     ck.testLE(strokeLength, curveLength, "strokeLength cannot exceed curveLength");
     if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
       || Checker.noisy.stroke) {
@@ -249,7 +256,7 @@ class ExerciseCurve {
       ExerciseCurve.exerciseStroke(ck, bcurve);
       ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
     }
-// with weights, but all weights 1.0
+    // with weights, but all weights 1.0
     const bcurveH1 = BSplineCurve3dH.createUniformKnots(
       [Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 1), Point4d.create(10, 4, 0, 1)],
       3);

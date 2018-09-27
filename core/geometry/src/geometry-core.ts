@@ -161,6 +161,8 @@ export * from "./solid/Sphere";
 export * from "./solid/SweepContour";
 export * from "./solid/TorusPipe";
 export * from "./bspline/BSplineCurve";
+export * from "./bspline/BSpline1dNd";
+export * from "./bspline/BSplineCurve3dH";
 export * from "./bspline/BSplineSurface";
 export * from "./bspline/KnotVector";
 export * from "./polyface/BoxTopology";

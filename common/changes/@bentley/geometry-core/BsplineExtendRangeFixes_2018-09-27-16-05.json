@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix bugs in bspline curve extendRange functions",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@Bentley.com"
+}

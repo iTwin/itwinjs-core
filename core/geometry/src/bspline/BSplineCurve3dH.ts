@@ -239,6 +239,14 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   }
 
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    this._bcurve.extendRange(rangeToExtend, transform);
+    const buffer = this._bcurve.packedData;
+    const n = buffer.length - 3;
+    if (transform) {
+      for (let i0 = 0; i0 < n; i0 += 4)
+        rangeToExtend.extendTransformedXYZW(transform, buffer[i0], buffer[i0 + 1], buffer[i0 + 2], buffer[i0 + 3]);
+    } else {
+      for (let i0 = 0; i0 < n; i0 += 4)
+        rangeToExtend.extendXYZW(buffer[i0], buffer[i0 + 1], buffer[i0 + 2], buffer[i0 + 3]);
+    }
   }
 }

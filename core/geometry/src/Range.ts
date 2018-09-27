@@ -308,6 +308,19 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       origin.y + coffs[3] * x + coffs[4] * y + coffs[5] * z,
       origin.z + coffs[6] * x + coffs[7] * y + coffs[8] * z);
   }
+
+  /** multiply the point x,y,z,w by transform and use the coordinate to extend this range.
+   */
+  public extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number) {
+    const origin = transform.origin;
+    const coffs = transform.matrix.coffs;
+    this.extendXYZW(
+      origin.x * w + coffs[0] * x + coffs[1] * y + coffs[2] * z,
+      origin.y * w + coffs[3] * x + coffs[4] * y + coffs[5] * z,
+      origin.z * w + coffs[6] * x + coffs[7] * y + coffs[8] * z,
+      w);
+  }
+
   /** multiply the point x,y,z by transform and use the coordinate to extend this range.
    */
   public extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean {
@@ -537,6 +550,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (z > this.high.z) this.high.z = z;
   }
 
+  /** Expand this range by distances a (weighted and possibly signed) in all directions */
+  public extendXYZW(x: number, y: number, z: number, w: number): void {
+    if (!Geometry.isSmallMetricDistance(w))
+      this.extendXYZ(x / w, y / w, z / w);
+  }
   /** Expand this range to include a point. */
   public extendPoint(point: Point3d): void { this.extendXYZ(point.x, point.y, point.z); }
 
