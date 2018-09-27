@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import { expect } from "chai";
-import { PropertyEditorManager, BasicPropertyEditor, PropertyEditor, DataControllerBase } from "../../src/editors/PropertyEditorManager";
+import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../src/editors/PropertyEditorManager";
 import { TextEditor } from "../../src/editors/TextEditor";
 import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "../../src/properties";
 import { AsyncValueProcessingResult } from "../../src/converters/TypeConverter";
@@ -29,7 +29,7 @@ describe("PropertyEditorManager", () => {
     expect(propertyEditor).to.be.instanceof(BasicPropertyEditor);
   });
 
-  class MinePropertyEditor extends PropertyEditor {
+  class MinePropertyEditor extends PropertyEditorBase {
     public get reactElement(): React.ReactNode {
       return <TextEditor />;
     }
@@ -152,7 +152,7 @@ describe("PropertyEditorManager", () => {
     }
   });
 
-  class PropertyEditorWithEditorParams extends PropertyEditor {
+  class PropertyEditorWithEditorParams extends PropertyEditorBase {
     public get reactElement(): React.ReactNode {
       return <TextEditor />;
     }

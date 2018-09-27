@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+.chk-listbox {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+
+  > li > .chk-listboxitem-checkbox {
+    @include bwc-inputs-checkbox;
+    margin: 4px 0;
+  }
+
+  > .chk-listboxseparator {
+    height: 1px;
+    background :#ccc;
+    margin: 4px 0;
+    pointer-events: none;
+  }
+}

@@ -2,6 +2,18 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.135.0",
+      "tag": "@bentley/geometry-core_v0.135.0",
+      "date": "Wed, 26 Sep 2018 19:16:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement bspline-bspline case in curveCurveIntersectXY"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.134.0",
       "tag": "@bentley/geometry-core_v0.134.0",
       "date": "Wed, 26 Sep 2018 00:50:11 GMT",

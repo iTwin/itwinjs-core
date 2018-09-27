@@ -9,13 +9,7 @@ exports[`<Backstage /> renders correctly 1`] = `
   <div
     className="nz-backstage-backstage"
   >
-    <div
-      className="nz-header"
-    />
     <ul />
-    <div
-      className="nz-footer"
-    />
   </div>
 </Fragment>
 `;
@@ -29,13 +23,7 @@ exports[`<Backstage /> should set is-open class 1`] = `
   <div
     className="nz-backstage-backstage nz-open"
   >
-    <div
-      className="nz-header"
-    />
     <ul />
-    <div
-      className="nz-footer"
-    />
   </div>
 </Fragment>
 `;

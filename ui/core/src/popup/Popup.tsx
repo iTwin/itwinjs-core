@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Popup */
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
@@ -8,6 +10,7 @@ import Timer from "../utils/Timer";
 import { CommonProps } from "../Props";
 import "./Popup.scss";
 
+/** Position of the popup relative to its target */
 export enum Position {
   TopLeft,
   TopRight,
@@ -19,17 +22,28 @@ export enum Position {
   Right,
 }
 
+/** Properties for the [[Popup]] component */
 export interface PopupProps extends CommonProps {
-  showShadow: boolean; // show or hide the box shadow
-  showArrow: boolean; // show or hide the arrow
-  isShown: boolean; // indicate if the popup is shown or not
+  /**  show or hide the box shadow */
+  showShadow: boolean;
+  /** show or hide the arrow */
+  showArrow: boolean;
+  /** indicate if the popup is shown or not */
+  isShown: boolean;
+  /** show the popup when hovered over the target */
   showOnHover: boolean;
+  /** time hovered over target to show the popup */
   showTime: number;
+  /** time away from target to hide the popup */
   hideTime: number;
-  position: Position; // direction to which the popup is expanded
+  /** Direction (relative to the target) to which the popup is expanded */
+  position: Position;
+  /** target element */
   context: HTMLElement | null;
-  onOpen?: () => void; // called when the Popover opens.
-  onClose?: () => void; // called when the Popover closes.
+  /** Function called when the popup is opened */
+  onOpen?: () => void;
+  /** Function called when the popup is closed */
+  onClose?: () => void;
 }
 
 interface PopupState {
@@ -37,7 +51,7 @@ interface PopupState {
   position: Position;
 }
 
-/** Popup component */
+/** Popup React component */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _ref: HTMLElement | undefined;
   private _targetRef: HTMLElement | null = null; // target element owning the popup

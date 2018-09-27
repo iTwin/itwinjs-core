@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export { default as UiCore } from "./UiCore";
 export { CommonProps } from "./Props";
+export * from "./checklistbox";
 export * from "./enums";
 export * from "./expandable";
 export * from "./base";
@@ -44,8 +45,16 @@ export * from "./utils";
  * Classes for working with a Dialog.
  */
 /**
+ * @docs-group-description Expandable
+ * Classes for working with a ExpandableBlock or ExpandableList.
+ */
+/**
  * @docs-group-description MessageBox
  * Classes for working with a MessageBox.
+ */
+/**
+ * @docs-group-description Popup
+ * Classes for working with a Popup.
  */
 /**
  * @docs-group-description RadialMenu
@@ -58,6 +67,10 @@ export * from "./utils";
 /**
  * @docs-group-description SplitButton
  * Classes for working with a SplitButton.
+ */
+/**
+ * @docs-group-description Toggle
+ * Classes for working with a Toggle.
  */
 /**
  * @docs-group-description Tree

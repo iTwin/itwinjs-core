@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { PropertyRecord } from "../properties/Record";
-import { PropertyEditor, PropertyEditorManager } from "./PropertyEditorManager";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback */
 export interface PropertyUpdatedArgs {
@@ -29,7 +29,7 @@ export interface EditorContainerProps {
 export class EditorContainer extends React.Component<EditorContainerProps> {
 
   private _editorRef: any;
-  private _propertyEditor: PropertyEditor | null = null;
+  private _propertyEditor: PropertyEditorBase | null = null;
 
   private getEditor(): any {
     return this._editorRef;

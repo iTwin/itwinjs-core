@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-/** Signature for [Timer] execute callback. */
+/** Signature for [[Timer] execute callback. */
 export type ExecuteHandler = (this: void) => void;
 
 /** Notifies handler after a set interval. */

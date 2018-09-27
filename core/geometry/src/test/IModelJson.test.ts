@@ -16,6 +16,7 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 
 // Requires for grabbing json object from external file
 import * as fs from "fs";
+import { Geometry } from "../Geometry";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
@@ -31,6 +32,14 @@ export class GeometryCoreTestIO {
     const filename = path + "/" + fileName + ".imjs";
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(filename, prettyPrint(imjs));
+  }
+
+  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (newGeometry) {
+      if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
+        newGeometry.tryTranslateInPlace(dx, dy, dz);
+      collection.push(newGeometry);
+    }
   }
 }
 

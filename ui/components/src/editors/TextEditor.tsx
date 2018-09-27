@@ -7,15 +7,17 @@ import * as React from "react";
 import classnames from "classnames";
 import { PropertyRecord } from "../properties/Record";
 
+/** Properties for [[TextEditor]] component */
 export interface TextEditorProps {
   onBlur?: (event: any) => void;
   value?: PropertyRecord;
 }
 
-export interface TextEditorState {
+interface TextEditorState {
   inputValue: string;
 }
 
+/** TextEditor React component that is a property editor with text input  */
 export class TextEditor extends React.Component<TextEditorProps, TextEditorState> {
   private _input: HTMLInputElement | null = null;
 

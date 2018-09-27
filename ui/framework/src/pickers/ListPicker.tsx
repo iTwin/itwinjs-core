@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Picker */
+
 import * as React from "react";
 import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
 import Panel from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Panel";
@@ -56,6 +58,7 @@ export interface ListPickerItemProps extends CommonProps {
 }
 
 export class ListPickerItem extends React.Component<ListPickerItemProps> {
+  /** Renders ListPickerItem */
   public render() {
     const itemClassName = classnames(
       "ListPicker-item",
@@ -79,11 +82,13 @@ export interface ExpandableSectionProps extends CommonProps {
 }
 
 export class ExpandableSection extends React.Component<ExpandableSectionProps, any> {
+  /** Creates an ExpandableSection */
   constructor(props: ExpandableSectionProps, context: any) {
     super(props, context);
     this.state = { expanded: false };
   }
 
+  /** Renders ExpandableSection */
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-group",
@@ -114,9 +119,12 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
   }
 }
 
-// List picker class
-// Used to provide an expandable list of items to enable/disable items
+/**
+ * List picker base class.
+ * Used to provide an expandable list of items to enable/disable items.
+ */
 export class ListPickerBase extends React.Component<ListPickerProps, ListPickerState> {
+  /** Creates a ListPickerBase */
   constructor(props: any) {
     super(props);
     this.state = {
@@ -147,6 +155,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
       this.props.onExpanded(expand);
   }
 
+  /** Minimizes the expandable component. */
   public minimize = () => {
     this.setState((_prevState, _props) => {
       return {
@@ -156,10 +165,12 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
     });
   }
 
+  /** Checks if ExpandableItem is expanded. */
   public isExpanded = () => {
     return this.state.expanded;
   }
 
+  /** Renders ListPickerBase */
   public render() {
     return (
       <ExpandableItem
@@ -174,7 +185,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
     );
   }
 
-  // Returns the list with the items
+  /** Returns the list with the items */
   public getExpandedContent() {
     if (!this.state.expanded)
       return undefined;
@@ -234,14 +245,17 @@ export interface ListPickerPropsExtended extends ListPickerProps {
   invertFunc?: () => void;
 }
 
-// List Picker that lets the user pick from a list of items to enable/disable
-// It also provides options to enable all, disable all and invert selection
+/**
+ * List Picker that lets the user pick from a list of items to enable/disable
+ * It also provides options to enable all, disable all and invert selection
+ */
 export default class ListPicker extends React.Component<ListPickerPropsExtended, any> {
   public static get Key_All() { return -3; }
   public static get Key_None() { return -2; }
   public static get Key_Invert() { return -1; }
   public static get Key_Seperator() { return -4; }
 
+  /** Creates a ListPicker */
   constructor(props: ListPickerPropsExtended) {
     super(props);
     this.state = {
@@ -276,11 +290,15 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
     return newItems;
   }
 
+  /**
+   * Checks if item is a special item.
+   * @param item Item to check
+   */
   public isSpecialItem(item: ListItem) {
     return item.key === ListPicker.Key_All || item.key === ListPicker.Key_Invert || item.key === ListPicker.Key_None || item.type !== ListItemType.Item || item.key === ListPicker.Key_Seperator;
   }
 
-  // Render the component
+  /** Renders ListPicker */
   public render() {
     const self = this;
     // Handle enabling/disabling the items

@@ -16,10 +16,8 @@ export * from "./configurableui";
 export * from "./feedback/ValidationTextbox";
 export * from "./messages/InputField";
 export * from "./messages/Pointer";
-export * from "./pickers/ViewList";
 export * from "./pickers/ModelSelector";
-export * from "./pickers/CategorySelector";
-export * from "./open/UserProfile";
+export * from "./pickers/ViewSelector";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
@@ -89,6 +87,10 @@ export * from "./open/UserProfile";
 /**
  * @docs-group-description OverallContent
  * Classes for working with the overall content of the application UI
+ */
+/**
+ * @docs-group-description Picker
+ * Classes for working a picker
  */
 /**
  * @docs-group-description redux-ts

@@ -8,6 +8,7 @@ import * as React from "react";
 
 import "./ExpansionToggle.scss";
 
+/** Properties for the [[ExpansionToggle]] component */
 export interface ExpansionToggleProps {
   isExpanded?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -16,6 +17,7 @@ export interface ExpansionToggleProps {
   style?: React.CSSProperties;
 }
 
+/** ExpansionToggle React component used by the [[TreeNode]] component */
 export default class ExpansionToggle extends React.Component<ExpansionToggleProps> {
   public render() {
     const className = classnames(

@@ -7,7 +7,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import "./ExpandableBlock.scss";
 
-/** Props for the ExpandableBlock React component */
+/** Propertiess for the [[ExpandableBlock]] React component */
 export interface ExpandableBlockProps {
   /** Label */
   title: string;
@@ -25,7 +25,7 @@ export interface ExpandableBlockProps {
   style?: React.CSSProperties;
 }
 
-export interface ExpandableBlockState {
+interface ExpandableBlockState {
   isExpanded: boolean;
 }
 
@@ -44,15 +44,16 @@ export class ExpandableBlock extends React.Component<ExpandableBlockProps, Expan
 
   public componentDidUpdate(prevProps: ExpandableBlockProps) {
     if (prevProps.isExpanded !== this.props.isExpanded) {
-      this.setState( { isExpanded: this.props.isExpanded! });
+      this.setState({ isExpanded: this.props.isExpanded! });
     }
   }
 
   private _handleClick = () => {
-    this.setState({ isExpanded: !this.state.isExpanded}, () => {
+    this.setState({ isExpanded: !this.state.isExpanded }, () => {
       if (this.props.onClick) {
         this.props.onClick();
-      }},
+      }
+    },
     );
   }
 

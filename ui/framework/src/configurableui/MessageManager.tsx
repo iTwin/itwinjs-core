@@ -113,7 +113,7 @@ export class MessageManager {
   public static get onInputFieldMessageAddedEvent(): InputFieldMessageAddedEvent { return this._InputFieldMessageAddedEvent; }
   public static get onInputFieldMessageRemovedEvent(): InputFieldMessageRemovedEvent { return this._InputFieldMessageRemovedEvent; }
 
-  /** List of messages as [[NotifyMessageDetails]]. */
+  /** List of messages as NotifyMessageDetails. */
   public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
 
   /** Clear the message list. */
@@ -219,7 +219,7 @@ export class MessageManager {
     // TODO - outputPrompt
   }
 
-  /** Gets an icon CSS class name based on a given [[NotifyMessageDetails]]. */
+  /** Gets an icon CSS class name based on a given NotifyMessageDetails. */
   public static getIconClassName(details: NotifyMessageDetails): string {
     const severity = MessageManager.getSeverity(details);
     const className = MessageContainer.getIconClassName(severity, false);
@@ -228,7 +228,7 @@ export class MessageManager {
     return iconClassName;
   }
 
-  /** Gets a [[MessageSeverity]] based on a given [[NotifyMessageDetails]]. */
+  /** Gets a [[MessageSeverity]] based on a given NotifyMessageDetails. */
   public static getSeverity(details: NotifyMessageDetails): MessageSeverity {
     let severity = MessageSeverity.None;
 

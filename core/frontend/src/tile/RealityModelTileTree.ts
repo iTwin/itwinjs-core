@@ -187,7 +187,7 @@ interface RDSClientProps {
  * ###TODO temporarly here for testing, needs to be moved to the clients repo
  * @hidden
  */
-class RealityModelTileClient {
+export class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
   private static _token?: AccessToken;

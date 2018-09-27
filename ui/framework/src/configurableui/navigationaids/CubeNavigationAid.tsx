@@ -407,6 +407,7 @@ class FaceRow extends React.Component<FaceRowProps> {
   }
 }
 
+/** Properties for the [[FaceCell]] component. */
 export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
   onFaceCellClick: (vector: Vector3d, face?: Face) => void;
@@ -416,6 +417,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face?: Face;
 }
 
+/** FaceCell React component. */
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {

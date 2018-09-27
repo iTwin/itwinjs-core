@@ -4,6 +4,9 @@
     "skipLibCheck": true,
     "outDir": "../lib",
     "baseUrl": "../node_modules/",
-    "jsx": "react"
+    "jsx": "react",
+    "types": [
+      "@bentley/webpack-tools"
+    ]
   }
 }

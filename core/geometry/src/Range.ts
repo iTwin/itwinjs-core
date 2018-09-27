@@ -496,6 +496,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       || other.low.z > this.high.z);
   }
 
+  /** Test if there is any intersection with other range */
+  public intersectsRangeXY(other: Range3d): boolean {
+    return !(this.low.x > other.high.x
+      || this.low.y > other.high.y
+      || other.low.x > this.high.x
+      || other.low.y > this.high.y);
+  }
   /** Return 0 if the point is within the range, otherwise the distance to the closest face or corner */
   public distanceToPoint(point: XYAndZ): number {
     if (this.isNull)

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Removed obsolete code and improved documentation",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "bill.steinbock@bentley.com"
+  "email": "Allison.Macdonald@bentley.com"
 }

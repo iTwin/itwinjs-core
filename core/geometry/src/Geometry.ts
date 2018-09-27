@@ -245,11 +245,22 @@ export class Geometry {
   public static maxAbsXYZ(x: number, y: number, z: number): number {
     return Geometry.maxXYZ(Math.abs(x), Math.abs(y), Math.abs(z));
   }
+  /** @returns the largest absolute absolute value among x,y */
+  public static maxAbsXY(x: number, y: number): number {
+    return Geometry.maxXY(Math.abs(x), Math.abs(y));
+  }
+
   /** @returns the largest signed value among a, b, c */
   public static maxXYZ(a: number, b: number, c: number): number {
     let q = a;
     if (b > q) q = b;
     if (c > q) q = c;
+    return q;
+  }
+  /** @returns the largest signed value among a, b*/
+  public static maxXY(a: number, b: number): number {
+    let q = a;
+    if (b > q) q = b;
     return q;
   }
 
@@ -312,16 +323,16 @@ export class Geometry {
       + uz * (vx * wy - vy * wx);
   }
 
-    /**
-   * @returns Returns curvature magnitude from a first and second derivative vector.
-   * @param ux  first derivative x component
-   * @param uy first derivative y component
-   * @param uz first derivative z component
-   * @param vx second derivative x component
-   * @param vy second derivative y component
-   * @param vz second derivative z component
-   */
-  public static curvatureMagnitude (
+  /**
+ * @returns Returns curvature magnitude from a first and second derivative vector.
+ * @param ux  first derivative x component
+ * @param uy first derivative y component
+ * @param uz first derivative z component
+ * @param vx second derivative x component
+ * @param vy second derivative y component
+ * @param vz second derivative z component
+ */
+  public static curvatureMagnitude(
     ux: number, uy: number, uz: number,
     vx: number, vy: number, vz: number): number {
     let q = uy * vz - uz * vy;
@@ -330,8 +341,8 @@ export class Geometry {
     sum += q * q;
     q = ux * vy - uy * vx;
     sum += q * q;
-    const a = Math.sqrt (ux * ux + uy * uy + uz * uz);
-    const b = Math.sqrt (sum);
+    const a = Math.sqrt(ux * ux + uy * uy + uz * uz);
+    const b = Math.sqrt(sum);
     // (sum and a are both nonnegative)
     const aaa = a * a * a;
     // radius of curvature = aaa / b;
@@ -380,6 +391,13 @@ export class Geometry {
       ux * vy - uy * vx, result);
   }
 
+  /**  magnitude of 3D cross product of vectors, with the vectors presented as */
+  public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
+    return Geometry.hypotenuseXYZ(
+      uy * vz - uz * vy,
+      uz * vx - ux * vz,
+      ux * vy - uy * vx);
+  }
   /**  3D dot product of vectors layed out as scalars. */
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
@@ -827,7 +845,7 @@ export class Angle implements BeJSONFunctions {
     return value;
   }
   /**
-     * Return the half angle of angle between vectors U, V with given vector dots.
+     * Return the half angle cosine, sine, and radians for given dot products between vectors.
      * @param dotUU dot product of vectorU with itself
      * @param dotVV dot product of vectorV with itself
      * @param dotUV dot product of vectorU with vectorV
@@ -838,6 +856,22 @@ export class Angle implements BeJSONFunctions {
     if (favorZero && Math.abs(rsin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
       return { c: 1.0, s: 0.0, radians: 0.0 };
     return Angle.trigValuesToHalfAngleTrigValues(rcos, rsin);
+  }
+  /**
+   * * The returned angle is between 0 and PI
+   * @return the angle between two vectors, with the vectors given as xyz components
+   * @param ux x component of vector u
+   * @param uy y component of vector u
+   * @param uz z component of vector u
+   * @param vx x component of vector v
+   * @param vy y component of vector v
+   * @param vz z component of vector v
+   */
+  public static radiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
+    //  const uu = ux * ux + uy * uy + uz * uz;
+    const uDotV = ux * vx + uy * vy + uz * vz;   // magU magV cos(theta)
+    //    const vv = vx * vx + vy * vy + vz * vz;
+    return Math.atan2 (Geometry.crossProductMagnitude (ux, uy, uz, vx, vy, vz), uDotV);
   }
 }
 /**

@@ -33,12 +33,8 @@
   }
 
   > .nz-header {
-    display: none;
+    display: block;
     border-bottom: $nz-backstage-user-profile-divider-height solid $nz-backstage-divider-color;
-
-    &.nz-show {
-      display: block;
-    }
   }
 
   > .nz-footer {

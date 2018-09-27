@@ -1,0 +1,168 @@
+/*---------------------------------------------------------------------------------------------
+| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+.widget-picker {
+  margin: 0 5px;
+  position: relative;
+  overflow-x: hidden;
+
+  > .widget-groups {
+    height: 100%;
+    transition: transform .2s linear;
+    opacity: 1;
+
+    &.hide {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+
+    > .searchbox {
+      width: 100%;
+      padding-top: 10px;
+      padding-bottom: 8px;
+    }
+
+    > .widget-picker-group {
+      padding: 10px 5px;
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      color: $bwc-text-color;
+      border-bottom: 1px solid #ccc;
+      cursor: pointer;
+
+      &:hover {
+        color: $bwc-blue;
+
+        > .icon {
+          color: $bwc-blue;
+        }
+      }
+
+      > .group-count {
+        font-size: 12px;
+        height: 1em;
+        line-height: 1em;
+        border-radius: 1em;
+        padding: .4em .6em;
+        background: #ccc;
+        margin-left: auto;
+        margin-right: 5px;
+        color: black;
+      }
+
+      > .icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .fw-modelselector {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: .2s linear;
+
+    &.show {
+      opacity: 1;
+      transform: translateX(0%);
+    }
+
+    > .fw-modelselector-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+
+      > .fw-modelselector-back {
+        display: flex;
+        align-items: center;
+        margin-right: auto;
+        width: 100%;
+        color: $bwc-text-color;
+
+        &:hover {
+          color: $bwc-blue;
+          cursor: pointer;
+        }
+
+        > .ms-title {
+          margin-left: 5px;
+          font-size: 16px;
+        }
+      }
+
+      > .options {
+        position: relative;
+        cursor: pointer;
+
+        ul {
+          margin: 0;
+          padding: .5em 0;
+          font-size: $bwc-font-size;
+          list-style: none;
+          background-color: $bwc-white;
+
+          > li {
+            display: flex;
+            align-items: center;
+            padding: .25em 1em;
+            color: $bwc-text-color;
+            white-space: nowrap;
+            cursor: pointer;
+
+            .icon {
+              margin-right: .5em;
+            }
+
+            &:hover{
+              background: #eee;
+            }
+          }
+        }
+      }
+    }
+
+    > .modelselector-toolbar {
+      display: inherit;
+
+      > .icon {
+        margin-right: 5px;
+        padding: 7px;
+        border: 1px solid #ccc;
+        font-size: 18px;
+        color: $bwc-icons-light;
+        cursor: pointer;
+        -webkit-transition: color .2s ease;
+        -moz-transition: color .2s ease;
+        -o-transition: color .2s ease;
+        transition: color .2s ease;
+
+        &:hover {
+        color: $bwc-icons-dark;
+        }
+      }
+
+      > .searchbox {
+        width: 100%;
+        margin-left: 5px;
+      }
+    }
+
+    > .fw-modelselector-listbox {
+      flex: 1;
+      margin: 8px 0 4px 0;
+      overflow: auto;
+    }
+  }
+}

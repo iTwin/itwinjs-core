@@ -5,6 +5,9 @@
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
+import { Point2d, Vector2d } from "../PointVector";
+import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
+import { SmallSystem } from "./Polynomials";
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries
  * from this base class.
@@ -109,6 +112,7 @@ export abstract class NewtonEvaluatorRtoR {
   public currentF!: number;
 }
 
+/** Newton iteration for a univariate function, using approximate derivatives. */
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRtoR;
   private _currentStep!: number;
@@ -141,5 +145,63 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
 
   public currentStepSize(): number {
     return Math.abs(this._currentStep / (1.0 + Math.abs(this._currentX)));
+  }
+}
+
+/** object to evaluate a 2-parameter newton function (with derivatives!!).
+ */
+export abstract class NewtonEvaluatorRRtoRRD {
+  /** Iteration controller calls this to ask for evaluation of the function and its two partial derivatives.
+   * * The implemention returns true, it must set the currentF object.
+   */
+  public abstract evaluate(x: number, y: number): boolean;
+  /** most recent function evaluation */
+  public currentF!: Plane3dByOriginAndVectors;
+  /**
+   * constructor.
+   * * This creates a crrentF object to (repeatedly) receive function and derivatives.
+   */
+  public constructor() {
+    this.currentF = Plane3dByOriginAndVectors.createXYPlane();
+  }
+}
+
+/**
+ * Implement evaluation steps for newton iteration in 2 dimensions.
+ */
+export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
+  private _func: NewtonEvaluatorRRtoRRD;
+  private _currentStep: Vector2d;
+  private _currentUV: Point2d;
+
+  public constructor(func: NewtonEvaluatorRRtoRRD) {
+    super();
+    this._func = func;
+    this._currentStep = Vector2d.createZero();
+    this._currentUV = Point2d.createZero();
+  }
+  public setUV(x: number, y: number): boolean { this._currentUV.set(x, y); return true; }
+  public getU(): number { return this._currentUV.x; }
+  public getV(): number { return this._currentUV.y; }
+  public applyCurrentStep(): boolean { return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y); }
+  /** Univariate newton step : */
+  public computeStep(): boolean {
+    if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
+      const fA = this._func.currentF;
+      if (SmallSystem.linearSystem2d(
+        fA.vectorU.x, fA.vectorV.x,
+        fA.vectorU.y, fA.vectorV.y,
+        fA.origin.x, fA.origin.y, this._currentStep))
+        return true;
+    }
+    return false;
+  }
+  /**
+   * @returns the largest relative step of the x,y, components of the current step.
+   */
+  public currentStepSize(): number {
+    return Geometry.maxAbsXY(
+      this._currentStep.x / (1.0 + Math.abs(this._currentUV.x)),
+      this._currentStep.y / (1.0 + Math.abs(this._currentUV.y)));
   }
 }

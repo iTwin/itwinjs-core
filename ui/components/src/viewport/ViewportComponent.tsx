@@ -22,7 +22,7 @@ import {
 import { Transform } from "@bentley/geometry-core";
 
 /**
- * Props for [[Viewport]] control.
+ * Properties for [[ViewportComponent]] component.
  */
 export interface ViewportProps {
   /** IModel to display */
@@ -36,7 +36,7 @@ export interface ViewportProps {
 }
 
 /**
- * A viewport component that creates a ScreenViewport.
+ * A viewport React component that creates a ScreenViewport.
  */
 export class ViewportComponent extends React.Component<ViewportProps> {
 
@@ -115,7 +115,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   private _handleContextMenu = (e: React.MouseEvent): boolean => {
     e.preventDefault();
     if (this.props.onContextMenu)
-    this.props.onContextMenu(e);
+      this.props.onContextMenu(e);
     return false;
   }
 

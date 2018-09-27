@@ -10,6 +10,7 @@ import "./Cube.scss";
 
 import { Matrix3d } from "@bentley/geometry-core";
 
+/** Cube Face enumeration */
 export enum Face {
   None = 0,
   Left,
@@ -20,12 +21,14 @@ export enum Face {
   Top,
 }
 
+/** Properties for the [[Cube]] React component */
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
-  faces?: {[key: string]: React.ReactNode};
+  faces?: { [key: string]: React.ReactNode };
   rotMatrix: Matrix3d;
   className?: string;
 }
 
+/** Cube React component used by the 3d Cube Navigation Aid */
 export class Cube extends React.Component<CubeProps> {
   public render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;

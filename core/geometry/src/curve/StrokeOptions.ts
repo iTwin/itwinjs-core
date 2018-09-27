@@ -74,6 +74,22 @@ export class StrokeOptions {
       minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
     return minCount;
   }
+  /**
+   *
+   * @param options
+   * @param minCount smallest allowed count
+   * @param edgeLength
+   */
+  public static applyMaxEdgeLength(options: StrokeOptions | undefined, minCount: number, edgeLength: number): number {
+    if (edgeLength < 0)
+      edgeLength = - edgeLength;
+    if (minCount < 1)
+      minCount = 1;
+    if (options && options.maxEdgeLength && options.maxEdgeLength * minCount < edgeLength) {
+      minCount = Math.ceil(edgeLength / options.maxEdgeLength + 0.99999);
+    }
+    return minCount;
+  }
 
   public applyTolerancesToArc(radius: number, sweepRadians: number = Math.PI * 2): number {
     let numStrokes = 1;

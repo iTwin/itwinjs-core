@@ -1,20 +1,20 @@
-# iModelHub - The Backbone for iModelJs Applications
+# iModelHub - The Backbone for iModel.js Applications
 
-[iModelHub](http:/www.iModelHub.com) is the distribution platform for Digital Twins. It is responsible for coordinating access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
+[iModelHub](http:/www.iModelHub.com) is the distribution platform for Digital Twins. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
 
 ![iModelHub](./iModelHub.png)
 
 Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases]($docs/learning/glossary.md#briefcase). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout). Rather, iModelHub's main role is to maintain the sequence of [ChangeSets]($docs/learning/glossary.md#changeset) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like an accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
 
-iModelHub accepts ChangeSets from iModelJs [backends]($docs/learning/backend/index) through a process called [*push*]($docs/learning/glossary.md#push), and sends them to other validated users when requested through a process called [*pull*]($docs/learning/glossary.md#pull). iModelJs applications determine when and how to push and pull changes.
+iModelHub accepts ChangeSets from iModel.js [backends]($docs/learning/backend/index) through a process called [*push*]($docs/learning/glossary.md#push), and sends them to other validated users when requested through a process called [*pull*]($docs/learning/glossary.md#pull). iModel.js applications determine when and how to push and pull changes.
 
 See [working with iModelHub](./WorkingWith.md) for entire list of learning topics.
 
-## The Connection between iModelJs and iModelHub
+## The Connection between iModel.js and iModelHub
 
 1. Every iModel has an [identity]($docs/learning/iModels#every-imodel-has-a-guid) registered in iModelHub.
 2. Users [authenticate]($docs/learning/common/AccessToken.md) with iModelHub.
-3. iModelJs backends have an identity, registered with iModelHub.
+3. iModel.js backends have an identity, registered with iModelHub.
 4. iModel owners decide, which users and which applications have [access](./Permissions.md) to their iModels.
 
 When an iModel.js backend opens an iModel, it is first required to verify with iModelHub that the iModel's owner has granted the right for the current user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
@@ -23,7 +23,7 @@ When an iModel.js backend opens an iModel, it is first required to verify with i
 
 ## Creating a new iModel in iModelHub
 
-When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with a connected context, and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
+When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with a connected context (e.g. a CONNECT [Project]($clients)), and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
 
 See [working with iModels](./iModels/index.md).
 

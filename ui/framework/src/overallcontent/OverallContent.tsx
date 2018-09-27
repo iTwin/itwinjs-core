@@ -11,7 +11,7 @@ import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { OpenIModel } from "../openimodel/OpenIModel";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
-import { IModelViewsSelectedFunc } from "../openimodel/IModelPanel";
+import { IModelViewsSelectedFunc } from "../openimodel/IModelOpen";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
 import { SignInPage } from "../oidc/SignIn";
