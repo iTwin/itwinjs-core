@@ -169,6 +169,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Analysis importer backend tests",
+      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
+      "args": [
+        "--testDir=${workspaceFolder}/test-apps/analysis-importer/backend/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "_Testbed (backend)",
       "cwd": "${workspaceFolder}/test-apps/testbed/",
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
@@ -461,6 +475,20 @@
         "--listen_time=40000"
       ],
       "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Analysis backend tests",
+      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/test-apps/analysis-importer",
+      "args": [
+        "--testDir=${workspaceFolder}/test-apps/analysis-importer/lib/backend/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
     },
   ],
   "compounds": [

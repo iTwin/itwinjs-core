@@ -8,7 +8,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Geometry } from "./Geometry";
 import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Range3d, Range2d } from "../Range";
+import { Range3d, Range2d, Range1d } from "../Range";
 import { Transform } from "../Transform";
 import { NumberArray, Vector3dArray, Point2dArray } from "../PointHelpers";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
@@ -235,13 +235,62 @@ export class FacetFaceData {
     return true;
   }
 }
+export enum AuxChannelDataType {
+  Scalar = 0,
+  Distance = 1,
+  Vector = 2,
+  Normal = 3,
+  Point = 4,
+}
+export class AuxChannelData {
+  public input: number;
+  public values: number[];
 
+  constructor(input: number, values: number[]) {
+    this.input = input;
+    this.values = values;
+  }
+}
+
+export class AuxChannel {
+  public data: AuxChannelData[];
+  public dataType: AuxChannelDataType;
+  public name?: string;
+  public inputName?: string;
+
+  public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
+    this.data = data;
+    this.dataType = dataType;
+    this.name = name;
+    this.inputName = inputName;
+  }
+  get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
+  get scalarRange(): Range1d | undefined {
+    if (!this.isScalar) return undefined;
+
+    const range = Range1d.createNull();
+    for (const data of this.data) {
+      range.extendArray(data.values);
+    }
+    return range;
+  }
+}
+export class PolyfaceAuxData {
+  public channels: AuxChannel[];
+  public indices: number[];
+
+  public constructor(channels: AuxChannel[], indices: number[]) {
+    this.channels = channels;
+    this.indices = indices;
+  }
+}
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
  * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
  */
+
 export class PolyfaceData {
   // <ul
   // <li>optional arrays (normal, uv, color) must be indicated at constructor time.
@@ -267,6 +316,7 @@ export class PolyfaceData {
   public colorIndex: number[] | undefined;
   /** Face data will remain empty until a face is specified. */
   public face: FacetFaceData[];
+  public auxData: PolyfaceAuxData | undefined;
 
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
     this.point = new GrowableXYZArray();

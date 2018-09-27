@@ -210,8 +210,8 @@ export namespace IModelTileIO {
               // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
               textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
             }
-            if (undefined !== gradient.thematic) {
-              thematicRange = gradient.thematic.range;
+            if (undefined !== gradient.thematicSettings) {
+              thematicRange = gradient.thematicSettings.range;
             }
           }
         }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Analysis mesh import from JSON",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "AuxData support for Polyfaces",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "ray.bentley@bentley.com"
+}
