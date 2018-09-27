@@ -917,7 +917,7 @@ export namespace Gradient {
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
-    marginColor: number;
+    marginColor: ColorDefProps;
     colorScheme: number;
     rangeLow: number;
     rangeHigh: number;
@@ -929,7 +929,10 @@ export namespace Gradient {
     public stepCount: number = 10;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
     public colorScheme: number = ThematicColorScheme.BlueRed;
-    public range: Range1d = Range1d.createNull();
+    public rangeLow: number = 1.0E200;
+    public rangeHigh: number = -1.0E200;
+    public get range() { return (this.rangeLow > this.rangeHigh) ? Range1d.createNull() : Range1d.createXX(this.rangeLow, this.rangeHigh); }
+    public set range(range: Range1d) { this.rangeLow = range.low; this.rangeHigh = range.high; }
     public static defaults = new ThematicSettings();
     public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
     public static get contentRange(): number { return 1.0 - 2.0 * ThematicSettings.margin; }
@@ -941,7 +944,8 @@ export namespace Gradient {
       result.stepCount = json.stepCount;
       result.marginColor = new ColorDef(json.marginColor);
       result.colorScheme = json.colorScheme;
-      result.range = Range1d.createXX(json.rangeLow, json.rangeHigh);
+      result.rangeLow = json.rangeLow;
+      result.rangeHigh = json.rangeHigh;
       return result;
     }
   }
@@ -987,7 +991,7 @@ export namespace Gradient {
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
-    public thematic?: ThematicSettings;
+    public thematicSettings?: ThematicSettings;
     public keys: KeyColor[] = [];
 
     /** create a GradientSymb from a json object. */
@@ -1001,11 +1005,27 @@ export namespace Gradient {
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
-      result.thematic = (json.thematicSettings === undefined) ? undefined : ThematicSettings.fromJSON(json.thematicSettings);
+      result.thematicSettings = (json.thematicSettings === undefined) ? undefined : ThematicSettings.fromJSON(json.thematicSettings);
 
       return result;
     }
+    public static createThematic(settings: ThematicSettings) {
+      const result = new Symb();
+      result.mode = Mode.Thematic;
+      result.thematicSettings = settings;
 
+      if (settings.colorScheme < ThematicColorScheme.Custom) {
+        const fixedSchemeKeys = [[[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]],  // Blue Red.
+        [[0.0, 255, 0, 0], [0.25, 255, 0, 255], [0.5, 0, 0, 255], [0.75, 0, 255, 255], [1.0, 0, 255, 0]], // Red blue.
+        [[0.0, 0, 0, 0], [1.0, 255, 255, 255]], // Monochrome.
+        [[0.0, 152, 148, 188], [0.5, 204, 160, 204], [1.0, 152, 72, 128]], // Based off of the topographic gradients in Point Clouds.
+        [[0.0, 0, 255, 0], [0.2, 72, 96, 160], [0.4, 152, 96, 160], [0.6, 128, 32, 104], [0.7, 148, 180, 128], [1.0, 240, 240, 240]]]; // Based off of the sea-mountain gradient in Point Clouds.
+
+        for (const keyValue of fixedSchemeKeys[settings.colorScheme])
+        result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+      }
+      return result;
+    }
     public clone(): Symb {
       return Symb.fromJSON(this);
     }
@@ -1243,7 +1263,7 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          let settings = this.thematic;
+          let settings = this.thematicSettings;
           if (settings === undefined) {
             settings = ThematicSettings.defaults;
           }
@@ -1294,6 +1314,7 @@ export namespace Gradient {
     }
   }
 }
+
 
 /**  Whether a closed region should be drawn for wireframe display with its internal area filled or not. */
 export const enum FillDisplay {

@@ -26,7 +26,7 @@ describe("Import Analysis Json", () => {
 
         const modelId: Id64 = IModelTestUtils.createNewModel(iModel.elements.getRootSubject(), "AnalysisTest", false);
 
-        const jsonString = readFileSync(path.join(KnownTestLocations.assetsDir, "AuxData.json"), "utf8");
+        const jsonString = readFileSync(path.join(KnownTestLocations.assetsDir, "RadialWave.json"), "utf8");
         const json = JSON.parse(jsonString);
         const polyface = IModelJson.Reader.parse(json);
         if (polyface instanceof Polyface)
