@@ -18,7 +18,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64Props, Id64 } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64, Id64Props, Id64String } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem, TextureImage } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
@@ -40,6 +40,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const monoJson = this.styles[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
     this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+
+    // Read subcategory overrides.
+    // ###TODO: overrideSubCategory() and dropSubCategoryOverride() should be updating this element's JSON properties...
+    // NB: Not using this.getStyle() because it inserts the style as an object if not found, but this style is supposed to be an array...
+    const jsonProps = JsonUtils.asObject(props.jsonProperties);
+    const styles = undefined !== jsonProps ? JsonUtils.asObject(jsonProps.styles) : undefined;
+    const ovrsArray = undefined !== styles ? JsonUtils.asArray(styles.subCategoryOvr) : undefined;
+    if (undefined !== ovrsArray) {
+      for (const ovrJson of ovrsArray) {
+        const subCatId = Id64.fromJSON(ovrJson.subCategory);
+        if (subCatId.isValid) {
+          const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
+          if (subCatOvr.anyOverridden)
+            this.overrideSubCategory(subCatId, subCatOvr);
+        }
+      }
+    }
   }
 
   public syncBackgroundMapState() {
@@ -88,18 +105,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.backgroundMap.getPlane() : undefined; }
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 
-  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
-    if (id.isValid)
-      this._subCategoryOverrides.set(id.value, ovr);
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
+    this._subCategoryOverrides.set(id.toString(), ovr);
   }
 
-  public dropSubCategoryOverride(id: Id64) {
-    this._subCategoryOverrides.delete(id.value);
+  public dropSubCategoryOverride(id: Id64String) {
+    this._subCategoryOverrides.delete(id.toString());
   }
 
   public get hasSubCategoryOverride() { return this._subCategoryOverrides.entries.length > 0; }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined {
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
     return this._subCategoryOverrides.get(id.toString());
   }
 }
