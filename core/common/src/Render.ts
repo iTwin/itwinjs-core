@@ -1022,7 +1022,7 @@ export namespace Gradient {
         [[0.0, 0, 255, 0], [0.2, 72, 96, 160], [0.4, 152, 96, 160], [0.6, 128, 32, 104], [0.7, 148, 180, 128], [1.0, 240, 240, 240]]]; // Based off of the sea-mountain gradient in Point Clouds.
 
         for (const keyValue of fixedSchemeKeys[settings.colorScheme])
-        result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
+          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]) }));
       }
       return result;
     }
@@ -1314,7 +1314,6 @@ export namespace Gradient {
     }
   }
 }
-
 
 /**  Whether a closed region should be drawn for wireframe display with its internal area filled or not. */
 export const enum FillDisplay {
