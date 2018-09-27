@@ -7,7 +7,7 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 * [Notifications]($frontend:Notifications)
 * [Localization support](./Localization.md)
 * App configuration using [Feature Gates](../common/FeatureGates.md)
-* User settings using [Settings]($clients:Settings)
+* User settings using [Settings](./Settings.md)
 
 Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different implementations of them.
 

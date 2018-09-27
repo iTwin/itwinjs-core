@@ -52,7 +52,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
  /**
   * @docs-group-description WireFormats
-  * Definitions of the "props" interfaces and types that define the [wire format]($docs/earning/wireformat.md) for communication between the frontend and backend
+  * Definitions of the "props" interfaces and types that define the [wire format]($docs/learning/wireformat.md) for communication between the frontend and backend
   */
  /**
   * @docs-group-description Codes

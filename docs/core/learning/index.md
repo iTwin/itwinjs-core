@@ -10,10 +10,9 @@
 
 This website is organized into sections by tabs at the top of each page.
 
-* You are currently looking at the Overview page. Start here.
 * Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
 * The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iModel.js apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModel.js.
-* The [Learning](../learning/index) tab introduces the building blocks of iModel.js and provides step-by-step instructions for creating applications.
+* The *Learning* tab (this page) introduces the building blocks of iModel.js and provides step-by-step instructions for creating applications.
 * The [API Reference](../reference/index) tab explains the API in more detail with package/class/function level documentation.
 
 ## Using iModel.js

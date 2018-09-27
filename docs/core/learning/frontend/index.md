@@ -13,7 +13,7 @@ See the [app architecture overview](../../learning/SoftwareArchitecture.md) for 
 
 An app's frontend always implements its own frontend script and resources.
 
-An app's frontend will often depend on npm packages to help implement the its GUI.
+An app's frontend will often depend on npm packages to help implement its GUI.
 
 An app's frontend script requires the `@bentley/imodeljs-frontend` npm package.
 The [common packages](..\common\index.md) will also be required.

@@ -45,14 +45,7 @@ Note that you still have to import the underlying ECSchema before attempting to 
 
 ## Schema Registration
 
-If an app backend wants to use a pre-written TypeScript Schema class, it must register the pre-written schema first.
-
-*Example:*
-``` ts
-[[include:Schema.registerSchema]]
-```
-
-The TypeScript Schema class itself must register all of the classes that it defines. The best practice is for the Schema class to do that in its constructor.
+If an app backend wants to use a pre-written TypeScript Schema class, it must first register it and all of the classes that it defines. The best practice is for the Schema class to do that in its constructor.
 
 *Example:*
 ``` ts

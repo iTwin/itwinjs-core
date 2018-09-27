@@ -9,6 +9,7 @@
   * If a method is being called many times in a loop, reusing a result can give a significant performance benefit.
 
 Typical names in the tables are:
+
 | name | implied type | remarks |
 |---|---|---|
 | x | number | x coordinate |
@@ -101,7 +102,7 @@ Typical names in the tables are:
 |---|---|---|---|---|
 | dot product of two vectors |  | value = vectorA.dotProduct (vectorB) : number | | value = vectorA.dotProduct (vectorB) : number|
 | dot product of XY parts of two vectors |  | value = vectorA.dotProductXY (vectorB) : number | | |
-| dot product with vector given as x,y,z | | value = vectorA.dotProductXYZ (x,y,z) : number | | | 
+| dot product with vector given as x,y,z | | value = vectorA.dotProductXYZ (x,y,z) : number | | |
 | cross product of two vectors |  | newVector = Vector3d.createCrossProduct (vectorA, vectorB) : Vector3d| | |
 |                              |  | value = vectorA.crossProduct (vectorB):number | | |
 | cross product of XY parts of two vectors |  | value = vectorA.crossProductXY (vectorB) : number | | |
@@ -116,7 +117,7 @@ Typical names in the tables are:
 | (scalar) triple product of three vectors  | | value = vectorA.tripleProduct (vectorB, vectorC) : number| | |
 | project instance onto a line segment, return fractional postition | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number | fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number|fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number |
 | in the instance, accumulate crossproduct of vectors from (baseX. baseY, baseZ) to (ax, ay, az) and (bx, by, bz) | | vector.addCrossProductToTargetsInPlace (baseX, baseY, baseZ, ax, ay, az, bx, by, bz) | |
-| dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | |a = basePoint.dotVectorsToTargets (pointA, 
+| dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | |a = basePoint.dotVectorsToTargets (pointA,
 pointB) | |
 | dot product of instance vector with vector from startPoint to endPoint.  | | a = vector.dotProductStartEnd (startPoint, endPoint)  : number| | a = vector.dotProductStartEnd (startPoint, endPoint)  : number |
 
@@ -127,7 +128,7 @@ pointB) | |
 ## Angles between vectors
 
 * Methods that return bare radians have *radians* in the method name.
-* Methods without specific *radians* indication return a (strongly typed) `Angle` object that can be queried for `degrees` or `radians`.   
+* Methods without specific *radians* indication return a (strongly typed) `Angle` object that can be queried for `degrees` or `radians`.
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
