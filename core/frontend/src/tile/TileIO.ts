@@ -103,6 +103,13 @@ export namespace TileIO {
       return bytes;
     }
 
+    public nextUint32s(numUint32s: number): Uint32Array {
+      const numBytes = numUint32s * 4;
+      const uint32s = new Uint32Array(this.arrayBuffer, this.curPos, numBytes);
+      this.advance(numBytes);
+      return uint32s;
+    }
+
     /** Returns the underlying array buffer */
     public get arrayBuffer(): ArrayBuffer | SharedArrayBuffer { return this._view.buffer; }
 

@@ -12,7 +12,7 @@ import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, Mesh
 import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
-import { RenderGraphic, GraphicBranch } from "../render/System";
+import { RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ImageUtil } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
@@ -307,7 +307,7 @@ export namespace GltfTileIO {
           renderGraphic = this._system.createGraphicList(renderGraphicList);
         }
         if (undefined !== renderGraphic) {
-          renderGraphic = this._system.createBatch(renderGraphic, featureTable, contentRange);
+          renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
           if (undefined !== this._returnToCenter || this._yAxisUp) {
             const branch = new GraphicBranch();
             branch.add(renderGraphic);

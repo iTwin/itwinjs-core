@@ -27,7 +27,7 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { ViewState, ViewState2d, ViewState3d, SheetViewState, SpatialViewState } from "./ViewState";
 import { TileTree, Tile, TileRequests, TileLoader } from "./tile/TileTree";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { RenderTarget, GraphicList, RenderPlan } from "./render/System";
+import { RenderTarget, GraphicList, RenderPlan, PackedFeatureTable } from "./render/System";
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
 import { IModelConnection } from "./IModelConnection";
 
@@ -711,14 +711,15 @@ export namespace Attachments {
     public readonly viewport: AttachmentViewport;
     public readonly sheetView: SheetViewState;
     public readonly attachment: Attachment3d;
-    public readonly featureTable: FeatureTable;
+    public readonly featureTable: PackedFeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
       super(new TileLoader3d(), view.iModel, new Id64(""));
 
       this.tileColor = tileColorSequence.next;
-      this.featureTable = new FeatureTable(1);
-      this.featureTable.insert(new Feature(attachment.id));
+      const featureTable = new FeatureTable(1);
+      featureTable.insert(new Feature(attachment.id));
+      this.featureTable = PackedFeatureTable.pack(featureTable);
 
       this.viewport = viewport;
       this.sheetView = sheetView;

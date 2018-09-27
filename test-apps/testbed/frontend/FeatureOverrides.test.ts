@@ -5,9 +5,10 @@
 import { expect, assert } from "chai";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { PackedFeatureTable } from "@bentley/imodeljs-frontend/lib/rendering";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
-import { FeatureTable, Feature } from "@bentley/imodeljs-common/lib/Render";
+import { GeometryClass, FeatureTable, Feature } from "@bentley/imodeljs-common/lib/Render";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { WebGLTestContext } from "./WebGLTestContext";
 
@@ -53,9 +54,11 @@ describe("FeatureOverrides tests", () => {
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
-    const tbl = new FeatureTable(1);
-    tbl.insertWithIndex(new Feature(new Id64("0x1")), 0);
-    ovr.initFromMap(tbl);
+    const features = new FeatureTable(1);
+    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
+
+    const table = PackedFeatureTable.pack(features);
+    ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -65,7 +68,7 @@ describe("FeatureOverrides tests", () => {
     expect(ovr.anyHilited).to.be.false;
     const hls = new Set<string>(); hls.add("0x1");
     vp.target.setHiliteSet(hls);
-    ovr.update(tbl);
+    ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
   });
 
@@ -78,10 +81,12 @@ describe("FeatureOverrides tests", () => {
 
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
-    const tbl = new FeatureTable(2);
-    tbl.insertWithIndex(new Feature(new Id64("0x1")), 0);
-    tbl.insertWithIndex(new Feature(new Id64("0x2")), 1);
-    ovr.initFromMap(tbl);
+    const features = new FeatureTable(2);
+    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
+    features.insertWithIndex(new Feature(new Id64("0x2")), 1);
+
+    const table = PackedFeatureTable.pack(features);
+    ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -91,7 +96,53 @@ describe("FeatureOverrides tests", () => {
     expect(ovr.anyHilited).to.be.false;
     const hls = new Set<string>(); hls.add("0x1");
     vp.target.setHiliteSet(hls);
-    ovr.update(tbl);
+    ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
+  });
+});
+
+describe("FeatureTable tests", () => {
+  it("should pack and unpack a FeatureTable", () => {
+    const features: Feature[] = [
+      new Feature("0x1", "0x1", GeometryClass.Primary),
+      new Feature("0x2", "0x1", GeometryClass.Primary),
+      new Feature("0x3", "0x1", GeometryClass.Construction),
+      new Feature("0x4", "0xabcdabcdabcdabcd", GeometryClass.Primary),
+      new Feature("0xabcdabcdabcdabce", "0x63", GeometryClass.Construction),
+      new Feature("0xabcdabcdabcdabcc", "0xc8", GeometryClass.Primary),
+      new Feature("0xabcdabcdabcdabc7", "0xabcdabcdabcdabd1", GeometryClass.Construction),
+      new Feature("0x2", "0xabcdabcdabcdabcd", GeometryClass.Primary),
+      new Feature("0x1", "0x1", GeometryClass.Construction),
+    ];
+
+    const table = new FeatureTable(100, new Id64("0x1234"));
+    for (const feature of features) {
+      let testId = new Id64(feature.elementId);
+      expect(testId.isValid).to.be.true;
+      testId = new Id64(feature.subCategoryId);
+      expect(testId.isValid).to.be.true;
+
+      table.insert(feature);
+    }
+
+    expect(table.length).to.equal(features.length);
+
+    const packed = PackedFeatureTable.pack(table);
+    const unpacked = packed.unpack();
+
+    expect(table.length).to.equal(unpacked.length);
+    expect(table.maxFeatures).to.equal(unpacked.maxFeatures);
+    expect(table.modelId.toString()).to.equal(unpacked.modelId.toString());
+    expect(table.isUniform).to.equal(unpacked.isUniform);
+
+    for (let i = 0; i < table.length; i++) {
+      const lhs = table.getArray()[i];
+      const rhs = unpacked.getArray()[i];
+
+      expect(lhs.index).to.equal(rhs.index);
+      expect(lhs.value.geometryClass).to.equal(rhs.value.geometryClass);
+      expect(lhs.value.elementId).to.equal(rhs.value.elementId);
+      expect(lhs.value.subCategoryId).to.equal(rhs.value.subCategoryId);
+    }
   });
 });

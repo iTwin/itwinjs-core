@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, Id64String, BeTimePoint, IndexedValue, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { ViewFlags, FeatureTable, Feature, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { assert, Id64, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -36,18 +36,18 @@ class OvrUniform {
   public get anyTranslucent() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 > this.rgba.alpha; }
   public get anyHilited() { return this.isFlagSet(OvrFlags.Hilited); }
 
-  public initialize(map: FeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashed: Id64) {
+  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashed: Id64) {
     this.update(map, hilite, flashed, ovrs);
   }
 
-  public update(map: FeatureTable, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
+  public update(map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
     assert(map.isUniform);
 
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
-    const kvp = map.getArray()[0];
-    const isFlashed = flashedElemId.isValid && kvp.value.elementId === flashedElemId.value;
-    const isHilited = hilites.has(kvp.value.elementId);
+    const feature = map.uniform!;
+    const isFlashed = flashedElemId.isValid && feature.elementId === flashedElemId.value;
+    const isHilited = hilites.has(feature.elementId);
 
     if (undefined === ovrs) {
       // We only need to update the 'flashed' and 'hilited' flags
@@ -65,7 +65,7 @@ class OvrUniform {
     this.rgba = FloatRgba.fromColorDef(ColorDef.black, 0);
     this.flags = OvrFlags.None;
 
-    const app = ovrs.getAppearance(kvp.value, map.modelId);
+    const app = ovrs.getAppearance(feature, map.modelId);
     if (undefined === app) {
       // We're invisible. Don't care about any other overrides.
       this.flags = OvrFlags.Visibility;
@@ -115,8 +115,8 @@ class OvrNonUniform {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
-  public initialize(map: FeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64): TextureHandle | undefined {
-    const nFeatures = map.length;
+  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64): TextureHandle | undefined {
+    const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
     const height = dims.height;
@@ -131,7 +131,7 @@ class OvrNonUniform {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  public update(map: FeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
+  public update(map: PackedFeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs)
@@ -142,7 +142,7 @@ class OvrNonUniform {
     (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: FeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -157,10 +157,9 @@ class OvrNonUniform {
     //  [1]
     //      RGB = rgb
     //      A = alpha
-    const arr: Array<IndexedValue<Feature>> = map.getArray();
-    for (const kvp of arr) {
-      const feature = kvp.value;
-      const dataIndex = kvp.index * 4 * 2;
+    for (let i = 0; i < map.numFeatures; i++) {
+      const feature = map.getFeature(i);
+      const dataIndex = i * 4 * 2;
 
       const app = ovr.getAppearance(feature, map.modelId);
       if (undefined === app || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
@@ -220,18 +219,17 @@ class OvrNonUniform {
         nOverridden++;
     }
 
-    this.allHidden = (nHidden === map.length);
+    this.allHidden = (nHidden === map.numFeatures);
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: FeatureTable, hilites: Set<string>, flashedElemId: Id64) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64) {
     this.anyOverridden = false;
     this.anyHilited = false;
 
-    const arr: Array<IndexedValue<Feature>> = map.getArray();
-    for (const kvp of arr) {
-      const feature = kvp.value;
-      const dataIndex = kvp.index * 4 * 2;
+    for (let i = 0; i < map.numFeatures; i++) {
+      const feature = map.getFeature(i);
+      const dataIndex = i * 4 * 2;
       const oldFlags = data.getFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // Do the same thing as when applying feature overrides - if it's invisible, none of the other flags matter
@@ -304,8 +302,8 @@ export class FeatureOverrides implements IDisposable {
     return new Float32Array(4);
   }
 
-  public initFromMap(map: FeatureTable) {
-    const nFeatures = map.length;
+  public initFromMap(map: PackedFeatureTable) {
+    const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
 
     this._uniform = this._nonUniform = undefined;
@@ -326,7 +324,7 @@ export class FeatureOverrides implements IDisposable {
     this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }
 
-  public update(features: FeatureTable) {
+  public update(features: PackedFeatureTable) {
     const styleLastUpdated = this.target.overridesUpdateTime;
     const flashLastUpdated = this.target.flashedUpdateTime;
     const ovrsUpdated = this._lastOverridesUpdated.before(styleLastUpdated);
@@ -371,15 +369,15 @@ function uint32ToFloatArray(value: number): Float32Array {
   return floats;
 }
 
-function createUniformPickTable(elemId: Id64String): UniformPickTable {
+function createUniformPickTable(elemIdParts: { low: number, high: number }): UniformPickTable {
   return {
-    elemId0: uint32ToFloatArray(Id64.getLowUint32(elemId)),
-    elemId1: uint32ToFloatArray(Id64.getHighUint32(elemId)),
+    elemId0: uint32ToFloatArray(elemIdParts.low),
+    elemId1: uint32ToFloatArray(elemIdParts.high),
   };
 }
 
-function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable | undefined {
-  const nFeatures = features.length;
+function createNonUniformPickTable(features: PackedFeatureTable): NonUniformPickTable | undefined {
+  const nFeatures = features.numFeatures;
   if (nFeatures <= 1) {
     assert(false);
     return undefined;
@@ -390,21 +388,20 @@ function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable 
 
   const bytes = new Uint8Array(dims.width * dims.height * 4);
   const ids = new Uint32Array(bytes.buffer);
-  for (const entry of features.getArray()) {
-    const elemId = entry.value.elementId;
-    const index = entry.index;
-    ids[index * 2] = Id64.getLowUint32(elemId);
-    ids[index * 2 + 1] = Id64.getHighUint32(elemId);
+  for (let index = 0; index < features.numFeatures; index++) {
+    const elemIdParts = features.getElementIdParts(index);
+    ids[index * 2] = elemIdParts.low;
+    ids[index * 2 + 1] = elemIdParts.high;
   }
 
   return TextureHandle.createForData(dims.width, dims.height, bytes);
 }
 
-function createPickTable(features: FeatureTable): PickTable {
+function createPickTable(features: PackedFeatureTable): PickTable {
   if (!features.anyDefined)
     return {};
   else if (features.isUniform)
-    return { uniform: createUniformPickTable(features.uniform!.elementId) };
+    return { uniform: createUniformPickTable(features.getElementIdParts(0)) };
   else
     return { nonUniform: createNonUniformPickTable(features) };
 }
@@ -420,12 +417,12 @@ export abstract class Graphic extends RenderGraphic {
 
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
-  public readonly featureTable: FeatureTable;
+  public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
 
-  public constructor(graphic: RenderGraphic, features: FeatureTable, range: ElementAlignedBox3d) {
+  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
     super();
     this.graphic = graphic;
     this.featureTable = features;

@@ -327,11 +327,14 @@ export abstract class ViewState extends ElementState {
 
   public isSubCategoryVisible(id: Id64 | string): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
-    if (undefined === app || app.invisible)
+    if (undefined === app)
       return false;
 
     const ovr = this.getSubCategoryOverride(id);
-    return undefined === ovr || !ovr.invisible;
+    if (undefined === ovr || undefined === ovr.invisible)
+      return !app.invisible;
+    else
+      return !ovr.invisible;
   }
 
   /** Returns true if the set of elements returned by getAlwaysDrawn() are the *only* elements rendered by this view controller */

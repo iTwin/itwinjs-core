@@ -164,7 +164,7 @@ describe("TileIO", () => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.length).to.equal(6);
+        expect(batch.featureTable.numFeatures).to.equal(6);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
@@ -229,7 +229,7 @@ describe("TileIO", () => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
-        expect(batch.featureTable.length).to.equal(1);
+        expect(batch.featureTable.numFeatures).to.equal(1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(PolylinePrimitive);
         const plinePrim = batch.graphic as PolylinePrimitive;
@@ -278,7 +278,7 @@ describe("TileIO", () => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
-        expect(batch.featureTable.length).to.equal(3);
+        expect(batch.featureTable.numFeatures).to.equal(3);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
