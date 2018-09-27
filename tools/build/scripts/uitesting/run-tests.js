@@ -86,9 +86,7 @@ const clearTestFilesCache = () => {
 const setupReporter = (mocha) => {
   let reporter = "spec";
   let reporterOptions = undefined;
-  if (options.coverage) {
-    reporter = "mocha-tldr-reporter";
-  } else if (options.watch) {
+  if (options.coverage || options.watch) {
     reporter = "min";
   }
   if (options.report) {

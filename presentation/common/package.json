@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc -b ./src 1>&2 && npm run ruleset-json-schema && npm run extract",
     "clean": "rimraf lib package-deps.json",
-    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test -- --reporter mocha-tldr-reporter",
+    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-common",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
@@ -61,7 +61,6 @@
     "faker": "^4.1.0",
     "json-schema-faker": "^0.5.0-rc15",
     "mocha": "^5.2.0",
-    "mocha-tldr-reporter": "^1.0.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "ts-node": "^7.0.1",
