@@ -5,6 +5,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const getClientEnvironment = require("./env");
@@ -101,14 +102,6 @@ const config = {
           query: "describe=>global.globalMochaHooks(__filename)",
         }
       },
-      // First, run the linter.
-      // It's important to do this before Typescript runs.
-      {
-        test: /\.(ts|tsx)$/,
-        loader: require.resolve("tslint-loader"),
-        enforce: "pre",
-        include: [paths.appTest], // Only lint test code - app code is already linted by the regular build.
-      },
       {
         // "oneOf" will traverse all following loaders until one will
         // match the requirements. When no loader matches it will fall
@@ -125,7 +118,9 @@ const config = {
             use: {
               loader: require.resolve("ts-loader"),
               options: {
-                // onlyCompileBundledFiles: true,
+                transpileOnly: true,
+                experimentalWatchApi: true,
+                onlyCompileBundledFiles: true,
                 logLevel: "warn",
                 compilerOptions: {
                   declaration: false,
@@ -156,6 +151,11 @@ const config = {
     ],
   },
   plugins: [
+    new ForkTsCheckerWebpackPlugin({
+      tsconfig: paths.appTsConfig,
+      tslint: paths.appTsLint,
+      formatter: 'codeframe',
+    }),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
     new webpack.DefinePlugin(env.frontendStringified),

@@ -5,6 +5,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const nodeExternals = require("webpack-node-externals");
@@ -95,13 +96,6 @@ module.exports = (publicPath) => {
       ],
       strictExportPresence: true,
       rules: [
-        // First, run the linter.
-        {
-          test: /\.ts$/,
-          loader: require.resolve("tslint-loader"),
-          enforce: "pre",
-          include: paths.appSrc,
-        },
         {
           test: /\.js$/,
           loader: require.resolve("source-map-loader"),
@@ -118,6 +112,8 @@ module.exports = (publicPath) => {
               use: {
                 loader: require.resolve("ts-loader"),
                 options: {
+                  transpileOnly: true,
+                  experimentalWatchApi: (process.env.NODE_ENV === "development"),
                   onlyCompileBundledFiles: true,
                   logLevel: "warn",
                   compilerOptions: {
@@ -142,6 +138,12 @@ module.exports = (publicPath) => {
       setImmediate: false
     },
     plugins: [
+      new ForkTsCheckerWebpackPlugin({
+        tsconfig: paths.appTsConfig,
+        tslint: paths.appTsLint,
+        async: false,
+        silent: true,
+      }),
       new plugins.CopyAppAssetsPlugin(),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
       new plugins.CopyNativeAddonsPlugin(),

@@ -25,6 +25,7 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "declarationMap": true,
-    "jsx": "react"
+    "jsx": "react",
+    "preserveConstEnums": true /* Do not erase const enum declarations (objects) in generated code. Enum values will still be replaced by literals, this just gives downstream consumers the option to parallelize transpilation and typechecking. */
   }
 }

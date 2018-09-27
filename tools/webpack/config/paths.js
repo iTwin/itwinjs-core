@@ -62,9 +62,10 @@ let baseConfig = {
   // Top-level files
   dotenv: resolveApp(".env"),
   appTsConfig: resolveApp("tsconfig.json"),
+  appTsLint: resolveApp("tslint.json"),
   appPackageJson: resolveApp("package.json"),
   appPackageLockJson: resolveApp("package-lock.json"),
-  
+
   // Top-level directories
   appNodeModules: resolveApp("node_modules"),
   appSrc: resolveApp("src"),
@@ -96,13 +97,13 @@ module.exports = {
   appFrontendStats: path.resolve(baseConfig.appLib, "frontend.stats.json"),
   appBackendStats: path.resolve(baseConfig.appLib, "backend.stats.json"),
   appTestResults: baseConfig.appLib, // We may move this in a future release...
-  
+
   // src/
   appSrcBackendWeb: path.resolve(baseConfig.appSrcBackend, "web"),
   appSrcBackendElectron: path.resolve(baseConfig.appSrcBackend, "electron"),
   appMainJs: path.resolve(baseConfig.appSrcBackend, "main.ts"),
   appIndexJs: path.resolve(baseConfig.appSrcFrontend, "index.tsx"),
-  
+
   // test/e2e/
   appTestE2ELib: path.resolve(baseConfig.appTestE2E, "lib"),
   appTestE2EScreenshots: path.resolve(baseConfig.appTestE2E, "screenshots"),
@@ -119,6 +120,6 @@ module.exports = {
   appWebpackConfigFrontend: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.frontend.js"),
   appWebpackConfigTest: path.resolve(baseConfig.appWebpackConfigs, "webpack.config.test.js"),
 
-  // Note that this will *still*overwrite any of the above paths 
+  // Note that this will *still*overwrite any of the above paths
   ...baseConfig,
 };

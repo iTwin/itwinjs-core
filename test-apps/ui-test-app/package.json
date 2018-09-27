@@ -5,8 +5,8 @@
   "typings": "lib/index",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p ./src 1>&2",
-    "lint": "tslint -p ./src 1>&2",
+    "build": "tsc 1>&2",
+    "lint": "tslint -p . 1>&2",
     "webpack": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js build electron",
     "electron": "electron ./lib/main.js",
     "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start",

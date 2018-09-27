@@ -45,6 +45,7 @@
     "escape-string-regexp": "^1.0.5",
     "exports-loader": "^0.7.0",
     "file-loader": "^1.1.11",
+    "fork-ts-checker-webpack-plugin": "^0.4.9",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "html-webpack-plugin": "^3.2.0",

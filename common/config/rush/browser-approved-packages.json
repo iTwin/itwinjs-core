@@ -240,7 +240,7 @@
     },
     {
       "name": "enzyme",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "enzyme-adapter-react-16",
@@ -280,6 +280,10 @@
     },
     {
       "name": "file-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
     {

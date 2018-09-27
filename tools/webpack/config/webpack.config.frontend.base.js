@@ -5,6 +5,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const InterpolateHtmlPlugin = require("../scripts/utils/InterpolateHtmlPlugin"); // FIXME
@@ -87,15 +88,6 @@ module.exports = (publicPath) => {
             requireEnsure: false
           }
         },
-
-        // First, run the linter.
-        // It's important to do this before Typescript runs.
-        {
-          test: /\.(ts|tsx)$/,
-          loader: require.resolve("tslint-loader"),
-          enforce: "pre",
-          include: paths.appSrc,
-        },
         {
           test: /\.js$/,
           loader: require.resolve("source-map-loader"),
@@ -143,6 +135,8 @@ module.exports = (publicPath) => {
               use: {
                 loader: require.resolve("ts-loader"),
                 options: {
+                  transpileOnly: true,
+                  experimentalWatchApi: (process.env.NODE_ENV === "development"),
                   onlyCompileBundledFiles: true,
                   logLevel: "warn",
                   compilerOptions: {
@@ -212,6 +206,12 @@ module.exports = (publicPath) => {
 
     // There are a number of plugins that are common to both configs
     plugins: [
+      new ForkTsCheckerWebpackPlugin({
+        tsconfig: paths.appTsConfig,
+        tslint: paths.appTsLint,
+        async: false,
+        silent: true,
+      }),
       new plugins.CopyBentleyStaticResourcesPlugin(["public"]),
       // Generates an `index.html` file with the <script> injected.
       // This _should_ be specified in the separate dev and prod configs, but it's here because it has to be added _before_ InterpolateHtmlPlugin
