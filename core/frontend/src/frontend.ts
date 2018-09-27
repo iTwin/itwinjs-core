@@ -47,7 +47,7 @@ export * from "./tile/TileTree";
 /**
  * @docs-group-description IModelApp
  * Classes for configuring and administering an iModel.js application.
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description IModelConnection
@@ -55,13 +55,13 @@ export * from "./tile/TileTree";
  */
 /**
  * @docs-group-description ElementState
- * Classes for working with the *state* of Elements in the frontend
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * Classes for working with the *state* of Elements in the frontend.
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description ModelState
- * Classes for working with the *state* of Models in the frontend
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * Classes for working with the *state* of Models in the frontend.
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description Tools
@@ -73,23 +73,23 @@ export * from "./tile/TileTree";
  */
 /**
  * @docs-group-description LocatingElements
- * Classes for locating and snapping to elements in views
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * Classes for locating and snapping to elements in views.
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description AccuDraw
  * AccuDraw provides helpful assistance for creating and modifying elements in a view.
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description Notifications
  * Notifications provide feedback to the user of something of interest.
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
- * See [the learning articles]($docs/learning/frontend/index.md)
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description Rendering

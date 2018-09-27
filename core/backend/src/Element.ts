@@ -499,9 +499,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** @hidden */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Create a code that can be used for any kind of InformationPartitionElement.
-   * See the example in [[InformationPartitionElement]].
-   */
+  /** Create a code that can be used for any kind of InformationPartitionElement. */
   public static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
     return new Code({ spec: codeSpec.id, scope: scopeElementId, value: codeValue });
