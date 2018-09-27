@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 26 Sep 2018 19:16:30 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Sep 2018 15:02:44 GMT and should not be manually modified.
+
+## 0.136.0
+Thu, 27 Sep 2018 15:02:44 GMT
+
+### Updates
+
+- Optimize memory consumed by feature tables.
+- Check for subcategory appearance invisible and dontSnap.
+- Apply subcategory appearance overrides when instantiating a DisplayStyleState from JSON.
 
 ## 0.135.0
 Wed, 26 Sep 2018 19:16:30 GMT

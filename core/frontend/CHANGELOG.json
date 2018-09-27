@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.136.0",
+      "tag": "@bentley/imodeljs-frontend_v0.136.0",
+      "date": "Thu, 27 Sep 2018 15:02:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Optimize memory consumed by feature tables."
+          },
+          {
+            "comment": "Check for subcategory appearance invisible and dontSnap."
+          },
+          {
+            "comment": "Apply subcategory appearance overrides when instantiating a DisplayStyleState from JSON."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.135.0",
       "tag": "@bentley/imodeljs-frontend_v0.135.0",
       "date": "Wed, 26 Sep 2018 19:16:30 GMT",
