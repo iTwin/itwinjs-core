@@ -1,6 +1,17 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Thu, 27 Sep 2018 15:02:45 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Sep 2018 00:57:48 GMT and should not be manually modified.
+
+## 0.137.0
+Fri, 28 Sep 2018 00:57:48 GMT
+
+### Updates
+
+- Added ForkTsCheckerWebpackPlugin to speed up webpack builds and test runs.
+
+While this should greatly improve webpack performance, there are two side effects that may be considered breaking changes:
+  - The TypeScript type checking process will now rely soley on tsconfig files when resolving modules.  (See https: //www.npmjs.com/package/fork-ts-checker-webpack-plugin#modules-resolution).
+  - Type checking errors will now be reported concurrently with test result output.
 
 ## 0.136.0
 Thu, 27 Sep 2018 15:02:45 GMT

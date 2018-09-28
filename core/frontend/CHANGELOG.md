@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 27 Sep 2018 15:02:44 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Sep 2018 00:57:48 GMT and should not be manually modified.
+
+## 0.137.0
+Fri, 28 Sep 2018 00:57:48 GMT
+
+### Updates
+
+- Analysis mesh import from JSON
+- doc fixes
+- docs
 
 ## 0.136.0
 Thu, 27 Sep 2018 15:02:44 GMT
