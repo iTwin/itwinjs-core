@@ -83,7 +83,7 @@ export default class Tools extends React.Component<{}, State> {
   private getToolbarIcons1(direction: Direction) {
     const historyItem1 = (
       <HistoryIcon>
-        <i className="icon icon-3d-cube" />
+        <i className="icon icon-placeholder" />
       </HistoryIcon>
     );
     const historyItems = (
@@ -92,13 +92,13 @@ export default class Tools extends React.Component<{}, State> {
         <HistoryIcon
           isActive
         >
-          <i className="icon icon-3d-photo" />
+          <i className="icon icon-placeholder" />
         </HistoryIcon>
         <HistoryIcon
           isActive
           isDisabled
         >
-          <i className="icon icon-3d-render" />
+          <i className="icon icon-placeholder" />
         </HistoryIcon>
       </>
     );
@@ -114,7 +114,7 @@ export default class Tools extends React.Component<{}, State> {
       >
         <Icon
           icon={
-            <i className="icon icon-3d" />
+            <i className="icon icon-placeholder" />
           }
         />
       </Expandable>,
@@ -135,7 +135,7 @@ export default class Tools extends React.Component<{}, State> {
       >
         <Icon
           icon={
-            <i className="icon icon-2d" />
+            <i className="icon icon-placeholder" />
           }
           isActive
           onClick={this._toggleIsPanelVisible}
@@ -154,7 +154,7 @@ export default class Tools extends React.Component<{}, State> {
       >
         <Icon
           icon={
-            <i className="icon icon-3d-cube" />
+            <i className="icon icon-placeholder" />
           }
           isDisabled
         />
@@ -166,7 +166,7 @@ export default class Tools extends React.Component<{}, State> {
       >
         <Icon
           icon={
-            <i className="icon icon-3d-photo" />
+            <i className="icon icon-placeholder" />
           }
           isDisabled
           isActive
@@ -174,13 +174,13 @@ export default class Tools extends React.Component<{}, State> {
       </Expandable>,
       <Icon
         icon={
-          <i className="icon icon-angle" />
+          <i className="icon icon-placeholder" />
         }
         isActive
         key={4} />,
       <Icon
         icon={
-          <i className="icon icon-apps-generic" />
+          <i className="icon icon-placeholder" />
         }
         key={5} />,
     ];
@@ -190,19 +190,19 @@ export default class Tools extends React.Component<{}, State> {
     return [
       <Icon
         icon={
-          <i className="icon icon-filter" />
+          <i className="icon icon-placeholder" />
         }
         key={6}
       />,
       <Icon
         icon={
-          <i className="icon icon-find" />
+          <i className="icon icon-placeholder" />
         }
         key={7}
       />,
       <Icon
         icon={
-          <i className="icon icon-flag" />
+          <i className="icon icon-placeholder" />
         }
         key={8}
       />,
@@ -216,7 +216,7 @@ export default class Tools extends React.Component<{}, State> {
       path = "../" + path;
     }
 
-    const icon = <i className="icon icon-3d-cube" />;
+    const icon = <i className="icon icon-placeholder" />;
     return (
       <div style={{ padding: "10px" }}>
         <h1>Toolbar</h1>
@@ -272,7 +272,7 @@ export default class Tools extends React.Component<{}, State> {
           </Button>
           <IconButton
             icon={
-              <i className="icon icon-camera" />
+              <i className="icon icon-placeholder" />
             }
           />
           <App
@@ -302,7 +302,7 @@ export default class Tools extends React.Component<{}, State> {
                   this._toggleDirection();
                 }}
                 icon={
-                  <i className="icon icon-camera-animation" />
+                  <i className="icon icon-placeholder" />
                 }
               />
             }

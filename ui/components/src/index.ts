@@ -40,7 +40,7 @@ export * from "./viewport";
  */
 /**
  * @docs-group-description PropertyEditors
- * Classes for property editors.
+ * Classes for working with Property Editors.
  */
 /**
  * @docs-group-description PropertyGrid

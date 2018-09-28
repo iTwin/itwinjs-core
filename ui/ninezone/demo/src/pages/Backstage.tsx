@@ -22,13 +22,13 @@ export default class BackstagePage extends React.Component<{}, State> {
     return (
       <>
         <Item
-          icon="icon-align-center" // <AlignCenter
+          icon="icon-placeholder"
           label="Item1"
           isActive={this.state.activeItem === 1}
           onClick={() => this._handleSetActiveItem(1)}
         />
         <Item
-          icon="icon-align-align-top"
+          icon="icon-placeholder"
           label="Item2"
           isActive={this.state.activeItem === 2}
           onClick={() => this._handleSetActiveItem(2)}
@@ -41,13 +41,13 @@ export default class BackstagePage extends React.Component<{}, State> {
         />
         <Separator />
         <Item
-          icon="icon icon-align-align-right"
+          icon="icon icon-placeholder"
           label="Item4"
           isActive={this.state.activeItem === 4}
           onClick={() => this._handleSetActiveItem(4)}
         />
         <Item
-          icon="icon-align-align-left"
+          icon="icon-placeholder"
           label="Item5"
           isActive={this.state.activeItem === 5}
           onClick={() => this._handleSetActiveItem(5)}

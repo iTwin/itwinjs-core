@@ -227,11 +227,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -243,16 +243,16 @@ export default class ZonesExample extends React.Component<{}, State> {
           history: [],
           isExtended: false,
           isToolGroupOpen: false,
-          icon: "icon-2d",
+          icon: "icon-placeholder",
         } as ToolGroup,
         "angle": {
-          icon: "icon-angle",
+          icon: "icon-placeholder",
         } as SimpleTool,
         "attach": {
-          icon: "icon-attach",
+          icon: "icon-placeholder",
         } as SimpleTool,
         "browse": {
-          icon: "icon-browse",
+          icon: "icon-placeholder",
         } as SimpleTool,
         "calendar": {
           trayId: "tray1",
@@ -264,11 +264,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -278,12 +278,12 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Left,
           history: [],
-          icon: "icon-calendar",
+          icon: "icon-placeholder",
           isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "channel": {
-          icon: "icon-channel",
+          icon: "icon-placeholder",
           trayId: "tray1",
           backTrays: [],
           trays: {
@@ -293,7 +293,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "icon-arc",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -307,7 +307,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           isToolGroupOpen: false,
         } as ToolGroup,
         "chat": {
-          icon: "icon-chat",
+          icon: "icon-placeholder",
         } as SimpleTool,
         "clipboard": {
           trayId: "tray1",
@@ -319,11 +319,11 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     "3D#1": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     "3D#2": {
-                      icon: "icon-3d",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -333,12 +333,12 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Left,
           history: [],
-          icon: "icon-clipboard",
+          icon: "icon-placeholder",
           isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "cube": {
-          icon: "icon-3d-cube",
+          icon: "icon-3d-placeholder",
           trayId: "tray1",
           backTrays: [],
           trays: {
@@ -348,33 +348,33 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "icon-text-align-text-align-center",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     Test2123123: {
-                      icon: "icon-text-align-text-align-justify",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                       isDisabled: true,
                     },
                     Test3: {
-                      icon: "icon-text-align-text-align-left",
+                      icon: "icon-placeholder",
                       trayId: "tray2",
                     },
                     Test4: {
-                      icon: "icon-text-align-text-align-right",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     Test5: {
-                      icon: "icon-text-align-text-align-right",
+                      icon: "icon-placeholder",
                       trayId: "disabled",
                       isDisabled: true,
                     },
                     Test6: {
-                      icon: "icon-text-align-text-align-right",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                     Test7: {
-                      icon: "icon-text-align-text-align-right",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -382,7 +382,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 1: {
                   items: {
                     Test5: {
-                      icon: "icon-app-1",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -390,7 +390,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 2: {
                   items: {
                     ":)": {
-                      icon: "icon-app-2",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -403,7 +403,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Test1: {
-                      icon: "icon-text-align-text-align-center",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -429,7 +429,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 0: {
                   items: {
                     Validate: {
-                      icon: "icon-validate",
+                      icon: "icon-placeholder",
                       trayId: undefined,
                     },
                   },
@@ -439,12 +439,12 @@ export default class ZonesExample extends React.Component<{}, State> {
           },
           direction: Direction.Right,
           history: [],
-          icon: "icon-validate",
+          icon: "icon-placeholder",
           isExtended: false,
           isToolGroupOpen: false,
         } as ToolGroup,
         "chat1": {
-          icon: "icon-chat",
+          icon: "icon-placeholder",
         } as SimpleTool,
       },
       visibleMessage: Message.None,
@@ -494,7 +494,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             position={this.state.mousePosition}
             adjustPosition={adjustTooltipPosition}
           >
-            <i className="icon icon-cursor" />
+            <i className="icon icon-placeholder" />
           </TooltipWithTimeout>
         )}
         <TemporaryMessage
@@ -1477,7 +1477,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
-            <i className="icon icon-globe" />
+            <i className="icon icon-placeholder" />
           </WidgetTab>,
         ]);
       }
@@ -1493,7 +1493,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
-            <i className="icon icon-globe" />
+            <i className="icon icon-placeholder" />
           </WidgetTab>,
         ]);
       }
@@ -1512,7 +1512,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
           >
-            <i className="icon icon-records" />
+            <i className="icon icon-placeholder" />
           </WidgetTab>,
         ]);
       }
@@ -2005,7 +2005,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                                 Clink on element
                             </ToolAssistanceItem>
                               <ToolAssistanceItem>
-                                <i className="icon  icon-check-out" />
+                                <i className="icon  icon-placeholder" />
                                 Drag across elements
                             </ToolAssistanceItem>
                               <ToolAssistanceSeparator />
@@ -2040,7 +2040,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                           buttons={
                             <>
                               <MessageCenterButton>
-                                <i className={"icon icon-export"} />
+                                <i className={"icon icon-placeholder"} />
                               </MessageCenterButton>
                               <MessageCenterButton onClick={() => {
                                 this.setState((prevState) => ({
