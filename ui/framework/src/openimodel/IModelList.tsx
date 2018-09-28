@@ -194,7 +194,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
   }
 
   public render() {
-    const classThumbnails = classnames("viewtype icon icon-app-launcher", !this.state.showDetails && "active");
+    const classThumbnails = classnames("viewtype icon icon-placeholder", !this.state.showDetails && "active");
     const classList = classnames("viewtype icon icon-list", this.state.showDetails && "active");
     return (
       <div className="cards-content">

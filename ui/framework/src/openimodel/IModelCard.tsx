@@ -160,7 +160,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
                     onClose={this._onClose}>
                 <ul className="options-dropdown">
                   <li onClick={this._onViewsClicked}><span className="icon icon-visibility"/>Views</li>
-                  <li onClick={this._onPopupTestClicked}><span className="icon icon-punch-list"/>Details</li>
+                  <li onClick={this._onPopupTestClicked}><span className="icon icon-placeholder"/>Details</li>
                 </ul>
               </Popup>
             </div>

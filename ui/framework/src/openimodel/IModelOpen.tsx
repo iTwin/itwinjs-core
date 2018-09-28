@@ -156,14 +156,14 @@ class IModelOpenComponent extends React.Component<IModelOpenProps, IModelOpenSta
           </div>
         </div>
         <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
-          <NavigationItem label="Recent" icon="icon-history" />
-          <NavigationItem label="Offline" icon="icon-network" />
-          <NavigationItem label="Browse History" icon="icon-folder" />
-          <NavigationItem label="iModels" icon="icon-imodel-2" />
-          <NavigationItem label="Share" icon="icon-share" />
-          <NavigationItem label="Share Point" icon="icon-apps-sharepoint" />
-          <NavigationItem label="Reality Data" icon="icon-apps-reality-modeling" />
-          <NavigationItem label="New Project..." icon="icon-zoom-in" />
+          <NavigationItem label="Recent" icon="icon-placeholder" />
+          <NavigationItem label="Offline" icon="icon-placeholder" />
+          <NavigationItem label="Browse History" icon="icon-placeholder" />
+          <NavigationItem label="iModels" icon="icon-placeholder" />
+          <NavigationItem label="Share" icon="icon-placeholder" />
+          <NavigationItem label="Share Point" icon="icon-placeholder" />
+          <NavigationItem label="Reality Data" icon="icon-placeholder" />
+          <NavigationItem label="New Project..." icon="icon-placeholder" />
         </NavigationList>
         <div className={contentStyle}>
           {this.renderIModels()}
