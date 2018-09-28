@@ -4,7 +4,7 @@
 import Format, { IFormat } from "./Format";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
-import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption, FormatTraits } from "../utils/FormatEnums";
+import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption, FormatTraits, FormatType } from "../utils/FormatEnums";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -30,12 +30,12 @@ export default class OverrideFormat implements IFormat {
   }
 
   // Properties that can be overriden
-  get precision() { return (undefined === this._precision) ? this.parent.precision : this._precision; }
+  get precision(): DecimalPrecision | FractionalPrecision { return (undefined === this._precision) ? this.parent.precision : this._precision; }
   get units() { return (undefined === this._units) ? this.parent.units : this._units; }
 
   // Properties that cannot be overriden
-  get roundFactor() { return this.parent.roundFactor; }
-  get type() { return this.parent.type; }
+  get roundFactor(): number { return this.parent.roundFactor; }
+  get type(): FormatType { return this.parent.type; }
   get minWidth(): number | undefined { return this.parent.minWidth; }
   get scientificType(): ScientificType | undefined { return this.parent.scientificType; }
   get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
