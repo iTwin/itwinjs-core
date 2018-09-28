@@ -2727,6 +2727,18 @@ export class AccuDraw {
   public onMotion(_ev: BeButtonEvent): void { }
 
   public onPreButtonEvent(ev: BeButtonEvent): boolean {
+    if (BeButton.Reset === ev.button && !ev.isDown && !ev.isDragging) {
+      if (IModelApp.tentativePoint.isActive && this.isActive) {
+        IModelApp.tentativePoint.clear(true);
+        this.refreshDecorationsAndDynamics();
+        return true;
+      }
+
+      if (this.isEnabled)
+        this.onEventCommon();
+      return false;
+    }
+
     if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled)
       return false;
 
@@ -2771,19 +2783,6 @@ export class AccuDraw {
 
     this.flags.inDataPoint = false;
     this.flags.indexLocked = false;
-    return false;
-  }
-
-  public oResetButtonUp(_ev: BeButtonEvent): boolean {
-    if (IModelApp.tentativePoint.isActive && this.isActive) {
-      IModelApp.tentativePoint.clear(true);
-      return true;
-    }
-
-    if (!this.isEnabled)
-      return false;
-
-    this.onEventCommon();
     return false;
   }
 
