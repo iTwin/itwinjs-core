@@ -10,7 +10,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import "./IModelCard.scss";
 import { IModelViewsSelectedFunc } from "./IModelOpen";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { Popup, Position} from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
 
@@ -27,7 +27,7 @@ export interface IModelCardProps {
   onIModelViewsSelected: IModelViewsSelectedFunc;
 
    // actions:
-   setSelectedViews: (viewsSelected: Id64Props[]) => any;
+   setSelectedViews: (viewsSelected: Id64String[]) => any;
 }
 
 interface IModelCardState {
@@ -81,7 +81,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
-    const viewIds: Id64Props[] = new Array<Id64Props>();
+    const viewIds: Id64String[] = new Array<Id64String>();
     for (const view of views ) {
       viewIds.push (view.id!);
     }

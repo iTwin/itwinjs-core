@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, GuidProps } from "@bentley/bentleyjs-core";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
@@ -14,7 +14,7 @@ import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 /** Properties of a NavigationProperty. */
 export interface RelatedElementProps {
   /** The Id of the element to which this element is related. */
-  id: Id64Props;
+  id: Id64String;
   /** The full className of the relationship class. */
   relClassName?: string;
 }
@@ -22,7 +22,7 @@ export interface RelatedElementProps {
 /** Properties of an [Element]($docs/bis/intro/element-fundamentals) */
 export interface ElementProps extends EntityProps {
   /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
-  model: Id64Props;
+  model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
   code: CodeProps;
   /** The Parent of this element, if defined. */
@@ -63,7 +63,7 @@ export class TypeDefinition extends RelatedElement {
 /** Properties of a [GeometricElement]($backend) */
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
-  category: Id64Props;
+  category: Id64String;
   geom?: GeometryStreamProps;
 }
 
@@ -121,7 +121,7 @@ export interface SheetBorderTemplateProps extends ElementProps {
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
   width?: number;
-  border?: Id64Props;
+  border?: Id64String;
 }
 
 /** Properties of a [Sheet]($backend) */
@@ -129,8 +129,8 @@ export interface SheetProps extends ElementProps {
   width?: number;
   height?: number;
   scale?: number;
-  sheetTemplate?: Id64Props;
-  attachments?: Id64Props[];
+  sheetTemplate?: Id64String;
+  attachments?: Id64String[];
 }
 
 /** Properties of a [DefinitionElement]($backend) */
@@ -150,7 +150,7 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
 
 /** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend). */
 export interface ElementLoadProps {
-  id?: Id64Props;
+  id?: Id64String;
   code?: CodeProps;
   federationGuid?: GuidProps;
   /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */

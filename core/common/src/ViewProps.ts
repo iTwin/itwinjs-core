@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64Props, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
@@ -42,8 +42,8 @@ export interface ViewQueryParams extends EntityQueryParams {
 
 /** Parameters used to construct a ViewDefinition */
 export interface ViewDefinitionProps extends DefinitionElementProps {
-  categorySelectorId: Id64Props;
-  displayStyleId: Id64Props;
+  categorySelectorId: Id64String;
+  displayStyleId: Id64String;
   description?: string;
 }
 
@@ -120,12 +120,12 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 /** Parameters to construct a SpatialViewDefinition */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-  modelSelectorId: Id64Props;
+  modelSelectorId: Id64String;
 }
 
 /** Parameters used to construct a ViewDefinition2d */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
-  baseModelId: Id64Props;
+  baseModelId: Id64String;
   origin: XYProps;
   delta: XYProps;
   angle: AngleProps;

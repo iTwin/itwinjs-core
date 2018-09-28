@@ -6,7 +6,7 @@ import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType } from "@bentley/imodeljs-common";
-import { Id64, Id64Props } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
@@ -28,7 +28,7 @@ export class FakeModelProps implements ModelProps {
 }
 
 export class FakeREProps implements RelatedElementProps {
-  public id: Id64Props;
+  public id: Id64String;
   public constructor() { this.id = Id64.invalidId; }
 }
 

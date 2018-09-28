@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** Parameters that define the way geometry on a SubCategory appears. */
@@ -84,9 +84,9 @@ export namespace SubCategoryAppearance {
     dontSnap?: boolean;
     dontLocate?: boolean;
     weight?: number;
-    style?: Id64Props;
+    style?: Id64String;
     priority?: number;
-    material?: Id64Props;
+    material?: Id64String;
     transp?: number;
   }
 }

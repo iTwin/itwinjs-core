@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Codes */
 
-import { Id64, Id64Props, GuidProps, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, GuidProps, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values. */
-export type CodeScopeProps = Id64Props | GuidProps;
+export type CodeScopeProps = Id64String | GuidProps;
 
 /** The wire format for a Code */
 export interface CodeProps {
-  spec: Id64Props;
+  spec: Id64String;
   scope: CodeScopeProps;
   value?: string;
 }

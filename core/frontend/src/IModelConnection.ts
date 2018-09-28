@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -550,7 +550,7 @@ export namespace IModelConnection {
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-    public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
+    public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
       const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
@@ -572,7 +572,7 @@ export namespace IModelConnection {
      * @returns A Promise of the ThumbnailProps.
      * @throws `Error` exception if no thumbnail exists.
      */
-    public async getThumbnail(viewId: Id64Props): Promise<ThumbnailProps> {
+    public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
       const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken, viewId.toString());
       const intVals = new Uint16Array(val.buffer);
       return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 8, intVals[0]) };
@@ -584,7 +584,7 @@ export namespace IModelConnection {
      * @returns A void Promise
      * @throws `Error` exception if the thumbnail wasn't successfully saved.
      */
-    public async saveThumbnail(viewId: Id64Props, thumbnail: ThumbnailProps): Promise<void> {
+    public async saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void> {
       const id = new Id64(viewId);
       const val = new Uint8Array(thumbnail.image.length + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
       new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0

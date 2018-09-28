@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, Id64Props, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d, LowAndHighXYZ, LowAndHighXY,
@@ -1609,8 +1609,8 @@ export class SpatialViewState extends ViewState3d {
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64Props) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64Props) { this.modelSelector.dropModels(id); }
+  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
+  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {

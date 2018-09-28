@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { RelatedElement } from "./ElementProps";
 
@@ -12,7 +12,7 @@ export interface EntityProps {
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
-  id?: Id64Props;
+  id?: Id64String;
   /**
    * If this Entity is *not* from the `BisCore` schema, the name of the highest level (leaf-most)
    * class *in the BisCore schema* for this entity. If the entity is an instance of a class in the BisCore schema

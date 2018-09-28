@@ -18,7 +18,7 @@ import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
 import { UiFramework, FrameworkState, FrameworkReducer, OverallContent, AppNotificationManager, ProjectInfo, ConfigurableUiManager, FrontstageManager, FrontstageProps } from "@bentley/ui-framework";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./appui/AppBackstage";
@@ -142,7 +142,7 @@ export class SampleAppIModelApp extends IModelApp {
         MeasurePointsTool.register(this.sampleAppNamespace);
     }
 
-    public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]): void {
+    public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]): void {
         const payload = { iModelConnection };
         SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
 

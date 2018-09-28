@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove redundant Id64Props type - replace usage with equivalent but more descriptive Id64String.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

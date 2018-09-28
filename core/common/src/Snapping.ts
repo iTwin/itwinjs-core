@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64Props, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 
 /**
@@ -11,7 +11,7 @@ import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
  * Includes the viewing parameters so that snap can be relative to the view direction, viewing mode, etc.
  */
 export interface SnapRequestProps {
-  id: Id64Props;
+  id: Id64String;
   testPoint: XYZProps;
   closePoint: XYZProps;
   worldToView: Matrix4dProps;

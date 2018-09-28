@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
+import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
 
 import {
   IModelConnection,
@@ -42,7 +42,7 @@ import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 
 export class ViewsFrontstage {
 
-  constructor(public viewIds: Id64Props[], private _iModelConnection: IModelConnection) {
+  constructor(public viewIds: Id64String[], private _iModelConnection: IModelConnection) {
   }
 
   public defineProps(): FrontstageProps | undefined {

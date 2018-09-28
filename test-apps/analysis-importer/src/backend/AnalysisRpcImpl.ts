@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
 import { RpcInterface, IModelToken, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { Id64Props, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { AnalysisService } from "./AnalysisService";
 import { AnalysisReadRpcInterface } from "../common/AnalysisRpcInterface";
@@ -19,7 +19,7 @@ import { AnalysisWriteRpcInterface } from "../common/AnalysisRpcInterface";
 
 // Implement AnalysisWriteRpcInterface
 export class AnalysisWriteRpcImpl extends RpcInterface implements AnalysisWriteRpcInterface {
-    public async insertMesh(iModelToken: IModelToken, modelId: Id64Props, name: string, location: Point3d, polyface: Polyface): Promise<Id64Props> {
+    public async insertMesh(iModelToken: IModelToken, modelId: Id64String, name: string, location: Point3d, polyface: Polyface): Promise<Id64String> {
         const activityContext = ActivityLoggingContext.current; activityContext.enter();
         return AnalysisService.insertMesh(IModelDb.find(iModelToken), modelId, name, location, polyface);
     }

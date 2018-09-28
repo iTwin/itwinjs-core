@@ -6,7 +6,7 @@
 
 import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
 import { ColorDef } from "../ColorDef";
-import { Id64, Id64Props } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
 export namespace AreaPattern {
   /** Single hatch line definition */
@@ -64,7 +64,7 @@ export namespace AreaPattern {
     /** Set to allow snapping to pattern geometry, false if undefined */
     snappable?: boolean;
     /** GeometryPart id to use for tiled area pattern display */
-    symbolId?: Id64Props;
+    symbolId?: Id64String;
     /** Define an area pattern by supplying hatch line definitions instead of using a GeometryPart */
     defLines?: HatchDefLineProps[];
   }

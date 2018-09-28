@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Categories */
 
-import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, SubCategoryAppearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -90,7 +90,7 @@ export class DrawingCategory extends Category {
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
 
   /** Looks up the CategoryId of a DrawingCategory by model and name */
-  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64Props, categoryName: string): Id64 | undefined {
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64 | undefined {
     const code: Code = DrawingCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }
@@ -120,7 +120,7 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64Props, categoryName: string): Id64 | undefined {
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64 | undefined {
     const code: Code = SpatialCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }

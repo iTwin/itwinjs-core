@@ -15,11 +15,11 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { OpenIModelActions, OpenIModelState } from "../openimodel/state";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import "./IModelOpen.scss";
 import "./Common.scss";
 
-export type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64Props[]) => void;
+export type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) => void;
 
 export interface IModelOpenProps {
   accessToken: AccessToken;
@@ -40,7 +40,7 @@ export interface IModelOpenProps {
   setIModels: (iModels: IModelInfo[]) => any;
   setCurrentIModel: (iModelInfo: IModelInfo) => any;
   setIModelConnection: (iModelConnection: IModelConnection, viewProps: ViewDefinitionProps[]) => any;
-  setSelectedViews: (viewsSelected: Id64Props[]) => any;
+  setSelectedViews: (viewsSelected: Id64String[]) => any;
 }
 
 interface IModelOpenState {

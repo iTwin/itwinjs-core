@@ -5,14 +5,14 @@
 
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 import { XYProps } from "@bentley/geometry-core";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { RelatedElementProps } from "./ElementProps";
 
 /** Properties that define a [Model]($docs/bis/intro/model-fundamentals) */
 export interface ModelProps extends EntityProps {
   modeledElement: RelatedElementProps;
   name?: string;
-  parentModel?: Id64Props; // NB! Must always match the model of the modeledElement!
+  parentModel?: Id64String; // NB! Must always match the model of the modeledElement!
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;

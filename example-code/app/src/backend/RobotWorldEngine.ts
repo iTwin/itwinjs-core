@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { EnvMacroSubst, DbResult, Id64Props, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { EnvMacroSubst, DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
@@ -44,7 +44,7 @@ export class RobotWorldEngine {
     }
     // __PUBLISH_EXTRACT_END__
 
-    public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64Props[]): number {
+    public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
         let robotCount: number = 0;
         for (const elemId of elemIds) {
             const elem: Element = iModelDb.elements.getElement(elemId);
@@ -63,7 +63,7 @@ export class RobotWorldEngine {
     }
 
     // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
-    public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64Props): Id64Props[] {
+    public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
         const robot1 = iModelDb.elements.getElement(rid) as Robot;
 
         const selStmt =
@@ -72,7 +72,7 @@ export class RobotWorldEngine {
         return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
             stmt.bindRange3d("bbox", robot1.placement.calculateRange());
             stmt.bindId("thisRobot", rid);
-            const hits: Id64Props[] = [];
+            const hits: Id64String[] = [];
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
                 hits.push(stmt.getValue(0).getId());
             }
@@ -82,7 +82,7 @@ export class RobotWorldEngine {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
-    public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64Props): Id64Props[] {
+    public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
         const robot1 = iModelDb.elements.getElement(rid) as Robot;
 
         const selStmt =
@@ -91,7 +91,7 @@ export class RobotWorldEngine {
         return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
             stmt.bindRange3d("bbox", robot1.placement.calculateRange());
             stmt.bindId("thisRobot", rid);
-            const hits: Id64Props[] = [];
+            const hits: Id64String[] = [];
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
                 hits.push(stmt.getValue(0).getId());
             }
@@ -100,7 +100,7 @@ export class RobotWorldEngine {
     }
     // __PUBLISH_EXTRACT_END__
 
-    public static moveRobot(iModelDb: IModelDb, id: Id64Props, location: Point3d) {
+    public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
         const r = iModelDb.elements.getElement(id) as Robot;
         r.placement.origin = location;
         iModelDb.elements.updateElement(r);
@@ -108,7 +108,7 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
     // An experimental method. It is in the release build, but only turned on in some deployments.
-    public static fuseRobots(iModelDb: IModelDb, r1Id: Id64Props, r2Id: Id64Props) {
+    public static fuseRobots(iModelDb: IModelDb, r1Id: Id64String, r2Id: Id64String) {
         if (!IModelHost.features.check("robot.experimental.methods"))
             return;
 
@@ -127,7 +127,7 @@ export class RobotWorldEngine {
     }
 
     // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
-    public static insertRobot(iModelDb: IModelDb, modelId: Id64Props, name: string, location: Point3d): Id64Props {
+    public static insertRobot(iModelDb: IModelDb, modelId: Id64String, name: string, location: Point3d): Id64String {
         const props: GeometricElement3dProps = {
             model: modelId,
             code: Code.createEmpty(),
@@ -141,7 +141,7 @@ export class RobotWorldEngine {
     }
     // __PUBLISH_EXTRACT_END__
 
-    public static insertBarrier(iModelDb: IModelDb, modelId: Id64Props, location: Point3d, angle: Angle, length: number): Id64Props {
+    public static insertBarrier(iModelDb: IModelDb, modelId: Id64String, location: Point3d, angle: Angle, length: number): Id64String {
         const props: GeometricElement3dProps = {      // I know what class and category to use.
             model: modelId,
             code: Code.createEmpty(),

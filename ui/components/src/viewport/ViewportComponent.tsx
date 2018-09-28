@@ -4,7 +4,7 @@
 /** @module Viewport */
 
 import * as React from "react";
-import { Id64Props, BeDuration } from "@bentley/bentleyjs-core";
+import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
 import {
   IModelApp,
   IModelConnection,
@@ -29,7 +29,7 @@ export interface ViewportProps {
   imodel: IModelConnection;
 
   /** Id of a default view definition to load as a starting point */
-  viewDefinitionId: Id64Props;
+  viewDefinitionId: Id64String;
 
   /** @hidden */
   onContextMenu?: (e: React.MouseEvent) => boolean;

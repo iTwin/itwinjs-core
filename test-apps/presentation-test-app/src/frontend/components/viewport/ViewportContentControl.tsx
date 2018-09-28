@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewportComponent } from "@bentley/ui-components";
 import { withUnifiedSelection } from "@bentley/presentation-components/lib/viewport";
@@ -10,7 +10,7 @@ const SampleViewport = withUnifiedSelection(ViewportComponent);
 export interface Props {
   imodel: IModelConnection;
   rulesetId: string;
-  viewDefinitionId: Id64Props;
+  viewDefinitionId: Id64String;
 }
 export default class ViewportContentComponent extends React.Component<Props> {
   public render() {

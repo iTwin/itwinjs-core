@@ -3,8 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Ids */
 
-/** The properties of a 64-bit Id value. When serialized, will always be a string. */
-export type Id64Props = Id64 | string;
+/**
+ * An [[Id64]] or its string representation.
+ * If a value of this type is a string, the string is expected to contain a valid representation of
+ * an Id64 - specifically, "0" for an invalid ID, or a hexadecimal-formatted 64-bit integer with
+ * an "0x" prefix.
+ */
+export type Id64String = Id64 | string;
 
 /** The properties of a GUID. When serialized, will always be a string. */
 export type GuidProps = Guid | string;
@@ -17,9 +22,6 @@ export type Id64Array = string[];
 
 /** Used for arguments to functions that can accept one or more Id64 values. */
 export type Id64Arg = Id64[] | Id64 | Id64Set | Id64Array | string;
-
-/** An Id64 or its string representation. */
-export type Id64String = Id64 | string;
 
 /**
  * A 64 bit Id, stored as a hex string. This is necessary since JavaScript does not intrinsically support 64-bit integers.
@@ -72,7 +74,7 @@ export class Id64 {
    * @note If valid, the value will be *normalized* to always be in the form "0x123abc". That is, it will
    * only have lowercase letters, with no leading zeros after the "0x"
    */
-  constructor(prop?: Id64Props | number[]) {
+  constructor(prop?: Id64String | number[]) {
     if (!prop) {
       this.value = "0";
       return;
@@ -142,9 +144,9 @@ export class Id64 {
   }
 
   /** Create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable.
-   * @param val the json object containing Id64Props. If val does not contain valid values, result will be an invalid Id64.
+   * @param val the json object containing Id64String. If val does not contain valid values, result will be an invalid Id64.
    */
-  public static fromJSON(val?: Id64Props): Id64 {
+  public static fromJSON(val?: Id64String): Id64 {
     if (undefined === val)
       return this.invalidId;
     else if (val instanceof Id64)

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { assert, Id64Props } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 
 /** Describes the different data types an ECSQL value can be of.
  *
@@ -37,7 +37,7 @@ export enum ECSqlValueType {
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
-  id: Id64Props;
+  id: Id64String;
   /** Fully qualified class name of the relationship backing the Navigation property */
   relClassName?: string;
 }
@@ -73,7 +73,7 @@ export enum ECSqlStringType {
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
-  id: ECSqlTypedString | Id64Props;
+  id: ECSqlTypedString | Id64String;
   /** Fully qualified class name of the relationship backing the Navigation property */
   relClassName?: string;
   /** Table space where the relationship's schema is persisted. This is only required

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { Id64Props, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
 import { Polyface, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AnalysisSchema, Analysis } from "./AnalysisSchema";
@@ -15,7 +15,7 @@ import { AnalysisWriteRpcImpl, AnalysisReadRpcImpl } from "./AnalysisRpcImpl";
 
 export class AnalysisService {
 
-    public static insertMesh(iModelDb: IModelDb, modelId: Id64Props, name: string, location: Point3d, polyface: Polyface): Id64Props {
+    public static insertMesh(iModelDb: IModelDb, modelId: Id64String, name: string, location: Point3d, polyface: Polyface): Id64String {
         const categoryId = AnalysisMeshElement.getCategory(iModelDb).id;
         const props: GeometricElement3dProps = {
             model: modelId,

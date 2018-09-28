@@ -8,7 +8,7 @@ import { ProjectInfo } from "../clientservices/ProjectServices";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 // @ts-ignore
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -31,7 +31,7 @@ export const OpenIModelActions = {
   setIModels: (iModels: IModelInfo[]) => createAction("OpenIModel:SETIMODELS", iModels),
   setCurrentIModel: (newIModel: IModelInfo) => createAction("OpenIModel:SETCURRENTIMODEL", newIModel),
   setIModelConnection: (iModelConnection: IModelConnection, viewProps: ViewDefinitionProps[]) => createAction("OpenIModel:SETIMODELCONNECTION", { iModelConnection, viewProps }),
-  setSelectedViews: (selectedViews: Id64Props[]) => createAction("OpenIModel:SETSELECTEDVIEWS", selectedViews),
+  setSelectedViews: (selectedViews: Id64String[]) => createAction("OpenIModel:SETSELECTEDVIEWS", selectedViews),
 };
 
 /** The union of all actions that are handled by our reducer. */
@@ -46,7 +46,7 @@ export interface OpenIModelState {
   currentProject?: ProjectInfo;
   iModels?: IModelInfo[];
   currentIModel?: IModelInfo;
-  currentViews?: Id64Props[];
+  currentViews?: Id64String[];
   currentIModelConnection?: IModelConnection;
   showRecentProjects: boolean;
 }

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64Props, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64String, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code,
@@ -954,7 +954,7 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel(modelId: Id64Props): Model {
+    public getModel(modelId: Id64String): Model {
       const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
       const props = JSON.parse(json!) as ModelProps;
       return this._iModel.constructEntity(props) as Model;
@@ -1063,7 +1063,7 @@ export namespace IModelDb {
      * Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElementProps(elementId: Id64Props | Guid | Code | ElementLoadProps): ElementProps {
+    public getElementProps(elementId: Id64String | Guid | Code | ElementLoadProps): ElementProps {
       if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
       else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
       else if (elementId instanceof Code) elementId = { code: elementId };
@@ -1075,7 +1075,7 @@ export namespace IModelDb {
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
+    public getElement(elementId: Id64String | Guid | Code | ElementLoadProps): Element {
       if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
       else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
       else if (elementId instanceof Code) elementId = { code: elementId };
@@ -1315,7 +1315,7 @@ export namespace IModelDb {
      * @param viewDefinitionId The Id of the view for thumbnail
      * @return the ThumbnailProps, or undefined if no thumbnail exists.
      */
-    public getThumbnail(viewDefinitionId: Id64Props): ThumbnailProps | undefined {
+    public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps)
@@ -1331,7 +1331,7 @@ export namespace IModelDb {
      * @param thumbnail The thumbnail data.
      * @returns 0 if successful
      */
-    public saveThumbnail(viewDefinitionId: Id64Props, thumbnail: ThumbnailProps): number {
+    public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);

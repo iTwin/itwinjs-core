@@ -18,7 +18,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, Id64Props, Id64String } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem, TextureImage } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
@@ -189,17 +189,17 @@ export const enum SkyBoxImageType {
 }
 
 export interface SkyCubeProps {
-  front?: Id64Props;
-  back?: Id64Props;
-  top?: Id64Props;
-  bottom?: Id64Props;
-  right?: Id64Props;
-  left?: Id64Props;
+  front?: Id64String;
+  back?: Id64String;
+  top?: Id64String;
+  bottom?: Id64String;
+  right?: Id64String;
+  left?: Id64String;
 }
 
 export interface SkyBoxImageProps {
   type?: SkyBoxImageType;
-  texture?: Id64Props;
+  texture?: Id64String;
   textures?: SkyCubeProps;
 }
 

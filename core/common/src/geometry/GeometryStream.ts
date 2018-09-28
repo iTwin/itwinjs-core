@@ -7,7 +7,7 @@ import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Id64, Id64Props, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
@@ -21,13 +21,13 @@ import { IModelError } from "../IModelError";
  */
 export interface GeometryAppearanceProps {
   /** Optional subCategory id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default subCategory for the element's category or is on multiple subCategories */
-  subCategory?: Id64Props;
+  subCategory?: Id64String;
   /** Optional color to override the subCategory appearance color for subsequent geometry */
   color?: ColorDef;
   /** Optional weight to override the subCategory appearance weight for subsequent geometry */
   weight?: number;
   /** Optional style to override the subCategory appearance style for subsequent geometry */
-  style?: Id64Props;
+  style?: Id64String;
   /** Optional transparency, 0.0 if undefined. Effective transparency is a combination of this value and that from the subCategory appearance */
   transparency?: number;
   /** Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and that from the subCategory appearance */
@@ -56,7 +56,7 @@ export interface AreaFillProps {
  */
 export interface MaterialProps {
   /** Material id */
-  materialId?: Id64Props;
+  materialId?: Id64String;
   /** @hidden */
   origin?: XYZProps;
   /** @hidden */
@@ -83,7 +83,7 @@ export namespace BRepEntity {
     /** Optional transparency override for face */
     transparency?: number;
     /** Optional material override for face */
-    materialId?: Id64Props;
+    materialId?: Id64String;
   }
 
   /** GeometryStream entry for brep data. Must be specifically requested. */
@@ -102,7 +102,7 @@ export namespace BRepEntity {
 /** GeometryStream entry to a GeometryPart for a GeometricElement */
 export interface GeometryPartInstanceProps {
   /** GeometryPart id */
-  part: Id64Props;
+  part: Id64String;
   /** Optional translation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/translation, supply non-zero x and y only */
   origin?: XYZProps;
   /** Optional rotation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/rotation, supply a non-zero yaw angle only */
@@ -316,7 +316,7 @@ export class GeometryStreamIteratorEntry {
   /** Current iterator entry is raw brep data when brep is not undefined */
   public brep?: BRepEntity.DataProps;
 
-  public constructor(category?: Id64Props) {
+  public constructor(category?: Id64String) {
     this.geomParams = new GeometryParams(category !== undefined ? new Id64(category) : Id64.invalidId);
   }
 }
@@ -333,7 +333,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   /** Construct a new GeometryStreamIterator given a GeometryStreamProps from either a GeometricElement3d, GeometricElement3d, or GeometryPart.
    * Supply the GeometricElement's category to initialize the appearance information for each geometric entry.
    */
-  public constructor(geometryStream: GeometryStreamProps, category?: Id64Props) {
+  public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {
     this.geometryStream = geometryStream;
     this.entry = new GeometryStreamIteratorEntry(category !== undefined ? new Id64(category) : Id64.invalidId);
   }

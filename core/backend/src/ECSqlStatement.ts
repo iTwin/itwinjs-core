@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -136,7 +136,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64Props): void { this.getBinder(parameter).bindId(val); }
+  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -411,7 +411,7 @@ export class ECSqlBinder {
   /** Binds an Id value to the ECSQL parameter.
    * @param val Id value. If passed as string it must be the hexadecimal representation of the Id.
    */
-  public bindId(val: Id64Props | ECSqlTypedString): void {
+  public bindId(val: Id64String | ECSqlTypedString): void {
     const stat: DbResult = this._binder.bindId(ECSqlTypeHelper.toIdString(val));
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat);
@@ -903,7 +903,7 @@ class ECSqlTypeHelper {
     return (val.type !== undefined && val.type === ECSqlStringType.Id && val.value !== undefined && typeof (val.value) === "string");
   }
 
-  public static toIdString(val: ECSqlTypedString | Id64Props): string {
+  public static toIdString(val: ECSqlTypedString | Id64String): string {
     if (ECSqlTypeHelper.isIdString(val))
       return val.value;
 

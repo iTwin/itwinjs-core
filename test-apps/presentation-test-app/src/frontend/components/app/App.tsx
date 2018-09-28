@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -14,7 +14,7 @@ import "./App.css";
 export interface State {
   imodel?: IModelConnection;
   currentRulesetId?: string;
-  currentViewDefinitionId?: Id64Props;
+  currentViewDefinitionId?: Id64String;
 }
 
 export default class App extends React.Component<{}, State> {
@@ -37,14 +37,14 @@ export default class App extends React.Component<{}, State> {
     this.setState({ ...this.state, currentRulesetId: rulesetId });
   }
 
-  private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64Props> {
+  private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
     const viewQueryParams: ViewQueryParams = { wantPrivate: false };
     const viewSpecs = await imodel.views.queryProps(viewQueryParams);
     const spatialViewSpecs = viewSpecs.filter((spec) => spec.classFullName === "BisCore:SpatialViewDefinition");
     return spatialViewSpecs.length > 0 ? spatialViewSpecs[0].id! : viewSpecs[0].id!;
   }
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64Props) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
     return (
       <div className="app-content">
         <div className="content-left">
