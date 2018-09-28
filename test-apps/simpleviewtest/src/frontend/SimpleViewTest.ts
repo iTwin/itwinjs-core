@@ -2,12 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName,
+  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
@@ -705,6 +706,7 @@ async function _changeView(view: ViewState) {
 export class MeasurePointsTool extends PrimitiveTool {
   public static toolId = "Measure.Points";
   public readonly points: Point3d[] = [];
+  protected _snapGeomId?: string;
 
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
@@ -725,17 +727,39 @@ export class MeasurePointsTool extends PrimitiveTool {
     hints.sendHints();
   }
 
+  public testDecorationHit(id: string): boolean { return id === this._snapGeomId; }
+
+  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+    if (this.points.length < 2)
+      return undefined;
+
+    const geomData = GeomJson.Writer.toIModelJson(LineString3d.create(this.points));
+    return (undefined === geomData ? undefined : [geomData]);
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (this.points.length < 2)
+      return;
+
+    if (undefined === this._snapGeomId)
+      this._snapGeomId = this.iModel.transientIds.next.value;
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
+
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
+    builder.addLineString(this.points);
+
+    context.addDecorationFromBuilder(builder);
+  }
+
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (this.points.length < 1)
       return;
 
-    const tmpPoints = this.points.slice();
-    tmpPoints.push(ev.point.clone());
-
     const builder = context.createGraphicBuilder(GraphicType.Scene);
 
-    builder.setSymbology(ColorDef.white, ColorDef.white, 1);
-    builder.addLineString(tmpPoints);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
+    builder.addLineString([this.points[this.points.length - 1], ev.point]); // Only draw current segment in dynamics, accepted segments are drawn as pickable decorations...
 
     context.addGraphic(builder.finish());
   }
