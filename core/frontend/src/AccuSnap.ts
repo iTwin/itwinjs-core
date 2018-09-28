@@ -12,9 +12,9 @@ import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitPriority, IntersectDetail, SnapHeat, HitGeomType } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { BeDuration, Id64 } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
-import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { SnapRequestProps, DecorationGeometryProps } from "@bentley/imodeljs-common";
 
 /** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap implements Decorator {
@@ -458,15 +458,44 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
     };
 
-    if (undefined !== hitList && snapModes.includes(SnapMode.Intersection)) {
-      for (const hit of hitList.hits) {
-        if (thisHit.sourceId === hit.sourceId)
-          continue;
-        if (undefined === requestProps.intersectCandidates)
-          requestProps.intersectCandidates = [];
-        requestProps.intersectCandidates.push(hit.sourceId);
-        if (5 === requestProps.intersectCandidates.length)
-          break; // Search for intersection with a few of the next best hits...
+    if (!thisHit.isElementHit) {
+      const thisGeom = IModelApp.viewManager.getDecorationGeometry(thisHit);
+      if (undefined === thisGeom) {
+        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        return undefined;
+      }
+      requestProps.decorationGeometry = [new DecorationGeometryProps(thisHit.sourceId, thisGeom)];
+    }
+
+    if (snapModes.includes(SnapMode.Intersection)) {
+      if (undefined !== hitList) {
+        for (const hit of hitList.hits) {
+          if (thisHit.sourceId === hit.sourceId)
+            continue;
+
+          if (!hit.isElementHit) {
+            const geom = IModelApp.viewManager.getDecorationGeometry(hit);
+            if (undefined === geom)
+              continue;
+            if (undefined === requestProps.decorationGeometry)
+              requestProps.decorationGeometry = [new DecorationGeometryProps(hit.sourceId, geom)];
+            else
+              requestProps.decorationGeometry.push(new DecorationGeometryProps(hit.sourceId, geom));
+          }
+
+          if (undefined === requestProps.intersectCandidates)
+            requestProps.intersectCandidates = [hit.sourceId];
+          else
+            requestProps.intersectCandidates.push(hit.sourceId);
+
+          if (5 === requestProps.intersectCandidates.length)
+            break; // Search for intersection with a few of the next best hits...
+        }
+      }
+
+      if (1 === snapModes.length && undefined === requestProps.intersectCandidates) {
+        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        return undefined; // Don't make back end request when only doing intersection snap when we don't have another hit to interesect with...
       }
     }
 
@@ -478,15 +507,14 @@ export class AccuSnap implements Decorator {
 
     if (undefined !== result.category && undefined !== result.subCategory) {
       const viewState = thisHit.viewport.view;
-      const appearance = viewState.getSubCategoryAppearance(new Id64(result.subCategory));
+      const appearance = viewState.getSubCategoryAppearance(result.subCategory);
 
       if (appearance.invisible) {
         const subCategories = viewState.subCategories.getSubCategories(result.category);
         if (undefined !== subCategories) {
-          requestProps.offSubCategories = [];
-          requestProps.offSubCategories.push(result.subCategory);
+          requestProps.offSubCategories = [result.subCategory];
           for (const thisSub of subCategories) {
-            if (thisSub !== result.subCategory && viewState.getSubCategoryAppearance(new Id64(thisSub)).invisible)
+            if (thisSub !== result.subCategory && viewState.getSubCategoryAppearance(thisSub).invisible)
               requestProps.offSubCategories.push(thisSub);
           }
         }
@@ -498,8 +526,8 @@ export class AccuSnap implements Decorator {
 
         result = await thisHit.viewport.iModel.requestSnap(requestProps); // Retry snap with list of unacceptable subcategories...
 
-        if (result.status === SnapStatus.Success) {
-          const appearanceRetry = viewState.getSubCategoryAppearance(new Id64(result.subCategory));
+        if (result.status === SnapStatus.Success && undefined !== result.subCategory) {
+          const appearanceRetry = viewState.getSubCategoryAppearance(result.subCategory);
           if (appearanceRetry.invisible)
             result.status = SnapStatus.NoSnapPossible;
           else if (appearanceRetry.dontSnap)

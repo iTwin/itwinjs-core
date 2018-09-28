@@ -11,7 +11,7 @@ import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
-import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
+import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -1792,8 +1792,6 @@ export class ScreenViewport extends Viewport {
     ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     this.view.decorate(context);
-    if (this.viewFlags.acsTriad)
-      this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
 
     for (const decorator of IModelApp.viewManager.decorators)
       decorator.decorate(context);

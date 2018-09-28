@@ -3,17 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
 import { IModelApp } from "./IModelApp";
-import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve, PointString3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, LinePixels, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeButton, InputCollector } from "./tools/Tool";
-import { SnapMode, SnapDetail, SnapHeat } from "./HitDetail";
+import { SnapMode, SnapDetail, SnapHeat, HitDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
-import { AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
@@ -225,6 +226,7 @@ export class AccuDraw {
   public dontMoveFocus = false; // Disable automatic focus change when user is entering input.
   public newFocus = ItemField.X_Item; // Item to move focus to (X_Item or Y_Item) for automatic focus change.
   private readonly _rMatrix = new Matrix3d();
+  protected _acsPickId?: string;
 
   // Compass Display Preferences...
   protected _compassSizeInches = 0.44;
@@ -1882,7 +1884,29 @@ export class AccuDraw {
     }
   }
 
+  public testDecorationHit(id: string): boolean { return id === this._acsPickId; }
+  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+    if (!hit.viewport.viewFlags.acsTriad)
+      return undefined;
+    const geomData = GeomJson.Writer.toIModelJson(PointString3d.create(hit.viewport.view.auxiliaryCoordinateSystem.getOrigin()));
+    if (undefined === geomData)
+      return undefined;
+    const acsGeom: GeometryStreamProps = [geomData];
+    return acsGeom;
+  }
+
   public decorate(context: DecorateContext) {
+    if (context.viewport.viewFlags.acsTriad) {
+      context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
+      if (undefined === this._acsPickId)
+        this._acsPickId = context.viewport.iModel.transientIds.next.value;
+      const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
+      const color = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor, 50);
+      acsPickBuilder.setSymbology(color, color, 6);
+      acsPickBuilder.addPointString([context.viewport.view.auxiliaryCoordinateSystem.getOrigin()]);
+      context.addDecorationFromBuilder(acsPickBuilder);
+    }
+
     // Make sure this is cleared even if we do nothing...redraw might have been to make compass go away...
     this.flags.redrawCompass = false;
 

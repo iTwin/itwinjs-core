@@ -197,10 +197,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     const fillColor = this.getAdjustedColor(color, true, vp, options);
 
     if (axis === 2) {
-      const linePts1: Point3d[] = [Point3d.create(), Point3d.create()];
-      linePts1[1].z = ACSDisplaySizes.ZAxisLength;
       builder.setSymbology(lineColor, lineColor, 6);
-      builder.addPointString(linePts1);
+      builder.addPointString([Point3d.create(0.0, 0.0, ACSDisplaySizes.ZAxisLength)]); // NOTE: ACS origin point will be drawn separately as a pickable world decoration...
 
       const linePts2: Point3d[] = [Point3d.create(), Point3d.create()]; // NOTE: Don't use same point array, addPointString/addLineString don't deep copy...
       linePts2[1].z = ACSDisplaySizes.ZAxisLength;

@@ -313,11 +313,11 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
   /** Returns the appearance of the subcategory with the specified Id within this view, possibly as overridden by the display style. */
-  public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
-    const app = this.subCategories.getSubCategoryAppearance(id.value);
+  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
+    const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
       return SubCategoryAppearance.defaults;
 
@@ -325,7 +325,7 @@ export abstract class ViewState extends ElementState {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  public isSubCategoryVisible(id: Id64 | string): boolean {
+  public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
       return false;
