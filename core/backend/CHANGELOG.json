@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.139.0",
+      "tag": "@bentley/imodeljs-backend_v0.139.0",
+      "date": "Fri, 28 Sep 2018 19:37:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Include the license for the iModel.js native module"
+          },
+          {
+            "comment": "Fixed assertion that prevented opening of iModels with no ChangeSet-s. "
+          }
+        ]
+      }
+    },
+    {
       "version": "0.138.0",
       "tag": "@bentley/imodeljs-backend_v0.138.0",
       "date": "Fri, 28 Sep 2018 17:15:55 GMT",

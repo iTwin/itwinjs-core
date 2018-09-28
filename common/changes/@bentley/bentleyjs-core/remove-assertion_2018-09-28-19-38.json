@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Version 0.139.0",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Ramanujam.Raman@bentley.com"
+}

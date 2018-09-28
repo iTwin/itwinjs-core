@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Version 0.139.0",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Ramanujam.Raman@bentley.com"
+}

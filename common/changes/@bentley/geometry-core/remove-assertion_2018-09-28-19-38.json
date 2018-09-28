@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Version 0.139.0",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Ramanujam.Raman@bentley.com"
+}

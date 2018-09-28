@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Version 0.139.0",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Ramanujam.Raman@bentley.com"
+}

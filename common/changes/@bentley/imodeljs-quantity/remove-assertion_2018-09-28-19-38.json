@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Version 0.139.0",
+      "packageName": "@bentley/imodeljs-quantity",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "Ramanujam.Raman@bentley.com"
+}
