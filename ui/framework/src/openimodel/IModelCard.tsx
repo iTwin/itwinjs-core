@@ -138,7 +138,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     } else {
       return (
         <div className="preview-container">
-          <span className="icon icon-imodel-hollow-2" />
+          <span className="icon icon-placeholder" />
           <span className="open">Open</span>
         </div>
       );

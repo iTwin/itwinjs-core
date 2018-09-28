@@ -96,7 +96,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
         <ul style={ulStyle}>
           {projects && projects.map((project: ProjectInfo, i: number) => (
             <li style={liStyle} key={i} onClick={() => this._onItemClick(project)}>
-              <span className="pp-icon icon icon-apps-connect" />
+              <span className="pp-icon icon icon-placeholder" />
               <div className="pp-details">
                 <span>{project.projectNumber}</span>
                 <span>{project.name}</span>

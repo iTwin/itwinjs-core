@@ -118,7 +118,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     // const checked = Math.random() > .5;
     return (
       <tr key={iModelInfo.wsgId}>
-        <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-imodel-2" />{iModelInfo.name}</td>
+        <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-placeholder" />{iModelInfo.name}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{size}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>

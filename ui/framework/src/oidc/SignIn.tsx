@@ -56,7 +56,7 @@ class SignInPageComponent extends React.Component<SignInProps, SignInState> {
     return (
       <div className="signin2">
         <div className="signin-content">
-          <span className="icon icon-bentley-systems" />
+          <span className="icon icon-placeholder" />
           <span className="prompt">Please sign in to access your Bentley Services.</span>
           <button className={signinButtonClassName} type="button" onClick={this.onSignInClick.bind(this)}>Sign In</button>
           <span className="signin-register-div">Don't have a profile?<a onClick={this.onRegisterShow}>Register</a></span>

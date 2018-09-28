@@ -295,9 +295,9 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
             </div>
           </div>
           <div className="modelselector-toolbar">
-            <span className="icon icon-visibility" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
-            <span className="icon icon-visibility-hide" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
-            <span className="icon icon-convert" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} />
+            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
+            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
+            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} />
             <SearchBox placeholder="search..." onValueChanged={this._handleSearchValueChanged} />
           </div>
           <CheckListBox className="fw-modelselector-listbox">
