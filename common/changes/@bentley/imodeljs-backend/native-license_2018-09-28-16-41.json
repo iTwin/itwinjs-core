@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Include the license for the iModel.js native module",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}
