@@ -12,6 +12,7 @@ import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "./ViewState";
+import { GeometryStreamProps } from "@bentley/imodeljs-common";
 
 /** Interface for drawing "decorations" into, or on top of, the active views.
  * Decorators generate Decorations.
@@ -38,6 +39,14 @@ export interface Decorator {
    * @returns  A Promise that resolves to Yes if event completely handled by decoration and event should not be processed by the calling tool.
    */
   onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+
+  /** If [[testDecorationHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
+   * An example would be an InteractiveTool for placing a linestring. It might wish to allow snapping to accepted segments, the segment from the last accepted point to the current cursor position would not be included
+   * as snappable geometry and would just be displayed in dynamics.
+   * @param hit The HitDetail about the decoration that was picked.
+   * @returns GeometryStreamProps containing world coordinate snappable geometry for this decoration.
+   */
+  getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
 }
 
 /** Argument for [[ViewManager.onSelectedViewportChanged]] */
@@ -289,6 +298,17 @@ export class ViewManager {
         return decorator.onDecorationButtonEvent(hit, ev);
     }
     return EventHandled.No;
+  }
+
+  /** Allow a pickable decoration to be snapped to by AccuSnap or TentativePoint.
+   *  @hidden
+   */
+  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+    for (const decorator of IModelApp.viewManager.decorators) {
+      if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationGeometry && decorator.testDecorationHit(hit.sourceId))
+        return decorator.getDecorationGeometry(hit);
+    }
+    return undefined;
   }
 
   /** Change the cursor shown in all Viewports.

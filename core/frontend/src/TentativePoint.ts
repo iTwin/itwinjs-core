@@ -6,7 +6,7 @@
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { ScreenViewport } from "./Viewport";
 import { BeButtonEvent, BeButton } from "./tools/Tool";
-import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource } from "./HitDetail";
+import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
@@ -259,6 +259,9 @@ export class TentativePoint {
       return undefined;
 
     const snapModes = IModelApp.accuSnap.getActiveSnapModes(); // Get the list of point snap modes to consider
+    if (1 === snapModes.length && SnapMode.Intersection === snapModes[0])
+      snapModes.push(SnapMode.Nearest); // Add nearest when doing intersection by itself to support finding extended intersections...
+
     const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, IModelApp.accuSnap.keypointDivisor, this.tpHits);
 
     if (undefined !== thisSnap)

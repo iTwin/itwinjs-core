@@ -426,6 +426,7 @@ export class AccuDrawShortcuts {
           accudraw.indexed |= LockedStates.X_BM;
         accudraw.angleLock();
       }
+      accudraw.refreshDecorationsAndDynamics();
       return;
     }
 

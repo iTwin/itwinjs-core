@@ -9,7 +9,7 @@ import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 
 export type ToolType = typeof Tool;
@@ -301,6 +301,14 @@ export abstract class InteractiveTool extends Tool {
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
   public onUnsuspend(): void { }
+
+  /** Called to support operations on pickable decorations, like snapping. */
+  public testDecorationHit(_id: string): boolean { return false; }
+
+  /** Called to allow snapping to pickable decoration geometry.
+   * @note Snap geometry can be different from decoration geometry (ex. center point of a + symbol). Valid decoration geometry for snapping should be "stable" and not change based on the current cursor location.
+   */
+  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined { return undefined; }
 
   /**
    * Called to allow an active tool to display non-element decorations in overlay mode.

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "InteractiveTool methods to support snappable decorations. Restore AccuDraw/Tentative/Reset interaction.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}

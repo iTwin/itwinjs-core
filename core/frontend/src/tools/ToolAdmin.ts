@@ -5,7 +5,7 @@
 
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { NpcCenter } from "@bentley/imodeljs-common";
+import { NpcCenter, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
@@ -969,7 +969,8 @@ export class ToolAdmin {
         tool = undefined;
     }
 
-    IModelApp.accuDraw.onPreButtonEvent(ev);
+    if (IModelApp.accuDraw.onPreButtonEvent(ev))
+      return;
 
     switch (ev.button) {
       case BeButton.Data: {
@@ -1254,6 +1255,12 @@ export class ToolAdmin {
     else
       this._saveCursor = cursor;
   }
+
+  /** @hidden */
+  public testDecorationHit?(id: string): boolean { return this.currentTool.testDecorationHit(id); }
+
+  /** @hidden */
+  public getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
 
   /** @hidden */
   public decorate(context: DecorateContext): void {

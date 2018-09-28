@@ -250,9 +250,6 @@ export class SnapDetail extends HitDetail {
 
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
-      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2);
-
       let singleSegment = false;
       switch (this.snapMode) {
         case SnapMode.Center:
@@ -266,7 +263,17 @@ export class SnapDetail extends HitDetail {
         }
       }
 
-      builder.addPath(Path.create(this.getCurvePrimitive(singleSegment)!));
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      const outline = context.viewport.hilite.color.adjustForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustForContrast(outline, 175);
+      const path = Path.create(this.getCurvePrimitive(singleSegment)!);
+
+      builder.setSymbology(outline, outline, 6);
+      builder.addPath(path);
+
+      builder.setSymbology(centerLine, centerLine, 2);
+      builder.addPath(path);
+
       context.addDecorationFromBuilder(builder);
       return;
     }
@@ -298,10 +305,20 @@ export class IntersectDetail extends SnapDetail {
   public draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2);
-      builder.addPath(Path.create(this.primitive));
-      builder.setSymbology(context.viewport.hilite.color, context.viewport.hilite.color, 2, LinePixels.Code2);
-      builder.addPath(Path.create(this.otherPrimitive));
+      const outline = context.viewport.hilite.color.adjustForContrast(context.viewport.view.backgroundColor, 50);
+      const centerLine = context.viewport.hilite.color.adjustForContrast(outline, 175);
+      const path1 = Path.create(this.primitive);
+      const path2 = Path.create(this.otherPrimitive);
+
+      builder.setSymbology(outline, outline, 6);
+      builder.addPath(path1);
+      builder.addPath(path2);
+
+      builder.setSymbology(centerLine, centerLine, 2);
+      builder.addPath(path1);
+      builder.setSymbology(centerLine, centerLine, 2, LinePixels.Code2);
+      builder.addPath(path2);
+
       context.addDecorationFromBuilder(builder);
       return;
     }
