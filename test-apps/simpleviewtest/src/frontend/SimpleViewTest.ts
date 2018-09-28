@@ -320,7 +320,10 @@ function applyClassifierToggleChange(cName: string) {
 }
 
 function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
-  view.changeCategoryDisplay(catId, !invis);
+  const enableAllSubCategories = false; // set to true to emulate semi-wacky Navigator behavior...
+  const alreadyInvis = !view.viewsCategory(catId);
+  if (alreadyInvis !== invis)
+    view.changeCategoryDisplay(catId, !invis, enableAllSubCategories);
 }
 
 // apply a category checkbox state being changed

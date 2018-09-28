@@ -121,7 +121,7 @@ export class ViewSubCategories {
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
-  public getSubCategoryAppearance(subCategoryId: string): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId); }
+  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
 
   /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
@@ -135,9 +135,8 @@ export class ViewSubCategories {
 
   /**
    * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
-   * When the request completes, the ViewState's feature overrides will be marked dirty to indicate they must be updated.
    */
-  public update(addedCategoryIds: Set<string>, view: ViewState): void {
+  public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -149,7 +148,9 @@ export class ViewSubCategories {
     }
 
     if (undefined !== missing)
-      this.load(missing, view.iModel).then(() => view.setFeatureOverridesDirty());
+      return this.load(missing, iModel);
+    else
+      return Promise.resolve();
   }
 
   private loadFromRows(rows: any[]): void {
@@ -303,21 +304,21 @@ export abstract class ViewState extends ElementState {
     this.setFeatureOverridesDirty();
   }
 
-  public dropSubCategoryOverride(id: Id64) {
+  public dropSubCategoryOverride(id: Id64String) {
     this.displayStyle.dropSubCategoryOverride(id);
     this.setFeatureOverridesDirty();
   }
 
-  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
     this.displayStyle.overrideSubCategory(id, ovr);
     this.setFeatureOverridesDirty();
   }
 
-  public getSubCategoryOverride(id: Id64 | string): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
   /** Returns the appearance of the subcategory with the specified Id within this view, possibly as overridden by the display style. */
-  public getSubCategoryAppearance(id: Id64): SubCategoryAppearance {
-    const app = this.subCategories.getSubCategoryAppearance(id.value);
+  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
+    const app = this.subCategories.getSubCategoryAppearance(id);
     if (undefined === app)
       return SubCategoryAppearance.defaults;
 
@@ -325,7 +326,7 @@ export abstract class ViewState extends ElementState {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  public isSubCategoryVisible(id: Id64 | string): boolean {
+  public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
       return false;
@@ -340,15 +341,51 @@ export abstract class ViewState extends ElementState {
   /** Returns true if the set of elements returned by getAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
-  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
-    if (add) {
-      this.categorySelector.addCategories(arg);
-      this.subCategories.update(Id64.toIdSet(arg), this);
+  /**
+   * Enable or disable display of elements belonging to a set of categories specified by ID.
+   * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
+   * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
+   * @param categories The ID(s) of the categories to which the change should be applied. No other categories will be affected.
+   * @param display Whether or not elements on the specified categories should be displayed in the view.
+   * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
+   */
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
+    if (display) {
+      this.categorySelector.addCategories(categories);
+      const categoryIds = Id64.toIdSet(categories);
+      this.subCategories.update(categoryIds, this.iModel).then(() => {
+        this.setFeatureOverridesDirty();
+        if (enableAllSubCategories) {
+          for (const categoryId of categoryIds) {
+            const subCategoryIds = this.subCategories.getSubCategories(categoryId);
+            if (undefined !== subCategoryIds) {
+              for (const subCategoryId of subCategoryIds)
+                this.changeSubCategoryDisplay(subCategoryId, true);
+            }
+          }
+        }
+      });
     } else {
-      this.categorySelector.dropCategories(arg);
+      this.categorySelector.dropCategories(categories);
     }
 
     this.setFeatureOverridesDirty();
+  }
+
+  private changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
+    const app = this.subCategories.getSubCategoryAppearance(subCategoryId);
+    if (undefined === app)
+      return; // category is not enabled or subcategory does not exist
+
+    const curOvr = this.getSubCategoryOverride(subCategoryId);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === display)
+      return;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : { };
+    json.invisible = !display;
+    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
   }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
@@ -696,7 +733,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Determine whether the specified Category is displayed in this view */
-  public viewsCategory(id: Id64): boolean { return this.categorySelector.isCategoryViewed(id); }
+  public viewsCategory(id: Id64String): boolean { return this.categorySelector.isCategoryViewed(id); }
 
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }

@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated.All rights reserved.$
  * --------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { CategorySelectorProps } from "@bentley/imodeljs-common";
@@ -44,10 +44,10 @@ export class CategorySelectorState extends ElementState {
   public get name(): string { return this.code.getValue(); }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: string): boolean { return this.categories.has(id); }
+  public has(id: Id64String): boolean { return this.categories.has(id.toString()); }
 
   /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id64): boolean { return this.has(categoryId.value); }
+  public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
 
   /** Add a category to this CategorySelector */
   public addCategories(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
