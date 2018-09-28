@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.137.0",
+      "tag": "@bentley/imodeljs-frontend_v0.137.0",
+      "date": "Fri, 28 Sep 2018 00:57:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Analysis mesh import from JSON"
+          },
+          {
+            "comment": "doc fixes"
+          },
+          {
+            "comment": "docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.136.0",
       "tag": "@bentley/imodeljs-frontend_v0.136.0",
       "date": "Thu, 27 Sep 2018 15:02:44 GMT",
