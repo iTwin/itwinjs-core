@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 28 Sep 2018 19:37:10 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Sep 2018 21:04:21 GMT and should not be manually modified.
+
+## 0.140.0
+Fri, 28 Sep 2018 21:04:21 GMT
+
+### Updates
+
+- Version 0.139.0
+- Removed more assertions when opening an iModel with no change sets. 
 
 ## 0.139.0
 Fri, 28 Sep 2018 19:37:10 GMT

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Version 0.139.0",
+      "comment": "0.140.0",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }

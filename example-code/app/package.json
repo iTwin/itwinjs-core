@@ -17,12 +17,12 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.139.0",
-    "@bentley/geometry-core": "0.139.0",
-    "@bentley/imodeljs-backend": "0.139.0",
-    "@bentley/imodeljs-clients": "0.139.0",
-    "@bentley/imodeljs-common": "0.139.0",
-    "@bentley/imodeljs-frontend": "0.139.0",
+    "@bentley/bentleyjs-core": "0.140.0",
+    "@bentley/geometry-core": "0.140.0",
+    "@bentley/imodeljs-backend": "0.140.0",
+    "@bentley/imodeljs-clients": "0.140.0",
+    "@bentley/imodeljs-common": "0.140.0",
+    "@bentley/imodeljs-frontend": "0.140.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
@@ -38,7 +38,7 @@
     "webpack": "^4.16.4"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.139.0",
+    "@bentley/build-tools": "0.140.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.11.1",

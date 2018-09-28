@@ -62,7 +62,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
       if (token.openMode === OpenMode.Readonly) {
         appMode = AppMode.MilestoneReview;
-        assert(!!token.changeSetId, "ChangeSetId needs to be setup in IModelToken before open");
+        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelToken before open");
         routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
       } else {
         appMode = AppMode.WorkGroupEdit;
