@@ -63,7 +63,7 @@
     "@types/react": "^16.4.14",
     "@types/react-highlight-words": "^0.11.1",
     "@types/react-data-grid": "^2.0.11",
-    "@types/react-dom": "^16.0.6",
+    "@types/react-dom": "16.0.7",
     "@types/sinon": "^5.0.1",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",
