@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.138.0",
+      "tag": "@bentley/imodeljs-frontend_v0.138.0",
+      "date": "Fri, 28 Sep 2018 17:15:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add option to enable all hidden subcategories when enabling display of a category."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.137.0",
       "tag": "@bentley/imodeljs-frontend_v0.137.0",
       "date": "Fri, 28 Sep 2018 00:57:48 GMT",

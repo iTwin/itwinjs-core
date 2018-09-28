@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.137.0",
+  "version": "0.138.0",
   "description": "iModel.js components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
@@ -37,19 +37,19 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.137.0",
-    "@bentley/geometry-core": "0.137.0",
-    "@bentley/imodeljs-clients": "0.137.0"
+    "@bentley/bentleyjs-core": "0.138.0",
+    "@bentley/geometry-core": "0.138.0",
+    "@bentley/imodeljs-clients": "0.138.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.137.0",
-    "@bentley/build-tools": "0.137.0",
-    "@bentley/geometry-core": "0.137.0",
-    "@bentley/imodeljs-clients": "0.137.0",
+    "@bentley/bentleyjs-core": "0.138.0",
+    "@bentley/build-tools": "0.138.0",
+    "@bentley/geometry-core": "0.138.0",
+    "@bentley/imodeljs-clients": "0.138.0",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",

@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Fri, 28 Sep 2018 00:57:48 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Sep 2018 17:15:55 GMT and should not be manually modified.
+
+## 0.138.0
+Fri, 28 Sep 2018 17:15:55 GMT
+
+*Version update only*
 
 ## 0.137.0
 Fri, 28 Sep 2018 00:57:48 GMT
