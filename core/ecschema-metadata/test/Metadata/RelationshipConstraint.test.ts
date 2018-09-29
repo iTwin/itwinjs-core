@@ -56,7 +56,7 @@ describe("RelationshipConstraint", () => {
       expect(testConstraint.fromJson(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError, ``);
     });
     const oneCustomAttributeJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "ValidSchema",
       customAttributes: [
         {
@@ -76,7 +76,7 @@ describe("RelationshipConstraint", () => {
       assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
     });
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "ValidSchema",
       customAttributes: [
         {
@@ -99,7 +99,7 @@ describe("RelationshipConstraint", () => {
     });
     it("sync - Deserialize Two Custom Attributes with additional properties", () => {
       const relConstraintJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         customAttributes: [
           {
@@ -117,7 +117,7 @@ describe("RelationshipConstraint", () => {
       assert(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
     });
     const mustBeAnArrayJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "InvalidSchema",
       customAttributes: "CoreCustomAttributes.HiddenSchema",
     };

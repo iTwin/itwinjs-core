@@ -62,7 +62,6 @@ describe("SchemaItem", () => {
     let baseClass: any;
     let schema;
     before(() => {
-      Schema.ec32 = false;
       schema = new Schema("ExampleSchema", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
@@ -89,7 +88,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",

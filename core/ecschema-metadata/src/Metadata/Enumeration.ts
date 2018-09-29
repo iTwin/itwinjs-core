@@ -180,16 +180,11 @@ export default class Enumeration extends SchemaItem {
         if (undefined === enumerator.value)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
 
-        let enumName;
-        if (undefined !== enumerator.name) {
-          if (typeof (enumerator.name) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
-          enumName = enumerator.name;
-        } else {
-          if (Schema.ec32)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'name'.`);
-          enumName = (this.type === PrimitiveType.Integer) ? this.name + enumerator.value : enumerator.value;
-        }
+        if (undefined === enumerator.name)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'name'.`);
+
+        if (typeof (enumerator.name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (undefined !== enumerator.label) {
           if (typeof (enumerator.label) !== "string")
@@ -202,7 +197,7 @@ export default class Enumeration extends SchemaItem {
         }
         // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
         // Throws ECObjectsError if there are duplicate names or values present in the enumeration
-        this.addEnumerator(this.createEnumerator(enumName, enumerator.value, enumerator.label, enumerator.description));
+        this.addEnumerator(this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description));
       });
     }
   }

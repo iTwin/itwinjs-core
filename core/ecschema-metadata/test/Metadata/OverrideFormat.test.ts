@@ -21,7 +21,7 @@ function createSchemaJson(format: any) {
       schemaItemType: "Format",
       ...format,
     },
-  }, true, {
+  }, {
       references: [
         {
           name: "Formats",
@@ -32,13 +32,6 @@ function createSchemaJson(format: any) {
 }
 
 describe("OverrideFormat", () => {
-  before(() => {
-    Schema.ec32 = true;
-  });
-  after(() => {
-    Schema.ec32 = false;
-  });
-
   let context: SchemaContext;
   beforeEach(() => {
     context = new SchemaContext();

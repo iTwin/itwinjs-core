@@ -517,7 +517,7 @@ describe("EntityClass", () => {
     const schema = new Schema("TestSchema", 1, 0, 0);
     const testEntityClass = new EntityClass(schema, "testClass");
     const schemaJsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       version: "1.2.3",
       name: "testClass",
       schemaItemType: "EntityClass",

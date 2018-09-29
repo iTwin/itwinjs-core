@@ -23,9 +23,7 @@ import Phenomenon from "./Phenomenon";
 import Format from "./Format";
 import Constant from "./Constant";
 import InvertedUnit from "./InvertedUnit";
-import KindOfQuantityEC32 from "./KindOfQuantityEC32";
 
-const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
@@ -40,7 +38,6 @@ export default class Schema implements CustomAttributeContainerProps {
   protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _items: SchemaItem[];
-  public static ec32: boolean = false; // use EC3.1 for now
   /**
    * Constructs an empty Schema with the given name and version, (optionally) in a given context.
    * @param name The schema's name
@@ -63,7 +60,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   constructor();
   constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, _otherCtx?: SchemaContext) {
-    this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
+    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
     // this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
     this._items = [];
@@ -83,9 +80,9 @@ export default class Schema implements CustomAttributeContainerProps {
 
   get minorVersion() { return this.schemaKey.minorVersion; }
 
-  get alias() {return this._alias; }
-  get label() {return this._label; }
-  get description() {return this._description; }
+  get alias() { return this._alias; }
+  get label() { return this._label; }
+  get description() { return this._description; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
@@ -111,11 +108,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param modifier
    */
   protected async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
-     return this.createClass<EntityClass>(EntityClass, name, modifier);
+    return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
   protected createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
-     return this.createClass<EntityClass>(EntityClass, name, modifier);
+    return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
   /**
@@ -182,16 +179,12 @@ export default class Schema implements CustomAttributeContainerProps {
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
    */
- protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
-    if (!Schema.ec32) // use EC3.1
-      return this.createItem<KindOfQuantity>(KindOfQuantity, name);
-    return (this.createItem<KindOfQuantityEC32>(KindOfQuantityEC32, name) as any) as KindOfQuantity;
+  protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
+    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
-    if (!Schema.ec32) // use EC3.1
-      return this.createItem<KindOfQuantity>(KindOfQuantity, name);
-    return (this.createItem<KindOfQuantityEC32>(KindOfQuantityEC32, name) as any) as KindOfQuantity;
+    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
 
   /**
@@ -316,7 +309,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   public async lookupItem<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): Promise<T | undefined> {
     let schemaName, itemName: string;
-    if (typeof(key) === "string") {
+    if (typeof (key) === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
     } else {
       itemName = key.name;
@@ -342,7 +335,7 @@ export default class Schema implements CustomAttributeContainerProps {
    */
   public lookupItemSync<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): T | undefined {
     let schemaName, itemName: string;
-    if (typeof(key) === "string") {
+    if (typeof (key) === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
     } else {
       itemName = key.name;
@@ -425,7 +418,7 @@ export default class Schema implements CustomAttributeContainerProps {
 
   public toJson() {
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.$schema = (Schema.ec32) ? SCHEMAURL3_2 : SCHEMAURL3_1; // $schema is required
+    schemaJson.$schema = SCHEMAURL3_2; // $schema is required
     schemaJson.name = this.name; // name is required
     schemaJson.version = this.schemaKey.version.toString(true);
     schemaJson.alias = this.alias; // alias is required
@@ -467,16 +460,14 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public fromJsonSync(jsonObj: any): void {
-    if (Schema.ec32 && SCHEMAURL3_2 !== jsonObj.$schema)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${jsonObj.$schema}' is not supported.`);
-    else if (!Schema.ec32 && SCHEMAURL3_1 !== jsonObj.$schema)
+    if (SCHEMAURL3_2 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${jsonObj.$schema}' is not supported.`);
 
     if (!this._schemaKey) {
       if (undefined === jsonObj.name)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
 
-      if (typeof(jsonObj.name) !== "string")
+      if (typeof (jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
 
       const schemaName = jsonObj.name;
@@ -484,14 +475,14 @@ export default class Schema implements CustomAttributeContainerProps {
       if (undefined === jsonObj.version)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} is missing the required 'version' attribute.`);
 
-      if (typeof(jsonObj.version) !== "string")
+      if (typeof (jsonObj.version) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
 
       const version = ECVersion.fromString(jsonObj.version);
       this._schemaKey = new SchemaKey(schemaName, version);
     } else {
       if (undefined !== jsonObj.name) {
-        if (typeof(jsonObj.name) !== "string")
+        if (typeof (jsonObj.name) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
@@ -499,7 +490,7 @@ export default class Schema implements CustomAttributeContainerProps {
       }
 
       if (undefined !== jsonObj.version) {
-        if (typeof(jsonObj.version) !== "string")
+        if (typeof (jsonObj.version) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
 
         if (jsonObj.version !== this.schemaKey.version.toString())
@@ -508,19 +499,19 @@ export default class Schema implements CustomAttributeContainerProps {
     }
 
     if (undefined !== jsonObj.alias) {
-      if (typeof(jsonObj.alias) !== "string")
+      if (typeof (jsonObj.alias) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'alias' attribute. It should be of type 'string'.`);
       this._alias = jsonObj.alias;
     }
 
     if (undefined !== jsonObj.label) {
-      if (typeof(jsonObj.label) !== "string")
+      if (typeof (jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
       this._label = jsonObj.label;
     }
 
     if (undefined !== jsonObj.description) {
-      if (typeof(jsonObj.description) !== "string")
+      if (typeof (jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
       this._description = jsonObj.description;
     }

@@ -13,14 +13,6 @@ import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { SchemaItemType } from "../../src";
 
 describe("Constant", () => {
-  before(() => {
-    Schema.ec32 = true;
-  });
-
-  after(() => {
-    Schema.ec32 = false;
-  });
-
   describe("accept", () => {
     let testConstant: Constant;
     beforeEach(() => {
@@ -55,7 +47,7 @@ describe("Constant", () => {
       TestUnitSystem: {
         schemaItemType: "UnitSystem",
       },
-    }, true);
+    });
   }
 
   describe("deserialization", () => {

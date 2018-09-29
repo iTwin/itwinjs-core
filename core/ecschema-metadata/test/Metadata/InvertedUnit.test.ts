@@ -46,13 +46,8 @@ describe("Inverted Unit tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
-    });
-
-    afterEach(() => {
-      Schema.ec32 = false;
     });
 
     it("Basic test for label", async () => {
@@ -251,13 +246,8 @@ describe("Inverted Unit tests", () => {
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
-    });
-
-    afterEach(() => {
-      Schema.ec32 = false;
     });
 
     it("Basic test for label", () => {
@@ -456,14 +446,10 @@ describe("Inverted Unit tests", () => {
   });
   describe("toJson", () => {
     beforeEach(() => {
-      Schema.ec32 = true;
       const schema = new Schema("TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
-    afterEach(() => {
-      Schema.ec32 = false;
-    });
     const jsonOne = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       version: "1.0.0",

@@ -80,7 +80,7 @@ describe("Schema", () => {
 
       it("with name/version first specified in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -95,7 +95,7 @@ describe("Schema", () => {
 
       it("with name/version repeated in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -110,7 +110,7 @@ describe("Schema", () => {
 
       it("with name/version omitted in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
@@ -121,7 +121,7 @@ describe("Schema", () => {
         assertValidSchema(testSchema);
       });
       const oneCustomAttributeJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -147,7 +147,7 @@ describe("Schema", () => {
         assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
       });
       const twoCustomAttributeJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -176,7 +176,7 @@ describe("Schema", () => {
       });
       it("sync - Deserialize Two Custom Attributes with additional properties", () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -201,7 +201,7 @@ describe("Schema", () => {
         assert(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
       });
       const mustBeArrayJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "InvalidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -226,7 +226,7 @@ describe("Schema", () => {
     async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
       expect(schema).to.exist;
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         [attributeName]: value,
       };
       await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema ${schema.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
@@ -247,7 +247,7 @@ describe("Schema", () => {
 
     it("should throw for missing name", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       };
       const testSchema = new Schema();
       expect(testSchema).to.exist;
@@ -257,7 +257,7 @@ describe("Schema", () => {
 
     it("should throw for mismatched name", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ThisDoesNotMatch",
       };
       const testSchema = new Schema("BadSchema", 1, 2, 3);
@@ -270,7 +270,7 @@ describe("Schema", () => {
       const schemaWithName = new Schema("BadSchema", 1, 2, 3);
 
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: 0,
       };
       await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
@@ -282,7 +282,7 @@ describe("Schema", () => {
       const schemaWithKey = new Schema("BadSchema", 1, 2, 3);
 
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "BadSchema",
         version: 0,
       };
@@ -292,7 +292,7 @@ describe("Schema", () => {
 
     it("should throw for missing version", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "BadSchema",
       };
       const testSchema = new Schema();
@@ -302,7 +302,7 @@ describe("Schema", () => {
 
     it("should throw for mismatched version", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "BadSchema",
         version: "1.2.6",
       };
@@ -318,7 +318,7 @@ describe("Schema", () => {
   describe("toJSON", () => {
     it("Simple serialization", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -329,7 +329,7 @@ describe("Schema", () => {
       expect(testSchema).to.exist;
       await testSchema.fromJson(propertyJson);
       const serialized = testSchema.toJson();
-      assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema");
+      assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema");
       assert(serialized.name, "ValidSchema");
       assert(serialized.version, "01.02.03");
       assert(serialized.alias, "vs");
@@ -338,7 +338,7 @@ describe("Schema", () => {
     });
     it("Serialization with one custom attribute- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -358,7 +358,7 @@ describe("Schema", () => {
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -380,7 +380,7 @@ describe("Schema", () => {
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -408,7 +408,7 @@ describe("Schema", () => {
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -439,7 +439,7 @@ describe("Schema", () => {
     });
     it("Serialization with one reference", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -465,7 +465,7 @@ describe("Schema", () => {
     });
     it("Serialization with multiple references", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -499,7 +499,7 @@ describe("Schema", () => {
     });
     it("Serialization with one reference and item", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -533,7 +533,7 @@ describe("Schema", () => {
     });
     it("Serialization with one reference and multiple items", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         references: [

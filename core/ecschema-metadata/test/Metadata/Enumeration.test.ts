@@ -72,7 +72,7 @@ describe("Enumeration", () => {
   describe("deserialization", () => {
     it("minimum values", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -100,7 +100,7 @@ describe("Enumeration", () => {
 
     it("with enumerators", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -225,44 +225,6 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJson(json);
         assertValidEnumeration(testEnumSansPrimType);
-      });
-
-      it(`no name with type="string"`, async () => {
-        const json = {
-          ...baseJson,
-          type: "string",
-          isStrict: false,
-          label: "SomeDisplayLabel",
-          description: "A really long description...",
-          enumerators: [
-            { value: "A" },
-            { value: "B" },
-          ],
-        };
-        await testEnumSansPrimType.fromJson(json);
-        assertValidEnumeration(testEnumSansPrimType);
-
-        expect(testEnumSansPrimType.enumerators[0].name).eql("A");
-        expect(testEnumSansPrimType.enumerators[1].name).eql("B");
-      });
-
-      it(`no name with type="int"`, async () => {
-        const json = {
-          ...baseJson,
-          type: "int",
-          isStrict: false,
-          label: "SomeDisplayLabel",
-          description: "A really long description...",
-          enumerators: [
-            { value: 6 },
-            { value: 8 },
-          ],
-        };
-        await testEnum.fromJson(json);
-        assertValidEnumeration(testEnum);
-
-        expect(testEnum.enumerators[0].name).eql("TestEnumeration6");
-        expect(testEnum.enumerators[1].name).eql("TestEnumeration8");
       });
     });
 
@@ -440,9 +402,7 @@ describe("Enumeration", () => {
           { value: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
-      Schema.ec32 = true;
       await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
-      Schema.ec32 = false;
     });
     it("Value is required", async () => {
       const json = {

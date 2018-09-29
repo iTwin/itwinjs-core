@@ -14,14 +14,6 @@ import UnitSystem from "../../src/Metadata/UnitSystem";
 import { ECObjectsError } from "../../src/Exception";
 
 describe("Unit", () => {
-  before(() => {
-    Schema.ec32 = true;
-  });
-
-  after(() => {
-    Schema.ec32 = false;
-  });
-
   describe("accept", () => {
     let testUnit: Unit;
     beforeEach(() => {
@@ -56,7 +48,7 @@ describe("Unit", () => {
       TestUnitSystem: {
         schemaItemType: "UnitSystem",
       },
-    }, true);
+    });
   }
 
   describe("deserialization", () => {
@@ -126,7 +118,7 @@ describe("Unit", () => {
         schemaItemType: "UnitSystem",
         label: "metric",
       },
-    }, true);
+    });
     it("async - order shouldn't matter", async () => {
       const ecSchema = await Schema.fromJson(reverseOrderJson);
       assert.isDefined(ecSchema);
@@ -317,7 +309,7 @@ describe("Unit", () => {
         schemaItemType: "UnitSystem",
         label: "metric",
       },
-    }, true);
+    });
     it("async - order shouldn't matter", async () => {
       const ecSchema = await Schema.fromJson(reverseOrderJson);
       assert.isDefined(ecSchema);

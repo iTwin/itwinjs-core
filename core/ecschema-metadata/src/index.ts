@@ -20,7 +20,6 @@ export { default as RelationshipClass, RelationshipConstraint } from "./Metadata
 export { default as CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 export { default as Enumeration, Enumerator } from "./Metadata/Enumeration";
 export { default as KindOfQuantity } from "./Metadata/KindOfQuantity";
-export { default as KindOfQuantityEC32 } from "./Metadata/KindOfQuantityEC32";
 export { default as Constant } from "./Metadata/Constant";
 export { default as Format } from "./Metadata/Format";
 export { default as OverrideFormat } from "./Metadata/OverrideFormat";

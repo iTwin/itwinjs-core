@@ -6,15 +6,23 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../src/Metadata/Schema";
-import { ECObjectsError } from "../../src/Exception";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
+import { ECObjectsError } from "../../src/Exception";
 import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
+import OverrideFormat from "../../src/Metadata/OverrideFormat";
+import Schema from "../../src/Metadata/Schema";
+
+import Unit from "../../src/Metadata/Unit";
+import Format from "../../src/Metadata/Format";
+import { SchemaContext } from "../../src/Context";
+import { DecimalPrecision } from "../../src/utils/FormatEnums";
 
 describe("KindOfQuantity", () => {
-  const schema = new Schema("TestSchema", 1, 0, 0);
 
   describe("accept", () => {
+    const schema = new Schema("TestSchema", 1, 0, 0);
     let testKoq: KindOfQuantity;
 
     beforeEach(() => {
@@ -35,197 +43,411 @@ describe("KindOfQuantity", () => {
     });
   });
 
-  describe("fromJson", () => {
-    let testKoQ: KindOfQuantity;
+  describe("deserialization", () => {
+    let context: SchemaContext;
     beforeEach(() => {
-      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+      context = new SchemaContext();
+
+      // contains the Formats schema
+      context.addLocater(new TestSchemaLocater());
     });
 
-    const baseJson = { schemaItemType: "KindOfQuantity" };
-    it("should successfully deserialize valid JSON", async () => {
-      const koqJson = {
-        ...baseJson,
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        precision: 1.234,
-        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+    function createSchemaJson(koq: any) {
+      return createSchemaJsonWithItems({
+        TestKoQ: {
+          schemaItemType: "KindOfQuantity",
+          ...koq,
+        },
+      }, {
+          references: [
+            {
+              name: "Formats",
+              version: "1.0.0",
+            },
+          ],
+        });
+    }
+
+    const fullDefinedJson = createSchemaJson({
+      relativeError: 5,
+      persistenceUnit: "Formats.IN",
+      presentationUnits: [
+        "Formats.DefaultReal",
+      ],
+    });
+    it("async - should succeed with fully defined", async () => {
+      const ecSchema = await Schema.fromJson(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+
+      expect(koq.relativeError).equal(5);
+
+      assert.isDefined(koq.persistenceUnit);
+      const schemaPersistenceUnit = await ecSchema.lookupItem<Unit>("Formats.IN");
+      assert.equal(schemaPersistenceUnit, await koq.persistenceUnit);
+
+      assert.isDefined(koq.presentationUnits);
+      expect(koq.presentationUnits!.length).to.eql(1);
+      for (const lazyFormat of koq.presentationUnits!) {
+        const schemaFormat = await ecSchema.lookupItem<Format>("Formats.DefaultReal");
+        const koqFormat = await lazyFormat;
+        assert.isTrue(schemaFormat === koqFormat);
+      }
+    });
+    it("sync - should succeed with fully defined", () => {
+      const ecSchema = Schema.fromJsonSync(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = ecSchema.getItemSync("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+
+      expect(koq.relativeError).equal(5);
+
+      assert.isDefined(koq.persistenceUnit);
+      const schemaPersistenceUnit = ecSchema.lookupItemSync<Unit>("Formats.IN");
+      assert.equal(schemaPersistenceUnit, ecSchema.lookupItemSync<Unit>(koq.persistenceUnit!.fullName));
+
+      assert.isDefined(koq.presentationUnits);
+      expect(koq.presentationUnits!.length).to.eql(1);
+      // Can't do this portion of the test because need to wait to resolve the format....
+      // for (const lazyFormat of koq.presentationUnits!) {
+      //   const schemaFormat = ecSchema.getItemSync<Format>("Formats.DefaultReal", true);
+      //   assert.equal(schemaFormat, ecSchema.getItemSync<Format>(lazyFormat.key.schemaName + "." + lazyFormat.name, true));
+      // }
+    });
+
+    // should throw for missing persistenceUnit
+    const missingPersistenceUnit = createSchemaJson({
+      relativeError: 5,
+    });
+    it("async - should throw for missing persistenceUnit", async () => {
+      await expect(Schema.fromJson(missingPersistenceUnit, context)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKoQ is missing the required attribute 'persistenceUnit'.`);
+    });
+    it("sync - should throw for missing persistenceUnit", () => {
+      assert.throws(() => Schema.fromJsonSync(missingPersistenceUnit, context), ECObjectsError, `The KindOfQuantity TestKoQ is missing the required attribute 'persistenceUnit'.`);
+    });
+
+    // should throw for not found persistenceUnit
+    const badPersistenceUnit = createSchemaJson({
+      relativeError: 4,
+      persistenceUnit: "TestSchema.BadUnit",
+    });
+    it("async - should throw when persistenceUnit not found", async () => {
+      await expect(Schema.fromJson(badPersistenceUnit, context)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadUnit does not exist.`);
+    });
+    it("sync - should throw when persistenceUnit not found", () => {
+      assert.throws(() => Schema.fromJsonSync(badPersistenceUnit, context), ECObjectsError, `The SchemaItem BadUnit does not exist.`);
+    });
+
+    // should throw for presentationUnits not an array or string
+    const invalidPresentationUnits = createSchemaJson({
+      relativeError: 5,
+      persistenceUnit: "Formats.IN",
+      presentationUnits: 5,
+    });
+    it("async - should throw for presentationUnits not an array or string", async () => {
+      await expect(Schema.fromJson(invalidPresentationUnits, context)).to.be.rejectedWith(ECObjectsError, `The Kind Of Quantity TestKoQ has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
+    });
+    it("sync - should throw for presentationUnits not an array or string", () => {
+      assert.throws(() => Schema.fromJsonSync(invalidPresentationUnits, context), ECObjectsError, `The Kind Of Quantity TestKoQ has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
+    });
+
+    // invalid presentation format
+    const formatNonExistent = createSchemaJson({
+      relativeError: 4,
+      persistenceUnit: "Formats.IN",
+      presentationUnits: [
+        "TestSchema.NonexistentFormat",
+      ],
+    });
+    it("async - should throw for presentationUnit having a non-existent format", async () => {
+      await expect(Schema.fromJson(formatNonExistent, context)).to.be.rejectedWith(ECObjectsError, `The SchemaItem NonexistentFormat does not exist.`);
+    });
+    it("sync - should throw for presentationUnit having a non-existent format", () => {
+      assert.throws(() => Schema.fromJsonSync(formatNonExistent, context), ECObjectsError, `The SchemaItem NonexistentFormat does not exist.`);
+    });
+
+    describe("format overrides", () => {
+      // relativeError override
+      const relativeErrorOverride = createSchemaJson({
+        relativeError: 4,
+        persistenceUnit: "Formats.IN",
         presentationUnits: [
-          { unit: "cm" },
-          { unit: "in", format: "anotherFormat" },
+          "Formats.DefaultReal(2)",
+          "Formats.DefaultReal(3,)",
+          "Formats.DefaultReal(4,,)",
         ],
-      };
-      await testKoQ.fromJson(koqJson);
+      });
+      it("async - relativeError override", async () => {
+        const schema = await Schema.fromJson(relativeErrorOverride, context);
+        const testKoQItem = await schema.getItem<KindOfQuantity>("TestKoQ");
 
-      expect(testKoQ.name).to.eql("TestKindOfQuantity");
-      expect(testKoQ.label).to.eql("SomeDisplayLabel");
-      expect(testKoQ.description).to.eql("A really long description...");
-      expect(testKoQ.precision).to.eql(1.234);
-      expect(testKoQ.presentationUnits).to.exist;
-      expect(testKoQ.presentationUnits.length).to.eql(2);
-      expect(testKoQ.defaultPresentationUnit).to.eql({ unit: "cm" });
-      expect(testKoQ.presentationUnits[0]).to.eql({ unit: "cm" });
-      expect(testKoQ.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
-      expect(testKoQ.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
-    });
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(3);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
+        assert.isTrue(defaultFormat instanceof OverrideFormat);
 
-    it("should successfully deserialize valid JSON (without units)", async () => {
-      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
-      const koqJson = {
-        ...baseJson,
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        precision: 1.234,
-      };
-      await testKoQ.fromJson(koqJson);
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
-      expect(testKoQ.name).to.eql("TestKindOfQuantity");
-      expect(testKoQ.label).to.eql("SomeDisplayLabel");
-      expect(testKoQ.description).to.eql("A really long description...");
-      expect(testKoQ.precision).to.eql(1.234);
-      expect(testKoQ.presentationUnits).to.exist;
-      expect(testKoQ.presentationUnits.length).to.eql(0);
-      expect(testKoQ.defaultPresentationUnit).to.not.exist;
-      expect(testKoQ.persistenceUnit).to.not.exist;
-    });
+        expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
-    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
-      const json: any = {
-        ...baseJson,
-        [attributeName]: value,
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
+        expect(testKoQItem!.presentationUnits![1].precision).eql(3);
+        expect(testKoQItem!.presentationUnits![2].precision).eql(4);
+      });
+      it("sync - relativeError override", () => {
+        const schema = Schema.fromJsonSync(relativeErrorOverride, context);
+        const testKoQItem = schema.getItemSync<KindOfQuantity>("TestKoQ");
 
-    function testInvalidAttributeSync(attributeName: string, expectedType: string, value: any) {
-      const json: any = {
-        ...baseJson,
-        [attributeName]: value,
-      };
-      assert.throws(() => testKoQ.fromJsonSync(json), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(3);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
 
-    it("async - should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
-    it("sync - should throw for invalid precision", () => testInvalidAttributeSync("precision", "number", false));
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
-    it("async - should throw for presentationUnits not an array", async () => testInvalidAttribute("presentationUnits", "object[]", 0));
-    it("sync - should throw for presentationUnits not an array", () => testInvalidAttributeSync("presentationUnits", "object[]", 0));
+        expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
 
-    it("async - should throw for presentationUnits not an array of objects", async () => testInvalidAttribute("presentationUnits", "object[]", [0]));
-    it("sync - should throw for presentationUnits not an array of objects", () => testInvalidAttributeSync("presentationUnits", "object[]", [0]));
+        expect(testKoQItem!.presentationUnits![1].precision).eql(3);
+        expect(testKoQItem!.presentationUnits![2].precision).eql(4);
+      });
 
-    it("async - should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
-    it("sync - should throw for persistenceUnit not an object", () => testInvalidAttributeSync("persistenceUnit", "object", 0));
+      // single unit override
+      const singleUnitOverride = createSchemaJson({
+        relativeError: 4,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal[Formats.IN]",
+        ],
+      });
+      it("async - single unit override", async () => {
+        const schema = await Schema.fromJson(singleUnitOverride, context);
+        const testKoQItem = await schema.getItem<KindOfQuantity>("TestKoQ");
 
-    // should throw for presentationUnit with missing unit
-    const presentationUnitWithMissingUnitJson = {
-      ...baseJson,
-      presentationUnits: [{}],
-    };
-    it("async - should throw for presentationUnit with missing unit", async () => {
-      await expect(testKoQ.fromJson(presentationUnitWithMissingUnitJson)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
-    });
-    it("sync - should throw for presentationUnit with missing unit", () => {
-      assert.throws(() => testKoQ.fromJsonSync(presentationUnitWithMissingUnitJson), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
-    });
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(1);
+        const defaultFormat = await testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
 
-    // should throw for presentationUnit with invalid unit
-    const presentationUnitWithInvalidUnitJson = {
-      ...baseJson,
-      presentationUnits: [{ unit: 0 }],
-    };
-    it("async - should throw for presentationUnit with invalid unit", async () => {
-      await expect(testKoQ.fromJson(presentationUnitWithInvalidUnitJson)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-    it("sync - should throw for presentationUnit with invalid unit", () => {
-      assert.throws(() => testKoQ.fromJsonSync(presentationUnitWithInvalidUnitJson), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
+        assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
-    // should throw for presentationUnit with invalid format
-    const presentationUnitWithInvalidFormatJson = {
-      ...baseJson,
-      presentationUnits: [{ unit: "valid", format: false }],
-    };
-    it("async - should throw for presentationUnit with invalid format", async () => {
-      await expect(testKoQ.fromJson(presentationUnitWithInvalidFormatJson)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
-    });
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+        assert.equal(await unitOverride[0], unitFromSchema);
+        assert.isUndefined(unitOverride[1]);
+      });
+      it("sync - single unit override", () => {
+        const schema = Schema.fromJsonSync(singleUnitOverride, context);
+        const testKoQItem = schema.getItemSync<KindOfQuantity>("TestKoQ");
 
-    it("sync - should throw for presentationUnit with invalid format", () => {
-      assert.throws(() => testKoQ.fromJsonSync(presentationUnitWithInvalidFormatJson), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
-    });
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(1);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
 
-    // should throw for persistenceUnit with missing unit
-    const persistenceUnitWithMissingUnit = {
-      ...baseJson,
-      persistenceUnit: {},
-    };
-    it("async - should throw for persistenceUnit with missing unit", async () => {
-      await expect(testKoQ.fromJson(persistenceUnitWithMissingUnit)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
-    });
-    it("sync - should throw for persistenceUnit with missing unit", () => {
-      assert.throws(() => testKoQ.fromJsonSync(persistenceUnitWithMissingUnit), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
-    });
+        assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
-    // should throw for persistenceUnit with invalid unit
-    const persistenceUnitWithInvalidUnit = {
-      ...baseJson,
-      persistenceUnit: { unit: 0 },
-    };
-    it("async - should throw for persistenceUnit with invalid unit", async () => {
-      await expect(testKoQ.fromJson(persistenceUnitWithInvalidUnit)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-    it("sync - should throw for persistenceUnit with invalid unit", () => {
-      assert.throws(() => testKoQ.fromJsonSync(persistenceUnitWithInvalidUnit), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
+        const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+        assert.equal(unitOverride[0], unitFromSchema);
+        assert.isUndefined(unitOverride[1]);
+      });
 
-    // should throw for persistenceUnit with invalid format
-    const persistenceUnitWithInvalidFormat = {
-      ...baseJson,
-      persistenceUnit: { unit: "valid", format: false },
-    };
-    it("async - should throw for persistenceUnit with invalid format", async () => {
-      await expect(testKoQ.fromJson(persistenceUnitWithInvalidFormat)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
-    });
-    it("sync - should throw for persistenceUnit with invalid format", () => {
-      assert.throws(() => testKoQ.fromJsonSync(persistenceUnitWithInvalidFormat), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+      // single unit label override
+      const singleUnitLabelOverride = createSchemaJson({
+        relativeError: 4,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal[Formats.IN| in]",
+        ],
+      });
+      it("async - single unit label override", async () => {
+        const schema = await Schema.fromJson(singleUnitLabelOverride, context);
+        const testKoQItem = await schema.getItem<KindOfQuantity>("TestKoQ");
+
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(1);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
+
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+        assert.equal(await unitOverride[0], unitFromSchema);
+        expect(unitOverride[1]).to.be.eql(" in");
+      });
+      it("sync - single unit label override", () => {
+        const schema = Schema.fromJsonSync(singleUnitLabelOverride, context);
+        const testKoQItem = schema.getItemSync<KindOfQuantity>("TestKoQ");
+
+        assert.isDefined(testKoQItem);
+        expect(testKoQItem!.presentationUnits!.length).to.eql(1);
+        const defaultFormat = testKoQItem!.defaultPresentationFormat;
+        assert.isDefined(defaultFormat);
+
+        assert.isDefined(defaultFormat!.units);
+        expect(defaultFormat!.units!.length).to.eql(1);
+        const unitOverride = defaultFormat!.units![0];
+        const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+        assert.equal(unitOverride[0], unitFromSchema);
+        expect(unitOverride[1]).to.be.eql(" in");
+      });
+
+      // TODO add tests for all # of overrides
+
+      // failure cases
+      function testInvalidFormatStrings(testName: string, formatString: string, expectedErrorMessage: string) {
+        const badOverrideString = createSchemaJson({
+          relativeError: 4,
+          persistenceUnit: "Formats.IN",
+          presentationUnits: [
+            formatString,
+          ],
+        });
+
+        it("async - " + testName, async () => {
+          await expect(Schema.fromJson(badOverrideString, context)).to.be.rejectedWith(ECObjectsError, expectedErrorMessage);
+        });
+
+        it("sync - " + testName, () => {
+          assert.throws(() => Schema.fromJsonSync(badOverrideString, context), ECObjectsError, expectedErrorMessage);
+        });
+      }
+
+      // The regex doesn't properly catch this case and just ignores the ().
+      // testInvalidFormatStrings("should throw for invalid override string without any overrides", "Formats.DefaultReal()", "");
+      // testInvalidFormatStrings("should throw for invalid override string with empty unit brackets", "Formats.DefaultReal[]", "");
+      // testInvalidFormatStrings("should throw for invalid override string with only vertical bar in unit brackets", "Formats.DefaultReal[|]", "");
+      // testInvalidFormatStrings("should throw for invalid override string with an empty string for unit", "Formats.DefaultReal[|label]", "Unable to locate SchemaItem .");
+      testInvalidFormatStrings("should throw for invalid override string with an invalid precision", "Formats.DefaultReal(banana)", "");
+      testInvalidFormatStrings("should throw for invalid override string without any overrides but still has commas", "Formats.DefaultReal(,,,,,)", "");
+      testInvalidFormatStrings("should throw for invalid override string with 5 unit overrides", "Formats.DefaultReal[Formats.MILE|m][Formats.YRD|yard][Formats.FT|feet][Formats.IN|in][Formats.MILLIINCH|milli]", "");
+      testInvalidFormatStrings("should throw for presentationUnit having a non-existent unit as an override", "Formats.DefaultReal[Formats.NonexistentUnit]", "Unable to locate SchemaItem Formats.NonexistentUnit.");
     });
   });
   describe("toJson", () => {
-    let testKoQ: KindOfQuantity;
+    let context: SchemaContext;
     beforeEach(() => {
-      testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
+      context = new SchemaContext();
+
+      // contains the Formats schema
+      context.addLocater(new TestSchemaLocater());
     });
 
-    const baseJson = {
-      schemaItemType: "KindOfQuantity",
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
-      name: "TestKindOfQuantity",
-      schema: "TestSchema",
-      schemaVersion: "1.0.0",
-    };
-    it("should successfully deserialize valid JSON", async () => {
-      const koqJson = {
-        ...baseJson,
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        precision: 1.234,
-        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
+    function createSchemaJson(koq: any) {
+      return createSchemaJsonWithItems({
+        TestKoQ: {
+          schemaItemType: "KindOfQuantity",
+          ...koq,
+        },
+      }, {
+          references: [
+            {
+              name: "Formats",
+              version: "1.0.0",
+            },
+          ],
+        });
+    }
+
+    it("async - should succeed with fully defined", async () => {
+      const fullDefinedJson = createSchemaJson({
+        relativeError: 5,
+        persistenceUnit: "Formats.IN",
         presentationUnits: [
-          { unit: "cm", format: "format" },
-          { unit: "in", format: "anotherFormat" },
+          "Formats.DefaultReal",
         ],
-      };
-      await testKoQ.fromJson(koqJson);
-      const koQSerialization = testKoQ.toJson(true, true);
-      assert.isDefined(koQSerialization);
-      expect(koQSerialization.name).to.eql("TestKindOfQuantity");
-      expect(koQSerialization.label).to.eql("SomeDisplayLabel");
-      expect(koQSerialization.description).to.eql("A really long description...");
-      expect(koQSerialization.precision).to.eql(1.234);
-      expect(koQSerialization.presentationUnits).to.exist;
-      expect(koQSerialization.presentationUnits.length).to.eql(2);
-      expect(koQSerialization.presentationUnits[0]).to.eql({ unit: "cm", format: "format" });
-      expect(koQSerialization.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
-      expect(koQSerialization.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
+      });
+      const ecSchema = await Schema.fromJson(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.relativeError).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.IN");
+      expect(koqSerialization.presentationUnits[0]).equal("DefaultReal");
+    });
+    it("sync - should succeed with fully defined", () => {
+      const fullDefinedJson = createSchemaJson({
+        relativeError: 5,
+        persistenceUnit: "Formats.IN",
+        presentationUnits: [
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = Schema.fromJsonSync(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = ecSchema.getItemSync("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.relativeError).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.IN");
+      expect(koqSerialization.presentationUnits[0]).equal("DefaultReal");
+    });
+    it("async - should succeed with list of presentation units", async () => {
+      const fullDefinedJson = createSchemaJson({
+        relativeError: 5,
+        persistenceUnit: "Formats.FT",
+        presentationUnits: [
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = await Schema.fromJson(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.relativeError).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.FT");
+      expect(koqSerialization.presentationUnits).to.deep.equal(["DefaultReal", "DefaultReal", "DefaultReal"]);
+    });
+    it("sync - should succeed with list of presentation units", () => {
+      const fullDefinedJson = createSchemaJson({
+        relativeError: 5,
+        persistenceUnit: "Formats.FT",
+        presentationUnits: [
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+          "Formats.DefaultReal",
+        ],
+      });
+      const ecSchema = Schema.fromJsonSync(fullDefinedJson, context);
+      assert.isDefined(ecSchema);
+
+      const testItem = ecSchema.getItemSync("testKoQ");
+      assert.isTrue(testItem instanceof KindOfQuantity);
+      const koq: KindOfQuantity = testItem as KindOfQuantity;
+      assert.isDefined(koq);
+      const koqSerialization = koq.toJson(true, true);
+      assert.isDefined(koqSerialization);
+      expect(koqSerialization.relativeError).equal(5);
+      expect(koqSerialization.persistenceUnit).equal("Formats.FT");
+      expect(koqSerialization.presentationUnits).to.deep.equal(["DefaultReal", "DefaultReal", "DefaultReal"]);
     });
   });
 });
