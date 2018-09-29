@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const argv = require("yargs").argv;
@@ -69,7 +70,7 @@ const stream = fs.createWriteStream(modLocation);
 
 stream.once("open", (fd) => {
   stream.write("/*---------------------------------------------------------------------------------------------\n");
-  stream.write("|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $\n");
+  stream.write("* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.* Licensed under the MIT License. See LICENSE.md in the project root for license terms.\n");
   stream.write("*--------------------------------------------------------------------------------------------*/\n");
   stream.write("// This is a generated file from an npm script. Please do not modify.\n\n");
 

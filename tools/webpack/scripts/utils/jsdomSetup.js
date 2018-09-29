@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 // This is all required to simulate a browser environment in React tests.
 const jsdom = require("jsdom");
 const document = new jsdom.JSDOM("", { url: "http://localhost/" });

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
 import { IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Arc3d, LineString3d, Loop, Transform } from "@bentley/geometry-core";

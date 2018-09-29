@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 
 // import { Sample } from "../serialization/GeometrySamples";
 import { Bezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../numerics/BezierPolynomials";

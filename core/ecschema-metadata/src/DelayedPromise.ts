@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 /**
  * Similar to a normal Promise, a DelayedPromise represents the eventual completion (or failure)
  * and resulting value of an asynchronous operation ***that has not yet started***.
@@ -81,7 +86,7 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new<TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
+  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
@@ -89,7 +94,7 @@ export interface DelayedPromiseWithPropsConstructor {
 // tslint:disable-next-line:variable-name
 export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {
-    super (cb);
+    super(cb);
 
     const handler = {
       get: (target: TProps, name: string) => {

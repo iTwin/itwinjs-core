@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64String, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";

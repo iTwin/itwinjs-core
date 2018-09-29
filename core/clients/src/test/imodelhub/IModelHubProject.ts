@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { AccessToken, UserProfile, ConnectClient, Project, IModelClient, DeploymentEnv } from "../..";
 import { IModelHubClient, IModelQuery } from "../..";
 import { TestConfig } from "../TestConfig";
@@ -50,5 +51,5 @@ export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public readonly project = new TestIModelHubProject();
   public readonly orchestrator = new TestIModelHubOrchestrator();
   public readonly authorization = new TestIModelHubUserMgr();
-  public terminate(): void {}
+  public terminate(): void { }
 }

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";

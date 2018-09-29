@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 const fs = require("fs");
 const path = require("path");
 const child_process = require('child_process');
@@ -17,21 +22,21 @@ function spawnStmux(args) {
     console.log("Try running: " + chalk.cyan("npm i -g stmux.\n"));
     process.exit();
   }
-  const subProc = child_process.spawn("node", [ 
+  const subProc = child_process.spawn("node", [
     "-r", __filename,
     path.join(binPath, "node_modules", "stmux", "bin", "stmux.js"),
     "--mouse",
     "--",
     ...args
-  ], 
-  { stdio: ["pipe", 1, 2], shell: true });
+  ],
+    { stdio: ["pipe", 1, 2], shell: true });
 
   // Remap input to stmux (the default controls are too wonky)
   process.stdin.setRawMode(true);
   readline.emitKeypressEvents(process.stdin);
-  process.stdin.on("keypress", function(chunk, key) {
+  process.stdin.on("keypress", function (chunk, key) {
     if (key && key.ctrl) {
-      // CTRL + LEFT ==> Switch to left terminal 
+      // CTRL + LEFT ==> Switch to left terminal
       if (key.name === "left") {
         subProc.stdin.write("\x01");
         subProc.stdin.write("\x1B[D");

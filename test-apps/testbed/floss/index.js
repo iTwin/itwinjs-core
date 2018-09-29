@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 'use strict';
 
 const path = require('path');
@@ -8,7 +13,7 @@ let electron;
 try {
     electron = require('electron');
 }
-catch(err) {
+catch (err) {
     // silence is golden
 }
 
@@ -55,7 +60,7 @@ function floss(options, done) {
     const args = JSON.stringify(options);
 
     const isWindows = /^win/.test(process.platform);
-    if(isWindows && !path.extname(options.electron)) {
+    if (isWindows && !path.extname(options.electron)) {
         // In the case where floss is running in windows with the cmdline option --electron electron
         // options.electron will just be "electron" at this point.
         // Due to limitations with how nodejs spawns windows processes we need to add .cmd to the end of the command

@@ -13,9 +13,9 @@ function cli(args, callback) {
         parsedArgs.outputHelp();
         return;
     }
-    floss(parsedArgs, function(err){
-        if(callback) {
-            if(err) {
+    floss(parsedArgs, function (err) {
+        if (callback) {
+            if (err) {
                 callback(1);
             } else {
                 callback(0);
@@ -51,6 +51,6 @@ function parseArgs(args) {
     return commander;
 }
 
-cli(process.argv, function(returnCode){
+cli(process.argv, function (returnCode) {
     process.exit(returnCode);
 });

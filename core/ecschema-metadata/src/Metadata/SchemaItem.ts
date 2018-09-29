@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaItemKey, SchemaItemType, parseSchemaItemType, schemaItemTypeToString } from "../ECObjects";
@@ -47,8 +48,8 @@ export default abstract class SchemaItem {
     itemJson.schemaItemType = schemaItemTypeToString(this.schemaItemType);
     if (this.label !== undefined)
       itemJson.label = this.label;
-    if (this.description  !== undefined)
-      itemJson.description  = this.description;
+    if (this.description !== undefined)
+      itemJson.description = this.description;
     return itemJson;
   }
 
@@ -56,14 +57,14 @@ export default abstract class SchemaItem {
     if (undefined === jsonObj.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} is missing the required schemaItemType property.`);
 
-    if (typeof(jsonObj.schemaItemType) !== "string")
+    if (typeof (jsonObj.schemaItemType) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
     if (parseSchemaItemType(jsonObj.schemaItemType) !== this.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${jsonObj.schemaItemType}".`);
 
     if (undefined !== jsonObj.name) {
-      if (typeof(jsonObj.name) !== "string")
+      if (typeof (jsonObj.name) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
 
       if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
@@ -71,19 +72,19 @@ export default abstract class SchemaItem {
     }
 
     if (undefined !== jsonObj.description) {
-      if (typeof(jsonObj.description) !== "string")
+      if (typeof (jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
       this._description = jsonObj.description;
     }
 
     if (undefined !== jsonObj.label) {
-      if (typeof(jsonObj.label) !== "string")
+      if (typeof (jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
       this._label = jsonObj.label;
     }
 
     if (undefined !== jsonObj.schema) {
-      if (typeof(jsonObj.schema) !== "string")
+      if (typeof (jsonObj.schema) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
 
       if (jsonObj.schema.toLowerCase() !== this.schema.name.toLowerCase())
@@ -91,7 +92,7 @@ export default abstract class SchemaItem {
     }
 
     if (undefined !== jsonObj.schemaVersion) {
-      if (typeof(jsonObj.schemaVersion) !== "string")
+      if (typeof (jsonObj.schemaVersion) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaVersion' attribute. It should be of type 'string'.`);
 
       if (jsonObj.schemaVersion !== this.key.schemaKey.version.toString())

@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
@@ -33,9 +34,9 @@ export default class CustomAttributeClass extends ECClass {
 
   private caFromJson(jsonObj: any): void {
     if (undefined === jsonObj.appliesTo)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} is missing the required 'appliesTo' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} is missing the required 'appliesTo' attribute.`);
 
-    if (typeof(jsonObj.appliesTo) !== "string")
+    if (typeof (jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
     const containerType = parseCustomAttributeContainerType(jsonObj.appliesTo);

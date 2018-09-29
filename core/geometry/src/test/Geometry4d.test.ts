@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { Point4d, Matrix4d, Map4d, Plane4dByOriginAndVectors } from "../numerics/Geometry4d";
 import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 import { Point3d, Vector3d } from "../PointVector";

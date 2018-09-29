@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { Geometry, AxisScaleSelect, Angle } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
 import { Matrix4d } from "../numerics/Geometry4d";

@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { CalloutProps, GeometricElement2dProps, GeometricElement3dProps, ModelProps, ElementProps, ViewAttachmentLabelProps } from "@bentley/imodeljs-common";
 import { GraphicalElement2d, GraphicalElement3d, GroupInformationElement, PhysicalElement, SpatialLocationElement } from "../Element";

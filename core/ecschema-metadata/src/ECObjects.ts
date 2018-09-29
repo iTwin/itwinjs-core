@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
@@ -548,15 +549,15 @@ export class SchemaKey {
   public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
 
   public static parseString(fullName: string) {
-    const keyPieces = fullName.split (".");
+    const keyPieces = fullName.split(".");
     if (keyPieces.length !== 4) {
-      throw new ECObjectsError (ECObjectsStatus.InvalidECName);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
     }
 
     const schemaName = keyPieces[0];
-    const readVer = Number (keyPieces[1]);
-    const writeVer = Number (keyPieces[2]);
-    const minorVer = Number (keyPieces[3]);
+    const readVer = Number(keyPieces[1]);
+    const writeVer = Number(keyPieces[2]);
+    const minorVer = Number(keyPieces[3]);
     return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
   }
 
@@ -565,7 +566,7 @@ export class SchemaKey {
    * @return True if they match; otherwise, false.
    */
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
-    if (undefined === rhs || typeof(rhs) === "string")
+    if (undefined === rhs || typeof (rhs) === "string")
       return rhs === this.name;
     return rhs.name === this.name;
   }
@@ -590,10 +591,10 @@ export class SchemaKey {
         // TODO: if (this.checksum && rhs.checksum)
         // TODO:   return this.checksum === rhs.checksum;
         return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-            this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
+          this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
       case SchemaMatchType.Exact:
         return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-              this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
+          this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
       case SchemaMatchType.LatestReadCompatible:
         if (!this.compareByName(rhs.name))
           return false;
@@ -602,16 +603,16 @@ export class SchemaKey {
           return false;
 
         if (this.writeVersion === rhs.writeVersion)
-            return this.minorVersion >= rhs.minorVersion;
+          return this.minorVersion >= rhs.minorVersion;
 
         return this.writeVersion > rhs.writeVersion;
       case SchemaMatchType.LatestWriteCompatible:
-        return this.compareByName (rhs.name) && this.readVersion === rhs.readVersion &&
-                this.writeVersion === rhs.writeVersion && this.minorVersion >= rhs.minorVersion;
+        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
+          this.writeVersion === rhs.writeVersion && this.minorVersion >= rhs.minorVersion;
       case SchemaMatchType.Latest:
-          return this.compareByName(rhs.name);
+        return this.compareByName(rhs.name);
       default:
-          return false;
+        return false;
     }
   }
 }

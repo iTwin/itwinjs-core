@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 // @ts-ignore
 import { ToleranceRatio, GeometryOptions, NormalMode, SurfacesOnly, PreserveOrder, GenerateEdges, GraphicBuilderCreateParams, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";

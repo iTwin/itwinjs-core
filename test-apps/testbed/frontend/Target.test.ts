@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";

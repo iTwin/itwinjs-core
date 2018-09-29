@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";

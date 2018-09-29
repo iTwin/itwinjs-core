@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Logging */
 
 import { BentleyError, IModelStatus } from "./BentleyError";
@@ -61,8 +62,8 @@ export class SeqLoggerConfig {
     seqStreamParams.level = "trace";
 
     const bunyanLogger = bunyan.createLogger({
-      name : loggerName,
-      streams : [
+      name: loggerName,
+      streams: [
         seq.createStream(seqStreamParams),
       ],
     });

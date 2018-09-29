@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 import { expect, assert } from "chai";
 import { Id64, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType } from "../ECObjects";
@@ -21,14 +23,14 @@ export default class Phenomenon extends SchemaItem {
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.definition  = this.definition;
+    schemaJson.definition = this.definition;
     return schemaJson;
   }
 
   private phenomenonFromJson(jsonObj: any) {
     if (undefined === jsonObj.definition)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required 'definition' attribute.`);
-    else if (typeof(jsonObj.definition) !== "string")
+    else if (typeof (jsonObj.definition) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} has an invalid 'definition' attribute. It should be of type 'string'.`);
     else if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} has an invalid 'definition' attribute.`);

@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 const webpack = require("webpack");
 const chalk = require("chalk");
 const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
@@ -14,7 +19,7 @@ class BentleyWebpackLoggingPlugin {
     this.startMessage = startMessage;
     this.startTime = Date.now();
     this.successCount = 0;
-    this.onSuccess = onSuccess || function() {};
+    this.onSuccess = onSuccess || function () { };
   }
 
   get isInteractive() { return process.stdout.isTTY && this.isWatch; }
@@ -27,7 +32,7 @@ class BentleyWebpackLoggingPlugin {
   printHeading(message, color, elapsed) {
     if (this.grouped)
       console.groupEnd();
-      
+
     const newline = (this.isInteractive) ? "\n" : "";
 
     const myChalk = (color) ? chalk[color] : chalk;
@@ -35,9 +40,9 @@ class BentleyWebpackLoggingPlugin {
       console.log(`${newline + myChalk.inverse(this.name)} ${myChalk.bold(message) + chalk.gray("   (in " + elapsed.toLocaleString() + " ms)") + newline}`);
     else
       console.log(`${newline + myChalk.inverse(this.name)} ${myChalk.bold(message) + newline}`);
-      
+
     console.group();
-    this.grouped = true;    
+    this.grouped = true;
   }
 
   // Reformats warnings and errors with react-dev-utils.
@@ -78,19 +83,19 @@ class BentleyWebpackLoggingPlugin {
       this.isWatch = true;
       this.startTime = Date.now();
     });
-    
+
     compiler.hooks.invalid.tap("BentleyWebpackLoggingPlugin", () => {
       this.isRebuild = true;
       this.startTime = Date.now();
       this.clearIfInteractive();
       this.printHeading("Files changed, rebuilding...");
     });
-  
+
     compiler.hooks.done.tap("BentleyWebpackLoggingPlugin", (stats) => {
       this.clearIfInteractive();
       const elapsed = Date.now() - this.startTime;
 
-      let isSuccessful;    
+      let isSuccessful;
       try {
         isSuccessful = this.handleWarningsAndErrors(elapsed, stats);
       } catch (err) {
@@ -105,7 +110,7 @@ class BentleyWebpackLoggingPlugin {
         if (!this.isWatch)
           throw err;
       }
-      
+
       if (isSuccessful) {
         const build = (this.isRebuild) ? "Rebuild" : "Build";
         this.printHeading(build + " completed successfully!", "green", elapsed);
@@ -135,7 +140,7 @@ function printFrontendInstructions(appName, urls) {
 }
 
 
-function createCompiler(webpack, config, name, description, onSuccess = function(){}) {
+function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
   try {
     config.plugins.push(new BentleyWebpackLoggingPlugin(name, description, onSuccess));
     compiler = webpack(config);

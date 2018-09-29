@@ -1,7 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
-const {Reporter, Instrumenter, Collector, hook} = require('istanbul');
+const { Reporter, Instrumenter, Collector, hook } = require('istanbul');
 
 /**
  * Create the coverage using istanbul
@@ -71,7 +76,7 @@ class Coverage {
                 realpath: true
             });
         }
-        else if (Array.isArray(this.pattern)){
+        else if (Array.isArray(this.pattern)) {
             fn.files = [];
             this.pattern.forEach((pattern) => {
                 const files = glob.sync(pattern, {
@@ -129,13 +134,13 @@ class Coverage {
         }
 
         reporter.write(collector, true, () => {
-            if(this.sourceMaps) {
+            if (this.sourceMaps) {
                 //use remap-istanbul to generate the sourcemapped version of the reports
                 var remapIstanbul = require('remap-istanbul');
                 const coverageJson = path.join(this.root, 'coverage/coverage-final.json');
-                const remapReporters = {'json': path.join(this.root, 'coverage', 'coverage-final.json')};
+                const remapReporters = { 'json': path.join(this.root, 'coverage', 'coverage-final.json') };
                 //add the html reporter if necessary
-                if(this.htmlReporter) {
+                if (this.htmlReporter) {
                     remapReporters['html'] = path.join(this.root, 'coverage');
                 }
                 remapIstanbul(coverageJson, remapReporters).then(() => {

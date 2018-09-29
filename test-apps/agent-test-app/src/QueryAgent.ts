@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, DbResult, assert, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients/lib";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common/lib/common";

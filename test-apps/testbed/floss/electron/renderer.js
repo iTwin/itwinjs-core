@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 'use strict';
 
 const Mocha = require('mocha');
@@ -7,7 +12,7 @@ const chai = require('chai');
 const pathNode = require('path');
 const fs = require('fs');
 const resolve = require('resolve');
-const {ipcRenderer, remote} = require('electron');
+const { ipcRenderer, remote } = require('electron');
 //const Coverage = require('./coverage');
 const querystring = require('querystring');
 
@@ -65,7 +70,7 @@ class Renderer {
         });
 
         // Add the stylesheet
-        const mochaPath = pathNode.dirname(resolve.sync('mocha', {basedir: __dirname}));
+        const mochaPath = pathNode.dirname(resolve.sync('mocha', { basedir: __dirname }));
         const link = document.getElementById(linkId);
         link.href = pathNode.join(mochaPath, 'mocha.css');
     }
@@ -78,7 +83,7 @@ class Renderer {
         if (this.options.grep) {
             mochaInst.grep(this.options.grep);
         }
-        
+
         if (this.options.fgrep) {
             mochaInst.fgrep(this.options.fgrep);
         }
@@ -107,7 +112,7 @@ class Renderer {
         });
         mocha.run(() => {
             if (this.coverage) {
-                this.coverage.report(() => {});
+                this.coverage.report(() => { });
             }
         });
     }
@@ -153,7 +158,7 @@ class Renderer {
                     else {
                         ipcRenderer.send('mocha-done', 'ping');
                     }
-                } catch(e) {
+                } catch (e) {
                     console.log(`[floss]: ${e.stack || e.message || e}`);
                     ipcRenderer.send('mocha-error', 'ping');
                 }
@@ -169,22 +174,22 @@ class Renderer {
 
         if (isQuiet) {
             if (isHeadless) {
-                console.log = function() {
+                console.log = function () {
                     remoteConsole.log.apply(remoteConsole, arguments)
                 }
 
-                console.dir = function() {
+                console.dir = function () {
                     remoteConsole.dir.apply(remoteConsole, arguments)
                 }
             }
-        } else if (isHeadless){
+        } else if (isHeadless) {
             bindConsole();
         }
 
         // if we don't do this, we get socket errors and our tests crash
         Object.defineProperty(process, 'stdout', {
             value: {
-                write: function(str) {
+                write: function (str) {
                     remote.process.stdout.write(str);
                 }
             }
@@ -197,7 +202,7 @@ class Renderer {
             for (const name in console) {
                 if (typeof console[name] === 'function') {
                     globalLoggers[name] = console[name];
-                    console[name] = function(...args) {
+                    console[name] = function (...args) {
                         globalLoggers[name].apply(console, args);
                         ipcRenderer.send(name, args);
                     }

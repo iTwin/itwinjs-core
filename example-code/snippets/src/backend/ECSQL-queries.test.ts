@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64, Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb, ECSqlStatement, Element, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";

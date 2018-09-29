@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, IModelQuery, HubIModel, VersionQuery, Version, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";

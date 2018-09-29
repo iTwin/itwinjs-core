@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Dictionary, SortedArray } from "../bentleyjs-core";
 
@@ -101,7 +102,7 @@ describe("SortedArray", () => {
     list.insert(id);
     expect(list.length).to.equal(2);
 
-    const ids = [ "x", "w", "z", "a", "a", "z", "w", "p", "a", "x", "y", "e", "r", "w", "q" ];
+    const ids = ["x", "w", "z", "a", "a", "z", "w", "p", "a", "x", "y", "e", "r", "w", "q"];
     for (const toInsert of ids)
       list.insert(new Id(toInsert));
 
@@ -110,9 +111,9 @@ describe("SortedArray", () => {
 });
 
 describe("Dictionary", () => {
-  it ("should maintain mapping between keys and values", () => {
+  it("should maintain mapping between keys and values", () => {
     const compareIds = (lhs: Id, rhs: Id) => lhs.compare(rhs);
-    const entries = [ "a", "b", "c", "z", "y", "x", "p", "r", "q" ];
+    const entries = ["a", "b", "c", "z", "y", "x", "p", "r", "q"];
     const dict = new Dictionary<Id, Id>(compareIds);
     for (const entry of entries) {
       const key = new Id(entry);

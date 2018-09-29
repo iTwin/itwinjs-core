@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -9,23 +10,23 @@ exports.command = "build <target>";
 exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>
   yargs.strict(true)
-  .positional("target", {
-    choices: ["electron", "web"],
-    describe: `The target environment.`,
-    type: "string"
-  })
-  .options({
-    "frontend": {
-      alias: "F",
-      describe: "Only build the FRONTEND bundle",
-      conflicts: "backend"
-    },
-    "backend": {
-      alias: "B",
-      describe: "Only build the BACKEND bundle",
-      conflicts: "frontend"
-    },
-  });
+    .positional("target", {
+      choices: ["electron", "web"],
+      describe: `The target environment.`,
+      type: "string"
+    })
+    .options({
+      "frontend": {
+        alias: "F",
+        describe: "Only build the FRONTEND bundle",
+        conflicts: "backend"
+      },
+      "backend": {
+        alias: "B",
+        describe: "Only build the BACKEND bundle",
+        conflicts: "frontend"
+      },
+    });
 
 exports.handler = async (argv) => {
 
@@ -82,7 +83,7 @@ exports.handler = async (argv) => {
 
   // This can take a while, so get it started while we build the backend.
   const prepFrontendPromise = prepFrontendBuild();
-  
+
   // Start the webpack backend build
   if (!skipBackend) {
     const stats = await buildBackend(backendConfig);
@@ -98,11 +99,11 @@ exports.handler = async (argv) => {
   if (!skipFrontend) {
     const stats = await buildFrontend(frontendConfig);
     statDumpPromises.push(saveJsonStats(stats, paths.appFrontendStats));
-    
+
     // These sizes are pretty large. We'll warn for bundles exceeding them.
     const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
     const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
-    
+
     console.groupEnd();
     console.log("\nFile sizes after gzip:\n");
     printFileSizesAfterBuild(
@@ -123,9 +124,9 @@ exports.handler = async (argv) => {
   if (buildTarget === "web") {
     console.log(`The ${chalk.cyan("lib")} folder is ready to be deployed.`);
   } else {
-    console.log(`The built electron app can now be run with ${chalk.cyan("npm run electron")}.`);      
+    console.log(`The built electron app can now be run with ${chalk.cyan("npm run electron")}.`);
   }
-  
+
   const statsPaths = await Promise.all(statDumpPromises);
   if (statsPaths.length > 0) {
     console.log();

@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKey, ECVersion, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus, ISchemaLocater} from "..";
+import { SchemaKey, ECVersion, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus, ISchemaLocater } from "..";
 import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
 import { SchemaContext } from "./../Context";
 import * as path from "path";
@@ -54,7 +55,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
 
     // Load the file
     if (!await this.fileExists(schemaPath))
-        return undefined;
+      return undefined;
 
     const schemaText = await this.readUtf8FileToString(schemaPath);
     if (!schemaText)
@@ -83,7 +84,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
 
     // Load the file
     if (!fs.existsSync(schemaPath))
-        return undefined;
+      return undefined;
 
     const schemaText = fs.readFileSync(schemaPath, "utf-8");
     if (!schemaText)

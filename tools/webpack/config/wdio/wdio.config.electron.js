@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 const { mergeWdioConfigs } = require("../helpers");
 const base = require("./wdio.config.base");
 const paths = require("../paths");
 
-// NEEDSWORK: For now, we need this monkey patch to use electron-chromedriver instead of the regular version of chromedriver... 
+// NEEDSWORK: For now, we need this monkey patch to use electron-chromedriver instead of the regular version of chromedriver...
 // (Apparently the regular chromedriver used to work for electron 1.x, but now it fails to connect to the electron 2.x instance)
 require.cache[require.resolve("chromedriver")] = {
   exports: { path: require.resolve("electron-chromedriver/bin/chromedriver.exe") }
@@ -24,7 +25,7 @@ exports.config = mergeWdioConfigs(base.config, {
     },
   }],
   beforeSuite: () => {
-    // NEEDSWORK: For now, we need this monkey patch to actually allow the visual regression testing service to resize the window... 
+    // NEEDSWORK: For now, we need this monkey patch to actually allow the visual regression testing service to resize the window...
     browser.setViewportSize = (size) => {
       browser.execute((w, h) => {
         require("electron").remote.getCurrentWindow().setContentSize(w, h);

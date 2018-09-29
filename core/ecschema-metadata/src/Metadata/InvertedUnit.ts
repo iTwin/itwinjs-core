@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
@@ -29,7 +30,7 @@ export default class InvertedUnit extends SchemaItem {
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.invertsUnit  = this.invertsUnit!.name;
+    schemaJson.invertsUnit = this.invertsUnit!.name;
     schemaJson.unitSystem = this.unitSystem!.name;
     return schemaJson;
   }
@@ -48,7 +49,7 @@ export default class InvertedUnit extends SchemaItem {
     super.fromJsonSync(jsonObj);
     if (undefined === jsonObj.invertsUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'invertsUnit' attribute.`);
-    if (typeof(jsonObj.invertsUnit) !== "string")
+    if (typeof (jsonObj.invertsUnit) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
     const unitSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.invertsUnit);
     if (!unitSchemaItemKey)
@@ -59,11 +60,11 @@ export default class InvertedUnit extends SchemaItem {
         if (undefined === invertsUnit)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${jsonObj.invertsUnit}.`);
         return invertsUnit;
-    });
+      });
 
     if (undefined === jsonObj.unitSystem)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'unitSystem' attribute.`);
-    if (typeof(jsonObj.unitSystem) !== "string")
+    if (typeof (jsonObj.unitSystem) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.unitSystem);
     if (!unitSystemSchemaItemKey)
@@ -74,7 +75,7 @@ export default class InvertedUnit extends SchemaItem {
         if (undefined === unitSystem)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
         return unitSystem;
-    });
+      });
   }
 
   public async accept(visitor: SchemaItemVisitor) {

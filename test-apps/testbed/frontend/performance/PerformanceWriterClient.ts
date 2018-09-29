@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { request, Response } from "@bentley/imodeljs-clients";
 import { PerformanceDataEntry } from "./PerformanceInterface";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";

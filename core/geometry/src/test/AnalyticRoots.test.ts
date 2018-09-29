@@ -1,7 +1,7 @@
-
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
@@ -218,7 +218,7 @@ describe("AnalyticRoots.SolveCubic", () => {
     it("SolveCubic.Cubic3X", () => {
       // root e = small positive -- e.g. in range 01 for sure,like the one interesting root for a cubic bezier
       // x0, x0+1 = two roots "somewhere else" -- not interesting in bezier case.
-  
+
       for (let e = 1.0; e > 1.0e-10; e *= 0.1) {
         if (printAll) {
           console.log("\n\n e: " + e);
@@ -227,7 +227,7 @@ describe("AnalyticRoots.SolveCubic", () => {
           const u0 = e;
           const u1 = x0;
           const u2 = x0 + 1;
-  
+
           const coffs = new Float64Array(4);
           coffs[3] = 1.0;
           coffs[2] = - NumberArray.PreciseSum([u0, u1, u2]);
@@ -247,15 +247,15 @@ describe("AnalyticRoots.SolveCubic", () => {
           for (let i = 0; i < numRoots; i++) {
             actual.push(roots[i]);
           }
-  
+
           ck.testCoordinate(3, numRoots, "cubic root count");
-  
+
           if (numRoots === 3) {
             const uMax = NumberArray.MaxAbsArray(target);
             const eMax = matchRoots(target, actual) / uMax;
             const eSafe = ErrorAtClosestRoot(target, actual, xSafe[0]) / uMax;
             const printTrigger = 1.0e-12;
-  
+
             if (printAll || (eSafe >= (printTrigger * uMax))) {
               ck.testTrue(eMax < (1.0e-14 * NumberArray.MaxAbsArray(target)), "root error");
               console.log("Cubic root variances.  These may be expected behavior under extreme origin conditions");

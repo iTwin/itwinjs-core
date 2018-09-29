@@ -1,6 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationPropertyDataProvider, withUnifiedSelection  } from "@bentley/presentation-components/lib/propertygrid";
+import { PresentationPropertyDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/propertygrid";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid } from "@bentley/ui-components";
 import "./PropertiesWidget.css";

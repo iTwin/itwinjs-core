@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 import { Schema } from "..";
 
 /** Utility class for working with Schema graphs. */
@@ -27,7 +32,7 @@ export class SchemaGraphUtil {
    */
   private static dependsOn(schema: Schema, possibleDependency: Schema): boolean {
     if (this.directlyReferences(schema, possibleDependency))
-        return true;
+      return true;
 
     // Possible SupplementalSchema support?
     // ...

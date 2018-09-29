@@ -1,7 +1,7 @@
-
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { } from "../PointVector";
 import { Matrix3d } from "../Transform";
 import { Geometry } from "../Geometry";
@@ -103,16 +103,16 @@ function hypotenuseCalculationLoop(numTest: number, funcIdentifier: number) {
       console.timeEnd(name);
       break;
 
-/*     case 6:
-      name = "Geometry_HypotenuseVariableXYZW";
-      console.time(name);
-      for (let i = 0; i < numTest; i++) {
-        Geometry.tempHypot(10, -5, 2, 7);
-      }
-      console.timeEnd(name);
-      break;
-*/
-      case 7:
+    /*     case 6:
+          name = "Geometry_HypotenuseVariableXYZW";
+          console.time(name);
+          for (let i = 0; i < numTest; i++) {
+            Geometry.tempHypot(10, -5, 2, 7);
+          }
+          console.timeEnd(name);
+          break;
+    */
+    case 7:
       name = "Geometry_HypotenuseSquaredXY";
       console.time(name);
       for (let i = 0; i < numTest; i++) {
@@ -257,9 +257,9 @@ function arrayCheck(numTest: number, type: number) {
         arr[1];
         arr[2];
         // Push items
-        arr.push(toPush.clone ());
-        arr.push(toPush.clone ());
-        arr.push(toPush.clone ());
+        arr.push(toPush.clone());
+        arr.push(toPush.clone());
+        arr.push(toPush.clone());
         // Pop items
         arr.pop();
         arr.pop();
@@ -487,7 +487,7 @@ describe("Geometry.HypotenuseSquared", () => {
 
 describe("Array_Vs_Growable", () => {
   it("Use of indexing, pushing, popping, length, and reassignment of array types", () => {
-    console.log ({numTest: numTestGlobal});
+    console.log({ numTest: numTestGlobal });
     TimingTests.RunTestG(numTestGlobal * 2);
   });
 });

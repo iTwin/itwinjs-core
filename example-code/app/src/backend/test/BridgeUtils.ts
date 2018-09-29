@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { IModelDb, SpatialCategory, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, ViewDefinition, Subject, DefinitionPartition, DefinitionModel } from "@bentley/imodeljs-backend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { CodeSpec, CodeScopeSpec, ColorDef, CategoryProps, SubCategoryAppearance, ModelSelectorProps, CategorySelectorProps, DefinitionElementProps, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, InformationPartitionElementProps, IModel, Code, BisCodeSpec } from "@bentley/imodeljs-common";

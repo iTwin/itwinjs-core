@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
