@@ -1,6 +1,6 @@
 # iModelHub - The Backbone for iModel.js Applications
 
-[iModelHub](http:/www.iModelHub.com) is the distribution platform for Digital Twins. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
+[iModelHub](http:/www.iModelHub.com) is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
 
 ![iModelHub](./iModelHub.png)
 
@@ -8,7 +8,7 @@ Like [Git](https://git-scm.com/) repositories for source code, in the iModel eco
 
 iModelHub accepts ChangeSets from iModel.js [backends]($docs/learning/backend/index) through a process called [*push*]($docs/learning/glossary.md#push), and sends them to other validated users when requested through a process called [*pull*]($docs/learning/glossary.md#pull). iModel.js applications determine when and how to push and pull changes.
 
-See [working with iModelHub](./WorkingWith.md) for entire list of learning topics.
+See [working with iModelHub](./WorkingWith.md) for a list of related learning topics.
 
 ## The Connection between iModel.js and iModelHub
 
@@ -17,7 +17,7 @@ See [working with iModelHub](./WorkingWith.md) for entire list of learning topic
 3. iModel.js backends have an identity, registered with iModelHub.
 4. iModel owners decide, which users and which applications have [access](./Permissions.md) to their iModels.
 
-When an iModel.js backend opens an iModel, it is first required to verify with iModelHub that the iModel's owner has granted the right for the current user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
+When an iModel.js backend opens an iModel, it first verifies with iModelHub that the iModel's owner has granted the right for the specified user and application to access the briefcase. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
 
 > This means that applications written using iModel.js require a valid project on iModelHub.
 

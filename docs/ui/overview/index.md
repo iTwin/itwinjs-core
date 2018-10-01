@@ -1,6 +1,3 @@
-<p style="text-align: center;">
-![](./imodeljs.ico)
-</p>
 <h1 style="text-align: center;">
   iModel.js UI - React components and TypeScript library for building iModel.js application user interfaces
 </h1>
