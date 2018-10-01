@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // import { Sample } from "../serialization/GeometrySamples";
-import { Bezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../numerics/BezierPolynomials";
+import { UnivariateBezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../numerics/BezierPolynomials";
 import { Geometry } from "../Geometry";
 import { PascalCoefficients } from "../numerics/PascalCoefficients";
 import { LineString3d } from "../curve/LineString3d";
@@ -16,7 +16,7 @@ import { GeometryCoreTestIO } from "./IModelJson.test";
 describe("Bezier", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
-    const b0 = new Bezier(4);
+    const b0 = new UnivariateBezier(4);
     b0.coffs[0] = 1;
     b0.coffs[1] = 21;
     b0.coffs[2] = 41;
@@ -97,7 +97,7 @@ describe("BezierRoots", () => {
     for (let i1 = 0; i1 < factors.length; i1++) {
       let bezier = factors[0].clone();
       for (let i = 1; i <= i1; i++)
-        bezier = Bezier.createProduct(bezier, factors[i]);
+        bezier = UnivariateBezier.createProduct(bezier, factors[i]);
       const dx = 0.1;
       for (let x = 0; x <= 1; x += dx) {
         const a = bezier.evaluate(x);
@@ -121,13 +121,13 @@ describe("BezierRoots", () => {
       for (const scale of [1, 0.5, 0.1]) {
         const rootsA = [];
         for (const r of baseRoots) rootsA.push(r * scale);
-        let bezier = new Bezier(2);
+        let bezier = new UnivariateBezier(2);
         bezier.coffs[0] = -rootsA[0];
         bezier.coffs[1] = 1 - rootsA[0];
         for (let i = 1; i < numRoots; i++) {
           const a = rootsA[i];
           const bezierA = bezier.clone();
-          bezier = Bezier.createProduct(bezier, new Order2Bezier(-a, 1.0 - a));
+          bezier = UnivariateBezier.createProduct(bezier, new Order2Bezier(-a, 1.0 - a));
           const bezierB = bezier.clone();
           const remainder = bezierB.deflateRoot(rootsA[i]);
           ck.testCoordinate(remainder, 0, "deflation remainder");
@@ -138,14 +138,14 @@ describe("BezierRoots", () => {
         for (const r of rootsA) {
           const bezier0 = bezier.clone();
           const bezier10 = bezier.clone();
-          const remainder = (bezier as Bezier).deflateRoot(r);
+          const remainder = (bezier as UnivariateBezier).deflateRoot(r);
           ck.testCoordinate(0, remainder, "remainder after deflation");
-          const bezier1 = Bezier.createProduct(bezier, new Order2Bezier(-r, 1 - r));
+          const bezier1 = UnivariateBezier.createProduct(bezier, new Order2Bezier(-r, 1 - r));
           const delta = BezierCoffs.maxAbsDiff(bezier0, bezier1);
           if (ck.testTrue(delta !== undefined))
             ck.testCoordinate(0, delta!, "deflate and remultiply round trip.");
           // another time around for debug convenience.  . .
-          const remainder1 = (bezier10 as Bezier).deflateRoot(r);
+          const remainder1 = (bezier10 as UnivariateBezier).deflateRoot(r);
           ck.testExactNumber(remainder, remainder1);
         }
       }
@@ -165,9 +165,9 @@ describe("BezierRoots", () => {
       [1, 1, -4, -3, 2],
       [1, -4, 0.01, -2],
       [1, 0.1, 0.1, -0.1, -5, 2]]) {
-      const bezier = Bezier.createCoffs(coffs);
+      const bezier = UnivariateBezier.createCoffs(coffs);
       const bezier1 = bezier.clone();
-      const deflationRoots = Bezier.deflateRoots01(bezier);
+      const deflationRoots = UnivariateBezier.deflateRoots01(bezier);
       if (ck.testPointer(deflationRoots, "deflation produces roots", coffs))
         for (const r of deflationRoots!) {
           const fOfR = bezier1.evaluate(r);
@@ -203,13 +203,13 @@ describe("BezierRoots", () => {
         (x: number) => (Math.tan(x))]) {
         const rootsA = [];
         for (const r of baseRoots) rootsA.push(distributionFunction(r));
-        let bezier = Bezier.createCoffs([-rootsA[0], 1 - rootsA[0]]);
+        let bezier = UnivariateBezier.createCoffs([-rootsA[0], 1 - rootsA[0]]);
         for (let i = 1; i < numRoots; i++) {
           const a = rootsA[i];
-          bezier = Bezier.createProduct(bezier, Bezier.createCoffs([-a, 1.0 - a]));
+          bezier = UnivariateBezier.createProduct(bezier, UnivariateBezier.createCoffs([-a, 1.0 - a]));
         }
         const bezier0 = bezier.clone();
-        const roots = Bezier.deflateRoots01(bezier);
+        const roots = UnivariateBezier.deflateRoots01(bezier);
         if (ck.testPointer(roots, "root solver ok") && roots) {
           for (const u of rootsA)
             ck.testCoordinate(0, bezier0.evaluate(u));
@@ -234,8 +234,8 @@ describe("BezierRoots", () => {
       for (const numOther of [1, 2, 3, 5]) {
         for (let i = 0; i < numOther; i++)
           coffs.push(2 * i + i * i);
-        const bezierA = Bezier.createCoffs(coffs);
-        const bezierB = bezierA.clone() as Bezier;
+        const bezierA = UnivariateBezier.createCoffs(coffs);
+        const bezierB = bezierA.clone() as UnivariateBezier;
         for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
           bezierB.deflateLeft();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
@@ -261,8 +261,8 @@ describe("BezierRoots", () => {
         for (let i = 0; i < numZero; i++)
           coffs.push(0);
 
-        const bezierA = Bezier.createCoffs(coffs);
-        const bezierB = bezierA.clone() as Bezier;
+        const bezierA = UnivariateBezier.createCoffs(coffs);
+        const bezierB = bezierA.clone() as UnivariateBezier;
         for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
           bezierB.deflateRight();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {

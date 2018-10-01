@@ -311,7 +311,7 @@ export class XYZ implements XYAndZ {
   /** Freeze this XYZ */
   public freeze() { Object.freeze(this); }
 }
-
+/** 3D vector with x,y,z properties */
 export class Point3d extends XYZ {
   /** Constructor for Point3d */
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
@@ -322,7 +322,7 @@ export class Point3d extends XYZ {
   /** Create a new Point3d with given coordinates
    * @param x x part
    * @param y y part
-   * @param z z part
+   * @param z z partpubli
    */
   public static create(x: number = 0, y: number = 0, z: number = 0, result?: Point3d): Point3d {
     if (result) {

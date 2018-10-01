@@ -133,10 +133,45 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
-    result.point = point.clone();
+    result.point.setFromPoint3d(point);
     result.vector.set(0, 0, 0);
     result.a = 0.0;
     return result;
+  }
+
+  /** create with CurvePrimitive pointer, fraction, and point coordinates.
+   */
+  public static createCurveFractionPointDistance(
+    curve: CurvePrimitive,
+    fraction: number,
+    point: Point3d,
+    a: number,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.curve = curve;
+    result.fraction = fraction;
+    result.point.setFromPoint3d(point);
+    result.vector.set(0, 0, 0);
+    result.a = a;
+    return result;
+  }
+
+  /** update or create if closer than current contents.
+   * @param curve candidate curve
+   * @param fraction candidate fraction
+   * @param point candidate point
+   * @param a candidate distance
+   * @returns true if the given distance is smaller (and hence this detail was updated.)
+   */
+  public updateIfCloserCurveFractionPointDistance(
+    curve: CurvePrimitive,
+    fraction: number,
+    point: Point3d,
+    a: number): boolean {
+    if (this.a < a)
+      return false;
+    CurveLocationDetail.createCurveFractionPointDistance(curve, fraction, point, a, this);
+    return true;
   }
 
 }

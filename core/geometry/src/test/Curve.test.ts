@@ -267,13 +267,22 @@ class ExerciseCurve {
       ExerciseCurve.exerciseClosestPoint(ck, bcurveH1, 0.1);
     }
 
-    const bcurveH = BSplineCurve3dH.createUniformKnots(
-      [Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 0.8), Point4d.create(10, 4, 0, 1)],
-      3);
-    if (ck.testPointer(bcurveH) && bcurveH) {
-      ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
-      ExerciseCurve.exerciseStroke(ck, bcurveH);
-      ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1);
+    const poles4d = [
+      Point4d.create(0, 0, 0, 1),
+      Point4d.create(5, 0, 0, 0.8),
+      Point4d.create(10, 4, 0, 1),
+      Point4d.create(15, 4, 0, 1),
+      Point4d.create(20, 0, 0, 1)];
+
+    for (let order = 3; order <= poles4d.length; order++) {
+      const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
+      if (ck.testPointer(bcurveH) && bcurveH) {
+        ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
+        ExerciseCurve.exerciseStroke(ck, bcurveH);
+        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1);
+        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48);
+        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82);
+      }
     }
 
     const bezierCurve0 = BezierCurve3d.create([

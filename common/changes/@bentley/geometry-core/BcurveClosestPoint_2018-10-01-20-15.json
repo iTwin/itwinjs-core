@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implement projection from space point to bezier and bspline curves (replaces strokeAndRefine pattern)",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@Bentley.com"
+}

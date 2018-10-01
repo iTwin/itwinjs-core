@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive, CurveLocationDetail } from "../curve/CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
@@ -112,6 +112,34 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     */
   public abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
 
+  /** Search for the curve point that is closest to the spacePoint.
+   *
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always succeed
+   * @param spacePoint point in space
+   * @param extend true to extend the curve (if possible)
+   * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
+   */
+  public closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+    const point = this.fractionToPoint(0);
+    const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
+    this.fractionToPoint(1.0, point);
+    result.updateIfCloserCurveFractionPointDistance(this, 1.0, spacePoint, spacePoint.distance(point));
+
+    let span: BezierCurve3dH | undefined;
+    const numSpans = this.numSpan;
+    for (let i = 0; i < numSpans; i++) {
+      span = this.getSaturatedBezierSpan3dOr3dH(i, true, span) as BezierCurve3dH;
+      if (span) {
+        if (span.updateClosestPointByTruePerpendicular(spacePoint, result)) {
+          // the detail records the span bezier -- promote it to the parent curve . ..
+          result.curve = this;
+          result.fraction = span.fractionToParentFraction(result.fraction);
+        }
+      }
+    }
+    return result;
+  }
 }
 
 export class BSplineCurve3d extends BSplineCurve3dBase {

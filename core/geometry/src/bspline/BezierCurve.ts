@@ -12,7 +12,7 @@ import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive, CurveLocationDetail } from "../curve/CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, Angle } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
@@ -20,7 +20,7 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../PointHelpers";
-import { BezierCoffs, Bezier } from "../numerics/BezierPolynomials";
+import { BezierCoffs, UnivariateBezier, BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
 import { BSplineCurve3d } from "./BSplineCurve";
 /**
@@ -39,7 +39,7 @@ export class Bezier1dNd {
     this._blockSize = blockSize;
     this._order = polygon.length / blockSize;   // This should be an integer!!!
     this._packedData = polygon;
-    this._basis = new Bezier(this._order);
+    this._basis = new UnivariateBezier(this._order);
   }
   /** return a clone of the data array */
   public clonePolygon(result?: Float64Array): Float64Array {
@@ -415,6 +415,23 @@ export class BezierCurve3dH extends BezierCurveBase {
     return undefined;
   }
   /**
+   * @returns true if all weights are within tolerance of 1.0
+   */
+  public isUnitWeight(tolerance?: number): boolean {
+    if (tolerance === undefined) tolerance = Geometry.smallAngleRadians;
+    const aLow = 1.0 - tolerance;
+    const aHigh = 1.0 + tolerance;
+    const data = this._polygon.packedData;
+    const n = data.length;
+    let a;
+    for (let i = 3; i < n; i += 4) {
+      a = data[i];
+      if (a < aLow || a > aHigh)
+        return false;
+    }
+    return true;
+  }
+  /**
    * Capture a polygon as the data for a new `BezierCurve3dH`
    * @param polygon complete packed data and order.
    */
@@ -475,7 +492,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     this._polygon.loadSpanPolesWithWeight(data, 3, spanIndex, weight);
   }
   /** Load order * 4 doubles from data[3 * spanIndex] as poles (with added weight) */
-  public loadSpan4dPolesWithWeight(data: Float64Array, spanIndex: number) {
+  public loadSpan4dPoles(data: Float64Array, spanIndex: number) {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
 
@@ -576,7 +593,7 @@ export class BezierCurve3dH extends BezierCurveBase {
   }
 
   public dispatchToGeometryHandler(_handler: GeometryHandler): any {
-    // NEEDS WORK
+    // NEEDS WORK  -- GEOMETRY HANDLER DOES NOT DEMAND THIS TYPE !!!
   }
   /**
    * Form dot products of each pole with given coefficients. Return as entries in products array.
@@ -592,6 +609,103 @@ export class BezierCurve3dH extends BezierCurveBase {
     for (let i = 0, k = 0; i < n; i++ , k += 4)
       products[i] = ax * data[k] + ay * data[k + 1] + az * data[k + 2] + aw * data[k + 3];
   }
+  private _workBezier?: UnivariateBezier;  // available for bezier logic within a method
+  private _workCoffsA?: Float64Array;
+  private _workCoffsB?: Float64Array;
+  /**
+   * set up the _workBezier members with specific order.
+   * * Try to reuse existing members if their sizes match.
+   * * Ignore members corresponding to args that are 0 or negative.
+   * @param primaryBezierOrder order of expected bezier
+   * @param orderA length of _workCoffsA (simple array)
+   * @param orderB length of _workdCoffsB (simple array)
+   */
+  private allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
+    if (primaryBezierOrder > 0) {
+      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
+        this._workBezier.zero();
+      } else
+        this._workBezier = new UnivariateBezier(primaryBezierOrder);
+    }
+    if (orderA > 0) {
+      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
+        this._workCoffsA.fill(0);
+      else
+        this._workCoffsA = new Float64Array(orderA);
+    }
+    if (orderB > 0) {
+      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
+        this._workCoffsB.fill(0);
+      else
+        this._workCoffsB = new Float64Array(orderB);
+    }
+  }
+  /** Find the closest point within the bezier span, using true perpendicular test (but no endpoint test)
+   * * If closer than previously recorded, update the CurveLocationDetail
+   * * This assumes this bezier is saturated.
+   * @param spacePoint point being projected
+   * @param detail pre-allocated detail to record (evolving) closest point.
+   * @returns true if an updated occured, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
+   */
+  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean {
+    let numUpdates = 0;
+    let roots: number[] | undefined;
+    if (this.isUnitWeight()) {
+      // unweighted !!!
+      const productOrder = 2 * this.order - 2;
+      this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
+      const bezier = this._workBezier!;
+
+      // closestPoint condition is:
+      //   (spacePoint - curvePoint) DOT curveTangent = 0;
+      // Each product (x,y,z) of the DOT is the product of two bezier polynonmials
+      BezierPolynomialAlgebra.accumulateShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 0, -spacePoint.x, 0);
+      BezierPolynomialAlgebra.accumulateShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1, -spacePoint.y, 1);
+      BezierPolynomialAlgebra.accumulateShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 2, -spacePoint.z, 2);
+      roots = bezier.roots(0.0, true);
+    } else {
+      // This bezier has weights.
+      // The pure cartesian closest point condition is
+      //   (spacePoint - X/w) DOT (X' w - w' X)/ w^2 = 0
+      // ignoring denominator and using bezier coefficient differences for the derivative, making the numerator 0 is
+      //   (w * spacePoint - X) DOT ( DELTA X * w - DELTA w * X) = 0
+      const orderA = this.order;
+      const orderB = 2 * this.order - 2;  // products of component and component difference.
+      const productOrder = orderA + orderB - 1;
+
+      this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB);
+      const bezier = this._workBezier!;
+      const workA = this._workCoffsA!;
+      const workB = this._workCoffsB!;
+      const packedData = this._polygon.packedData;
+
+      for (let i = 0; i < 3; i++) {
+        // x representing loop pass:   (w * spacePoint.x - curve.x(s), 1.0) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
+        // (and p.w is always 1)
+        BezierPolynomialAlgebra.scaledComponentSum(workA,
+          packedData, 4, orderA,
+          3, spacePoint.at(i),    // w * spacePoint.x
+          i, -1.0);              // curve.x(s) * 1.0
+        BezierPolynomialAlgebra.accumulateShiftedComponentTimesComponentDelta(workB,
+          packedData, 4, orderA,
+          3, 1.0, i);
+        BezierPolynomialAlgebra.accumulateShiftedComponentTimesComponentDelta(workB,
+          packedData, 4, orderA,
+          i, 1.0, 3);
+        BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
+      }
+      roots = bezier.roots(0.0, true);
+    }
+    if (roots) {
+      for (const fraction of roots) {
+        const xyz = this.fractionToPoint(fraction);
+        const a = xyz.distance(spacePoint);
+        numUpdates += detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a) ? 1 : 0;
+      }
+    }
+    return numUpdates > 0;
+  }
+
 }
 
 // ================================================================================================================

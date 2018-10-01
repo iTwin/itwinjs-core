@@ -221,7 +221,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     if (result === undefined || !(result instanceof BezierCurve3d) || result.order !== order)
       result = BezierCurve3dH.createOrder(order);
     const bezier = result as BezierCurve3dH;
-    bezier.loadSpan3dPolesWithWeight(this._bcurve.packedData, spanIndex, 1.0);
+    bezier.loadSpan4dPoles(this._bcurve.packedData, spanIndex);
     bezier.saturateInPlace(this._bcurve.knots, spanIndex);
     return result;
   }
