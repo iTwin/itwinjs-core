@@ -2,6 +2,18 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.144.0",
+      "tag": "@bentley/geometry-core_v0.144.0",
+      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement projection from space point to bezier and bspline curves (replaces strokeAndRefine pattern)"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.143.0",
       "tag": "@bentley/geometry-core_v0.143.0",
       "date": "Mon, 01 Oct 2018 19:10:45 GMT",

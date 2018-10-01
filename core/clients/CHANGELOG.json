@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.144.0",
+      "tag": "@bentley/imodeljs-clients_v0.144.0",
+      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix imports that directly reference the node_modules folder"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.143.0",
       "tag": "@bentley/imodeljs-clients_v0.143.0",
       "date": "Mon, 01 Oct 2018 19:10:45 GMT",

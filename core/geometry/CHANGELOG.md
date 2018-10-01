@@ -1,6 +1,13 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 01 Oct 2018 19:10:45 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Oct 2018 22:10:58 GMT and should not be manually modified.
+
+## 0.144.0
+Mon, 01 Oct 2018 22:10:58 GMT
+
+### Updates
+
+- Implement projection from space point to bezier and bspline curves (replaces strokeAndRefine pattern)
 
 ## 0.143.0
 Mon, 01 Oct 2018 19:10:45 GMT

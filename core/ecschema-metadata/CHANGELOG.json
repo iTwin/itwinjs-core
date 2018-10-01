@@ -2,6 +2,12 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.144.0",
+      "tag": "@bentley/ecschema-metadata_v0.144.0",
+      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.143.0",
       "tag": "@bentley/ecschema-metadata_v0.143.0",
       "date": "Mon, 01 Oct 2018 19:10:45 GMT",
