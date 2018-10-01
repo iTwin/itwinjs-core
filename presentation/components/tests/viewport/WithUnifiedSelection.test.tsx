@@ -183,6 +183,7 @@ describe("ViewportSelectionHandler", () => {
     Presentation.presentation = presentationManagerMock.object;
     Presentation.selection = selectionManagerMock.object;
   });
+
   after(() => {
     NoRenderApp.shutdown();
   });
@@ -194,13 +195,7 @@ describe("ViewportSelectionHandler", () => {
     selectionManagerMock.reset();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
 
-    const imodelElementsMock = moq.Mock.ofType<IModelConnection.Elements>();
-    imodelElementsMock.setup((x) => x.getProps(moq.It.isAny())).returns(async (ids: Id64Arg) => createElementProps(ids));
-
-    const selectionSet = new SelectionSet(imodelMock.object);
-    imodelMock.reset();
-    imodelMock.setup((imodel) => imodel.selectionSet).returns(() => selectionSet);
-    imodelMock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);
+    mockIModel(imodelMock);
 
     handler = new ViewportSelectionHandler(imodelMock.object, rulesetId);
   });
@@ -208,6 +203,16 @@ describe("ViewportSelectionHandler", () => {
   afterEach(() => {
     handler.dispose();
   });
+
+  const mockIModel = (mock: moq.IMock<IModelConnection>) => {
+    const imodelElementsMock = moq.Mock.ofType<IModelConnection.Elements>();
+    imodelElementsMock.setup((x) => x.getProps(moq.It.isAny())).returns(async (ids: Id64Arg) => createElementProps(ids));
+
+    const selectionSet = new SelectionSet(mock.object);
+    mock.reset();
+    mock.setup((imodel) => imodel.selectionSet).returns(() => selectionSet);
+    mock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);
+  };
 
   const createElementProps = (ids: Id64Arg): ElementProps[] => {
     return [...Id64.toIdSet(ids)].map((id: string): ElementProps => ({
@@ -226,6 +231,7 @@ describe("ViewportSelectionHandler", () => {
 
     it("sets a different imodel", () => {
       const newConnection = moq.Mock.ofType<IModelConnection>();
+      mockIModel(newConnection);
       handler.imodel = newConnection.object;
       expect(handler.imodel).to.eq(newConnection.object);
     });
@@ -489,6 +495,14 @@ describe("ViewportSelectionHandler", () => {
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, new Set(ids));
       await selectionManagerCalled.promise;
       selectionSetSpies.forEach((s) => expect(s).to.not.be.called());
+    });
+
+    it("reacts to viewport selection changes after changing imodel", async () => {
+      mockIModel(imodelMock);
+      handler.imodel = imodelMock.object;
+      imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Clear);
+      await selectionManagerCalled.promise;
+      selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAnyString(), imodelMock.object, 0, rulesetId), moq.Times.once());
     });
 
   });

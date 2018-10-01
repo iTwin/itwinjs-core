@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix viewport unified selection stopping working after imodel change.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

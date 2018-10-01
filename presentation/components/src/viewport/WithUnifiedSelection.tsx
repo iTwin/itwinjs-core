@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Id64Set, Id64, IDisposable, DisposableList } from "@bentley/bentleyjs-core";
+import { Id64Set, Id64, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
@@ -91,8 +91,8 @@ export class ViewportSelectionHandler implements IDisposable {
 
   private _imodel: IModelConnection;
   private _rulesetId: string;
-  private _disposables = new DisposableList();
   private _selectionHandler: SelectionHandler;
+  private _imodelSelectionListenerDisposeFunc: () => void;
   private _selectedElementsProvider: SelectedElementsProvider;
   private _isApplyingUnifiedSelection = false;
 
@@ -103,17 +103,17 @@ export class ViewportSelectionHandler implements IDisposable {
     // handles changing and listening to unified selection
     this._selectionHandler = new SelectionHandler(Presentation.selection,
       `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
-    this._disposables.add(this._selectionHandler);
 
     // `imodel.selectionSet` handles changing and listening to viewport selection
-    this._disposables.add(imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged));
+    this._imodelSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
 
     // handles querying for elements which should be selected in the viewport
     this._selectedElementsProvider = new SelectedElementsProvider(imodel, rulesetId);
   }
 
   public dispose() {
-    this._disposables.dispose();
+    this._selectionHandler.dispose();
+    this._imodelSelectionListenerDisposeFunc();
   }
 
   public get selectionHandler() { return this._selectionHandler; }
@@ -123,6 +123,8 @@ export class ViewportSelectionHandler implements IDisposable {
     this._imodel = value;
     this._selectionHandler.imodel = value;
     this._selectedElementsProvider.connection = value;
+    this._imodelSelectionListenerDisposeFunc();
+    this._imodelSelectionListenerDisposeFunc = this._imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
   }
 
   public get rulesetId() { return this._rulesetId; }
