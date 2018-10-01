@@ -2,6 +2,21 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.143.0",
+      "tag": "@bentley/ui-components_v0.143.0",
+      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added defaultDragPreview, added column reordering"
+          },
+          {
+            "comment": "Added tests and docs to Breadcrumb"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.142.0",
       "tag": "@bentley/ui-components_v0.142.0",
       "date": "Mon, 01 Oct 2018 10:28:46 GMT",

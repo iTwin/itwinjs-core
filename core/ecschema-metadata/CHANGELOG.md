@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Mon, 01 Oct 2018 10:28:46 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Oct 2018 19:10:45 GMT and should not be manually modified.
+
+## 0.143.0
+Mon, 01 Oct 2018 19:10:45 GMT
+
+### Updates
+
+- Fixed overly strict ECFormat JSON validation errors.
 
 ## 0.142.0
 Mon, 01 Oct 2018 10:28:46 GMT

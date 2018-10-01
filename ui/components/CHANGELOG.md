@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 01 Oct 2018 10:28:46 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Oct 2018 19:10:45 GMT and should not be manually modified.
+
+## 0.143.0
+Mon, 01 Oct 2018 19:10:45 GMT
+
+### Updates
+
+- added defaultDragPreview, added column reordering
+- Added tests and docs to Breadcrumb
 
 ## 0.142.0
 Mon, 01 Oct 2018 10:28:46 GMT

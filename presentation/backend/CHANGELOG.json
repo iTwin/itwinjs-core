@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "0.143.0",
+      "tag": "@bentley/presentation-backend_v0.143.0",
+      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix localization"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.142.0",
       "tag": "@bentley/presentation-backend_v0.142.0",
       "date": "Mon, 01 Oct 2018 10:28:46 GMT",

@@ -2,6 +2,24 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.143.0",
+      "tag": "@bentley/ui-core_v0.143.0",
+      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added tests to ui-core components"
+          },
+          {
+            "comment": "Added tests, refactored ContextMenu."
+          },
+          {
+            "comment": "Fixed sizing issues in Dialog, added GlobalContextMenu"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.142.0",
       "tag": "@bentley/ui-core_v0.142.0",
       "date": "Mon, 01 Oct 2018 10:28:46 GMT",
