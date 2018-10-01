@@ -9,7 +9,7 @@ const webpack = require("webpack");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const InterpolateHtmlPlugin = require("../scripts/utils/InterpolateHtmlPlugin"); // FIXME
+const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
 const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const getClientEnvironment = require("./env");
@@ -238,7 +238,7 @@ module.exports = (publicPath) => {
       // In development, this will be an empty string.
       // In production, it will be an empty string unless you specify "homepage"
       // in `package.json`, in which case it will be the pathname of that URL.
-      new InterpolateHtmlPlugin(env.raw),
+      new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       // For a PRODUCTION build, it is absolutely essential that NODE_ENV was set to production here.

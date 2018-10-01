@@ -66,7 +66,7 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
-    "html-webpack-plugin": "^3.2.0",
+    "html-webpack-plugin": "4.0.0-alpha.2",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "raw-loader": "^0.5.1",
