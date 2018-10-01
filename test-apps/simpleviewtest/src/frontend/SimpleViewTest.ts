@@ -685,9 +685,11 @@ function updateRenderModeOptionsMap() {
 
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
-  // find the canvas.
-  const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
-  theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+  if (undefined === theViewport) {
+    const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
+    theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+  }
+
   await _changeView(state.viewState!);
   theViewport.addFeatureOverrides = addFeatureOverrides;
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;

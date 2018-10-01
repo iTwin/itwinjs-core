@@ -23,7 +23,7 @@ import { ViewRect, Viewport } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture } from "./Texture";
+import { TextureHandle, Texture, TextureMonitor } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
@@ -69,6 +69,7 @@ export const enum DepthType {
 
 const forceNoDrawBuffers = false;
 const forceHalfFloat = false;
+const debugTextureLifetime = false;
 
 /** Describes the rendering capabilities of the host system. */
 export class Capabilities {
@@ -389,6 +390,30 @@ export class IdMap implements IDisposable {
   }
 }
 
+class TextureStats implements TextureMonitor {
+  private _allocated = new Set<TextureHandle>();
+  private _maxSize = 0;
+
+  public onTextureCreated(tex: TextureHandle): void {
+    assert(!this._allocated.has(tex));
+    const size = tex.width * tex.height;
+    this._maxSize = Math.max(size, this._maxSize);
+    this._allocated.add(tex);
+  }
+
+  public onTextureDisposed(tex: TextureHandle): void {
+    assert(this._allocated.has(tex));
+    this._allocated.delete(tex);
+    const thisSize = tex.width * tex.height;
+    if (thisSize < this._maxSize)
+      return;
+
+    this._maxSize = 0;
+    for (const entry of this._allocated)
+      this._maxSize = Math.max(this._maxSize, entry.width * entry.height);
+  }
+}
+
 export class System extends RenderSystem {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
@@ -397,6 +422,7 @@ export class System extends RenderSystem {
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+  private readonly _textureStats?: TextureStats;
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -590,6 +616,11 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+
+    if (debugTextureLifetime) {
+      this._textureStats = new TextureStats();
+      TextureHandle.monitor = this._textureStats;
+    }
   }
 
   private getIdMap(imodel: IModelConnection): IdMap {
