@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
@@ -168,7 +168,7 @@ export class ConcurrencyControl {
       return Promise.reject(err);
   }
 
-  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string, value?: string): HubCode {
+  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: Id64, codeScope: string, value?: string): HubCode {
     const requestCode = new HubCode();
     requestCode.briefcaseId = briefcaseEntry.briefcaseId;
     requestCode.state = CodeState.Reserved;
@@ -179,7 +179,7 @@ export class ConcurrencyControl {
   }
 
   private buildHubCodesFromCode(briefcaseEntry: BriefcaseEntry, code: Code): HubCode {
-    return this.buildHubCodes(briefcaseEntry, code.spec.toString(), code.scope, code.value);
+    return this.buildHubCodes(briefcaseEntry, code.spec, code.scope, code.value);
   }
 
   private buildHubCodesFromRequest(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): HubCode[] | undefined {
@@ -203,14 +203,14 @@ export class ConcurrencyControl {
         ecId: "and-what-is-this",
         lockLevel: LockLevel.Exclusive,
         lockType: LockType.Schemas,
-        objectId: "0x1",
+        objectId: new Id64("0x1"),
         briefcaseId: this._iModel.briefcase.briefcaseId,
-        seedFileId: this._iModel.briefcase.fileId,
+        seedFileId: new Guid(this._iModel.briefcase.fileId),
         releasedWithChangeSet: this._iModel.briefcase.changeSetId,
       },
     ];
     assert(this.inBulkOperation(), "should always be in bulk mode");
-    const res = BriefcaseManager.imodelClient.Locks().update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    const res = BriefcaseManager.imodelClient.Locks().update(actx, accessToken, new Guid(this._iModel.iModelToken.iModelId!), locks);
     assert(this.inBulkOperation(), "should always be in bulk mode");
     return res;
   }
@@ -229,7 +229,7 @@ export class ConcurrencyControl {
       lock.lockType = reqLock.LockableId.Type;
       lock.objectId = reqLock.LockableId.Id;
       lock.releasedWithChangeSet = this._iModel.briefcase.changeSetId;
-      lock.seedFileId = this._iModel.briefcase.fileId!;
+      lock.seedFileId = new Guid(this._iModel.briefcase.fileId!);
       locks.push(lock);
     }
     return locks;
@@ -241,13 +241,13 @@ export class ConcurrencyControl {
     const locks = this.buildLockRequests(briefcaseEntry, req);
     if (locks === undefined)
       return [];
-    return BriefcaseManager.imodelClient.Locks().update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    return BriefcaseManager.imodelClient.Locks().update(actx, accessToken, new Guid(this._iModel.iModelToken.iModelId!), locks);
   }
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
   private async reserveCodes2(actx: ActivityLoggingContext, request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
     actx.enter();
-    return BriefcaseManager.imodelClient.Codes().update(actx, accessToken, briefcaseEntry.iModelId, request);
+    return BriefcaseManager.imodelClient.Codes().update(actx, accessToken, new Guid(briefcaseEntry.iModelId), request);
   }
 
   /** process the Code-specific part of the request. */
@@ -279,7 +279,7 @@ export class ConcurrencyControl {
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
 
-    const query = new CodeQuery().byCodeSpecId(specId.toString()).byCodeScope(scopeId);
+    const query = new CodeQuery().byCodeSpecId(specId).byCodeScope(scopeId);
 
     /* NEEDS WORK
     if (value !== undefined) {
@@ -287,7 +287,7 @@ export class ConcurrencyControl {
     }
     */
 
-    return BriefcaseManager.imodelClient.Codes().get(actx, accessToken, this._iModel.briefcase.iModelId, query);
+    return BriefcaseManager.imodelClient.Codes().get(actx, accessToken, new Guid(this._iModel.briefcase.iModelId), query);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -315,7 +315,7 @@ export class ConcurrencyControl {
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
-      const result = await codesHandler.get(actx, accessToken, this._iModel.briefcase.iModelId, query);
+      const result = await codesHandler.get(actx, accessToken, new Guid(this._iModel.briefcase.iModelId), query);
       for (const code of result) {
         if (code.state !== CodeState.Available)
           return false;

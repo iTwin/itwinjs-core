@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHubClient, AccessToken, ChangeSet, Version, VersionQuery, SmallThumbnail } from "@bentley/imodeljs-clients";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -15,7 +15,7 @@ const alctx: ActivityLoggingContext = new ActivityLoggingContext("b0f0808d-e76f-
 
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const token: AccessToken = new MockAccessToken();
-const imodelId: string = "";
+const imodelId: Guid = new Guid(true);
 
 async () => {
   // __PUBLISH_EXTRACT_START__ VersionHandler.create.example-code
@@ -50,7 +50,7 @@ async () => {
   const versionWithThumbnailId: Version[] = await imodelHubClient.Versions().get(alctx, token, imodelId, thumbnailIdQuery);
   // Download the Thumbnail
   const thumbnail: SmallThumbnail = new SmallThumbnail();
-  thumbnail.wsgId = versionWithThumbnailId[0].smallThumbnailId!;
+  thumbnail.id = versionWithThumbnailId[0].smallThumbnailId!;
   const thumbnailContents: string = await imodelHubClient.Thumbnails().download(alctx, token, imodelId, thumbnail);
   // __PUBLISH_EXTRACT_END__
   if (!thumbnailContents)

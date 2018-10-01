@@ -6,11 +6,11 @@
 
 import * as deepAssign from "deep-assign";
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, Id64Serializer, PropertySerializer } from "./../ECJsonTypeMap";
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
 import { AggregateResponseError, Query } from "./index";
 import { IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -167,7 +167,7 @@ export class LockBase extends WsgInstance {
 
   /** Id of the file, that the Lock belongs to. See [[Briefcase.fileId]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
-  public seedFileId?: string;
+  public seedFileId?: Guid;
 
   /** Id of the [[ChangeSet]] that the Lock was last used with. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReleasedWithChangeSet")
@@ -184,8 +184,30 @@ export class LockBase extends WsgInstance {
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Lock extends LockBase {
   /** Id of the locked object. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId")
-  public objectId?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId", new Id64Serializer())
+  public objectId?: Id64;
+}
+
+class Id64ArraySerializer implements PropertySerializer {
+  public serialize(value: any): any {
+    if (!(value instanceof Array))
+      return undefined;
+    return value.map((v) => {
+      if (v instanceof Id64)
+        return v.toString();
+      return undefined;
+    });
+  }
+
+  public deserialize(value: any): any {
+    if (!(value instanceof Array))
+      return undefined;
+    return value.map((v) => {
+      if (typeof v === "string")
+        return new Id64(v);
+      return undefined;
+    });
+  }
 }
 
 /**
@@ -195,8 +217,8 @@ export class Lock extends LockBase {
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiLock extends LockBase {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectIds")
-  public objectIds?: string[];
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectIds", new Id64ArraySerializer())
+  public objectIds?: Id64[];
 }
 
 /**
@@ -251,7 +273,7 @@ export class LockQuery extends Query {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if objectId is undefined.
    */
-  public byObjectId(objectId: string) {
+  public byObjectId(objectId: Id64) {
     ArgumentCheck.defined("objectId", objectId);
     this._isMultiLockQuery = false;
     this.addFilter(`ObjectId+eq+'${objectId}'`);
@@ -355,7 +377,7 @@ export class LockHandler {
     this._handler = handler;
   }
 
-  private getRelativeUrl(imodelId: string, multilock = true, lockId?: string) {
+  private getRelativeUrl(imodelId: Guid, multilock = true, lockId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
   }
 
@@ -414,7 +436,7 @@ export class LockHandler {
   }
 
   /** Send partial request for lock updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -455,7 +477,7 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -515,7 +537,7 @@ export class LockHandler {
    * @returns Resolves to an array of Locks matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -555,7 +577,7 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, briefcaseId: number): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

@@ -72,8 +72,8 @@ async function queryIModelByName(activityContext: ActivityLoggingContext, access
 async function createIModel(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
   try {
     const existingid = await queryIModelByName(activityContext, accessToken, projectId, name);
-    if (existingid !== undefined)
-      BriefcaseManager.imodelClient.IModels().delete(activityContext, accessToken, projectId, existingid.wsgId);
+    if (existingid !== undefined && !!existingid.id)
+      BriefcaseManager.imodelClient.IModels().delete(activityContext, accessToken, projectId, existingid.id!);
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code

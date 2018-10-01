@@ -31,12 +31,12 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
     const roIModelId = await HubUtility.queryIModelIdByName(accessToken, testProjectId, "ReadOnlyTest");
     const rwIModelId = await HubUtility.queryIModelIdByName(accessToken, testProjectId, "ReadWriteTest");
 
-    const qp1 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    const qp2 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp1 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp2 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isTrue(qp1.isPending);
     assert.strictEqual(qp2, qp1);
 
-    const qp3 = memoizeOpenIModelDb(actx, accessToken, testProjectId, rwIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp3 = memoizeOpenIModelDb(actx, accessToken, testProjectId, rwIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isTrue(qp1.isPending);
     assert.notStrictEqual(qp3, qp1);
 
@@ -46,8 +46,8 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
     assert.exists(qp1.result);
     assert.exists(qp3.result);
 
-    deleteMemoizedOpenIModelDb(actx, accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
-    const qp4 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    deleteMemoizedOpenIModelDb(actx, accessToken, testProjectId, roIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp4 = memoizeOpenIModelDb(actx, accessToken, testProjectId, roIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isTrue(qp4.isPending);
   });
 

@@ -8,9 +8,10 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { InstanceIdQuery } from "./Query";
+import { Query } from "./Query";
 import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -57,7 +58,10 @@ export class UserStatistics extends UserInfo {
 /**
  * Query object for getting User Statistics. You can use this to modify the [[UserStatisticsHandler.get]] results.
  */
-export class UserStatisticsQuery extends InstanceIdQuery {
+export class UserStatisticsQuery extends Query {
+  /** @hidden */
+  protected _byId?: string;
+
   private _statisticsPrefix = "HasStatistics-forward-Statistics";
   private _queriedByIds = false;
   /**
@@ -67,6 +71,26 @@ export class UserStatisticsQuery extends InstanceIdQuery {
   constructor() {
     super();
     this.select(`*`);
+  }
+
+  /**
+   * Query single instance by its id.
+   * @param id Id of the instance to query.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
+   */
+  public byId(id: string) {
+    ArgumentCheck.validGuid("id", id);
+    this._byId = id;
+    return this;
+  }
+
+  /**
+   * Used by iModelHub handlers to get the id that is queried.
+   * @hidden
+   */
+  public getId() {
+    return this._byId;
   }
 
   /**
@@ -146,7 +170,7 @@ export class UserStatisticsHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: string, userId?: string) {
+  private getRelativeUrl(imodelId: Guid, userId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId ? userId : ""}`;
   }
 
@@ -158,7 +182,7 @@ export class UserStatisticsHandler {
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string,
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
@@ -187,8 +211,10 @@ export class UserStatisticsHandler {
 /**
  * Query object for getting [[UserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
  */
-export class UserInfoQuery extends InstanceIdQuery {
+export class UserInfoQuery extends Query {
   private _queriedByIds = false;
+  /** @hidden */
+  protected _byId?: string;
 
   /**
    * Query UserInfo by user ids.
@@ -217,6 +243,26 @@ export class UserInfoQuery extends InstanceIdQuery {
   /** @hidden */
   public get isQueriedByIds() {
     return this._queriedByIds;
+  }
+
+  /**
+   * Query single instance by its id.
+   * @param id Id of the instance to query.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
+   */
+  public byId(id: string) {
+    ArgumentCheck.validGuid("id", id);
+    this._byId = id;
+    return this;
+  }
+
+  /**
+   * Used by iModelHub handlers to get the id that is queried.
+   * @hidden
+   */
+  public getId() {
+    return this._byId;
   }
 }
 
@@ -248,7 +294,7 @@ export class UserInfoHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: string, userId?: string) {
+  private getRelativeUrl(imodelId: Guid, userId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId || ""}`;
   }
 
@@ -259,7 +305,7 @@ export class UserInfoHandler {
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

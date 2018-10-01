@@ -6,7 +6,7 @@
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
-import { Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -221,7 +221,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (foundUserEmail === undefined) {
-            const userInfos: UserInfo[] = await BriefcaseManager.imodelClient.Users().get(actx, ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId));
+            const userInfos: UserInfo[] = await BriefcaseManager.imodelClient.Users().get(actx, ctx.accessToken, new Guid(ctx.iModelId), new UserInfoQuery().byId(userId));
             actx.enter();
             assert(userInfos.length !== 0);
             if (userInfos.length !== 0) {
@@ -267,7 +267,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, ctx.accessToken, ctx.iModelId, query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, ctx.accessToken, new Guid(ctx.iModelId), query);
       actx.enter();
       if (changeSets.length === 0)
         throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);

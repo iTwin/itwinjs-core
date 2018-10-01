@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, ArgumentCheck } from "./Errors";
 
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
-import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
+import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -55,8 +56,8 @@ export class ChangeSet extends WsgInstance {
   public parentId?: string;
 
   /** Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend). */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
-  public seedFileId?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId", new GuidSerializer())
+  public seedFileId?: Guid;
 
   /** Id of the [[Briefcase]] that pushed this ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
@@ -93,7 +94,8 @@ export class ChangeSet extends WsgInstance {
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
  */
-export class ChangeSetQuery extends InstanceIdQuery {
+export class ChangeSetQuery extends StringIdQuery {
+
   /**
    * Query will additionally select [[ChangeSet]] file download URL. This is needed to use the ChangeSet object with [[ChangeSetHandler.download]].
    * @returns This query.
@@ -103,15 +105,9 @@ export class ChangeSetQuery extends InstanceIdQuery {
     return this;
   }
 
-  /**
-   * Query [[ChangeSet]] by its id.
-   * @param id Id of a ChangeSet.
-   * @returns This query.
-   */
-  public byId(id: string) {
+  /** @hidden */
+  protected checkValue(id: string) {
     ArgumentCheck.validChangeSetId("id", id);
-    this._byId = id;
-    return this;
   }
 
   /**
@@ -163,7 +159,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public getVersionChangeSets(versionId: string) {
+  public getVersionChangeSets(versionId: Guid) {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -174,7 +170,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public afterVersion(versionId: string) {
+  public afterVersion(versionId: Guid) {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -186,7 +182,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @param destinationVersionId Id of the destination version.
    * @returns This query.
    */
-  public betweenVersions(sourceVersionId: string, destinationVersionId: string) {
+  public betweenVersions(sourceVersionId: Guid, destinationVersionId: Guid) {
     ArgumentCheck.validGuid("sourceVersionId", sourceVersionId);
     ArgumentCheck.validGuid("destinationVersionId", destinationVersionId);
     let query: string;
@@ -205,7 +201,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @param changeSetId Id of the changeSet.
    * @returns This query.
    */
-  public betweenVersionAndChangeSet(versionId: string, changeSetId: string) {
+  public betweenVersionAndChangeSet(versionId: Guid, changeSetId: string) {
     ArgumentCheck.validGuid("versionId", versionId);
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     let query: string;
@@ -223,7 +219,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
    * @param seedFileId Id of the seed file.
    * @returns This query.
    */
-  public bySeedFileId(seedFileId: string) {
+  public bySeedFileId(seedFileId: Guid) {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
     this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
     return this;
@@ -254,7 +250,7 @@ export class ChangeSetHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the ChangeSet.
    */
-  private getRelativeUrl(imodelId: string, changeSetId?: string) {
+  private getRelativeUrl(imodelId: Guid, changeSetId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
   }
 
@@ -267,7 +263,7 @@ export class ChangeSetHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -347,7 +343,7 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -373,7 +369,7 @@ export class ChangeSetHandler {
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
-    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId, postChangeSet.wsgId), postChangeSet);
+    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId, postChangeSet.id!), postChangeSet);
     alctx.enter();
 
     changeSet.isUploaded = true;

@@ -94,7 +94,7 @@ export class TestConfig {
       iModel = iModels[0];
 
       if (versionName) {
-        version = (await imodelHubClient.Versions().get(actx, accessToken, iModel.wsgId, new VersionQuery().byName(versionName)))[0];
+        version = (await imodelHubClient.Versions().get(actx, accessToken, iModel.id!, new VersionQuery().byName(versionName)))[0];
         expect(version);
       }
     }

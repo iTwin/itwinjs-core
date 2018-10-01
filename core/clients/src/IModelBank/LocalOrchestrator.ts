@@ -15,6 +15,7 @@ import { ActivityLoggingContext, EnvMacroSubst, assert } from "@bentley/bentleyj
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
 import { IModelBankFileSystemProject, IModelBankServerConfig } from "./IModelBankFileSystemProject";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 // A running instance of iModelBank
 class RunningBank {
@@ -31,7 +32,7 @@ class RunningBank {
 
   public static fromJson(obj: IModelAccessContextProps, handler: FileHandler): RunningBank | undefined {
     const props = obj.imodeljsCoreClientsIModelBankAccessContext;
-    return new RunningBank(props.iModelId, props.url, props.env, handler);
+    return new RunningBank(props.iModelId.toString(), props.url, props.env, handler);
   }
 }
 
@@ -65,19 +66,19 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
   /* Make sure a bank server is running for the specified iModel */
   private queryContextPropsFor(iModelId: string): NamedIModelAccessContextProps {
     for (const context of this.proj.group.iModelBankProjectAccessContextGroup.contexts) {
-      if (context.imodeljsCoreClientsIModelBankAccessContext.iModelId === iModelId) {
+      if (context.imodeljsCoreClientsIModelBankAccessContext.iModelId.toString() === iModelId) {
         return context;
       }
     }
     throw new Error(`iModel ${iModelId} not registered in this project.`);
   }
 
-  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, iModelId: string): Promise<IModelClient> {
-    const running = this.runningBanks.get(iModelId);
+  public getClientForIModel(_actx: ActivityLoggingContext, _projectId: string | undefined, imodelId: Guid): Promise<IModelClient> {
+    const running = this.runningBanks.get(imodelId.toString());
     if (running !== undefined)
       return Promise.resolve(running.client);
 
-    const props: NamedIModelAccessContextProps = this.queryContextPropsFor(iModelId);
+    const props: NamedIModelAccessContextProps = this.queryContextPropsFor(imodelId.toString());
 
     // Assign a port to this bank
     const port = this.nextPort++;
@@ -87,7 +88,7 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
     const bankToRun = RunningBank.fromJson(props, new UrlFileHandler())!;
 
     //  Run the bank
-    const imodelDir = this.proj.fsAdmin.getIModelDir(this.proj.group.iModelBankProjectAccessContextGroup.name, iModelId);
+    const imodelDir = this.proj.fsAdmin.getIModelDir(this.proj.group.iModelBankProjectAccessContextGroup.name, imodelId.toString());
     assert(fs.existsSync(imodelDir));
 
     const thisBankServerConfig: IModelBankServerConfig = Object.assign({}, this.serverConfig);
@@ -117,14 +118,14 @@ export class IModelBankLocalOrchestrator implements IModelOrchestrationClient {
 
     bankToRun.proc = child_process.spawn("node", cmdargs, { stdio: "inherit" });
 
-    this.runningBanks.set(iModelId, bankToRun);
+    this.runningBanks.set(imodelId.toString(), bankToRun);
 
     bankToRun.proc.on("exit", () => {
-      this.runningBanks.delete(iModelId);
+      this.runningBanks.delete(imodelId.toString());
     });
 
     bankToRun.proc.on("error", (err: Error) => {
-      this.runningBanks.delete(iModelId);
+      this.runningBanks.delete(imodelId.toString());
       throw err;
     });
 

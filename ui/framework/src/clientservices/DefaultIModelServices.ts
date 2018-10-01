@@ -56,7 +56,7 @@ export class DefaultIModelServices implements IModelServices {
     try {
       const iModels: HubIModel[] = await this._hubClient.IModels().get(alctx, accessToken, projectInfo.wsgId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await this._hubClient.Versions().get(alctx, accessToken, imodel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await this._hubClient.Versions().get(alctx, accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -88,7 +88,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     try {
-      const pngImage = await this._hubClient.Thumbnails().download(alctx, accessToken, iModelId, { projectId: projectId!, size: "Small" });
+      const pngImage = await this._hubClient.Thumbnails().download(alctx, accessToken, new Guid(iModelId), { projectId: projectId!, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
@@ -101,14 +101,14 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const versionInfos: VersionInfo[] = [];
     try {
-      const versions: Version[] = await this._hubClient.Versions().get(alctx, accessToken, iModelId, new VersionQuery().select("*").top(5));
+      const versions: Version[] = await this._hubClient.Versions().get(alctx, accessToken, new Guid(iModelId), new VersionQuery().select("*").top(5));
       for (const thisVersion of versions) {
         versionInfos.push(this.createVersionInfo(thisVersion));
       }
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);
-      }
+    }
     return versionInfos;
   }
 
@@ -117,14 +117,14 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const changeSetInfos: ChangeSetInfo[] = [];
     try {
-      const changesets: ChangeSet[] = await this._hubClient.ChangeSets().get(alctx, accessToken, iModelId, new ChangeSetQuery().top(5).latest());
+      const changesets: ChangeSet[] = await this._hubClient.ChangeSets().get(alctx, accessToken, new Guid(iModelId), new ChangeSetQuery().top(5).latest());
       for (const thisChangeSet of changesets) {
         changeSetInfos.push(this.createChangeSetInfo(thisChangeSet));
       }
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);
-      }
+    }
     return changeSetInfos;
   }
 
@@ -133,14 +133,14 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().select("*"));
+      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, new Guid(iModelId), new UserInfoQuery().select("*"));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);
-      }
+    }
     return userInfos;
   }
 
@@ -148,14 +148,14 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().byId(userId));
+      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, new Guid(iModelId), new UserInfoQuery().byId(userId));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);
-      }
+    }
     return userInfos;
   }
 
@@ -168,7 +168,7 @@ export class DefaultIModelServices implements IModelServices {
 
   private createVersionInfo(thisVersion: Version): VersionInfo {
     const createDate: Date = new Date(thisVersion.createdDate!);
-    const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated!, thisVersion.smallThumbnailId!, thisVersion.largeThumbnailId!);
+    const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated!, thisVersion.smallThumbnailId!.toString(), thisVersion.largeThumbnailId!.toString());
     return thisVersionInfo;
   }
 

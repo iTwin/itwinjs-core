@@ -6,16 +6,17 @@
 
 import * as deepAssign from "deep-assign";
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, Id64Serializer } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
 import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./index";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -35,9 +36,9 @@ export enum CodeState {
 
 /** Base class for [Code]($common)s. */
 export class CodeBase extends WsgInstance {
-  /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
-  public codeSpecId?: string;
+  /** Code specification Id. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId", new Id64Serializer())
+  public codeSpecId?: Id64;
 
   /** Code scope. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")
@@ -228,7 +229,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeSpecId is undefined or empty.
    */
-  public byCodeSpecId(codeSpecId: string) {
+  public byCodeSpecId(codeSpecId: Id64) {
     ArgumentCheck.defined("codeSpecId", codeSpecId);
     this.addFilter(`CodeSpecId+eq+'${codeSpecId}'`);
     return this;
@@ -314,7 +315,7 @@ export enum CodeSequenceType {
 export class CodeSequence extends WsgInstance {
   /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
-  public codeSpecId?: string;
+  public codeSpecId?: Id64;
 
   /** Code scope. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")
@@ -360,7 +361,7 @@ export class CodeSequenceHandler {
    * Get relative url for Code sequence requests.
    * @param imodelId Id of the iModel. See [[HubIModel]].
    */
-  private getRelativeUrl(imodelId: string) {
+  private getRelativeUrl(imodelId: Guid) {
     return `/Repositories/iModel--${imodelId}/iModelScope/CodeSequence/`;
   }
 
@@ -372,7 +373,7 @@ export class CodeSequenceHandler {
    * @returns Resolves to the suggested index value.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, sequence: CodeSequence): Promise<string> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, sequence: CodeSequence): Promise<string> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying code sequence for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -412,7 +413,7 @@ export class CodeHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param codeId Id of the code.
    */
-  private getRelativeUrl(imodelId: string, multiCode = true, codeId?: string) {
+  private getRelativeUrl(imodelId: Guid, multiCode = true, codeId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${multiCode ? "MultiCode" : "Code"}/${codeId || ""}`;
   }
 
@@ -469,7 +470,7 @@ export class CodeHandler {
   }
 
   /** Send partial request for code updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -506,7 +507,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical Codes in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -567,7 +568,7 @@ export class CodeHandler {
    * @returns Resolves to an array of Codes matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -597,7 +598,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, briefcaseId: number): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

@@ -158,11 +158,18 @@
 
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { Guid, Id64 } from "../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 export type ConstructorType = new () => any;
 
 const loggingCategory = "ECJson";
 const className = "className";
+
+export interface PropertySerializer {
+  serialize: (value: any) => any;
+
+  deserialize: (value: any) => any;
+}
 
 export interface ClassKeyMapInfo {
   /** The key of the JSON property that stores the schema name - e.g., set to"schemaName" in the case of JSON consumed/supplied by WSG */
@@ -174,7 +181,7 @@ export interface ClassKeyMapInfo {
 }
 
 class PropertyEntry {
-  constructor(public readonly typedPropertyName: string, public propertyAccessString: string) {
+  constructor(public readonly typedPropertyName: string, public propertyAccessString: string, public propertySerializer?: PropertySerializer) {
   }
 }
 
@@ -194,14 +201,14 @@ class ApplicationEntry {
   }
 
   /** Adds a new entry for a mapped property */
-  public addProperty(typedPropertyName: string, propertyAccessString: string): void {
+  public addProperty(typedPropertyName: string, propertyAccessString: string, propertySerializer?: PropertySerializer): void {
     let propertyEntry = this.getPropertyByAccessString(propertyAccessString);
     if (propertyEntry) {
       const err = `The ECProperty ${propertyAccessString} has already been mapped to another TypeScript property ${propertyEntry.typedPropertyName}`;
       throw new Error(err);
     }
 
-    propertyEntry = new PropertyEntry(typedPropertyName, propertyAccessString);
+    propertyEntry = new PropertyEntry(typedPropertyName, propertyAccessString, propertySerializer);
     this.propertiesByAccessString.set(propertyAccessString, propertyEntry);
   }
 }
@@ -289,7 +296,7 @@ export class ECJsonTypeMap {
   }
 
   /** Adds a new entry for a mapped property */
-  private static addProperty(typedPropertyName: string, typedConstructor: ConstructorType, applicationKey: string, propertyAccessString: string) {
+  private static addProperty(typedPropertyName: string, typedConstructor: ConstructorType, applicationKey: string, propertyAccessString: string, propertySerializer?: PropertySerializer) {
     let classEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!classEntry)
       classEntry = ECJsonTypeMap.addClassPlaceholder(typedConstructor);
@@ -298,7 +305,7 @@ export class ECJsonTypeMap {
     if (!applicationEntry)
       applicationEntry = classEntry.addApplication(applicationKey);
 
-    applicationEntry.addProperty(typedPropertyName, propertyAccessString);
+    applicationEntry.addProperty(typedPropertyName, propertyAccessString, propertySerializer);
   }
 
   /** Create a typed instance from an untyped JSON ECInstance  */
@@ -383,7 +390,10 @@ export class ECJsonTypeMap {
             i++;
           }
         }
+        if (propertyEntry.propertySerializer)
+          ecValue = propertyEntry.propertySerializer.deserialize(ecValue);
         typedInstance[propertyEntry.typedPropertyName] = ecValue;
+
       });
     });
 
@@ -452,7 +462,13 @@ export class ECJsonTypeMap {
             // if the current cursor of the ec class object has no value for the access string
             if (undefined === untypedInstanceCursor[accessString]) {
               // we need to bind it the typedValue or initialize an empty object
-              untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+              let value = {};
+              if (isLastPart) {
+                value = typedValue;
+                if (propertyEntry.propertySerializer)
+                  value = propertyEntry.propertySerializer.serialize(value);
+              }
+              untypedInstanceCursor[accessString] = value;
             }
             // advance the cursor to the newly defined value set by the accessString
             untypedInstanceCursor = untypedInstanceCursor[accessString];
@@ -502,7 +518,13 @@ export class ECJsonTypeMap {
             // if this is the first round, no relationship instances will be defined yet, so we need to initialize it
             if (!untypedInstanceCursor[accessString][relationshipCount]) {
               // Note: the only way this would be the last part is if the entire relationship instance is the typed value
-              untypedInstanceCursor[accessString][relationshipCount] = isLastPart ? typedValue : {};
+              let value = {};
+              if (isLastPart) {
+                value = typedValue;
+                if (propertyEntry.propertySerializer)
+                  value = propertyEntry.propertySerializer.serialize(value);
+              }
+              untypedInstanceCursor[accessString][relationshipCount] = value;
             }
 
             // advance the cursor to the newly defined value set by the accessString
@@ -510,7 +532,13 @@ export class ECJsonTypeMap {
           } else {
             if (accessString !== "relatedInstance" || !untypedInstanceCursor[accessString]
               || (accessString === "relatedInstance" && untypedInstanceCursor[accessString][className] !== expectedclassName)) {
-              untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+              let value = {};
+              if (isLastPart) {
+                value = typedValue;
+                if (propertyEntry.propertySerializer)
+                  value = propertyEntry.propertySerializer.serialize(value);
+              }
+              untypedInstanceCursor[accessString] = value;
             }
             untypedInstanceCursor = untypedInstanceCursor[accessString];
           }
@@ -541,10 +569,38 @@ export class ECJsonTypeMap {
    * @param applicationKey Identifies the application for which the mapping is specified. e.g., "ecdb", "wsg", etc.
    * @param propertyAccessString Access string for the ECProperty
    */
-  public static propertyToJson(applicationKey: string, propertyAccessString: string) {
+  public static propertyToJson(applicationKey: string, propertyAccessString: string, propertySerializer?: PropertySerializer) {
     return (object: any, propertyKey: string): void => {
-      ECJsonTypeMap.addProperty(propertyKey, object.constructor as ConstructorType, applicationKey.toLowerCase(), propertyAccessString);
+      ECJsonTypeMap.addProperty(propertyKey, object.constructor as ConstructorType, applicationKey.toLowerCase(), propertyAccessString, propertySerializer);
     };
+  }
+}
+
+export class GuidSerializer implements PropertySerializer {
+  public serialize(value: any): any {
+    if (value instanceof Guid)
+      return value.toString();
+    return undefined;
+  }
+
+  public deserialize(value: any): any {
+    if (typeof value !== "string")
+      return undefined;
+    return new Guid(value);
+  }
+}
+
+export class Id64Serializer implements PropertySerializer {
+  public serialize(value: any): any {
+    if (value instanceof Id64)
+      return value.toString();
+    return undefined;
+  }
+
+  public deserialize(value: any): any {
+    if (typeof value !== "string")
+      return undefined;
+    return new Id64(value);
   }
 }
 

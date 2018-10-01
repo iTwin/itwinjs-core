@@ -28,8 +28,8 @@ export class IModelApi {
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
-      if (thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi._hubClient.Versions().get(alctx, accessToken, thisIModel.wsgId, new VersionQuery().select("Name,ChangeSetId").top(1));
+      if (!!thisIModel.id && thisIModel.name === iModelName) {
+        const versions: Version[] = await IModelApi._hubClient.Versions().get(alctx, accessToken, thisIModel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

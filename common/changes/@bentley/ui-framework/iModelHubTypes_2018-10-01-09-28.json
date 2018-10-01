@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed some iModelHub types to be stricter",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

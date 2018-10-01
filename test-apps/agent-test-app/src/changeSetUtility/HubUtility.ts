@@ -7,7 +7,7 @@ import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegat
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { Project, IModelQuery } from "@bentley/imodeljs-clients/lib";
 import { HubIModel as HubIModel } from "@bentley/imodeljs-clients/lib/imodelhub/iModels";
-import { Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Logger, assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
 import { Version } from "@bentley/imodeljs-clients/lib/imodelhub";
 import * as path from "path";
@@ -42,15 +42,15 @@ export class HubUtility {
     public async createNamedVersion(accessToken: AccessToken, iModelId: string, name: string, description: string): Promise<Version> {
         const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, this._hubClient);
         Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Creating named version "${name}" on the Hub`);
-        return await this._hubClient.Versions().create(actx, accessToken, iModelId, changeSetId, name, description);
+        return await this._hubClient.Versions().create(actx, accessToken, new Guid(iModelId), changeSetId, name, description);
     }
     /** Push an iModel to the Hub */
     public async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<string> {
         // Delete any existing iModels with the same name as the required iModel
         const iModelName = path.basename(pathname, ".bim");
         let iModel: HubIModel | undefined = await this._queryIModelByName(accessToken, projectId, iModelName);
-        if (iModel)
-            await this._hubClient.IModels().delete(actx, accessToken, projectId, iModel.wsgId);
+        if (iModel && !!iModel.id)
+            await this._hubClient.IModels().delete(actx, accessToken, projectId, iModel.id!);
 
         // Upload a new iModel
         Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Started pushing test iModel "${iModelName}" to the Hub`);

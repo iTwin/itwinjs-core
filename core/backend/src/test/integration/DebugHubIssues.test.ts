@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
@@ -30,9 +30,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     // Push the iModel to the Hub
     const projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    const iModelId: string = await HubUtility.pushIModel(accessToken, projectId, pathname);
+    const iModelId: Guid = await HubUtility.pushIModel(accessToken, projectId, pathname);
 
-    const iModelDb = await IModelDb.open(actx, accessToken, projectId, iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelDb = await IModelDb.open(actx, accessToken, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
@@ -42,7 +42,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await iModelDb.pushChanges(actx, accessToken!);
 
     // Create a named version on the just uploaded change set
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, BriefcaseManager.imodelClient);
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId.toString(), BriefcaseManager.imodelClient);
     await BriefcaseManager.imodelClient.Versions().create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
@@ -73,7 +73,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -98,7 +98,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -136,7 +136,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelId);
 
     const startTime = Date.now();
-    await HubUtility.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
+    await HubUtility.downloadIModelById(accessToken1, projectId, new Guid(iModelId), iModelDir);
     const finishTime = Date.now();
     console.log(`Time taken to download is ${finishTime - startTime} milliseconds`); // tslint:disable-line:no-console
   });

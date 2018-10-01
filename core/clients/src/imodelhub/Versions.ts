@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
@@ -20,6 +20,9 @@ const loggingCategory = "imodeljs-clients.imodelhub";
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+  public id?: Guid;
+
   /** Description of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
@@ -41,12 +44,12 @@ export class Version extends WsgInstance {
   public changeSetId?: string;
 
   /** Id of the [[SmallThumbnail]] of the named Version. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
-  public smallThumbnailId?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId", new GuidSerializer())
+  public smallThumbnailId?: Guid;
 
   /** Id of the [[LargeThumbnail]] of the named Version. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
-  public largeThumbnailId?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId", new GuidSerializer())
+  public largeThumbnailId?: Guid;
 }
 
 /**
@@ -115,7 +118,7 @@ export class VersionHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param versionId Id of the version.
    */
-  private getRelativeUrl(imodelId: string, versionId?: string) {
+  private getRelativeUrl(imodelId: Guid, versionId?: Guid) {
     return `/Repositories/iModel--${imodelId}/iModelScope/Version/${versionId || ""}`;
   }
 
@@ -128,7 +131,7 @@ export class VersionHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying named versions for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -155,7 +158,7 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, changeSetId: string, name: string, description?: string): Promise<Version> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, changeSetId: string, name: string, description?: string): Promise<Version> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Creating named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
     ArgumentCheck.defined("token", token);
@@ -185,14 +188,14 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, version: Version): Promise<Version> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, version: Version): Promise<Version> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Updating named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.validGuid("version.wsgId", version.wsgId);
 
-    const updatedVersion = await this._handler.postInstance<Version>(alctx, Version, token, this.getRelativeUrl(imodelId, version.wsgId), version);
+    const updatedVersion = await this._handler.postInstance<Version>(alctx, Version, token, this.getRelativeUrl(imodelId, version.id), version);
     alctx.enter();
     Logger.logTrace(loggingCategory, `Updated named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
 

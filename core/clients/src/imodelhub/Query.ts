@@ -6,6 +6,7 @@
 
 import { RequestQueryOptions } from "./../Request";
 import { ArgumentCheck } from "./Errors";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 /** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub. */
 export class Query {
@@ -95,7 +96,7 @@ export class Query {
 }
 
 /** Query for instances with string based instance ids. */
-export class InstanceIdQuery extends Query {
+export class StringIdQuery extends Query {
   /** @hidden */
   protected _byId?: string;
 
@@ -106,6 +107,37 @@ export class InstanceIdQuery extends Query {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
    */
   public byId(id: string) {
+    this.checkValue(id);
+    this._byId = id;
+    return this;
+  }
+
+  /** @hidden */
+  protected checkValue(id: string) {
+    ArgumentCheck.valid("id", id);
+  }
+
+  /**
+   * Used by iModelHub handlers to get the id that is queried.
+   * @hidden
+   */
+  public getId() {
+    return this._byId;
+  }
+}
+
+/** Query for instances with Guid based instance ids. */
+export class InstanceIdQuery extends Query {
+  /** @hidden */
+  protected _byId?: Guid;
+
+  /**
+   * Query single instance by its id.
+   * @param id Id of the instance to query.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
+   */
+  public byId(id: Guid) {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
     return this;

@@ -12,7 +12,7 @@ import { RealityDataServicesClient, RealityData } from "../RealityDataServicesCl
 import { UrlDiscoveryMock } from "./ResponseBuilder";
 import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { IModelHubClient } from "..";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 chai.should();
 
 export class RealityDataUrlMock {
@@ -53,7 +53,7 @@ describe.skip("RealityDataServicesClient", () => {
     accessToken = await realityDataServiceClient.getAccessToken(actx, authToken);
 
     const imodelHubToken = await imodelHubClient.getAccessToken(actx, authToken);
-    const versions: Version[] = await imodelHubClient.Versions().get(actx, imodelHubToken, iModelId);
+    const versions: Version[] = await imodelHubClient.Versions().get(actx, imodelHubToken, new Guid(iModelId));
     chai.expect(versions);
     versionId = versions[0].wsgId;
     chai.expect(versionId);

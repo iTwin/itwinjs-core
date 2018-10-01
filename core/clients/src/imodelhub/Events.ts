@@ -12,6 +12,7 @@ import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
+import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -257,7 +258,7 @@ export class EventSubscriptionHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param instanceId Id of the subscription.
    */
-  private getRelativeUrl(imodelId: string, instanceId?: string) {
+  private getRelativeUrl(imodelId: Guid, instanceId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/EventSubscription/${instanceId || ""}`;
   }
 
@@ -269,7 +270,7 @@ export class EventSubscriptionHandler {
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, events: EventType[]) {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, events: EventType[]) {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Creating event subscription on iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -295,7 +296,7 @@ export class EventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[EventSubscription]] does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, subscription: EventSubscription): Promise<EventSubscription> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, subscription: EventSubscription): Promise<EventSubscription> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.wsgId}`);
     ArgumentCheck.defined("token", token);
@@ -320,7 +321,7 @@ export class EventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if EventSubscription does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, eventSubscriptionId: string): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, eventSubscriptionId: string): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -365,7 +366,7 @@ export class EventHandler extends EventBaseHandler {
    * @hidden
    * @param imodelId Id of the iModel. See [[HubIModel]].
    */
-  private getEventSASRelativeUrl(imodelId: string): string {
+  private getEventSASRelativeUrl(imodelId: Guid): string {
     return `/Repositories/iModel--${imodelId}/iModelScope/EventSAS/`;
   }
 
@@ -376,7 +377,7 @@ export class EventHandler extends EventBaseHandler {
    * @return SAS Token to connect to the topic.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async getSASToken(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string): Promise<EventSAS> {
+  public async getSASToken(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid): Promise<EventSAS> {
     Logger.logInfo(loggingCategory, `Getting event SAS token from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -445,7 +446,7 @@ export class EventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: string, listener: (event: IModelHubEvent) => void): () => void {
+  public createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: Guid, listener: (event: IModelHubEvent) => void): () => void {
     alctx.enter();
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);

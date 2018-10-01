@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
@@ -26,7 +26,7 @@ export class TestPushUtility {
 
   private _accessToken?: AccessToken;
   private _projectId?: string;
-  private _iModelId?: string;
+  private _iModelId?: Guid;
 
   private _currentLevel: number = 0;
 
@@ -38,7 +38,7 @@ export class TestPushUtility {
   }
 
   /** Pushes a new Test IModel to the Hub */
-  public async pushTestIModel(): Promise<string> {
+  public async pushTestIModel(): Promise<Guid> {
     const pathname = this.createStandalone();
     this._iModelId = await HubUtility.pushIModel(this._accessToken!, this._projectId!, pathname);
     return this._iModelId;
@@ -46,7 +46,7 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await IModelDb.open(actx, this._accessToken!, this._projectId!, this._iModelId!, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb = await IModelDb.open(actx, this._accessToken!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
@@ -186,7 +186,7 @@ export class TestPushUtility {
   }
 
   private async createNamedVersion() {
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, this._accessToken!, this._iModelId!, BriefcaseManager.imodelClient);
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, this._accessToken!, this._iModelId!.toString(), BriefcaseManager.imodelClient);
     await BriefcaseManager.imodelClient.Versions().create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
   }
 

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
@@ -22,7 +22,7 @@ import * as path from "path";
 describe("PushRetry", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
-  let testIModelId: string;
+  let testIModelId: Guid;
   let testIModel: IModelDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
@@ -38,7 +38,7 @@ describe("PushRetry", () => {
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await IModelDb.open(actx, accessToken, testProjectId, testIModelId.toString(), OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
       await testIModel.pullAndMergeChanges(actx, accessToken, IModelVersion.asOfChangeSet(changeSetId));
@@ -100,7 +100,7 @@ describe("PushRetry", () => {
     });
 
     // Create a location to dump change summary
-    const outDir = path.join(KnownTestLocations.outputDir, `imodelid_${testIModelId.substr(0, 5)}`);
+    const outDir = path.join(KnownTestLocations.outputDir, `imodelid_${testIModelId.toString().substr(0, 5)}`);
     if (!IModelJsFs.existsSync(outDir))
       IModelJsFs.mkdirSync(outDir);
     const filePath = path.join(outDir, `${changeSummary.id.value}.json`);
@@ -154,7 +154,7 @@ describe("PushRetry", () => {
   it.skip("should retry to push changes (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.id!);
     }
 
     const pushRetryIModel: IModelDb = await IModelDb.create(actx, accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -189,13 +189,13 @@ describe("PushRetry", () => {
 
     await pushRetryIModel.pushChanges(actx, accessToken);
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, new Guid(pushRetryIModelId!));
   });
 
   it.skip("should fail to push and not retry again (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, iModelTemp.id!);
     }
 
     const pushRetryIModel: IModelDb = await IModelDb.create(actx, accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -219,7 +219,7 @@ describe("PushRetry", () => {
       assert.equal(error.name, "UnknownPushError");
     }
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, new Guid(pushRetryIModelId!));
   });
 
 });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed some iModelHub types to be stricter",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

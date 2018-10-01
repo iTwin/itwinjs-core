@@ -9,6 +9,7 @@ import { HubIModel } from "../../imodelhub";
 import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid } from "../../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestIModelHubProject extends IModelProjectClient {
@@ -22,7 +23,7 @@ class TestIModelHubProject extends IModelProjectClient {
     const client = getDefaultClient();
     return client.IModels().create(alctx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
-  public deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void> {
+  public deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: Guid): Promise<void> {
     const client = getDefaultClient();
     return client.IModels().delete(alctx, accessToken, projectId, iModelId);
   }
@@ -33,7 +34,7 @@ class TestIModelHubProject extends IModelProjectClient {
 }
 
 class TestIModelHubOrchestrator implements IModelOrchestrationClient {
-  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: string): Promise<IModelClient> {
+  public getClientForIModel(_alctx: ActivityLoggingContext, _projectId: string, _imodelId: Guid): Promise<IModelClient> {
     return Promise.resolve(getDefaultClient());
   }
 }

@@ -2,7 +2,7 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, DbResult, assert, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Logger, LogLevel, DbResult, assert, Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients/lib";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common/lib/common";
 import { IModelHost, IModelHostConfiguration, IModelDb, OpenParams, ChangeSummaryManager, ECSqlStatement, ChangeSummary, AccessMode } from "@bentley/imodeljs-backend/lib/backend";
@@ -50,9 +50,10 @@ export class QueryAgent {
         const accessToken: AccessToken = await this._tokenStore!.getAccessToken();
 
         // Subscribe to change set and named version events
+        const imodelId = new Guid(this._iModelId!);
         Logger.logTrace(QueryAgentConfig.loggingCategory, "Setting up changeset and named version listeners...");
-        const changeSetSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, this._iModelId!, ["ChangeSetPostPushEvent"]);
-        const deleteChangeSetListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, changeSetSubscription!.wsgId, this._iModelId!,
+        const changeSetSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, imodelId, ["ChangeSetPostPushEvent"]);
+        const deleteChangeSetListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, changeSetSubscription!.wsgId, imodelId,
             async (receivedEvent: ChangeSetPostPushEvent) => {
                 Logger.logTrace(QueryAgentConfig.loggingCategory, `Received notification that change set "${receivedEvent.changeSetId}" was just posted on the Hub`);
                 try {
@@ -61,8 +62,8 @@ export class QueryAgent {
                     Logger.logError(QueryAgentConfig.loggingCategory, `Error while extracting changeset summary: ${error}`);
                 }
             });
-        const namedVersionSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, this._iModelId!, ["VersionEvent"]);
-        const deleteNamedVersionListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, namedVersionSubscription!.wsgId, this._iModelId!,
+        const namedVersionSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, imodelId, ["VersionEvent"]);
+        const deleteNamedVersionListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, namedVersionSubscription!.wsgId, imodelId,
             async (receivedEvent: NamedVersionCreatedEvent) => {
                 Logger.logTrace(QueryAgentConfig.loggingCategory, `Received notification that named version "${receivedEvent.versionName}" was just created on the Hub`);
             });

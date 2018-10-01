@@ -11,6 +11,7 @@ import { ProgressInfo } from "./Request";
 import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid } from "../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 /** Information needed by a project abstraction to create an iModel */
 export interface IModelProjectIModelCreateParams {
@@ -27,13 +28,13 @@ export abstract class IModelProjectClient {
 
   // IModel management
   public abstract createIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: IModelProjectIModelCreateParams): Promise<HubIModel>;
-  public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: string): Promise<void>;
+  public abstract deleteIModel(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, imodelId: Guid): Promise<void>;
   public abstract queryIModels(alctx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]>;
 }
 
 /** Interface implemented by a service that allows client apps to connect to an iModel server */
 export interface IModelOrchestrationClient {
-  getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: string): Promise<IModelClient>;
+  getClientForIModel(alctx: ActivityLoggingContext, projectId: string | undefined, imodelId: Guid): Promise<IModelClient>;
 }
 
 /** Interface implemented by a service that authorizes users. */

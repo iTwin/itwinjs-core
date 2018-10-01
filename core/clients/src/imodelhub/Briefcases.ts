@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError } from "./Errors";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
@@ -47,8 +47,8 @@ export class Briefcase extends WsgInstance {
   public fileSize?: string;
 
   /** FileId of the master file. See [BriefcaseEntry.fileId]($backend). */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId")
-  public fileId?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId", new GuidSerializer())
+  public fileId?: Guid;
 
   /** Id of the briefcase. See [BriefcaseId]($backend) */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
@@ -86,8 +86,8 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "lastAccessedAt")
   public lastAccessedAt?: Date;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "iModelId")
-  public iModelId?: string;
+  @ECJsonTypeMap.propertyToJson("ecdb", "iModelId", new GuidSerializer())
+  public iModelId?: Guid;
 }
 
 /**
@@ -152,7 +152,7 @@ export class BriefcaseHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the briefcase.
    */
-  private getRelativeUrl(imodelId: string, briefcaseId?: number) {
+  private getRelativeUrl(imodelId: Guid, briefcaseId?: number) {
     return `/Repositories/iModel--${imodelId}/iModelScope/Briefcase/${briefcaseId || ""}`;
   }
 
@@ -166,7 +166,7 @@ export class BriefcaseHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.MaximumNumberOfBriefcasesPerUser]($bentley) or [IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute]($bentley) if a limit of Briefcases for that user was reached. Users should use the Briefcases they have previously acquired. If that is no longer possible, they should delete them, to be able to acquire new ones.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string): Promise<Briefcase> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid): Promise<Briefcase> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Acquiring briefcase for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -188,7 +188,7 @@ export class BriefcaseHandler {
    * @param briefcaseId Id of the Briefcase to be deleted.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, briefcaseId: number): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, briefcaseId: number): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting briefcase ${briefcaseId} from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -209,7 +209,7 @@ export class BriefcaseHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[BriefcaseQuery.byId]] is used and a Briefcase with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying briefcases for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

@@ -8,7 +8,7 @@ import { AccessToken } from "../Token";
 import { HubIModel, IModelQuery } from "../imodelhub/iModels";
 import { UserProfile } from "../UserProfile";
 import { DeploymentEnv } from "../Client";
-import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, WSStatus, LoggerLevelsConfig, ActivityLoggingContext, BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelProjectClient, IModelProjectIModelCreateParams, IModelAuthorizationClient } from "../IModelCloudEnvironment";
 import { IModelHubError, IModelHubClientError } from "../imodelhub/Errors";
 import { WsgError } from "../WsgClient";
@@ -134,7 +134,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
   }
 
   private matchesFilter(props: NamedIModelAccessContextProps, query: IModelQuery | undefined): boolean {
-    if (query === undefined || (query.getId() === "" && query.getQueryOptions().$filter === undefined))
+    if (query === undefined || (query.getId() === undefined && query.getQueryOptions().$filter === undefined))
       return true;
 
     const id = query.getId();
@@ -155,7 +155,7 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
   private toRepo(props: NamedIModelAccessContextProps): HubIModel {
     const id = props.imodeljsCoreClientsIModelBankAccessContext.iModelId;
     const name = props.name;
-    return { wsgId: id, ecId: id, name };
+    return { wsgId: id.toString(), ecId: id.toString(), name };
   }
 
   public queryIModels(_actx: ActivityLoggingContext, _accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
@@ -191,17 +191,17 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     const id = context.imodeljsCoreClientsIModelBankAccessContext.iModelId;
     if (params.tracker)
       params.tracker({ percent: 100, total: 1, loaded: 1 });
-    return Promise.resolve({ wsgId: id, ecId: id, name: params.name, initialized: true });
+    return Promise.resolve({ wsgId: id.toString(), ecId: id.toString(), name: params.name, initialized: true });
   }
 
-  public deleteIModel(_actx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, iModelId: string): Promise<void> {
+  public deleteIModel(_actx: ActivityLoggingContext, _accessToken: AccessToken, _projectId: string, iModelId: Guid): Promise<void> {
     this.onDeleteIModel.raiseEvent(iModelId);
 
     this.group.iModelBankProjectAccessContextGroup.contexts =
       this.group.iModelBankProjectAccessContextGroup.contexts.filter(
         (props: NamedIModelAccessContextProps) => props.imodeljsCoreClientsIModelBankAccessContext.iModelId === iModelId);
 
-    this.fsAdmin.deleteIModel(this.group.iModelBankProjectAccessContextGroup.name, iModelId);
+    this.fsAdmin.deleteIModel(this.group.iModelBankProjectAccessContextGroup.name, iModelId.toString());
 
     return Promise.resolve();
   }

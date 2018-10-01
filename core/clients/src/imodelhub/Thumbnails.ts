@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 
 import { request, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -20,9 +20,8 @@ export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails. */
 export abstract class Thumbnail extends WsgInstance {
-  /** @hidden */
-  @ECJsonTypeMap.propertyToJson("wsg", "workaround.to.add.class.to.map")
-  public workaround?: string;
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+  public id?: Guid;
 }
 
 /** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image. */
@@ -50,7 +49,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if versionId is undefined or it is not a valid [Guid]($bentley) value.
    */
-  public byVersionId(versionId: string) {
+  public byVersionId(versionId: Guid) {
     ArgumentCheck.validGuid("versionId", versionId);
     this.addFilter(`HasThumbnail-backward-Version.Id+eq+'${versionId}'`);
     return this;
@@ -79,8 +78,8 @@ export class ThumbnailHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
-  private getRelativeProjectUrl(projectId: string, imodelId: string, size: ThumbnailSize) {
-    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${imodelId}/$file`;
+  private getRelativeProjectUrl(projectId: string, imodelId: Guid, size: ThumbnailSize) {
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${imodelId.toString()}/$file`;
   }
 
   /**
@@ -90,7 +89,7 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail.
    * @param thumbnailId Id of the thumbnail.
    */
-  private getRelativeUrl(imodelId: string, size: ThumbnailSize, thumbnailId?: string) {
+  private getRelativeUrl(imodelId: Guid, size: ThumbnailSize, thumbnailId?: Guid) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${size}Thumbnail/${thumbnailId || ""}`;
   }
 
@@ -140,7 +139,7 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
-  private async downloadTipThumbnail(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, imodelId: string, size: ThumbnailSize): Promise<string> {
+  private async downloadTipThumbnail(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, imodelId: Guid, size: ThumbnailSize): Promise<string> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Downloading tip ${size}Thumbnail for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -165,7 +164,7 @@ export class ThumbnailHandler {
    * @return Array of Thumbnails of the specified size that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying iModel ${imodelId} thumbnails`);
     ArgumentCheck.defined("token", token);
@@ -192,7 +191,7 @@ export class ThumbnailHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[ResponseError]] if a network issue occurs.
    */
-  public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: string, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
+  public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
     alctx.enter();
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -202,7 +201,7 @@ export class ThumbnailHandler {
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";
-    const thumbnailId: string = thumbnail.wsgId;
+    const thumbnailId: Guid = thumbnail.id!;
 
     Logger.logInfo(loggingCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel ${imodelId}`);
 

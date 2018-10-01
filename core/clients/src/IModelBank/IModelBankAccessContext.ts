@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelBank */
 import { DeploymentEnv } from "../Client";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Guid } from "@bentley/bentleyjs-core";
 
 /* Format of the imodel.json file found in an iModel directory of an iModel file system. */
 export interface IModelFileSystemIModelProps {
@@ -25,7 +25,7 @@ export interface IModelFileSystemProps {
 /* The externalize format of an IModelAccessContext */
 export interface IModelAccessContextProps {
   imodeljsCoreClientsIModelBankAccessContext: {
-    iModelId: string;
+    iModelId: Guid;
     url: string;
     env: DeploymentEnv;
   };
@@ -127,7 +127,7 @@ export function makeNamedIModelAccessContextPropsFromFileSystem(iModel: IModelFi
   return {
     name: iModel.name,
     imodeljsCoreClientsIModelBankAccessContext: {
-      iModelId: iModel.id,
+      iModelId: new Guid(iModel.id),
       url: "",
       env: "PROD",
     },
