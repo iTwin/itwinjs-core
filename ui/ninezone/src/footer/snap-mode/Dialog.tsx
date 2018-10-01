@@ -36,9 +36,7 @@ export default class SnapModeDialog extends React.Component<SnapModeDialogProps>
         direction={Direction.Top}
         className={dialogClassName}
         content={
-          <DivWithContainIn
-            noVerticalContainment
-          >
+          <DivWithContainIn noVerticalContainment={true}>
             <div className="nz-title">
               {this.props.title}
             </div>
