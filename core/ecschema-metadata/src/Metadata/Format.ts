@@ -185,34 +185,34 @@ export default class Format extends SchemaItem implements IFormat {
     }
 
     if (undefined !== jsonObj.decimalSeparator) { // optional
-      if (typeof (jsonObj.decimalSeparator) !== "string") // not a string or not a one character string
+      if (typeof (jsonObj.decimalSeparator) !== "string") // not a string or not an empty or one character string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.decimalSeparator.length !== 1)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It must be a one character string.`);
+      if (jsonObj.decimalSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It must be an empty or one character string.`);
       this._decimalSeparator = jsonObj.decimalSeparator;
     }
 
     if (undefined !== jsonObj.thousandSeparator) { // optional
       if (typeof (jsonObj.thousandSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.thousandSeparator.length !== 1)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It must be a one character string.`);
+      if (jsonObj.thousandSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It must be an empty or one character string.`);
       this._thousandSeparator = jsonObj.thousandSeparator;
     }
 
     if (undefined !== jsonObj.uomSeparator) { // optional; default is " "
       if (typeof (jsonObj.uomSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.uomSeparator.length !== 1)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It must be a one character string.`);
+      if (jsonObj.uomSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It must be an empty or one character string.`);
       this._uomSeparator = jsonObj.uomSeparator;
     }
 
     if (undefined !== jsonObj.stationSeparator) { // optional; default is "+"
       if (typeof (jsonObj.stationSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.stationSeparator.length !== 1)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It must be a one character string.`);
+      if (jsonObj.stationSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It must be an empty or one character string.`);
       this._stationSeparator = jsonObj.stationSeparator;
     }
   }
@@ -233,8 +233,8 @@ export default class Format extends SchemaItem implements IFormat {
       if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
         if (typeof (jsonObj.composite.spacer) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
+        if (jsonObj.composite.spacer.length > 1) // spacer must be an empty or one character string
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
@@ -267,8 +267,8 @@ export default class Format extends SchemaItem implements IFormat {
       if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
         if (typeof (jsonObj.composite.spacer) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.spacer.length !== 1) // spacer must be a one character string
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be a one character string.`);
+        if (jsonObj.composite.spacer.length > 1) // spacer must be an empty or one character string
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
