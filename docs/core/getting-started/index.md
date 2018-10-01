@@ -25,12 +25,30 @@ The following tools are very helpful and highly suggested for working with iMode
     - [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens) (great tools for using Git inside VSCode)
     - [MarkdownLint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) (for editing documentation)
 
+## Code Samples
+
+The following samples showcase the iModel.js API in action:
+
+- [Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)
+  - Embed an iModel.js viewport into your application to display graphical data.
+  - Browse iModel catalog and view element properties.
+- [iModel Query Agent](https://github.com/imodeljs/imodel-query-agent)
+  - Listen to changes made to an iModel on the iModelHub.
+  - Construct a 'Change Summary' of useful information.
+
 ## Recommended Reading
 
 - [TypeScript](http://www.typescriptlang.org/)
-  - iModel.js applications are written in TypeScript and then *compiled* to plain JavaScript.
+  - iModel.js applications are written in TypeScript and then _compiled_ to plain JavaScript.
 - [Node Package Manager (npm)](https://www.npmjs.com/)
   - `npm` is used to install and manage dependencies of an iModel.js application.
   - The `npm` [command line](https://docs.npmjs.com/cli/npm) and `npm` [scripts](https://docs.npmjs.com/misc/scripts) are used to build and test iModel.js applications.
 
-<!-- TODO: add links when samples are posted to GitHub -->
+## Support
+
+The following are some useful support links:
+
+- [Stack Overflow Questions](https://stackoverflow.com/questions/ask?tags=imodeljs+typescript)
+- [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
+- [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
+- [Discussion Board](https://github.com/imodeljs/imodeljs/labels/discussion)
