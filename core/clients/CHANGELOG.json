@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.142.0",
+      "tag": "@bentley/imodeljs-clients_v0.142.0",
+      "date": "Mon, 01 Oct 2018 10:28:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.141.0",
       "tag": "@bentley/imodeljs-clients_v0.141.0",
       "date": "Fri, 28 Sep 2018 22:27:44 GMT",

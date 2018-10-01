@@ -2,6 +2,18 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.142.0",
+      "tag": "@bentley/ecschema-metadata_v0.142.0",
+      "date": "Mon, 01 Oct 2018 10:28:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove the Schema.ec32 flag, as EC3.2 is now the default."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.141.0",
       "tag": "@bentley/ecschema-metadata_v0.141.0",
       "date": "Fri, 28 Sep 2018 22:27:44 GMT",

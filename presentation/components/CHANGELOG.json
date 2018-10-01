@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.142.0",
+      "tag": "@bentley/presentation-components_v0.142.0",
+      "date": "Mon, 01 Oct 2018 10:28:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix viewport unified selection stopping working after imodel change."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.141.0",
       "tag": "@bentley/presentation-components_v0.141.0",
       "date": "Fri, 28 Sep 2018 22:27:44 GMT",
