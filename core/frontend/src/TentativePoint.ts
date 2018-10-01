@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Point3d } from "@bentley/geometry-core";
 import { ScreenViewport } from "./Viewport";
 import { BeButtonEvent, BeButton } from "./tools/Tool";
 import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
-import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { IModelApp } from "./IModelApp";
 import { AccuSnap } from "./AccuSnap";
 
@@ -115,119 +113,32 @@ export class TentativePoint {
     this.tpHits = undefined;
   }
 
-  /** draw the cross as 4 lines rather than 2, so that there's no hole in the middle when drawn in dashed symbology */
-  private drawTpCross(graphic: GraphicBuilder, tpSize: number, x: number, y: number): void {
-    const tpCross: Point2d[] = [new Point2d(x, y), new Point2d(x + tpSize, y)];
-    graphic.addLineString2d(tpCross, 0.0);
-
-    tpCross[1].x = x - tpSize;
-    graphic.addLineString2d(tpCross, 0.0);
-
-    tpCross[1].x = x;
-    tpCross[1].y = y + tpSize;
-    graphic.addLineString2d(tpCross, 0.0);
-
-    tpCross[1].y = y - tpSize;
-    graphic.addLineString2d(tpCross, 0.0);
-  }
-
   public decorate(context: DecorateContext): void {
     const viewport = context.viewport;
     if (!this.isActive || !viewport)
       return;
 
-    const tpSize = viewport.pixelsPerInch / 2.0;  // about a 1/2 inch
-    const center = viewport.worldToView(this._point);
+    const tpSize = viewport.pixelsPerInch * 0.5; // About 1/2 inch...
+    const position = context.viewport.worldToView(this._point);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      if (!this.isSnapped)
+        ctx.setLineDash([2, 1]);
+      ctx.strokeStyle = "white";
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 5;
 
-    // draw a "background shadow" line: wide, black, mostly transparent
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-    const color = ColorDef.from(0, 0, 0, 225);
-    builder.setSymbology(color, color, 7);
-    this.drawTpCross(builder, tpSize + 2, center.x + 1, center.y + 1);
+      ctx.beginPath();
+      ctx.moveTo(-tpSize, 0);
+      ctx.lineTo(tpSize, 0);
+      ctx.stroke();
 
-    // draw a background line: narrow, black, slightly transparent (this is in case we're not snapped and showing a dotted line)
-    ColorDef.from(0, 0, 0, 10, color);
-    builder.setSymbology(color, color, 3);
-    this.drawTpCross(builder, tpSize + 1, center.x, center.y);
-
-    // off-white (don't want white/black reversal), slightly transparent
-    ColorDef.from(0xfe, 0xff, 0xff, 10, color);
-    builder.setSymbology(color, color, 1, this.isSnapped ? LinePixels.Solid : LinePixels.Code2);
-
-    this.drawTpCross(builder, tpSize, center.x, center.y);
-    context.addDecorationFromBuilder(builder);
+      ctx.beginPath();
+      ctx.moveTo(0, -tpSize);
+      ctx.lineTo(0, tpSize);
+      ctx.stroke();
+    };
+    context.addCanvasDecoration({ position, drawDecoration }, true);
   }
-
-  /** find an intersection between the current snap path and one of the other paths in the current hitList. */
-  //  private doTPIntersectSnap(_inHit: HitDetail | undefined, changeFirst: boolean): SnapDetail | undefined {
-
-  // use the current snapped path as the first path for the intersection
-  //    const currSnap = this.getCurrSnap()!;
-  //    const firstHit = currSnap;
-
-  // // if we're already showing an intersection, use the "second" path as the new first path
-  // if (changeFirst && (HitDetailType.Intersection === firstHit.getHitType()))
-  //   firstHit = ((IntersectDetail *) firstHit) -> GetSecondHit();
-
-  // // keep searching hits for an acceptable intersection
-  // HitList intsctList;
-  // for (secondHit = inHit; secondHit; secondHit = ElementLocateManager:: GetManager().GetElementPicker().GetNextHit())
-  // {
-  //   SnapDetailP thisIntsct = nullptr;
-  //   if (SnapStatus:: Success == intsctCtx.IntersectDetails(& thisIntsct, firstHit, secondHit, & point, true))
-  //   {
-  //     intsctList.AddHit(thisIntsct, false, false);
-  //     thisIntsct -> Release(); // ref count was incremented when we added to list
-  //   }
-  // }
-
-  // intsctSnap = (SnapDetail *) intsctList.GetHit(0);
-  // if (nullptr != intsctSnap) {
-  //   intsctSnap -> AddRef();
-  //   intsctSnap -> SetSnapMode(SnapMode.Intersection);
-  //   ElementLocateManager:: GetManager()._SetChosenSnapMode(SnapType:: Points, SnapMode.Intersection);
-  //   return intsctSnap;
-  // }
-
-  // We couldn't find an intersection, so now we have to decide what to show. If we were previously
-  // showing an intersection, and the mouse moved to a new location (that's what "changeFirst" means), then
-  // that probably means that s/he was trying to find a new element, but missed. In that case, we re-activate the
-  // previous hit as the new snap, but of course we don't show it as an intersection. If we were not previously
-  // snapped to an intersection, then s/he just missed, start the TP over and return a nullptr.
-  //    return (changeFirst && (currSnap !== firstHit)) ? firstHit : undefined;
-  //  }
-
-  /*  We're looking for the second path for an intersection.
-  *   currHit already points to the first path.
-  *   nextHit is the next snap after currHit in snapList.
-  * Multiple snaps:
-  *   Because snapList can contain snaps of different types and because
-  *   this list is sorted by proximity to the cursor, the
-  *   SnapMode::Intersection candidate snaps may not be contiguous in the list.
-  * This function returns the next snap in the snap list that is
-  *   a SnapMode::Intersection candidate snap. This might be nextHit, or
-  *   it might be a snap farther along.
-  */
-  /*   private findNextIntersectionCandidate(nextHit: SnapDetail | undefined): SnapDetail | undefined {
-      if (!nextHit)
-        return undefined;
-
-      if (SnapMode.Intersection === nextHit.snapMode && HitDetailType.Intersection !== nextHit.getHitType()) // A SnapDetail (not IntersectionDetail) with SnapMode.Intersection denotes an intersection candidate...
-        return nextHit;
-
-      if (this.snapList.currHit === -1)
-        return undefined; // There is no current hit?! This happens when we TP twice to the same element.
-
-      // Now search for the NEXT intersection target
-      // currHit already points to the item in the list that follows nextHit
-      for (let iSnapDetail = this.snapList.currHit; iSnapDetail < this.snapList.length; ++iSnapDetail) {
-        const snap = this.snapList.hits[iSnapDetail];
-        if (SnapMode.Intersection === snap.snapMode && HitDetailType.Intersection !== snap.getHitType())
-          return snap;
-      }
-
-      return undefined;
-    } */
 
   private async getSnap(newSearch: boolean): Promise<SnapDetail | undefined> {
     // Use next hit from previous search when using tentative to cycle through hits...
