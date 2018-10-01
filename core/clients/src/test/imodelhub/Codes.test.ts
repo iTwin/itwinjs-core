@@ -14,8 +14,7 @@ import {
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
-import { Guid } from "../../../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { IModelHubStatus, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
 
 chai.should();
 

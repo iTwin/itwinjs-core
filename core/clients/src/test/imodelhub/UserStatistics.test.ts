@@ -12,8 +12,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub";
 import { TestUsers } from "../TestConfig";
-import { IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Guid } from "../../../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 chai.should();
 

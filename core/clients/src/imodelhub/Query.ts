@@ -6,7 +6,7 @@
 
 import { RequestQueryOptions } from "./../Request";
 import { ArgumentCheck } from "./Errors";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { Guid } from "@bentley/bentleyjs-core/lib/Id";
 
 /** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub. */
 export class Query {

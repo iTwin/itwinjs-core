@@ -158,7 +158,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Guid, Id64 } from "../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 export type ConstructorType = new () => any;
 

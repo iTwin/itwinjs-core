@@ -7,11 +7,10 @@
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Query } from "./Query";
 import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 

@@ -10,8 +10,7 @@ import { IModelClient } from "./IModelClient";
 import { ProgressInfo } from "./Request";
 import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Guid } from "../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 /** Information needed by a project abstraction to create an iModel */
 export interface IModelProjectIModelCreateParams {

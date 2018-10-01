@@ -8,13 +8,12 @@ import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, ArgumentCheck } from "./Errors";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 

@@ -8,8 +8,7 @@ import { TestConfig } from "../TestConfig";
 import { HubIModel } from "../../imodelhub";
 import { IModelProjectClient, IModelProjectIModelCreateParams, IModelOrchestrationClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Guid } from "../../../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestIModelHubProject extends IModelProjectClient {
