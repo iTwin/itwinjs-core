@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added tests, refactored ContextMenu.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Simeon.McGraw@bentley.com"
+}

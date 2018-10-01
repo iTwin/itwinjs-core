@@ -40,3 +40,12 @@
     font-size: $bwc-font-size-small;
   }
 }
+.column-drag-layer {
+  border: 1px solid rgba($bwc-black, 0.5);
+  border-radius: $bwc-border-radius;
+  padding: 0px;
+  margin: 0px;
+  line-height: $bwc-line-height;
+  color: rgba($bwc-text-color, 0.5);
+  font-weight: bold;
+}

@@ -137,7 +137,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   };
 
   public render(): JSX.Element {
-    const { opened, title, footer, buttonCluster, onClose, onEscape, minWidth, minHeight, width, height, backgroundStyle, titleStyle, footerStyle, modal, resizable, movable, className, ...props } = this.props;
+    const { opened, title, footer, buttonCluster, onClose, onEscape, minWidth, minHeight, width, height, backgroundStyle, titleStyle, footerStyle, modal, resizable, movable, className, alignment, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
       margin: "",
@@ -206,7 +206,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         },
       )} style={this.props.backgroundStyle}>
         <div
-          className={classnames("dialog-container", this.props.alignment)}
+          className={classnames("dialog-container", alignment)}
           style={containerStyle}
         >
           <div className={"dialog-area"} ref={(el) => { this._containerElement = el; }}>

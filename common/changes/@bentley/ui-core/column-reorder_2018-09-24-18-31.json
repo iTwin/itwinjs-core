@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added tests to ui-core components",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Simeon.McGraw@bentley.com"
+}

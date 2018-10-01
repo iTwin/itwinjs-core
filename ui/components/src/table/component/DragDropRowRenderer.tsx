@@ -20,6 +20,7 @@ import "./Table.scss";
 export interface DragDropRowProps {
   dragProps: DragSourceProps;
   dropProps: TableDropTargetProps;
+  idx?: number;
 }
 
 interface RowWrapperProps {
@@ -36,17 +37,16 @@ enum HoverMode {
   Below,
 }
 
-/** @hidden */
 interface RowWrapperState {
   hoverMode: HoverMode;
 }
 
-class RowWrapper extends React.Component<any & RowWrapperProps, RowWrapperState> {
+class RowWrapper extends React.Component<RowWrapperProps, RowWrapperState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: RowWrapperState = {
     hoverMode: HoverMode.Above,
   };
-  public render(): React.ReactElement<any> {
+  public render(): React.ReactNode {
     const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as RowWrapperProps;
     const mode = this.state.hoverMode;
     const classes = classnames(
@@ -95,8 +95,8 @@ class RowWrapper extends React.Component<any & RowWrapperProps, RowWrapperState>
 
 // Used only internally in ./Table.tsx
 /** @hidden */
-export class DragDropRow extends React.Component<DragDropRowProps & any> {
-  public render(): React.ReactElement<any> {
+export class DragDropRow extends React.Component<DragDropRowProps> {
+  public render(): React.ReactNode {
     // tslint:disable-next-line:variable-name
     const DDRow = withDragSource(withDropTarget(RowWrapper));
     const { dragProps, dropProps, ...props } = this.props as DragDropRowProps;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { DragLayerProps } from "@bentley/ui-framework";
+import { DragLayerProps } from "@bentley/ui-components";
 
 import "./DragLayer.scss";
 

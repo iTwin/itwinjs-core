@@ -85,6 +85,7 @@ export const withDragSource = <ComponentProps extends {}>(
         dropEffect,
         dropStatus: DropStatus.None,
         dragRect,
+        defaultDragLayer: props.dragProps.defaultDragLayer,
         clientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
         initialClientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
       };

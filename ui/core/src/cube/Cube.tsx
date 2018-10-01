@@ -62,12 +62,14 @@ const faceNames: { [key: number]: string } = {
   [Face.Bottom]: "bottom",
 };
 
-interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+/** @hidden */
+export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   rotMatrix: Matrix3d;
   face: Face;
 }
 
-class CubeFace extends React.Component<CubeFaceProps> {
+/** @hidden */
+export class CubeFace extends React.Component<CubeFaceProps> {
   private _faceWidth: number = 0;
   public render(): React.ReactNode {
     const { rotMatrix, face, style, children, ...props } = this.props;

@@ -523,6 +523,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "react-testing-library",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "readline",
       "allowedCategories": [ "tools" ]
     },

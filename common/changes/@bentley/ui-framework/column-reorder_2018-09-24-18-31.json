@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added defaultDragPreview",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Simeon.McGraw@bentley.com"
+}

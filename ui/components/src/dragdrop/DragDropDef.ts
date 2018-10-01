@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module DragDrop  */
+import * as React from "react";
 
 /** Enum for different DropEffects. */
 export enum DropEffects {
@@ -49,6 +50,12 @@ export interface DragSourceProps {
    * data parameter is non-null when data is trickled down from dragged component.
    */
   objectType?: ((data?: any) => string | symbol) | string | symbol;
+  /**
+   * Specifies a default DragLayer component to display as a drag preview.
+   * This property is dependent on the DragDropLayerManager in ui-framework. The DragLayer is ultimately rendered using the DragDropLayerRendererComponent, which must exist within the app that is used.
+   * Component may be overridden if another DragLayer is registered for the given type using the DragDropLayerManager in ui-framework.
+   */
+  defaultDragLayer?: React.ComponentType<DragLayerProps>;
 }
 
 /** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments. */
@@ -95,6 +102,12 @@ export interface DragDropArguments {
   col?: number;
 }
 
+/** Properties for DragLayer components
+ */
+export interface DragLayerProps {
+  args?: DragSourceArguments;
+}
+
 /** Interface for arguments supplied to DragSource callbacks, including onDragSourceBegin, and onDragSourceEnd, as well as to the DragLayers as a prop. */
 export interface DragSourceArguments extends DragDropArguments {
   /** Parent object, using the data structure relavent to object being used.
@@ -102,6 +115,7 @@ export interface DragSourceArguments extends DragDropArguments {
    * Specifically used where further information is needed within a given dataProvider structure. Ie. dataProvider.removeChild(parentObject, child) type methods.
    */
   parentObject?: any;
+  defaultDragLayer?: React.ComponentType<DragLayerProps>;
 }
 /** Interface for arguments supplied to DropTarget callbacks, including onDropTargetOver, onDropTargetDrop, and canDropTargetDrop. */
 export interface DropTargetArguments extends DragDropArguments {
