@@ -183,12 +183,16 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "coveralls",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "cpx",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "cross-env",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "cross-spawn",
@@ -255,6 +259,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "eslint",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "eventemitter2",
       "allowedCategories": [ "frontend" ]
     },
@@ -303,6 +311,14 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "http-proxy",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "https-proxy-agent",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "i18next",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -329,6 +345,10 @@
     {
       "name": "inspire-tree",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "istanbul",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -360,7 +380,7 @@
     },
     {
       "name": "lolex",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "merge-json",
@@ -388,7 +408,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "tools" ]
     },
     {
       "name": "node-glob",
@@ -456,6 +476,10 @@
     },
     {
       "name": "promise",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proxy-from-env",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -581,6 +605,10 @@
     {
       "name": "superagent",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "supertest",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "svg-react-loader",

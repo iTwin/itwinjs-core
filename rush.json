@@ -150,6 +150,12 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/dev-cors-proxy-server",
+      "projectFolder": "tools/dev-cors-proxy-server",
+      "reviewCategory": "tools",
+      "shouldPublish": true
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",

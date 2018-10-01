@@ -29,18 +29,23 @@
     "coveralls": "^2.11.6",
     "eslint": "^2.2.0",
     "istanbul": "^0.4.2",
-    "lolex": "^1.5.0",
+    "lolex": "^2.7.1",
     "mocha": "^5.2.0",
-    "nock": "^8.2.1",
+    "nock": "^9.2.3",
     "rimraf": "^2.6.2",
     "supertest": "^2.0.1",
-    "cross-env": "^5.1.1"
+    "cross-env": "^5.1.4"
   },
   "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": "",
+    "test": "",
     "start": "cross-env PORT=3001 node ./server.js",
-    "lint": "eslint .",
-    "test": "mocha ./test/test*.js --reporter spec",
-    "test-coverage": "istanbul cover ./node_modules/.bin/_mocha -- test/test.js test/test-ratelimit.js --reporter spec",
+    "skip:lint": "eslint .",
+    "skip:test": "mocha ./test/test*.js --reporter spec",
+    "skip:test-coverage": "istanbul cover ./node_modules/.bin/_mocha -- test/test.js test/test-ratelimit.js --reporter spec",
     "uninstall": "rimraf package-lock.json node_modules"
   },
   "engines": {

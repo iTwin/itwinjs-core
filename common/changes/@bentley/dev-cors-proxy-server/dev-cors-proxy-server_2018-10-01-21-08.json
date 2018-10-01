@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/dev-cors-proxy-server",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/dev-cors-proxy-server",
+  "email": "shaun.sewall@bentley.com"
+}
