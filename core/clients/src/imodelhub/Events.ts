@@ -8,11 +8,12 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
+import { LockType, LockLevel } from "./Locks";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -39,6 +40,18 @@ export type EventType =
 
 /** Base type for all iModelHub events. */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
+  /** Id of the iModel where the event occured. */
+  public iModelId?: Guid;
+
+  /**
+   * Construct this event from object instance.
+   * @hidden
+   * @param obj Object instance.
+   */
+  public fromJson(obj: any) {
+    super.fromJson(obj);
+    this.iModelId = new Guid(this.eventTopic);
+  }
 }
 
 /** Base type for iModelHub events that have BriefcaseId. */
@@ -62,11 +75,11 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
  */
 export class LockEvent extends BriefcaseEvent {
   /** [[LockType]] of the updated Locks. */
-  public lockType?: string;
+  public lockType?: LockType;
   /** [[LockLevel]] of the updated Locks. */
-  public lockLevel?: string;
+  public lockLevel?: LockLevel;
   /** Id's of the updated Locks. */
-  public objectIds?: string[];
+  public objectIds?: Id64[];
   /** Id of the [[ChangeSet]] Locks were released with. */
   public releasedWithChangeSet?: string;
 
@@ -77,9 +90,9 @@ export class LockEvent extends BriefcaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.lockType = obj.LockType;
-    this.lockLevel = obj.LockLevel;
-    this.objectIds = obj.ObjectIds;
+    this.lockType = parseInt(obj.LockType, 10) as LockType;
+    this.lockLevel = parseInt(obj.LockLevel, 10) as LockLevel;
+    this.objectIds = (obj.ObjectIds as string[]).map((value: string) => new Id64(value));
     this.releasedWithChangeSet = obj.ReleasedWithChangeSet;
   }
 }
@@ -93,7 +106,7 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
   /** Id of the ChangeSet that was pushed. */
   public changeSetId?: string;
   /** Index of the ChangeSet that was pushed. */
-  public changeSetIndex?: number;
+  public changeSetIndex?: string;
 
   /**
    * Construct this event from object instance.
@@ -118,7 +131,7 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
-  public codeSpecId?: string;
+  public codeSpecId?: Id64;
   /** Scope of the updated Codes. */
   public codeScope?: string;
   /** Array of the updated Code values. */
@@ -133,7 +146,7 @@ export class CodeEvent extends BriefcaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.codeSpecId = obj.CodeSpecId;
+    this.codeSpecId = new Id64(obj.CodeSpecId);
     this.codeScope = obj.CodeScope;
     this.values = obj.Values;
     this.state = obj.State;
@@ -163,7 +176,7 @@ export class IModelDeletedEvent extends IModelHubEvent {
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
-  public versionId?: string;
+  public versionId?: Guid;
   /** Name of the created Version. */
   public versionName?: string;
   /** Id of the [[ChangeSet]] that this Version was created for.  */
@@ -176,7 +189,7 @@ export class VersionEvent extends IModelHubEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.versionId = obj.VersionId;
+    this.versionId = new Guid(obj.VersionId);
     this.versionName = obj.VersionName;
     this.changeSetId = obj.ChangeSetId;
   }

@@ -7,7 +7,7 @@
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -34,7 +34,7 @@ export type GlobalEventType =
  */
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
-  public iModelId?: string;
+  public iModelId?: Guid;
   /** Id of the [[Project]] that this iModel belongs to. */
   public projectId?: string;
 
@@ -45,7 +45,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.iModelId = obj.iModelId;
+    this.iModelId = new Guid(obj.iModelId);
     this.projectId = obj.ProjectId;
   }
 }
@@ -92,7 +92,7 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
  * Sent when a named [[Version]] is created. See [[VersionHandler.create]].
  */
 export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
-  public versionId?: string;
+  public versionId?: Guid;
   public versionName?: string;
   public changeSetId?: string;
 
@@ -102,7 +102,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.versionId = obj.VersionId;
+    this.versionId = new Guid(obj.VersionId);
     this.versionName = obj.VersionName;
     this.changeSetId = obj.ChangeSetId;
   }

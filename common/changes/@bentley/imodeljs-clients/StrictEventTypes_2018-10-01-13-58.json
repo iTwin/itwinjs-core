@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added strict types for iModelHub events",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}
