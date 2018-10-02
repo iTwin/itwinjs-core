@@ -85,10 +85,5 @@
     "immutable": "^3.8.2",
     "svg-sprite-loader": "^3.8.0"
   },
-  "proxy": {
-    "/ui-test-app": {
-      "target": "http://localhost:5000",
-      "logLevel": "silent"
-    }
-  }
+  "proxy": "http://localhost:5000"
 }

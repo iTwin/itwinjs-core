@@ -57,7 +57,7 @@ module.exports = (publicPath) => {
       // This allows you to set a fallback for where Webpack should look for modules.
       // We placed these paths second because we want `node_modules` to "win"
       // if there are any conflicts. This matches Node resolution mechanism.
-      // https://github.com/facebookincubator/create-react-app/issues/253
+      // https://github.com/facebook/create-react-app/issues/253
       modules: ["node_modules", paths.appNodeModules, paths.appSrc].concat(
         // It is guaranteed to exist because we tweak it in `env.js`
         process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
@@ -246,7 +246,7 @@ module.exports = (publicPath) => {
       new webpack.DefinePlugin(env.frontendStringified),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
-      // See https://github.com/facebookincubator/create-react-app/issues/240
+      // See https://github.com/facebook/create-react-app/issues/240
       new CaseSensitivePathsPlugin(),
       // Moment.js is an extremely popular library that bundles large locale files
       // by default due to how Webpack interprets its code. This is a practical
