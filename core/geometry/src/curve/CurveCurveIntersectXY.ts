@@ -21,7 +21,7 @@ import { Arc3d } from "./Arc3d";
 import { GrowableFloat64Array } from "../GrowableArray";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BezierCurve3dH, BezierCurveBase } from "../bspline/BezierCurve";
-import { Bezier } from "../numerics/BezierPolynomials";
+import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Range3d } from "../Range";
 import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
@@ -451,7 +451,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const orderF = cpB.order; // order of the beziers for simple coordinates
       const orderG = 2 * orderF - 1;  // order of the (single) bezier for squared coordinates.
       const coffF = new Float64Array(orderF);
-      const univariateBezierG = new Bezier(orderG);
+      const univariateBezierG = new UnivariateBezier(orderG);
       const axx = matrixAinverse.at(0, 0); const axy = matrixAinverse.at(0, 1); const axz = 0.0; const axw = matrixAinverse.at(0, 2);
       const ayx = matrixAinverse.at(1, 0); const ayy = matrixAinverse.at(1, 1); const ayz = 0.0; const ayw = matrixAinverse.at(1, 2);
       const awx = matrixAinverse.at(2, 0); const awy = matrixAinverse.at(2, 1); const awz = 0.0; const aww = matrixAinverse.at(2, 2);
@@ -521,7 +521,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
     _strokeCOuntB: number,
-    univariateBezierB: Bezier,  // caller-allocated for univariate coefficients.
+    univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
     reversed: boolean) {
     if (!this._xyzwA0) this._xyzwA0 = Point4d.create();
     if (!this._xyzwA1) this._xyzwA1 = Point4d.create();
@@ -611,8 +611,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     const rangeB = this.getRanges(bezierSpanB);
     const orderA = bcurveA.order;
     const orderB = bcurveB.order;
-    const univariateCoffsA = new Bezier(orderA);
-    const univairateCoffsB = new Bezier(orderB);
+    const univariateCoffsA = new UnivariateBezier(orderA);
+    const univairateCoffsB = new UnivariateBezier(orderB);
     for (let a = 0; a < numA; a++) {
       for (let b = 0; b < numB; b++) {
         if (rangeA[a].intersectsRangeXY(rangeB[b])) {

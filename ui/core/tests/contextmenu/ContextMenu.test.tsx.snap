@@ -1,14 +1,324 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ContextMenu /> renders correctly 1`] = `
+exports[`ContextMenu <ContextMenu /> renders close correctly 1`] = `
 <div
   className="context-menu"
+  data-testid="context-menu-root"
   onClick={[Function]}
   onKeyUp={[Function]}
 >
   <div
-    className="context-menu-container opened right bottom"
+    className="context-menu-container bottom right"
     tabIndex={0}
   />
 </div>
+`;
+
+exports[`ContextMenu <ContextMenu /> renders open correctly 1`] = `
+<div
+  className="context-menu"
+  data-testid="context-menu-root"
+  onClick={[Function]}
+  onKeyUp={[Function]}
+>
+  <div
+    className="context-menu-container opened bottom right"
+    tabIndex={0}
+  />
+</div>
+`;
+
+exports[`ContextMenu <ContextMenu /> renders with ContextMenuItem correctly 1`] = `
+<div
+  className="context-menu"
+  data-testid="context-menu-root"
+  onClick={[Function]}
+  onKeyUp={[Function]}
+>
+  <div
+    className="context-menu-container opened bottom right"
+    tabIndex={0}
+  >
+    <ContextMenuItem
+      disabled={false}
+      key=".0"
+      onHover={[Function]}
+      parent={
+        ContextMenu {
+          "_handleClick": [Function],
+          "_handleFocusChange": [Function],
+          "_handleKeyUp": [Function],
+          "_length": 1,
+          "_menuElement": null,
+          "_rootElement": null,
+          "_selectedElement": null,
+          "blur": [Function],
+          "context": Object {},
+          "focus": [Function],
+          "getRect": [Function],
+          "props": Object {
+            "autoflip": true,
+            "children": <ContextMenuItem
+              disabled={false}
+              selected={false}
+            >
+               Test 
+            </ContextMenuItem>,
+            "direction": "bottom right",
+            "edgeLimit": true,
+            "floating": true,
+            "opened": true,
+            "selected": -1,
+          },
+          "refs": Object {},
+          "setState": [Function],
+          "state": Object {
+            "selected": -1,
+          },
+          "updater": Updater {
+            "_callbacks": Array [],
+            "_renderer": ReactShallowRenderer {
+              "_context": Object {},
+              "_element": <ContextMenu
+                autoflip={true}
+                direction="bottom right"
+                edgeLimit={true}
+                floating={true}
+                opened={true}
+                selected={-1}
+              >
+                <ContextMenuItem
+                  disabled={false}
+                  selected={false}
+                >
+                   Test 
+                </ContextMenuItem>
+              </ContextMenu>,
+              "_forcedUpdate": false,
+              "_instance": [Circular],
+              "_newState": null,
+              "_rendered": <div
+                className="context-menu"
+                data-testid="context-menu-root"
+                onClick={[Function]}
+                onKeyUp={[Function]}
+                style={undefined}
+              >
+                <div
+                  className="context-menu-container opened bottom right"
+                  tabIndex={0}
+                >
+                  <ContextMenuItem
+                    disabled={false}
+                    onHover={[Function]}
+                    parent={[Circular]}
+                    selected={false}
+                  >
+                     Test 
+                  </ContextMenuItem>
+                </div>
+              </div>,
+              "_rendering": false,
+              "_updater": [Circular],
+            },
+          },
+          Symbol(enzyme.__setState__): [Function],
+        }
+      }
+      selected={false}
+    >
+       Test 
+    </ContextMenuItem>
+  </div>
+</div>
+`;
+
+exports[`ContextMenu <ContextMenuDivider /> renders correctly 1`] = `
+<div
+  className="context-menu-divider"
+/>
+`;
+
+exports[`ContextMenu <ContextMenuItem /> renders correctly 1`] = `
+<div
+  className="context-menu-item"
+  data-testid="context-menu-item"
+  onClick={[Function]}
+  onFocus={[Function]}
+  onKeyUp={[Function]}
+  onMouseOver={[Function]}
+>
+  <div
+    className="context-menu-icon icon"
+  />
+  <div
+    className="context-menu-content"
+  >
+    Test
+  </div>
+</div>
+`;
+
+exports[`ContextMenu <ContextSubMenu /> renders correctly 1`] = `
+<div
+  className="context-menu"
+  data-testid="context-menu-root"
+  onClick={[Function]}
+  onKeyUp={[Function]}
+>
+  <div
+    className="context-menu-container opened bottom right"
+    tabIndex={0}
+  >
+    <ContextSubMenu
+      autoflip={true}
+      direction="bottom right"
+      disabled={false}
+      key=".0"
+      label="test"
+      onHover={[Function]}
+      parent={
+        ContextMenu {
+          "_handleClick": [Function],
+          "_handleFocusChange": [Function],
+          "_handleKeyUp": [Function],
+          "_length": 1,
+          "_menuElement": null,
+          "_rootElement": null,
+          "_selectedElement": null,
+          "blur": [Function],
+          "context": Object {},
+          "focus": [Function],
+          "getRect": [Function],
+          "props": Object {
+            "autoflip": true,
+            "children": <ContextSubMenu
+              autoflip={true}
+              disabled={false}
+              label="test"
+              selected={false}
+            >
+              <ContextMenuItem
+                disabled={false}
+                selected={false}
+              >
+                 Test 
+              </ContextMenuItem>
+            </ContextSubMenu>,
+            "direction": "bottom right",
+            "edgeLimit": true,
+            "floating": true,
+            "opened": true,
+            "selected": -1,
+          },
+          "refs": Object {},
+          "setState": [Function],
+          "state": Object {
+            "selected": -1,
+          },
+          "updater": Updater {
+            "_callbacks": Array [],
+            "_renderer": ReactShallowRenderer {
+              "_context": Object {},
+              "_element": <ContextMenu
+                autoflip={true}
+                direction="bottom right"
+                edgeLimit={true}
+                floating={true}
+                opened={true}
+                selected={-1}
+              >
+                <ContextSubMenu
+                  autoflip={true}
+                  disabled={false}
+                  label="test"
+                  selected={false}
+                >
+                  <ContextMenuItem
+                    disabled={false}
+                    selected={false}
+                  >
+                     Test 
+                  </ContextMenuItem>
+                </ContextSubMenu>
+              </ContextMenu>,
+              "_forcedUpdate": false,
+              "_instance": [Circular],
+              "_newState": null,
+              "_rendered": <div
+                className="context-menu"
+                data-testid="context-menu-root"
+                onClick={[Function]}
+                onKeyUp={[Function]}
+                style={undefined}
+              >
+                <div
+                  className="context-menu-container opened bottom right"
+                  tabIndex={0}
+                >
+                  <ContextSubMenu
+                    autoflip={true}
+                    direction="bottom right"
+                    disabled={false}
+                    label="test"
+                    onHover={[Function]}
+                    parent={[Circular]}
+                    selected={false}
+                  >
+                    <ContextMenuItem
+                      disabled={false}
+                      selected={false}
+                    >
+                       Test 
+                    </ContextMenuItem>
+                  </ContextSubMenu>
+                </div>
+              </div>,
+              "_rendering": false,
+              "_updater": [Circular],
+            },
+          },
+          Symbol(enzyme.__setState__): [Function],
+        }
+      }
+      selected={false}
+    >
+      <ContextMenuItem
+        disabled={false}
+        selected={false}
+      >
+         Test 
+      </ContextMenuItem>
+    </ContextSubMenu>
+  </div>
+</div>
+`;
+
+exports[`ContextMenu <GlobalContextMenu /> renders correctly 1`] = `
+<Portal
+  containerInfo={
+    <div
+      id="context-menu-test"
+    />
+  }
+>
+  <div
+    className="context-menu-global"
+    style={
+      Object {
+        "left": "0",
+        "top": "0",
+      }
+    }
+  >
+    <ContextMenu
+      autoflip={true}
+      direction="bottom right"
+      edgeLimit={true}
+      floating={true}
+      opened={true}
+      selected={-1}
+    />
+  </div>
+</Portal>
 `;

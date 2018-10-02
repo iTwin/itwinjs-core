@@ -19,6 +19,7 @@ export * from "./searchbox";
 export * from "./splitbutton";
 export * from "./toggle";
 export * from "./tree";
+export * from "./uisettings";
 export * from "./utils";
 
 /** @docs-package-description
@@ -76,6 +77,10 @@ export * from "./utils";
 /**
  * @docs-group-description Tree
  * Classes for working with a Tree.
+ */
+/**
+ * @docs-group-description UiSettings
+ * Interfaces for working with persistant UI settings.
  */
 /**
  * @docs-group-description Utils

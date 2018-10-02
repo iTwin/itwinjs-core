@@ -11,11 +11,10 @@ import { DeploymentEnv } from "../Client";
 import { IModelBankClient } from "./IModelBankClient";
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
-import { ActivityLoggingContext, EnvMacroSubst, assert } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, EnvMacroSubst, assert, Guid } from "@bentley/bentleyjs-core";
 import { UrlFileHandler } from "../UrlFileHandler";
 import { IModelOrchestrationClient } from "../IModelCloudEnvironment";
 import { IModelBankFileSystemProject, IModelBankServerConfig } from "./IModelBankFileSystemProject";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 // A running instance of iModelBank
 class RunningBank {

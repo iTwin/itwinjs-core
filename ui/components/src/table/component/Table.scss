@@ -3,6 +3,29 @@
  *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
 
+.column-drag-layer {
+  border: 1px solid rgba($bwc-black, 0.5);
+  border-radius: $bwc-border-radius;
+  padding: 0px;
+  margin: 0px;
+  line-height: $bwc-line-height;
+  color: rgba($bwc-text-color, 0.5);
+  font-weight: bold;
+}
+.react-grid-HeaderRow {
+  overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
+}
+.table-header-drag-drop {
+  &.dragging .react-grid-HeaderCell {
+    background: $bwc-gray;
+  }
+  &.left .react-grid-HeaderCell {
+    border-left: solid black 2px;
+  }
+  &.right .react-grid-HeaderCell {
+    border-right: solid black 2px;
+  }
+}
 .table-drop-target {
   border-top: solid transparent 1px;
   border-bottom: solid transparent 1px;

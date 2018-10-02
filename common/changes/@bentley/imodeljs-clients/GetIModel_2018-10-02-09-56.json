@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Added strict types for iModelHub events",
+      "comment": "Replaced GetIModel with IModelQuery property primary()",
       "packageName": "@bentley/imodeljs-clients",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-clients",
-  "email": "Karolis.Dziedzelis@bentley.com"
+  "email": "Algirdas.Mikoliunas@bentley.com"
 }

@@ -2,6 +2,45 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.145.0",
+      "tag": "@bentley/imodeljs-clients_v0.145.0",
+      "date": "Tue, 02 Oct 2018 01:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "More fixes to invalid imports"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.144.0",
+      "tag": "@bentley/imodeljs-clients_v0.144.0",
+      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix imports that directly reference the node_modules folder"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.143.0",
+      "tag": "@bentley/imodeljs-clients_v0.143.0",
+      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed some iModelHub types to be stricter"
+          },
+          {
+            "comment": "Added strict types for iModelHub events"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.142.0",
       "tag": "@bentley/imodeljs-clients_v0.142.0",
       "date": "Mon, 01 Oct 2018 10:28:46 GMT",

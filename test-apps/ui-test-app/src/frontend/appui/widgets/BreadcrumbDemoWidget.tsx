@@ -16,8 +16,8 @@ import {
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import {ChildDragLayer} from "./ChildDragLayer";
-import {RootDragLayer} from "./ParentDragLayer";
+import { ChildDragLayer } from "./ChildDragLayer";
+import { RootDragLayer } from "./ParentDragLayer";
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -65,9 +65,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
     return (
       <div>
         <label htmlFor="recieves_row">Can accept rows: </label>
-        <input id="recieves_row" type="checkbox" checked={this.state.checked} onClick={() => {
-            this.setState((prevState) => ({checked: !prevState.checked}), () => {
-            });
+        <input id="recieves_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
+            this.setState({checked: (event.target as HTMLInputElement).checked});
           }}/>
         <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}
           dragProps={dragProps}

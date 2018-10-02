@@ -69,6 +69,8 @@ class TableDemoWidget extends React.Component<Props, State> {
           dataProvider={demoMutableTableDataProvider}
           dragProps={dragProps}
           dropProps={dropProps}
+          reorderableColumns={true}
+          settingsIdentifier="Test"
         />
       </div>
     );

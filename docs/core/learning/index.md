@@ -1,11 +1,4 @@
 
-<p style="text-align: center;">
-![](./imodeljs.ico)
-</p>
-<p style="text-align: center;">
-<b>iModel.js</b> is a JavaScript library for creating, querying, displaying, and modifying iModels.
-</p>
-
 ## Documentation Overview
 
 This website is organized into sections by tabs at the top of each page.

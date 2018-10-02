@@ -13,6 +13,8 @@ import { SortDirection } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
 import { DragDropRow } from "./DragDropRowRenderer";
+import { DragDropHeaderCell } from "./DragDropHeaderCell";
+import { LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
@@ -61,11 +63,15 @@ export interface TableProps {
 
   dragProps?: DragSourceProps;
   dropProps?: TableDropTargetProps;
-
   /** Callback for when properties are being edited */
   onPropertyEditing?: (args: CellEditorState) => void;
   /** Callback for when properties are updated */
   onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
+  reorderableColumns?: boolean;
+  /** Optional parameter for persistent UI settings. Used for row reordering and row collapsing persistency. */
+  uiSettings?: UiSettings;
+  /** Identifying string used for persistent state. */
+  settingsIdentifier?: string;
 }
 
 /** Properties for the Table's DropTarget. */
@@ -272,7 +278,19 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    const columns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
+    let columns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
+    if (this.props.settingsIdentifier) {
+      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
+      const result = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      if (result.status === UiSettingsStatus.Sucess) {
+        const setting = result.setting as string[];
+        // map columns according to the keys in columns, in the order of the loaded array of keys
+        columns = setting.map((key) => columns.filter((col) => col.key === key)[0]);
+      } else if (result.status === UiSettingsStatus.NotFound) {
+        const keys = columnDescriptions.map((col) => col.key);
+        uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+      }
+    }
     this.setState(() => {
       return {
         columns,
@@ -356,6 +374,7 @@ export class Table extends React.Component<TableProps, TableState> {
       icon: columnDescription.icon,
       resizable: columnDescription.resizable !== undefined ? columnDescription.resizable : false,
       sortable: columnDescription.sortable !== undefined ? columnDescription.sortable : false,
+      draggable: this.props.reorderableColumns || false,
     };
 
     if (editable) {
@@ -783,7 +802,19 @@ export class Table extends React.Component<TableProps, TableState> {
   private _onMouseDown = () => {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
   }
+  private _onHeaderDrop = (source: string, target: string) => {
+    const cols = [ ...this.state.columns ];
+    const columnSourceIndex = this.state.columns.findIndex((i) => i.key === source);
+    const columnTargetIndex = this.state.columns.findIndex((i) => i.key === target);
 
+    cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
+    if (this.props.settingsIdentifier) {
+      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
+      const keys = cols.map((col) => col.key);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+    }
+    this.setState({ columns: cols });
+  }
   private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: { rowIdx: number, idx: number, name: string }): void {
     let activate = false;
 
@@ -936,11 +967,16 @@ export class Table extends React.Component<TableProps, TableState> {
             height: "100%",
           }}
           dropProps={dropProps}
+          onMouseDown={this._onMouseDown}
         >
           <ReactDataGrid
             columns={this.state.columns}
             rowGetter={this._rowGetter}
             rowRenderer={rowRenderer}
+            {...(this.props.reorderableColumns ? {
+              draggableHeaderCell: DragDropHeaderCell,
+              onHeaderDrop: this._onHeaderDrop,
+            } as any : {})}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}
@@ -959,6 +995,10 @@ export class Table extends React.Component<TableProps, TableState> {
             columns={this.state.columns}
             rowGetter={this._rowGetter}
             rowRenderer={rowRenderer}
+            {...(this.props.reorderableColumns ? {
+              draggableHeaderCell: DragDropHeaderCell,
+              onHeaderDrop: this._onHeaderDrop,
+            } as any : {})}
             rowsCount={this.state.rowsCount}
             enableCellSelect={true}
             minHeight={500}

@@ -513,6 +513,7 @@ export class Sample {
   public static createSimplePointStrings(): PointString3d[] {
     const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 0), [Point3d.create(6, 10, 0)]]];
     const simplePaths = [
+      PointString3d.create(Point3d.create(1, 2, 0)),
       PointString3d.create(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0)),
       PointString3d.create(
         Point3d.create(10, 0, 0),

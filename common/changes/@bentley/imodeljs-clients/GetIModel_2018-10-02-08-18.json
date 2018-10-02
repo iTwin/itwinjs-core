@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Changed some iModelHub types to be stricter",
+      "comment": "Added GetIModel method",
       "packageName": "@bentley/imodeljs-clients",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-clients",
-  "email": "Karolis.Dziedzelis@bentley.com"
+  "email": "Algirdas.Mikoliunas@bentley.com"
 }

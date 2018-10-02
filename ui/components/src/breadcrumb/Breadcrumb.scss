@@ -9,66 +9,48 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
   display: flex;
   flex-direction: column;
 
-  &.breadcrumb-active {
-    > .breadcrumb-head {
+  > .breadcrumb-head {
+    position: relative;
+    .breadcrumb-input-root {
       > .breadcrumb-input {
-        display: block;
+        @include bwc-inputs-input;
+
+        width: calc(100% - #{$breadcrumb-edge});
+        height: $bwc-line-height;
       }
 
       > .breadcrumb-close {
-        display: block;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        padding: $bwc-inputs-padding-bordered - 1px;
+        margin: $bwc-inputs-margin 0;
+        height: $bwc-line-height;
+        width: $bwc-line-height;
+        font-size: $bwc-icons-small;
+        line-height: $bwc-line-height;
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+          color: $bwc-blue;
+        }
       }
 
-      > .breadcrumb-split-buttons {
-        display: none;
-      }
-    }
-  }
+      > .context-menu .context-menu-item {
+        padding: $bwc-bordered-padding;
+        transform: rotate(180deg);
 
-  > .breadcrumb-head {
-    position: relative;
+        > .context-menu-icon {
+          display: none;
+        }
 
-    > .breadcrumb-input {
-      @include bwc-inputs-input;
-
-      width: calc(100% - #{$breadcrumb-edge});
-      display: none;
-      height: $bwc-line-height;
-    }
-
-    > .breadcrumb-close {
-      display: none;
-      position: absolute;
-      top: 0px;
-      right: 0px;
-      padding: $bwc-inputs-padding-bordered - 1px;
-      margin: $bwc-inputs-margin 0;
-      height: $bwc-line-height;
-      width: $bwc-line-height;
-      font-size: $bwc-icons-small;
-      line-height: $bwc-line-height;
-      text-align: center;
-      cursor: pointer;
-
-      &:hover {
-        color: $bwc-blue;
+        > .context-menu-content {
+          transform: rotate(-180deg);
+        }
       }
     }
-
-    > .context-menu .context-menu-item {
-      padding: $bwc-bordered-padding;
-      transform: rotate(180deg);
-
-      > .context-menu-icon {
-        display: none;
-      }
-
-      > .context-menu-content {
-        transform: rotate(-180deg);
-      }
-    }
-
-    > .breadcrumb-split-buttons {
+    .breadcrumb-dropdown {
       @include bwc-inputs-input;
 
       display: flex;
@@ -98,23 +80,25 @@ $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
           }
         }
       }
+      .breadcrumb-crumb-list {
+        display: flex;
+        .breadcrumb-split-button {
+          padding: 0;
 
-      .breadcrumb-split-button {
-        padding: 0;
+          .split-button-arrow-icon {
+            font-size: 10px;
+            line-height: $bwc-line-height;
+            transform: rotate(-90deg);
+          }
 
-        .split-button-arrow-icon {
-          font-size: 10px;
-          line-height: $bwc-line-height;
-          transform: rotate(-90deg);
-        }
+          .split-button-label {
+            min-width: $bwc-line-height;
+            text-align: center;
+          }
 
-        .split-button-label {
-          min-width: $bwc-line-height;
-          text-align: center;
-        }
-
-        &.expanded .split-button-arrow-icon {
-          transform: rotate(0deg);
+          &.expanded .split-button-arrow-icon {
+            transform: rotate(0deg);
+          }
         }
       }
 

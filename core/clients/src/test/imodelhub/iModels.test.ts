@@ -253,6 +253,30 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
 
+  it("should get primary IModel", async () => {
+    if (TestConfig.enableMocks) {
+      const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", "?$orderby=CreatedDate+asc&$top=1");
+      const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
+        new Map<string, any>([["name", imodelName]])));
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    }
+
+    const imodels = await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().primary());
+    chai.expect(imodels.length).to.be.equal(1);
+  });
+
+  it("should return empty list if no IModels returned", async () => {
+    if (!TestConfig.enableMocks)
+      return;
+
+    const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", "?$orderby=CreatedDate+asc&$top=1");
+    const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel), 0);
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+
+    const imodels = await imodelProject.queryIModels(alctx, accessToken, projectId, new IModelQuery().primary());
+    chai.expect(imodels.length).to.be.equal(0);
+  });
+
   it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");

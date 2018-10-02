@@ -7,7 +7,17 @@ import { TreeDataProvider, TreeNodeItem } from "../tree";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table";
 import { PropertyRecord, PropertyValueFormat } from "..";
 
+/**
+ * Utility class for tree searching and manipulation in the Breadcrumb component.
+ */
 export class BreadcrumbTreeUtils {
+  /**
+   * Searches for target node and returns a list of target node, with all parent nodes.
+   * Return list is ordered parent first, with root node first and target node as the last element.
+   * @param dataProvider Tree data provider to search for target in.
+   * @param target Target node to search for.
+   * @returns Promise for a list of parent nodes up to and including target parameter.
+   */
   public static pathTo = async (dataProvider: TreeDataProvider, target?: TreeNodeItem): Promise<TreeNodeItem[]> => {
     if (target === undefined)
       return [];
@@ -32,6 +42,12 @@ export class BreadcrumbTreeUtils {
     }
     return undefined;
   }
+  /**
+   * Transforms a node list from [[BreadcrumbTreeUtils.pathTo]] into a string, composed of tree node labels seperated by a given delimiter character.
+   * @param pathList List of nodes to convert to delimited string.
+   * @param delimiter String delimiter to insert between tree node labels.
+   * @returns String of tree node labels seperated by delimiter.
+   */
   public static nodeListToString = (pathList: ReadonlyArray<Readonly<TreeNodeItem>>, delimiter: string): string => {
     const p: string[] = [];
     if (pathList.length === 0)
@@ -45,14 +61,22 @@ export class BreadcrumbTreeUtils {
 
   private static _escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 
-  public static findChild = async (dataProvider: TreeDataProvider, p: string, delimiter: string): Promise<TreeNodeItem | undefined> => {
-    if (p.lastIndexOf(delimiter) === p.length - delimiter.length)
-      p = p.substr(0, p.length - delimiter.length);
-    if (p.length === 0)
+  /**
+   * Takes a string in the format of the return value of [[BreadcrumbTreeUtils.nodeListToString]], and finds the tree node
+   * object in dataProvider based on the delimiter seperating tree node labels.
+   * @param dataProvider Tree data provider to search for target in.
+   * @param pathString String path value generated from [[BreadcrumTreeUtils.nodeListToString]] to be used to locate tree node.
+   * @param delimiter String delimiter used in [[BreadcrumbTreeUtils.nodeListToString]], to distinguish each between each node.
+   * @returns Tree node located by the pathString parameter.
+   */
+  public static findChild = async (dataProvider: TreeDataProvider, pathString: string, delimiter: string): Promise<TreeNodeItem | undefined> => {
+    if (pathString.lastIndexOf(delimiter) === pathString.length - delimiter.length)
+      pathString = pathString.substr(0, pathString.length - delimiter.length);
+    if (pathString.length === 0)
       return undefined;
     const root = await dataProvider.getRootNodes({ size: 9999, start: 0 });
     for (const tree of root) {
-      const node = await BreadcrumbTreeUtils._find(dataProvider, tree, p, delimiter);
+      const node = await BreadcrumbTreeUtils._find(dataProvider, tree, pathString, delimiter);
       if (node)
         return node;
     }
@@ -79,18 +103,31 @@ export class BreadcrumbTreeUtils {
     return undefined;
   }
 
-  public static findMatches = async (dataProvider: TreeDataProvider, p: string, delimiter: string, hasChildren: boolean = false): Promise<{ items: ReadonlyArray<Readonly<TreeNodeItem>>, list: ReadonlyArray<Readonly<TreeNodeItem>> }> => {
+  /**
+   * Takes a string in the format of the return value of [[BreadcrumbTreeUtils.nodeListToString]], and returns a list of all
+   * parent nodes in pathString, and a list of all child nodes matching the last substring delimited by delimiter parameter in pathString.
+   * The .items field of the returned object contains all parent tree node objects up to last instance of the delimiter parameter in pathString.
+   * The .list field of the returned object contains all tree nodes that are children of the last tree node in the .items field
+   * that match the substring following the last instance of the delimiter parameter in pathString.
+   * @param dataProvider Tree data provider to search for target in.
+   * @param pathString String path value generated from [[BreadcrumTreeUtils.nodeListToString]] to be used to locate tree nodes.
+   * @param delimiter String delimiter used in [[BreadcrumbTreeUtils.nodeListToString]], to distinguish each between each node.
+   * @param hasChildren Specifies whether to filter all items in .list, leaving only nodes with children.
+   * @returns Object with a .items field: a list of all parent tree nodes and a .list field: all child nodes matching last substring delimited by
+   * delimiter parameter in pathString.
+   */
+  public static findMatches = async (dataProvider: TreeDataProvider, pathString: string, delimiter: string, hasChildren: boolean = false): Promise<{ items: ReadonlyArray<Readonly<TreeNodeItem>>, list: ReadonlyArray<Readonly<TreeNodeItem>> }> => {
     let items: ReadonlyArray<Readonly<TreeNodeItem>> = [];
     let list: ReadonlyArray<Readonly<TreeNodeItem>> = [];
-    if (p.length === 0) {
+    if (pathString.length === 0) {
       items = await dataProvider.getRootNodes({ size: 9999, start: 0 });
       list = [];
     } else {
       const del = BreadcrumbTreeUtils._escapeRegExp(delimiter);
-      const mat = p.match(new RegExp("(.*)" + del + "(.*?)$"));
+      const mat = pathString.match(new RegExp("(.*)" + del + "(.*?)$"));
 
       let node: TreeNodeItem | undefined;
-      let name = p;
+      let name = pathString;
       if (mat) {
         node = await BreadcrumbTreeUtils.findChild(dataProvider, mat[1], delimiter);
         name = mat[2];
@@ -117,6 +154,12 @@ export class BreadcrumbTreeUtils {
       return { items, list };
   }
 
+  /**
+   * Transforms a list of children from a tree node into a [[TableDataProvider]], given a list of column descriptions.
+   * @param nodes Node list to use as a basis for the [[TableDataProvider]].
+   * @param columns An array of column descriptions to specify which columns to provide to the resulting [[TableDataProvider]].
+   * @returns A [[TableDataProvider]] object that can be used to populate a [[Table]] component.
+   */
   public static aliasNodeListToTableDataProvider = (nodes: ReadonlyArray<Readonly<TreeNodeItem>>, columns: ColumnDescription[]): TableDataProvider => {
     return {
       onColumnsChanged: new TableDataChangeEvent(),
@@ -205,6 +248,7 @@ export class BreadcrumbTreeUtils {
   }
 }
 
+/** @hidden */
 export interface DataRowItem extends RowItem {
   _node?: TreeNodeItem;
 }

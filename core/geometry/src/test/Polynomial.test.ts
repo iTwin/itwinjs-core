@@ -16,7 +16,7 @@ import { AnalyticRoots } from "../numerics/Polynomials";
 import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
-import { Bezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
+import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
 import { GrowableFloat64Array } from "../GrowableArray";
 import { Point4d } from "../numerics/Geometry4d";
 
@@ -34,7 +34,7 @@ function testBezier(ck: Checker, bezier: BezierCoffs) {
       const roots = bezier.roots(y, false);
       ck.testBoolean(true, NumberArray.isCoordinateInArray(f, roots), "root");
     }
-    const bezier1 = Bezier.create(bezier);
+    const bezier1 = UnivariateBezier.create(bezier);
     ck.testExactNumber(bezier.order, bezier1.order, "general clone order");
     const basisFunctions1 = bezier1.basisFunctions(f);
     const diff = NumberArray.maxAbsDiffFloat64(basisFunctions, basisFunctions1);

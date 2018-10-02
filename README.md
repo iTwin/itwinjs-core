@@ -2,16 +2,9 @@
 
 Copyright © Bentley Systems, Inc. 2018
 
-The iModel.js library is an open source library for creating and accessing iModels.
+The [iModel.js](http://imodeljs.org) library is an open source library for creating and accessing iModels.
 
-## Getting Started With iModel.js
-
-* [This Overview](./docs/index) explains the purpose and organization of the library.
-* [These Tutorials](./docs/tutorials/index) provide examples of its use.
-* The [API Documentation](./api/) gives details of the classes and functions.
-* [Additional Resources](./docs/learning/CommunityResources) are available to ask questions and get further help.
-* [Release Notes](./ReleaseNotes) describes changes from previous versions.
-* [Contributions](./Contributing) to iModel.js are welcome.
+If you have questions, or want to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
 
 ## About this Repository
 

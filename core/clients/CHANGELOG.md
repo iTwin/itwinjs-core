@@ -1,6 +1,28 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 01 Oct 2018 10:28:46 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Oct 2018 01:02:27 GMT and should not be manually modified.
+
+## 0.145.0
+Tue, 02 Oct 2018 01:02:27 GMT
+
+### Updates
+
+- More fixes to invalid imports
+
+## 0.144.0
+Mon, 01 Oct 2018 22:10:58 GMT
+
+### Updates
+
+- Fix imports that directly reference the node_modules folder
+
+## 0.143.0
+Mon, 01 Oct 2018 19:10:45 GMT
+
+### Updates
+
+- Changed some iModelHub types to be stricter
+- Added strict types for iModelHub events
 
 ## 0.142.0
 Mon, 01 Oct 2018 10:28:46 GMT

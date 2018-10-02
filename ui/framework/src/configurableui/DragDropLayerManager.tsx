@@ -8,7 +8,7 @@ import * as React from "react";
 import { DragLayer } from "react-dnd";
 
 import { UiEvent } from "@bentley/ui-core";
-import { DragSourceArguments } from "@bentley/ui-components";
+import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
 
 /** Drag/Drop Layer Changed Event Args class.
  */
@@ -60,12 +60,6 @@ export class DragDropLayerManager {
   }
 }
 
-/** Properties for DragLayer components
- */
-export interface DragLayerProps {
-  args?: DragSourceArguments;
-}
-
 /** Properties for the DragDropLayerRenderer component
  */
 export interface DragDropLayerRendererProps {
@@ -113,12 +107,13 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
       clientOffset, initialClientOffset,
       sourceClientOffset, initialSourceClientOffset,
     } = this.props;
-    // tslint:disable-next-line:variable-name
-    const LayerElement = DragDropLayerManager.getActiveLayer();
-    if (!this._dragging || !LayerElement)
-      return null;
 
     const dragSourceArgs = item! as DragSourceArguments;
+
+    // tslint:disable-next-line:variable-name
+    const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer);
+    if (!this._dragging || !LayerElement)
+      return null;
 
     if (clientOffset) dragSourceArgs.clientOffset = clientOffset;
     if (initialClientOffset) dragSourceArgs.initialClientOffset = initialClientOffset;

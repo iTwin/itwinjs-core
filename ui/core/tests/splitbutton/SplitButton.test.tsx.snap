@@ -28,8 +28,43 @@ exports[`<SplitButton /> renders correctly 1`] = `
       onEsc={[Function]}
       onSelect={[Function]}
       opened={false}
-      parentHeight={0}
-      parentWidth={0}
+      selected={0}
+    />
+  </div>
+</div>
+`;
+
+exports[`<SplitButton /> renders with icon correctly 1`] = `
+<div
+  className="split-button"
+>
+  <div
+    className="split-button-label"
+  >
+    <span
+      className="icon icon-placeholder"
+    />
+     
+    test
+  </div>
+  <div
+    className="split-button-arrow"
+    onClick={[Function]}
+    onKeyUp={[Function]}
+    tabIndex={0}
+  >
+    <div
+      className="split-button-arrow-icon icon icon-chevron-down"
+    />
+    <ContextMenu
+      autoflip={false}
+      direction="bottom right"
+      edgeLimit={true}
+      floating={true}
+      onBlur={[Function]}
+      onEsc={[Function]}
+      onSelect={[Function]}
+      opened={false}
       selected={0}
     />
   </div>

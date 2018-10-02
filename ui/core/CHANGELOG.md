@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 01 Oct 2018 10:28:46 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Oct 2018 01:02:27 GMT and should not be manually modified.
+
+## 0.145.0
+Tue, 02 Oct 2018 01:02:27 GMT
+
+*Version update only*
+
+## 0.144.0
+Mon, 01 Oct 2018 22:10:58 GMT
+
+*Version update only*
+
+## 0.143.0
+Mon, 01 Oct 2018 19:10:45 GMT
+
+### Updates
+
+- Added tests to ui-core components
+- Added tests, refactored ContextMenu.
+- Fixed sizing issues in Dialog, added GlobalContextMenu
 
 ## 0.142.0
 Mon, 01 Oct 2018 10:28:46 GMT
