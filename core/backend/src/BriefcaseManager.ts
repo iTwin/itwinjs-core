@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
@@ -1259,6 +1259,7 @@ export class BriefcaseManager {
       if (!Number.isNaN(Number.parseInt(key, 10))) {
         const code = new HubCode();
         Object.assign(code, value);
+        code.codeSpecId = new Id64(value.codeSpecId);
         code.briefcaseId = briefcase.briefcaseId;
         return code;
       }
