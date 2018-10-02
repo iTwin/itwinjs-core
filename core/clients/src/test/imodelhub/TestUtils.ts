@@ -165,7 +165,7 @@ export async function getProjectId(accessToken: AccessToken, projectName?: strin
 
   projectName = projectName || TestConfig.projectName;
 
-  const project: Project = await getCloudEnv().contextClient.queryContextByName(actx, accessToken, projectName);
+  const project: Project = await getCloudEnv().contextMgr.queryContextByName(actx, accessToken, projectName);
 
   if (!project || !project.wsgId)
     return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);

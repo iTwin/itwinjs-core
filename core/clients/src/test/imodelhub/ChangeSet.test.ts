@@ -103,10 +103,6 @@ describe("iModelHub ChangeSetHandler", () => {
     }
   });
 
-  after(() => {
-    utils.getCloudEnv().terminate();
-  });
-
   afterEach(() => {
     ResponseBuilder.clearMocks();
   });

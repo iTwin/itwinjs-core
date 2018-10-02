@@ -9,7 +9,7 @@ import { IModelBankDummyAuthorizationClient } from "../../IModelBank/IModelBankD
 import { IModelHubError } from "../../imodelhub";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelClient } from "../../IModelClient";
-import { IModelContextClient } from "../../IModelCloudEnvironment";
+import { ContextManagerClient } from "../../IModelCloudEnvironment";
 import { ActivityLoggingContext, IModelHubStatus, Guid, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../../Token";
 import { Project } from "../../ConnectClients";
@@ -18,12 +18,9 @@ import { IModelBankClient } from "../../IModelBank";
 import { TestConfig } from "../TestConfig";
 import { workDir } from "./TestUtils";
 
-class TestIModelBankContextClient extends IModelContextClient {
+class IModelBankFileSystemContextClient implements ContextManagerClient {
   constructor(public bankFsRoot: string) {
-    super();
   }
-
-  public terminate(): void { }
 
   private findContextByName(name: string) {     // *** TODO: Remove this when we can import IModelBankFileSystemAdmin from imodel-bank
     for (const contextId of fs.readdirSync(this.bankFsRoot)) {
@@ -71,10 +68,10 @@ class TestIModelBankContextClient extends IModelContextClient {
 export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
-  const contextClient = new TestIModelBankContextClient(path.join(workDir, "bankfs"));
+  const contextMgr = new IModelBankFileSystemContextClient(path.join(workDir, "bankfs"));
 
-  contextClient.recreateBankFs();
-  contextClient.createContextByName(TestConfig.projectName);
+  contextMgr.recreateBankFs();
+  contextMgr.createContextByName(TestConfig.projectName);
 
   // TODO this should be of type OrchestratorConfig, imported from imodel-bank
   const cfg = require(path.resolve(__dirname, "../assets/LocalOrchestrator.config.json"));
@@ -83,7 +80,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   cfg.firstBankPort = cfg.port + 1;
   cfg.firstContextPort = cfg.port + 20;
   cfg.firstBackendPort = 0;
-  cfg.bankfsRoot = contextClient.bankFsRoot;
+  cfg.bankfsRoot = contextMgr.bankFsRoot;
 
   const serverConfigFile = path.join(workDir, "LocalOrchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
@@ -125,8 +122,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   const cloudEnv = {
     isIModelHub: false,
     authorization: new IModelBankDummyAuthorizationClient(),
-    contextClient,
-    terminate: () => { },
+    contextMgr,
   };
 
   const bankClient = new IModelBankClient(`${cfg.baseUrl}:${cfg.port}`, TestConfig.deploymentEnv, new UrlFileHandler());

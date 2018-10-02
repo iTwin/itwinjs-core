@@ -63,10 +63,6 @@ describe("iModelHubClient LockHandler", () => {
     }
   });
 
-  after(() => {
-    utils.getCloudEnv().terminate();
-  });
-
   afterEach(() => {
     ResponseBuilder.clearMocks();
   });

@@ -170,7 +170,6 @@ describe("iModelHub iModelHandler", () => {
 
   after(async () => {
     await utils.deleteIModelByName(accessToken, projectId, createIModelName);
-    utils.getCloudEnv().terminate();
   });
 
   it("should get list of IModels", async () => {

@@ -93,10 +93,6 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  after(() => {
-    utils.getCloudEnv().terminate();
-  });
-
   it("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(imodelId, 3);
     const briefcase = await iModelClient.Briefcases().create(actx, accessToken, imodelId);

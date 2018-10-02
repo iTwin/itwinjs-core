@@ -5,25 +5,16 @@
 /** @module iModels */
 import { AccessToken } from "./Token";
 import { UserProfile } from "./UserProfile";
-import { ProgressInfo } from "./Request";
 import { Project } from "./ConnectClients";
 import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** @hidden Information needed by a project abstraction to create an iModel */
-export interface IModelContextIModelCreateParams {
-  name: string;
-  description: string;
-  seedFile: string;
-  tracker?: (progress: ProgressInfo) => void;
+/** @hidden How to discover "contexts". A context corresponds roughly to a "project" in Connect. */
+export interface ContextManagerClient {
+  queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<Project>;
 }
 
-/** @hidden  Corresponds to Connect's project manager. */
-export abstract class IModelContextClient {
-  public abstract queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<Project>;
-}
-
-/** @hidden Access to a service that authorizes users. */
+/** @hidden User-authorization service. */
 export interface IModelAuthorizationClient {
   authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 }
@@ -32,6 +23,5 @@ export interface IModelAuthorizationClient {
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly authorization: IModelAuthorizationClient;
-  readonly contextClient: IModelContextClient;
-  terminate(): void;
+  readonly contextMgr: ContextManagerClient;
 }
