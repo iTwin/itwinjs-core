@@ -196,7 +196,7 @@ describe("ImsDelegationSecureTokenClient", () => {
         chai.expect(tokenString!.startsWith("Token "));
         chai.expect(tokenString!.length).is.greaterThan(1000);
 
-        const roundTrippedTokenString = AccessToken.fromTokenString(tokenString!)!.toTokenString();
+        const roundTrippedTokenString = AccessToken.fromSamlTokenString(tokenString!)!.toTokenString();
         chai.expect(roundTrippedTokenString).equals(tokenString);
       }
     }

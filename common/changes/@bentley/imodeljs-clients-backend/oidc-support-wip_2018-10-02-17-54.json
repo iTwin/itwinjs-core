@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Better OIDC support for agents. ",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

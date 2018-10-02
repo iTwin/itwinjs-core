@@ -452,7 +452,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "passport",

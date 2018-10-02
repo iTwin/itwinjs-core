@@ -3,8 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
-    {
+  "configurations": [{
       "type": "node",
       "request": "launch",
       "name": "LocalOrchestrator",
@@ -82,7 +81,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Clients Tests (Offline)",
+      "name": "Clients Tests (Offline)",
       "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
@@ -98,11 +97,25 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Clients Tests",
+      "name": "Clients Tests (Online)",
       "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients",
       "args": [
         "--testDir=${workspaceFolder}/core/clients/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Clients-Backend Tests (Integration)",
+      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients-backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
         "--debug"
       ],
       "port": 9229,
@@ -504,13 +517,11 @@
       "outputCapture": "std"
     },
   ],
-  "compounds": [
-    {
-      "name": "Run Testbed (all)",
-      "configurations": [
-        "_Testbed (frontend)",
-        "_Testbed (backend)"
-      ]
-    }
-  ]
+  "compounds": [{
+    "name": "Run Testbed (all)",
+    "configurations": [
+      "_Testbed (frontend)",
+      "_Testbed (backend)"
+    ]
+  }]
 }

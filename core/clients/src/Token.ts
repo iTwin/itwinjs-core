@@ -8,6 +8,12 @@ import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
 import { UserProfile } from "./UserProfile";
 import { Base64 } from "js-base64";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+
+export enum IncludePrefix {
+  Yes = 0,
+  No = 1,
+}
 
 /** Token base class */
 export abstract class Token {
@@ -80,15 +86,19 @@ export abstract class Token {
 /** Token issued by Active Secure Token Service or Federated Authentication Service for user authentication/authorization  */
 export class AuthorizationToken extends Token {
 
-  public static fromSamlAssertion(samlAssertion: string): AuthorizationToken | undefined {
+  public static fromSamlAssertion(samlAssertion: string): AuthorizationToken {
     const token = new AuthorizationToken(samlAssertion);
-    return token.parseSamlAssertion() ? token : undefined;
+    if (!token.parseSamlAssertion())
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot parse Saml assertion");
+    return token;
   }
 
-  public toTokenString(): string | undefined {
+  public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     if (!this._x509Certificate)
-      return undefined;
-    return "X509 access_token=" + Buffer.from(this._x509Certificate, "utf8").toString("base64");
+      throw new BentleyError(BentleyStatus.ERROR, "Invalid access token");
+
+    const prefix = (includePrefix === IncludePrefix.Yes) ? "X509 access_token=" : "";
+    return prefix + Buffer.from(this._x509Certificate, "utf8").toString("base64");
   }
 
   public static clone(unTypedObj: any): AuthorizationToken {
@@ -100,15 +110,16 @@ export class AuthorizationToken extends Token {
 
 /** Token issued by DelegationSecureTokenService for API access  */
 export class AccessToken extends Token {
-  private _samlAccessTokenString?: string;
   private _jwt?: string;
   private static _samlTokenPrefix = "Token";
   private static _jwtTokenPrefix = "Bearer";
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
-  public static fromSamlAssertion(samlAssertion: string): AuthorizationToken | undefined {
+  public static fromSamlAssertion(samlAssertion: string): AuthorizationToken {
     const token = new AccessToken(samlAssertion);
-    return token.parseSamlAssertion() ? token : undefined;
+    if (!token.parseSamlAssertion())
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot parse Saml assertion");
+    return token;
   }
 
   public static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined {
@@ -123,19 +134,22 @@ export class AccessToken extends Token {
   }
 
   /** Create an AccessToken from a SAML based accessTokenString for Windows Federated Authentication workflows */
-  public static fromTokenString(accessTokenString: string): AccessToken | undefined {
-    const index = accessTokenString.toLowerCase().indexOf(AccessToken._samlTokenPrefix.toLowerCase());
-    if (index < 0)
-      return undefined;
+  public static fromSamlTokenString(accessTokenString: string, includesPrefix: IncludePrefix = IncludePrefix.Yes): AccessToken {
+    let extractedStr = accessTokenString;
+    if (includesPrefix === IncludePrefix.Yes) {
+      const index = accessTokenString.toLowerCase().indexOf(AccessToken._samlTokenPrefix.toLowerCase());
+      if (index < 0)
+        throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
 
-    const extractedStr = accessTokenString.slice(6);
-    if (!extractedStr)
-      return undefined;
+      extractedStr = accessTokenString.slice(6);
+      if (!extractedStr)
+        throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
+    }
 
     // Need to replace the trailing \u0000 - see https://github.com/nodejs/node/issues/4775
     const samlStr = Base64.atob(extractedStr).replace(/\0$/, "");
     if (!samlStr)
-      return undefined;
+      throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
 
     return AccessToken.fromSamlAssertion(samlStr);
   }
@@ -150,18 +164,15 @@ export class AccessToken extends Token {
     return token;
   }
 
-  public toTokenString(): string | undefined {
+  public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     if (this._jwt)
-      return AccessToken._jwtTokenPrefix + " " + this._jwt;
-
-    if (this._samlAccessTokenString)
-      return this._samlAccessTokenString;
+      return (includePrefix === IncludePrefix.Yes) ? AccessToken._jwtTokenPrefix + " " + this._jwt : this._jwt;
 
     if (!this._samlAssertion)
-      return undefined;
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot convert invalid access token to string");
 
     const tokenStr: string = Base64.btoa(this._samlAssertion);
-    return AccessToken._samlTokenPrefix + " " + tokenStr;
+    return (includePrefix === IncludePrefix.Yes) ? AccessToken._samlTokenPrefix + " " + tokenStr : tokenStr;
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {

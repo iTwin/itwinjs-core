@@ -185,7 +185,7 @@ describe("RbacClient", () => {
     chai.expect(!!project);
 
     // Round trip the access token to mimic its use
-    const newAccessToken = AccessToken.fromTokenString(accessToken.toTokenString()!);
+    const newAccessToken = AccessToken.fromSamlTokenString(accessToken.toTokenString()!);
 
     const permissions: IModelHubPermissions = await rbacClient.getIModelHubPermissions(actx, newAccessToken!, project.wsgId);
 
