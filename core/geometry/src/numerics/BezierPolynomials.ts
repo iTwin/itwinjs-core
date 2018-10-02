@@ -7,7 +7,7 @@
 
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { PascalCoefficients } from "./PascalCoefficients";
 import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, AnalyticRoots } from "./Polynomials";
 /* tslint:disable:variable-name*/

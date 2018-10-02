@@ -5,17 +5,22 @@
 
 /** @module Curve */
 
-import { Geometry, AngleSweep, Angle, AxisOrder } from "../Geometry";
-import { Segment1d, Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
+import { Geometry, AxisOrder } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Segment1d, Point3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 import { Quadrature } from "../numerics/Quadrature";
-import { GeometryHandler } from "../GeometryHandler";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { CurvePrimitive, GeometryQuery } from "./CurvePrimitive";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { StrokeOptions } from "./StrokeOptions";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 
-import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { IStrokeHandler } from "../GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 // import {} from "./";
 

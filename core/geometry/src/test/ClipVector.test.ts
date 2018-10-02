@@ -5,14 +5,14 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { Point2d, Point3d, Vector2d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point2d, Point3d, Vector2d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { ClipShape, ClipMask } from "../clipping/ClipPrimitive";
 import { ClipVector } from "../clipping/ClipVector";
 import { SmallSystem } from "../numerics/Polynomials";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 
 // External test functions
 import { clipShapesAreEqual } from "./ClipPrimitives.test";

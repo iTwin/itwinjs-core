@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // import { Sample } from "../serialization/GeometrySamples";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurvePrimitive";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 // import { Point3d, Transform } from "../PointVector";
 import { Checker } from "./Checker";

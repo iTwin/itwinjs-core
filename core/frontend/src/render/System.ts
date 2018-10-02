@@ -39,7 +39,7 @@ import { PointStringParams, MeshParams, PolylineParams } from "./primitives/Vert
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { SkyBox } from "../DisplayStyleState";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */

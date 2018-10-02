@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { NumberArray } from "../PointHelpers";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { NumberArray } from "../geometry3d/PointHelpers";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { AnalyticRoots, Degree2PowerPolynomial } from "../numerics/Polynomials";
 
 /* tslint:disable:no-console no-trailing-whitespace */

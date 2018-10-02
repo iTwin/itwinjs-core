@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module CartesianGeometry */
 
-import { Segment1d, Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { GrowableFloat64Array } from "../GrowableArray";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Segment1d, Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";

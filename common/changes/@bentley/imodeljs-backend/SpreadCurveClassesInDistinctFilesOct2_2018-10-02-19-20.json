@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Spread various geometry classes to smaller files",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Earlin.Lutz@Bentley.com"
+}

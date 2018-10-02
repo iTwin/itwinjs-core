@@ -9,9 +9,9 @@ import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clip
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 import { Geometry } from "../Geometry";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Triangulator } from "../topology/Triangulation";

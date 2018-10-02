@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Sample } from "../serialization/GeometrySamples";
-import { CurveCollection } from "../curve/CurveChain";
-import { Point3d } from "../PointVector";
-import { Transform } from "../Transform";
+import { CurveCollection } from "../curve/CurveCollection";
+import { Point3d } from "../geometry3d/PointVector";
+import { Transform } from "../geometry3d/Transform";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 // import { prettyPrint } from "./testFunctions";

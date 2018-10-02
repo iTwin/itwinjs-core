@@ -8,12 +8,12 @@
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 import { Geometry } from "../Geometry";
-import { Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { BSplineSurface3dQuery, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { expect } from "chai";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 /* tslint:disable:no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;

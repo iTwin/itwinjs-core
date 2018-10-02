@@ -6,8 +6,8 @@
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Point3d } from "../PointVector";
-import { GrowableBlockedArray, GrowableXYZArray } from "../GrowableArray";
+import { Point2d, Point3d } from "../geometry3d/PointVector";
+import { GrowableBlockedArray, GrowableXYZArray } from "../geometry3d/GrowableArray";
 
 export class ClusterableArray extends GrowableBlockedArray {
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.

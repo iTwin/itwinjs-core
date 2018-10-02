@@ -6,11 +6,11 @@
 /** @module Topology */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
-import { Point3d, XAndY } from "../PointVector";
+import { Point3d, XAndY } from "../geometry3d/PointVector";
 import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../GrowableArray";
-import { Range2d } from "../Range";
-import { IndexedXYZCollection } from "../IndexedXYZCollection";
+import { GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { Range2d } from "../geometry3d/Range";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 
 export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Spread various geometry classes to smaller files",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@Bentley.com"
+}

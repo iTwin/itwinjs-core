@@ -8,7 +8,7 @@
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { Geometry } from "../Geometry";
-import { NumberArray } from "../PointHelpers";
+import { NumberArray } from "../geometry3d/PointHelpers";
 /**
  * Array of non-decreasing numbers acting as a knot array for bsplines.
  *

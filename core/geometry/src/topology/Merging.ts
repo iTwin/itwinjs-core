@@ -6,10 +6,10 @@
 /** @module Topology */
 
 import { Geometry } from "../Geometry";
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 
 class SweepEvent {

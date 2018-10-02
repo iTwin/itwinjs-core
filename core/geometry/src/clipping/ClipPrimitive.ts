@@ -8,12 +8,12 @@
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { ClipPlaneContainment } from "./ClipUtils";
-import { Point3d, Vector2d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point3d, Vector2d, Vector3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { Geometry } from "../Geometry";
-import { PolygonOps } from "../PointHelpers";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { PolygonOps } from "../geometry3d/PointHelpers";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 import { Triangulator } from "../topology/Triangulation";

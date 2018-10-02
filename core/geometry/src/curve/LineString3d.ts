@@ -5,15 +5,21 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions, Angle, PlaneAltitudeEvaluator } from "../Geometry";
-import { Point3d, Vector3d, XAndY } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { Plane3dByOriginAndUnitNormal, Plane3dByOriginAndVectors, Ray3d } from "../AnalyticGeometry";
-import { GrowableXYZArray, GrowableFloat64Array } from "../GrowableArray";
-import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { CurvePrimitive, GeometryQuery, CurveLocationDetail, CurveIntervalRole, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d, XAndY } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { GrowableXYZArray, GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { StrokeOptions } from "./StrokeOptions";
+import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { CurveLocationDetail} from "./CurveLocationDetail";
+import { CurveIntervalRole } from "./CurveLocationDetail";
 import { AxisOrder } from "../Geometry";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/

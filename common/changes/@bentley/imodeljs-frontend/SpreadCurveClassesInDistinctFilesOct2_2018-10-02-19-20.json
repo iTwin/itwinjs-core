@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Spread various classes to smaller files.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Earlin.Lutz@Bentley.com"
+}

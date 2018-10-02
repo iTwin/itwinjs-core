@@ -2,10 +2,15 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Transform, Range3d, Matrix3d, Angle, AxisOrder, Point3d, Vector3d } from "../geometry-core";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Range3d } from "../geometry3d/Range";
+import { Angle } from "../geometry3d/Angle";
+
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
 import * as bsiChecker from "./Checker";
 import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
+import { AxisOrder } from "../Geometry";
 /* tslint:disable:no-console */
 export class MatrixTests {
 

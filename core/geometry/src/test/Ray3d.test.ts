@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Transform } from "../Transform";
-import { Matrix3d } from "../Transform";
-import { Ray3d } from "../AnalyticGeometry";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 

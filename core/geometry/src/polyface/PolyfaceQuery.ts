@@ -8,13 +8,14 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 import { Polyface, PolyfaceVisitor } from "./Polyface";
-import { Matrix4d } from "../numerics/Geometry4d";
-import { Loop, BagOfCurves } from "../curve/CurveChain";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { BagOfCurves } from "../curve/CurveCollection";
+import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
-import { PolygonOps } from "../PointHelpers";
-import { MomentData } from "../numerics/Moments";
+import { PolygonOps } from "../geometry3d/PointHelpers";
+import { MomentData } from "../geometry4d/MomentData";
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod. */
 export class PolyfaceQuery {

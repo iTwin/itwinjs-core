@@ -10,7 +10,7 @@ import { TestChangesetSequence } from "./TestChangesetSequence";
 import { Id64, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase } from "@bentley/imodeljs-backend/lib/backend";
 import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
-import { Point3d } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import * as fs from "fs";
 import * as path from "path";

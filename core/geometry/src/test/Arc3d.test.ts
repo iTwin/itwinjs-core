@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Matrix3d, Transform } from "../Transform";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
+import { Matrix3d, Transform } from "../geometry3d/Transform";
 
 import { Arc3d } from "../curve/Arc3d";
-import { Angle, AngleSweep } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 

@@ -5,7 +5,7 @@
 
 /** @module Polyface */
 
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 //
 //      2------------------3
 //      | \     F4       / |

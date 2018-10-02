@@ -6,15 +6,20 @@
 /** @module Serialization */
 
 // import { Geometry, Angle, AxisOrder, BSIJSONValues } from "../Geometry";
-import { Geometry, Angle, AngleSweep, AngleProps, AngleSweepProps, AxisOrder } from "../Geometry";
-import { Point2d, Point3d, XYZ, Vector3d, XYProps, XYZProps, YawPitchRollProps, YawPitchRollAngles, Segment1d } from "../PointVector";
-import { Matrix3d } from "../Transform";
-import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
-
-import { CurveCollection } from "../curve/CurveChain";
+import { Geometry, AngleProps, AngleSweepProps, AxisOrder } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Point2d, Point3d, XYZ, Vector3d, XYProps, XYZProps, YawPitchRollProps, YawPitchRollAngles, Segment1d } from "../geometry3d/PointVector";
+import { Matrix3d } from "../geometry3d/Transform";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
-import { Transform } from "../Transform";
-import { Path, Loop, ParityRegion, UnionRegion, BagOfCurves } from "../curve/CurveChain";
+import { Transform } from "../geometry3d/Transform";
+import { UnionRegion } from "../curve/UnionRegion";
+import { BagOfCurves } from "../curve/CurveCollection";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
 import { IndexedPolyface, PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../polyface/Polyface";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
@@ -25,14 +30,15 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
-import { Ray3d } from "../AnalyticGeometry";
-import { GeometryHandler } from "../GeometryHandler";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Point4d } from "../numerics/Geometry4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { CurveCollection } from "../curve/CurveCollection";
 /* tslint:disable: object-literal-key-quotes no-console*/
 
 export namespace IModelJson {

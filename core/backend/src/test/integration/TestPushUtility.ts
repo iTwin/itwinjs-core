@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, BriefcaseManager } from "../../backend";

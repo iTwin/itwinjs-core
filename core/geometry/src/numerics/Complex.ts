@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Numerics */
-import { BeJSONFunctions, Geometry, Angle } from "../Geometry";
+import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 export class Complex implements BeJSONFunctions {
   private _myX: number;
   set x(value) { this._myX = value; }

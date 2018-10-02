@@ -5,9 +5,10 @@
 
 import { expect, assert } from "chai";
 import { Degree2PowerPolynomial } from "../numerics/Polynomials";
-import { Geometry, Angle } from "../Geometry";
-import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles } from "../PointVector";
-import { Matrix3d } from "../Transform";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles } from "../geometry3d/PointVector";
+import { Matrix3d } from "../geometry3d/Transform";
 import { Checker } from "./Checker";
 /* tslint:disable:no-console */
 

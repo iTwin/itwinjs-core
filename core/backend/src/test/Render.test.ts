@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps, Gradient } from "@bentley/imodeljs-common";
-import { Angle } from "../../../geometry/lib/Geometry";
+import { Angle } from "@bentley/geometry-core";
 
 describe("Render", () => {
 

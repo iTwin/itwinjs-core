@@ -2,10 +2,11 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { YawPitchRollAngles, Vector3d, Point3d } from "../PointVector";
-import { Transform } from "../Transform";
+import { YawPitchRollAngles, Vector3d, Point3d } from "../geometry3d/PointVector";
+import { Transform } from "../geometry3d/Transform";
 
-import { Geometry, Angle } from "../Geometry";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import * as bsiChecker from "./Checker";
 // import { Sample } from "../serialization/GeometrySamples";
 import { expect, assert } from "chai";

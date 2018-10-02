@@ -5,13 +5,15 @@
 
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { Point4d, Matrix4d } from "../numerics/Geometry4d";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { Geometry, Angle } from "../Geometry";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";

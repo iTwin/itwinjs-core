@@ -2,9 +2,9 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 
-import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -17,32 +17,8 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 
 // Requires for grabbing json object from external file
 import * as fs from "fs";
-import { Geometry } from "../Geometry";
-
-// Methods (called from other files in the test suite) for doing I/O of tests files.
-export class GeometryCoreTestIO {
-  public static outputRootDirectory = "./src/test/output";
-  public static saveGeometry(geometry: GeometryQuery[], directoryName: string | undefined, fileName: string) {
-
-    let path = GeometryCoreTestIO.outputRootDirectory;
-    if (directoryName !== undefined) {
-      path += "/" + directoryName;
-      if (!fs.existsSync(path))
-        fs.mkdirSync(path);
-    }
-    const filename = path + "/" + fileName + ".imjs";
-    const imjs = IModelJson.Writer.toIModelJson(geometry);
-    fs.writeFileSync(filename, prettyPrint(imjs));
-  }
-
-  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (newGeometry) {
-      if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
-        newGeometry.tryTranslateInPlace(dx, dy, dz);
-      collection.push(newGeometry);
-    }
-  }
-}
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 
 // directory containing imjs files produced by native geomlibs tests:
 const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";

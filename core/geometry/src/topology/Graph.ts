@@ -5,7 +5,7 @@
 
 /** @module Topology */
 
-import { Point3d, Vector2d, Vector3d } from "../PointVector";
+import { Point3d, Vector2d, Vector3d } from "../geometry3d/PointVector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 export type NodeFunction = (node: HalfEdge) => any;

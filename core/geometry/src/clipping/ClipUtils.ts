@@ -2,9 +2,9 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { Arc3d } from "../curve/Arc3d";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";

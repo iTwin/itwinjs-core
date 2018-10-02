@@ -2,17 +2,19 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../PointVector";
-import { Geometry, Angle, AngleSweep } from "../Geometry";
+import { Point3d } from "../geometry3d/PointVector";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BezierCurve3d, BezierCurveBase } from "../bspline/BezierCurve";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { LineString3d } from "../curve/LineString3d";
-import { Transform } from "../Transform";
+import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 

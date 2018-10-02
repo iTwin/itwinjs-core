@@ -8,16 +8,17 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { AxisOrder } from "../Geometry";
-import { Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { Point3dArray, Point4dArray } from "../PointHelpers";
-import { Plane3dByOriginAndUnitNormal, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
+import { Point3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { KnotVector } from "./KnotVector";
 import { Geometry } from "../Geometry";
-import { Point4d } from "../numerics/Geometry4d";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { GeometryHandler } from "../GeometryHandler";
+import { Point4d } from "../geometry4d/Point4d";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 /**
  * UVSelect is an integer indicating uDirection (0) or vDirection (1) in a bspline surface parameterization.
  */

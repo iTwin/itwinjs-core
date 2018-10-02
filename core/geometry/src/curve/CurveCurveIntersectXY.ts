@@ -5,27 +5,30 @@
 
 /** @module Curve */
 
-import { GeometryQuery } from "./CurvePrimitive";
-import { NullGeometryHandler } from "../GeometryHandler";
-import { CurvePrimitive, CurveLocationDetail, CurveIntervalRole } from "./CurvePrimitive";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
+import { GeometryQuery } from "./GeometryQuery";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveIntervalRole } from "./CurveLocationDetail";
 import { Geometry } from "../Geometry";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 // import { Arc3d } from "./Arc3d";
-import { Point3d, Vector2d, XYAndZ } from "../PointVector";
+import { Point3d, Vector2d, XYAndZ } from "../geometry3d/PointVector";
 // import { LineString3d } from "./LineString3d";
 import { SmallSystem, AnalyticRoots, TrigPolynomial } from "../numerics/Polynomials";
-import { Matrix4d, Point4d } from "../numerics/Geometry4d";
-import { Transform, Matrix3d } from "../Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 import { Arc3d } from "./Arc3d";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BezierCurve3dH, BezierCurveBase } from "../bspline/BezierCurve";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Range3d } from "../Range";
+import { Range3d } from "../geometry3d/Range";
 import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
-import { Ray3d } from "../AnalyticGeometry";
+import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
  * * Private class for refining bezier-bezier intersections.

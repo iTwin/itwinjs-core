@@ -5,10 +5,12 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { NumberArray } from "../PointHelpers";
-import { Geometry, Angle, AngleSweep } from "../Geometry";
+import { NumberArray } from "../geometry3d/PointHelpers";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 import { Quadrature } from "../numerics/Quadrature";
-import { Point2d, Vector2d, Point3d, Vector3d } from "../PointVector";
+import { Point2d, Vector2d, Point3d, Vector3d } from "../geometry3d/PointVector";
 import { Arc3d } from "../curve/Arc3d";
 import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "../numerics/Polynomials";
 import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
@@ -17,8 +19,8 @@ import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
 import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
-import { GrowableFloat64Array } from "../GrowableArray";
-import { Point4d } from "../numerics/Geometry4d";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { Point4d } from "../geometry4d/Point4d";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {

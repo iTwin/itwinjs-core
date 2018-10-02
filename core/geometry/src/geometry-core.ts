@@ -119,13 +119,24 @@
  */
 // doc:export class TopologyDoc { }
 
-export * from "./PointVector";
-export * from "./PointHelpers";
+export * from "./geometry3d/PointVector";
+export * from "./geometry3d/PointHelpers";
+export * from "./geometry3d/Transform";
+export * from "./geometry3d/Range";
+export * from "./geometry3d/GrowableArray";
+export * from "./geometry3d/FrameBuilder";
+export * from "./geometry3d/GeometryHandler";
+export * from "./geometry3d/IndexedXYZCollection";
+export * from "./geometry3d/OrderedRotationAngles";
+
+export * from "./geometry3d/Ray3d";
+export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
+export * from "./geometry3d/Plane3dByoriginAndVectors";
+
 export * from "./Geometry";
-export * from "./Transform";
-export * from "./Range";
+export * from "./geometry3d/Angle";
+export * from "./geometry3d/AngleSweep";
 export * from "./Constant";
-export * from "./GrowableArray";
 export * from "./clipping/ClipPlane";
 export * from "./clipping/ConvexClipPlaneSet";
 export * from "./clipping/UnionOfConvexClipPlaneSets";
@@ -133,8 +144,11 @@ export * from "./clipping/ClipPrimitive";
 export * from "./clipping/ClipVector";
 export * from "./clipping/ClipUtils";
 export * from "./numerics/ConvexPolygon2d";
-export * from "./numerics/Geometry4d";
-export * from "./numerics/Moments";
+export * from "./geometry4d/PlaneByOriginAndVectors4d";
+export * from "./geometry4d/Point4d";
+export * from "./geometry4d/Matrix4d";
+export * from "./geometry4d/Map4d";
+export * from "./geometry4d/MomentData";
 export * from "./numerics/Newton";
 export * from "./numerics/Complex";
 export * from "./numerics/Polynomials";
@@ -143,9 +157,17 @@ export * from "./numerics/Range1dArray";
 export * from "./numerics/TriDiagonalSystem";
 export * from "./curve/Arc3d";
 export * from "./curve/ConstructCurveBetweenCurves";
+export * from "./curve/CurveCollection";
 export * from "./curve/CurveChain";
+export * from "./curve/Loop";
+export * from "./curve/ParityRegion";
+export * from "./curve/Path";
+export * from "./curve/UnionRegion";
 export * from "./curve/CurveCurveIntersectXY";
 export * from "./curve/CurvePrimitive";
+export * from "./curve/CurveLocationDetail";
+export * from "./curve/CoordinateXYZ";
+export * from "./curve/GeometryQuery";
 export * from "./curve/CurveProcessor";
 export * from "./curve/LineSegment3d";
 export * from "./curve/LineString3d";

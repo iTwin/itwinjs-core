@@ -2,34 +2,22 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// import { IndexedPolyface, Polyface } from "../polyface/Polyface";
-// import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
-// import { Sample } from "../serialization/GeometrySamples";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-// import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Point3d, Vector3d, YawPitchRollAngles } from "../PointVector";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
-// import { Range3d } from "../Range";
-// import { SolidPrimitive } from "../solid/SolidPrimitive";
-// import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/CurveChain";
-// import { SweepContour } from "../solid/SweepContour";
+import { Point3d, Vector3d, YawPitchRollAngles } from "../geometry3d/PointVector";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Loop } from "../curve/Loop";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-// import { IModelJson } from "../serialization/IModelJsonSchema";
-import { GeometryCoreTestIO } from "./IModelJson.test";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
-import { AngleSweep, StandardViewIndex } from "../Geometry";
+import { StandardViewIndex } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Sample } from "../serialization/GeometrySamples";
-// import { Transform } from "stream";
-// import { AxisIndex } from "../Geometry";
-// import { StrokeOptions } from "../geometry-core";
-// import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
 */

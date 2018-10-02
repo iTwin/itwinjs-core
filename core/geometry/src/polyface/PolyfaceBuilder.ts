@@ -7,14 +7,15 @@
 
 // import { Geometry, AxisOrder, Angle, AngleSweep, BSIJSONValues } from "./Geometry";
 import { IndexedPolyface } from "./Polyface";
-import { GrowableFloat64Array } from "../GrowableArray";
-import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Transform, Matrix3d } from "../Transform";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { Point3d, Vector3d, Point2d } from "../geometry3d/PointVector";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 import { BoxTopology } from "./BoxTopology";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Cone } from "../solid/Cone";
-import { CurveChain } from "../curve/CurveChain";
+import { CurveChain } from "../curve/CurveCollection";
+
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { LinearSweep } from "../solid/LinearSweep";
@@ -25,7 +26,7 @@ import { AnyCurve } from "../curve/CurveChain";
 import { Geometry, AxisOrder } from "../Geometry";
 import { LineString3d } from "../curve/LineString3d";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeToBooleanFunction } from "../topology/Graph";
-import { NullGeometryHandler, UVSurface } from "../GeometryHandler";
+import { NullGeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 
 /**
  *

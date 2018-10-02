@@ -22,7 +22,7 @@ import { IModelConnection } from "./IModelConnection";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
-import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { GeometricModelState, GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderGraphic } from "./render/System";

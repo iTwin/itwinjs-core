@@ -5,15 +5,25 @@
 
 /** @module Serialization */
 
-import { Geometry, Angle, AngleSweep } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal, Ray3d } from "../AnalyticGeometry";
-import { Point3d, Vector3d, Point2d, Vector2d, Segment1d } from "../PointVector";
-import { Transform, Matrix3d } from "../Transform";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Point3d, Vector3d, Point2d, Vector2d, Segment1d } from "../geometry3d/PointVector";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 
-import { Range1d, Range2d, Range3d } from "../Range";
-import { CurvePrimitive, GeometryQuery } from "../curve/CurvePrimitive";
-import { Point4d, Matrix4d, Map4d } from "../numerics/Geometry4d";
-import { Path, Loop, ParityRegion, UnionRegion, BagOfCurves } from "../curve/CurveChain";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Map4d } from "../geometry4d/Map4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { UnionRegion } from "../curve/UnionRegion";
+import { BagOfCurves } from "../curve/CurveCollection";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
@@ -32,7 +42,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 

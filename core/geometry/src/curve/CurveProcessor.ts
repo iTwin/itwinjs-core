@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Curve */
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Path, Loop, ParityRegion, UnionRegion, AnyCurve, BagOfCurves, CurveCollection } from "./CurveChain";
+import { AnyCurve } from "./CurveChain";
+import { UnionRegion } from "./UnionRegion";
+import { BagOfCurves } from "./CurveCollection";
+import { ParityRegion } from "./ParityRegion";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
+import { CurveCollection } from "./CurveCollection";
 /* tslint:disable:variable-name no-empty*/
 
 /** base class for detailed traversal of curve artifacts.  This recurses to children in the quickest way (no records of path)

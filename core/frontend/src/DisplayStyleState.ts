@@ -23,7 +23,7 @@ import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem, TextureImage } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {

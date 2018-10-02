@@ -2,11 +2,11 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { } from "../PointVector";
-import { Matrix3d } from "../Transform";
+import { } from "../geometry3d/PointVector";
+import { Matrix3d } from "../geometry3d/Transform";
 import { Geometry } from "../Geometry";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
-import { Point3d } from "../PointVector";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { Point3d } from "../geometry3d/PointVector";
 /* tslint:disable:no-console no-unused-variable */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {

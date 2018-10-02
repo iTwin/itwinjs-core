@@ -7,11 +7,11 @@
 
 import { ClipShape, ClipMask } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
-import { Point3d, Segment1d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point3d, Segment1d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { Geometry } from "../Geometry";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 
 /** Class holding an array structure of shapes defined by clip plane sets */

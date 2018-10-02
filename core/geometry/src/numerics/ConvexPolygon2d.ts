@@ -5,8 +5,8 @@
 
 /** @module Numerics */
 
-import { Point2d, Vector2d } from "../PointVector";
-import { Range1d } from "../Range";
+import { Point2d, Vector2d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
 import { Geometry } from "../Geometry";
 
 export class Ray2d {

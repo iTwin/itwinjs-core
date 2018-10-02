@@ -6,7 +6,7 @@
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 
 // Enumerated type lies outside of TriDiagonalSystem, as TSLint prevented declaration within class
 enum DataState {

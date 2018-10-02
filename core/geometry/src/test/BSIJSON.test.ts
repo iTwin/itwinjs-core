@@ -2,25 +2,34 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Angle, AngleSweep, BeJSONFunctions } from "../Geometry";
+import { BeJSONFunctions } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 import { Complex } from "../numerics/Complex";
-import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles, Segment1d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Range2d } from "../Range";
-import { Range3d } from "../Range";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
-import { BagOfCurves, Path, Loop, ParityRegion, UnionRegion } from "../curve/CurveChain";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles, Segment1d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
+import { Range2d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { UnionRegion } from "../curve/UnionRegion";
+import { BagOfCurves } from "../curve/CurveCollection";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
 
-import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Checker } from "./Checker";
-import { Point4d, Matrix4d, Map4d } from "../numerics/Geometry4d";
+import { Map4d } from "../geometry4d/Map4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { expect } from "chai";
 import { Sample } from "../serialization/GeometrySamples";
-import { NullGeometryHandler } from "../GeometryHandler";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
@@ -31,6 +40,8 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 
 // Requires for grabbing json object from external file
 import * as fs from "fs";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 
 // Variables used for testing
 let outputFolderPath = "./src/test/output";

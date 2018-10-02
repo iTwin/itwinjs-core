@@ -5,25 +5,31 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { Angle, AngleSweep, Geometry } from "../Geometry";
-import { Segment1d, Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Range3d } from "../Range";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
-import { PolygonOps } from "../PointHelpers";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Segment1d, Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range1d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { PolygonOps } from "../geometry3d/PointHelpers";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
-import { CurvePrimitive, GeometryQuery, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "../clipping/ClipUtils";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Sample } from "../serialization/GeometrySamples";
 
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;

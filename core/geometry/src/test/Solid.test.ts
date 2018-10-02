@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Sample } from "../serialization/GeometrySamples";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Point3d } from "../PointVector";
-import { Transform } from "../Transform";
-import { Matrix3d } from "../Transform";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Point3d } from "../geometry3d/PointVector";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Transform";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Checker } from "./Checker";
 import { expect } from "chai";

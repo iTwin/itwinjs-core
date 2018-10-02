@@ -2,20 +2,23 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point4d, Matrix4d, Map4d, Plane4dByOriginAndVectors } from "../numerics/Geometry4d";
-import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
+import { PlaneByOriginAndVectors4d } from "../geometry4d/PlaneByOriginAndVectors4d";
+import { Map4d } from "../geometry4d/Map4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { Angle } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import * as bsiChecker from "./Checker";
 import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { SmallSystem } from "../numerics/Polynomials";
 /* tslint:disable:no-console variable-name */
 
@@ -465,33 +468,33 @@ describe("Matrix4d", () => {
 function verify3d4dPlaneMatch(
   ck: bsiChecker.Checker,
   planeA: Plane3dByOriginAndVectors,
-  planeB: Plane4dByOriginAndVectors) {
+  planeB: PlaneByOriginAndVectors4d) {
   for (const uv of [[0.4, 0.62], [0, 0], [1, 0], [0, 1]]) {
     const q3d = planeA.fractionToPoint(uv[0], uv[1]);
     const q4d = planeB.fractionToPoint(uv[0], uv[1]);
     const q4dReal = q4d.realPoint()!;
     ck.testPoint3d(q3d, q4dReal);
   }
-  const planeXY = Plane4dByOriginAndVectors.createXYPlane(); // NOT to be overwritten
+  const planeXY = PlaneByOriginAndVectors4d.createXYPlane(); // NOT to be overwritten
   const planeB1 = planeB.clone();
   ck.testTrue(planeB1.isAlmostEqual(planeB));
-  const planeB2 = Plane4dByOriginAndVectors.createXYPlane(); // to be overwritten
+  const planeB2 = PlaneByOriginAndVectors4d.createXYPlane(); // to be overwritten
   if (!planeB.isAlmostEqual(planeB2)) {
     planeB2.setFrom(planeB);
     ck.testTrue(planeB.isAlmostEqual(planeB2));
-    const planeB2A = Plane4dByOriginAndVectors.createXYPlane(); // to be overwritten
+    const planeB2A = PlaneByOriginAndVectors4d.createXYPlane(); // to be overwritten
     // clone to target
     const planeB3 = planeB.clone(planeB2A);
     ck.testTrue(planeB.isAlmostEqual(planeB3));
     // now rewrite as planeXY ..
-    Plane4dByOriginAndVectors.createXYPlane(planeB3);
+    PlaneByOriginAndVectors4d.createXYPlane(planeB3);
     ck.testTrue(planeXY.isAlmostEqual(planeB3), "revert to XY plane");
 
-    const planeB4 = Plane4dByOriginAndVectors.createOriginAndVectors(
+    const planeB4 = PlaneByOriginAndVectors4d.createOriginAndVectors(
       planeB.origin, planeB.vectorU, planeB.vectorV);
     ck.testTrue(planeB.isAlmostEqual(planeB4));
     // reuse planeB3
-    Plane4dByOriginAndVectors.createOriginAndVectors(planeB.origin, planeB.vectorU, planeB.vectorV, planeB3);
+    PlaneByOriginAndVectors4d.createOriginAndVectors(planeB.origin, planeB.vectorU, planeB.vectorV, planeB3);
     ck.testTrue(planeB.isAlmostEqual(planeB3));
   }
 
@@ -502,7 +505,7 @@ describe("Plane4dByOriginAndVectors", () => {
     const origin = Point4d.create(1, 2, 3, 2);
     const vectorU = Point4d.create(3, 7, 9, 0);
     const vectorV = Point4d.create(-5, 2, 8, 1);
-    const plane0 = Plane4dByOriginAndVectors.createOriginAndVectors(origin, vectorU, vectorV);
+    const plane0 = PlaneByOriginAndVectors4d.createOriginAndVectors(origin, vectorU, vectorV);
     ck.testPoint4d(origin, plane0.origin);
     ck.testPoint4d(vectorU, plane0.vectorU);
     ck.testPoint4d(vectorV, plane0.vectorV);
@@ -517,9 +520,9 @@ describe("Plane4dByOriginAndVectors", () => {
     const vectorV = Vector3d.create(-5, 2, 8);
     const targetU = origin.plus(vectorU);
     const targetV = origin.plus(vectorV);
-    const plane0 = Plane4dByOriginAndVectors.createOriginAndTargets3d(origin,
+    const plane0 = PlaneByOriginAndVectors4d.createOriginAndTargets3d(origin,
       targetU, targetV);
-    const plane2 = Plane4dByOriginAndVectors.createOriginAndVectors(
+    const plane2 = PlaneByOriginAndVectors4d.createOriginAndVectors(
       Point4d.createFromPointAndWeight(origin, 1),
       Point4d.createFromPointAndWeight(vectorU, 0),
       Point4d.createFromPointAndWeight(vectorV, 0));
@@ -531,7 +534,7 @@ describe("Plane4dByOriginAndVectors", () => {
     verify3d4dPlaneMatch(ck, plane1, plane0);
     verify3d4dPlaneMatch(ck,
       Plane3dByOriginAndVectors.createXYPlane(),
-      Plane4dByOriginAndVectors.createXYPlane());
+      PlaneByOriginAndVectors4d.createXYPlane());
 
     expect(ck.getNumErrors()).equals(0);
   });

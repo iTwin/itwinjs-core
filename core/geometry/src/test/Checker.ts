@@ -2,19 +2,21 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry, Angle } from "../Geometry";
-import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../PointVector";
-import { Transform, Matrix3d } from "../Transform";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../geometry3d/PointVector";
+import { Transform, Matrix3d } from "../geometry3d/Transform";
 
-import { GrowableFloat64Array } from "../GrowableArray";
-import { Range3d } from "../Range";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { Range3d } from "../geometry3d/Range";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
-import { Point4d, Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
 import { Complex } from "../numerics/Complex";
 
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 
 /* tslint:disable:variable-name no-console*/
 

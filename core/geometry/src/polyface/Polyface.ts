@@ -8,13 +8,13 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Geometry } from "./Geometry";
-import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Range3d, Range2d, Range1d } from "../Range";
-import { Transform } from "../Transform";
-import { NumberArray, Vector3dArray, Point2dArray } from "../PointHelpers";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { GeometryHandler } from "../GeometryHandler";
+import { Point3d, Vector3d, Point2d } from "../geometry3d/PointVector";
+import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { NumberArray, Vector3dArray, Point2dArray } from "../geometry3d/PointHelpers";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 
 /**

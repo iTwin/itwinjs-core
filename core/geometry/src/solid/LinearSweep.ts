@@ -5,15 +5,17 @@
 
 /** @module Solid */
 
-import { Vector3d, XAndY } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Vector3d, XAndY } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 
-import { CurveCollection, Loop, Path } from "../curve/CurveChain";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
+import { CurveCollection } from "../curve/CurveCollection";
 import { LineString3d } from "../curve/LineString3d";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { PolygonOps } from "../PointHelpers";
-import { GeometryHandler } from "../GeometryHandler";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { PolygonOps } from "../geometry3d/PointHelpers";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";
 /**

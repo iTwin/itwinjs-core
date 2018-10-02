@@ -5,12 +5,12 @@
 
 /** @module Curve */
 
-import { GeometryQuery } from "./CurvePrimitive";
-import { NullGeometryHandler } from "../GeometryHandler";
+import { GeometryQuery } from "./GeometryQuery";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { LineSegment3d } from "./LineSegment3d";
 import { Arc3d } from "./Arc3d";
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/PointVector";
 import { LineString3d } from "./LineString3d";
 
 /**

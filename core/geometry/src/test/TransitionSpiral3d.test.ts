@@ -5,10 +5,10 @@
 
 // import { Point3d, Vector3d } from "../PointVector";
 // import { Range1d } from "../Range";
-// import { Matrix3d, Transform } from "../Transform";
+// import { Matrix3d, Transform } from "../geometry3d/Transform";
 
 import { TransitionConditionalProperties } from "../curve/TransitionSpiral";
-import { Angle } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 

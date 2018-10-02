@@ -7,18 +7,22 @@
 
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { CurvePrimitive, CurveLocationDetail } from "../curve/CurvePrimitive";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { KnotVector } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
-import { Point3dArray } from "../PointHelpers";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCurve3d, BezierCurve3dH, BezierCurveBase } from "./BezierCurve";
 import { BSpline1dNd } from "./BSpline1dNd";
 

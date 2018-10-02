@@ -17,7 +17,7 @@ import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext, DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }

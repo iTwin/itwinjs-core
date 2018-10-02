@@ -5,10 +5,11 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { Geometry, Angle } from "../Geometry";
-import { Point3d, Vector3d } from "../PointVector";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 /* tslint:disable:no-console */

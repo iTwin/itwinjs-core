@@ -5,8 +5,9 @@
 
 /** @module CartesianGeometry */
 
-import { Geometry, Angle, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "./Geometry";
-import { Point4d } from "./numerics/Geometry4d";
+import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
+import { Angle } from "./Angle";
+import { Point4d } from "../geometry4d/Point4d";
 import { Range3d } from "./Range";
 import { Point2d, Point3d, Vector3d, XYAndZ } from "./PointVector";
 import { XAndY, XYZ, Matrix3dProps, TransformProps } from "./PointVector";

@@ -5,17 +5,19 @@
 
 /** @module Solid */
 
-import { } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { } from "../geometry3d/PointVector";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 
-import { CurveCollection } from "../curve/CurveChain";
-import { GeometryQuery, CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveCollection } from "../curve/CurveCollection";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../GeometryHandler";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { CurveChain } from "../curve/CurveCollection";
 
 export class RuledSweep extends SolidPrimitive {
   private _contours: SweepContour[];
@@ -110,7 +112,7 @@ export class RuledSweep extends SolidPrimitive {
       section0 = numSection - 2;
     const section1 = section0 + 1;
     const localFraction = Geometry.clampToStartEnd(q - section0, 0, 1);
-    return CurveCollection.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
+    return RuledSweep.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
       (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
         const newPrimitive = ConstructCurveBetweenCurves.InterpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
@@ -121,6 +123,55 @@ export class RuledSweep extends SolidPrimitive {
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     for (const contour of this._contours)
       contour.curves.extendRange(rangeToExtend, transform);
+  }
+
+  /** Construct a CurveCollection with the same structure as collectionA and collectionB, with primitives constructed by the caller-supplied primitiveMutator function.
+   * @returns Returns undefined if there is any type mismatch between the two collections.
+   */
+  public static mutatePartners(collectionA: CurveCollection, collectionB: CurveCollection, primitiveMutator: (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined): CurveCollection | undefined {
+    if (!collectionA.isSameGeometryClass(collectionB))
+      return undefined;
+    if (collectionA instanceof CurveChain && collectionB instanceof CurveChain) {
+      const chainA = collectionA as CurveChain;
+      const chainB = collectionB as CurveChain;
+      const chainC = chainA.cloneEmptyPeer() as CurveChain;
+      const childrenA = chainA.children;
+      const childrenB = chainB.children;
+      if (childrenA.length !== childrenA.length)
+        return undefined;
+      for (let i = 0; i < childrenA.length; i++) {
+        const newChild = primitiveMutator(childrenA[i], childrenB[i]);
+        if (!newChild)
+          return undefined;
+        chainC.children.push(newChild);
+      }
+      return chainC;
+    } else if (collectionA instanceof CurveCollection && collectionB instanceof CurveCollection) {
+      const collectionC = collectionA.cloneEmptyPeer();
+      const childrenA = collectionA.children;
+      const childrenB = collectionB.children;
+      const childrenC = collectionC.children;
+      if (!childrenA || !childrenB || !childrenC)
+        return undefined;
+      for (let i = 0; i < childrenA.length; i++) {
+        const childA = childrenA[i];
+        const childB = childrenB[i];
+        if (childA instanceof CurvePrimitive && childB instanceof CurvePrimitive) {
+          const newPrimitive = primitiveMutator(childA, childB);
+          if (!newPrimitive)
+            return undefined;
+          childrenC.push(newPrimitive);
+        } else if (childA instanceof CurveCollection && childB instanceof CurveCollection) {
+          const newChild = this.mutatePartners(childA, childB, primitiveMutator);
+          if (!newChild)
+            return undefined;
+          if (newChild instanceof CurveCollection)
+            childrenC.push(newChild);
+        }
+      }
+      return collectionC;
+    }
+    return undefined;
   }
 
 }
