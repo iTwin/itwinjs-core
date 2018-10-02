@@ -2,6 +2,21 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.147.0",
+      "tag": "@bentley/geometry-core_v0.147.0",
+      "date": "Tue, 02 Oct 2018 19:41:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add README.md"
+          },
+          {
+            "comment": "Updating README to remove internal links"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/geometry-core_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",

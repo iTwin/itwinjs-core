@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.147.0",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "platform-bld@bentley.com"
+}
