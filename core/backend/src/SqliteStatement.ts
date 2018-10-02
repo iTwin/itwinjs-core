@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SQLite */
 
-import { DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { Id64, Guid, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
@@ -93,14 +93,16 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Binds a value to the specified SQL parameter.
-   *  The value must be of one of the types SQLite supports:
-   *  SQLite Type | JavaScript Type
+   *  The value must be of one of these types:
+   *  JavaScript Type | SQLite Type
    *  --- | ---
-   *  NULL | undefined
-   *  Integer | number; boolean (will be bound as 1 or 0 respectively)
-   *  Double | number
-   *  String | string
-   *  BLOB | ArrayBuffer or SharedArrayBuffer
+   *  undefined | NULL
+   *  boolean | INTEGER with true being bound as 1 and false as 0
+   *  number | INTEGER if number is integral or REAL if number is not integral
+   *  string | TEXT
+   *  ArrayBuffer | BLOB
+   *  [Id64]($common) | INTEGER
+   *  [Guid]($common) | BLOB
    *
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
@@ -120,7 +122,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
       stat = this._stmt!.bindString(parameter, value);
-    } else if (value instanceof ArrayBuffer || value instanceof SharedArrayBuffer) {
+    } else if (value instanceof Id64) {
+      stat = this._stmt!.bindId(parameter, value.toString());
+    } else if (value instanceof Guid) {
+      stat = this._stmt!.bindGuid(parameter, value.toString());
+    } else if (value instanceof ArrayBuffer) {
       stat = this._stmt!.bindBlob(parameter, value);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
@@ -323,6 +329,9 @@ export class SqliteValue {
    * [SqliteValueType.Double]($backend) | number
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | ArrayBuffer
+   *
+   * Note: You cannot retrieve [Id64s]($common) or [Guids]($common) with this property
+   * directly. Use [SqliteValue.getId]($backend) or [SqliteValue.getGuid]($backend) respectively instead.
    */
   public get value(): any {
     switch (this.type) {
@@ -349,6 +358,10 @@ export class SqliteValue {
   public getInteger(): number { return this._stmt.getValueInteger(this._colIndex); }
   /** Get the value as a string value */
   public getString(): string { return this._stmt.getValueString(this._colIndex); }
+  /** Get the value as an Id value */
+  public getId(): Id64 { return new Id64(this._stmt.getValueId(this._colIndex)); }
+  /** Get the value as a Guid value */
+  public getGuid(): Guid { return new Guid(this._stmt.getValueGuid(this._colIndex)); }
 }
 
 /** A cached SqliteStatement.

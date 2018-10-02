@@ -136,11 +136,10 @@
       }
     },
     "@bentley/bwc": {
-      "version": "6.0.2",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bwc/-/bwc-6.0.2.tgz",
-      "integrity": "sha1-rvh5lERygXv3waeKnpvOzjXC99Y=",
+      "version": "6.0.3",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bwc/-/bwc-6.0.3.tgz",
+      "integrity": "sha1-i5GRMPIYn3oXpzgVNEm47euDHpU=",
       "requires": {
-        "@bentley/get-user-color": "1.2.0",
         "classnames": "2.2.6",
         "highlight.js": "9.12.0",
         "js-beautify": "1.8.6",
@@ -149,25 +148,20 @@
         "react-syntax-highlighter": "3.0.2"
       }
     },
-    "@bentley/get-user-color": {
-      "version": "1.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/get-user-color/-/get-user-color-1.2.0.tgz",
-      "integrity": "sha1-hsbj685lCNyOrgyldUAOEQ5Rrbk="
-    },
     "@bentley/icons-webfont": {
-      "version": "6.6.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/icons-webfont/-/icons-webfont-6.6.0.tgz",
-      "integrity": "sha1-ksPGVzQEfleVgnUSKv7hDIj+BVs="
+      "version": "6.6.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/icons-webfont/-/icons-webfont-6.6.1.tgz",
+      "integrity": "sha1-gYP8UqBHANasnUY2vUye0h73JzI="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "0.58.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.58.0.tgz",
-      "integrity": "sha1-ot0EAzLOY6ZoO4mZ45/kVYXvC+k="
+      "version": "0.60.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.60.0.tgz",
+      "integrity": "sha1-dzRCxOma9S5YIFCdDieDxHF09PQ="
     },
     "@bentley/svg-icons": {
-      "version": "6.6.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/svg-icons/-/svg-icons-6.6.0.tgz",
-      "integrity": "sha1-1dfLucpv+MZbyhVad66X4OcM0Os="
+      "version": "6.6.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/svg-icons/-/svg-icons-6.6.1.tgz",
+      "integrity": "sha1-eWRwT9FLfoJSGOXryIOYHSoPfck="
     },
     "@fimbul/bifrost": {
       "version": "0.11.0",
@@ -411,9 +405,9 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-qQH+3NcrZ9Q1zjHDnIuABuoqHuU=",
+      "integrity": "sha1-/a8l38s1FXRPYmIzDPrtaPt+kKU=",
       "requires": {
-        "@bentley/imodeljs-native-platform-api": "0.58.0",
+        "@bentley/imodeljs-native-platform-api": "0.60.0",
         "@types/chai": "4.1.6",
         "@types/fs-extra": "4.0.8",
         "@types/glob": "5.0.36",
@@ -478,7 +472,7 @@
     },
     "@rush-temp/imodeljs-clients-backend": {
       "version": "file:projects/imodeljs-clients-backend.tgz",
-      "integrity": "sha1-LAoIw6HpXVRgqyZvMXkE9v2k++Y=",
+      "integrity": "sha1-T/r26hiL1VFNTean2coLJWmv2b8=",
       "requires": {
         "@types/chai": "4.1.6",
         "@types/mocha": "5.2.5",
@@ -744,7 +738,7 @@
       "version": "file:projects/presentation-test-app.tgz",
       "integrity": "sha1-TbhRgXVTYVuAi+PvaNGEf3W/w1A=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
+        "@bentley/bwc": "6.0.3",
         "@types/body-parser": "1.17.0",
         "@types/bunyan": "1.8.4",
         "@types/electron-devtools-installer": "2.2.0",
@@ -835,8 +829,8 @@
       "version": "file:projects/ui-components.tgz",
       "integrity": "sha1-TiaqtmfKLwjsLyg/5q9uKVrcVb4=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
-        "@bentley/icons-webfont": "6.6.0",
+        "@bentley/bwc": "6.0.3",
+        "@bentley/icons-webfont": "6.6.1",
         "@types/chai": "4.1.6",
         "@types/chai-as-promised": "7.1.0",
         "@types/chai-jest-snapshot": "1.3.4",
@@ -897,8 +891,8 @@
       "version": "file:projects/ui-core.tgz",
       "integrity": "sha1-FgqgzPT7x2krdEbgiCYko82T4T4=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
-        "@bentley/icons-webfont": "6.6.0",
+        "@bentley/bwc": "6.0.3",
+        "@bentley/icons-webfont": "6.6.1",
         "@types/chai": "4.1.6",
         "@types/chai-as-promised": "7.1.0",
         "@types/chai-jest-snapshot": "1.3.4",
@@ -945,8 +939,8 @@
       "version": "file:projects/ui-framework.tgz",
       "integrity": "sha1-6GMBiFEJV10ZwUzL4OZY8NYdzSc=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
-        "@bentley/icons-webfont": "6.6.0",
+        "@bentley/bwc": "6.0.3",
+        "@bentley/icons-webfont": "6.6.1",
         "@types/chai": "4.1.6",
         "@types/chai-as-promised": "7.1.0",
         "@types/chai-jest-snapshot": "1.3.4",
@@ -1001,9 +995,9 @@
       "version": "file:projects/ui-ninezone.tgz",
       "integrity": "sha1-xrzIhi3mSdDViPG2tUYA/1qSYes=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
-        "@bentley/icons-webfont": "6.6.0",
-        "@bentley/svg-icons": "6.6.0",
+        "@bentley/bwc": "6.0.3",
+        "@bentley/icons-webfont": "6.6.1",
+        "@bentley/svg-icons": "6.6.1",
         "@types/chai": "4.1.6",
         "@types/chai-as-promised": "7.1.0",
         "@types/chai-jest-snapshot": "1.3.4",
@@ -1062,8 +1056,8 @@
       "version": "file:projects/ui-test-app.tgz",
       "integrity": "sha1-R+RLRkTGXWwKBzO0Y2PS7OgLZrs=",
       "requires": {
-        "@bentley/bwc": "6.0.2",
-        "@bentley/icons-webfont": "6.6.0",
+        "@bentley/bwc": "6.0.3",
+        "@bentley/icons-webfont": "6.6.1",
         "@types/body-parser": "1.17.0",
         "@types/electron-devtools-installer": "2.2.0",
         "@types/express": "4.16.0",

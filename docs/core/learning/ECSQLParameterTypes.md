@@ -5,7 +5,7 @@ The following table list which iModel.js type you can use for binding values to 
 ECSQL Parameter Type | iModel.js Type
 ------------- | ----------
 Boolean       | boolean
-Blob          | ArrayBuffer, SharedArrayBuffer, Base64 string
+Blob          | ArrayBuffer, Base64 string
 DateTime      | [ECSqlTypedString]($common) with an ISO 8601 date time string
 Double        | number
 GUID          | [Guid]($bentleyjs-core)
