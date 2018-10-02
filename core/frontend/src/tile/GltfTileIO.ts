@@ -9,7 +9,24 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair, ElementAlignedBox3d, TextureMapping, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  FeatureTable,
+  QPoint3d,
+  QPoint3dList,
+  QParams3d,
+  OctEncodedNormal,
+  MeshPolyline,
+  MeshPolylineList,
+  MeshEdges,
+  MeshEdge,
+  OctEncodedNormalPair,
+  ElementAlignedBox3d,
+  TextureMapping,
+  ImageSource,
+  ImageSourceFormat,
+  RenderTexture,
+  BatchType,
+} from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
@@ -274,7 +291,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readonly _yAxisUp: boolean;
     /** @hidden */
-    protected readonly _asClassifier: boolean;
+    protected readonly _type: BatchType;
     private readonly _canceled?: IsCanceled;
 
     /** Asynchronously deserialize the tile data and return the result. */
@@ -284,6 +301,8 @@ export namespace GltfTileIO {
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     /** @hidden */
     protected get _hasBakedLighting(): boolean { return false; }
+    /** @hidden */
+    protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
     protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
@@ -376,7 +395,7 @@ export namespace GltfTileIO {
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
     /** @hidden */
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
@@ -396,7 +415,7 @@ export namespace GltfTileIO {
       this._modelId = modelId;
       this._is3d = is3d;
       this._system = system;
-      this._asClassifier = asClassifier;
+      this._type = type;
       this._canceled = isCanceled;
     }
 
@@ -445,7 +464,7 @@ export namespace GltfTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const hasBakedLighting = this._hasBakedLighting;
-      const asClassifier = this._asClassifier;
+      const asClassifier = this._isClassifier;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,

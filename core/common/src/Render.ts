@@ -226,7 +226,7 @@ export namespace RenderTexture {
   export class Params {
     public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
     public readonly type: Type;
-    public readonly isOwned: boolean; // For unnamed textures, true if another object owns the texture. If true, the owner is responsible for disposing of the texture; otherwise the texture will be disposed along with the RenderGraphic with which it is associated.
+    public readonly isOwned: boolean; // For unnamed textures, true if another object owns the texture. If true, the owner is responsible for disposing of the texture; otherwise the texture will be disposed along with the [[RenderGraphic]] with which it is associated.
 
     public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
       this.key = key;
@@ -302,7 +302,7 @@ export namespace ImageLight {
 }
 
 /**
- * The "cooked" material and symbology for a RenderGraphic. This determines the appearance
+ * The "cooked" material and symbology for a [[RenderGraphic]]. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
 export class GraphicParams {
@@ -1545,7 +1545,7 @@ export namespace Hilite {
 }
 
 /**
- * Describes a "feature" within a batched RenderGraphic. A batched RenderGraphic can
+ * Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (elementId, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
@@ -1589,24 +1589,43 @@ export class Feature implements Comparable<Feature> {
 }
 
 /**
- * Defines a look-up table for Features within a batched RenderGraphic. Consecutive 32-bit
- * indices are assigned to each unique Feature. Primitives within the RenderGraphic can
+ * Describes the type of a 'batch' of graphics as produced by RenderSystem.createBatch().
+ * The most commonly-encountered batches are [[Tile]]s, which can be of either Primary or
+ * Classifier type.
+ */
+export const enum BatchType {
+  /** This batch contains graphics derived from a model's primary geometry. */
+  Primary,
+  /**
+   * This batch contains graphics which are used to classify a model's primary geometry.
+   * The graphics themselves are not rendered to the screen; instead they are rendered to the stencil buffer
+   * to resymbolize the primary geometry.
+   */
+  Classifier,
+}
+
+/**
+ * Defines a look-up table for Features within a batched [[RenderGraphic]]. Consecutive 32-bit
+ * indices are assigned to each unique Feature. Primitives within the [[RenderGraphic]] can
  * use per-vertex indices to specify the distribution of Features within the primitive.
- * A FeatureTable can be shared amongst multiple primitives within a single RenderGraphic, and
- * amongst multiple sub-Graphics of a RenderGraphic.
+ * A FeatureTable can be shared amongst multiple primitives within a single [[RenderGraphic]], and
+ * amongst multiple sub-Graphics of a [[RenderGraphic]].
  */
 export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64;
+  public readonly type: BatchType;
 
-  public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId) {
+  public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId, type: BatchType = BatchType.Primary) {
     super(compare, maxFeatures);
     this.modelId = modelId;
+    this.type = type;
   }
 
   public get maxFeatures(): number { return this._maximumSize; }
   public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
   public get isUniform(): boolean { return 1 === this.length; }
   public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
+  public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {

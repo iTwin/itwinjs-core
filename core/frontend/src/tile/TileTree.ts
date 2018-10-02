@@ -18,7 +18,18 @@ import {
   IDisposable,
   base64StringToUint8Array,
 } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d, ViewFlag, ViewFlags, RenderMode, Frustum, FrustumPlanes, TileProps, TileTreeProps, ColorDef } from "@bentley/imodeljs-common";
+import {
+  ElementAlignedBox3d,
+  ViewFlag,
+  ViewFlags,
+  RenderMode,
+  Frustum,
+  FrustumPlanes,
+  TileProps,
+  TileTreeProps,
+  ColorDef,
+  BatchType,
+} from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { RenderGraphic, GraphicBranch } from "../render/System";
@@ -684,7 +695,7 @@ export abstract class TileLoader {
   public abstract async loadTileContents(missingtiles: Tile[]): Promise<void>;
   public abstract get maxDepth(): number;
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
-  public loadGraphics(tile: Tile, geometry: any, asClassifier: boolean = false): void {
+  public loadGraphics(tile: Tile, geometry: any, type: BatchType = BatchType.Primary): void {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
       blob = base64StringToUint8Array(geometry as string);
@@ -710,11 +721,11 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled);
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled);
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, asClassifier, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
 
       case TileIO.Format.Pnts:
@@ -767,7 +778,7 @@ function bisectRange2d(range: Range3d, takeUpper: boolean): void {
 
 /** @hidden */
 export class IModelTileLoader extends TileLoader {
-  constructor(private _iModel: IModelConnection, private _asClassifier: boolean) { super(); }
+  constructor(private _iModel: IModelConnection, private _type: BatchType) { super(); }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
@@ -841,7 +852,7 @@ export class IModelTileLoader extends TileLoader {
       tile.setIsQueued();
       this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
         if (tile.isQueued)
-          this.loadGraphics(tile, content, this._asClassifier);
+          this.loadGraphics(tile, content, this._type);
       }).catch((_err: any) => {
         tile.setNotFound();
       });

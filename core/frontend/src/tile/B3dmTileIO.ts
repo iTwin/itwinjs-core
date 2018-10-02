@@ -6,7 +6,7 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping, BatchType } from "@bentley/imodeljs-common";
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { ColorMap } from "../render/primitives/ColorMap";
@@ -57,13 +57,13 @@ export namespace B3dmTileIO {
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, isCanceled) : undefined;
     }
     private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled) {
-      super(props, iModel, modelId, is3d, system, false, isCanceled);
+      super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
-      const featureTable: FeatureTable = new FeatureTable(1, this._modelId);
+      const featureTable: FeatureTable = new FeatureTable(1, this._modelId, this._type);
       const feature = new Feature(this._modelId);
       featureTable.insert(feature);
 

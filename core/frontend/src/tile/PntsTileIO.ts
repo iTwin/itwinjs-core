@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { TileIO } from "./TileIO";
-import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable, BatchType } from "@bentley/imodeljs-common";
 import { Id64, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { utf8ToString } from "@bentley/bentleyjs-core";
@@ -70,7 +70,7 @@ export namespace PntsTileIO {
     }
 
     // ###TODO? Do we expect a batch table? not currently handled...
-    const featureTable = new FeatureTable(1, modelId);
+    const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
     const features = new Mesh.Features(featureTable);
     features.add(new Feature(modelId), 1);
 

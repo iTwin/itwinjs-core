@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
@@ -153,7 +153,10 @@ export namespace FeatureSymbology {
     public setAlwaysDrawn(id: Id64String): void { this.alwaysDrawn.add(id.toString()); }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
-    public getAppearance(feature: Feature, modelId: Id64String): Appearance | undefined {
+    public getAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
+      if (BatchType.Classifier === type)
+        return this.getClassifierAppearance(feature, modelId);
+
       let app = !this._lineWeights ? Appearance.fromJSON({ weight: 1 }) : Appearance.defaults;
       const modelApp = this.getModelOverrides(modelId);
       if (undefined !== modelApp)
@@ -194,6 +197,34 @@ export namespace FeatureSymbology {
         visible = app.alpha! < 0xff; // don't bother rendering something with full transparency...
 
       return visible ? app : undefined;
+    }
+
+    /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent. */
+    private getClassifierAppearance(feature: Feature, modelId: Id64String): Appearance | undefined {
+      let app = Appearance.defaults;
+      const modelApp = this.getModelOverrides(modelId);
+      if (undefined !== modelApp)
+        app = modelApp.extendAppearance(app);
+
+      const { elementId, subCategoryId } = feature;
+      const elemApp = this.getElementOverrides(elementId);
+      if (undefined !== elemApp)
+        app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
+
+      if (!Id64.isInvalidId(subCategoryId)) {
+        const subCat = this.getSubCategoryOverrides(subCategoryId);
+        if (undefined !== subCat)
+          app = subCat.extendAppearance(app);
+      }
+
+      if (undefined === elemApp && undefined === modelApp)
+        app = this._defaultOverrides.extendAppearance(app);
+
+      // ###TODO: It appears 'alpha' really means 'transparency' here???
+      if (app.overridesAlpha && 0xff === app.alpha!)
+        return undefined;
+      else
+        return app;
     }
 
     public isClassVisible(geomClass: GeometryClass): boolean {

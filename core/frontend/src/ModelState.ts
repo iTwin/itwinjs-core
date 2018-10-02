@@ -7,7 +7,7 @@
 import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
@@ -93,6 +93,7 @@ export abstract class GeometricModelState extends ModelState {
       RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
       return tileTreeState.loadStatus;
     }
+
     return this.loadIModelTileTree(tileTreeState, asClassifier, classifierExpansion);
   }
 
@@ -100,7 +101,7 @@ export abstract class GeometricModelState extends ModelState {
     const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id.value) : this.id.value;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier));
+      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary));
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
       this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.

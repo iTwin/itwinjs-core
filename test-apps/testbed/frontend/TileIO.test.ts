@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ModelProps, RelatedElementProps, FeatureIndexType } from "@bentley/imodeljs-common";
+import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
 import * as path from "path";
@@ -80,7 +80,7 @@ describe("TileIO", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(rectangle);
-      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, false, (_) => true);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, (_) => true);
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();

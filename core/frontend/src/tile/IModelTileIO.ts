@@ -42,6 +42,7 @@ import {
   QParams2d,
   QParams3d,
   PolylineTypeFlags,
+  BatchType,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -117,7 +118,7 @@ export namespace IModelTileIO {
     private readonly _sizeMultiplier?: number;
 
     /** Attempt to initialize a Reader to deserialize iModel tile data beginning at the stream's current position. */
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean = false, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -128,7 +129,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream, false);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, asClassifier, isCanceled, sizeMultiplier) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, type, isCanceled, sizeMultiplier) : undefined;
     }
 
     /** Attempt to deserialize the tile data */
@@ -153,7 +154,7 @@ export namespace IModelTileIO {
       let sizeMultiplier = this._sizeMultiplier;
       const completeTile = 0 === (header.flags & IModelTileIO.Flags.Incomplete);
       const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-      if (emptyTile || this._asClassifier) {    // Classifier algorithm currently supports only a single tile.
+      if (emptyTile || this._isClassifier) {    // Classifier algorithm currently supports only a single tile.
         isLeaf = true;
       } else {
         const canSkipSubdivision = header.tolerance <= maxLeafTolerance;
@@ -360,11 +361,11 @@ export namespace IModelTileIO {
 
       this._buffer.curPos = startPos + header.length;
 
-      return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures);
+      return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type);
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, asClassifier: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
-      super(props, iModel, modelId, is3d, system, asClassifier, isCanceled);
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
+      super(props, iModel, modelId, is3d, system, type, isCanceled);
       this._sizeMultiplier = sizeMultiplier;
     }
 

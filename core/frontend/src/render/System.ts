@@ -20,6 +20,7 @@ import {
   RenderTexture,
   Feature,
   FeatureTable,
+  BatchType,
   Gradient,
   ElementAlignedBox3d,
   QParams3d,
@@ -298,13 +299,15 @@ export class PackedFeatureTable {
   public readonly maxFeatures: number;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
+  public readonly type: BatchType;
 
   /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a [[Tile]] serialized in iMdl format. */
-  public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number) {
+  public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number, type: BatchType) {
     this._data = data;
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
     this.numFeatures = numFeatures;
+    this.type = type;
 
     switch (this.numFeatures) {
       case 0:
@@ -359,7 +362,7 @@ export class PackedFeatureTable {
       uint32s[index32 + 1] = Id64.getHighUint32(id);
     });
 
-    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures);
+    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures, featureTable.type);
   }
 
   /** Retrieve the Feature associated with the specified index. */
@@ -406,6 +409,8 @@ export class PackedFeatureTable {
 
   /** If this table contains exactly 1 feature, return it. */
   public get uniform(): Feature | undefined { return this.isUniform ? this.getFeature(0) : undefined; }
+
+  public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
 
   /** Unpack the features into a [[FeatureTable]]. */
   public unpack(): FeatureTable {
