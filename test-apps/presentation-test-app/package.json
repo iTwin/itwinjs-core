@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@bentley/build-tools": "0.147.0",
-    "@bentley/bwc": "^6.0.1",
+    "@bentley/bwc": "^6.0.3",
     "@bentley/webpack-tools": "0.147.0",
     "@types/body-parser": "^1.17.0",
     "@types/bunyan": "^1.8.4",

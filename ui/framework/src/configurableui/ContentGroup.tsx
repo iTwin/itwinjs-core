@@ -5,8 +5,8 @@
 /** @module ContentGroup */
 
 import { ContentControl } from "./ContentControl";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ConfigurableUIManager } from "./ConfigurableUIManager";
+import { ConfigurableUIControlType } from "./ConfigurableUIControl";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
@@ -88,9 +88,9 @@ export class ContentGroup {
       id = this.groupId + "-" + index;
 
     // TODO - should this call getContentControl if widget is sharable
-    if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-      const contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
-      if (contentControl.getType() !== ConfigurableUiControlType.Content) {
+    if (!this._contentControls.get(id) && ConfigurableUIManager.isControlRegistered(contentProps.classId)) {
+      const contentControl = ConfigurableUIManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
+      if (contentControl.getType() !== ConfigurableUIControlType.Content) {
         throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
       }
       this._contentControls.set(id, contentControl);

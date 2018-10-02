@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
 
-import { ConfigurableBase, ConfigurableCreateInfo, ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ConfigurableBase, ConfigurableCreateInfo, ConfigurableUIControlType } from "./ConfigurableUIControl";
 import { ToolItemDef } from "./Item";
 
 // -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ export interface ToolUiProviderProps {
   toolUiProvider: ToolUiProvider;
 }
 
-/** ToolUiProvider base class for ConfigurableUi.
+/** ToolUiProvider base class for ConfigurableUI.
  */
 export class ToolUiProvider extends ConfigurableBase {
   private _toolItem!: ToolItemDef;
@@ -37,7 +37,7 @@ export class ToolUiProvider extends ConfigurableBase {
   public get toolItem(): ToolItemDef { return this._toolItem; }
   public set toolItem(v: ToolItemDef) { this._toolItem = v; }
 
-  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
+  public getType(): ConfigurableUIControlType { return ConfigurableUIControlType.ToolUiProvider; }
 }
 
 export default ToolUiProvider;

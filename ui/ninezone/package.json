@@ -38,8 +38,8 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "0.147.0",
-    "@bentley/bwc": "^6.0.1",
-    "@bentley/icons-webfont": "^6.5.0",
+    "@bentley/bwc": "^6.0.3",
+    "@bentley/icons-webfont": "^6.6.1",
     "@bentley/ui-core": "0.147.0",
     "@bentley/svg-icons": "^6.4.0",
     "@types/chai": "^4.1.4",

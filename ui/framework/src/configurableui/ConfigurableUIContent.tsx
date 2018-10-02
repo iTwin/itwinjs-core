@@ -2,7 +2,7 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUi */
+/** @module ConfigurableUI */
 
 import * as React from "react";
 import { CSSProperties } from "react";
@@ -27,7 +27,7 @@ function mapStateToProps(state: any) {
 const mapDispatch = {
 };
 
-/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUi */
+/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUI */
 class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentProps> {
 
   public constructor(props: ConfigurableUIContentProps) {
@@ -45,18 +45,16 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentPr
       overflow: "hidden",
     };
     return (
-      <div className="App" style={{ height: "100%" }} >
-        <div id="wrapper" style={wrapperStyle}>
-          {this.props.appBackstage}
-          <FrontstageComposer style={{ position: "relative", height: "100%" }} />
-          <ModalDialogRenderer />
-          <ElementTooltip />
-          <PointerMessage />
-        </div>
+      <div id="configurableui-wrapper" style={wrapperStyle}>
+        {this.props.appBackstage}
+        <FrontstageComposer style={{ position: "relative", height: "100%" }} />
+        <ModalDialogRenderer />
+        <ElementTooltip />
+        <PointerMessage />
       </div>
     );
   }
 }
 
-/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUi */
+/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUI */
 export const ConfigurableUIContent = connect(mapStateToProps, mapDispatch)(ConfigurableUIContentClass); // tslint:disable-line:variable-name

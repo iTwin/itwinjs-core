@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
+  ConfigurableUIManager, ConfigurableCreateInfo,
   WidgetControl, WidgetControlProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
@@ -76,4 +76,4 @@ class TreeDemoWidget extends React.Component<Props, State> {
   }
 }
 
-ConfigurableUiManager.registerControl("TreeDemoWidget", TreeDemoWidgetControl);
+ConfigurableUIManager.registerControl("TreeDemoWidget", TreeDemoWidgetControl);

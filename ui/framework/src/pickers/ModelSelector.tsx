@@ -10,8 +10,8 @@ import { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
 import { UiFramework } from "../UiFramework";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { ConfigurableUIManager } from "../configurableui/ConfigurableUIManager";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUIControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
 import { CheckListBox, CheckListBoxItem } from "@bentley/ui-core";
 import { SearchBox } from "@bentley/ui-core";
@@ -312,4 +312,4 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
   }
 }
 
-ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorDemoWidget);
+ConfigurableUIManager.registerControl("ModelSelectorWidget", ModelSelectorDemoWidget);

@@ -11,7 +11,7 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
-export default class ViewSelector extends React.Component<any, any> {
+export class ViewSelector extends React.Component<any, any> {
   /** Creates a ViewSelector */
   constructor(props: any) {
     super(props);
@@ -226,3 +226,5 @@ export default class ViewSelector extends React.Component<any, any> {
     );
   }
 }
+
+export default ViewSelector;

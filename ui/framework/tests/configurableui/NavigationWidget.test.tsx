@@ -12,7 +12,7 @@ import {
   WidgetState,
   WidgetDefFactory,
   NavigationWidgetDef,
-  ConfigurableUiManager,
+  ConfigurableUIManager,
   ItemPropsList,
   ToolButton,
   NavigationWidget,
@@ -45,7 +45,7 @@ describe("NavigationWidget", () => {
       ],
     };
 
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
+    ConfigurableUIManager.loadCommonItems(commonItemsList);
   });
 
   const widgetProps: AnyWidgetProps = {

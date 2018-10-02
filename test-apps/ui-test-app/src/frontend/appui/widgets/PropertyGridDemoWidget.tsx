@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUIManager } from "@bentley/ui-framework";
 import { WidgetControl, WidgetControlProps } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
@@ -117,7 +117,7 @@ class VerticalPropertyGridWidget extends React.Component<WidgetControlProps> {
   }
 }
 
-ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
+ConfigurableUIManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
 class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -143,7 +143,7 @@ class HorizontalPropertyGridWidget extends React.Component<WidgetControlProps> {
   }
 }
 
-ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
+ConfigurableUIManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
 
 class HorizontalPropertyGridContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -169,4 +169,4 @@ class HorizontalPropertyGridContent extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoContent", HorizontalPropertyGridContentControl);
+ConfigurableUIManager.registerControl("HorizontalPropertyGridDemoContent", HorizontalPropertyGridContentControl);

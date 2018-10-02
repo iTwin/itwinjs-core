@@ -10,7 +10,7 @@ import {
   ContentLayoutDef,
   ContentControl,
   ConfigurableCreateInfo,
-  ConfigurableUiManager,
+  ConfigurableUIManager,
   FrontstageProps,
   FrontstageManager,
   ContentViewManager,
@@ -29,7 +29,7 @@ describe("ContentControl", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
+    ConfigurableUIManager.registerControl("TestContentControl", TestContentControl);
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({
@@ -53,8 +53,8 @@ describe("ContentControl", () => {
   };
 
   it("activated", () => {
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage1");
+    ConfigurableUIManager.loadFrontstage(frontstageProps);
+    const frontstageDef = ConfigurableUIManager.findFrontstageDef("TestFrontstage1");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -101,8 +101,8 @@ describe("ContentControl", () => {
   };
 
   it("deactivated", () => {
-    ConfigurableUiManager.loadFrontstage(frontstageProps2);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    ConfigurableUIManager.loadFrontstage(frontstageProps2);
+    const frontstageDef = ConfigurableUIManager.findFrontstageDef("TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

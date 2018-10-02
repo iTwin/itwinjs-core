@@ -1274,8 +1274,8 @@
     },
     "@types/commander": {
       "version": "2.12.2",
-      "resolved": "https://registry.npmjs.org/@types/commander/-/commander-2.12.2.tgz",
-      "integrity": "sha512-0QEFiR8ljcHp9bAbWxecjVRuAMr16ivPiGOw6KFQBVrVd0RQIcM3xKdRisH2EDWgVWujiYtHwhSkSUoAAGzH7Q==",
+      "resolved": "https://npm.bentley.com/npm/npm/@types/commander/-/commander-2.12.2.tgz",
+      "integrity": "sha1-GDBBojhC1CgUePpdI8XKeOb9CK4=",
       "requires": {
         "commander": "2.18.0"
       }
@@ -4142,8 +4142,8 @@
     },
     "config-chain": {
       "version": "1.1.12",
-      "resolved": "https://registry.npmjs.org/config-chain/-/config-chain-1.1.12.tgz",
-      "integrity": "sha512-a1eOIcu8+7lUInge4Rpf/n4Krkf3Dd9lqhljRzII1/Zno/kRtUWnznPO3jOKBmTEktkt3fkxisUcivoj0ebzoA==",
+      "resolved": "https://npm.bentley.com/npm/npm/config-chain/-/config-chain-1.1.12.tgz",
+      "integrity": "sha1-D96NCRIA616AjK8l/mGMAvSOTvo=",
       "requires": {
         "ini": "1.3.5",
         "proto-list": "1.2.4"
@@ -5337,8 +5337,8 @@
     },
     "editorconfig": {
       "version": "0.15.0",
-      "resolved": "https://registry.npmjs.org/editorconfig/-/editorconfig-0.15.0.tgz",
-      "integrity": "sha512-j7JBoj/bpNzvoTQylfRZSc85MlLNKWQiq5y6gwKhmqD2h1eZ+tH4AXbkhEJD468gjDna/XMx2YtSkCxBRX9OGg==",
+      "resolved": "https://npm.bentley.com/npm/npm/editorconfig/-/editorconfig-0.15.0.tgz",
+      "integrity": "sha1-tt1KC2ueds5I4Ga9wVOBrruIBP0=",
       "requires": {
         "@types/commander": "2.12.2",
         "@types/semver": "5.5.0",
@@ -6361,8 +6361,8 @@
     },
     "fault": {
       "version": "1.0.2",
-      "resolved": "https://registry.npmjs.org/fault/-/fault-1.0.2.tgz",
-      "integrity": "sha512-o2eo/X2syzzERAtN5LcGbiVQ0WwZSlN3qLtadwAz3X8Bu+XWD16dja/KMsjZLiQr+BLGPDnHGkc4yUJf1Xpkpw==",
+      "resolved": "https://npm.bentley.com/npm/npm/fault/-/fault-1.0.2.tgz",
+      "integrity": "sha1-w9D+wgLxcqOk1BQEKtK7Xio/+6o=",
       "requires": {
         "format": "0.2.2"
       }
@@ -6633,7 +6633,7 @@
     },
     "format": {
       "version": "0.2.2",
-      "resolved": "https://registry.npmjs.org/format/-/format-0.2.2.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/format/-/format-0.2.2.tgz",
       "integrity": "sha1-1hcBB+nv3E7TDJ3DkBbflCtctYs="
     },
     "format-util": {
@@ -8852,8 +8852,8 @@
     },
     "js-beautify": {
       "version": "1.8.6",
-      "resolved": "https://registry.npmjs.org/js-beautify/-/js-beautify-1.8.6.tgz",
-      "integrity": "sha512-TYDZa+lg8vEC5U0OmGQEEwiZ0XFBfvZAUeNOtqflLe+woKuIqF4JzlsBx/C1KVYW5lUewZy2ODL4Obq6sH7a4Q==",
+      "resolved": "https://npm.bentley.com/npm/npm/js-beautify/-/js-beautify-1.8.6.tgz",
+      "integrity": "sha1-an5h5HpuRftYxeIkme7TUPhgfZg=",
       "requires": {
         "config-chain": "1.1.12",
         "editorconfig": "0.15.0",
@@ -9513,8 +9513,8 @@
     },
     "lowlight": {
       "version": "1.10.0",
-      "resolved": "https://registry.npmjs.org/lowlight/-/lowlight-1.10.0.tgz",
-      "integrity": "sha512-ABxJUAYNftRU6b2vC3HlVf2pEln9ViUpfZWDOtsraVhGrcYUSzIe8cldF+mK6FQTaK6ba7dNDPoGOQTFVfiqxg==",
+      "resolved": "https://npm.bentley.com/npm/npm/lowlight/-/lowlight-1.10.0.tgz",
+      "integrity": "sha1-+72RWCQNnGwHxEsFX/DDLxosm5k=",
       "requires": {
         "fault": "1.0.2",
         "highlight.js": "9.12.0"
@@ -10970,7 +10970,7 @@
     },
     "nopt": {
       "version": "4.0.1",
-      "resolved": "https://registry.npmjs.org/nopt/-/nopt-4.0.1.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/nopt/-/nopt-4.0.1.tgz",
       "integrity": "sha1-0NRoWv1UFRk8jHUFYC0NF81kR00=",
       "requires": {
         "abbrev": "1.1.1",
@@ -13674,7 +13674,7 @@
     },
     "proto-list": {
       "version": "1.2.4",
-      "resolved": "https://registry.npmjs.org/proto-list/-/proto-list-1.2.4.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/proto-list/-/proto-list-1.2.4.tgz",
       "integrity": "sha1-IS1b/hMYMGpCD2QCuOJv85ZHqEk="
     },
     "proxy-addr": {
@@ -14305,7 +14305,7 @@
     },
     "react-syntax-highlighter": {
       "version": "3.0.2",
-      "resolved": "https://registry.npmjs.org/react-syntax-highlighter/-/react-syntax-highlighter-3.0.2.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/react-syntax-highlighter/-/react-syntax-highlighter-3.0.2.tgz",
       "integrity": "sha1-d8VWOFu/cdwul0upa/3Q7e9cMZI=",
       "requires": {
         "babel-runtime": "6.26.0",
@@ -14315,7 +14315,7 @@
       "dependencies": {
         "highlight.js": {
           "version": "9.8.0",
-          "resolved": "https://registry.npmjs.org/highlight.js/-/highlight.js-9.8.0.tgz",
+          "resolved": "https://npm.bentley.com/npm/npm/highlight.js/-/highlight.js-9.8.0.tgz",
           "integrity": "sha1-OO7vQM1F6t2+yMnlI4+3p4OjtoU="
         }
       }
@@ -15707,7 +15707,7 @@
     },
     "sigmund": {
       "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/sigmund/-/sigmund-1.0.1.tgz",
+      "resolved": "https://npm.bentley.com/npm/npm/sigmund/-/sigmund-1.0.1.tgz",
       "integrity": "sha1-P/IfGYytIXX587eBhT/ZTQ0ZtZA="
     },
     "signal-exit": {

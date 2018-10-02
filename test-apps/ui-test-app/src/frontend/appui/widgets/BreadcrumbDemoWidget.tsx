@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
+  ConfigurableUIManager, ConfigurableCreateInfo,
   WidgetControl, WidgetControlProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
@@ -66,8 +66,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
       <div>
         <label htmlFor="recieves_row">Can accept rows: </label>
         <input id="recieves_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
-            this.setState({checked: (event.target as HTMLInputElement).checked});
-          }}/>
+          this.setState({ checked: (event.target as HTMLInputElement).checked });
+        }} />
         <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}
           dragProps={dragProps}
           dropProps={dropProps}
@@ -81,4 +81,4 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   }
 }
 
-ConfigurableUiManager.registerControl("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);
+ConfigurableUIManager.registerControl("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);

@@ -6,7 +6,7 @@ import * as React from "react";
 import { CSSProperties } from "react";
 
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUIManager } from "@bentley/ui-framework";
 import { NavigationAidControl } from "@bentley/ui-framework";
 
 // -----------------------------------------------------------------------------
@@ -136,4 +136,4 @@ class CubeExampleNavigationAid extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("CubeExampleNavigationAid", CubeExampleNavigationAidControl);
+ConfigurableUIManager.registerControl("CubeExampleNavigationAid", CubeExampleNavigationAidControl);

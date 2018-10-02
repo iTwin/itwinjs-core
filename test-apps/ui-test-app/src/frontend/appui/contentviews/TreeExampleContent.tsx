@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUIManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 import {
@@ -93,4 +93,4 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
   }
 }
 
-ConfigurableUiManager.registerControl("TreeExampleContent", TreeExampleContentControl);
+ConfigurableUIManager.registerControl("TreeExampleContent", TreeExampleContentControl);

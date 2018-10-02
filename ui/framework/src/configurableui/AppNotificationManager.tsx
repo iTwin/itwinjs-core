@@ -116,13 +116,13 @@ export class AppNotificationManager extends NotificationManager {
 
   /**
    * Show a Pointer message.
-   * @param _message  Text to display in message.
-   * @param _location The place to display the message.
+   * @param message  Text to display in message.
    */
   protected _showPointerMessage(message: NotifyMessageDetails): void {
     PointerMessage.showMessage(message);
   }
 
+  /** Hide a Pointer message. */
   protected _hidePointerMessage(): void {
     PointerMessage.hideMessage();
   }

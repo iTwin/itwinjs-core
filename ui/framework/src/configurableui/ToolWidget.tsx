@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import ConfigurableUiManager from "./ConfigurableUiManager";
+import ConfigurableUIManager from "./ConfigurableUIManager";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { Icon } from "./IconLabelSupport";
@@ -30,7 +30,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public executeAppButtonClick = (): void => {
-    const appButton = ConfigurableUiManager.findItem(this._appButtonId);
+    const appButton = ConfigurableUIManager.findItem(this._appButtonId);
     if (appButton) {
       appButton.execute();
     }
@@ -44,7 +44,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public renderCornerItem(): React.ReactNode | undefined {
-    const appButton = ConfigurableUiManager.findItem(this._appButtonId);
+    const appButton = ConfigurableUIManager.findItem(this._appButtonId);
 
     if (appButton) {
       return (

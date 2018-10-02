@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module NavigationAids */
 
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUIControl, ConfigurableUIControlType } from "./ConfigurableUIControl";
 
 // -----------------------------------------------------------------------------
 // Configurable Ui Navigation Aid Control
@@ -12,7 +12,7 @@ import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlTyp
 
 /** The base class for Navigation Aid controls.
  */
-export class NavigationAidControl extends ConfigurableUiControl {
+export class NavigationAidControl extends ConfigurableUIControl {
   private _reactElement: React.ReactNode;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -25,5 +25,5 @@ export class NavigationAidControl extends ConfigurableUiControl {
   /** Default size is "64px". Override to set a different size. */
   public getSize(): string | undefined { return undefined; }
 
-  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.NavigationAid; }
+  public getType(): ConfigurableUIControlType { return ConfigurableUIControlType.NavigationAid; }
 }

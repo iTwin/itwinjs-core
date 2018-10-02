@@ -7,7 +7,7 @@ import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {
-  ConfigurableUiManager,
+  ConfigurableUIManager,
   ItemPropsList,
   ToolItemDef,
   FrontstageManager,
@@ -27,7 +27,7 @@ describe("ConfigurableuIManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.initialize();
+    ConfigurableUIManager.initialize();
   });
 
   it("loadCommonItems & commonItems", () => {
@@ -40,8 +40,8 @@ describe("ConfigurableuIManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
-    expect(ConfigurableUiManager.commonItems.get("tool1")).to.not.be.undefined;
+    ConfigurableUIManager.loadCommonItems(commonItemsList);
+    expect(ConfigurableUIManager.commonItems.get("tool1")).to.not.be.undefined;
   });
 
   it("addCommonItem & commonItems", () => {
@@ -51,8 +51,8 @@ describe("ConfigurableuIManager", () => {
       labelKey: "SampleApp:buttons.tool2",
     };
     const itemDef = new ToolItemDef(item);
-    ConfigurableUiManager.addCommonItem(itemDef);
-    expect(ConfigurableUiManager.commonItems.get("tool2")).to.not.be.undefined;
+    ConfigurableUIManager.addCommonItem(itemDef);
+    expect(ConfigurableUIManager.commonItems.get("tool2")).to.not.be.undefined;
   });
 
   it("loadFrontstages & findFrontstageDef", () => {
@@ -65,13 +65,13 @@ describe("ConfigurableuIManager", () => {
         defaultContentId: "TestContent1",
       },
     ];
-    ConfigurableUiManager.loadFrontstages(frontstagePropsList);
-    expect(ConfigurableUiManager.findFrontstageDef("TestFrontstage1")).to.not.be.undefined;
+    ConfigurableUIManager.loadFrontstages(frontstagePropsList);
+    expect(ConfigurableUIManager.findFrontstageDef("TestFrontstage1")).to.not.be.undefined;
   });
 
   it("findFrontstageDef passed no argument", () => {
     FrontstageManager.setActiveFrontstageDef(undefined);
-    expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
+    expect(ConfigurableUIManager.findFrontstageDef()).to.be.undefined;
   });
 
   it("loadFrontstage & findItem", () => {
@@ -89,12 +89,12 @@ describe("ConfigurableuIManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    ConfigurableUIManager.loadFrontstage(frontstageProps);
+    const frontstageDef = ConfigurableUIManager.findFrontstageDef("TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
     FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    expect(ConfigurableUiManager.findItem("frontstageTool")).to.not.be.undefined;
-    expect(ConfigurableUiManager.findItem("tool2")).to.not.be.undefined;
+    expect(ConfigurableUIManager.findItem("frontstageTool")).to.not.be.undefined;
+    expect(ConfigurableUIManager.findItem("tool2")).to.not.be.undefined;
   });
 
   class TestWidget extends WidgetControl {
@@ -106,16 +106,16 @@ describe("ConfigurableuIManager", () => {
   }
 
   it("registerControl & createConfigurable using same classId", () => {
-    ConfigurableUiManager.registerControl("TestWidget", TestWidget);
-    expect(ConfigurableUiManager.createControl("TestWidget", "1")).to.not.be.undefined;
+    ConfigurableUIManager.registerControl("TestWidget", TestWidget);
+    expect(ConfigurableUIManager.createControl("TestWidget", "1")).to.not.be.undefined;
   });
 
   it("registerControl trying to register a classId already registered", () => {
-    expect(() => ConfigurableUiManager.registerControl("TestWidget", TestWidget)).to.throw(Error);
+    expect(() => ConfigurableUIManager.registerControl("TestWidget", TestWidget)).to.throw(Error);
   });
 
   it("createConfigurable trying to create an unregistered control", () => {
-    expect(() => ConfigurableUiManager.createControl("invalid", "1")).to.throw(Error);
+    expect(() => ConfigurableUIManager.createControl("invalid", "1")).to.throw(Error);
   });
 
   it("loadContentGroup", () => {
@@ -128,7 +128,7 @@ describe("ConfigurableuIManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadContentGroup(contentGroupProps);
+    ConfigurableUIManager.loadContentGroup(contentGroupProps);
     expect(ContentGroupManager.findGroup("testContentGroup1")).to.not.be.undefined;
   });
 
@@ -144,7 +144,7 @@ describe("ConfigurableuIManager", () => {
         ],
       },
     ];
-    ConfigurableUiManager.loadContentGroups(contentGroupProps);
+    ConfigurableUIManager.loadContentGroups(contentGroupProps);
     expect(ContentGroupManager.findGroup("testContentGroup2")).to.not.be.undefined;
   });
 
@@ -160,7 +160,7 @@ describe("ConfigurableuIManager", () => {
         right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
       },
     };
-    ConfigurableUiManager.loadContentLayout(contentLayoutProps);
+    ConfigurableUIManager.loadContentLayout(contentLayoutProps);
     expect(ContentLayoutManager.findLayout("testContentLayout1")).to.not.be.undefined;
   });
 
@@ -178,7 +178,7 @@ describe("ConfigurableuIManager", () => {
         },
       },
     ];
-    ConfigurableUiManager.loadContentLayouts(contentLayoutProps);
+    ConfigurableUIManager.loadContentLayouts(contentLayoutProps);
     expect(ContentLayoutManager.findLayout("testContentLayout2")).to.not.be.undefined;
   });
 
@@ -200,7 +200,7 @@ describe("ConfigurableuIManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
+    ConfigurableUIManager.loadTasks(taskPropsList);
     expect(TaskManager.findTask("Task1")).to.not.be.undefined;
   });
 
@@ -223,7 +223,7 @@ describe("ConfigurableuIManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
+    ConfigurableUIManager.loadWorkflows(workflowPropsList);
     expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
   });
 

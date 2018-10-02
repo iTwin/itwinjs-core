@@ -14,7 +14,7 @@ import NZ_Item from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool
 import NZ_Tray from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
 import WithContainInViewport from "@bentley/ui-ninezone/lib/base/WithContainInViewport";
 
-import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
+import { ConfigurableCreateInfo } from "../ConfigurableUIControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import "./StandardRotationNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";

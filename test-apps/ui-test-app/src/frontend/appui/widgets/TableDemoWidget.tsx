@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
+  ConfigurableUIManager, ConfigurableCreateInfo,
   WidgetControl, WidgetControlProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
@@ -77,4 +77,4 @@ class TableDemoWidget extends React.Component<Props, State> {
   }
 }
 
-ConfigurableUiManager.registerControl("TableDemoWidget", TableDemoWidgetControl);
+ConfigurableUIManager.registerControl("TableDemoWidget", TableDemoWidgetControl);

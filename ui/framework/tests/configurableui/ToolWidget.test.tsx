@@ -12,7 +12,7 @@ import {
   WidgetState,
   WidgetDefFactory,
   ToolWidgetDef,
-  ConfigurableUiManager,
+  ConfigurableUIManager,
   ItemPropsList,
   ToolButton,
   GroupButton,
@@ -46,7 +46,7 @@ describe("ToolWidget", () => {
       ],
     };
 
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
+    ConfigurableUIManager.loadCommonItems(commonItemsList);
   });
 
   const widgetProps: AnyWidgetProps = {

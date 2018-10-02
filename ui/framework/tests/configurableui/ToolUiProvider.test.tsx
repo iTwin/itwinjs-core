@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ItemPropsList, ZoneState, WidgetState, FrontstageProps, FrontstageManager, ToolItemDef } from "../../src/index";
+import { ConfigurableUIManager, ItemPropsList, ZoneState, WidgetState, FrontstageProps, FrontstageManager, ToolItemDef } from "../../src/index";
 import { ConfigurableCreateInfo } from "../../src/index";
 import { ToolUiProvider } from "../../src/index";
 
@@ -100,9 +100,9 @@ describe("ToolUiProvider", () => {
       },
     };
 
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
-    ConfigurableUiManager.registerControl("ToolUiProvider-TestTool", Tool2UiProvider);
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
+    ConfigurableUIManager.loadCommonItems(commonItemsList);
+    ConfigurableUIManager.registerControl("ToolUiProvider-TestTool", Tool2UiProvider);
+    ConfigurableUIManager.loadFrontstage(frontstageProps);
   });
 
   it("starting a tool with tool settings", () => {
@@ -112,7 +112,7 @@ describe("ToolUiProvider", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolItemDef = ConfigurableUiManager.findItem("ToolUiProvider-TestTool");
+      const toolItemDef = ConfigurableUIManager.findItem("ToolUiProvider-TestTool");
       expect(toolItemDef).to.not.be.undefined;
       expect(toolItemDef).to.be.instanceof(ToolItemDef);
 

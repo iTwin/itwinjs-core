@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUIManager } from "@bentley/ui-framework";
 import { FrontstageManager } from "@bentley/ui-framework";
 import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
 import { ItemPropsList, GroupItemProps } from "@bentley/ui-framework";
@@ -46,7 +46,7 @@ import { Frontstage5 } from "./frontstages/Frontstage5";
 export class AppUi {
 
   public static initialize() {
-    ConfigurableUiManager.initialize();
+    ConfigurableUIManager.initialize();
 
     AppUi.defineFrontstages();
     AppUi.defineCommonItems();
@@ -63,11 +63,11 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.loadFrontstage(new Frontstage1().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage2().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage3().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage4().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage5().defineProps());
+    ConfigurableUIManager.loadFrontstage(new Frontstage1().defineProps());
+    ConfigurableUIManager.loadFrontstage(new Frontstage2().defineProps());
+    ConfigurableUIManager.loadFrontstage(new Frontstage3().defineProps());
+    ConfigurableUIManager.loadFrontstage(new Frontstage4().defineProps());
+    ConfigurableUIManager.loadFrontstage(new Frontstage5().defineProps());
   }
 
   /** Define Common Items used in different Frontstages.
@@ -80,7 +80,7 @@ export class AppUi {
       labelKey: "SampleApp:buttons.tool1",
       applicationData: { key: "value" },
     });
-    ConfigurableUiManager.addCommonItem(myToolItem1);
+    ConfigurableUIManager.addCommonItem(myToolItem1);
 
     const myGroupItem1 = new GroupItemDef({
       groupId: "my-group1",
@@ -90,7 +90,7 @@ export class AppUi {
       direction: Direction.Bottom,
       itemsInColumn: 7,
     });
-    ConfigurableUiManager.addCommonItem(myGroupItem1);
+    ConfigurableUIManager.addCommonItem(myGroupItem1);
 
     const myGroupItemProps2: GroupItemProps = {
       groupId: "my-group2",
@@ -99,7 +99,7 @@ export class AppUi {
       items: ["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"],
       direction: Direction.Right,
     };
-    ConfigurableUiManager.addCommonItem(new GroupItemDef(myGroupItemProps2));
+    ConfigurableUIManager.addCommonItem(new GroupItemDef(myGroupItemProps2));
 
     const commonItemsList: ItemPropsList = {
       items: [
@@ -145,7 +145,7 @@ export class AppUi {
       ],
     };
 
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
+    ConfigurableUIManager.loadCommonItems(commonItemsList);
   }
 
   /** Define Content Groups referenced by Frontstages.
@@ -310,14 +310,14 @@ export class AppUi {
 
     const contentGroups: ContentGroupProps[] = [];
     contentGroups.push(one2dIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
-    ConfigurableUiManager.loadContentGroups(contentGroups);
+    ConfigurableUIManager.loadContentGroups(contentGroups);
   }
 
   /** Define Content Layouts referenced by Frontstages.
    */
   private static defineContentLayouts() {
     const contentLayouts: ContentLayoutProps[] = AppUi.getContentLayouts();
-    ConfigurableUiManager.loadContentLayouts(contentLayouts);
+    ConfigurableUIManager.loadContentLayouts(contentLayouts);
   }
 
   private static getContentLayouts(): ContentLayoutProps[] {
@@ -398,7 +398,7 @@ export class AppUi {
       ],
     };
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
+    ConfigurableUIManager.loadTasks(taskPropsList);
 
     // Test Workflows
     const workflowPropsList: WorkflowPropsList = {
@@ -419,6 +419,6 @@ export class AppUi {
       ],
     };
 
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
+    ConfigurableUIManager.loadWorkflows(workflowPropsList);
   }
 }

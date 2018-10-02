@@ -10,7 +10,7 @@ import {
   ContentLayoutDef,
   ContentControl,
   ConfigurableCreateInfo,
-  ConfigurableUiManager,
+  ConfigurableUIManager,
 } from "../../src/index";
 import TestUtils from "../TestUtils";
 
@@ -26,7 +26,7 @@ describe("ContentLayout", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.registerControl("TestContentControl2", TestContentControl);
+    ConfigurableUIManager.registerControl("TestContentControl2", TestContentControl);
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({

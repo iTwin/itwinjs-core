@@ -15,7 +15,7 @@ import {
   PromptField,
   StatusBarWidgetControl,
   ZoneDef,
-  ConfigurableUiManager,
+  ConfigurableUIManager,
   ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
@@ -44,8 +44,8 @@ describe("PromptField", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUiManager.unregisterControl("AppStatusBar");
-    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+    ConfigurableUIManager.unregisterControl("AppStatusBar");
+    ConfigurableUIManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
     statusBarZoneDef = new ZoneDef({
       defaultState: ZoneState.Open,

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUIManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ToolUiProvider } from "@bentley/ui-framework";
 
@@ -88,4 +88,4 @@ class Tool1Assistance extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("tool1", Tool1UiProvider);
+ConfigurableUIManager.registerControl("tool1", Tool1UiProvider);

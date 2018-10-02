@@ -6,7 +6,7 @@ import * as React from "react";
 import { CSSProperties } from "react";
 
 import { ViewportComponent } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUIManager } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 import { ContentViewManager } from "@bentley/ui-framework";
 
@@ -104,4 +104,4 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
 
 export default IModelViewportControl;
 
-ConfigurableUiManager.registerControl("IModelViewport", IModelViewportControl);
+ConfigurableUIManager.registerControl("IModelViewport", IModelViewportControl);

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo } from "../../src/index";
+import { WidgetState, WidgetProps, WidgetDef, ConfigurableUIManager, WidgetControl, ConfigurableCreateInfo } from "../../src/index";
 
 describe("WidgetControl", () => {
 
@@ -19,7 +19,7 @@ describe("WidgetControl", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.registerControl("WidgetControlTest", TestWidget);
+    ConfigurableUIManager.registerControl("WidgetControlTest", TestWidget);
   });
 
   const widgetProps: WidgetProps = {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { ConfigurableUIManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import {
   Table, ColumnDescription, RowItem, TableDataProvider,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode, PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription,
@@ -164,4 +164,4 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
   }
 }
 
-ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);
+ConfigurableUIManager.registerControl("TableExampleContent", TableExampleContentControl);

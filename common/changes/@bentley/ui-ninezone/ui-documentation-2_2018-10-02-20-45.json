@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgraded BWC to 6.0.3 and icons-webfont to 6.6.1. Made 'ConfigurableUI' case consistent across uses.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

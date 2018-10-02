@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import ConfigurableUiManager from "./ConfigurableUiManager";
+import ConfigurableUIManager from "./ConfigurableUIManager";
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "./ItemFactory";
 
@@ -40,13 +40,13 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     this.verticalItems = new ItemList();
 
     this._horizontalIds.map((id, _index) => {
-      const item = ConfigurableUiManager.findItem(id);
+      const item = ConfigurableUIManager.findItem(id);
       if (item)
         this.horizontalItems.addItem(item);
     });
 
     this._verticalIds.map((id, _index) => {
-      const item = ConfigurableUiManager.findItem(id);
+      const item = ConfigurableUIManager.findItem(id);
       if (item)
         this.verticalItems.addItem(item);
     });

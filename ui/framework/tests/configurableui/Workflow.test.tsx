@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow } from "../../src/index";
+import { WorkflowManager, WorkflowPropsList, ConfigurableUIManager, TaskPropsList, Workflow } from "../../src/index";
 
 describe("Workflow & WorkflowManager", () => {
 
@@ -40,7 +40,7 @@ describe("Workflow & WorkflowManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
+    ConfigurableUIManager.loadTasks(taskPropsList);
 
     const workflowPropsList: WorkflowPropsList = {
       defaultWorkflowId: "default-workflow",
@@ -74,7 +74,7 @@ describe("Workflow & WorkflowManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
+    ConfigurableUIManager.loadWorkflows(workflowPropsList);
   });
 
   describe("Workflow", () => {
@@ -130,8 +130,8 @@ describe("Workflow & WorkflowManager", () => {
     });
 
     it("Task Picker", () => {
-      const taskPickerDef = WorkflowManager.taskPickerDef;
-      expect(taskPickerDef.classid).to.eq("taskpicker-class");
+      const taskPickerProps = WorkflowManager.taskPickerProps;
+      expect(taskPickerProps.classid).to.eq("taskpicker-class");
     });
 
     it("setActiveWorkflowAndTask & isActive", () => {

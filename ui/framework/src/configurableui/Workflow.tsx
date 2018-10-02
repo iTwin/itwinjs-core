@@ -45,10 +45,15 @@ export interface WorkflowPropsList {
 /** Workflow class.
  */
 export class Workflow extends ItemDefBase {
+  /** Id of the Workflow */
   public workflowId: string;
+  /** Default Task Id */
   public defaultTaskId: string;
+  /** Active Task Id */
   public activeTaskId: string | null = null;
+  /** Indicates whether this Workflow is the default */
   public isDefault: boolean;
+
   private _taskIds: string[];
   private _tasks: Map<string, Task> = new Map<string, Task>();
 
@@ -67,17 +72,21 @@ export class Workflow extends ItemDefBase {
     });
   }
 
+  /** Gets the Id of the Workflow. */
   public get id(): string {
     return this.workflowId;
   }
 
+  /** Override of the execute method. A Workflow's execute does nothing. */
   public execute(): void {
   }
 
+  /** Override of the toolbarReactNode method. A Workflow provides no Toolbar React node. */
   public toolbarReactNode(_index: number): React.ReactNode {
     return null;
   }
 
+  /** Gets the active Task. */
   public get activeTask(): Task | undefined {
     if (!this.activeTaskId)
       return undefined;
@@ -85,10 +94,15 @@ export class Workflow extends ItemDefBase {
     return this._tasks.get(this.activeTaskId);
   }
 
+  /** Gets a Task with a given Id.
+   * @param taskId Id of the Task to get
+   */
   public getTask(taskId: string): Task | undefined {
     return this._tasks.get(taskId);
   }
 
+  /** Gets the last active Task. If no Task is active, it returns the default Task.
+   */
   public get lastActiveTask(): Task | undefined {
     if (!this.activeTaskId) {
       return this.getTask(this.defaultTaskId);
@@ -97,6 +111,8 @@ export class Workflow extends ItemDefBase {
     return this.getTask(this.activeTaskId);
   }
 
+  /** Determines if the Workflow is active.
+   */
   public get isActive(): boolean {
     let isActive = false;
 
@@ -106,13 +122,17 @@ export class Workflow extends ItemDefBase {
     return isActive;
   }
 
+  /** Sets a Task as active.
+   * @param task  The Task to set as active
+   */
   public setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
     task.onActivated();
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
   }
 
-  public getSortedTasks(_onlyVisible?: boolean): Task[] {
+  /** Gets an array of sorted Tasks in the Workflow. */
+  public getSortedTasks(): Task[] {
     const sortedTasks = new Array<Task>();
 
     for (const key of this._tasks.keys()) {
@@ -162,43 +182,64 @@ export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
   private static _activeWorkflow: Workflow;
   private static _defaultWorkflowId: string;
-  private static _taskPickerDef: TaskPickerProps;
+  private static _taskPickerProps: TaskPickerProps;
   private static _workflowActivatedEvent: WorkflowActivatedEvent = new WorkflowActivatedEvent();
   private static _taskActivatedEvent: TaskActivatedEvent = new TaskActivatedEvent();
 
   public static get onWorkflowActivatedEvent(): WorkflowActivatedEvent { return this._workflowActivatedEvent; }
   public static get onTaskActivatedEvent(): TaskActivatedEvent { return this._taskActivatedEvent; }
 
-  public static loadWorkflows(workflowsDef: WorkflowPropsList) {
-    this._defaultWorkflowId = workflowsDef.defaultWorkflowId;
-    this._taskPickerDef = workflowsDef.taskPicker;
-    WorkflowManager.loadWorkflowDefs(workflowsDef.workflows);
+  /** Loads one or more Workflows.
+   * @param workflowPropsList  the list of Workflows to load
+   */
+  public static loadWorkflows(workflowPropsList: WorkflowPropsList) {
+    this._defaultWorkflowId = workflowPropsList.defaultWorkflowId;
+    this._taskPickerProps = workflowPropsList.taskPicker;
+    WorkflowManager.loadWorkflowDefs(workflowPropsList.workflows);
   }
 
-  public static loadWorkflowDefs(workflowDefs: WorkflowProps[]) {
-    workflowDefs.map((workflowDef, _index) => {
-      WorkflowManager.loadWorkflowDef(workflowDef);
+  private static loadWorkflowDefs(workflowDefs: WorkflowProps[]) {
+    workflowDefs.map((workflowProps: WorkflowProps) => {
+      WorkflowManager.loadWorkflow(workflowProps);
     });
   }
 
-  public static loadWorkflowDef(workflowDef: WorkflowProps) {
-    const workflow = new Workflow(workflowDef);
-    WorkflowManager.addWorkflow(workflowDef.id, workflow);
+  /** Loads a Workflow.
+   * @param workflowProps  Properties of the Workflow to load
+   */
+  public static loadWorkflow(workflowProps: WorkflowProps) {
+    const workflow = new Workflow(workflowProps);
+    WorkflowManager.addWorkflow(workflowProps.id, workflow);
   }
 
-  public static findWorkflow(workflowId: string): Workflow | undefined {
-    return this._workflows.get(workflowId);
-  }
-
+  /** Adds a Workflow.
+   * @param workflowId  Id of the Workflow to add
+   * @param workflow    The Workflow to add
+   */
   public static addWorkflow(workflowId: string, workflow: Workflow) {
     this._workflows.set(workflowId, workflow);
   }
 
+  /** Finds a Workflow with a given Id.
+   * @param workflowId  Id of the Workflow to find
+   * @returns The Workflow if found, or undefined if not found
+   */
+  public static findWorkflow(workflowId: string): Workflow | undefined {
+    return this._workflows.get(workflowId);
+  }
+
+  /** Sets the active Workflow
+   * @param workflow  The Workflow to set as active
+   */
   public static setActiveWorkflow(workflow: Workflow) {
     this._activeWorkflow = workflow;
     WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
   }
 
+  /** Sets the active Workflow and Task
+   * @param workflow  The Workflow to set as active
+   * @param task      The Task to set as active
+   */
   public static setActiveWorkflowAndTask(workflow: Workflow, task: Task) {
     if (!workflow.isActive)
       this.setActiveWorkflow(workflow);
@@ -207,16 +248,19 @@ export class WorkflowManager {
       workflow.setActiveTask(task);
   }
 
+  /** Gets the active Workflow */
   public static get activeWorkflow(): Workflow {
     return this._activeWorkflow;
   }
 
+  /** Gets the Id of the default Workflow */
   public static get defaultWorkflowId(): string {
     return this._defaultWorkflowId;
   }
 
-  public static get taskPickerDef(): TaskPickerProps {
-    return this._taskPickerDef;
+  /** Gets the Task Picker properrties */
+  public static get taskPickerProps(): TaskPickerProps {
+    return this._taskPickerProps;
   }
 
   public static getSortedWorkflows(): Workflow[] {
@@ -236,5 +280,3 @@ export class WorkflowManager {
     return sortedWorkflows;
   }
 }
-
-// export default WorkflowsDef;
