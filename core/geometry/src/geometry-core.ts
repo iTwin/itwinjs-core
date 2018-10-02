@@ -131,7 +131,7 @@ export * from "./geometry3d/OrderedRotationAngles";
 
 export * from "./geometry3d/Ray3d";
 export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
-export * from "./geometry3d/Plane3dByoriginAndVectors";
+export * from "./geometry3d/Plane3dByOriginAndVectors";
 
 export * from "./Geometry";
 export * from "./geometry3d/Angle";
