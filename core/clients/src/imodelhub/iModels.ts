@@ -238,6 +238,17 @@ export class IModelQuery extends InstanceIdQuery {
         this.addFilter(`Name+eq+'${name}'`);
         return this;
     }
+
+    /**
+     * Query [[Project]] primary iModel.
+     * @returns This query.
+     */
+    public primary() {
+        this.resetQueryOptions();
+
+        this.orderBy("CreatedDate+asc").top(1);
+        return this;
+    }
 }
 
 /**

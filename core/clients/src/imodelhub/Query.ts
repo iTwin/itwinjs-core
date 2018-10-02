@@ -20,6 +20,14 @@ export class Query {
   }
 
   /**
+   * Reset QueryOptions.
+   * @hidden
+   */
+  public resetQueryOptions() {
+    this._query = {};
+  }
+
+  /**
    * Append a part of the filter.
    * @hidden
    */

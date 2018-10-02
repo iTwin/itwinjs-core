@@ -152,6 +152,10 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
     return (query !== undefined) && (query.getId() !== undefined);
   }
 
+  private isTop1Query(query: IModelQuery | undefined) {
+    return (query !== undefined) && (query.getQueryOptions().$top === 1);
+  }
+
   private toRepo(props: NamedIModelAccessContextProps): HubIModel {
     const id = props.imodeljsCoreClientsIModelBankAccessContext.iModelId;
     const name = props.name;
@@ -176,6 +180,11 @@ export class IModelBankFileSystemProject extends IModelProjectClient {
       err.name = "InstanceNotFound";
       return Promise.reject(err);
     }
+
+    if ((repos.length) > 0 && this.isTop1Query(query)) {
+      return Promise.resolve(repos.slice(0, 1));
+    }
+
     return Promise.resolve(repos);
   }
 
