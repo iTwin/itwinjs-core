@@ -1749,6 +1749,7 @@ export class ScreenViewport extends Viewport {
       el.removeChild(el.lastChild);
   }
 
+  /** @hidden */
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
