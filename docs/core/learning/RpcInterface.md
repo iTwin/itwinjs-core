@@ -154,26 +154,19 @@ The server must decide which interfaces it wants to expose. A server can expose 
 ```
 
 ### Configure Interfaces
-The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients. If the server is an app backend, the RPC configuration must correspond to the app configuration.
-
-|App Configuration|RPC Configuration for App-Specific RpcInterfaces
-|---------------|-----------|--------------------
-|Mobile app|[in-process RPC configuration](#in-process-rpc-configuration)
-|Desktop app|[desktop RPC configuration](#desktop-rpc-configuration)
-|Web app|a [Web PRC configuration](#web-rpc-configuration)
-
+The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients.
+If the server is an app backend, the RPC configuration must correspond to the app configuration.
+If the server is a [service](..App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
 A backend should configure its RpcInterfaces in its [configuration-specific main](..AppTailoring.md#configuration-specific-main).
-
-If the server is a [service](..App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces. Each client must use the same configuration.
-
-*Web Example:*
-``` ts
-[[include:RpcInterface.initializeImplBentleyCloud]]
-```
 
 *Desktop Example:*
 ``` ts
 [[include:RpcInterface.initializeImplDesktop]]
+```
+
+*Web Example:*
+``` ts
+[[include:RpcInterface.initializeImplBentleyCloud]]
 ```
 
 ### Serve the Interfaces
@@ -190,25 +183,42 @@ It is this simple because the server should be concerned *only* with serving its
 
 ## Client-side Configuration
 
-The client must choose the interfaces that it plans to use.
+The client must specify *what* interfaces it plans to use and *where* those interfaces are found.
+The configuration for all app-specific RpcInterfaces must agree with the app's overall configuration.
+A frontend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
-The client then configures each interface with the correct RPC mechanism. For all interfaces served by the app backend, the RPC configuration must corresponds to the app configuration. A frontend should configure its RpcInterfaces in its [configuration-specific main](..AppTailoring.md#configuration-specific-main).
+### Desktop Configuration
 
-Clients must always use a [Web RPC configuration](#web-rpc-configuration) for RpcInterfaces provided by a [remote service](..App.md#imodel-services). Client and server must use the same configuration.
-
-*Web Example:*
-``` ts
-[[include:RpcInterface.initializeClientBentleyCloud]]
-```
-
-Note that the client must specify the server URL for a Web configuration.
+A desktop app must use a desktop configuration.
 
 *Desktop Example:*
 ``` ts
 [[include:RpcInterface.initializeClientDesktop]]
 ```
 
-For a desktop or mobile configuration, the connection is local and so no URL or authorization token is necessary.
+### Web Configuration
+
+The configuration of RpcInterfaces in a Web app depends on the relative locations of the frontend and backend(s). There are two basic options:
+
+1. Same Server
+
+If the app has its own backend, and if its backend serves both its RpcInterfaces and its frontend Web resources, then configuration is simple. Just pass the array of interfaces to [BentleyCloudRpcManager]($common). The URI of the backend defaults to the origin of the Web page.
+
+*Web example (simple app):*
+``` ts
+[[include:RpcInterface.initializeClientBentleyCloudApp]]
+```
+
+2. Different Servers
+
+If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `baseUri` property when configuring BentleyCloudRpcManager.
+
+*Web example (separate backend):*
+``` ts
+[[include:RpcInterface.initializeClientBentleyCloudRemote]]
+```
+
+A single frontend can consume RpcInterfaces from multiple sources, including the app's own backend, if any, and remote services. The frontend must group interfaces according to the backend that provides them and then use the appropriate configuration for each.
 
 ## Asynchronous Nature of RpcInterfaces
 

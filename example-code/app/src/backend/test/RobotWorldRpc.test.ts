@@ -116,11 +116,18 @@ describe("RobotWorldRpc", () => {
   });
 });
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloud
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
-export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], webServerUrl?: string) {
-  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: webServerUrl };
+export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
+  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
+}
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudRemote
+export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) {
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__
