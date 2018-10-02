@@ -9,6 +9,7 @@ import { ViewRect } from "./Viewport";
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.
  * This is typically used in tests.
+ * @hidden
  */
 export class NullTarget extends RenderTarget {
   public get animationFraction(): number { return 0; }
@@ -40,6 +41,7 @@ export class NullTarget extends RenderTarget {
 /**
  * A RenderSystem for applications that must run in environments where WebGL is not present.
  * This is typically used in tests.
+ * @hidden
  */
 export class NullRenderSystem extends RenderSystem {
   public get isValid(): boolean { return false; }
@@ -56,6 +58,7 @@ export class NullRenderSystem extends RenderSystem {
 /**
  * An IModelApp for applications that must run in environments where WebGL is not present.
  * This is typically used in tests.
+ * @hidden
  */
 export class NoRenderApp extends IModelApp {
   protected static supplyRenderSystem(): RenderSystem { return new NullRenderSystem(); }

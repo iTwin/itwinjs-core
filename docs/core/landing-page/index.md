@@ -9,7 +9,7 @@ middleContent: [
     {
         header: "Open, for Business",
         content:
-        "Infrastructure assets are complex, valuable, and long-lived, yet ever-changing. The businesses and governments that design, build, own and operate them wish to create digital twins that accurately reflects those traits. No single software system can possibly meet all of those requirements at once. So iModel.js was designed to be both flexible and open so that it can be used wherever needed and easily integrated with other systems wherever necessary. It is built to be as malleable as possible to satisfy your business requirements within your existing business systems. We strive to innovate while being both open and transparent, while also stable and secure. iModel.js is not a community project by part time volunteers with other jobs, it is the heart of Bentley's <a href=\"learning/itwinservice\">iTwin subscription service</a>."
+        "Infrastructure assets are complex, valuable, and long-lived, yet ever-changing. The businesses and governments that design, build, own and operate them wish to create digital twins that accurately reflects those traits. No single software system can possibly meet all of those requirements at once. So iModel.js was designed to be both flexible and open so that it can be used wherever needed and easily integrated with other systems wherever necessary. It is built to be as malleable as possible to satisfy your business requirements within your existing business systems. We strive to innovate while being both open and transparent, while also stable and secure. iModel.js is not a community project by part time volunteers with other jobs; it is the heart of Bentley's <a href=\"learning/itwinservice\">iTwin subscription service</a>."
     },
     {
         header: "Open, By Design",
@@ -19,7 +19,7 @@ middleContent: [
     {
         header: "Open, For Innovation",
         content:
-"Sometimes pushing the envelope in pursuit of new ideas means breaking new ground in terms of hardware, software, or system design. A primary reason for open-sourcing the iModel.js library is to permit its use in scenarios outside of those for which it was originally conceived. We know firsthand that simply examining the inner workings of a codebase can vastly improve your understanding of its design and limitations. Source level debugging and even local modification can substantially improve programmer productivity when push comes to shove. And of course the ability to fix/change the source when necessary means self-help is always available if needed."
+"Sometimes pushing the envelope in pursuit of new ideas means breaking new ground. A primary reason for open-sourcing the iModel.js library is to permit its use in scenarios outside of those for which it was originally conceived. We know firsthand that simply examining the inner workings of a codebase improves your understanding of its design and limitations. Source level debugging and even local modification can substantially improve programmer productivity. And of course the ability to fix/change the source when necessary means self-help is always available if needed."
     },
     {
         header: "Open for suggestions",

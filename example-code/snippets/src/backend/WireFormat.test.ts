@@ -33,8 +33,8 @@ describe("Wire Format Snippets", () => {
   it("Root Subject", () => {
     const jsonOutputFileName: string = getJsonOutputFileName("WireFormat_RootSubject");
     // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.code
-    const elementProps: ElementProps = iModel.elements.getElementProps(IModel.rootSubjectId);
-    const json: string = JSON.stringify(elementProps, undefined, 2);
+    const elementProps = iModel.elements.getElementProps(IModel.rootSubjectId) as ElementProps;
+    const json = JSON.stringify(elementProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(elementProps);
     fs.writeFileSync(jsonOutputFileName, json);
@@ -44,8 +44,8 @@ describe("Wire Format Snippets", () => {
   it("RepositoryModel", () => {
     const jsonOutputFileName: string = getJsonOutputFileName("WireFormat_RepositoryModel");
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.code
-    const modelProps: ModelProps = iModel.models.getModel(IModel.repositoryModelId);
-    const json: string = JSON.stringify(modelProps, undefined, 2);
+    const modelProps = iModel.models.getModel(IModel.repositoryModelId) as ModelProps;
+    const json = JSON.stringify(modelProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);
     fs.writeFileSync(jsonOutputFileName, json);

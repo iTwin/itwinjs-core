@@ -2,7 +2,7 @@
 
 The *wire format* describes is the way entities are serialized to JSON.
 
-Below are examples of wire formats for .
+Below are examples of wire formats for a few interesting iModel.js classes.
 
 ## Root Subject
 

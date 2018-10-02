@@ -33,6 +33,7 @@ export class ViewContext {
   public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
 }
 
+/** @hidden */
 export class NullContext extends ViewContext {
 }
 

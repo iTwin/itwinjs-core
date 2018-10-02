@@ -11,7 +11,7 @@ export class ConversionData implements UnitConversion {
   public offset: number = 0.0;
 }
 
-/** Class that implement the UnitProps interface so that it can be used by the UnitProvider to retrieve unit information. */
+/** Class that implements the UnitProps interface so that it can be used by the UnitProvider to retrieve unit information. */
 export class Unit implements UnitProps {
   public name = "";
   public label = "";
@@ -232,7 +232,7 @@ const defaultsFormats = {
 };
 
 /**
- * The QuantityFormatter provide the ability to generate formatted strings for quantity values.
+ * Formats quantity values into strings.
  */
 export class QuantityFormatter implements UnitsProvider {
   protected _activeSystemIsImperial = true;
