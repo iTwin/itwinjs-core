@@ -8,11 +8,10 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 import { LockType, LockLevel } from "./Locks";
 
 const loggingCategory = "imodeljs-clients.imodelhub";

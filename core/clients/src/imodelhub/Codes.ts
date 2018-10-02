@@ -11,12 +11,11 @@ import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
 import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./index";
-import { Guid } from "../../node_modules/@bentley/bentleyjs-core/lib/Id";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
