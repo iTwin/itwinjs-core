@@ -7,6 +7,19 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "LocalOrchestrator",
+      "program": "${workspaceFolder}/test-apps/local-orchestrator/lib/server.js",
+      "cwd": "${workspaceFolder}/test-apps/local-orchestrator",
+      "args": [
+        "./assets/config.json",
+        "./assets/iModelBank.server.config.json",
+        "./assets/iModelBank.logging.config.json",
+        "./assets/backend-registry.json",
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run Backend Tests (Integration)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",

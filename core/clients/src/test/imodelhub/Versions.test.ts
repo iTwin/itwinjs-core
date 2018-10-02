@@ -58,7 +58,7 @@ describe("iModelHub VersionHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
       iModelClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());

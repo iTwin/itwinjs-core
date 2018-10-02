@@ -7,9 +7,6 @@ import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase a
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
-import { IModelBankFileSystemProjectOptions, IModelBankFileSystemProject } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemProject";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { TestConfig } from "../TestConfig";
 
 const defaultEnv: DeploymentEnv = "QA";
 const actx = new ActivityLoggingContext("");
@@ -386,15 +383,5 @@ export function getIModelProjectAbstraction(): any {
     return projectAbstraction = new TestIModelHubProject();
   }
 
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-
-  const options: IModelBankFileSystemProjectOptions = {
-    rootDir: path.join(KnownTestLocations.outputDir, "imodel-bank"),
-    name: TestConfig.projectName,
-    env: defaultEnv,
-    deleteIfExists: true,
-    createIfNotExist: true,
-  };
-  projectAbstraction = new IModelBankFileSystemProject(options);
-  return projectAbstraction;
+  throw new Error("WIP");
 }

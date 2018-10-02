@@ -42,7 +42,7 @@ describe("iModelHubClient LockHandler", () => {
     // Does not create an imodel right now, but should in the future
     await utils.createIModel(accessToken, imodelName, undefined, true);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     briefcases = (await utils.getBriefcases(accessToken, imodelId, 2));
     lastObjectId = await utils.getLastLockObjectId(accessToken, imodelId);
     changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcases[0]))[0];

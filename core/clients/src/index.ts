@@ -10,7 +10,6 @@ export * from "./ConnectClients";
 export * from "./WsgClient";
 export * from "./FileHandler";
 export * from "./imodelhub";
-export * from "./IModelAccessContext";
 export * from "./IModelClient";
 export * from "./imodelhub/Client";
 export * from "./ImsClients";

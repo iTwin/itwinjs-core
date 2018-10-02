@@ -61,7 +61,7 @@ describe("iModelHub BriefcaseHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const briefcases = await iModelClient.Briefcases().get(actx, accessToken, imodelId);
       let briefcasesCount = briefcases.length;

@@ -74,7 +74,7 @@ describe("iModelHub ChangeSetHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await iModelClient.ChangeSets().get(actx, accessToken, imodelId)).length;
       if (changeSetCount > 9) {

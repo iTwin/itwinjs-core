@@ -5,12 +5,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
-
-import { Guid, Id64, EnvMacroSubst, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, Project,
-  ProgressInfo, UrlDescriptor, DeploymentEnv, IModelClient,
+  ProgressInfo, UrlDescriptor, DeploymentEnv,
 } from "../../";
 import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
@@ -23,9 +22,9 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
 import { IModelCloudEnvironment } from "../../IModelCloudEnvironment";
-import { IModelBankFileSystemProject, IModelBankFileSystemProjectOptions, IModelBankServerConfig, IModelBankPermissionDummy } from "../../IModelBank/IModelBankFileSystemProject";
-import { TestIModelHubCloudEnv } from "./IModelHubProject";
-import { IModelBankLocalOrchestrator } from "../../IModelBank/LocalOrchestrator";
+import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
+import { IModelBankClient } from "../../IModelBank";
+import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -84,6 +83,8 @@ function getImodelHubClient() {
   return _imodelHubClient;
 }
 
+let _imodelBankClient: IModelBankClient;
+
 export class IModelHubUrlMock {
   private static readonly _urlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -103,13 +104,9 @@ export class IModelHubUrlMock {
 
 export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
-export function getClient(imodelId: Guid): Promise<IModelClient> {
-  return getCloudEnv().orchestrator.getClientForIModel(actx, undefined, imodelId);
-}
-
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
-  return getImodelHubClient();
+  return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -168,10 +165,7 @@ export async function getProjectId(accessToken: AccessToken, projectName?: strin
 
   projectName = projectName || TestConfig.projectName;
 
-  const project: Project = await getCloudEnv().project.queryProject(actx, accessToken, {
-    $select: "*",
-    $filter: `Name+eq+'${projectName}'`,
-  });
+  const project: Project = await getCloudEnv().contextClient.queryContextByName(actx, accessToken, projectName);
 
   if (!project || !project.wsgId)
     return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);
@@ -184,9 +178,11 @@ export async function deleteIModelByName(accessToken: AccessToken, projectId: st
   if (TestConfig.enableMocks)
     return;
 
-  const imodels = await getCloudEnv().project.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const client = getDefaultClient();
+  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+
   for (const imodel of imodels) {
-    await getCloudEnv().project.deleteIModel(actx, accessToken, projectId, imodel.id!);
+    await client.IModels().delete(actx, accessToken, projectId, imodel.id!);
   }
 }
 
@@ -196,7 +192,8 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
 
   const projectId = await getProjectId(accessToken);
 
-  const imodels = await getCloudEnv().project.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const client = getDefaultClient();
+  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
@@ -234,7 +231,7 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: Guid, co
     });
   }
 
-  const client = await getClient(imodelId);
+  const client = getDefaultClient();
   let briefcases = await client.Briefcases().get(actx, accessToken, imodelId);
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
@@ -414,7 +411,7 @@ export async function getLastLockObjectId(accessToken: AccessToken, imodelId: Gu
   if (TestConfig.enableMocks)
     return new Id64("0x0");
 
-  const client = await getClient(imodelId);
+  const client = getDefaultClient();
   const locks = await client.Locks().get(actx, accessToken, imodelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
@@ -608,17 +605,19 @@ export async function createIModel(accessToken: AccessToken, name: string, proje
 
   projectId = projectId || await getProjectId(accessToken, TestConfig.projectName);
 
-  const imodels = await getCloudEnv().project.queryIModels(actx, accessToken, projectId, new IModelQuery().byName(name));
+  const client = getDefaultClient();
+
+  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await getCloudEnv().project.deleteIModel(actx, accessToken, projectId, imodels[0].id!);
+      await client.IModels().delete(actx, accessToken, projectId, imodels[0].id!);
     } else {
       return;
     }
   }
 
-  return getCloudEnv().project.createIModel(actx, accessToken, projectId, { name, description: "", seedFile: getMockSeedFilePath() });
+  return client.IModels().create(actx, accessToken, projectId, name, getMockSeedFilePath(), "");
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -654,7 +653,7 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: Guid,
   if (startingId + count > maxCount)
     throw Error(`Only have ${maxCount} changesets generated`);
 
-  const client = await getClient(imodelId);
+  const client = getDefaultClient();
 
   const currentCount = (await client.ChangeSets().get(actx, accessToken, imodelId)).length;
 
@@ -674,7 +673,7 @@ export async function createLocks(accessToken: AccessToken, imodelId: Guid, brie
   if (TestConfig.enableMocks)
     return;
 
-  const client = await getClient(imodelId);
+  const client = getDefaultClient();
   let lastObjectId: Id64 = await getLastLockObjectId(accessToken, imodelId);
   const generatedLocks: Lock[] = [];
 
@@ -692,7 +691,7 @@ export async function createVersions(accessToken: AccessToken, imodelId: Guid, c
   if (TestConfig.enableMocks)
     return;
 
-  const client = await getClient(imodelId);
+  const client = getDefaultClient();
   for (let i = 0; i < changesetIds.length; i++) {
     // check if changeset does not have version
     const version = await client.Versions().get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
@@ -729,35 +728,9 @@ export function getCloudEnv() {
     return cloudEnv;
 
   if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
-    // --- iModelHub ---
     return cloudEnv = new TestIModelHubCloudEnv();
   }
 
-  // --- iModelBank ---
-
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-
-  const options: IModelBankFileSystemProjectOptions = {
-    rootDir: workDir,
-    name: TestConfig.projectName,
-    env: TestConfig.deploymentEnv,
-    deleteIfExists: true,
-    createIfNotExist: true,
-  };
-  const bankFsProject = new IModelBankFileSystemProject(options);
-
-  const serverConfigFile = path.resolve(__dirname, "../assets/iModelBank.server.config.json");
-  const loggingConfigFile = path.resolve(__dirname, "../assets/iModelBank.logging.config.json");
-  // tslint:disable-next-line:no-var-requires
-  const serverConfig: IModelBankServerConfig = require(serverConfigFile);
-  EnvMacroSubst.replaceInProperties(serverConfig, true);
-  const localOrchestrator = new IModelBankLocalOrchestrator(serverConfig, loggingConfigFile, bankFsProject);
-
-  return cloudEnv = {
-    isIModelHub: false,
-    project: bankFsProject,
-    authorization: new IModelBankPermissionDummy(),
-    orchestrator: localOrchestrator,
-    terminate: () => bankFsProject.terminate(),
-  };
+  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
+  return cloudEnv;
 }

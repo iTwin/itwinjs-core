@@ -44,7 +44,7 @@ describe("iModelHub CodeHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(accessToken, imodelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
     briefcaseId2 = briefcases[1].briefcaseId!;
@@ -359,7 +359,7 @@ describe("iModelHub CodeSequenceHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
-    iModelClient = await utils.getClient(imodelId);
+    iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(accessToken, imodelId, 1);
     briefcaseId = briefcases[0].briefcaseId!;
   });
