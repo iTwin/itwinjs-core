@@ -283,7 +283,7 @@ export abstract class TextureHandle implements IDisposable {
 
   // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
   // This helps in debugging issues in which e.g. the same texture is bound as an input and output.
-  public static wantDebugIds: boolean = true;
+  public static wantDebugIds: boolean = false;
   private static _debugId: number = 0;
   private static readonly _maxDebugId = 0xffffff;
   protected constructor(glTexture: WebGLTexture) {

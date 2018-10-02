@@ -299,19 +299,13 @@ export abstract class Target extends RenderTarget {
   public get is3d(): boolean { return !this.is2d; }
 
   public dispose() {
-    dispose(this._decorations);
+    this.reset();
+
     dispose(this.compositor);
-    this._dynamics = disposeArray(this._dynamics);
-    this._worldDecorations = dispose(this._worldDecorations);
     this._environmentMap = dispose(this._environmentMap);
     this._diffuseMap = dispose(this._diffuseMap);
 
-    for (const batch of this._batches)
-      batch.onTargetDisposed(this);
-    this._batches = [];
-
     this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
-    this._renderCommands.clear();
   }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
@@ -587,15 +581,34 @@ export abstract class Target extends RenderTarget {
 
   protected drawOverlayDecorations(): void { }
 
-  public queueReset(): void {
-    this.reset();
-  }
+  /*
+   * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
+   * Invoked via dispose() when the target is being destroyed.
+   * The primary difference is that in the former case we retain the SceneCompositor.
+   */
   public reset(): void {
-    this.dispose();
+    // Clear the scene
     this._scene.length = 0;
-    this._dynamics = undefined;
+
+    // Clear decorations
+    dispose(this._decorations);
+    this._dynamics = disposeArray(this._dynamics);
+    this._worldDecorations = dispose(this._worldDecorations);
+
+    // Clear render commands
+    this._renderCommands.clear();
+
+    // Clear FeatureOverrides for this Target.
+    // This may not be strictly necessary as the Target may still be viewing some of these batches, but better to clean up and recreate
+    // than to leave unused in memory.
+    for (const batch of this._batches)
+      batch.onTargetDisposed(this);
+
+    this._batches = [];
+
     // ###TODO this._activeVolume = undefined;
   }
+
   public get wantInvertBlackBackground(): boolean { return false; }
 
   public get visibleEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.OpaqueLinear); }

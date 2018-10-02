@@ -467,7 +467,6 @@ export abstract class RenderTarget implements IDisposable {
   public abstract setHiliteSet(hilited: Set<string>): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
-  public abstract queueReset(): void;
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;

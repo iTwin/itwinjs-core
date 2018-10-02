@@ -1383,7 +1383,7 @@ async function resetStandaloneIModel(filename: string) {
   const spinner = document.getElementById("spinner") as HTMLDivElement;
 
   spinner.style.display = "block";
-  IModelApp.viewManager.dropViewport(theViewport!);
+  IModelApp.viewManager.dropViewport(theViewport!, false);
   await clearViews();
   await openStandaloneIModel(activeViewState, filename);
   await buildViewList(activeViewState);
@@ -1434,10 +1434,22 @@ function doRedo(_event: any) {
 
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
-  if (document.getElementById("showfps") && perfMet) document.getElementById("showfps")!.innerHTML =
-    "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
-    + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
-    + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
+  if (undefined !== perfMet && document.getElementById("showfps")) {
+    document.getElementById("showfps")!.innerHTML =
+      "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
+      + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
+      + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
+
+    let msg = "";
+    perfMet.frameTimings.forEach((v, k) => {
+      if (0 < msg.length)
+        msg += ", ";
+
+      msg += k + "=" + v;
+    });
+
+    console.log(msg);
+  }
 }
 
 function addRenderModeHandler(id: string) {
