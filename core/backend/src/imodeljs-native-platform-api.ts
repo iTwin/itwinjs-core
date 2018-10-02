@@ -889,6 +889,20 @@ export declare class NativeSqliteStatement implements IDisposable {
    */
   public bindString(param: number | string, val: string): DbResult;
 
+  /** Binds an Id, formatted as hexadecimal string, to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param hexStr Id, formatted as hexadecimal string
+   * @return non-zero error status in case of failure.
+   */
+  public bindId(param: number | string, hexStr: string): DbResult;
+
+  /** Binds a Guid, formatted as GUID string, to the specified SQL parameter.
+   * @param param Index (1-based) or name (without leading colon) of the parameter.
+   * @param guidStr GUID value
+   * @return non-zero error status in case of failure.
+   */
+  public bindGuid(param: number | string, guidStr: string): DbResult;
+
   /** Clear the bindings of this statement.
    * @return Returns a non-zero error status in case of failure.
    */
@@ -942,6 +956,14 @@ export declare class NativeSqliteStatement implements IDisposable {
    * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
    */
   public getValueString(columnIndex: number): string;
+  /** Get value as Id, formatted as hexadecimal string of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueId(columnIndex: number): string;
+  /** Get value as Guid, formatted as string of the specified column for the current row.
+   * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
+   */
+  public getValueGuid(columnIndex: number): string;
 }
 
 /**

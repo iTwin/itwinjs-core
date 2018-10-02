@@ -7,7 +7,7 @@ import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
-import { DbResult, using } from "@bentley/bentleyjs-core";
+import { DbResult, using, Id64, Guid } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 
 describe("SqliteStatement", () => {
@@ -228,6 +228,76 @@ describe("SqliteStatement", () => {
         }
 
         assert.equal(rowCount, 6);
+      });
+    });
+  });
+
+  it("Ids and Guids", () => {
+    using(ECDbTestHelper.createECDb(_outDir, "idsandguids.ecdb"), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, guid BLOB)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(?,?)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(1, new Id64("0x11"));
+        stmt.bindValue(2, new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+
+        stmt.bindValues([new Id64("0x12"), new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341")]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+      });
+
+      ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(:id,:guid)", (stmt: SqliteStatement) => {
+        assert.isFalse(stmt.isReadonly);
+        stmt.bindValue(":id", new Id64("0x13"));
+        stmt.bindValue(":guid", new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+
+        stmt.bindValues({ ":id": new Id64("0x14"), ":guid": new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341") });
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+      });
+
+      ecdb.withPreparedSqliteStatement("SELECT id,guid FROM MyTable", (stmt: SqliteStatement) => {
+        assert.isTrue(stmt.isReadonly);
+        let rowCount: number = 0;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          const expectedId: number = rowCount + 16;
+          const idVal: SqliteValue = stmt.getValue(0);
+          assert.equal(expectedId, idVal.getInteger());
+          assert.equal(typeof (idVal.value), "number");
+          assert.equal(expectedId, idVal.value);
+          assert.equal(expectedId, Number.parseInt(idVal.getId().toString(), 16));
+
+          const guidVal: SqliteValue = stmt.getValue(1);
+          assert.instanceOf(guidVal.value, ArrayBuffer);
+
+          if (rowCount % 2 !== 0)
+            assert.equal("370cea34-8415-4f81-b54c-85040eb3111e", guidVal.getGuid().toString());
+          else
+            assert.equal("f9f1eb6e-1171-4f45-ba90-55c856056341", guidVal.getGuid().toString());
+
+          const row = stmt.getRow();
+          assert.isDefined(row.id);
+          assert.equal(typeof (row.id), "number");
+          assert.equal(expectedId, row.id);
+
+          assert.isDefined(row.guid);
+          assert.instanceOf(row.guid, ArrayBuffer);
+        }
+        assert.equal(4, rowCount);
       });
     });
   });
