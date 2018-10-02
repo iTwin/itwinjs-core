@@ -68,7 +68,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
   public componentWillUnmount() {
     if (this._vp) {
-      IModelApp.viewManager.dropViewport(this._vp);
+      IModelApp.viewManager.dropViewport(this._vp, true);
       this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 

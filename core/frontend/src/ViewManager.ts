@@ -182,12 +182,13 @@ export class ViewManager {
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
+   * @returns SUCCESS if vp was successfully added, ERROR if it was already present.
    * @note raises onViewOpen event with newVp.
-   * @note Does nothing if newVp is already present in the list.
    */
-  public addViewport(newVp: ScreenViewport): void {
+  public addViewport(newVp: ScreenViewport): BentleyStatus {
     if (this._viewports.includes(newVp)) // make sure its not already added
-      return;
+      return BentleyStatus.ERROR;
+
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
@@ -198,15 +199,24 @@ export class ViewManager {
       IModelApp.toolAdmin.startEventLoop();
 
     this.onViewOpen.emit(newVp);
+
+    return BentleyStatus.SUCCESS;
   }
 
   /**
-   * Remove a Viewport from the list of opened views.
+   * Remove a Viewport from the list of opened views, and optionally dispose of it.
+   * Typically a Viewport is dropped when it is no longer of any use to the application, in which case it should also be
+   * disposed of as it may hold significant GPU resources.
+   * However in some cases a Viewport may be temporarily dropped in order to suspend rendering; and subsequently re-added to
+   * resume rendering - for example, when the Viewport is temporarily hidden by other UI elements.
+   * In the latter case it is up to the caller to ensure the Viewport is properly disposed of when it is no longer needed.
+   * Attempting to invoke any function on a Viewport after it has been disposed is an error.
    * @param vp the Viewport to remove.
+   * @param disposeOfViewport Whether or not to dispose of the Viewport. Defaults to true.
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
    * @note raises onViewClose event with vp.
    */
-  public dropViewport(vp: ScreenViewport): BentleyStatus {
+  public dropViewport(vp: ScreenViewport, disposeOfViewport: boolean = true): BentleyStatus {
     const index = this._viewports.indexOf(vp);
     if (index === -1)
       return BentleyStatus.ERROR;
@@ -219,6 +229,9 @@ export class ViewManager {
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
       this.setSelectedView(undefined);
+
+    if (disposeOfViewport)
+      vp.dispose();
 
     return BentleyStatus.SUCCESS;
   }

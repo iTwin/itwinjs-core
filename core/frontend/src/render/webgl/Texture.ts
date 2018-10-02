@@ -14,6 +14,11 @@ import { debugPrint } from "./debugPrint";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
+export interface TextureMonitor {
+  onTextureCreated: (texture: TextureHandle) => void;
+  onTextureDisposed: (texture: TextureHandle) => void;
+}
+
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
 function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
   const tex = handle.getHandle()!;
@@ -219,6 +224,9 @@ class TextureCubeCreateParams {
 
 /** Wraps a WebGLTextureHandle */
 export abstract class TextureHandle implements IDisposable {
+  protected static _monitor?: TextureMonitor;
+  public static set monitor(monitor: TextureMonitor | undefined) { this._monitor = monitor; }
+
   protected _glTexture?: WebGLTexture;
 
   public abstract get width(): number;
@@ -240,6 +248,9 @@ export abstract class TextureHandle implements IDisposable {
 
   public dispose() {
     if (!this.isDisposed) {
+      if (undefined !== TextureHandle._monitor)
+        TextureHandle._monitor.onTextureDisposed(this);
+
       System.instance.context.deleteTexture(this._glTexture!);
       this._glTexture = undefined;
     }
@@ -383,6 +394,10 @@ export class Texture2DHandle extends TextureHandle {
     this._format = params.format;
     this._dataType = params.dataType;
     this._dataBytes = params.dataBytes;
+
+    if (undefined !== TextureHandle._monitor)
+      TextureHandle._monitor.onTextureCreated(this);
+
     params.loadImageData(this, params);
   }
 }
@@ -445,6 +460,10 @@ export class TextureCubeHandle extends TextureHandle {
     this._dim = params.dim;
     this._format = params.format;
     this._dataType = params.dataType;
+
+    if (undefined !== TextureHandle._monitor)
+      TextureHandle._monitor.onTextureCreated(this);
+
     params.loadImageData(this, params);
   }
 }

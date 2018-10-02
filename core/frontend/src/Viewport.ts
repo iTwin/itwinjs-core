@@ -10,7 +10,7 @@ import {
 } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
@@ -842,7 +842,7 @@ export class ViewFrustum {
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
  */
-export abstract class Viewport {
+export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
@@ -865,6 +865,8 @@ export abstract class Viewport {
   private _addFeatureOverrides?: AddFeatureOverrides;
   private _wantTileBoundingBoxes: boolean = false;
   private _viewFrustum!: ViewFrustum;
+  private _target?: RenderTarget;
+
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
   public get rotation(): Matrix3d { return this._viewFrustum.rotation; }
@@ -882,7 +884,11 @@ export abstract class Viewport {
   public get isAspectRatioLocked(): boolean { return false; }
 
   /** @hidden */
-  public readonly target: RenderTarget;
+  public get target(): RenderTarget {
+    assert(undefined !== this._target, "Accessing RenderTarget of a disposed Viewport");
+    return this._target!;
+  }
+
   /** @hidden */
   public readonly sync = new SyncFlags();
   /** The settings that control how elements are hilited in this Viewport. */
@@ -922,7 +928,12 @@ export abstract class Viewport {
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
   protected constructor(target: RenderTarget) {
-    this.target = target;
+    this._target = target;
+  }
+
+  public dispose(): void {
+    assert(undefined !== this._target, "Double disposal of Viewport");
+    this._target = dispose(this._target);
   }
 
   /** Determine whether continuous rendering is enabled. */
@@ -988,7 +999,7 @@ export abstract class Viewport {
     this.doSetupFromView(view);
     this.invalidateScene();
     this.sync.invalidateController();
-    this.target.queueReset();
+    this.target.reset();
   }
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
@@ -1686,7 +1697,29 @@ export abstract class Viewport {
   }
 }
 
-/** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events. */
+/**
+ * An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
+ * In order to render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
+ * Every frame, the ViewManager will update the Viewport's state and re-render its contents if anything has changed.
+ * To halt this loop, use ViewManager.dropViewport() to remove the viewport from the ViewManager.
+ *
+ * A ScreenViewport internally owns significant WebGL resources which must be explicitly disposed of when the viewport is no longer needed.
+ * This is achieved by invoking the viewport's dispose() method. ViewManager.dropViewport() invokes dispose() on the viewport by default.
+ *
+ * The lifetime of a ScreenViewport typically follows a pattern:
+ *  1. Application creates the viewport via ScreenViewport.create()
+ *  2. The viewport is added to the render loop via ViewManager.addViewport()
+ *  3. When the application is finished with the viewport, it removes it from the render loop and disposes of it via ViewManager.dropViewport().
+ *
+ * In some cases it may be useful to temporarily suspend a viewport's render loop. In this case the lifetime of the viewport proceeds as follows:
+ *  1. Application creates the viewport via ScreenViewport.create()
+ *  2. The viewport is added to the render loop via ViewManager.addViewport()
+ *  3. At some point the render loop is suspended via ViewManager.dropViewport(viewport, false), indicating the viewport should not be disposed.
+ *  4. Optionally, resume rendering by returning to step 2.
+ *  5. When the application is finished with the viewport:
+ *    5a. If it is currently registered with the ViewManager, it is dropped and disposed of via ViewManager.dropViewport()
+ *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
+ */
 export class ScreenViewport extends Viewport {
   private _evController?: EventController;
   private _viewCmdTargetCenter?: Point3d;
