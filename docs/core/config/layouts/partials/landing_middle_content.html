@@ -34,7 +34,17 @@
 <div id="demo-container">
   <img src="landing-page/assets/imodel_viewer.png" class="example-view-demonstrator">
   <div class="overlay">
-    <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="/learning/viewer-demonstrator/" role="button"
-      target="_blank">Open iModel.js Viewer Example <i class="fa fa-external-link"></i> </a>
+
+    <script>
+      function replaceViewer(e) {
+        document.getElementById("demo-container").innerHTML = "<a id='viewiModelBtn' class='btn btn-outline-secondary mb-2' href='./learning/public-viewer-demonstrator' role='button' target='_blank'>Open iModel.js Viewer Full Screen Example <i class='fa fa-external-link'></i> </a> <iframe src='./learning/public-viewer-demonstrator' class='iframe-viewer'></iframe>";
+        e.preventDefault();
+      }
+    </script>
+
+    <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="javascript:;" role="button" target="_blank"
+      onclick="replaceViewer(event)">Open iModel.js Viewer Example <i class="fa fa-external-link"></i> </a>
+    <a id='viewiModelBtn' class='btn btn-outline-secondary mb-2' href='./learning/public-viewer-demonstrator' role='button'
+      target='_blank'> Open iModel.js Viewer Full Screen Example <i class='fa fa-external-link'></i> </a>
   </div>
 </div>
