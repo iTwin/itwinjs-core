@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change ViewOverlay decorators to Canvas decorators.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@Bentley.com"
+}

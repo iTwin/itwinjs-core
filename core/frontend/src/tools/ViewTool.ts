@@ -6,13 +6,13 @@
 
 import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d, Arc3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
 import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { GraphicBuilder, GraphicType } from "../rendering";
+import { GraphicType } from "../rendering";
 import { ToolSettings } from "./ToolAdmin";
 
 export const enum ViewHandleWeight {
@@ -659,23 +659,6 @@ class ViewTargetCenter extends ViewingToolHandle {
     return true;
   }
 
-  public addCross(graphic: GraphicBuilder, size: number, x: number, y: number): void {
-    const lineHorzPts = [new Point2d(), new Point2d()];
-    const lineVertPts = [new Point2d(), new Point2d()];
-
-    lineHorzPts[0].x = x - size;
-    lineHorzPts[0].y = y;
-    lineHorzPts[1].x = x + size;
-    lineHorzPts[1].y = y;
-    lineVertPts[0].x = x;
-    lineVertPts[0].y = y - size;
-    lineVertPts[1].x = x;
-    lineVertPts[1].y = y + size;
-
-    graphic.addLineString2d(lineHorzPts, 0.0);
-    graphic.addLineString2d(lineVertPts, 0.0);
-  }
-
   public drawHandle(context: DecorateContext, hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport)
       return;
@@ -686,23 +669,31 @@ class ViewTargetCenter extends ViewingToolHandle {
       hasFocus = false;
     }
 
-    const targetPt = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld);
-    const pixelSize = context.viewport.pixelsFromInches(sizeInches);
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    const crossSize = Math.floor(context.viewport.pixelsFromInches(sizeInches)) + 0.5;
+    const outlineSize = crossSize + 1;
+    const position = this.viewTool.viewport!.worldToView(this.viewTool.targetCenterWorld); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0,0,0,.5)";
+      ctx.lineWidth = hasFocus ? 5 : 3;
+      ctx.moveTo(-outlineSize, 0);
+      ctx.lineTo(outlineSize, 0);
+      ctx.moveTo(0, -outlineSize);
+      ctx.lineTo(0, outlineSize);
+      ctx.stroke();
 
-    const shadow = ColorDef.from(0, 0, 0, 225);
-    builder.setSymbology(shadow, shadow, hasFocus ? 9 : 6);
-    this.addCross(builder, pixelSize + 2, targetPt.x + 1, targetPt.y + 1);
-
-    const outline = ColorDef.from(0, 0, 0, 10);
-    builder.setSymbology(outline, outline, hasFocus ? 5 : 3);
-    this.addCross(builder, pixelSize + 1, targetPt.x, targetPt.y);
-
-    const cross = ColorDef.from(254, 255, 255, 10);
-    builder.setSymbology(cross, cross, hasFocus ? 3 : 1);
-    this.addCross(builder, pixelSize, targetPt.x, targetPt.y);
-
-    context.addDecorationFromBuilder(builder);
+      ctx.beginPath();
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = hasFocus ? 3 : 1;
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = hasFocus ? 7 : 5;
+      ctx.moveTo(-crossSize, 0);
+      ctx.lineTo(crossSize, 0);
+      ctx.moveTo(0, -crossSize);
+      ctx.lineTo(0, crossSize);
+      ctx.stroke();
+    };
+    context.addCanvasDecoration({ position, drawDecoration });
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean) {
@@ -991,33 +982,41 @@ class ViewScroll extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
-    const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone(); white.setAlpha(100);
-    const green = ColorDef.green.clone(); green.setAlpha(200);
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    const radius = Math.floor(context.viewport.pixelsFromInches(0.15)) + 0.5;
+    const position = this._anchorPtView.clone(); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position2 = this._lastPtView.clone(); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const offset = position2.minus(position);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = "green";
+      ctx.lineWidth = 2;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(offset.x, offset.y);
+      ctx.stroke();
 
-    const points = [new Point2d(this._anchorPtView.x, this._anchorPtView.y), new Point2d(this._lastPtView.x, this._lastPtView.y)];
-    builder.setSymbology(green, green, 2);
-    builder.addLineString2d(points, 0.0);
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0,0,0,.5)";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "rgba(255,255,255,.5)";
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
 
-    const radius = context.viewport.pixelsFromInches(0.15);
-    const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    builder.setBlankingFill(white);
-    builder.addArc(ellipse, true, true);
-    builder.setSymbology(black, black, 1);
-    builder.addArc(ellipse, false, false);
+      let vec = Vector2d.createStartEnd(position, position2);
+      if (undefined === vec) vec = Vector2d.unitX(); else vec.normalize(vec);
 
-    const vec = Vector2d.createStartEnd(points[0], points[1]);
-    if (vec.magnitude() > 0.1) {
       const slashPts = [new Point2d(), new Point2d()];
-      vec.normalize(vec);
-      points[0].plusScaled(vec, radius, slashPts[0]);
-      points[0].plusScaled(vec, -radius, slashPts[1]);
-      builder.setSymbology(black, black, 2);
-      builder.addLineString2d(slashPts, 0.0);
-    }
+      slashPts[0].plusScaled(vec, radius, slashPts[0]);
+      slashPts[1].plusScaled(vec, -radius, slashPts[1]);
 
-    context.addDecorationFromBuilder(builder);
+      ctx.beginPath();
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.moveTo(slashPts[0].x, slashPts[0].y);
+      ctx.lineTo(slashPts[1].x, slashPts[1].y);
+      ctx.stroke();
+    };
+    context.addCanvasDecoration({ position, drawDecoration }, true);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1101,36 +1100,30 @@ class ViewZoom extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
-    const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone(); white.setAlpha(100);
-    const radius = context.viewport.pixelsFromInches(0.15);
-    const plusMinus = context.viewport.pixelsFromInches(0.075);
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    const radius = Math.floor(context.viewport.pixelsFromInches(0.15)) + 0.5;
+    const crossRadius = radius * 0.6;
+    const position = this._anchorPtView.clone(); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0,0,0,.5)";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "rgba(255,255,255,.5)";
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
 
-    const ellipse = Arc3d.createXYEllipse(this._anchorPtView, radius, radius);
-    builder.setBlankingFill(white);
-    builder.addArc(ellipse, true, true);
-    builder.setSymbology(black, black, 1);
-    builder.addArc(ellipse, false, false);
-
-    const lineHorzPts = [new Point2d(), new Point2d()];
-    lineHorzPts[0].x = this._anchorPtView.x - plusMinus;
-    lineHorzPts[0].y = this._anchorPtView.y;
-    lineHorzPts[1].x = this._anchorPtView.x + plusMinus;
-    lineHorzPts[1].y = this._anchorPtView.y;
-    builder.setSymbology(black, black, 2);
-    builder.addLineString2d(lineHorzPts, 0.0);
-
-    if (this._lastZoomRatio < 1.0) {
-      const lineVertPts = [new Point2d(), new Point2d()];
-      lineVertPts[0].x = this._anchorPtView.x;
-      lineVertPts[0].y = this._anchorPtView.y - plusMinus;
-      lineVertPts[1].x = this._anchorPtView.x;
-      lineVertPts[1].y = this._anchorPtView.y + plusMinus;
-      builder.addLineString2d(lineVertPts, 0.0);
-    }
-
-    context.addDecorationFromBuilder(builder);
+      ctx.beginPath();
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.moveTo(-crossRadius, 0);
+      ctx.lineTo(crossRadius, 0);
+      if (this._lastZoomRatio < 1.0) {
+        ctx.moveTo(0, -crossRadius);
+        ctx.lineTo(0, crossRadius);
+      }
+      ctx.stroke();
+    };
+    context.addCanvasDecoration({ position, drawDecoration }, true);
   }
 
   public firstPoint(ev: BeButtonEvent) {
@@ -1534,20 +1527,15 @@ abstract class ViewNavigate extends ViewingToolHandle {
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
-
-    const point = new Point2d(this._anchorPtView.x, this._anchorPtView.y);
-    const points = [point];
-    const black = ColorDef.black.clone();
-    const white = ColorDef.white.clone();
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-
-    builder.setSymbology(black, black, 9);
-    builder.addPointString2d(points, 0.0);
-
-    builder.setSymbology(white, black, 5);
-    builder.addPointString2d(points, 0.0);
-
-    context.addDecorationFromBuilder(builder);
+    const position = this._anchorPtView.clone(); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-2, -2, 5, 5);
+      ctx.fillStyle = "white";
+      ctx.fillRect(-1, -1, 3, 3);
+    };
+    context.addCanvasDecoration({ position, drawDecoration });
   }
 }
 
@@ -1725,8 +1713,6 @@ export class WindowAreaTool extends ViewTool {
   private _viewport: Viewport;
   private _corners = [new Point3d(), new Point3d()];
   private _shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
-  private _lineHorzPts = [new Point3d(), new Point3d()];
-  private _lineVertPts = [new Point3d(), new Point3d()];
   private _fillColor = ColorDef.from(0, 0, 255, 200);
 
   constructor(viewport: Viewport) { super(); this._viewport = viewport; }
@@ -1827,26 +1813,20 @@ export class WindowAreaTool extends ViewTool {
     if (undefined === this._lastPtView)
       return;
 
-    const gf = context.createGraphicBuilder(GraphicType.ViewOverlay);
-    gf.setSymbology(color, color, ViewHandleWeight.Thin);
-
+    const cursorPt = this._lastPtView.clone(); cursorPt.x = Math.floor(cursorPt.x) + 0.5; cursorPt.y = Math.floor(cursorPt.y) + 0.5;
     const viewRect = this._viewport.viewRect;
-    const cursorPt = this._lastPtView;
-    cursorPt.z = 0;
 
-    this._lineHorzPts[0].setFrom(cursorPt);
-    this._lineHorzPts[1].setFrom(cursorPt);
-    this._lineHorzPts[0].x = viewRect.left;
-    this._lineHorzPts[1].x = viewRect.right;
-    gf.addLineString(this._lineHorzPts);
-
-    this._lineVertPts[0].setFrom(cursorPt);
-    this._lineVertPts[1].setFrom(cursorPt);
-    this._lineVertPts[0].y = viewRect.top;
-    this._lineVertPts[1].y = viewRect.bottom;
-    gf.addLineString(this._lineVertPts);
-
-    context.addDecorationFromBuilder(gf);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = (ColorDef.black === color ? "black" : "white");
+      ctx.lineWidth = 1;
+      ctx.moveTo(viewRect.left, cursorPt.y);
+      ctx.lineTo(viewRect.right, cursorPt.y);
+      ctx.moveTo(cursorPt.x, viewRect.top);
+      ctx.lineTo(cursorPt.x, viewRect.bottom);
+      ctx.stroke();
+    };
+    context.addCanvasDecoration({ drawDecoration });
   }
 
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {

@@ -118,26 +118,32 @@ export class TentativePoint {
     if (!this.isActive || !viewport)
       return;
 
-    const tpSize = viewport.pixelsPerInch * 0.5; // About 1/2 inch...
-    const position = context.viewport.worldToView(this._point);
+    const tpSize = Math.floor(viewport.pixelsPerInch * 0.4) + 0.5;
+    const toSizeOutline = tpSize + 1;
+    const position = context.viewport.worldToView(this._point); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-      if (!this.isSnapped)
-        ctx.setLineDash([2, 1]);
-      ctx.strokeStyle = "white";
-      ctx.shadowColor = "black";
-      ctx.shadowBlur = 5;
-
       ctx.beginPath();
-      ctx.moveTo(-tpSize, 0);
-      ctx.lineTo(tpSize, 0);
+      ctx.strokeStyle = "rgba(0,0,0,.5)";
+      ctx.lineWidth = 3;
+      ctx.moveTo(-toSizeOutline, 0);
+      ctx.lineTo(toSizeOutline, 0);
+      ctx.moveTo(0, -toSizeOutline);
+      ctx.lineTo(0, toSizeOutline);
       ctx.stroke();
 
       ctx.beginPath();
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 1;
+      if (!this.isSnapped) ctx.setLineDash([4, 1]);
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 5;
+      ctx.moveTo(-tpSize, 0);
+      ctx.lineTo(tpSize, 0);
       ctx.moveTo(0, -tpSize);
       ctx.lineTo(0, tpSize);
       ctx.stroke();
     };
-    context.addCanvasDecoration({ position, drawDecoration }, true);
+    context.addCanvasDecoration({ position, drawDecoration });
   }
 
   private async getSnap(newSearch: boolean): Promise<SnapDetail | undefined> {

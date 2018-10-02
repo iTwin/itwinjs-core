@@ -12,11 +12,10 @@ import { DecorateContext } from "../ViewContext";
 import { BeButtonEvent, BeButton, BeModifierKeys, EventHandled, BeTouchEvent, InputSource } from "./Tool";
 import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
-import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { ViewRect } from "../Viewport";
 import { Pixel } from "../rendering";
-import { GraphicType } from "../render/GraphicBuilder";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -162,29 +161,31 @@ export class SelectionTool extends PrimitiveTool {
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
 
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-
     const vp = context.viewport!;
-    const origin = vp.worldToView(this.points[0]);
-    const corner = vp.worldToView(ev.point);
-    origin.z = corner.z = 0.0;
+    const bestContrastIsBlack = (ColorDef.black === vp.getContrastToBackgroundColor());
+    const crossingLine = (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button));
+    const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
 
-    const viewPts: Point3d[] = [];
-    if (SelectionMethod.Line === this.getSelectionMethod() || (SelectionMethod.Pick === this.getSelectionMethod() && BeButton.Reset === ev.button)) {
-      viewPts[0] = origin;
-      viewPts[1] = corner;
+    const position = vp.worldToView(this.points[0]); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position2 = vp.worldToView(ev.point); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const offset = position2.minus(position);
 
-      builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
-      builder.addLineString(viewPts);
-    } else {
-      viewPts[0] = viewPts[4] = origin;
-      viewPts[1] = new Point3d(corner.x, origin.y, corner.z);
-      viewPts[2] = corner;
-      viewPts[3] = new Point3d(origin.x, corner.y, origin.z);
-      builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useOverlapSelection(ev) ? LinePixels.Code2 : LinePixels.Solid);
-      builder.addLineString(viewPts);
-    }
-    context.addDecorationFromBuilder(builder);
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.strokeStyle = bestContrastIsBlack ? "black" : "white";
+      ctx.lineWidth = 1;
+      if (overlapSelection) ctx.setLineDash([5, 5]);
+      if (crossingLine) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(offset.x, offset.y);
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(0, 0, offset.x, offset.y);
+        ctx.fillStyle = bestContrastIsBlack ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)";
+        ctx.fillRect(0, 0, offset.x, offset.y);
+      }
+    };
+    context.addCanvasDecoration({ position, drawDecoration });
   }
 
   protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean) {

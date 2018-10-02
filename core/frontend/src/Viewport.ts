@@ -1940,9 +1940,9 @@ export class ScreenViewport extends Viewport {
       ScreenViewport.drawLocateHitDetail(context, aperture, hit);
 
     if (isLocateCircleOn) {
-      // draw a filled and outlined circle to represent the size of the location tolerance in the current view.
-      const radius = (aperture * 0.5) + 0.5;
-      const position = this.worldToView(pt);
+      // draw a filled and outlined circle to represent the size of the location aperture in the current view.
+      const radius = Math.floor(aperture * 0.5) + 0.5;
+      const position = this.worldToView(pt); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
       const drawDecoration = (ctx: CanvasRenderingContext2D) => {
         ctx.beginPath();
         ctx.strokeStyle = "rgba(255,255,255,.4)";
