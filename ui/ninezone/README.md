@@ -18,10 +18,6 @@ import BackButton from "@bentley/ui-ninezone/lib/components/buttons/Back";
 <BackButton />
 ```
 
-## Demo
-
-Live demo is hosted [here](https://ninezone.azurewebsites.net/)
-
 ### Components
 
 * Buttons
@@ -31,14 +27,9 @@ Live demo is hosted [here](https://ninezone.azurewebsites.net/)
   * Close
 * ...
 
-## Contributing
-
-Please push code and pull requests to the [Git repository](http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui/)
-
 ### Local Demo
 
 ```shell
-git clone http://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-ui
 cd imodeljs-ui
 rush install
 rush build
@@ -65,7 +56,3 @@ Look at the existing code and try to keep your code similar.
 * Use [classnames](https://www.npmjs.com/package/classnames) function to create className strings for the elements.
 
 * Use `const className` inside render for the root element className value.
-
-## Contact
-
-* [Gerardas Butkevičius](mailto:gerardas.butkevicius@bentley.com)

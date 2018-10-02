@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updating README to remove internal links",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Caleb.Shafer@bentley.com"
+}
