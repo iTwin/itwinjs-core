@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.146.0",
+      "tag": "@bentley/ui-components_v0.146.0",
+      "date": "Tue, 02 Oct 2018 14:51:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adding license.md"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.145.0",
       "tag": "@bentley/ui-components_v0.145.0",
       "date": "Tue, 02 Oct 2018 01:02:27 GMT",

@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Tue, 02 Oct 2018 01:02:27 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+
+## 0.146.0
+Tue, 02 Oct 2018 14:51:50 GMT
+
+### Updates
+
+- Added GetIModel method
+- Replaced GetIModel with IModelQuery property primary()
+- use imodel-bank local-orchestrator for tests
 
 ## 0.145.0
 Tue, 02 Oct 2018 01:02:27 GMT

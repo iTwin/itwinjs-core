@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.146.0",
+      "tag": "@bentley/imodeljs-frontend_v0.146.0",
+      "date": "Tue, 02 Oct 2018 14:51:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change ViewOverlay decorators to Canvas decorators."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.145.0",
       "tag": "@bentley/imodeljs-frontend_v0.145.0",
       "date": "Tue, 02 Oct 2018 01:02:27 GMT",
