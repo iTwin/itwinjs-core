@@ -14,7 +14,7 @@
 
 /**
  * @docs-package-description
- * The geometry-core package contains classes for workiing with CAD geometry:  points, vectors, curves, surfaces, and analytic solids
+ * The geometry-core package contains classes for working with CAD geometry:  points, vectors, curves, surfaces, and analytic solids
  */
 /**
  * @docs-group-description CartesianGeometry
@@ -33,11 +33,11 @@
  * * Angles
  * * * Angle -- a strongly typed angle object whose method names make it clear whether input and outputs are degrees or radians.
  * * * AngleSweep -- an angular interval
- * * * YawPitchAndRollAngles -- 3 angles that define a rotated coordinte system.
+ * * * YawPitchAndRollAngles -- 3 angles that define a rotated coordinate system.
  * * Utility classes
  * * * FrameBuilder -- construction of coordinate frames from mixed data sources.
  * * * ClipPlane -- a single plane
- * * * ConvexClipPlaneSet -- an array of planes bounding a convex volumne
+ * * * ConvexClipPlaneSet -- an array of planes bounding a convex volume
  * * * ClipPlaneSet -- an array of ConvexClipPlaneSet, defining the union of their volumes
  * * * Constant -- various numeric values exported as readonly constants
  */
@@ -49,7 +49,7 @@
  * * * GrowableArray -- A carrier for a Float64Array, with methods that hide reallocation of the underlying array as contents are added.
  * * * Point2dArray, Point3dArray, Point4dArray, Vector3dArray -- miscellaneous operations on arrays of 2d and 3d points.
  * * Interfaces
- * * * GeometryHandler -- a double-dispatch protocal used for efficient implementation of algorithms that work on many geometry types.
+ * * * GeometryHandler -- a double-dispatch protocol used for efficient implementation of algorithms that work on many geometry types.
  *
  */
 // doc:export class ArraysAndInterfacesDoc { }
@@ -101,7 +101,7 @@
  * * Sphere -- a sphere
  * * Cone -- a cone or cylinder
  * * TorusPipe -- a pipe elbow
- * * LinearSweep -- a linar sweep of a base contour
+ * * LinearSweep -- a linear sweep of a base contour
  * * RotationalSweep -- a rotational sweep of a base contour
  * * RuledSweep -- two or more similarly structured contours joined by linear rule lines.
  */

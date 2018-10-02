@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add README.md",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "shaun.sewall@bentley.com"
+}

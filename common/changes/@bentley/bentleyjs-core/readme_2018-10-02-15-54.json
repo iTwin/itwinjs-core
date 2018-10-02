@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add README.md",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "shaun.sewall@bentley.com"
+}

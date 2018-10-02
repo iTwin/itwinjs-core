@@ -1,10 +1,10 @@
-﻿# @bentley/imodeljs-quantity
+﻿# @bentley/imodeljs-i18n
 
 Copyright © Bentley Systems, Inc. 2018
 
 ## Description
 
-The __@bentley/imodeljs-quantity__ package contains classes for quantity formatting and parsing.
+The __@bentley/imodeljs-i18n__ package contains classes related to internationalization and localization.
 
 ## Documentation
 

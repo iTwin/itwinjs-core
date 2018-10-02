@@ -1,10 +1,10 @@
-﻿# @bentley/imodeljs-quantity
+﻿# @bentley/imodeljs-backend
 
 Copyright © Bentley Systems, Inc. 2018
 
 ## Description
 
-The __@bentley/imodeljs-quantity__ package contains classes for quantity formatting and parsing.
+The __@bentley/imodeljs-backend__ package contains classes that backend code can use to work with directly with iModels.
 
 ## Documentation
 

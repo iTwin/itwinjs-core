@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add README.md",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "shaun.sewall@bentley.com"
+}
