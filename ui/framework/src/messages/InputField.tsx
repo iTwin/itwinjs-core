@@ -21,7 +21,7 @@ const DivWithOnOutsideClick = withOnOutsideClick(Div);
 /** Properties of [[InputField]] component. */
 export interface InputFieldProps extends CommonProps {
   /** Parent of message. */
-  target: Element | null;
+  target: Element;
   /** Message content. */
   children: React.ReactNode;
   /** Function that will close the message */
@@ -31,9 +31,7 @@ export interface InputFieldProps extends CommonProps {
 /** InputField message is a popup error message that appears under invalid user input. */
 export class InputField extends React.Component<InputFieldProps> {
   public render(): React.ReactNode {
-    return (
-      (this.props.target) ? ReactDOM.createPortal(this._getErrorMessage(), this.props.target) : <div />
-    );
+    return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
   }
 
   /**

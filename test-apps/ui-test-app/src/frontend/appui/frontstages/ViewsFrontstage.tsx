@@ -14,6 +14,7 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   OutputMessageType,
+  RelativePosition,
 } from "@bentley/imodeljs-frontend";
 
 import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
@@ -266,28 +267,28 @@ export class ViewsFrontstage {
 
   private _handleTool4Keypress = (event: any) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", "", OutputMessageType.Pointer);
+    const viewport = IModelApp.viewManager.selectedView!.parentDiv;
     const midX = window.innerWidth / 2;
     const midY = window.innerHeight / 2;
-    const offset = 200;
     switch (event.keyCode) {
       case 37:
         details.briefMessage = "Left pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX - offset, y: midY });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Left);
         IModelApp.notifications.outputMessage(details);
         break;
       case 38:
         details.briefMessage = "Up pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY - offset });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Top);
         IModelApp.notifications.outputMessage(details);
         break;
       case 39:
         details.briefMessage = "Right pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX + offset, y: midY });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Right);
         IModelApp.notifications.outputMessage(details);
         break;
       case 40:
         details.briefMessage = "Down pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY + offset });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Bottom);
         IModelApp.notifications.outputMessage(details);
         break;
     }

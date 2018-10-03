@@ -107,8 +107,22 @@ export class ViewSelector extends React.Component<any, any> {
     const params: ViewQueryParams = {};
     params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
     params.where = "";
-    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
-    return viewProps as ViewDefinitionProps[];
+    const viewProps = this._getViewProps(imodel, params);
+    return viewProps;
+  }
+
+  /**
+   * Gets props for specified imodel.
+   * @param imodel Model to query for props
+   * @param params Parameters for view query
+   */
+  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams) {
+    try {
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
+      return viewProps as ViewDefinitionProps[];
+    } catch {
+      return [] as ViewDefinitionProps[];
+    }
   }
 
   /**

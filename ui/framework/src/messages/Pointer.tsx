@@ -49,17 +49,14 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 /** Pointer message pops up near pointer when attemping an invalid interaction. */
 export class Pointer extends React.Component<PointerProps> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
-  private static _isMessageVisible: boolean;
 
   public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return Pointer._pointerMessageChangedEvent; }
-  public static get isMessageVisible(): boolean { return Pointer._isMessageVisible; }
 
   public static showMessage(message: NotifyMessageDetails): void {
-    Pointer._isMessageVisible = true;
     Pointer.onPointerMessageChangedEvent.emit({
       isVisible: true,
       message: message.briefMessage,
-      detailedMessage: message.detailedMessage ? message.detailedMessage : "",
+      detailedMessage: message.detailedMessage,
       relativePosition: message.relativePosition,
       viewport: message.viewport,
       pt: message.displayPoint,
@@ -67,7 +64,6 @@ export class Pointer extends React.Component<PointerProps> {
   }
 
   public static hideMessage(): void {
-    Pointer._isMessageVisible = false;
     Pointer.onPointerMessageChangedEvent.emit({
       isVisible: false,
       message: "",
@@ -144,7 +140,7 @@ export class Pointer extends React.Component<PointerProps> {
     if (!this.state)
       return tooltipAdjustment;
 
-    const adjustmentOffset = 20;
+    const adjustmentOffset = 50;
     switch (this.state.relativePosition) {
       case RelativePosition.Top:
         tooltipAdjustment = offsetAndContainInContainer({ x: 0, y: -adjustmentOffset });

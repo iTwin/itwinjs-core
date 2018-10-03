@@ -42,7 +42,6 @@ export interface ValidationTextboxProps {
  * for empty if no method for onValueChanged is provided.
  */
 export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
-  private _inputElement: HTMLInputElement | null = null;
   private _isValid: boolean = true;
 
   /** @hidden */
@@ -66,7 +65,6 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
         style={sizeStyle}>
         <input
           className={this._isValid ? validClassNames : invalidClassNames}
-          ref={(el) => { this._inputElement = el; }}
           onChange={this._validateText}
           onKeyUp={this._validateText}
           onPaste={this._validateText}
@@ -89,8 +87,8 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
     this._isValid = false;
     let value = "";
 
-    if (this._inputElement)
-      value = this._inputElement.value;
+    if (event.target)
+      value = event.target.value;
 
     this._calculateIsValid(value);
 

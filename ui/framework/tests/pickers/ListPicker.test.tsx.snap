@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ListPicker ListPickerBase should render correctly 1`] = `
+<ExpandableItem
+  items={Array []}
+  setEnabled={[Function]}
+  title="Test"
+>
+  <Icon
+    icon={
+      <i
+        className="icon icon-list"
+      />
+    }
+    onClick={[Function]}
+  />
+</ExpandableItem>
+`;
+
+exports[`ListPicker ListPickerItem should render correctly 1`] = `
+<div
+  className="ListPicker-item"
+>
+  <div
+    className="label"
+  />
+</div>
+`;
+
+exports[`ListPicker should render correctly 1`] = `
+<ListPickerBase
+  items={Array []}
+  setEnabled={[Function]}
+  title="Test"
+/>
+`;
+
+exports[`ListPickerBase should render correctly 1`] = `
+<ExpandableItem
+  items={Array []}
+  setEnabled={[Function]}
+  title="Test"
+>
+  <Icon
+    icon={
+      <i
+        className="icon icon-list"
+      />
+    }
+    onClick={[Function]}
+  />
+</ExpandableItem>
+`;
+
+exports[`ListPickerItem should render correctly 1`] = `
+<div
+  className="ListPicker-item"
+>
+  <div
+    className="label"
+  />
+</div>
+`;
