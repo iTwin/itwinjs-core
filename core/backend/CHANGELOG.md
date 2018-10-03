@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 02 Oct 2018 19:41:32 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Oct 2018 17:00:37 GMT and should not be manually modified.
+
+## 0.148.0
+Wed, 03 Oct 2018 17:00:37 GMT
+
+### Updates
+
+- Add IModelJsFs.appendFileSync
+- Add README.md
+- Spread various geometry classes to smaller files
 
 ## 0.147.0
 Tue, 02 Oct 2018 19:41:32 GMT

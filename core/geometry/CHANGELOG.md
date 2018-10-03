@@ -1,6 +1,16 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 02 Oct 2018 19:41:32 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Oct 2018 17:00:37 GMT and should not be manually modified.
+
+## 0.148.0
+Wed, 03 Oct 2018 17:00:37 GMT
+
+### Updates
+
+- Distribute classes to smaller files: Point2dVector2d, Point3dVector3d, YawPitchRollAngles, Segment1d, Matrix3d XYZProps
+- Add README.md
+- Spread various geometry classes to smaller files
+- Updating README to remove internal links
 
 ## 0.147.0
 Tue, 02 Oct 2018 19:41:32 GMT

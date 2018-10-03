@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.148.0",
+      "packageName": "@bentley/presentation-backend",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "platform-bld@bentley.com"
+}

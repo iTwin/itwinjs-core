@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.148.0",
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "platform-bld@bentley.com"
+}

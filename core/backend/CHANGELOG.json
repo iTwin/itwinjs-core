@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.148.0",
+      "tag": "@bentley/imodeljs-backend_v0.148.0",
+      "date": "Wed, 03 Oct 2018 17:00:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelJsFs.appendFileSync"
+          },
+          {
+            "comment": "Add README.md"
+          },
+          {
+            "comment": "Spread various geometry classes to smaller files"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.147.0",
       "tag": "@bentley/imodeljs-backend_v0.147.0",
       "date": "Tue, 02 Oct 2018 19:41:32 GMT",

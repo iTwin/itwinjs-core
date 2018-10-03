@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.148.0",
+      "packageName": "@bentley/build-tools",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "platform-bld@bentley.com"
+}

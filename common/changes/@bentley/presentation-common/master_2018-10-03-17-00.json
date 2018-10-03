@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.148.0",
+      "packageName": "@bentley/presentation-common",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "platform-bld@bentley.com"
+}
