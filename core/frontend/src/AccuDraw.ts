@@ -8,7 +8,8 @@ import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineS
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { StandardViewId, ViewState } from "./ViewState";
+import { StandardViewId } from "./StandardView";
+import { ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";

@@ -31,6 +31,7 @@ export * from "./ModelState";
 export * from "./NotificationManager";
 export * from "./SelectionSet";
 export * from "./Sprites";
+export * from "./StandardView";
 export * from "./TentativePoint";
 export * from "./QuantityFormatter";
 export * from "./ViewContext";

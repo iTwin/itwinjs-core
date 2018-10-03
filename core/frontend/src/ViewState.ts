@@ -29,6 +29,7 @@ import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree } from "./tile/TileTree";
 import { GraphicType } from "./render/GraphicBuilder";
+import { StandardView, StandardViewId } from "./StandardView";
 
 export const enum GridOrientationType {
   View = 0,
@@ -37,55 +38,6 @@ export const enum GridOrientationType {
   WorldXZ = 3, // Front
   AuxCoord = 4,
   GeoCoord = 5,
-}
-
-export const enum StandardViewId {
-  NotStandard = -1,
-  Top = 0,
-  Bottom = 1,
-  Left = 2,
-  Right = 3,
-  Front = 4,
-  Back = 5,
-  Iso = 6,
-  RightIso = 7,
-}
-
-/** @hidden */
-export class StandardView {
-  private static _standardViewMatrices?: Matrix3d[];
-  private static init() {
-    if (this._standardViewMatrices !== undefined)
-      return;
-    this._standardViewMatrices = [];
-    this._standardViewMatrices[StandardViewId.Top] = Matrix3d.identity;
-    this._standardViewMatrices[StandardViewId.Bottom] = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1);
-    this._standardViewMatrices[StandardViewId.Left] = Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0);
-    this._standardViewMatrices[StandardViewId.Right] = Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0);
-    this._standardViewMatrices[StandardViewId.Front] = Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
-    this._standardViewMatrices[StandardViewId.Back] = Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0);
-    this._standardViewMatrices[StandardViewId.Iso] = Matrix3d.createRowValues(
-      0.707106781186548, -0.70710678118654757, 0.00000000000000000,
-      0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-      -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
-    this._standardViewMatrices[StandardViewId.RightIso] = Matrix3d.createRowValues(
-      0.707106781186548, 0.70710678118654757, 0.00000000000000000,
-      -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-      0.577350269189626, -0.57735026918962573, 0.57735026918962573);
-    this._standardViewMatrices.forEach((view) => Object.freeze(view));
-  }
-
-  public static get top(): Matrix3d { return this.getStandardRotation(StandardViewId.Top); }
-  public static get bottom(): Matrix3d { return this.getStandardRotation(StandardViewId.Bottom); }
-  public static get left(): Matrix3d { return this.getStandardRotation(StandardViewId.Left); }
-  public static get right(): Matrix3d { return this.getStandardRotation(StandardViewId.Right); }
-  public static get front(): Matrix3d { return this.getStandardRotation(StandardViewId.Front); }
-  public static get back(): Matrix3d { return this.getStandardRotation(StandardViewId.Back); }
-  public static get iso(): Matrix3d { return this.getStandardRotation(StandardViewId.Iso); }
-  public static get rightIso(): Matrix3d { return this.getStandardRotation(StandardViewId.RightIso); }
-
-  public static getStandardRotation(id: StandardViewId): Matrix3d { this.init(); if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return this._standardViewMatrices![id]; }
-  public static adjustToStandardRotation(matrix: Matrix3d): void { this.init(); this._standardViewMatrices!.some((test) => { if (test.maxDiff(matrix) > 1.0e-7) return false; matrix.setFrom(test); return true; }); }
 }
 
 export const enum ViewStatus {

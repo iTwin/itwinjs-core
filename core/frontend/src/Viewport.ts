@@ -8,7 +8,8 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
 } from "@bentley/geometry-core";
-import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { StandardView, StandardViewId } from "./StandardView";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1329,7 +1330,7 @@ export abstract class Viewport implements IDisposable {
       } else if (undefined !== options.placementRelativeId) {
         const firstProps = placementProps[0];
         const firstPlacement = hasAngle(firstProps) ? Placement2d.fromJSON(firstProps) : Placement3d.fromJSON(firstProps);
-        const viewRotation = ViewState.getStandardViewMatrix(options.placementRelativeId).clone(); // ###TODO Figure out why this can't be called directly...
+        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone(); // ###TODO Figure out why this can't be called directly...
         viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
         this.view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {
