@@ -5,6 +5,7 @@
 import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients/lib";
 import { IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common/lib/common";
+import { ConnectProjectConfiguration } from "../common/SVTConfiguration";
 
 /** Global information on the currently opened iModel and the state of the view. */
 export class SimpleViewState {
@@ -15,5 +16,6 @@ export class SimpleViewState {
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;
   public viewPort?: Viewport;
+  public projectConfig?: ConnectProjectConfiguration;
   constructor() { }
 }

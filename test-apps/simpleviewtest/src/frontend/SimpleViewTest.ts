@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Config, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
@@ -21,11 +21,12 @@ import {
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import * as ttjs from "tooltip.js";
-import { ConnectProject } from "./ConnectProject";
-import { NonConnectProject } from "./NonConnectProject";
-import { ProjectAbstraction } from "./ProjectAbstraction";
+import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";
 import { showError, showStatus } from "./Utils";
+import { initializeCustomCloudEnv } from "./CustomCloudEnv";
+import { initializeIModelHub } from "./ConnectEnv";
+import { SVTConfiguration } from "../common/SVTConfiguration";
 
 type Tooltip = ttjs.default;
 
@@ -70,18 +71,6 @@ function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewpor
     ovrs.overrideElement(elemId, app);
 }
 
-/** Parameters for starting SimpleViewTest with a specified initial configuration */
-interface SVTConfiguration {
-  useIModelBank: boolean;
-  viewName?: string;
-  environment?: DeploymentEnv;
-  // standalone-specific config:
-  standalone?: boolean;
-  iModelName?: string;
-  filename?: string;
-  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
-}
-
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 function retrieveConfiguration(): Promise<void> {
   return new Promise((resolve, _reject) => {
@@ -95,9 +84,6 @@ function retrieveConfiguration(): Promise<void> {
           Object.assign(configuration, newConfigurationInfo);
           resolve();
         }
-        // Everything is good, the response was received.
-      } else {
-        // Not ready yet.
       }
     });
     request.send();
@@ -109,6 +95,21 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
   state.iModelConnection = await IModelConnection.openStandalone(filename);
   configuration.iModelName = state.iModelConnection.name;
+}
+
+// opens the configured iModel from iModelHub or iModelBank
+async function openIModel(state: SimpleViewState) {
+  await retrieveProjectConfiguration();
+  configuration.iModelName = activeViewState.projectConfig!.iModelName;
+  IModelApp.hubDeploymentEnv = configuration.environment || "QA";
+  if (configuration.customOrchestratorUri)
+    await initializeCustomCloudEnv(state, configuration.customOrchestratorUri);
+  else
+    await initializeIModelHub(state);
+  state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, configuration.iModelName!);
+  if (state.iModel === undefined)
+    throw new Error(`${configuration.iModelName} - IModel not found in project ${state.project!.name}`);
+  state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
 }
 
 // selects the configured view.
@@ -1724,6 +1725,24 @@ const docReady = new Promise((resolve) => {
   });
 });
 
+// Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
+function retrieveProjectConfiguration(): Promise<void> {
+  return new Promise((resolve, _reject) => {
+    const request: XMLHttpRequest = new XMLHttpRequest();
+    request.open("GET", "connect-configuration.json", false);
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.onreadystatechange = ((_event: Event) => {
+      if (request.readyState === XMLHttpRequest.DONE) {
+        if (request.status === 200) {
+          activeViewState.projectConfig = JSON.parse(request.responseText);
+          resolve();
+        }
+      }
+    });
+    request.send();
+  });
+}
+
 // main entry point.
 async function main() {
   if (!MobileRpcConfiguration.isMobileFrontend) {
@@ -1742,7 +1761,8 @@ async function main() {
     Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
     rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" } }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    const uriPrefix = configuration.customOrchestratorUri;
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     Config.devCorsProxyServer = "https://localhost:3001";
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
@@ -1757,11 +1777,8 @@ async function main() {
     if (configuration.standalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
     } else {
-      IModelApp.hubDeploymentEnv = configuration.environment || "QA";
-      const projectMgr: ProjectAbstraction = configuration.useIModelBank ? new NonConnectProject() : new ConnectProject();
-      await projectMgr.loginAndOpenImodel(activeViewState);
+      await openIModel(activeViewState);
     }
-
   } catch (reason) {
     alert(reason);
     return;

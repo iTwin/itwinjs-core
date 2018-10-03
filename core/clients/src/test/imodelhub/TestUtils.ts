@@ -25,6 +25,9 @@ import { IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelBankClient } from "../../IModelBank";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
+import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
+
+const bankProjects: string[] = [];
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -159,11 +162,24 @@ export async function login(userCredentials?: UserCredentials): Promise<AccessTo
   return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
 }
 
+export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {
+  if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
+    return;
+
+  const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
+  try { await bankContext.deleteContext(actx, accessToken, projectName); } catch (_err) { }
+  await bankContext.createContext(actx, accessToken, projectName);
+
+  bankProjects.push(projectName);
+}
+
 export async function getProjectId(accessToken: AccessToken, projectName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   projectName = projectName || TestConfig.projectName;
+
+  await bootstrapBankProject(accessToken, projectName);
 
   const project: Project = await getCloudEnv().contextMgr.queryContextByName(actx, accessToken, projectName);
 

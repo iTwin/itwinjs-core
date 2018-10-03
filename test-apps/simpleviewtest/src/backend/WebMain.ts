@@ -2,9 +2,9 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 import * as path from "path";
 import * as express from "express";
+import * as https from "https";
 import * as bodyParser from "body-parser";
 import * as cp from "child_process";
 import * as fs from "fs";
@@ -36,24 +36,49 @@ function setupStandaloneConfiguration() {
 // Initialize the backend
 initializeBackend();
 
-// Start the dev-cors-proxy-server
-const proxyServer = cp.spawn("node", ["./node_modules/@bentley/dev-cors-proxy-server/server.js", "--serve-over-https"]);
-proxyServer.stdout.on("data", (data) => {
-  console.log(`proxy server: ${data}`);
-});
-proxyServer.stderr.on("data", (data) => {
-  console.log(`proxy server: ${data}`);
-});
-proxyServer.on("close", (code) => {
-  console.log(`proxy server terminated with code ${code}`);
-});
-
-// Initialize additional web-specific backend parts
-Config.devCorsProxyServer = "https://localhost:3001";
-setupStandaloneConfiguration();
 Logger.setLevelDefault(LogLevel.Error);
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
 Logger.setLevel("imodeljs-backend", LogLevel.Trace);
+Logger.setLevel("SVT", LogLevel.Trace);
+
+let serverConfig: any;
+let serverOptions: any;
+if (process.argv.length === 3) {
+  Logger.logTrace("SVT", `reading server config from ${process.argv[2]}`);
+
+  try {
+    // tslint:disable-next-line:no-var-requires
+    serverConfig = require(process.argv[2]);
+    serverOptions = {
+      key: fs.readFileSync(serverConfig.keyFile),
+      cert: fs.readFileSync(serverConfig.certFile),
+    };
+  } catch (_err) { }
+}
+
+if (serverConfig === undefined) {
+  // Start the dev-cors-proxy-server
+  const proxyServer = cp.spawn("node", ["./node_modules/@bentley/dev-cors-proxy-server/server.js", "--serve-over-https"]);
+  proxyServer.stdout.on("data", (data) => {
+    console.log(`proxy server: ${data}`);
+  });
+  proxyServer.stderr.on("data", (data) => {
+    console.log(`proxy server: ${data}`);
+  });
+  proxyServer.on("close", (code) => {
+    console.log(`proxy server terminated with code ${code}`);
+  });
+
+  // Initialize additional web-specific backend parts
+  Config.devCorsProxyServer = "https://localhost:3001";
+  setupStandaloneConfiguration();
+
+  serverConfig = { port: 3000, baseUrl: "https://localhost" };
+} else {
+
+}
+
+Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());
@@ -78,6 +103,12 @@ app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostReques
 // ---------------------------------------------
 // Run the server...
 // ---------------------------------------------
-app.set("port", 3000);
-// tslint:disable-next-line:no-console
-app.listen(app.get("port"), () => console.log("***** SimpleViewTest running on localhost:" + app.get("port")));
+app.set("port", serverConfig.port);
+
+const announce = () => console.log(`***** SimpleViewTest listening on ${serverConfig.baseUrl}:${app.get("port")}`);
+
+if (serverOptions === undefined) {
+  app.listen(app.get("port"), announce);
+} else {
+  https.createServer(serverOptions, app).listen(app.get("port"), announce);
+}

@@ -13,9 +13,13 @@ import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration. */
 export interface BentleyCloudRpcParams {
+  /** Identifies the remote server that implements a set of RpcInterfaces. Note that the ID of the remote server is not a URI or hostname. It is a string that matches a key in the orchestrator's app registry. */
   info: OpenAPIInfo;
+  /** The protocol for Bentley cloud RPC interface deployments */
   protocol?: typeof BentleyCloudRpcProtocol;
+  /** The URI of the orchestrator that will route requests to the remote RpcInterface server. If not supplied, this default to the origin of the Web page. */
   uriPrefix?: string;
+  /** Handler for RPC request events. */
   pendingRequestListener?: RpcRequestEventHandler;
 }
 
