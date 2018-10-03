@@ -37,9 +37,12 @@ describe("FormDataManagementClient", () => {
   const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    actx = new ActivityLoggingContext("");
+    if (TestConfig.enableMocks)
+      return;
+
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
-    actx = new ActivityLoggingContext("");
     accessToken = await formDataManagementClient.getAccessToken(actx, authToken);
   });
 
@@ -62,16 +65,24 @@ describe("FormDataManagementClient", () => {
   });
 
   it("should be able to retrieve Form Definitions", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const formDefinitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(accessToken, actx, projectId);
     chai.assert(formDefinitions);
   });
 
   it("should be able to retrieve Risk Issue Form Definitions", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const formDefinitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(accessToken, actx, projectId);
     chai.assert(formDefinitions);
   });
 
   it("should be able to create new Form Data", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const definitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(accessToken, actx, projectId);
     const formDef = definitions[0];
@@ -98,6 +109,8 @@ describe("FormDataManagementClient", () => {
   });
 
   it("should be able to create new Risk Issue Form Data", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const definitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(accessToken, actx, projectId);
     const formDef = definitions[0];
@@ -119,11 +132,17 @@ describe("FormDataManagementClient", () => {
   });
 
   it("should be able to retrieve Form Data", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const formData: FormInstanceData[] = await formDataManagementClient.getFormData(accessToken, actx, projectId, "Issue");
     chai.assert(formData);
   });
 
   it("should be able to retrieve Risk Issue Form Data", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const iModelId = "b702d44e-d8c0-4978-9a41-b6cdddcb5619";
     const formData: FormInstanceData[] = await formDataManagementClient.getRiskIssueFormData(accessToken, actx, projectId, iModelId, "Issue");
     chai.assert(formData);

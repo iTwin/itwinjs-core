@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Marking some tests as integration",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}
