@@ -1,6 +1,14 @@
 # Wire Format
 
-The *wire format* describes is the way entities are serialized to JSON.
+The *wire format* describes the way entities are serialized to JSON.
+
+Here is some sample code that dumps the entire iModel to JSON.
+
+```ts
+[[include:WireFormat_DumpIModel.code]]
+```
+
+-------------------------------------------------
 
 Below are examples of wire formats for a few interesting iModel.js classes.
 

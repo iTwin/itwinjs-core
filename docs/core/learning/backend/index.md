@@ -30,6 +30,7 @@ These packages provide the following functions to support backend operations:
   * [Access Elements](./AccessElements.md)
   * [Create Elements](./CreateElements.md)
   * [Access ElementAspects](./AccessElementAspects.md)
+  * [Create ElementAspects](./CreateElementAspects.md)
   * [Access Models](./AccessModels.md)
   * [Create Models](./CreateModels.md)
 

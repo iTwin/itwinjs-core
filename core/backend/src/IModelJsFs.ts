@@ -46,6 +46,9 @@ export class IModelJsFs {
   /** Write to a file. */
   public static writeFileSync(path: string, str: string, wflag: string = "w"): void { fs.writeFileSync(path, str, { flag: wflag }); }
 
+  /** Append to a file. */
+  public static appendFileSync(path: string, str: string): void { fs.appendFileSync(path, str); }
+
   /** Make a copy of a file */
   public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }
 
