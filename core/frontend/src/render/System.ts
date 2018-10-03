@@ -4,43 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { ClipVector, Transform, Point2d, Range3d, Point3d, IndexedPolyface, XAndY } from "@bentley/geometry-core";
-import { assert, Id64, Id64String, IDisposable, dispose, disposeArray, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";
 import {
-  AntiAliasPref,
-  SceneLights,
-  ViewFlags,
-  ViewFlag,
-  Frustum,
-  Hilite,
-  HiddenLine,
-  ColorDef,
-  RenderMaterial,
-  ImageBuffer,
-  RenderTexture,
-  Feature,
-  FeatureTable,
-  BatchType,
-  Gradient,
-  ElementAlignedBox3d,
-  QParams3d,
-  QPoint3dList,
-  ImageSource,
-  ImageSourceFormat,
-  isValidImageSourceFormat,
+  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
+  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
+  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags,
 } from "@bentley/imodeljs-common";
-import { Viewport, ViewRect, ViewFrustum } from "../Viewport";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
-import { IModelConnection } from "../IModelConnection";
-import { FeatureSymbology } from "./FeatureSymbology";
-import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { PointStringParams, MeshParams, PolylineParams } from "./primitives/VertexTable";
+import { SkyBox } from "../DisplayStyleState";
 import { ImageUtil } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
-import { SkyBox } from "../DisplayStyleState";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { IModelConnection } from "../IModelConnection";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
+import { ViewFrustum, Viewport, ViewRect } from "../Viewport";
+import { FeatureSymbology } from "./FeatureSymbology";
+import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
+import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export class RenderPlan {
@@ -301,7 +282,7 @@ export class PackedFeatureTable {
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
 
-  /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a [[Tile]] serialized in iMdl format. */
+  /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a Tile serialized in iMdl format. */
   public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number, type: BatchType) {
     this._data = data;
     this.modelId = modelId;
