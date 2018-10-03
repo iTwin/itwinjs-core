@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { FrontstageProps, ZoneState, WidgetState, ConfigurableUIManager, WidgetControl, ConfigurableCreateInfo, FrontstageManager, FrontstageComposer, ContentGroup, ContentLayoutDef } from "../../src";
+import { FrontstageProps, ZoneState, WidgetState, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, FrontstageManager, FrontstageComposer, ContentGroup, ContentLayoutDef } from "../../src";
 
 describe("StackedWidget", () => {
 
@@ -64,14 +64,14 @@ describe("StackedWidget", () => {
       },
     };
 
-    ConfigurableUIManager.registerControl("StackedWidgetTestWidget", TestWidget);
-    ConfigurableUIManager.loadFrontstage(frontstageProps);
+    ConfigurableUiManager.registerControl("StackedWidgetTestWidget", TestWidget);
+    ConfigurableUiManager.loadFrontstage(frontstageProps);
 
     FrontstageManager.setActiveFrontstageDef(undefined);
 
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = ConfigurableUIManager.findFrontstageDef("StackedWidget-Frontstage");
+    const frontstageDef = ConfigurableUiManager.findFrontstageDef("StackedWidget-Frontstage");
     expect(frontstageDef).to.not.be.undefined;
     FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();

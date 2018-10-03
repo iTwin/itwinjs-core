@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { SampleAppIModelApp } from "../..";
 
-import { ConfigurableUIManager } from "@bentley/ui-framework";
+import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { WidgetControl, WidgetControlProps } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 
@@ -91,4 +91,4 @@ class NavigationTreeWidget extends React.Component<NavigationTreeProps> {
   }
 }
 
-ConfigurableUIManager.registerControl("NavigationTreeWidget", NavigationTreeWidgetControl);
+ConfigurableUiManager.registerControl("NavigationTreeWidget", NavigationTreeWidgetControl);

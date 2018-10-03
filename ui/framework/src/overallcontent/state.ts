@@ -12,14 +12,14 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 export enum OverallContentPage {
   OfflinePage = -3,
   SelectIModelPage = -2,
-  ConfigurableUIPage = -1,
+  ConfigurableUiPage = -1,
 }
 
 /** An object with a function that creates each Overall Content Action that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
 export const OverallContentActions = {
   setOverallPage: (newPage: OverallContentPage | number) => createAction("OverallContent:SET_PAGE", newPage),
   setAccessToken: (accessToken: AccessToken) => createAction("OverallContent:SET_ACCESS_TOKEN", accessToken),
-  goToConfigurableUI: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
+  goToConfigurableUi: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
 };
 
 /** The union of all actions that are handled by our reducer. */
@@ -43,7 +43,7 @@ export function OverallContentReducer(state: OverallContentState = initialState,
     case "OverallContent:SET_ACCESS_TOKEN":
       return { ...state, accessToken: action.payload as any };
     case "OpenIModel:SETSELECTEDVIEWS":
-      return { ...state, currentPage: OverallContentPage.ConfigurableUIPage };
+      return { ...state, currentPage: OverallContentPage.ConfigurableUiPage };
   }
   return state;
 }

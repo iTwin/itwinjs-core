@@ -2,13 +2,13 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUI */
+/** @module ConfigurableUi */
 
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
 import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
-import { ConfigurableCreateInfo, ConfigurableUIElement } from "./ConfigurableUIControl";
+import { ConfigurableCreateInfo, ConfigurableUiElement } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
@@ -26,17 +26,17 @@ import { CubeNavigationAidControl } from "./navigationaids/CubeNavigationAid";
 /** Configurable Ui Manager maintains common items, controls, Frontstages, Content Groups,
  * Content Layouts, Tasks and Workflows.
  */
-export class ConfigurableUIManager {
-  private static _registeredControls: { [classId: string]: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUIElement } = {};
+export class ConfigurableUiManager {
+  private static _registeredControls: { [classId: string]: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement } = {};
 
   private static _commonItemMap: ItemMap = new ItemMap();
 
-  /** Initializes the ConfigurableUIManager and registeres core controls. */
+  /** Initializes the ConfigurableUiManager and registeres core controls. */
   public static initialize() {
     // Register core controls
-    ConfigurableUIManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
-    ConfigurableUIManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
-    ConfigurableUIManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
+    ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
+    ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
+    ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
   }
 
   /** Loads common Group, Tool and Command items into the item map.
@@ -88,7 +88,7 @@ export class ConfigurableUIManager {
     return item;
   }
 
-  /** Registers a control implementing the [[ConfigurableUIElement]] interface.
+  /** Registers a control implementing the [[ConfigurableUiElement]] interface.
    * These controls can be a
    * [[ContentControl]],
    * [[NavigationAidControl]],
@@ -99,9 +99,9 @@ export class ConfigurableUIManager {
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
-  public static registerControl(classId: string, constructor: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUIElement): void {
+  public static registerControl(classId: string, constructor: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement): void {
     if (this._registeredControls.hasOwnProperty(classId)) {
-      throw Error("ConfigurableUIManager.registerControl error: classId '" + classId + "' already registered");
+      throw Error("ConfigurableUiManager.registerControl error: classId '" + classId + "' already registered");
     }
 
     this._registeredControls[classId] = constructor;
@@ -131,11 +131,11 @@ export class ConfigurableUIManager {
    * @param options   options passed to the constructor of the control
    * @returns  the created control
    */
-  public static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUIElement | undefined {
+  public static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined {
     const info = new ConfigurableCreateInfo(classId, uniqueId, uniqueId);
     const constructor = this._registeredControls[info.classId];
     if (!constructor) {
-      throw Error("ConfigurableUIManager.createControl error: classId '" + classId + "' not registered");
+      throw Error("ConfigurableUiManager.createControl error: classId '" + classId + "' not registered");
     }
 
     const control = new constructor(info, options);
@@ -200,4 +200,4 @@ export class ConfigurableUIManager {
 
 }
 
-export default ConfigurableUIManager;
+export default ConfigurableUiManager;

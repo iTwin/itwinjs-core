@@ -2,23 +2,23 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUI */
+/** @module ConfigurableUi */
 
-/** Interface for a ConfigurableUI element
+/** Interface for a ConfigurableUi element
  */
-export interface ConfigurableUIElement {
+export interface ConfigurableUiElement {
   uniqueId: string;
   classId: string;
   name: string;
 
-  // adopt(other: ConfigurableUIElement): boolean;
+  // adopt(other: ConfigurableUiElement): boolean;
   // request(requestId: string, options?: any, abortUpdate?: boolean): Promise<any>;
   // registerMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
   // unregisterMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
   // broadcastMessage(messageName: string, messageArguments?: any[]): void;
 }
 
-/** Information for creating a ConfigurableUI element
+/** Information for creating a ConfigurableUi element
  */
 export class ConfigurableCreateInfo {
   constructor(public readonly classId: string,
@@ -27,9 +27,9 @@ export class ConfigurableCreateInfo {
   }
 }
 
-/** The base class for all ConfigurableUI elements
+/** The base class for all ConfigurableUi elements
  */
-export class ConfigurableBase implements ConfigurableUIElement {
+export class ConfigurableBase implements ConfigurableUiElement {
   private _uniqueId: string;
   private _classId: string;
   private _name: string;
@@ -41,7 +41,7 @@ export class ConfigurableBase implements ConfigurableUIElement {
   }
 
   /** @hidden */
-  // public adopt(other: ConfigurableUIElement): boolean {
+  // public adopt(other: ConfigurableUiElement): boolean {
   //   if (this === other)
   //     return true;
 
@@ -60,8 +60,8 @@ export class ConfigurableBase implements ConfigurableUIElement {
   //   return true;
   // }
 
-  // protected _canAdopt(other: ConfigurableUIElement): boolean { return this._classId === other.classId; }
-  // protected _adopt(other: ConfigurableUIElement): void { this._uniqueId = other.uniqueId; }
+  // protected _canAdopt(other: ConfigurableUiElement): boolean { return this._classId === other.classId; }
+  // protected _adopt(other: ConfigurableUiElement): void { this._uniqueId = other.uniqueId; }
 
   /** @hidden */
   public get uniqueId(): string { return this._uniqueId; }
@@ -74,7 +74,7 @@ export class ConfigurableBase implements ConfigurableUIElement {
   public get name(): string { return this._name; }
 }
 
-/** The base class for all ConfigurableUI elements that belong to a stage.
+/** The base class for all ConfigurableUi elements that belong to a stage.
  */
 export class StageConfigurable extends ConfigurableBase {
   // private _stage?: FrontstageDef;
@@ -83,7 +83,7 @@ export class StageConfigurable extends ConfigurableBase {
     super(info, options);
   }
 
-  // protected _adopt(other: ConfigurableUIElement): void {
+  // protected _adopt(other: ConfigurableUiElement): void {
   //   super._adopt(other);
 
   //   const otherStageConfigurable = other as StageConfigurable;
@@ -106,9 +106,9 @@ export class StageConfigurable extends ConfigurableBase {
   // protected _onStageChanged(): void { }
 }
 
-/** The type of the ConfigurableUIControl.
+/** The type of the ConfigurableUiControl.
  */
-export enum ConfigurableUIControlType {
+export enum ConfigurableUiControlType {
   Content,          /** Represents [[ContentControl]] */
   NavigationAid,    /** Represents [[NavigationAidControl]] */
   StatusBarWidget,  /** Represents [[StatusBarWidgetControl]]  */
@@ -122,10 +122,10 @@ export enum ConfigurableUIControlType {
  * Instead, applications should derive from one of [[ContentControl]], [[WidgetControl]] or [[NavigationAidControl]].
  *
  */
-export abstract class ConfigurableUIControl extends StageConfigurable {
+export abstract class ConfigurableUiControl extends StageConfigurable {
   private _cid: string;
 
-  /** Creates an instance of ConfigurableUIControl.
+  /** Creates an instance of ConfigurableUiControl.
    * @param info         An object that the subclass must pass to this base class.
    * @param options      Options provided to the control
    * @note Subclasses must pass all arguments to the base class and not add themselves
@@ -141,8 +141,8 @@ export abstract class ConfigurableUIControl extends StageConfigurable {
    */
   public initialize(): void { this._initialize(); }
 
-  /** Called to initialize the ConfigurableUIControl. Instead of creating all the child views
-   * in its constructor, ConfigurableUIControl should do that in this callback. The reason
+  /** Called to initialize the ConfigurableUiControl. Instead of creating all the child views
+   * in its constructor, ConfigurableUiControl should do that in this callback. The reason
    * is that in cases when a control is adopted, it's immediately destroyed, so creating the
    * view hierarchy is pointless.
    */
@@ -150,17 +150,17 @@ export abstract class ConfigurableUIControl extends StageConfigurable {
     // this.SetPlatformTargetId(this.m_cid);
   }
 
-  /** Returns the ID of this ConfigurableUIControl.
+  /** Returns the ID of this ConfigurableUiControl.
    */
-  public getConfigurableUIControlId(): string { return this._cid; }
+  public getConfigurableUiControlId(): string { return this._cid; }
 
   /** Get the type of this control.
    */
-  public abstract getType(): ConfigurableUIControlType;
+  public abstract getType(): ConfigurableUiControlType;
 
   /** Returns a promise that resolves when the control is ready for usage.
    */
   // public Ready(): Promise<void> { return Promise.Resolve<void>(0); }
 }
 
-export default ConfigurableUIControl;
+export default ConfigurableUiControl;

@@ -2,7 +2,7 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUI */
+/** @module ConfigurableUi */
 
 import * as React from "react";
 import { CSSProperties } from "react";
@@ -12,25 +12,25 @@ import { FrontstageComposer } from "./FrontstageComposer";
 import { ElementTooltip } from "./ElementTooltip";
 import PointerMessage from "../messages/Pointer";
 
-/** Props for [[ConfigurableUIContent]] */
-export interface ConfigurableUIContentProps {
+/** Props for [[ConfigurableUiContent]] */
+export interface ConfigurableUiContentProps {
   placeholder: string;
   appBackstage?: React.ReactNode;
 }
 
 function mapStateToProps(state: any) {
   return {
-    placeholder: state.frameworkState.configurableUIState.placeHolder,
+    placeholder: state.frameworkState.configurableUiState.placeHolder,
   };
 }
 
 const mapDispatch = {
 };
 
-/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUI */
-class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentProps> {
+/** The ConfigurableUiContent component is the high order component the pages specified using ConfigurableUi */
+class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentProps> {
 
-  public constructor(props: ConfigurableUIContentProps) {
+  public constructor(props: ConfigurableUiContentProps) {
     super(props);
   }
 
@@ -56,5 +56,5 @@ class ConfigurableUIContentClass extends React.Component<ConfigurableUIContentPr
   }
 }
 
-/** The ConfigurableUIContent component is the high order component the pages specified using ConfigurableUI */
-export const ConfigurableUIContent = connect(mapStateToProps, mapDispatch)(ConfigurableUIContentClass); // tslint:disable-line:variable-name
+/** The ConfigurableUiContent component is the high order component the pages specified using ConfigurableUi */
+export const ConfigurableUiContent = connect(mapStateToProps, mapDispatch)(ConfigurableUiContentClass); // tslint:disable-line:variable-name

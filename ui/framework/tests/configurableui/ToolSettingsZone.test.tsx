@@ -11,7 +11,7 @@ import {
   ZoneState,
   WidgetState,
   ToolSettingsZone,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   FrontstageProps,
   ToolUiProvider,
   ConfigurableCreateInfo,
@@ -98,9 +98,9 @@ describe("ToolSettingsZone", () => {
       },
     };
 
-    ConfigurableUIManager.loadCommonItems(commonItemsList);
-    ConfigurableUIManager.registerControl("ToolSettingsZone-TestTool", Tool2UiProvider);
-    ConfigurableUIManager.loadFrontstage(frontstageProps);
+    ConfigurableUiManager.loadCommonItems(commonItemsList);
+    ConfigurableUiManager.registerControl("ToolSettingsZone-TestTool", Tool2UiProvider);
+    ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
 
   it("mount ToolSettingsZone with active Tool Settings", () => {
@@ -110,7 +110,7 @@ describe("ToolSettingsZone", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolItemDef = ConfigurableUIManager.findItem("ToolSettingsZone-TestTool");
+      const toolItemDef = ConfigurableUiManager.findItem("ToolSettingsZone-TestTool");
       expect(toolItemDef).to.not.be.undefined;
       expect(toolItemDef).to.be.instanceof(ToolItemDef);
 

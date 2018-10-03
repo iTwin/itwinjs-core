@@ -8,38 +8,38 @@
 import { createAction, Action, ActionsUnion, ActionWithPayload, DeepReadonlyObject, DeepReadonly } from "../utils/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 
-/** The portion of state managed by the ConfigurableUIReducer. */
-export interface ConfigurableUIState {
+/** The portion of state managed by the ConfigurableUiReducer. */
+export interface ConfigurableUiState {
   placeHolder: string;
   snapMode: number;
   toolPrompt: string;
 }
 
-/* used on first call of ConfigurableUIReducer */
-const initialState: ConfigurableUIState = {
+/* used on first call of ConfigurableUiReducer */
+const initialState: ConfigurableUiState = {
   placeHolder: "placeholder",
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
 };
 
-/** An object with a function that creates each ConfigurableUIReducer that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
-export const ConfigurableUIActions = {
-  setSnapMode: (snapMode: number) => createAction("ConfigurableUI:SET_SNAPMODE", snapMode),
-  setToolPrompt: (toolPrompt: string) => createAction("ConfigurableUI:SET_TOOLPROMPT", toolPrompt),
+/** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
+export const ConfigurableUiActions = {
+  setSnapMode: (snapMode: number) => createAction("ConfigurableUi:SET_SNAPMODE", snapMode),
+  setToolPrompt: (toolPrompt: string) => createAction("ConfigurableUi:SET_TOOLPROMPT", toolPrompt),
 };
 
-/** Union of ConfigurableUI Redux actions  */
-export type ConfigurableUIActionsUnion = ActionsUnion<typeof ConfigurableUIActions>;
+/** Union of ConfigurableUi Redux actions  */
+export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActions>;
 
-/** Handles actions to update ConfigurableUIState. */
-export function ConfigurableUIReducer(state: ConfigurableUIState = initialState, _action: ConfigurableUIActionsUnion): ConfigurableUIState {
+/** Handles actions to update ConfigurableUiState. */
+export function ConfigurableUiReducer(state: ConfigurableUiState = initialState, _action: ConfigurableUiActionsUnion): ConfigurableUiState {
   switch (_action.type) {
-    case "ConfigurableUI:SET_SNAPMODE": {
+    case "ConfigurableUi:SET_SNAPMODE": {
       if (_action.payload)
         return { ...state, snapMode: _action.payload };
       break;
     }
-    case "ConfigurableUI:SET_TOOLPROMPT": {
+    case "ConfigurableUi:SET_TOOLPROMPT": {
       if (_action.payload)
         return { ...state, toolPrompt: _action.payload };
       break;

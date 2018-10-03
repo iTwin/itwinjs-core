@@ -8,7 +8,7 @@ tableRowAnchors: true
 |------------|------------|--------|--------|-------|
 |**Backstage**|A full-screen overlay presenting application settings and data management to the user.
 |**Content&nbsp;Group**|A collection of Content Views.
-|**Content&nbsp;Layout**|A configuration of Content Views.
+|**Content&nbsp;Layout**|A layout configuration of Content Views.
 |**Content&nbsp;View**|A representation of an iModel's data.
 |**Dialog**| A small temporary window of options presented to the user.
 |**Frontstage**|A full-screen configuration designed to enable the user to accomplish a task.

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUIManager } from "@bentley/ui-framework";
+import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { StatusBarWidgetControl, IStatusBar, StatusBarFieldId } from "@bentley/ui-framework";
 import { ActivityCenterField } from "@bentley/ui-framework";
@@ -30,4 +30,4 @@ class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-ConfigurableUIManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);

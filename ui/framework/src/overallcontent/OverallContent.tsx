@@ -11,7 +11,7 @@ import { OidcProvider } from "redux-oidc";
 import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { IModelOpen } from "../openimodel/IModelOpen";
-import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
+import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
 import { SignIn } from "../oidc/SignIn";
@@ -121,11 +121,11 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
       element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel.bind(this)} />;
-    } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage || OverallContentPage.OfflinePage === this.props.currentPage) {
+    } else if (OverallContentPage.ConfigurableUiPage === this.props.currentPage || OverallContentPage.OfflinePage === this.props.currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,
       };
-      element = <ConfigurableUIContent {...configurableUiContentProps} />;
+      element = <ConfigurableUiContent {...configurableUiContentProps} />;
     } else if (React.Children.count(this.props.children) > this.props.currentPage) {
       element = React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }

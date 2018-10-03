@@ -23,7 +23,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { OverallContentState, OverallContentReducer, OverallContentPage } from "./overallcontent/state";
 // @ts-ignore
 import { OpenIModelState, OpenIModelPage } from "./openimodel/state";
-import { ConfigurableUIState, ConfigurableUIReducer } from "./configurableui/state";
+import { ConfigurableUiState, ConfigurableUiReducer } from "./configurableui/state";
 // @ts-ignore
 import { combineReducers, DeepReadonlyObject, DeepReadonlyArray, Action, ActionWithPayload } from "./utils/redux-ts";
 import { reducer as OidcReducer } from "redux-oidc";
@@ -32,13 +32,13 @@ import { reducer as OidcReducer } from "redux-oidc";
 export interface FrameworkState {
   overallContentState: OverallContentState;
   openIModelState: OpenIModelState;
-  configurableUIState: ConfigurableUIState;
+  configurableUiState: ConfigurableUiState;
 }
 
 // framework reducer
 // tslint:disable-next-line:variable-name
 export const FrameworkReducer = combineReducers({
   overallContentState: OverallContentReducer,
-  configurableUIState: ConfigurableUIReducer,
+  configurableUiState: ConfigurableUiReducer,
   oidcState: OidcReducer,
 });

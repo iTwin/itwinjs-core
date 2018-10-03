@@ -8,13 +8,13 @@ import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-import ConfigurableUIManager from "./ConfigurableUIManager";
+import ConfigurableUiManager from "./ConfigurableUiManager";
 import { Icon } from "./IconLabelSupport";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 import { ToolItemProps, CommandItemProps, CommandHandler } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
-import { ConfigurableUIControlType } from "./ConfigurableUIControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
@@ -80,10 +80,10 @@ export class ToolItemDef extends ItemDefBase {
 
   public get toolUiProvider(): ToolUiProvider | undefined {
     // TODO - should call getConfigurable if widget is sharable
-    if (!this._toolUiProvider && ConfigurableUIManager.isControlRegistered(this.toolId)) {
-      const toolUiProvider = ConfigurableUIManager.createControl(this.toolId, this.id) as ToolUiProvider;
+    if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
+      const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.id) as ToolUiProvider;
       if (toolUiProvider) {
-        if (toolUiProvider.getType() !== ConfigurableUIControlType.ToolUiProvider) {
+        if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
           throw Error("ToolItemDef.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 

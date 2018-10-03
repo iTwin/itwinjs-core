@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
-import { ConfigurableCreateInfo, ConfigurableUIControl, ConfigurableUIControlType } from "./ConfigurableUIControl";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
 // -----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ export interface WidgetControlProps {
 
 /** The base class for Widget controls.
  */
-export class WidgetControl extends ConfigurableUIControl {
+export class WidgetControl extends ConfigurableUiControl {
   private _widgetDef!: WidgetDef;
   private _reactElement: React.ReactNode;
 
@@ -33,7 +33,7 @@ export class WidgetControl extends ConfigurableUIControl {
   public get widgetDef() { return this._widgetDef; }
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
-  public getType(): ConfigurableUIControlType { return ConfigurableUIControlType.Widget; }
+  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
 
   public setWidgetState(state: WidgetState): void {
     this.widgetDef.setWidgetState(state);

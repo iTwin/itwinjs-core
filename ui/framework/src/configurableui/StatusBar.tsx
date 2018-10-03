@@ -11,7 +11,7 @@ import { ReactNode } from "react";
 
 import { ZoneDef } from "./ZoneDef";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
-import { ConfigurableUIControlType } from "./ConfigurableUIControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import Footer from "@bentley/ui-ninezone/lib/footer/Footer";
 import ActivityMessage from "@bentley/ui-ninezone/lib/footer/message/Activity";
@@ -93,7 +93,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     let footerSections: React.ReactNode = null;
     const widgetDef = this.props.zoneDef.getOnlyWidgetDef();
     if (widgetDef) {
-      const widgetControl: StatusBarWidgetControl = widgetDef.getWidgetControl(ConfigurableUIControlType.StatusBarWidget) as StatusBarWidgetControl;
+      const widgetControl: StatusBarWidgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
       if (widgetControl && widgetControl.getReactNode) {
         footerSections = widgetControl.getReactNode(this, this.props.isInFooterMode, this.state.openWidget);
       }

@@ -14,7 +14,7 @@ import {
   TaskLaunchBackstageItem,
   FrontstageManager,
   FrontstageActivatedEventArgs,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   TaskPropsList,
   WorkflowPropsList,
 } from "../../src/index";
@@ -90,7 +90,7 @@ describe("Backstage", () => {
         contentGroup: "TestContentGroup1",
         defaultContentId: "TestContent1",
       };
-      ConfigurableUIManager.loadFrontstage(frontstageProps);
+      ConfigurableUiManager.loadFrontstage(frontstageProps);
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
@@ -112,7 +112,7 @@ describe("Backstage", () => {
         defaultContentId: "TestContent1",
       };
 
-      ConfigurableUIManager.loadFrontstage(frontstageProps);
+      ConfigurableUiManager.loadFrontstage(frontstageProps);
 
       const taskPropsList: TaskPropsList = {
         tasks: [
@@ -125,7 +125,7 @@ describe("Backstage", () => {
         ],
       };
 
-      ConfigurableUIManager.loadTasks(taskPropsList);
+      ConfigurableUiManager.loadTasks(taskPropsList);
 
       // Test Workflows
       const workflowPropsList: WorkflowPropsList = {
@@ -146,7 +146,7 @@ describe("Backstage", () => {
         ],
       };
 
-      ConfigurableUIManager.loadWorkflows(workflowPropsList);
+      ConfigurableUiManager.loadWorkflows(workflowPropsList);
 
       const spyMethod = sinon.stub();
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());

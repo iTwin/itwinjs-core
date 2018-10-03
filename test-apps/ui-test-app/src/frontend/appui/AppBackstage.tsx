@@ -12,7 +12,7 @@ import {
   FrontstageLaunchBackstageItem,
   SeparatorBackstageItem,
   BackstageCloseEventArgs,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   ToolUiProvider,
 } from "@bentley/ui-framework";
 
@@ -104,4 +104,4 @@ class AppBackstage extends React.Component<AppBackstageProps> {
 // makes a <Connect> react component
 export default connect(mapStateToProps)(AppBackstage);
 
-ConfigurableUIManager.registerControl("SampleApp.BackstageToggle", ToolUiProvider);
+ConfigurableUiManager.registerControl("SampleApp.BackstageToggle", ToolUiProvider);

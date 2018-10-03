@@ -10,7 +10,7 @@ import { ItemDefBase } from "./ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "./ItemProps";
 import { Icon, IconInfo } from "./IconLabelSupport";
 import { ItemList, ItemMap } from "./ItemFactory";
-import { ConfigurableUIManager } from "./ConfigurableUIManager";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import HistoryTray, { History, DefaultHistoryManager } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
@@ -64,7 +64,7 @@ export class GroupItemDef extends ItemDefBase {
 
       if (typeof value === "string") {
         id = value;
-        item = ConfigurableUIManager.findItem(value);
+        item = ConfigurableUiManager.findItem(value);
       } else {
         item = value;
         id = item.id;

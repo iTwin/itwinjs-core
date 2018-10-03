@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, ConfigurableUIManager, ItemPropsList, ToolItemDef, GroupItemDef } from "../../src";
+import { GroupButton, ConfigurableUiManager, ItemPropsList, ToolItemDef, GroupItemDef } from "../../src";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 describe("GroupItem", () => {
@@ -40,7 +40,7 @@ describe("GroupItem", () => {
         },
       ],
     };
-    ConfigurableUIManager.loadCommonItems(commonItemsList);
+    ConfigurableUiManager.loadCommonItems(commonItemsList);
 
   });
 

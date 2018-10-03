@@ -132,7 +132,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   public render(): React.ReactNode {
     return (
-      <>
+      <div id="frontstage-composer">
         {this.renderModalFrontstage()}
 
         {this._frontstageDef &&
@@ -144,7 +144,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
             zoneDefProvider={this}
           />
         }
-      </>
+      </div>
     );
   }
 

@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { FrontstageManager, ModalFrontstageInfo } from "../FrontstageManager";
-import { ConfigurableCreateInfo } from "../ConfigurableUIControl";
+import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import { SheetsModalFrontstage } from "./SheetsModalFrontstage";
 

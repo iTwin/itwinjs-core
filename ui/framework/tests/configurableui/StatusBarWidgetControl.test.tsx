@@ -10,7 +10,7 @@ import {
   StatusBarWidgetControl,
   ConfigurableCreateInfo,
   MessageCenterField,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   IStatusBar,
   StatusBarFieldId,
   ZoneDef,
@@ -40,8 +40,8 @@ describe("StatusBarWidgetControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUIManager.unregisterControl("AppStatusBar");
-    ConfigurableUIManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+    ConfigurableUiManager.unregisterControl("AppStatusBar");
+    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
     statusBarZoneDef = new ZoneDef({
       defaultState: ZoneState.Open,

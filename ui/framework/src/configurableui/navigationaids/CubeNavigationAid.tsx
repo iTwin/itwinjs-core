@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { Cube, Face } from "@bentley/ui-core";
-import { ConfigurableCreateInfo } from "../ConfigurableUIControl";
+import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
 import * as classnames from "classnames";
 import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, YawPitchRollAngles, Vector3d } from "@bentley/geometry-core";

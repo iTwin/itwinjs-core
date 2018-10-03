@@ -1,6 +1,14 @@
 # @bentley/ui-ninezone
 
-React components for 9 zone UI and other purposes.
+Copyright © Bentley Systems, Inc. 2018
+
+## Description
+
+The __@bentley/ui-ninezone__ package contains React components for 9-zone UI and other purposes.
+
+## Documentation
+
+See the [iModel.js](https://www.imodeljs.org) documentation for more information.
 
 ## Usage
 
@@ -30,10 +38,10 @@ import BackButton from "@bentley/ui-ninezone/lib/components/buttons/Back";
 ### Local Demo
 
 ```shell
-cd imodeljs-ui
+cd imodeljs
 rush install
 rush build
-cd packages/ninezone
+cd ui/ninezone
 npm start
 ```
 

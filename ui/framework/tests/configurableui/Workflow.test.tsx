@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WorkflowManager, WorkflowPropsList, ConfigurableUIManager, TaskPropsList, Workflow } from "../../src/index";
+import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow } from "../../src/index";
 
 describe("Workflow & WorkflowManager", () => {
 
@@ -40,7 +40,7 @@ describe("Workflow & WorkflowManager", () => {
       ],
     };
 
-    ConfigurableUIManager.loadTasks(taskPropsList);
+    ConfigurableUiManager.loadTasks(taskPropsList);
 
     const workflowPropsList: WorkflowPropsList = {
       defaultWorkflowId: "default-workflow",
@@ -74,7 +74,7 @@ describe("Workflow & WorkflowManager", () => {
       ],
     };
 
-    ConfigurableUIManager.loadWorkflows(workflowPropsList);
+    ConfigurableUiManager.loadWorkflows(workflowPropsList);
   });
 
   describe("Workflow", () => {

@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import {
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   WidgetControl,
   ConfigurableCreateInfo,
   MessageManager,
@@ -138,4 +138,4 @@ export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
   }
 }
 
-ConfigurableUIManager.registerControl("FeedbackWidget", FeedbackDemoWidget);
+ConfigurableUiManager.registerControl("FeedbackWidget", FeedbackDemoWidget);

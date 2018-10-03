@@ -18,7 +18,7 @@ import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
-import { UiFramework, FrameworkState, FrameworkReducer, OverallContent, AppNotificationManager, ProjectInfo, ConfigurableUIManager, FrontstageManager, FrontstageProps } from "@bentley/ui-framework";
+import { UiFramework, FrameworkState, FrameworkReducer, OverallContent, AppNotificationManager, ProjectInfo, ConfigurableUiManager, FrontstageManager, FrontstageProps } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { AppUi } from "./appui/AppUi";
@@ -64,7 +64,7 @@ class SampleAppAccuSnap extends AccuSnap {
     public getActiveSnapModes(): SnapMode[] {
         const snaps: SnapMode[] = [];
         if (SampleAppIModelApp.store.getState().frameworkState) {
-            const snapMode = SampleAppIModelApp.store.getState().frameworkState!.configurableUIState.snapMode;
+            const snapMode = SampleAppIModelApp.store.getState().frameworkState!.configurableUiState.snapMode;
             if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number) snaps.push(SnapMode.Bisector);
             if ((snapMode & SnapMode.Center) === SnapMode.Center as number) snaps.push(SnapMode.Center);
             if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number) snaps.push(SnapMode.Intersection);
@@ -150,7 +150,7 @@ export class SampleAppIModelApp extends IModelApp {
         // we create a FrontStage that contains the views that we want.
         const frontstageProps: FrontstageProps | undefined = new ViewsFrontstage(viewIdsSelected, iModelConnection).defineProps();
         if (frontstageProps) {
-            ConfigurableUIManager.loadFrontstage(frontstageProps);
+            ConfigurableUiManager.loadFrontstage(frontstageProps);
             const frontstageDef = FrontstageManager.findFrontstageDef(frontstageProps.id);
             FrontstageManager.setActiveFrontstageDef(frontstageDef);
         }

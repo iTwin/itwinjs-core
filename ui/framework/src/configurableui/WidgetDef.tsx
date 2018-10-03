@@ -7,10 +7,10 @@
 import * as React from "react";
 
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUIManager } from "./ConfigurableUIManager";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
-import { ConfigurableUIControlType } from "./ConfigurableUIControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -163,13 +163,13 @@ export class WidgetDef {
   public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
 
   public get widgetControl(): WidgetControl | undefined {
-    return this.getWidgetControl(ConfigurableUIControlType.Widget);
+    return this.getWidgetControl(ConfigurableUiControlType.Widget);
   }
 
-  public getWidgetControl(type: ConfigurableUIControlType): WidgetControl | undefined {
+  public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
     // TODO - should call getConfigurable if widget is sharable
     if (!this._widgetControl) {
-      this._widgetControl = ConfigurableUIManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
+      this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
       if (this._widgetControl.getType() !== type) {
         throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
       }
@@ -184,7 +184,7 @@ export class WidgetDef {
 
   public get reactElement(): React.ReactNode {
     if (!this._widgetReactNode) {
-      const widgetControl = this.getWidgetControl(ConfigurableUIControlType.Widget);
+      const widgetControl = this.getWidgetControl(ConfigurableUiControlType.Widget);
 
       if (widgetControl && widgetControl.reactElement)
         this._widgetReactNode = widgetControl.reactElement;

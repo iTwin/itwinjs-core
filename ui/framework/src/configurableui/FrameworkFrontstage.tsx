@@ -57,7 +57,7 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
     this.setState((_prevState, _props) => ({ toolId: args.toolId }));
   }
 
-  // This uses ConfigurableUI to render the content
+  // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
     // if (ProtogistApp.store.getState().contentState!.layoutDef)
     //   return undefined;

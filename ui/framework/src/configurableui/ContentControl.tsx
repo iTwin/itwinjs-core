@@ -4,35 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
-import { ConfigurableUIControlType, ConfigurableCreateInfo, ConfigurableUIControl } from "./ConfigurableUIControl";
+import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "./ConfigurableUiControl";
 
 /** The base class for Frontstage content controls.
  */
-export class ContentControl extends ConfigurableUIControl {
+export class ContentControl extends ConfigurableUiControl {
   private _reactElement: React.ReactNode;
 
-  /** Creates an instance of ConfigurableUIContentControl.
+  /** Creates an instance of ConfigurableUiContentControl.
    * @param info         An object that the subclass must pass to this base class.
    * @param options      An object which is created on the native part of this control by the function
-   *                     @link BentleyApi::DgnClientFx::ConfigurableUI::IConfigurable::_SupplyInitializationOptions
+   *                     @link BentleyApi::DgnClientFx::ConfigurableUi::IConfigurable::_SupplyInitializationOptions
    *                     IConfigurable::_SupplyInitializationOptions @endlink.
    * @note Subclasses must pass all arguments to the base class and not add themselves
-   * to any container - the control is added automatically by the @ref ConfigurableUIManager.
+   * to any container - the control is added automatically by the @ref ConfigurableUiManager.
    * @protected
    */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
-  // protected _canAdopt(other: ConfigurableUIElement): boolean {
+  // protected _canAdopt(other: ConfigurableUiElement): boolean {
   //   if (!super._canAdopt(other))
   //     return false;
 
   //   const otherContentControl = other as ContentControl;
-  //   return this.getConfigurableUIControlId() === otherContentControl.getConfigurableUIControlId();
+  //   return this.getConfigurableUiControlId() === otherContentControl.getConfigurableUiControlId();
   // }
 
-  // protected _adopt(other: ConfigurableUIElement): void {
+  // protected _adopt(other: ConfigurableUiElement): void {
   //   super._adopt(other);
 
   //   const otherContentControl = other as ContentControl;
@@ -47,7 +47,7 @@ export class ContentControl extends ConfigurableUIControl {
   public onDeactivated(): void {
   }
 
-  public getType(): ConfigurableUIControlType { return ConfigurableUIControlType.Content; }
+  public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Content; }
 
   public get reactElement(): React.ReactNode { return this._reactElement; }
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }

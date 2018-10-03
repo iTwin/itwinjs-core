@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { Cube } from "@bentley/ui-core";
 import { Matrix3d } from "@bentley/geometry-core";
-import { ConfigurableUIManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { ViewRotationCube, CubeRotationChangeEventArgs } from "@bentley/ui-components";
 
 import "./CubeContent.scss";
@@ -52,4 +52,4 @@ class CubeContent extends React.Component<{}, CubeContentState> {
   }
 }
 
-ConfigurableUIManager.registerControl("CubeContent", CubeContentControl);
+ConfigurableUiManager.registerControl("CubeContent", CubeContentControl);

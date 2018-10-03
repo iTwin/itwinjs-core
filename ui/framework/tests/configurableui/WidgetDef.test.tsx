@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUIManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUIControlType } from "../../src/index";
+import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../src/index";
 
 describe("WidgetDef", () => {
 
@@ -19,7 +19,7 @@ describe("WidgetDef", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUIManager.registerControl("WidgetDefTest", TestWidget);
+    ConfigurableUiManager.registerControl("WidgetDefTest", TestWidget);
   });
 
   it("optional properties", () => {
@@ -82,7 +82,7 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    expect(() => widgetDef.getWidgetControl(ConfigurableUIControlType.StatusBarWidget)).to.throw(Error);
+    expect(() => widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget)).to.throw(Error);
   });
 
 });

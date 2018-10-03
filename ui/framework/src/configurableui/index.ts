@@ -5,9 +5,9 @@
 
 export * from "./AppNotificationManager";
 export * from "./Backstage";
-export * from "./ConfigurableUIContent";
-export * from "./ConfigurableUIControl";
-export * from "./ConfigurableUIManager";
+export * from "./ConfigurableUiContent";
+export * from "./ConfigurableUiControl";
+export * from "./ConfigurableUiManager";
 export * from "./ContentControl";
 export * from "./ContentGroup";
 export * from "./ContentLayout";

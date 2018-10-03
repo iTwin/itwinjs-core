@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { SampleAppIModelApp } from "../..";
 
-import { ConfigurableUIManager } from "@bentley/ui-framework";
+import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ToolUiProvider } from "@bentley/ui-framework";
 
@@ -46,4 +46,4 @@ class Tool2Settings extends React.Component {
   }
 }
 
-ConfigurableUIManager.registerControl("tool2", Tool2UiProvider);
+ConfigurableUiManager.registerControl("tool2", Tool2UiProvider);

@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import {
-  ConfigurableUIManager, ConfigurableCreateInfo,
+  ConfigurableUiManager, ConfigurableCreateInfo,
   WidgetControl, WidgetControlProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
@@ -81,4 +81,4 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   }
 }
 
-ConfigurableUIManager.registerControl("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);
+ConfigurableUiManager.registerControl("BreadcrumbDemoWidget", BreadcrumbDemoWidgetControl);

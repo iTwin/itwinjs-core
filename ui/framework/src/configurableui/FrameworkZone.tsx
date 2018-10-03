@@ -45,7 +45,7 @@ interface FrameworkZoneState {
   updatedWidgetDef?: WidgetDef;
 }
 
-/** ConfigurableUI Zone React Component.
+/** ConfigurableUi Zone React Component.
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
   constructor(props: FrameworkZoneProps) {

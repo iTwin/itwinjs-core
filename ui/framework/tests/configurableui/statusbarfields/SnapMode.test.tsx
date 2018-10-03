@@ -14,7 +14,7 @@ import {
   StatusBarWidgetControl,
   StatusBar,
   ZoneDef,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
@@ -43,8 +43,8 @@ describe("SnapModeField", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUIManager.unregisterControl("AppStatusBar");
-    ConfigurableUIManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+    ConfigurableUiManager.unregisterControl("AppStatusBar");
+    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
     statusBarZoneDef = new ZoneDef({
       defaultState: ZoneState.Open,
@@ -85,7 +85,7 @@ describe("SnapModeField", () => {
       wrapper.update();
 
       // ensure the snap mode selected sets the state of the store.
-      const snapMode = TestUtils.store.getState().frameworkState!.configurableUIState.snapMode;
+      const snapMode = TestUtils.store.getState().frameworkState!.configurableUiState.snapMode;
       expect(snapMode).to.eq(modes[i]);
 
       // the indicator field should contain the selected snap icon.

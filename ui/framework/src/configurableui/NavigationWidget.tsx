@@ -7,13 +7,13 @@
 import * as React from "react";
 import { CSSProperties } from "react";
 
-import ConfigurableUIManager from "./ConfigurableUIManager";
+import ConfigurableUiManager from "./ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 import { NavigationAidControl } from "./NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs } from "./FrontstageManager";
-import { ConfigurableUIControlType } from "./ConfigurableUIControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
 
@@ -41,8 +41,8 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
   public renderCornerItem(): React.ReactNode | undefined {
     if (!this._navigationAidControl && this._navigationAidId) {
-      this._navigationAidControl = ConfigurableUIManager.createControl(this._navigationAidId, this._navigationAidId) as NavigationAidControl;
-      if (this._navigationAidControl.getType() !== ConfigurableUIControlType.NavigationAid) {
+      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId) as NavigationAidControl;
+      if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw Error("NavigationWidgetDef.renderCornerItem error: navigationAidId '" + this._navigationAidId + "' is registered to a control that is NOT a NavigationAid");
       }
     }

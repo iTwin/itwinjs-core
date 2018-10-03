@@ -33,7 +33,7 @@ export * from "./utils/redux-ts";
  * Classes for working with services for iModels, Login and Projects
  */
 /**
- * @docs-group-description ConfigurableUI
+ * @docs-group-description ConfigurableUi
  * Classes for working with the Application UI Configuration
  */
 /**

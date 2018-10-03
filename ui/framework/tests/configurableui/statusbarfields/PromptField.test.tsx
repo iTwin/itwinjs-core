@@ -15,7 +15,7 @@ import {
   PromptField,
   StatusBarWidgetControl,
   ZoneDef,
-  ConfigurableUIManager,
+  ConfigurableUiManager,
   ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
@@ -44,8 +44,8 @@ describe("PromptField", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUIManager.unregisterControl("AppStatusBar");
-    ConfigurableUIManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
+    ConfigurableUiManager.unregisterControl("AppStatusBar");
+    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
     statusBarZoneDef = new ZoneDef({
       defaultState: ZoneState.Open,
@@ -70,13 +70,13 @@ describe("PromptField", () => {
       <StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />
     </Provider>);
 
-    UiFramework.store.dispatch({ type: "ConfigurableUI:SET_TOOLPROMPT", payload: "Hello World!" });
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Hello World!" });
     wrapper.update();
 
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-text").text()).to.eq("Hello World!");
 
-    UiFramework.store.dispatch({ type: "ConfigurableUI:SET_TOOLPROMPT", payload: "Goodbye!" });
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Goodbye!" });
     wrapper.update();
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-text").text()).to.eq("Goodbye!");
