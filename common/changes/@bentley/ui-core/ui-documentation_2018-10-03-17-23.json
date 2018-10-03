@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "UI package documentation",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

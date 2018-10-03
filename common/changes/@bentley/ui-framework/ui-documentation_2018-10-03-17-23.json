@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "UI package documentation",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

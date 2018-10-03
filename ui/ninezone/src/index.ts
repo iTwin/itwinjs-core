@@ -2,7 +2,8 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export * from "./app/App";    // At least one export is required for @docs-package-description below!
+// At least one export is required for docs-package-description below!
+export * from "./app/App";
 
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.

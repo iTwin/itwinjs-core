@@ -40,9 +40,10 @@ export interface TreeDataProvider {
   getChildNodes(parentNode: TreeNodeItem, options?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>>;
 }
 
-/** An interface tree data change listeners */
+/** An interface Tree Data Change listeners */
 export declare type TreeDataChangesListener = () => void;
 
+/** Tree Data Change event */
 export class TreeDataChangeEvent extends BeEvent<TreeDataChangesListener> { }
 
 /**

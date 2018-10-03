@@ -18,21 +18,21 @@ import TabSeparator from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Separa
 import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
 
-/** Props for a StackedWidget Tab.
+/** Properties for a [[StackedWidget]] Tab.
  */
-export interface TabProps {
+export interface WidgetTabProps {
   isActive: boolean;
   icon: IconInfo;
 }
 
-/** Props for a Widget in a StackedWidget.
+/** Properties for a Widget in a [[StackedWidget]].
  */
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
-  tabs: TabProps[];
+  tabs: WidgetTabProps[];
 }
 
-/** Props for the StackedWidget React component.
+/** Properties for the [[StackedWidget]] React component.
  */
 export interface StackedWidgetProps {
   children?: React.ReactNode;
@@ -103,7 +103,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
   }
 
   private getWidgetTabs(stackedWidget: EachWidgetProps, isWidgetOpen: boolean): JSX.Element[] {
-    return stackedWidget.tabs.map((tab: TabProps, index: number) => {
+    return stackedWidget.tabs.map((tab: WidgetTabProps, index: number) => {
       const mode = !isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
         <WidgetTab

@@ -16,6 +16,7 @@ import {
 } from "../../dragdrop";
 import { ColumnDragLayer } from "./ColumnDragLayer";
 
+/** @hidden */
 export interface DragDropHeaderCellProps {
   onHeaderDrop?: (source: string, target: string) => void; // inherited by parent
   column: any; // inherited by parent
@@ -32,7 +33,7 @@ interface HeaderWrapperProps {
 
 class HeaderWrapper extends React.Component<HeaderWrapperProps> {
   public render(): React.ReactNode {
-    const {type, item, isOver, isDragging, canDrag, canDrop, ...props } = this.props as HeaderWrapperProps;
+    const { type, item, isOver, isDragging, canDrag, canDrop, ...props } = this.props as HeaderWrapperProps;
 
     let mode = 0;
     if (item && item.clientOffset && item.initialClientOffset) {
@@ -59,7 +60,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
 }
 
 // Used only internally in ./Table.tsx
-/* @hidden */
+/** @hidden */
 export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps> {
   public render(): React.ReactNode {
     const { column } = this.props;
@@ -71,7 +72,7 @@ export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps>
         const sourceXpos = args.dataObject.xpos || 0;
         const targetKey = (column && column.key) || "";
         const targetXpos = (column && column.left) || 0;
-        args.dataObject = {sourceKey, targetKey, sourceXpos, targetXpos};
+        args.dataObject = { sourceKey, targetKey, sourceXpos, targetXpos };
         return args;
       },
       objectTypes: ["Column"],
