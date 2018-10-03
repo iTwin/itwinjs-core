@@ -6,9 +6,8 @@
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ,
+  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
 } from "@bentley/geometry-core";
-import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
@@ -1707,11 +1706,14 @@ export abstract class Viewport implements IDisposable {
  * This is achieved by invoking the viewport's dispose() method. ViewManager.dropViewport() invokes dispose() on the viewport by default.
  *
  * The lifetime of a ScreenViewport typically follows a pattern:
+ * ```
  *  1. Application creates the viewport via ScreenViewport.create()
  *  2. The viewport is added to the render loop via ViewManager.addViewport()
  *  3. When the application is finished with the viewport, it removes it from the render loop and disposes of it via ViewManager.dropViewport().
+ * ```
  *
  * In some cases it may be useful to temporarily suspend a viewport's render loop. In this case the lifetime of the viewport proceeds as follows:
+ * ```
  *  1. Application creates the viewport via ScreenViewport.create()
  *  2. The viewport is added to the render loop via ViewManager.addViewport()
  *  3. At some point the render loop is suspended via ViewManager.dropViewport(viewport, false), indicating the viewport should not be disposed.
@@ -1719,6 +1721,7 @@ export abstract class Viewport implements IDisposable {
  *  5. When the application is finished with the viewport:
  *    5a. If it is currently registered with the ViewManager, it is dropped and disposed of via ViewManager.dropViewport()
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
+ * ```
  */
 export class ScreenViewport extends Viewport {
   private _evController?: EventController;
