@@ -24,7 +24,7 @@ const createMeaningfulInstances = async (imodel: IModelConnection): Promise<Mean
   };
 };
 
-describe.skip("TableDataProvider", async () => {
+describe("TableDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;

@@ -14,8 +14,7 @@
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./",
-    "test": "",
-    "test:temp-rename": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha --opts ./mocha.opts ./src/**/*.ts",
+    "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha --opts ./mocha.opts ./src/**/*.ts",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "dependencies": {

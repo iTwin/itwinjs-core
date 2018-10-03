@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import deepEqual from "deep-equal";
 import { initialize, terminate } from "../IntegrationTests";
 import { createRandomRuleset } from "@bentley/presentation-common/tests/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
@@ -38,14 +39,28 @@ describe("Rulesets roundtrip", () => {
   ];
   const specialDefaultValues = new Map<string, any>([
     ["condition", ""],
-    ["propertyName", ""],
     ["createGroupForUnspecifiedValues", true],
     ["groupingValue", PropertyGroupingValue.DisplayLabel],
+    ["isExclude", false],
+    ["propertyName", ""],
+    ["schemaNames", []],
     ["sortingValue", PropertyGroupingValue.DisplayLabel],
     ["sortAscending", true],
+    ["supportedSchemas", {}],
+    ["vars", []],
   ]);
   const hasIndexSignature = (o: any): o is { [key: string]: string } => {
     return typeof o === "object";
+  };
+  const valueMatchesDefault = (key: string, value: any): boolean => {
+    if (false === value) {
+      return true;
+    }
+    if (specialDefaultValues.has(key)) {
+      const defaultValue = specialDefaultValues.get(key);
+      return deepEqual(value, defaultValue) || (typeof defaultValue === "object");
+    }
+    return false;
   };
   const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, out: T) => {
     try {
@@ -76,13 +91,12 @@ describe("Rulesets roundtrip", () => {
             };
             srcValue.sort(compareByNames);
           }
+          if (undefined === out[key] && undefined !== src[key]) {
+            if (valueMatchesDefault(key, srcValue))
+              out[key] = srcValue;
+          }
           if (typeof srcValue === "object" || Array.isArray(srcValue)) {
             tweakRuleset(srcValue, out[key]);
-          } else if (undefined === out[key]) {
-            const setAsDefault = (false === srcValue)
-              || (specialDefaultValues.has(key) && srcValue === specialDefaultValues.get(key));
-            if (setAsDefault)
-              out[key] = srcValue;
           }
         });
       }
