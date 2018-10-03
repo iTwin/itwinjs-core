@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed invalid tag",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "will.bentley@bentley.com"
+}

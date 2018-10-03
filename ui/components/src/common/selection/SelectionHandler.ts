@@ -44,7 +44,7 @@ export interface SingleSelectionHandler<TItem> {
 export interface MultiSelectionHandler<TItem> {
   /**
    * Shift selects between two items.
-   * @returns Items that were selected.
+   * Returns items that were selected.
    */
   selectBetween: (item1: TItem, item2: TItem) => TItem[];
 

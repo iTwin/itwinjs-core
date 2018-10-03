@@ -72,6 +72,12 @@ const args = [
 console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
 
 spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code) => {
+    // Copy index.ts file to json output folder and rename to index.ts if a file is specified. Needed by bemetalsmith for adding descriptions
+    if (argv.tsIndexFile) {
+        const outputDir = path.parse(json).dir;
+        cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);
+        fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
+    }
     if (code === 0) {
         let tagErrors = validateTags(json);
         if (tagErrors.toString()) {
@@ -81,13 +87,6 @@ spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code
             code = 5;
         }
     }
-    // Copy index.ts file to json output folder and rename to index.ts if a file is specified. Needed by bemetalsmith for adding descriptions
-    if (code === 0 && argv.tsIndexFile) {
-        const outputDir = path.parse(json).dir;
-        cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);
-        fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
-    }
-
     process.exit(0)
 });
 handleInterrupts();
