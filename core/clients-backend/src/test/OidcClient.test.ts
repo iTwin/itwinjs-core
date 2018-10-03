@@ -89,7 +89,7 @@ describe("OidcClient (#integration)", () => {
     // Test that the OIDC tokens exchanged from SAML tokens work
     const client = new OidcClient(samlDelegationConfiguration, "QA");
     const scope = "openid email profile organization context-registry-service imodelhub rbac-service";
-    const jwt = await client.getJwtForImsUser(actx, testUser.email, testUser.password, scope);
+    const jwt: AccessToken = await client.getJwtForImsUser(actx, testUser.email, testUser.password, scope);
     await validateToken(jwt);
   });
 
