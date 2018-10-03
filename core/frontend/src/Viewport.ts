@@ -8,7 +8,8 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
 } from "@bentley/geometry-core";
-import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { StandardView, StandardViewId } from "./StandardView";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -369,6 +370,16 @@ export interface ViewChangeOptions {
   animationTime?: BeDuration;
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
+}
+
+/** Options to allow changing the view rotation with zoomTo methods. */
+export interface ZoomToOptions {
+  /** Set view rotation from standard view identifier. */
+  standardViewId?: StandardViewId;
+  /** Set view rotation relative to placement of first element or props entry. */
+  placementRelativeId?: StandardViewId;
+  /** Set view rotation from Matrix3d. */
+  viewRotation?: Matrix3d;
 }
 
 /**
@@ -1308,12 +1319,26 @@ export abstract class Viewport implements IDisposable {
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works
    */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions) {
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (placementProps.length === 0)
       return;
 
-    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+    if (undefined !== options) {
+      if (undefined !== options.standardViewId) {
+        this.view.setStandardRotation(options.standardViewId);
+      } else if (undefined !== options.placementRelativeId) {
+        const firstProps = placementProps[0];
+        const firstPlacement = hasAngle(firstProps) ? Placement2d.fromJSON(firstProps) : Placement3d.fromJSON(firstProps);
+        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
+        viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
+        this.view.setRotation(viewRotation);
+      } else if (undefined !== options.viewRotation) {
+        this.view.setRotation(options.viewRotation);
+      }
+    }
+
+    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (const props of placementProps) {
@@ -1330,7 +1355,7 @@ export abstract class Viewport implements IDisposable {
    * @param props element props. Will zoom to the union of the placements.
    * @param options options that control how the view change works
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions) {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (elementProps.length === 0)
       return;
     const placementProps: PlacementProps[] = [];
@@ -1346,7 +1371,7 @@ export abstract class Viewport implements IDisposable {
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
    * @param options options that control how the view change works
    */
-  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions): Promise<void> {
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
     this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
   }
 

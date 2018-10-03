@@ -29,6 +29,7 @@ import { RenderGraphic } from "./render/System";
 import { Attachments, SheetBorder } from "./Sheet";
 import { TileTree } from "./tile/TileTree";
 import { GraphicType } from "./render/GraphicBuilder";
+import { StandardView, StandardViewId } from "./StandardView";
 
 export const enum GridOrientationType {
   View = 0,
@@ -38,45 +39,6 @@ export const enum GridOrientationType {
   AuxCoord = 4,
   GeoCoord = 5,
 }
-
-export const enum StandardViewId {
-  NotStandard = -1,
-  Top = 0,
-  Bottom = 1,
-  Left = 2,
-  Right = 3,
-  Front = 4,
-  Back = 5,
-  Iso = 6,
-  RightIso = 7,
-}
-
-/** @hidden */
-// tslint:disable-next-line:variable-name
-export const StandardView = {
-  Top: Matrix3d.identity,
-  Bottom: Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
-  Left: Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
-  Right: Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
-  Front: Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
-  Back: Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-  Iso: Matrix3d.createRowValues(
-    0.707106781186548, -0.70710678118654757, 0.00000000000000000,
-    0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    -0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-  RightIso: Matrix3d.createRowValues(
-    0.707106781186548, 0.70710678118654757, 0.00000000000000000,
-    -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-};
-Object.freeze(StandardView);
-
-const standardViewMatrices = [
-  StandardView.Top, StandardView.Bottom, StandardView.Left, StandardView.Right,
-  StandardView.Front, StandardView.Back, StandardView.Iso, StandardView.RightIso,
-];
-standardViewMatrices.forEach((view) => Object.freeze(view));
-Object.freeze(standardViewMatrices);
 
 export const enum ViewStatus {
   Success = 0,
@@ -384,7 +346,7 @@ export abstract class ViewState extends ElementState {
       return;
 
     // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : { };
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
   }
@@ -446,7 +408,7 @@ export abstract class ViewState extends ElementState {
       this.displayStyle.backgroundMap.decorate(context);
   }
 
-  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
 
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
@@ -589,7 +551,7 @@ export abstract class ViewState extends ElementState {
       return ViewStatus.InvalidWindow;
 
     // if we're close to one of the standard views, adjust to it to remove any "fuzz"
-    standardViewMatrices.some((test) => { if (test.maxDiff(frustMatrix) > 1.0e-7) return false; frustMatrix.setFrom(test); return true; });
+    StandardView.adjustToStandardRotation(frustMatrix);
 
     const xDir = frustMatrix.getColumn(0);
     const yDir = frustMatrix.getColumn(1);
