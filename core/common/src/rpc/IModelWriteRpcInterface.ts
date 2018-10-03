@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -11,6 +10,9 @@ import { RpcManager } from "../RpcManager";
 import { IModel, IModelToken } from "../IModel";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
 import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { ElementProps } from "../ElementProps";
+
 /**
  * The RPC interface for writing to an iModel.
  * All operations require read+write access.
@@ -36,4 +38,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward.apply(this, arguments); }
   public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward.apply(this, arguments); }
   public saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward.apply(this, arguments); }
+  public insertElement(_iModelToken: IModelToken, _elementProps: ElementProps): Promise<Id64> { return this.forward.apply(this, arguments); }
+  public createAndInsertPhysicalPartition(_iModelToken: IModelToken, _modelName: string): Promise<Id64> { return this.forward.apply(this, arguments); }
+  public createAndInsertPhysicalModel(_iModelToken: IModelToken, _modeledElementId: Id64, _privateModel: boolean = false): Promise<Id64> { return this.forward.apply(this, arguments); }
+  public createAndInsertSpatialCategory(_iModelToken: IModelToken, _categoryName: string): Promise<Id64> { return this.forward.apply(this, arguments); }
 }
