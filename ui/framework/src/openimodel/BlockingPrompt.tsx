@@ -10,6 +10,9 @@ interface BlockingPromptProps {
   prompt: string;
 }
 
+/**
+ * Display a message box centered in the view port with lightbox (ghosting background)
+ */
 export class BlockingPrompt extends React.Component<BlockingPromptProps> {
 
   constructor(props: BlockingPromptProps, context?: any) {

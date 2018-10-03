@@ -7,7 +7,7 @@ import * as classnames from "classnames";
 import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { UiFramework } from "../UiFramework";
-import { Tabs, Tab } from "./Tabs";
+import { ProjectTabs, ProjectTab } from "./ProjectTabs";
 import { SearchBox } from "@bentley/ui-core";
 import "./Common.scss";
 import "./ProjectDialog.scss";
@@ -26,6 +26,9 @@ interface ProjectDialogState {
   filter: string;
 }
 
+/**
+ * Project picker dialog
+ */
 export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDialogState> {
 
   constructor(props?: any, context?: any) {
@@ -139,12 +142,12 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
           </div>
           <div className="projects-content">
             <div className="tabs-container">
-              <Tabs defaultTab={this.getTabIndexFromProjectScope()}>
-                <Tab label="My Projects" icon="icon-manager" onTabClicked={this._onMyProjectsClicked} />
-                <Tab label="Favorites" icon="icon-star" onTabClicked={this._onFavoritesClicked} />
-                <Tab label="Recent" icon="icon-history" onTabClicked={this._onRecentClicked} />
-                <Tab label="Search" icon="icon-search" onTabClicked={this._onSearchClicked} />
-              </Tabs>
+              <ProjectTabs defaultTab={this.getTabIndexFromProjectScope()}>
+                <ProjectTab label="My Projects" icon="icon-manager" onTabClicked={this._onMyProjectsClicked} />
+                <ProjectTab label="Favorites" icon="icon-star" onTabClicked={this._onFavoritesClicked} />
+                <ProjectTab label="Recent" icon="icon-history" onTabClicked={this._onRecentClicked} />
+                <ProjectTab label="Search" icon="icon-search" onTabClicked={this._onSearchClicked} />
+              </ProjectTabs>
               <div className={searchClassName}>
                 <SearchBox placeholder="Search..." onValueChanged={this._handleSearchValueChanged} valueChangedDelay={400} />
               </div>

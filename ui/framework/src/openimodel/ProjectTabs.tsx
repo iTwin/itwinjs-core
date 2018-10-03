@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
-import "./Tabs.scss";
+import "./ProjectTabs.scss";
 
 export interface TabProps {
   label?: string;
@@ -16,7 +16,10 @@ export interface TabProps {
   onTabClicked?: () => any;
 }
 
-export class Tab extends React.Component<TabProps> {
+/**
+ * A temporary tab component.  Do not reuse!
+ */
+export class ProjectTab extends React.Component<TabProps> {
 
   constructor(props: TabProps, context?: any) {
     super(props, context);
@@ -70,7 +73,10 @@ export interface TabsState {
   activeTab: number;
 }
 
-export class Tabs extends React.Component<TabsProps, TabsState> {
+/**
+ * List of tabs.  Do not reuse!
+ */
+export class ProjectTabs extends React.Component<TabsProps, TabsState> {
 
   constructor(props: TabsProps, context?: any) {
     super(props, context);

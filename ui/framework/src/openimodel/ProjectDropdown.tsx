@@ -24,6 +24,9 @@ interface ProjectDropdownState {
   showProjectsDialog: boolean;
 }
 
+/**
+ * List of projects in a dropdown
+ */
 export class ProjectDropdown extends React.Component<ProjectDropdownProps, ProjectDropdownState> {
   private _itemHeight: number = 3.25; // each item (project) height is (n-em) in the dropdown
 

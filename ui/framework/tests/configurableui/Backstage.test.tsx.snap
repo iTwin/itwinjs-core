@@ -69,9 +69,6 @@ exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
     onClose={[Function]}
     showOverlay={true}
   />
-  <div
-    onClick={[Function]}
-  />
 </Fragment>
 `;
 
@@ -81,9 +78,6 @@ exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
     isOpen={true}
     onClose={[Function]}
     showOverlay={true}
-  />
-  <div
-    onClick={[Function]}
   />
 </Fragment>
 `;
@@ -121,9 +115,6 @@ exports[`Backstage <Backstage /> with child items 1`] = `
     }
     onClose={[Function]}
     showOverlay={true}
-  />
-  <div
-    onClick={[Function]}
   />
 </Fragment>
 `;

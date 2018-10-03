@@ -24,6 +24,9 @@ const mapDispatch = {
   setOverallPage: OverallContentActions.setOverallPage,
 };
 
+/**
+ * Callback page for signing in.
+ */
 class CallbackPageComponent extends React.Component<CallbackProps, CallbackState> {
   constructor(props: CallbackProps, context?: any) {
     super(props, context);

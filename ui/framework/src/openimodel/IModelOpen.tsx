@@ -32,6 +32,9 @@ interface IModelOpenState {
   isNavigationExpanded: boolean;
 }
 
+/**
+ * Open component showing projects and imodels
+ */
 export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState> {
 
   constructor(props?: any, context?: any) {

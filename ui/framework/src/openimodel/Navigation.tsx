@@ -22,6 +22,9 @@ export interface NavigationItemProps {
   onClicked?: () => any;
 }
 
+/**
+ * A single navigation item
+ */
 export class NavigationItem extends React.Component<NavigationItemProps> {
 
   constructor(props: NavigationItemProps, context?: any) {
@@ -102,6 +105,9 @@ export interface NavigationListState {
   isPinned: boolean;
 }
 
+/**
+ * Navigation component for IModel open
+ */
 export class NavigationList extends React.Component<NavigationListProps, NavigationListState> {
 
   public static defaultProps: Partial<NavigationListProps> = {

@@ -312,12 +312,17 @@ export class Backstage extends React.Component<BackstageProps> {
     closeBackStage();
   }
 
+  private _onSignOut = () => {
+    closeBackStage();
+  }
+
   private _getUserProfile(): React.ReactNode | undefined {
     if (this.props.accessToken) {
       const userProfile = this.props.accessToken.getUserProfile();
       if (userProfile) {
         return (
-          <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email} />
+          <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email}
+                onClick={this._onSignOut.bind(this)} />
         );
       }
     }
@@ -335,7 +340,6 @@ export class Backstage extends React.Component<BackstageProps> {
           header={this._getUserProfile()}
           items={this.props.children}
         />
-        <div onClick={closeBackStage} />
       </>
     );
   }

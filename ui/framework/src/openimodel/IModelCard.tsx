@@ -6,7 +6,7 @@ import * as React from "react";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewSelector } from "./ViewSelector";
+import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Popup, Position} from "@bentley/ui-core";
@@ -27,6 +27,9 @@ interface IModelCardState {
   showPopupTest: boolean;
 }
 
+/**
+ * Card representing a single IModel
+ */
 export class IModelCard extends React.Component<IModelCardProps, IModelCardState> {
 
   constructor(props: IModelCardProps, context?: any) {
@@ -151,7 +154,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
           {this.props.showDescription && this.renderDescription()}
         </div>
         {this.state.showViews &&
-          <ViewSelector accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
+          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
         {this.state.showPopupTest && <PopupTest onClose={this._onClosePopupTest} />}
       </div>
     );

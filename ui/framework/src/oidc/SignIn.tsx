@@ -19,6 +19,9 @@ interface SignInState {
   isSigningIn: boolean;
 }
 
+/**
+ * SignIn component
+ */
 export class SignIn extends React.Component<SignInProps, SignInState> {
   constructor(props: SignInProps, context?: any) {
     super(props, context);

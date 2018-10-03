@@ -10,7 +10,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { ProjectDialog } from "./ProjectDialog";
-import { ViewSelector } from "./ViewSelector";
+import { IModelViewPicker } from "./IModelViewPicker";
 import { SearchBox, Toggle } from "@bentley/ui-core";
 import "./IModelList.scss";
 
@@ -29,6 +29,9 @@ interface IModelListState {
   filter: string;
 }
 
+/**
+ * A list of IModelCards (IModels)
+ */
 export class IModelList extends React.Component<IModelListProps, IModelListState> {
 
   constructor(props?: any, context?: any) {
@@ -177,7 +180,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
           {this.renderContent()}
         </div>
         {this.state.showViews &&
-          <ViewSelector accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
+          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
       </div>
     );
   }

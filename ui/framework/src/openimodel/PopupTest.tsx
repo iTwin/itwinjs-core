@@ -28,6 +28,9 @@ interface PopupTestState {
   onHover: boolean;
 }
 
+/**
+ * Test for popups.  Do not use, ths will be removed!
+ */
 export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
 
   constructor(props?: any, context?: any) {
