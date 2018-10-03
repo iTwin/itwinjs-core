@@ -1330,7 +1330,7 @@ export abstract class Viewport implements IDisposable {
       } else if (undefined !== options.placementRelativeId) {
         const firstProps = placementProps[0];
         const firstPlacement = hasAngle(firstProps) ? Placement2d.fromJSON(firstProps) : Placement3d.fromJSON(firstProps);
-        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone(); // ###TODO Figure out why this can't be called directly...
+        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
         viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
         this.view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {

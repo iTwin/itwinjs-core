@@ -14,9 +14,7 @@ export const enum StandardViewId {
    * Invalid as an argument to StandardView.getStandardRotation() - used as a return value only.
    */
   NotStandard = -1,
-  /** Looking directly down the z axis from above. */
   Top = 0,
-  /* ###TODO finish documenting me... */
   Bottom = 1,
   Left = 2,
   Right = 3,
@@ -83,7 +81,6 @@ export class StandardView {
    * If a matching standard rotation exists, the input matrix will be modified in-place to precisely match it.
    * Otherwise, the input matrix will be unmodified.
    * @param matrix The rotation matrix to adjust.
-   * ###TODO Didn't the native version of this return the ID of the standard rotation?
    */
   public static adjustToStandardRotation(matrix: Matrix3d): void {
     getMatrices().some((test) => {
