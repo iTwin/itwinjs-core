@@ -6,8 +6,6 @@ export { default as UiFramework } from "./UiFramework";
 
 export * from "./overallcontent/OverallContent";
 export * from "./overallcontent/state";
-export * from "./openimodel/OpenIModel";
-export * from "./openimodel/state";
 export * from "./FrameworkState";
 export * from "./UiFramework";
 export * from "./clientservices/LoginServices";

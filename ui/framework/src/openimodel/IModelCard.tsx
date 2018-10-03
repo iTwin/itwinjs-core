@@ -8,27 +8,16 @@ import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ViewSelector } from "./ViewSelector";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
-import "./IModelCard.scss";
-import { IModelViewsSelectedFunc } from "./IModelOpen";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Popup, Position} from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
+import "./IModelCard.scss";
 
 export interface IModelCardProps {
   showDescription?: boolean;
   iModel: IModelInfo;
-  cardClassName?: string;
-  thumbnailClassName?: string;
-  fallbackIconClassName?: string;
-  nameClassName?: string;
   accessToken: AccessToken;
-  onViewsClicked?: () => any;
-  selectModel: () => void;
-  onIModelViewsSelected: IModelViewsSelectedFunc;
-
-   // actions:
-   setSelectedViews: (viewsSelected: Id64String[]) => any;
+  onSelectIModel?: (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelCardState {
@@ -64,8 +53,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onCardClicked = () => {
-    // if (this.props.selectModel)
-    //  this.props.selectModel();
     this.setState({ showViews: true });
   }
 
@@ -81,14 +68,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showViews: false });
   }
 
-  private _onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
-    const viewIds: Id64String[] = new Array<Id64String>();
-    for (const view of views ) {
-      viewIds.push (view.id!);
-    }
-
-    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
-    this.props.setSelectedViews(viewIds);
+  private _onViewsSelected = (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+    this._onViewsClose();
+    if (this.props.onSelectIModel)
+      this.props.onSelectIModel (this.props.iModel, iModelConnection, views);
   }
 
   private _onViewsClicked = () => {
@@ -102,7 +85,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onCloseOptions = () => {
-    // alert ("on close options");
     this.setState({ showOptions: false });
   }
 

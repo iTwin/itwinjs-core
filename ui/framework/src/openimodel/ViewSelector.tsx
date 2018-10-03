@@ -60,7 +60,7 @@ export class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
 interface ViewsProps {
   accessToken: AccessToken;
   iModel: IModelInfo;
-  OnViewsSelected?: (iModel: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  OnViewsSelected?: (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
   onClose: () => void;
 }
 
@@ -101,7 +101,7 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
 
   private _onOKPressed = () => {
     if (this.props.OnViewsSelected && this.state.views)
-      this.props.OnViewsSelected(this.props.iModel, this._iModelConnection!, this.state.selectedViews);
+      this.props.OnViewsSelected(this._iModelConnection!, this.state.selectedViews);
   }
 
   private async startRetrieveViews() {
@@ -117,23 +117,11 @@ export class ViewSelector extends React.Component<ViewsProps, ViewsState> {
     try {
       viewProps = await this._iModelConnection.views.queryProps(viewQueryParams);
       this.setState({ views: viewProps, waitingForViews: false });
-      // for (const viewProp of viewProps) {
-      //   // tslint:disable-next-line:no-console
-      //   console.log(viewProp);
-      // }
     } catch (e) {
       // tslint:disable-next-line:no-console
       console.log("error getting views", e);
     }
   }
-
-  /*
-  private onViewSelected(view: ViewDefinitionProps) {
-    if (this.props.OnViewSelected)
-      this.props.OnViewSelected!(view);
-    // (this.props as any).dispatch({ type: "SELECTIMODEL", iModelInfo: selectedIModel });
-  }
-*/
 
   private renderViews() {
     if (this.state.waitingForViews) {

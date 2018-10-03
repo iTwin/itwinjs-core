@@ -10,15 +10,21 @@ import { User } from "oidc-client";
 import { OidcProvider } from "redux-oidc";
 import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
-import { OpenIModel } from "../openimodel/OpenIModel";
+import { IModelOpen } from "../openimodel/IModelOpen";
 import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
-import { IModelViewsSelectedFunc } from "../openimodel/IModelOpen";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
-import { SignInPage } from "../oidc/SignIn";
+import { SignIn } from "../oidc/SignIn";
 import { CallbackPage } from "../oidc/Callback";
 import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { IModelInfo } from "../clientservices/IModelServices";
 import { UiFramework } from "../UiFramework";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { ProjectInfo } from "../clientservices/ProjectServices";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+
+type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) => void;
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -58,6 +64,31 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     super(props);
   }
 
+  // called when the "Sign In" button is clicked
+  private _onSignIn() {
+    UiFramework.userManager.signinRedirect();
+  }
+
+  // called when an imodel (and views) have been selected on the IModelOpen
+  private _onOpenIModel(iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) {
+
+    // view ids are passed as params
+    const viewIds: Id64String[] = new Array<Id64String>();
+    for (const view of views) {
+      viewIds.push(view.id!);
+    }
+
+    // open the imodel and set the page
+    // Note: this should be refactored, just seems like hack!
+    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
+    this.props.setOverallPage(OverallContentPage.OfflinePage);
+  }
+
+  // called when the "Offline" is clicked on the Sign In.
+  private _onOffline() {
+    this.props.setOverallPage(OverallContentPage.OfflinePage);
+  }
+
   public componentDidMount() {
     const user = this.props.user;
     if (!user || user.expired)
@@ -75,7 +106,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     let element: JSX.Element | undefined;
     if (window.location.pathname === "/signin-oidc") {
       element = <CallbackPage />;
-    } else if (!this.props.accessToken) {
+    } else if (!this.props.accessToken && OverallContentPage.OfflinePage !== this.props.currentPage) {
       const appHeaderProps: ApplicationHeaderProps = {
         icon: this.props.appHeaderIcon,
         message: this.props.appHeaderMessage,
@@ -85,15 +116,12 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignInPage />
+          <SignIn onSignIn={this._onSignIn} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
-      const openIModelProps = {
-        onIModelViewsSelected: this.props.onIModelViewsSelected,
-      };
-      element = <OpenIModel {...openIModelProps} />;
-    } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage) {
+      element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel.bind(this)} />;
+    } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage || OverallContentPage.OfflinePage === this.props.currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,
       };

@@ -9,31 +9,21 @@ import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelViewsSelectedFunc } from "./IModelOpen";
 import { ProjectDialog } from "./ProjectDialog";
 import { ViewSelector } from "./ViewSelector";
 import { SearchBox, Toggle } from "@bentley/ui-core";
-
 import "./IModelList.scss";
 
 export interface IModelListProps {
   accessToken: AccessToken;
   iModels?: IModelInfo[];
-  onIModelSelected?: (iModelInfo: IModelInfo) => any;
-  onIModelViewsSelected: IModelViewsSelectedFunc;
-
-  // actions:
-  setSelectedViews: (viewsSelected: Id64String[]) => any;
+  onIModelSelected?: (iModel: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelListState {
   showDescriptions: boolean;
   showProjectDialog: boolean;
-  waitingForIModelConnection: boolean;
   currentIModel?: IModelInfo;
-  currentViews: ViewDefinitionProps[];
-  iModelConnection?: IModelConnection;
   showDetails: boolean;
   showViews: boolean;
   filter: string;
@@ -47,17 +37,10 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.state = {
       showDescriptions: true, /* show descriptions by default */
       showProjectDialog: false,
-      waitingForIModelConnection: true,
-      currentViews: [],
       showDetails: false,
       showViews: false,
       filter: "",
     };
-  }
-
-  private onIModelSelected(iModelInfo: IModelInfo) {
-    if (this.props.onIModelSelected)
-      this.props.onIModelSelected!(iModelInfo);
   }
 
   private _onShowThumbnails = () => {
@@ -77,29 +60,16 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
   }
 
   private _handleSearchValueChanged = (value: string): void => {
-    this.setState( { filter: value} );
+    this.setState({ filter: value });
   }
-
-  /*
-  private _onIModelOfflineChange = (checked: boolean): void => {
-    if (checked) {
-    } else {
-    }
-  }
-*/
 
   private _onViewsClose = () => {
     this.setState({ showViews: false });
   }
 
-  private _onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
-    const viewIds: Id64String[] = new Array<Id64String>();
-    for (const view of views ) {
-      viewIds.push (view.id!);
-    }
-
-    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
-    this.props.setSelectedViews(viewIds);
+  private _onViewsSelected = (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+    if (this.props.onIModelSelected && this.state.currentIModel)
+      this.props.onIModelSelected(this.state.currentIModel, iModelConnection, views);
   }
 
   private _onIModelClick = (iModelInfo: IModelInfo) => {
@@ -133,16 +103,14 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
   // <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this._onIModelOfflineChange}/>
 
   private renderThumbnails(iModels: IModelInfo[]) {
-    return  (
+    return (
       <div className="cards">
         {iModels.map((iModelInfo: IModelInfo) => (
           <IModelCard key={iModelInfo.wsgId}
             accessToken={this.props.accessToken}
             iModel={iModelInfo}
             showDescription={this.state.showDescriptions}
-            onIModelViewsSelected={this.props.onIModelViewsSelected}
-            setSelectedViews={this.props.setSelectedViews}
-            selectModel={this.onIModelSelected.bind(this, iModelInfo)} />
+            onSelectIModel={this.props.onIModelSelected} />
         ))}
       </div>
     );
@@ -177,8 +145,8 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
             There are no iModels associated to this project.
             <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
           </div>
-        {this.state.showProjectDialog && <ProjectDialog accessToken={this.props.accessToken} onClose={this._onProjectsSelectorClose}/>}
-      </div>
+          {this.state.showProjectDialog && <ProjectDialog accessToken={this.props.accessToken} onClose={this._onProjectsSelectorClose} />}
+        </div>
       );
     } else {
       const filteredIModels = this.getFilteredIModels();

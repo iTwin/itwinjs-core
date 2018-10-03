@@ -22,7 +22,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 // @ts-ignore
 import { OverallContentState, OverallContentReducer, OverallContentPage } from "./overallcontent/state";
 // @ts-ignore
-import { OpenIModelState, OpenIModelReducer, OpenIModelPage } from "./openimodel/state";
+import { OpenIModelState, OpenIModelPage } from "./openimodel/state";
 import { ConfigurableUIState, ConfigurableUIReducer } from "./configurableui/state";
 // @ts-ignore
 import { combineReducers, DeepReadonlyObject, DeepReadonlyArray, Action, ActionWithPayload } from "./utils/redux-ts";
@@ -39,7 +39,6 @@ export interface FrameworkState {
 // tslint:disable-next-line:variable-name
 export const FrameworkReducer = combineReducers({
   overallContentState: OverallContentReducer,
-  openIModelState: OpenIModelReducer,
   configurableUIState: ConfigurableUIReducer,
   oidcState: OidcReducer,
 });

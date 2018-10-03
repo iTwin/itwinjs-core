@@ -10,6 +10,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** The overall content that is displayed in the UI. */
 export enum OverallContentPage {
+  OfflinePage = -3,
   SelectIModelPage = -2,
   ConfigurableUIPage = -1,
 }
