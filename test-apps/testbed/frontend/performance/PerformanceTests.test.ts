@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
-import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients"; // @ts-ignore
+import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { PerformanceMetrics, System, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";

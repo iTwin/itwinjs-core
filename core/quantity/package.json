@@ -10,7 +10,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json .nyc_output",
     "lint": "tslint --project . 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/quantity/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/*.test.ts",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"

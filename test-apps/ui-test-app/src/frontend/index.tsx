@@ -28,8 +28,7 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
 import oidcSettings from "./utils/oidcSettings";
 
-// @ts-ignore
-import { createAction, Action, ActionsUnion, ActionWithPayload, DeepReadonlyObject, DeepReadonly } from "./utils/redux-ts";
+import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;

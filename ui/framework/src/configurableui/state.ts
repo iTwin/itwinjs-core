@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module FrameworkState */
 
-// @ts-ignore
-import { createAction, Action, ActionsUnion, ActionWithPayload, DeepReadonlyObject, DeepReadonly } from "../utils/redux-ts";
+import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 
 /** The portion of state managed by the ConfigurableUiReducer. */

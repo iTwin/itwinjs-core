@@ -3,7 +3,6 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "baseUrl": "./node_modules/",
     "outDir": "./lib"
   },
   "include": [

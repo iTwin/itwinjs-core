@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module OverallContent */
 
-// @ts-ignore
-import { createAction, Action, ActionsUnion, ActionWithPayload } from "../utils/redux-ts";
+import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** The overall content that is displayed in the UI. */
