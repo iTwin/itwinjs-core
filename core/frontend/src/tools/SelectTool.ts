@@ -333,8 +333,6 @@ export class SelectionTool extends PrimitiveTool {
     if (this.selectByPointsEnd(ev))
       return EventHandled.Yes;
 
-    /* ###TODO: Could allow pick on marker type decorations here. Return on EventHandled.Yes to allow marker to pop-up info dialog, etc. */
-
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
         this.iModel.selectionSet.emptyAll();

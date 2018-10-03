@@ -75,8 +75,8 @@ describe("ViewState", () => {
     assert.instanceOf(acs, AuxCoordSystemSpatialState);
     acs.setOrigin({ x: 1, y: 1 });
     assert.isTrue(acs.getOrigin().isExactEqual({ x: 1, y: 1, z: 0 }));
-    acs.setRotation(StandardView.Iso);
-    assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
+    acs.setRotation(StandardView.iso);
+    assert.isTrue(acs.getRotation().isExactEqual(StandardView.iso));
   });
 
   it("view volume adjustments", async () => {

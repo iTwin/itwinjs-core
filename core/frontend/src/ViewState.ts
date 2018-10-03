@@ -52,31 +52,41 @@ export const enum StandardViewId {
 }
 
 /** @hidden */
-// tslint:disable-next-line:variable-name
-export const StandardView = {
-  Top: Matrix3d.identity,
-  Bottom: Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
-  Left: Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
-  Right: Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
-  Front: Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
-  Back: Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-  Iso: Matrix3d.createRowValues(
-    0.707106781186548, -0.70710678118654757, 0.00000000000000000,
-    0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    -0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-  RightIso: Matrix3d.createRowValues(
-    0.707106781186548, 0.70710678118654757, 0.00000000000000000,
-    -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-};
-Object.freeze(StandardView);
+export class StandardView {
+  private static _standardViewMatrices?: Matrix3d[];
+  private static init() {
+    if (this._standardViewMatrices !== undefined)
+      return;
+    this._standardViewMatrices = [];
+    this._standardViewMatrices[StandardViewId.Top] = Matrix3d.identity;
+    this._standardViewMatrices[StandardViewId.Bottom] = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1);
+    this._standardViewMatrices[StandardViewId.Left] = Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0);
+    this._standardViewMatrices[StandardViewId.Right] = Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0);
+    this._standardViewMatrices[StandardViewId.Front] = Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0);
+    this._standardViewMatrices[StandardViewId.Back] = Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0);
+    this._standardViewMatrices[StandardViewId.Iso] = Matrix3d.createRowValues(
+      0.707106781186548, -0.70710678118654757, 0.00000000000000000,
+      0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+      -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+    this._standardViewMatrices[StandardViewId.RightIso] = Matrix3d.createRowValues(
+      0.707106781186548, 0.70710678118654757, 0.00000000000000000,
+      -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
+      0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+    this._standardViewMatrices.forEach((view) => Object.freeze(view));
+  }
 
-const standardViewMatrices = [
-  StandardView.Top, StandardView.Bottom, StandardView.Left, StandardView.Right,
-  StandardView.Front, StandardView.Back, StandardView.Iso, StandardView.RightIso,
-];
-standardViewMatrices.forEach((view) => Object.freeze(view));
-Object.freeze(standardViewMatrices);
+  public static get top(): Matrix3d { return this.getStandardRotation(StandardViewId.Top); }
+  public static get bottom(): Matrix3d { return this.getStandardRotation(StandardViewId.Bottom); }
+  public static get left(): Matrix3d { return this.getStandardRotation(StandardViewId.Left); }
+  public static get right(): Matrix3d { return this.getStandardRotation(StandardViewId.Right); }
+  public static get front(): Matrix3d { return this.getStandardRotation(StandardViewId.Front); }
+  public static get back(): Matrix3d { return this.getStandardRotation(StandardViewId.Back); }
+  public static get iso(): Matrix3d { return this.getStandardRotation(StandardViewId.Iso); }
+  public static get rightIso(): Matrix3d { return this.getStandardRotation(StandardViewId.RightIso); }
+
+  public static getStandardRotation(id: StandardViewId): Matrix3d { this.init(); if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return this._standardViewMatrices![id]; }
+  public static adjustToStandardRotation(matrix: Matrix3d): void { this.init(); this._standardViewMatrices!.some((test) => { if (test.maxDiff(matrix) > 1.0e-7) return false; matrix.setFrom(test); return true; }); }
+}
 
 export const enum ViewStatus {
   Success = 0,
@@ -384,7 +394,7 @@ export abstract class ViewState extends ElementState {
       return;
 
     // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : { };
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
   }
@@ -446,7 +456,7 @@ export abstract class ViewState extends ElementState {
       this.displayStyle.backgroundMap.decorate(context);
   }
 
-  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
 
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
@@ -589,7 +599,7 @@ export abstract class ViewState extends ElementState {
       return ViewStatus.InvalidWindow;
 
     // if we're close to one of the standard views, adjust to it to remove any "fuzz"
-    standardViewMatrices.some((test) => { if (test.maxDiff(frustMatrix) > 1.0e-7) return false; frustMatrix.setFrom(test); return true; });
+    StandardView.adjustToStandardRotation(frustMatrix);
 
     const xDir = frustMatrix.getColumn(0);
     const yDir = frustMatrix.getColumn(1);
