@@ -63,6 +63,8 @@ RpcInterfaces are restricted to using types that are common to both frontends an
 
 Apps must be designed with remote communication in mind. In the case where a server or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and servers. RpcInterface methods must be "chunky" and not "chatty".
 
+Also see [best practices](./backend/BestPractices.md).
+
 ## Define the Interface
 
 To define an interface, write a TypeScript class that extends [RpcInterface]($common).
