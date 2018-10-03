@@ -2,7 +2,7 @@
 
 There are 5 types of ECClass in ECObjects, [ECEntityClass](./ec-entity-class.md), [ECMixinClass](./ec-mixin-class.md), [ECStructClass](./ec-struct-class.md), [ECCustomAttributeClass](./ec-custom-attribute-class.md) and [ECRelationshipClass](./ec-relationship-class.md). This section will cover what is common among all ECClass types.
 
-Each class type models a different type of object. ECEntityClass models business objects, which are individually instantiable and have an Id. ECStructClass models complex property types, often known as structs. ECCustomAttributeClass models objects which are applied to other schema elements in order to provide additional metadata. ECRelationshipClass models connections between ECEntityClasses.
+Each class type models a different type of object. ECEntityClass models business objects, which are individually instantiable and have an Id. ECStructClass models complex property types, often known as structs. ECCustomAttributeClass models objects which are applied to other schema elements to provide additional metadata. ECRelationshipClass models connections between ECEntityClasses.
 
 All classes support inheritance within their own class type. Therefore, an ECEntityClass can have another ECEntityClass as its base class, but could not have an ECStructClass as the base class. ECRelationshipClass only supports single inheritance while ECEntityClass supports a limited form of multi-inheritance using 'mixins'.
 

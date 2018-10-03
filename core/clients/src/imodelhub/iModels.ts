@@ -319,7 +319,7 @@ export class IModelHandler {
         ArgumentCheck.validGuid("imodelId", imodelId);
 
         if (this._handler.getCustomRequestOptions().isSet) {
-            // In order to add custom request options, request with body is needed.
+            // to add custom request options, request with body is needed.
             const imodel = new HubIModel();
             imodel.id = imodelId;
             imodel.changeState = "deleted";

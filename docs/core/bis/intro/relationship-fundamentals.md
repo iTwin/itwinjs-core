@@ -13,7 +13,7 @@ Relationships are one of the main building blocks of BIS. They are used to defin
 
 Relationship inheritance is supported in BIS, but is tightly constrained. All relationships must be abstract, concrete or sealed:
 
-- Abstract relationship classes can never be instantiated. ElementRefersToElements is an example of an abstract relationship. It must be subclassed in order to be instantiated.
+- Abstract relationship classes can never be instantiated. ElementRefersToElements is an example of an abstract relationship. It must be subclassed to be instantiated.
 
 - Concrete relationship classes can be inherited from and can be instantiated. ElementOwnsUniqueAspect is an example of a Concrete relationship.
 

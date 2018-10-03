@@ -83,7 +83,7 @@ A best practice is that an interface definition class should be marked as `abstr
 [[include:RpcInterface.definition]]
 ```
 
-In a real interface definition class, each method and parameter should be commented, in order to provide documentation to client app developers that will try to use the interface.
+In a real interface definition class, each method and parameter should be commented, to provide documentation to client app developers that will try to use the interface.
 
 ## Client Stub
 

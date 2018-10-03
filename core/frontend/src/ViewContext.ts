@@ -61,12 +61,13 @@ export class DynamicsContext extends RenderContext {
 export class DecorateContext extends RenderContext {
   public decorationDiv: HTMLDivElement;
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
+  /** @hidden */
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
     this.decorationDiv = vp.decorationDiv;
   }
 
-  /** @hidden  */
+  /** @hidden */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
     let distLow = 0.0;
@@ -173,7 +174,7 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Add a [[CanvasDecoration] to the current frame. */
+  /** Add a [[CanvasDecoration]] to the current frame. */
   public addCanvasDecoration(decoration: CanvasDecoration, atFront = false) {
     if (undefined === this._decorations.canvasDecorations)
       this._decorations.canvasDecorations = [];
@@ -187,7 +188,7 @@ export class DecorateContext extends RenderContext {
 
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
-  /** @private */
+  /** @hidden */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
 
@@ -265,6 +266,7 @@ export class DecorateContext extends RenderContext {
     this.addDecorationFromBuilder(builder);
   }
 
+  /** @hidden */
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const viewZ = Vector3d.createFrom(eyePoint);
@@ -453,6 +455,7 @@ export class DecorateContext extends RenderContext {
   public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
 }
 
+/** @hidden */
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];

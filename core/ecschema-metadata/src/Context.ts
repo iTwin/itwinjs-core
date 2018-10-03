@@ -119,7 +119,7 @@ export class SchemaCache implements ISchemaLocater {
 /**
  * The SchemaContext, context object is used to facilitate schema and schema item location.
  *
- * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context in order to delete a schema object.
+ * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context to delete a schema object.
  *
  * The context is made up of a group of Schema Locators.
  */

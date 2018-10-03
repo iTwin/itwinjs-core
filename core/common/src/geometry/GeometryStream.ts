@@ -41,7 +41,7 @@ export interface GeometryAppearanceProps {
  * Only one value among backgroundFill, color, and gradient should be set.
  */
 export interface AreaFillProps {
-  /** Fill display type, must be set to something other than [[FillDisplay.Never]] in order to display fill */
+  /** Fill display type, must be set to something other than [[FillDisplay.Never]] to display fill */
   display: FillDisplay;
   /** Optional fill transparency, 0.0 if undefined. Allows for different fill and outline transparencies */
   transparency?: number;

@@ -131,7 +131,7 @@ export class Dictionary<K, V> {
   }
 
   /**
-   * Computes the position at which the specified key should be inserted in order to maintain sorted order.
+   * Computes the position at which the specified key should be inserted to maintain sorted order.
    * @param key The key whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent key already exists at that index.
    */

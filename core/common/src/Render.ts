@@ -970,7 +970,7 @@ export namespace Gradient {
 
   /** Multi-color area fill defined by a range of colors that vary by position */
   export interface SymbProps {
-    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
+    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] to display fill */
     mode: Mode;
     /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
@@ -1790,8 +1790,7 @@ export namespace TextureMapping {
       const sideVector = Vector3d.create(normal.y, -normal.x, 0.0);
 
       // if the magnitude of the normal is near zero, the real normal points
-      // almost straighten up.. In this case, use Y as the up vector in order to
-      // match QV
+      // almost straighten up.. In this case, use Y as the up vector to match QV
 
       const magnitude = sideVector.magnitude();
       sideVector.normalize(sideVector); // won't remain undefined if failed due to following check..

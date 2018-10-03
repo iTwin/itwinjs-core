@@ -207,7 +207,7 @@ export class ViewManager {
    * Remove a Viewport from the list of opened views, and optionally dispose of it.
    * Typically a Viewport is dropped when it is no longer of any use to the application, in which case it should also be
    * disposed of as it may hold significant GPU resources.
-   * However in some cases a Viewport may be temporarily dropped in order to suspend rendering; and subsequently re-added to
+   * However in some cases a Viewport may be temporarily dropped to suspend rendering; and subsequently re-added to
    * resume rendering - for example, when the Viewport is temporarily hidden by other UI elements.
    * In the latter case it is up to the caller to ensure the Viewport is properly disposed of when it is no longer needed.
    * Attempting to invoke any function on a Viewport after it has been disposed is an error.

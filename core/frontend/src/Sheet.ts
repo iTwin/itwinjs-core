@@ -643,7 +643,7 @@ export namespace Attachments {
 
       this.expirationTime = BeDuration.fromSeconds(15);
 
-      // The renderer needs the unclipped range of the attachment in order to produce polys to be rendered as clip mask...
+      // The renderer needs the unclipped range of the attachment to produce polys to be rendered as clip mask...
       // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {

@@ -83,7 +83,7 @@ export class MeshBuilder {
 
   /**
    * add data from polyface into mesh builder
-   * @param polyface the indexed polyface to iterate the facets of in order to load each facet's triangles' vertices
+   * @param polyface the indexed polyface to iterate the facets of to load each facet's triangles' vertices
    * @param props the properties required for this operation
    */
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {

@@ -1315,9 +1315,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (placementProps.length === 0)
@@ -1351,9 +1351,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
    * @param props element props. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
   public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (elementProps.length === 0)
@@ -1367,9 +1367,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of elements. Optionally, change view rotation.
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
     this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
@@ -1723,7 +1723,7 @@ export abstract class Viewport implements IDisposable {
 
 /**
  * An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
- * In order to render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
+ * To render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
  * Every frame, the ViewManager will update the Viewport's state and re-render its contents if anything has changed.
  * To halt this loop, use ViewManager.dropViewport() to remove the viewport from the ViewManager.
  *
@@ -1757,21 +1757,31 @@ export class ScreenViewport extends Viewport {
   private readonly _backStack: ViewState[] = [];
   private _currentBaseline?: ViewState;
 
-  /** The canvas created to hold the view contents. */
-  public readonly canvas: HTMLCanvasElement;
-
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
+  /** The canvas to display the view contents. */
+  public readonly canvas: HTMLCanvasElement;
+  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
   public readonly decorationDiv: HTMLDivElement;
+  /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
   public readonly toolTipDiv: HTMLDivElement;
 
-  public static create(parentDiv: HTMLDivElement, view: ViewState) {
+  /**
+   * Create a new ScreenViewport that shows a View of an iModel into an HTMLDivElement. This method will create a new HTMLCanvasElement as a child of the supplied parentDiv.
+   * It also creates two new child HTMLDivElements: one of class "overlay-decorators" for HTML overlay decorators, and one of class
+   * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
+   * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
+   * @param view The ViewState for the ScreenViewport.
+   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to be "live". You must also ensure your dispose of it properly.
+   */
+  public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
   }
 
+  /** Remove all of the children of an HTMLDivElement. */
   public static removeAllChildren(el: HTMLDivElement) {
     while (el.lastChild)
       el.removeChild(el.lastChild);
@@ -1819,6 +1829,13 @@ export class ScreenViewport extends Viewport {
     this.setCursor();
   }
 
+  /**
+   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTpDiv]].
+   * @param message The message to display
+   * @param location The position of the toolTip, in view coordinates. If undefined, use center of view.
+   * @param options the ToolTip options
+   * @note There is only one ToolTip window, so calling this method more than once will move the toolTip and show the second message.
+   */
   public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
   }
@@ -1843,11 +1860,13 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
+  /** @hidden */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
 
+  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @hidden */

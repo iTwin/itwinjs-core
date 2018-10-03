@@ -308,7 +308,7 @@ export class PackedFeatureTable {
 
   /** Create a packed feature table from a [[FeatureTable]]. */
   public static pack(featureTable: FeatureTable): PackedFeatureTable {
-    // We must determine how many subcategories we have ahead of time in order to compute the size of the Uint32Array, as
+    // We must determine how many subcategories we have ahead of time to compute the size of the Uint32Array, as
     // the array cannot be resized after it is created.
     // We are not too worried about this as FeatureTables created on the front-end will contain few if any features; those obtained from the
     // back-end arrive within tiles already in the packed format.

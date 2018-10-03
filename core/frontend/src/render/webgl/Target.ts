@@ -1136,7 +1136,7 @@ export class OffScreenTarget extends Target {
 
     this.renderRect.setFrom(rect);
     if (temporary) {
-      // Temporarily adjust view rect in order to create scene for a view attachment.
+      // Temporarily adjust view rect to create scene for a view attachment.
       // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures
       return;
     }

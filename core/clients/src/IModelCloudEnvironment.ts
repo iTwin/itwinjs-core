@@ -19,7 +19,7 @@ export interface IModelAuthorizationClient {
   authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
 }
 
-/** @hidden All of the services that a frontend or other client app needs in order to find and access iModels. */
+/** @hidden All of the services that a frontend or other client app needs to find and access iModels. */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly authorization: IModelAuthorizationClient;
