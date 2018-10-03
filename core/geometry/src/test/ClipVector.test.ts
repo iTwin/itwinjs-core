@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { Point2d, Point3d, Vector2d } from "../geometry3d/PointVector";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { ClipShape, ClipMask } from "../clipping/ClipPrimitive";

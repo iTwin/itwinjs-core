@@ -8,9 +8,11 @@
 import { Geometry, AxisOrder } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { Segment1d, Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
 import { Range3d } from "../geometry3d/Range";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Quadrature } from "../numerics/Quadrature";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";

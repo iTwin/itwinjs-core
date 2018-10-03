@@ -7,7 +7,7 @@
 
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { KnotVector } from "./KnotVector";
 
 /** Bspline knots and poles for 1d-to-Nd. */

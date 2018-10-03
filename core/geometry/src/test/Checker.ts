@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../geometry3d/PointVector";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { XYZ, Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 
 import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { Range3d } from "../geometry3d/Range";

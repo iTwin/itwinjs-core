@@ -5,7 +5,6 @@
 
 /** @module Numerics */
 
-import { } from "../geometry3d/PointVector";
 import { Range1d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 /**

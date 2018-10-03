@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as geometry from "../geometry-core";
-import { Vector3d, Point3d } from "../geometry3d/PointVector";
+import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { YawPitchRollAngles } from "../geometry-core";

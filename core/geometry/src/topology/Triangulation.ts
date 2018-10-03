@@ -6,7 +6,8 @@
 /** @module Topology */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
-import { Point3d, XAndY } from "../geometry3d/PointVector";
+import { XAndY } from "../geometry3d/XYZProps";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { Range2d } from "../geometry3d/Range";

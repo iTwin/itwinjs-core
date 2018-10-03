@@ -7,7 +7,7 @@
 
 import { AxisOrder } from "../Geometry";
 import { Angle } from "./Angle";
-import { Matrix3d } from "./Transform";
+import { Matrix3d } from "./Matrix3d";
 
 /** OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them. */
 export class OrderedRotationAngles {

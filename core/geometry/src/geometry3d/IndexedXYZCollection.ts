@@ -7,7 +7,8 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
-import { Point3d, Vector3d, XYAndZ } from "./PointVector";
+import { XYAndZ } from "./XYZProps";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 
 /**
  * abstract base class for access to XYZ data with indexed reference.

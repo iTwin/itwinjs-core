@@ -6,8 +6,9 @@
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";

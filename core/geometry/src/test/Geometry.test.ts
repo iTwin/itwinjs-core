@@ -7,8 +7,10 @@ import { expect, assert } from "chai";
 import { Degree2PowerPolynomial } from "../numerics/Polynomials";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { Point3d, Vector3d, Point2d, Vector2d, YawPitchRollAngles } from "../geometry3d/PointVector";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { YawPitchRollAngles } from "../geometry3d/YawPitchRollAngles";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Checker } from "./Checker";
 /* tslint:disable:no-console */
 

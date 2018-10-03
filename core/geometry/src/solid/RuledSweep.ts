@@ -5,7 +5,6 @@
 
 /** @module Solid */
 
-import { } from "../geometry3d/PointVector";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 

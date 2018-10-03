@@ -6,7 +6,7 @@
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/PointVector";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { SmallSystem } from "./Polynomials";
 /** base class for Newton iterations in various dimensions.

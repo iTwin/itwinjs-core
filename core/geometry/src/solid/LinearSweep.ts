@@ -5,7 +5,8 @@
 
 /** @module Solid */
 
-import { Vector3d, XAndY } from "../geometry3d/PointVector";
+import { XAndY } from "../geometry3d/XYZProps";
+import { Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 

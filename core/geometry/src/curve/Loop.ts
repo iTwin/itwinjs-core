@@ -8,7 +8,7 @@ import { Geometry } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";

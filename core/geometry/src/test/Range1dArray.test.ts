@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
-import { } from "../geometry3d/PointVector";
 import { Range1d } from "../geometry3d/Range";
 import { Range1dArray } from "../numerics/Range1dArray";
 import { Checker } from "./Checker";

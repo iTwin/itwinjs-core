@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Checker, UsageSums, SaveAndRestoreCheckTransform } from "./Checker";
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";

@@ -2,7 +2,7 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, XYZ } from "../geometry3d/PointVector";
+import { Point3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import * as bsiChecker from "./Checker";

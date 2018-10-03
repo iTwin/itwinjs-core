@@ -6,7 +6,7 @@
 /** @module Topology */
 
 import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { GrowableFloat64Array } from "../geometry3d/GrowableArray";

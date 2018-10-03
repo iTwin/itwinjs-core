@@ -7,7 +7,9 @@
 
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d, Point3d, Vector3d, XYZ, XYAndZ, XAndY } from "./PointVector";
+import { Point2d, Vector2d } from "./Point2dVector2d";
+import { XYAndZ, XAndY } from "./XYZProps";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 
 import { Matrix4d } from "../geometry4d/Matrix4d";

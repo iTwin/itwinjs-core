@@ -8,7 +8,8 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Geometry } from "./Geometry";
-import { Point3d, Vector3d, Point2d } from "../geometry3d/PointVector";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { NumberArray, Vector3dArray, Point2dArray } from "../geometry3d/PointHelpers";

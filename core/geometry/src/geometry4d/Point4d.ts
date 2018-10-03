@@ -5,7 +5,8 @@
 
 /** @module Numerics */
 import { Geometry, BeJSONFunctions } from "../Geometry";
-import { Point3d, Vector3d, XYAndZ } from "../geometry3d/PointVector";
+import { XYAndZ } from "../geometry3d/XYZProps";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 

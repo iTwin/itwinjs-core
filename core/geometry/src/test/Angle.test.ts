@@ -2,12 +2,13 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Matrix3d } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Complex } from "../numerics/Complex";
 import { Range1d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Point3d, Vector3d, YawPitchRollAngles } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { YawPitchRollAngles } from "../geometry3d/YawPitchRollAngles";
 import { Geometry, AxisOrder } from "../Geometry";
 
 import { Sample } from "../serialization/GeometrySamples";

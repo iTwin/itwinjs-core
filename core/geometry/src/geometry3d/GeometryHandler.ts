@@ -13,7 +13,7 @@ import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
-import { Point3d, Vector3d } from "./PointVector";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { IndexedPolyface } from "../polyface/Polyface";

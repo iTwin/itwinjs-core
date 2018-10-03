@@ -5,7 +5,7 @@
 
 /** @module Numerics */
 
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point4d } from "./Point4d";
 /**
  * A Plane4dByOriginAndVectors is a 4d origin and pair of 4d "vectors" defining a 4d plane.

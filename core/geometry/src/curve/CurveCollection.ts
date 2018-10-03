@@ -19,7 +19,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 
 /** Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
  */
-export class GapSearchContext extends RecursiveCurveProcessorWithStack {
+class GapSearchContext extends RecursiveCurveProcessorWithStack {
   public maxGap: number;
   constructor() { super(); this.maxGap = 0.0; }
   public static maxGap(target: CurveCollection): number {
@@ -43,7 +43,7 @@ export class GapSearchContext extends RecursiveCurveProcessorWithStack {
 
 /** Algorithmic class: Count LineSegment3d and LineString3d primitives.
  */
-export class CountLinearPartsSearchContext extends RecursiveCurveProcessorWithStack {
+class CountLinearPartsSearchContext extends RecursiveCurveProcessorWithStack {
   public numLineSegment: number;
   public numLineString: number;
   public numOther: number;
@@ -70,7 +70,7 @@ export class CountLinearPartsSearchContext extends RecursiveCurveProcessorWithSt
 
 /** Algorithmic class: Transform curves in place.
  */
-export class TransformInPlaceContext extends RecursiveCurveProcessor {
+class TransformInPlaceContext extends RecursiveCurveProcessor {
   public numFail: number;
   public numOK: number;
   public transform: Transform;
@@ -88,7 +88,7 @@ export class TransformInPlaceContext extends RecursiveCurveProcessor {
   }
 }
 /** Algorithmic class: Sum lengths of curves */
-export class SumLengthsContext extends RecursiveCurveProcessor {
+class SumLengthsContext extends RecursiveCurveProcessor {
   private _sum: number;
   private constructor() { super(); this._sum = 0.0; }
   public static sumLengths(target: CurveCollection): number {
@@ -105,7 +105,7 @@ export class SumLengthsContext extends RecursiveCurveProcessor {
  * * recurse through collection nodes, building image nodes as needed and inserting clones of children.
  * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
  */
-export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
+class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
   private _result: CurveCollection | undefined;
   private _transform: Transform | undefined;
   private constructor(transform?: Transform) {

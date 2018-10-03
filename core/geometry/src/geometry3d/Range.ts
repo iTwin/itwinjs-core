@@ -6,11 +6,13 @@
 /** @module CartesianGeometry */
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
-import { Point2d, Vector2d, Point3d, Vector3d } from "./PointVector";
-import { Transform, Matrix3d } from "./Transform";
-import { Range1dProps, Range2dProps, Range3dProps } from "./PointVector";
-import { LowAndHighXYZ, LowAndHighXY } from "./PointVector";
-import { XAndY, XYAndZ } from "./PointVector";
+import { Point2d, Vector2d } from "./Point2dVector2d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Transform } from "./Transform";
+import { Matrix3d } from "./Matrix3d";
+import { Range1dProps, Range2dProps, Range3dProps } from "./XYZProps";
+import { LowAndHighXYZ, LowAndHighXY } from "./XYZProps";
+import { XAndY, XYAndZ } from "./XYZProps";
 import { GrowableXYZArray } from "./GrowableArray";
 
 export abstract class RangeBase {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Distribute classes to smaller files: Point2dVector2d, Point3dVector3d, YawPitchRollAngles, Segment1d, Matrix3d XYZProps",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@Bentley.com"
+}

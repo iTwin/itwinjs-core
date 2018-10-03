@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module CartesianGeometry */
 
-import { Segment1d, Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GrowableFloat64Array } from "../geometry3d/GrowableArray";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
-import { Point3d, Vector3d } from "./PointVector";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { BeJSONFunctions, Geometry } from "../Geometry";
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.

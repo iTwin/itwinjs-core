@@ -6,7 +6,8 @@
 /** @module ArraysAndInterfaces */
 
 import { Geometry } from "../Geometry";
-import { XYAndZ, Point3d, Vector3d } from "./PointVector";
+import { XYAndZ } from "./XYZProps";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";

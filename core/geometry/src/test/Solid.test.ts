@@ -5,9 +5,9 @@
 
 import { Sample } from "../serialization/GeometrySamples";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Checker } from "./Checker";
 import { expect } from "chai";

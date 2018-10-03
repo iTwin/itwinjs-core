@@ -5,10 +5,11 @@
 
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
 import { Range3d } from "../geometry3d/Range";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";

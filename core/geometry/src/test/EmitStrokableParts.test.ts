@@ -5,7 +5,7 @@
 
 // import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
 import { Sample } from "../serialization/GeometrySamples";
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineString3d } from "../curve/LineString3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive } from "../curve/CurvePrimitive";

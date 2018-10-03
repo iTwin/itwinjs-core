@@ -9,10 +9,11 @@ import { ClusterableArray } from "../numerics/ClusterableArray";
 import { prettyPrint } from "./testFunctions";
 import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d, Point3d, Vector2d, Vector3d } from "../geometry3d/PointVector";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArrayCarrier, Point3dArray } from "../geometry3d/PointHelpers";
 import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Sample } from "../serialization/GeometrySamples";
 import { Angle } from "../geometry3d/Angle";
 

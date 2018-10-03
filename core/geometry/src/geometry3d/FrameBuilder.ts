@@ -8,8 +8,9 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Geometry, AxisOrder, AxisScaleSelect } from "../Geometry";
-import { Point3d, Vector3d } from "./PointVector";
-import { Transform, Matrix3d } from "./Transform";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Transform } from "./Transform";
+import { Matrix3d } from "./Matrix3d";
 import { Range3d } from "./Range";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveCollection } from "../curve/CurveCollection";

@@ -10,7 +10,7 @@ import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { LineSegment3d } from "./LineSegment3d";
 import { Arc3d } from "./Arc3d";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { LineString3d } from "./LineString3d";
 
 /**

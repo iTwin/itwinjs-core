@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
-import { Point3d, Vector3d } from "./PointVector";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { BeJSONFunctions, Geometry } from "../Geometry";
 /**

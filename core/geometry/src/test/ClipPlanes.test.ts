@@ -9,10 +9,11 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { Segment1d, Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
 import { Range1d } from "../geometry3d/Range";
 import { Range3d } from "../geometry3d/Range";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Transform } from "../geometry3d/Transform";
 import { PolygonOps } from "../geometry3d/PointHelpers";
 import { LineSegment3d } from "../curve/LineSegment3d";

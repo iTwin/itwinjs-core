@@ -5,7 +5,7 @@
 
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
 import { ClipPlane } from "./ClipPlane";

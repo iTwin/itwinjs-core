@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
-import { Point3d, Vector3d } from "./PointVector";
-import { Transform, Matrix3d } from "./Transform";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Transform } from "./Transform";
+import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 /** A Ray3d contains

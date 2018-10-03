@@ -9,8 +9,12 @@
 import { Geometry, AngleProps, AngleSweepProps, AxisOrder } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { Point2d, Point3d, XYZ, Vector3d, XYProps, XYZProps, YawPitchRollProps, YawPitchRollAngles, Segment1d } from "../geometry3d/PointVector";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { XYProps, XYZProps } from "../geometry3d/XYZProps";
+import { Point3d, XYZ, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";

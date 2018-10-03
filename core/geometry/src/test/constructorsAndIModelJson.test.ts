@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { GeometryQuery} from "../curve/GeometryQuery";
 import {CoordinateXYZ } from "../curve/CoordinateXYZ";
@@ -18,7 +18,8 @@ import { Path } from "../curve/Path";
 import { Sphere } from "../solid/Sphere";
 import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { TorusPipe } from "../solid/TorusPipe";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";

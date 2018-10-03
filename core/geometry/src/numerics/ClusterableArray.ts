@@ -6,7 +6,8 @@
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Point3d } from "../geometry3d/PointVector";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { GrowableBlockedArray, GrowableXYZArray } from "../geometry3d/GrowableArray";
 
 export class ClusterableArray extends GrowableBlockedArray {

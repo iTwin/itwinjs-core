@@ -5,7 +5,7 @@
 
 import { Sample } from "../serialization/GeometrySamples";
 import { CurveCollection } from "../curve/CurveCollection";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { Checker } from "./Checker";
 import { expect } from "chai";

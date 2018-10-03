@@ -119,9 +119,12 @@
  */
 // doc:export class TopologyDoc { }
 
-export * from "./geometry3d/PointVector";
+export * from "./geometry3d/Point2dVector2d";
+export * from "./geometry3d/Point3dVector3d";
+export * from "./geometry3d/XYZProps";
 export * from "./geometry3d/PointHelpers";
 export * from "./geometry3d/Transform";
+export * from "./geometry3d/Matrix3d";
 export * from "./geometry3d/Range";
 export * from "./geometry3d/GrowableArray";
 export * from "./geometry3d/FrameBuilder";
@@ -135,6 +138,7 @@ export * from "./geometry3d/Plane3dByOriginAndVectors";
 
 export * from "./Geometry";
 export * from "./geometry3d/Angle";
+export * from "./geometry3d/YawPitchRollAngles";
 export * from "./geometry3d/AngleSweep";
 export * from "./Constant";
 export * from "./clipping/ClipPlane";

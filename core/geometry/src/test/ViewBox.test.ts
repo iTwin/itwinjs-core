@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { Point3d, Vector3d, YawPitchRollAngles } from "../geometry3d/PointVector";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { YawPitchRollAngles } from "../geometry3d/YawPitchRollAngles";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Transform } from "../geometry3d/Transform";
 import { Loop } from "../curve/Loop";
 import { Checker } from "./Checker";

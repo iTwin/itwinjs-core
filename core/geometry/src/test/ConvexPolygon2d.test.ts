@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Checker } from "./Checker";
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/PointVector";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Ray2d, ConvexPolygon2d } from "../numerics/ConvexPolygon2d";
 import { PolygonOps } from "../geometry3d/PointHelpers";
 

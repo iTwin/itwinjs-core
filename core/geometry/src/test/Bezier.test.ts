@@ -8,7 +8,8 @@ import { UnivariateBezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier
 import { Geometry } from "../Geometry";
 import { PascalCoefficients } from "../numerics/PascalCoefficients";
 import { LineString3d } from "../curve/LineString3d";
-import { Point2d, Point3d } from "../geometry3d/PointVector";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";

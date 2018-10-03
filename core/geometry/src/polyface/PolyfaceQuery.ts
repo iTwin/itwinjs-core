@@ -8,7 +8,7 @@
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Polyface, PolyfaceVisitor } from "./Polyface";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { BagOfCurves } from "../curve/CurveCollection";

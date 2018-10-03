@@ -8,7 +8,7 @@
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { BSplineSurface3dQuery, BSplineSurface3dH } from "../bspline/BSplineSurface";

@@ -5,8 +5,8 @@
 
 /** @module Solid */
 
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
-import { Matrix3d } from "../geometry3d/Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryQuery } from "../curve/GeometryQuery";

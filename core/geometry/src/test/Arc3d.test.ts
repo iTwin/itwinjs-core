@@ -3,9 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../geometry3d/PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
-import { Matrix3d, Transform } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 
 import { Arc3d } from "../curve/Arc3d";
 import { AngleSweep } from "../geometry3d/AngleSweep";

@@ -9,9 +9,11 @@ import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "..
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
-import { Point3d, Vector3d, XYAndZ } from "../geometry3d/PointVector";
+import { XYAndZ } from "../geometry3d/XYZProps";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
-import { Transform, Matrix3d } from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -37,7 +39,6 @@ import { Point4d } from "../geometry4d/Point4d";
  * * Non-perpendicular vectors are always elliptic.
  * *  vectors of unequal length are always elliptic.
  * * To create an ellipse in the common "major and minor axis" form of an ellipse:
- *
  * ** vector0 is the vector from the center to the major axis extreme.
  * ** vector90 is the vector from the center to the minor axis extreme.
  * ** note the constructing the vectors to the extreme points makes them perpendicular.

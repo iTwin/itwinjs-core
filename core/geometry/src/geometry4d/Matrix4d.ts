@@ -5,8 +5,10 @@
 
 /** @module Numerics */
 import { Geometry, BeJSONFunctions } from "../Geometry";
-import { Point3d, Vector3d, XYZ, XYAndZ } from "../geometry3d/PointVector";
-import { Matrix3d, Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point4d, Point4dProps } from "./Point4d";
 export type Matrix4dProps = Point4dProps[];
 
