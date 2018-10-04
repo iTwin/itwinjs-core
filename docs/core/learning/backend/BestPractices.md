@@ -8,9 +8,9 @@ While the focus of this article is on backend and RpcInterface design, in many c
 
 ## Diagnostics
 
-Log all Errors that you throw. Be sure to define the logging-related arguments to the [IModelError]($bentleyjs/IModelError) constructor.
+Log all Errors that you throw. Be sure to define the logging-related arguments to the [IModelError]($common) constructor.
 
-Maintain the ActivityLoggingContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManageActivityLoggingContext.md).
+Maintain the ActivityLoggingContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManagingActivityLoggingContext.md).
 
 ## Do not Block Too Long
 
@@ -18,7 +18,7 @@ Use async functions when an operation is inherently asynchronous. Example: reque
 
 Break up a long-running synchronous operation into small increments, yielding back to the libuv event loop at regular intervals. You might say that your server must "come up for air" often to remain responsive. The operation becomes a series of asynchronous operations.
 
-Here is some pseudo-code to illustrate yielding. The code assumes that you have
+Here is some pseudo-code to illustrate yielding.
 ``` ts
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -31,7 +31,7 @@ async someServerFunction(many items): Promise<boolean> {
 }
 ```
 
-Note how the yield calls `setTimeout`. That is what causes the backend to return to the libuv event loop.
+Note how the loop calls `setTimeout`. That is what causes the code to yield all the way to libuv event loop.
 
 At the same time, the units of work performed by backend code must be "right-sized", not too large or too small. This requirement is addressed mostly in RpcInterface and frontend design, [as described below](#rpcinterfaces-and-frontend-design).
 
@@ -47,10 +47,10 @@ Be prepared for redundant requests. After one client requests a long-running ope
 RpcInterfaces must be "phrased" so that clients can make right-sized requests. RpcInterfaces must be "chunky" and not "chatty". One good strategy to avoid chatty interfaces is to [write a backend that is tailored to the needs of the frontend](../AppTailoring.md#backends-for-frontends).
 
 ### Paged Queries
-Clients must page all queries. A client must not issue a query that produces a very large result. Instead, a client must break up a large query into a series of requests, so that results are returned in small increments. The ECSql limit/offset query parameters are used for this purpose.
+A client must not issue a query that produces a very large result. Instead, a client must break up a large query into a series of requests, so that results are returned in small increments. The ECSql limit/offset query parameters are used for this purpose.
 
 ### Event-Driven Design
-As explained in [the app architecture overview](../App.md#interactive-apps), frontend and backend never run in the same JavaScript context. Requests are always asynchronous, and it is impossible to predict how long even a right-sized request will take. Therefore, frontend/client code cannot simply demand a result from a backend and then freeze while waiting for it. Instead, frontend code must be designed like a state machine and must be event-driven. For example, the frontend must go into a mode where only part of its UI is available while some long-running backend operation such as opening a briefcase or importing a schema is in progress. Query-paging is another example of the need for a frontend to maintain state data.
+Frontend and backend never run in the same JavaScript context. Requests are always asynchronous, and it is impossible to predict how long even a right-sized request will take. Frontend code must be designed like a state machine and must be event-driven. For example, the frontend must go into a mode where only part of its UI is available while some long-running backend operation such as opening a briefcase or importing a schema is in progress. Query-paging is another example of the need for a frontend to maintain state data.
 
 ### Refreshing
 Frontends and clients must also be ready for backends to become temporarily or permanently unavailable and for AccessTokens to need refreshing.
