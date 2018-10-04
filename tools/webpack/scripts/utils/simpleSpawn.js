@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 const spawn = require("react-dev-utils/crossSpawn");
@@ -23,7 +23,7 @@ function simpleSpawn(cmd, args, cwd, env) {
     child.stderr.on("data", (data) => {
       process.stderr.write(data);
     })
-    child.on("error", function(data) { console.log(chalk.red(data)); });  
+    child.on("error", function(data) { console.log(chalk.red(data)); });
     child.on("close", (code)=> resolve(code));
     simpleSpawn.children.push(child);
   });

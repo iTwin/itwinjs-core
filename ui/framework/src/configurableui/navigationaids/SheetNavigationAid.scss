@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- 
+
 .sheet-navigation {
   height: 64px;
   width: 64px;
@@ -39,7 +39,7 @@
         font-size: 15px;
         filter: drop-shadow(0 1px 0 #FFFFFF);
         z-index: 1;
-        
+
         &:active {
           color: rgba(#FFFFFF, 0.88);
           filter: drop-shadow(0 0 0 transparent);

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -66,7 +66,7 @@ exports.handler = async (argv) => {
     names.push("web-serv");
     colors.push("cyan");
   }
-  
+
   if (!argv.noElectron) {
     args.push(["node", require.resolve("nodemon/bin/nodemon"), "--no-colors", "--watch", paths.appBuiltMainJs, "node_modules/electron/cli.js", ...electronDebugOptions, ...electronRemoteDebugOptions, paths.appBuiltMainJs]);
     names.push("electron");

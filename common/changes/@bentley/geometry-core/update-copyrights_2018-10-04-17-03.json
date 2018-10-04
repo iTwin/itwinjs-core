@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updating copyrights",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Caleb.Shafer@bentley.com"
+}

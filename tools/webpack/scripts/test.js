@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -51,14 +51,14 @@ exports.handler = (argv) => {
   const paths = require("../config/paths");
   const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
-  
+
   // Support jest-style args for updating all snapshots
   if (argv.updateSnapshot || argv.u)
     process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
-  
+
   // Some additional options are required for CI builds
   let reporterOptions = [ "--inline-diffs",  "--colors" ];
-  if (CONTINUOUS_INTEGRATION) { 
+  if (CONTINUOUS_INTEGRATION) {
     const reportDir = (argv.subdirectory) ? path.join(paths.appTestResults, argv.subdirectory) : paths.appTestResults;
     const appJUnitTestResults = path.resolve(reportDir, "junit_results.xml");
 

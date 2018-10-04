@@ -1,6 +1,6 @@
 ﻿# The iModel.js Library
 
-Copyright © Bentley Systems, Inc. 2018
+Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
 The [iModel.js](http://imodeljs.org) library is an open source library for creating and accessing iModels.
 

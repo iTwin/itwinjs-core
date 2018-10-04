@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 const fs = require("fs-extra");
@@ -24,7 +24,7 @@ async function watchBackend(config) {
 }
 
 async function startFrontendDevServer(config, host, port) {
-  const protocol = process.env.HTTPS === "true" ? "https" : "http";  
+  const protocol = process.env.HTTPS === "true" ? "https" : "http";
   const appName = require(paths.appPackageJson).name;
   const urls = prepareUrls(protocol, host, port);
 
