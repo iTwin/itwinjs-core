@@ -136,7 +136,9 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       pattern: /.*/,
       includeUndefined: true,
       includePackagesWithoutLicense: true,
-      unacceptablePattern: /^(GPL|.*[^L]GPL)/i,
+      unacceptablePattern: /^L?GPL/i,
+      licenseFileOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseFileOverrides,
+      licenseTypeOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseTypeOverrides,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without
