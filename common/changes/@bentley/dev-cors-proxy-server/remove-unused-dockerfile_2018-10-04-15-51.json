@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/dev-cors-proxy-server",
+      "comment": "Removing unused dockerfile",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/dev-cors-proxy-server",
+  "email": "Caleb.Shafer@bentley.com"
+}
