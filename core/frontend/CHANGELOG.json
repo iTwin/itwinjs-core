@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.150.0",
+      "tag": "@bentley/imodeljs-frontend_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added documentation on Markers"
+          },
+          {
+            "comment": "Fix regression with classification of reality models."
+          },
+          {
+            "comment": "Add README.md"
+          },
+          {
+            "comment": "docs"
+          },
+          {
+            "comment": "Spread various classes to smaller files."
+          },
+          {
+            "comment": "Enable deterministic disposal of WebGL resources owned by Viewports."
+          },
+          {
+            "comment": "Updating copyrights"
+          },
+          {
+            "comment": "Added configuration system to imodeljs and removed urls/credentials"
+          },
+          {
+            "comment": "Added rotation options to zoomTo methods."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/imodeljs-frontend_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",

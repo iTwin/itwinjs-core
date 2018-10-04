@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Oct 2018 21:06:02 GMT and should not be manually modified.
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:02 GMT
+
+### Updates
+
+- Updated/added README.md files for ui packages. Changed case to 'ConfigurableUi'
+- UI package documentation
+- Upgraded BWC to 6.0.3 and icons-webfont to 6.6.1. Made 'ConfigurableUI' case consistent across uses.
+- Updating coprights
+- Updating README to remove internal links
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

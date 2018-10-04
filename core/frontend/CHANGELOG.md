@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Oct 2018 21:06:01 GMT and should not be manually modified.
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- added documentation on Markers
+- Fix regression with classification of reality models.
+- Add README.md
+- docs
+- Spread various classes to smaller files.
+- Enable deterministic disposal of WebGL resources owned by Viewports.
+- Updating copyrights
+- Added configuration system to imodeljs and removed urls/credentials
+- Added rotation options to zoomTo methods.
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

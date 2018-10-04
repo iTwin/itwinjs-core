@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.150.0",
+      "tag": "@bentley/ui-components_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed invalid tag"
+          },
+          {
+            "comment": "FrontstageManager.setActiveFrontstageDef now returns a Promise"
+          },
+          {
+            "comment": "Updated/added README.md files for ui packages. Changed case to 'ConfigurableUi'"
+          },
+          {
+            "comment": "ViewportComponent disposes of its Viewport when it is unmounted."
+          },
+          {
+            "comment": "UI package documentation"
+          },
+          {
+            "comment": "Upgraded BWC to 6.0.3 and icons-webfont to 6.6.1. Made 'ConfigurableUI' case consistent across uses."
+          },
+          {
+            "comment": "Updating copyrights"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/ui-components_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",

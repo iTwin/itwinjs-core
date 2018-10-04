@@ -2,6 +2,27 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.150.0",
+      "tag": "@bentley/bentleyjs-core_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add README.md"
+          },
+          {
+            "comment": "RpcInterfaceStatus"
+          },
+          {
+            "comment": "RpcInterface docs"
+          },
+          {
+            "comment": "Updating copyrights"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.148.0",
       "tag": "@bentley/bentleyjs-core_v0.148.0",
       "date": "Wed, 03 Oct 2018 17:00:37 GMT",

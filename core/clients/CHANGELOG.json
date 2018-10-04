@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.150.0",
+      "tag": "@bentley/imodeljs-clients_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added UlasClient to index.ts"
+          },
+          {
+            "comment": "Added missing URL to the whitelist"
+          },
+          {
+            "comment": "use imodel-bank local-orchestrator for tests"
+          },
+          {
+            "comment": "further simplification"
+          },
+          {
+            "comment": "Marking some tests as integration"
+          },
+          {
+            "comment": "Better OIDC support for agents."
+          },
+          {
+            "comment": "Add README.md"
+          },
+          {
+            "comment": "imodel-bank mode"
+          },
+          {
+            "comment": "Updating copyrights"
+          },
+          {
+            "comment": "Added configuration system to imodeljs and removed urls/credentials"
+          },
+          {
+            "comment": "Rename config var to what they do."
+          },
+          {
+            "comment": "Mark test as integeration that were not marked but access imodelhub"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/imodeljs-clients_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",

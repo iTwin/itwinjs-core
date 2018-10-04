@@ -1,4 +1,26 @@
 {
   "name": "@bentley/config-loader",
-  "entries": []
+  "entries": [
+    {
+      "version": "0.150.0",
+      "tag": "@bentley/config-loader_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added configuration system to imodeljs and removed urls/credentials"
+          },
+          {
+            "comment": "Removed lib folder"
+          },
+          {
+            "comment": "Ignore lib folder. Updated ReadMe. Use standard tslint and tsconfig."
+          },
+          {
+            "comment": "Made the config-loader not throw error if a optional parameter is specified. This is to get the build going."
+          }
+        ]
+      }
+    }
+  ]
 }

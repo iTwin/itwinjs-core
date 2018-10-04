@@ -1,6 +1,15 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Oct 2018 21:06:02 GMT and should not be manually modified.
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:02 GMT
+
+### Updates
+
+- Updating copyrights
+- Fixed inconsistency between backend and frontend LicenseWebpackPlugin configs and added README.
+- Added configuration system to imodeljs and removed urls/credentials
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

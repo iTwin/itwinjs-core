@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Oct 2018 21:06:01 GMT and should not be manually modified.
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- Add RPC Changes
+- Add README.md
+- RpcInterfaceStatus
+- RpcInterface docs
+- docs
+- Updating copyrights
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

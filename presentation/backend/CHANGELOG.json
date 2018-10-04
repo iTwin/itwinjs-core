@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "0.150.0",
+      "tag": "@bentley/presentation-backend_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add README"
+          },
+          {
+            "comment": "Updating copyrights"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/presentation-backend_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",
