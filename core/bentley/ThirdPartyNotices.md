@@ -1,7 +1,4 @@
-Copyright © Bentley Systems, Inc. 2018
-
-Third-Party Code
-================
+# Third-Party Code
 
 This library may incorporate or derive from the following third-party code:
 
