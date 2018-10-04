@@ -253,8 +253,8 @@ See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLo
 
 Each RpcInterface has a version. This should not to be confused with the version of the package that implements the interface. The version of an RpcInterface refers to the shape of the interface itself.
 
-You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org). This allows iModelJs to detect when a client tries to use a backend that implements an incompatible version of the RpcInterface that the client wants to use.
+You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org).
 
-iModelJs checks that the version of each RcpInterface required by the client is fulfilled by the implementation of that interface provided by the specified backend. If the versions are incompatible, then the interface method call will throw a [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
-
-Also see [best practices](./backend/BestPractices.md#version-each-rpcinterface).
+Interface version incompatibility is a possibility when a client makes requests on a remote server. iModelJs checks that an RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley). What does it mean for an interface to be incompatible?
+* The server may implement a newer version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
+* The server may implement an older version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.

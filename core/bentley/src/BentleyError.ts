@@ -102,10 +102,11 @@ export const enum BriefcaseStatus {
   CannotApplyChanges = 0x20006,
 }
 
-// RpcInterface Errors
+/** RpcInterface status codes */
 export enum RpcInterfaceStatus {
   Success = 0,
   RPC_INTERFACE_ERROR_BASE = 0x21000,
+  /** The RpcInterface implemented by the server is incompatible with the interface requested by the client. */
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
