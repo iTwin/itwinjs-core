@@ -1,9 +1,9 @@
 {
   "name": "ui-test-app",
   "description": "UI Test Application",
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "private": true,
   "license": "MIT",
+  "version": "0.0.0",
   "scripts": {
     "build": "tsc 1>&2",
     "lint": "tslint -p . 1>&2",

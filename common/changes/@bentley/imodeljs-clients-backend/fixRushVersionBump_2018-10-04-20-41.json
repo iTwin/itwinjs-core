@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Added openid-client type definition to imodeljs-clients-backend package to avoid downstream build errors. ",
+      "comment": "fixing changelog",
       "packageName": "@bentley/imodeljs-clients-backend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-clients-backend",
-  "email": "Ramanujam.Raman@bentley.com"
+  "email": "Caleb.Shafer@bentley.com"
 }
