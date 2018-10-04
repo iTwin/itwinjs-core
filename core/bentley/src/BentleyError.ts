@@ -102,6 +102,13 @@ export const enum BriefcaseStatus {
   CannotApplyChanges = 0x20006,
 }
 
+// RpcInterface Errors
+export enum RpcInterfaceStatus {
+  Success = 0,
+  RPC_INTERFACE_ERROR_BASE = 0x21000,
+  IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
+}
+
 /** Error status from various ChangeSet operations */
 export const enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
   Success = 0,
@@ -485,6 +492,9 @@ export class BentleyError extends Error {
       case BriefcaseStatus.CannotCopy: return "CannotCopy";
       case BriefcaseStatus.CannotDelete: return "CannotDelete";
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
+
+      // RpcInterface
+      case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
 
       // ChangeSetStatus
       case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";

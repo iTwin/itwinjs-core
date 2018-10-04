@@ -73,7 +73,7 @@ The interface definition class should define a method for each operation that is
 
 The definition class must also define two static properties as interface metadata:
 * `types`. Specifies any non-primitive types used in the methods of interface.
-* `version`. The interface version number.
+* `version`. The interface version number. See [below](#rpcinterface-version) for more on interface versioning.
 
 The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
 
@@ -248,3 +248,13 @@ Briefly, here is how it works:
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
 See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLoggingContext.md) for details.
+
+## RpcInterface Versioning
+
+Each RpcInterface has a version. This should not to be confused with the version of the package that implements the interface. The version of an RpcInterface refers to the shape of the interface itself.
+
+You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org). This allows iModelJs to detect when a client tries to use a backend that implements an incompatible version of the RpcInterface that the client wants to use.
+
+iModelJs checks that the version of each RcpInterface required by the client is fulfilled by the implementation of that interface provided by the specified backend. If the versions are incompatible, then the interface method call will throw a [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
+
+Also see [best practices](./backend/BestPractices.md#version-each-rpcinterface).
