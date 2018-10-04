@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { DeploymentEnv } from "../Client";
 import { AccessToken, AuthorizationToken } from "../Token";
 import { IModelClient } from "../IModelClient";
 import { FileHandler } from "../";
@@ -18,11 +17,10 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 export class IModelHubClient extends IModelClient {
   /**
    * Create an instance of IModelHubClient.
-   * @param deploymentEnv Deployment environment.
    * @param fileHandler File handler to handle file upload/download and file system operations. See [[AzureFileHandler]].
    */
-  public constructor(public deploymentEnv: DeploymentEnv = "PROD", fileHandler?: FileHandler) {
-    super(new IModelBaseHandler(deploymentEnv), deploymentEnv, fileHandler);
+  public constructor(fileHandler?: FileHandler) {
+    super(new IModelBaseHandler(), fileHandler);
   }
 
   /**

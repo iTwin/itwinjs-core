@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as TypeMoq from "typemoq";
-import { expect, assert } from "chai";
+import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
@@ -12,8 +12,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
 import { HubUtility } from "./HubUtility";
-import { TestConfig } from "../TestConfig";
-import { AccessToken, ChangeSet, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
+import { AccessToken, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 
 describe.skip("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
@@ -429,38 +428,6 @@ describe.skip("BriefcaseManager", () => {
     // Restart the backend to the default configuration
     IModelHost.shutdown();
     IModelTestUtils.startBackend();
-  });
-
-  it.skip("should open briefcase of an iModel in both DEV and QA (#integration)", async () => {
-    // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
-    const config = new IModelHostConfiguration();
-
-    IModelHost.shutdown();
-    config.hubDeploymentEnv = "DEV";
-    IModelHost.startup(config);
-
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
-    assert(devProjectId);
-    const devIModelId = await HubUtility.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
-    assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, devIModelId);
-    expect(devChangeSets.length).equals(0); // needs change sets
-    const devIModel: IModelDb = await IModelDb.open(actx, accessToken, devProjectId, devIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.exists(devIModel);
-
-    IModelHost.shutdown();
-    config.hubDeploymentEnv = "QA";
-    IModelHost.startup(config);
-
-    const qaProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
-    assert(qaProjectId);
-    const qaIModelId = await HubUtility.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
-    assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, qaIModelId);
-    expect(qaChangeSets.length).greaterThan(0);
-    const qaIModel: IModelDb = await IModelDb.open(actx, accessToken, qaProjectId, qaIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.exists(qaIModel);
   });
 
   // The test fails matching access tokens - needs investigation.

@@ -1,23 +1,25 @@
-import { UrlDescriptor, Client, DeploymentEnv, AccessToken, UserProfile, IncludePrefix } from "@bentley/imodeljs-clients";
+import { Client, AccessToken, UserProfile, IncludePrefix, Config } from "@bentley/imodeljs-clients";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, GrantParams, TokenSet, UserInfo } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 
 export class OidcClient extends Client {
   public static readonly searchKey: string = "IMSOpenID";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://qa-imsoidc.bentley.com",
-    QA: "https://qa-imsoidc.bentley.com",
-    PROD: "https://qa-imsoidc.bentley.com",
-    PERF: "https://qa-imsoidc.bentley.com",
-  };
+  public static readonly configURL = "imjs_oidc_url";
+  public static readonly configRegion = "imjs_oidc_region";
+  // private static readonly _defaultUrlDescriptor: UrlDescriptor = {
+  //   DEV: "https://qa-imsoidc.bentley.com",
+  //   QA: "https://qa-imsoidc.bentley.com",
+  //   PROD: "https://qa-imsoidc.bentley.com",
+  //   PERF: "https://qa-imsoidc.bentley.com",
+  // };
 
   /**
    * Creates an instance of ImsFederatedAuthenticationClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(private _clientConfiguration: ClientConfiguration, public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv);
+  public constructor(private _clientConfiguration: ClientConfiguration) {
+    super();
   }
 
   /**
@@ -33,9 +35,22 @@ export class OidcClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return OidcClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(OidcClient.configURL))
+      return Config.App.get(OidcClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${OidcClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(OidcClient.configRegion))
+      return Config.App.get(OidcClient.configRegion);
+
+    return undefined;
+  }
   private _issuer: Issuer;
   private async getIssuer(actx: ActivityLoggingContext): Promise<Issuer> {
     actx.enter();
@@ -93,8 +108,8 @@ export class OidcClient extends Client {
   }
 
   public async getJwtForImsUser(actx: ActivityLoggingContext, email: string, password: string, scope: string): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(this.deploymentEnv)).getToken(actx, email, password);
-    const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient(this.deploymentEnv)).getToken(actx, authToken);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, email, password);
+    const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
 
     const jwt: AccessToken = await this.getJwtFromSaml(actx, samlToken, scope);
     return jwt;

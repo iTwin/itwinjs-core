@@ -41,7 +41,7 @@ function mockGetVersionsByNameWithThumbnails(imodelId: Guid, name: string, thumb
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-describe("iModelHub VersionHandler", () => {
+describe("iModelHub VersionHandler  (#integration)", () => {
   let accessToken: AccessToken;
   let imodelId: Guid;
   let iModelClient: IModelClient;
@@ -49,7 +49,8 @@ describe("iModelHub VersionHandler", () => {
   const imodelName = "imodeljs-clients Versions test";
   const actx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
@@ -104,7 +105,7 @@ describe("iModelHub VersionHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
+  it("should create named version (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(imodelId, false, undefined, ...mockedChangeSets);
     const changeSetsCount = (await iModelClient.ChangeSets().get(actx, accessToken, imodelId)).length;
@@ -122,7 +123,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version.name).to.be.equal(versionName);
   });
 
-  it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
+  it("should get named versions (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
     // Needs to create before expecting more than 0
@@ -137,7 +138,7 @@ describe("iModelHub VersionHandler", () => {
     }
   });
 
-  it("should query named versions by ChangeSet id", async function (this: Mocha.ITestCallbackContext) {
+  it("should query named versions by ChangeSet id (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersion = utils.generateVersion();
     utils.mockGetVersions(imodelId, undefined, mockedVersion);
     utils.mockGetVersions(imodelId, `?$filter=ChangeSetId+eq+%27${mockedVersion.changeSetId!}%27`, mockedVersion);
@@ -151,7 +152,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version[0].changeSetId).to.be.equal(expectedVersion.changeSetId);
   });
 
-  it("should get named versions with thumbnail id", async () => {
+  it("should get named versions with thumbnail id (#integration)", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
     let versions: Version[] = await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery());
@@ -188,7 +189,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());
   });
 
-  it("should update named version", async function (this: Mocha.ITestCallbackContext) {
+  it("should update named version (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
 

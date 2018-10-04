@@ -7,9 +7,14 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { SVTConfiguration } from "../common/SVTConfiguration";
+import { Config } from "@bentley/imodeljs-clients";
+
+IModelJsConfig.init();
+Config.App.merge(process.env);
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
@@ -36,7 +41,7 @@ export function initializeBackend() {
   // tslint:disable-next-line:no-var-requires
   const svtConfig: SVTConfiguration = require("./public/configuration.json");
   if (svtConfig.customOrchestratorUri)
-    hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, svtConfig.environment || "QA", new UrlFileHandler());
+    hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
 
   IModelHost.startup(hostConfig);
 

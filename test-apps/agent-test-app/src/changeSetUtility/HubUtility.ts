@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IHubProjectConfig, ChangesetGenerationConfig } from "./Config";
+import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients/lib";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { Project, IModelQuery } from "@bentley/imodeljs-clients/lib";
@@ -18,30 +18,28 @@ const actx = new ActivityLoggingContext("");
 export class HubUtility {
     public connectClient: ConnectClient;
     private _hubClient: IModelHubClient;
-    private _projectConfig: IHubProjectConfig;
-    public constructor(projectConfig: IHubProjectConfig) {
-        this.connectClient = new ConnectClient(projectConfig.hubDeploymentEnv);
-        this._hubClient = new IModelHubClient(projectConfig.hubDeploymentEnv, new AzureFileHandler());
-        this._projectConfig = projectConfig;
+    public constructor() {
+        this.connectClient = new ConnectClient();
+        this._hubClient = new IModelHubClient(new AzureFileHandler());
     }
     public getHubClient(): IModelHubClient {
         return this._hubClient;
     }
     public async login(): Promise<AccessToken> {
         // TODO: eventually use OIDC
-        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(this._projectConfig.imsDeploymentEnv)).getToken(actx, this._projectConfig.user.email,
-            this._projectConfig.user.password);
+        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, ChangeSetUtilityConfig.userName,
+            ChangeSetUtilityConfig.userPassword);
         assert(!!authToken);
 
-        const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient(this._projectConfig.imsDeploymentEnv)).getToken(actx, authToken!);
+        const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken!);
         assert(!!accessToken);
 
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Logged in test user ${this._projectConfig.user.email}`);
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Logged in test user ${ChangeSetUtilityConfig.userName}`);
         return accessToken;
     }
     public async createNamedVersion(accessToken: AccessToken, iModelId: string, name: string, description: string): Promise<Version> {
         const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, this._hubClient);
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Creating named version "${name}" on the Hub`);
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Creating named version "${name}" on the Hub`);
         return await this._hubClient.Versions().create(actx, accessToken, new Guid(iModelId), changeSetId, name, description);
     }
     /** Push an iModel to the Hub */
@@ -53,9 +51,9 @@ export class HubUtility {
             await this._hubClient.IModels().delete(actx, accessToken, projectId, iModel.id!);
 
         // Upload a new iModel
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Started pushing test iModel "${iModelName}" to the Hub`);
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Started pushing test iModel "${iModelName}" to the Hub`);
         iModel = await this._hubClient.IModels().create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Finished pushing test iModel "${iModelName} (id:${iModel.wsgId})" to the Hub`);
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Finished pushing test iModel "${iModelName} (id:${iModel.wsgId})" to the Hub`);
         return iModel.wsgId;
     }
     /**

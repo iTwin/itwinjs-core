@@ -45,7 +45,7 @@ async function getIModelId(accessToken: AccessToken, name: string) {
   return new Guid(await utils.getIModelId(accessToken, name));
 }
 
-describe("iModelHub ThumbnailHandler", () => {
+describe("iModelHub ThumbnailHandler  (#integration)", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let accessToken: AccessToken;
   let _projectId: string;
@@ -55,7 +55,8 @@ describe("iModelHub ThumbnailHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   const actx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
       imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());

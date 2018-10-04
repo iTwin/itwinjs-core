@@ -12,12 +12,13 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: IModelDb;
-  let accessToken: AccessToken;
+
+  // tslint:prefer-const:false
+  const accessToken: AccessToken = (AccessToken as any);
   const activityContext = new ActivityLoggingContext("");
 
   before(async () => {
     iModel = IModelTestUtils.openIModel("test.bim");
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
   after(() => {

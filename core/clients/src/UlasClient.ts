@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
-import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
+import { Client } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, Response } from "./Request";
 import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "./UserProfile";
-
+import { Config } from "./Config";
 const loggingCategory: string = "imodeljs-clients.Ulas";
 
 /**
@@ -167,22 +167,15 @@ export interface LogPostingResponse {
  */
 export class UlasClient extends Client {
   public static readonly searchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    // WIP: Is this the right URL?
-    PERF: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-  };
-
+  public static readonly configURL = "imjs_usage_logging_service_url";
+  public static readonly configRegion = "imjs_usage_logging_service_region";
   // Workaround until these values can be read from Policy API
   private readonly _policyIds: ImsPolicyIds = new ImsPolicyIds();
 
   /**
    * Creates an instance of UlasClient.
-   * @param deploymentEnv Deployment environment
    */
-  constructor(public deploymentEnv: DeploymentEnv) { super(deploymentEnv); }
+  constructor() { super(); }
 
   /**
    * WIP: iModelBank might not be able to access the BUDDI service. How to solve that?
@@ -195,8 +188,22 @@ export class UlasClient extends Client {
   /**
    * @returns Default URL for the service.
    */
-  protected getDefaultUrl(): string { return UlasClient._defaultUrlDescriptor[this.deploymentEnv]; }
+  protected getDefaultUrl(): string {
+    if (Config.App.has(UlasClient.configURL))
+      return Config.App.get(UlasClient.configURL);
 
+    throw new Error(`Service URL not set. Set it in Config.App using key ${UlasClient.configURL}`);
+  }
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(UlasClient.configRegion))
+      return Config.App.get(UlasClient.configRegion);
+
+    return undefined;
+  }
   /**
    * Gets the (delegation) access token to access the service
    * @param authorizationToken Authorization token.
@@ -204,7 +211,7 @@ export class UlasClient extends Client {
    */
   public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     alctx.enter();
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
+    const imsClient = new ImsDelegationSecureTokenClient();
     return await imsClient.getToken(alctx, authorizationToken);
   }
 

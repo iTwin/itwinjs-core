@@ -70,7 +70,7 @@ if (serverConfig === undefined) {
   });
 
   // Initialize additional web-specific backend parts
-  Config.devCorsProxyServer = "https://localhost:3001";
+  Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
   setupStandaloneConfiguration();
 
   serverConfig = { port: 3000, baseUrl: "https://localhost" };

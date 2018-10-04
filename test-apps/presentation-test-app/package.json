@@ -42,6 +42,7 @@
     "react-dom": "^16.4.2"
   },
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/build-tools": "0.149.0",
     "@bentley/bwc": "^6.0.3",
     "@bentley/webpack-tools": "0.149.0",

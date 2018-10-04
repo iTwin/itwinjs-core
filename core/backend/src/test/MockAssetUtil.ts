@@ -437,7 +437,5 @@ export class MockAssetUtil {
     iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Users()).returns(() => userInfoHandlerMock.object);
-    const temp = IModelHost.configuration!.hubDeploymentEnv;
-    iModelHubClientMock.setup((f: IModelHubClient) => f.deploymentEnv).returns(() => temp);
   }
 }

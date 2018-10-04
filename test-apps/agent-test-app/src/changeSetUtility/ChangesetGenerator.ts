@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ChangesetGenerationConfig } from "./Config";
+import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { TestChangesetSequence } from "./TestChangesetSequence";
@@ -32,8 +32,8 @@ export class ChangesetGenerator {
     public constructor(private _accessToken: AccessToken, private _hubUtility: HubUtility,
         private _physicalModelId: Id64, private _categoryId: Id64, private _codeSpecId: Id64,
         private _iModelDbHandler: IModelDbHandler = new IModelDbHandler()) {
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, "Initialized Changeset Generator");
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, "--------------------------------------------------------------------------------------------");
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, "Initialized Changeset Generator");
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, "--------------------------------------------------------------------------------------------");
     }
     /** Pushes new change sets to the Hub periodically and sets up named versions */
     public async pushTestChangeSetsAndVersions(projectId: string, iModelId: string, testChangesetSequence: TestChangesetSequence): Promise<boolean> {
@@ -49,10 +49,10 @@ export class ChangesetGenerator {
                     await this.createNamedVersion(iModelId);
 
                 this._currentLevel++;
-                Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Sleeping for ${testChangesetSequence.changesetPushDelay} ms...`);
+                Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Sleeping for ${testChangesetSequence.changesetPushDelay} ms...`);
                 await pause(testChangesetSequence.changesetPushDelay);
             } catch (error) {
-                Logger.logError(ChangesetGenerationConfig.loggingCategory, `Error pushing changeset: ${error}`);
+                Logger.logError(ChangeSetUtilityConfig.loggingCategory, `Error pushing changeset: ${error}`);
             }
         }
         return true;
@@ -74,7 +74,7 @@ export class ChangesetGenerator {
     }
     private async pushTestChangeSet(testChangesetSequence: TestChangesetSequence) {
         const description = ChangesetGenerator._getChangeSetDescription(this._currentLevel, testChangesetSequence);
-        Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Pushing change set "${description}" to the Hub`);
+        Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Pushing change set "${description}" to the Hub`);
         await this._iModelDb!.pushChanges(actx, this._accessToken, () => description);
     }
 

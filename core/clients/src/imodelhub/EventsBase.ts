@@ -5,7 +5,6 @@
 /** @module iModelHubEvents */
 
 import { request, RequestOptions } from "../Request";
-import { Config } from "../Config";
 import { DefaultRequestOptionsProvider } from "../Client";
 import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
 import { BeEvent, ActivityLoggingContext } from "@bentley/bentleyjs-core";
@@ -130,7 +129,7 @@ export abstract class EventBaseHandler {
       return JSON.parse(message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1));
     };
 
-    if (Config.isBrowser) {
+    if (typeof window !== "undefined") {
       options.parser = (_: any, message: any) => parse(message);
     } else {
       options.buffer = true;

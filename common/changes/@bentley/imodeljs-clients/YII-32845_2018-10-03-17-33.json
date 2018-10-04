@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added configuration system to imodeljs and removed urls/credentials",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Affan.Khan@bentley.com"
+}

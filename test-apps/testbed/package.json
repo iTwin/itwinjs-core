@@ -46,6 +46,7 @@
     "save": "^2.3.2"
   },
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/build-tools": "0.149.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",

@@ -60,10 +60,11 @@ process.env.NODE_PATH = (process.env.NODE_PATH || "")
 // Grab NODE_ENV and REACT_APP_* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
 const REACT_APP = /^REACT_APP_/i;
-
+// Grab all the imjs_* var for core and test
+const IMJS = /^imjs_/i;
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
-    .filter(key => REACT_APP.test(key))
+    .filter(key => REACT_APP.test(key) || IMJS.test(key))
     .reduce(
       (env, key) => {
         env[key] = process.env[key];

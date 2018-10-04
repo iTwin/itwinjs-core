@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./ECJsonTypeMap";
 export * from "./Client";
+export * from "./Config";
 export * from "./Token";
 export * from "./UserProfile";
 export * from "./ConnectClients";

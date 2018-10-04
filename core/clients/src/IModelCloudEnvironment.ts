@@ -6,7 +6,6 @@
 import { AccessToken } from "./Token";
 import { UserProfile } from "./UserProfile";
 import { Project } from "./ConnectClients";
-import { DeploymentEnv } from "./Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** @hidden How to discover "contexts". A context corresponds roughly to a "project" in Connect. */
@@ -16,7 +15,7 @@ export interface ContextManagerClient {
 
 /** @hidden User-authorization service. */
 export interface IModelAuthorizationClient {
-  authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken>;
+  authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken>;
 }
 
 /** @hidden All of the services that a frontend or other client app needs to find and access iModels. */

@@ -2,13 +2,12 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
 
-const defaultEnv: DeploymentEnv = "QA";
 const actx = new ActivityLoggingContext("");
 
 /** Credentials for test users */
@@ -17,11 +16,11 @@ export interface UserCredentials {
   password: string;
 }
 
-async function doImsLogin(user: UserCredentials, imsDeploymentEnv: DeploymentEnv): Promise<AccessToken> {
-  const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(imsDeploymentEnv)).getToken(actx, user.email, user.password);
+async function doImsLogin(user: UserCredentials): Promise<AccessToken> {
+  const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, user.email, user.password);
   assert(!!authToken);
 
-  const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient(imsDeploymentEnv)).getToken(actx, authToken!);
+  const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken!);
   assert(!!accessToken);
 
   Logger.logTrace(HubUtility.logCategory, `Logged in test user ${user.email}`);
@@ -33,8 +32,8 @@ export class HubUtility {
 
   public static logCategory = "HubUtility";
 
-  public static async login(user: UserCredentials, imsDeploymentEnv: DeploymentEnv = defaultEnv): Promise<AccessToken> {
-    return getIModelPermissionAbstraction().authorizeUser(actx, undefined, user, imsDeploymentEnv);
+  public static async login(user: UserCredentials): Promise<AccessToken> {
+    return getIModelPermissionAbstraction().authorizeUser(actx, undefined, user);
   }
 
   private static makeDirectoryRecursive(dirPath: string) {
@@ -328,8 +327,8 @@ export class HubUtility {
 }
 
 class ImsUserMgr {
-  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-    return await doImsLogin(userCredentials, env);
+  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
+    return await doImsLogin(userCredentials);
   }
 }
 

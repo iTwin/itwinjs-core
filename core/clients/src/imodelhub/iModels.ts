@@ -6,7 +6,6 @@
 
 import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
-import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
@@ -426,7 +425,7 @@ export class IModelHandler {
         ArgumentCheck.defined("name", name);
         ArgumentCheck.defined("pathName", pathName);
 
-        if (Config.isBrowser)
+        if (typeof window !== "undefined")
             return Promise.reject(IModelHubClientError.browser());
 
         if (!this._fileHandler)
@@ -516,7 +515,7 @@ export class IModelHandler {
         ArgumentCheck.validGuid("imodelId", imodelId);
         ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
-        if (Config.isBrowser)
+        if (typeof window !== "undefined")
             return Promise.reject(IModelHubClientError.browser());
 
         if (!this._fileHandler)

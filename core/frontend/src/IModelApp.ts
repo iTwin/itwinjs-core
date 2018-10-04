@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { ConnectSettingsClient, DeploymentEnv, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { dispose } from "@bentley/bentleyjs-core";
+import { ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
 import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "./AccuDraw";
@@ -52,8 +52,6 @@ export class IModelApp {
   public static applicationId: string;
 
   /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels. */
-  public static hubDeploymentEnv: DeploymentEnv = "QA";
-
   public static readonly features = new FeatureGates();
   public static readonly tools = new ToolRegistry();
   protected static _imodelClient?: IModelClient;
@@ -62,9 +60,7 @@ export class IModelApp {
   /** IModelClient to be used for all frontend operations */
   public static get iModelClient(): IModelClient {
     if (!this._imodelClient)
-      this._imodelClient = new IModelHubClient(this.hubDeploymentEnv);
-    else if (this._imodelClient.deploymentEnv !== this.hubDeploymentEnv)
-      throw new IModelError(RepositoryStatus.ServerUnavailable);
+      this._imodelClient = new IModelHubClient();
     return this._imodelClient;
   }
 
@@ -106,7 +102,7 @@ export class IModelApp {
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!IModelApp.applicationId) IModelApp.applicationId = "IModelJsApp";
-    if (!IModelApp.settingsAdmin) IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.hubDeploymentEnv, IModelApp.applicationId);
+    if (!IModelApp.settingsAdmin) IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();

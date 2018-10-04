@@ -5,7 +5,6 @@
 "use strict";
 
 const chalk = require("chalk");
-
 exports.command = "build <target>";
 exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>

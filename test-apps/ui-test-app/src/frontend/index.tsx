@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
+import { Config, KnownRegions } from "@bentley/imodeljs-clients";
 
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
@@ -37,6 +37,17 @@ import { MeasurePointsTool } from "./tools/MeasurePoints";
 import oidcSettings from "./utils/oidcSettings";
 
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
+
+Config.App.merge({
+    imjs_host_name: "ConnectClientJsApi",
+    imjs_host_version: "1.0",
+    imjs_host_guid: "ConnectClientJsApiGuid",
+    imjs_host_device_id: "ConnectClientJsApiDeviceId",
+    imjs_host_relying_party_uri: "https://connect-wsg20.bentley.com",
+    imjs_buddi_url: "https://buddi.bentley.com/WebService",
+    imjs_buddi_resolve_url_using_region: KnownRegions.QA,
+    imjs_use_host_relying_party_uri_as_fallback: true,
+});
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
@@ -135,7 +146,7 @@ export class SampleAppIModelApp extends IModelApp {
 
         // Configure a CORS proxy in development mode.
         if (process.env.NODE_ENV === "development")
-            ClientConfig.devCorsProxyServer = `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`; // By default, this will run on port 3001
+            Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`); // By default, this will run on port 3001
     }
 
     public static async initialize() {

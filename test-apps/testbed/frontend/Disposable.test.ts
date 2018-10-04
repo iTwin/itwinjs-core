@@ -113,13 +113,12 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 }
 
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
-describe("Disposal of System", () => {
+describe("Disposal of System (#integration)", () => {
   before(async () => {
     viewDiv = document.createElement("div") as HTMLDivElement;
     assert(null !== viewDiv);
     viewDiv!.style.width = viewDiv!.style.height = "1000px";
     document.body.appendChild(viewDiv!);
-
     WebGLTestContext.startup();
 
     await TestData.load();
@@ -133,7 +132,7 @@ describe("Disposal of System", () => {
     WebGLTestContext.shutdown();
   });
 
-  it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
+  it("expect rendersystem disposal to trigger disposal of textures cached in id-map (#integration)", async () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
@@ -167,7 +166,7 @@ describe("Disposal of System", () => {
   });
 });
 
-describe("Disposal of WebGL Resources", () => {
+describe("Disposal of WebGL Resources (#integration)", () => {
   before(async () => {
     viewDiv = document.createElement("viewDiv") as HTMLDivElement;
     viewDiv!.style.width = viewDiv!.style.height = "1000px";
@@ -188,7 +187,7 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
-  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
+  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources (#integration)", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;
@@ -234,7 +233,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(tileGraphic));
   });
 
-  it("expect disposal of target to trigger disposal of only owned resources", async () => {
+  it("expect disposal of target to trigger disposal of only owned resources (#integration)", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;

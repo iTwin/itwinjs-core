@@ -24,6 +24,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/config-loader",
+      "projectFolder": "tools/config-loader",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",

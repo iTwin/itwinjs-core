@@ -8,7 +8,6 @@ const path = require("path");
 const chalk = require("chalk");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { spawnStmux } = require("./utils/tmuxUtils");
-
 exports.command = "start";
 exports.describe = chalk.bold("Runs the app in development mode.");
 exports.builder = (yargs) =>

@@ -4,6 +4,6 @@
   "port": 3002,
   "keyFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.key",
   "certFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.crt",
-  "adminConnectUserName": "Regular.IModelJsTestUser@mailinator.com",
-  "adminConnectUserPassword": "Regular@iMJs"
+  "adminConnectUserName": "${imjs_test_regular_user_name}",
+  "adminConnectUserPassword": "${imjs_test_regular_user_password}"
 }

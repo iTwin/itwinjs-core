@@ -494,12 +494,6 @@
       "outFiles": [
         "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
       ],
-      "args": [
-        "--listenFor=45000",
-        "--email=Regular.IModelJsTestUser@mailinator.com",
-        "--password=Regular@iMJs",
-        "--listen_time=40000"
-      ],
       "protocol": "inspector"
     },
     {

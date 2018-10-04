@@ -7,7 +7,7 @@
 import { IModelHubClient } from "@bentley/imodeljs-clients";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 
-const imodelHubClient = new IModelHubClient("PROD", new AzureFileHandler());
+const imodelHubClient = new IModelHubClient(new AzureFileHandler());
 // __PUBLISH_EXTRACT_END__
 () => {
   if (!imodelHubClient)

@@ -202,9 +202,18 @@ export class ResponseError extends BentleyError {
  * @throws ResponseError if the request fails due to network issues, or if the
  * returned status is *outside* the range of 200-299 (inclusive)
  */
-export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
+export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions, skipCorsProxy: boolean = false): Promise<Response> {
   alctx.enter();
-  const proxyUrl = Config.devCorsProxyServer ? Config.devCorsProxyServer + url : url;
+  let proxyUrl = "";
+  if (skipCorsProxy === false) {
+    proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
+    if (proxyUrl === "")
+      proxyUrl = url;
+    else
+      proxyUrl = proxyUrl.replace(/\/$/, "") + "/" + url;
+  } else {
+    proxyUrl = url;
+  }
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, options.retryCallback);
 
   if (options.headers) {
@@ -282,7 +291,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (Config.isBrowser) {
+    if (typeof window !== "undefined") {
       throw new Error("This option is not supported on browsers");
     }
 
@@ -307,7 +316,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   }
 
   if (options.stream) {
-    if (Config.isBrowser) {
+    if (typeof window !== "undefined") {
       throw new Error("This option is not supported on browsers");
     }
 

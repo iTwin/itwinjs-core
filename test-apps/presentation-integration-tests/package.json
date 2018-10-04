@@ -53,6 +53,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/build-tools": "0.149.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",

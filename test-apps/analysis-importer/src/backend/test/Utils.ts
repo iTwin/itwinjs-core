@@ -8,7 +8,7 @@ import { OpenMode, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core"
 import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
-import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken } from "@bentley/imodeljs-clients";
 
 export interface IModelTestUtilsOpenOptions {
     copyFilename?: string;
@@ -63,10 +63,10 @@ export class IModelTestUtils {
     }
 
     // __PUBLISH_EXTRACT_START__ Bridge.getAccessToken.example-code
-    public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(activityContext, userCredentials.email, userCredentials.password);
+    public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any): Promise<AccessToken> {
+        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(activityContext, userCredentials.email, userCredentials.password);
         assert(authToken);
-        const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(activityContext, authToken!);
+        const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(activityContext, authToken!);
         assert(accessToken);
         return accessToken;
     }

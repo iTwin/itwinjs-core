@@ -7,7 +7,6 @@ import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
-import { ProjectApi } from "./ProjectApi";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
@@ -16,7 +15,7 @@ export class IModelApi {
 
   /** Initialize the iModelHub Api */
   public static async init(): Promise<void> {
-    IModelApi._hubClient = new IModelHubClient(ProjectApi.hubDeploymentEnv);
+    IModelApi._hubClient = new IModelHubClient();
   }
 
   /** Get all iModels in a project */

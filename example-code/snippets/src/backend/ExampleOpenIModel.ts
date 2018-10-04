@@ -7,18 +7,18 @@ import { OpenMode, EnvMacroSubst, ActivityLoggingContext, Guid } from "@bentley/
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 
 // __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
-import { AccessToken, DeploymentEnv, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config } from "@bentley/imodeljs-clients";
 
 interface UserCredentials {
     email: string;
     password: string;
 }
 
-async function getUserAccessToken(userCredentials: UserCredentials, env: DeploymentEnv): Promise<AccessToken> {
+async function getUserAccessToken(userCredentials: UserCredentials): Promise<AccessToken> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(alctx, userCredentials.email, userCredentials.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx, userCredentials.email, userCredentials.password);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(alctx, authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(alctx, authToken!);
 
     return accessToken;
 }
@@ -67,8 +67,8 @@ function configureIModel() {
 }
 
 // Call the above functions, to avoid lint errors.
-const cred = { email: "Regular.IModelJsTestUser@mailinator.com", password: "Regular@iMJs" };
-getUserAccessToken(cred, "PROD").then((_accessToken: AccessToken) => {
+const cred = { email: Config.App.getString("imjs_test_regular_user_name"), password: Config.App.getString("imjs_test_regular_user_password") };
+getUserAccessToken(cred).then((_accessToken: AccessToken) => {
 });
 
 configureIModel();

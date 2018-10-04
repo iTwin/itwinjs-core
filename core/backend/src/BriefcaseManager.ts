@@ -220,7 +220,7 @@ export class BriefcaseManager {
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
       // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      this._imodelClient = new IModelHubClient(IModelHost.configuration ? IModelHost.configuration.hubDeploymentEnv : "PROD", new AzureFileHandler(false));
+      this._imodelClient = new IModelHubClient(new AzureFileHandler(false));
     }
     return this._imodelClient;
   }
@@ -236,7 +236,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._connectClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._connectClient = new ConnectClient(IModelHost.configuration.hubDeploymentEnv);
+      BriefcaseManager._connectClient = new ConnectClient();
     }
     return BriefcaseManager._connectClient;
   }

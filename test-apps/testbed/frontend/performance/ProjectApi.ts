@@ -5,8 +5,6 @@
 import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
-export type DeploymentEnv = "DEV" | "QA";
-
 export enum ProjectScope {
   Favorites,
   MostRecentlyUsed,
@@ -18,11 +16,10 @@ export class ProjectApi {
   private static _connectClient: ConnectClient;
 
   /** Deployment environment to use for Connect and iModelHub */
-  public static hubDeploymentEnv: DeploymentEnv = "QA";
 
   // Initialize the project Api
   public static async init(): Promise<void> {
-    ProjectApi._connectClient = new ConnectClient(ProjectApi.hubDeploymentEnv);
+    ProjectApi._connectClient = new ConnectClient();
   }
 
   public static async getProjectByName(accessToken: AccessToken, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {

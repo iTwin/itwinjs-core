@@ -15,7 +15,7 @@ class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
-const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
+const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const username: string = "";
 const password: string = "";

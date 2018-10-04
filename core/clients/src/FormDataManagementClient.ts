@@ -5,10 +5,10 @@
 /** @module FormDataManagementService */
 
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Config } from "./Config";
 
 /** FormDefinition */
 @ECJsonTypeMap.classToJson("wsg", "Forms_EC_Mapping.FormDefinition", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -92,19 +92,14 @@ export class FormInstanceData extends WsgInstance {
  */
 export class FormDataManagementClient extends WsgClient {
   public static readonly searchKey: string = "Forms.WSGService";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-formswsg-eus.cloudapp.net",
-    QA: "https://qa-formswsg-eus.cloudapp.net",
-    PROD: "https://connect-formswsg.bentley.com",
-    PERF: "https://perf-formswsg-eus.cloudapp.net",
-  };
-
+  public static readonly configURL = "imjs_form_data_management_url";
+  public static readonly configRelyingPartyUri = "imjs_form_data_management_relying_party_uri";
+  public static readonly configRegion = "imjs_form_data_management_region";
   /**
    * Creates an instance of RealityDataServicesClient.
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", FormDataManagementClient._defaultUrlDescriptor[deploymentEnv] + "/");
+  public constructor() {
+    super("v2.5");
   }
 
   /**
@@ -120,7 +115,37 @@ export class FormDataManagementClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return FormDataManagementClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(FormDataManagementClient.configURL))
+      return Config.App.get(FormDataManagementClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${FormDataManagementClient.configURL}`);
+  }
+
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(FormDataManagementClient.configRegion))
+      return Config.App.get(FormDataManagementClient.configRegion);
+
+    return undefined;
+  }
+
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(FormDataManagementClient.configRelyingPartyUri))
+      return Config.App.get(FormDataManagementClient.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${FormDataManagementClient.configRelyingPartyUri}`);
   }
 
   /**

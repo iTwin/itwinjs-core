@@ -12,11 +12,15 @@
     },
     {
       "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/bwc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/config-loader",
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
@@ -369,6 +373,10 @@
     {
       "name": "json-schema-faker",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "json5",
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "license-webpack-plugin",

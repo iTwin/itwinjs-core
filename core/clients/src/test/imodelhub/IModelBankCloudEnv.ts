@@ -10,7 +10,6 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelClient } from "../../IModelClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { IModelBankClient } from "../../IModelBank";
-import { TestConfig } from "../TestConfig";
 import { workDir } from "./TestUtils";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 
@@ -51,7 +50,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   child_process.spawn("node", cmdargs, { stdio: "inherit" });
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
-  const bankClient = new IModelBankClient(orchestratorUrl, TestConfig.deploymentEnv, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {

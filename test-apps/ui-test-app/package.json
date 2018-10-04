@@ -31,6 +31,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/webpack-tools": "0.149.0",
     "@bentley/dev-cors-proxy-server": "0.0.7",
     "@bentley/build-tools": "0.149.0",

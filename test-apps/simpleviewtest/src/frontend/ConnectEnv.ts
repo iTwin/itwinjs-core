@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, DeploymentEnv } from "@bentley/imodeljs-clients/lib";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken } from "@bentley/imodeljs-clients/lib";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { showStatus } from "./Utils";
@@ -56,8 +56,8 @@ async function loginToConnect(state: SimpleViewState, userName: string, password
   // tslint:disable-next-line:no-console
   console.log("Attempting login with userName", userName, "password", password);
 
-  const authClient = new ImsActiveSecureTokenClient("QA");
-  const accessClient = new ImsDelegationSecureTokenClient("QA");
+  const authClient = new ImsActiveSecureTokenClient();
+  const accessClient = new ImsDelegationSecureTokenClient();
 
   const authToken: AuthorizationToken = await authClient.getToken(alctx, userName, password);
   state.accessToken = await accessClient.getToken(alctx, authToken);
@@ -67,11 +67,10 @@ export async function initializeIModelHub(state: SimpleViewState): Promise<void>
   showStatus("logging in as", state.projectConfig!.userName);
   await loginToConnect(state, state.projectConfig!.userName, state.projectConfig!.password);
 
-  const env: DeploymentEnv = IModelApp.hubDeploymentEnv;
-  _connectClient = new ConnectClient(env);
+  _connectClient = new ConnectClient();
 
   showStatus("opening Project", state.projectConfig!.projectName);
   state.project = await getProjectByName(state.accessToken!, ProjectScope.Invited, state.projectConfig!.projectName);
 
-  IModelApp.iModelClient = new IModelHubClient(env);
+  IModelApp.iModelClient = new IModelHubClient();
 }

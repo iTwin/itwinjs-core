@@ -34,10 +34,10 @@ describe("OidcClient (#integration)", () => {
 
   const validateToken = async (accessToken: AccessToken) => {
     const testProjectName = "iModelJsTest";
-    const connectClient = new ConnectClient("QA");
-    const rbacClient = new RbacClient("QA");
+    const connectClient = new ConnectClient();
+    const rbacClient = new RbacClient();
     const testIModelName = "ReadOnlyTest";
-    const hubClient = new IModelHubClient("QA");
+    const hubClient = new IModelHubClient();
 
     // Validate access to Connect
     const queryOptions: ConnectRequestQueryOptions = {
@@ -56,21 +56,12 @@ describe("OidcClient (#integration)", () => {
   };
 
   it("should setup its URLs correctly", async () => {
-    let url: string = await new OidcClient(samlDelegationConfiguration, "DEV").getUrl(actx);
-    chai.expect(url).equals("https://qa-imsoidc.bentley.com");
-
-    url = await new OidcClient(samlDelegationConfiguration, "QA").getUrl(actx);
-    chai.expect(url).equals("https://qa-imsoidc.bentley.com");
-
-    url = await new OidcClient(samlDelegationConfiguration, "PROD").getUrl(actx);
-    chai.expect(url).equals("https://imsoidc.bentley.com");
-
-    url = await new OidcClient(samlDelegationConfiguration, "PERF").getUrl(actx);
+    const url: string = await new OidcClient(samlDelegationConfiguration).getUrl(actx);
     chai.expect(url).equals("https://qa-imsoidc.bentley.com");
   });
 
   it("should discover token end points correctly", async () => {
-    const client = new OidcClient(samlDelegationConfiguration, "QA");
+    const client = new OidcClient(samlDelegationConfiguration);
     const url: string = await client.getUrl(actx);
 
     const issuer: Issuer = await client.discoverEndpoints(actx);
@@ -82,23 +73,23 @@ describe("OidcClient (#integration)", () => {
 
   it("should exchange SAML tokens for OIDC tokens", async () => {
     // Test that the SAML token works
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(actx, testUser.email, testUser.password);
-    const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(actx, authToken);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, testUser.email, testUser.password);
+    const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
     await validateToken(samlToken);
 
     // Test that the OIDC tokens exchanged from SAML tokens work
-    const client = new OidcClient(samlDelegationConfiguration, "QA");
+    const client = new OidcClient(samlDelegationConfiguration);
     const scope = "openid email profile organization context-registry-service imodelhub rbac-service";
     const jwt: AccessToken = await client.getJwtForImsUser(actx, testUser.email, testUser.password, scope);
     await validateToken(jwt);
   });
 
   it.skip("should exchange OIDC tokens for SAML tokens", async () => {
-    const clientSamlToOAuth = new OidcClient(samlDelegationConfiguration, "QA");
+    const clientSamlToOAuth = new OidcClient(samlDelegationConfiguration);
     const scopeSamlToOAuth = "openid email profile organization";
     const jwt = await clientSamlToOAuth.getJwtForImsUser(actx, testUser.email, testUser.password, scopeSamlToOAuth);
 
-    const clientOAuthToSaml = new OidcClient(oauthDelegationConfiguration, "QA");
+    const clientOAuthToSaml = new OidcClient(oauthDelegationConfiguration);
     const scopeOAuthToSaml = "context-registry-service"; // Will this work for imodelhub, rbac-service?
     const saml = await clientOAuthToSaml.getSamlFromJwt(actx, jwt, scopeOAuthToSaml);
 
@@ -106,11 +97,11 @@ describe("OidcClient (#integration)", () => {
   });
 
   it.skip("should get OIDC delegation tokens", async () => {
-    const clientSamlToOAuth = new OidcClient(samlDelegationConfiguration, "QA");
+    const clientSamlToOAuth = new OidcClient(samlDelegationConfiguration);
     const scopeSamlToOAuth = "openid email profile organization";
     const jwt = await clientSamlToOAuth.getJwtForImsUser(actx, testUser.email, testUser.password, scopeSamlToOAuth);
 
-    const clientOAuthDelegation = new OidcClient(oauthDelegationConfiguration, "QA");
+    const clientOAuthDelegation = new OidcClient(oauthDelegationConfiguration);
     const scopeOAuthDelegation = "context-registry-service imodelhub rbac-service"; // Can I get a delegation token for multiple services?
     const saml = await clientOAuthDelegation.getDelegationJwt(actx, jwt, scopeOAuthDelegation);
 

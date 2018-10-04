@@ -39,6 +39,7 @@
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/build-tools": "0.149.0",
     "@bentley/dev-cors-proxy-server": "0.0.7",
     "@types/body-parser": "^1.17.0",

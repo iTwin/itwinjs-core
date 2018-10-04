@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
 import * as deepAssign from "deep-assign";
-
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { Logger, HttpStatus, WSStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
+import { DefaultRequestOptionsProvider, AuthenticationError, Client } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
 const loggingCategory = "imodeljs-clients.Clients";
@@ -197,19 +196,18 @@ export interface WsgRequestOptions {
  * Base class for Client implementations of services that are based on WSG
  */
 export abstract class WsgClient extends Client {
+  public static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
+  public static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
   protected _url?: string;
 
   /**
    * Creates an instance of Client.
-   * @param deploymentEnv Deployment environment
    * @param apiVersion ApiVersion if the service supports it
-   * @param relyingPartyUri Relying party URI if required by the service.
    */
-  protected constructor(public deploymentEnv: DeploymentEnv, public apiVersion: string, public relyingPartyUri: string) {
-    super(deploymentEnv);
+  protected constructor(public apiVersion: string) {
+    super();
     this.apiVersion = apiVersion;
-    this.relyingPartyUri = relyingPartyUri;
   }
 
   /**
@@ -223,6 +221,13 @@ export abstract class WsgClient extends Client {
       WsgClient._defaultWsgRequestOptionsProvider = new DefaultWsgRequestOptionsProvider();
     return WsgClient._defaultWsgRequestOptionsProvider.assignOptions(options);
   }
+
+  /**
+   * Implemented by clients to specify the relyingPartyUrl for the service.
+   * @protected
+   * @returns Default relyingPartyUrl for the service.
+   */
+  protected abstract getRelyingPartyUrl(): string;
 
   /**
    * Gets the URL of the service.
@@ -253,8 +258,8 @@ export abstract class WsgClient extends Client {
    * @returns Resolves to the (delegation) access token.
    */
   public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(alctx, authorizationToken, this.relyingPartyUri);
+    const imsClient = new ImsDelegationSecureTokenClient();
+    return imsClient.getToken(alctx, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */

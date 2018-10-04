@@ -6,6 +6,10 @@ import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelTileRpcInterface, IModelReadRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Config } from "@bentley/imodeljs-clients";
+IModelJsConfig.init(); // Read config into process.env
+Config.App.merge(process.env);
 
 // initialize logging
 Logger.initializeToConsole();
@@ -23,7 +27,7 @@ IModelHost.startup();
     init = (await import("./web/WebServer")).default;
   }
   // get RPCs supported by this backend
-  const rpcs = [ IModelTileRpcInterface, IModelReadRpcInterface ];
+  const rpcs = [IModelTileRpcInterface, IModelReadRpcInterface];
   // do initialize
   init(rpcs);
 })();

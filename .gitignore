@@ -7,6 +7,7 @@ node_modules
 /ui/**/lib
 /presentation/**/lib
 /example-code/**/lib
+/tools/config-loader/lib
 /test-apps/**/lib
 /core/geometry/src/test/output
 /core/backend/src/test/output

@@ -44,7 +44,7 @@ describe("Testbed", function () {
     });
   }
 
-  it("TestData should load", async () => {
+  it("TestData should load (#integration)", async () => {
     await TestData.load();
   });
 });

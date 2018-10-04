@@ -11,7 +11,8 @@ import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 
-describe("PromiseMemoizer", () => {
+// Require Dev envirnomet
+describe.skip("PromiseMemoizer", () => {
   let accessTokenRegular: AccessToken;
   let accessTokenManager: AccessToken;
 

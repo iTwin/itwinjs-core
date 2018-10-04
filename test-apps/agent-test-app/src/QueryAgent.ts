@@ -23,22 +23,19 @@ export class QueryAgent {
     private _iModelId?: string;
     private _iModelDb?: IModelDb;
     private _hubUtility: HubUtility;
-    private _config: QueryAgentConfig;
     private _isInitialized: boolean = false;
-    public constructor(config: QueryAgentConfig, hubUtility = new HubUtility(config)) {
-        this._config = config;
+    public constructor(hubUtility = new HubUtility()) {
         this._hubUtility = hubUtility;
         Logger.initializeToConsole();
         Logger.setLevelDefault(LogLevel.Error);
         Logger.setLevel(QueryAgentConfig.loggingCategory, LogLevel.Trace);
 
-        if (config.hubDeploymentEnv === "DEV") {
+        if (process.env.NODE_ENV === "development") {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
             Logger.logTrace(QueryAgentConfig.loggingCategory, "Setting NODE_TLS_REJECT_UNAUTHORIZED = 0");
         }
         // Startup IModel Host if we need to
         const configuration = new IModelHostConfiguration();
-        configuration.hubDeploymentEnv = config.hubDeploymentEnv;
         if (!IModelHost.configuration)
             IModelHost.startup(configuration);
     }
@@ -91,12 +88,12 @@ export class QueryAgent {
                 this._tokenStore = tokenStore;
 
                 const accessToken: AccessToken = await this._tokenStore.getAccessToken();
-                this._projectId = await this._hubUtility.queryProjectIdByName(accessToken, this._config.projectName);
-                this._iModelId = await this._hubUtility.queryIModelIdByName(accessToken, this._projectId, this._config.iModelName);
-                Logger.logTrace(QueryAgentConfig.loggingCategory, `Query Agent Intialized with event subscriptions for ${this._config.iModelName}`);
+                this._projectId = await this._hubUtility.queryProjectIdByName(accessToken, QueryAgentConfig.projectName);
+                this._iModelId = await this._hubUtility.queryIModelIdByName(accessToken, this._projectId, QueryAgentConfig.iModelName);
+                Logger.logTrace(QueryAgentConfig.loggingCategory, `Query Agent Intialized with event subscriptions for ${QueryAgentConfig.iModelName}`);
                 this._isInitialized = true;
             } catch (error) {
-                const errorStr = `Unable to verify IModel:'${this._config.iModelName}', for project '${this._config.projectName}' exists in the iModel Hub: ${error}`;
+                const errorStr = `Unable to verify IModel:'${QueryAgentConfig.iModelName}', for project '${QueryAgentConfig.projectName}' exists in the iModel Hub: ${error}`;
                 Logger.logError(QueryAgentConfig.loggingCategory, errorStr);
                 throw errorStr;
             }

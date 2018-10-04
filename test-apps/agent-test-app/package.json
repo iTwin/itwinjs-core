@@ -2,16 +2,6 @@
   "name": "agent-test-app",
   "description": "Demonstrates using iModel.js to create an agent",
   "license": "MIT",
-  "config": {
-    "port": "3000",
-    "listen_time": "40000",
-    "ims_deployment_env": "QA",
-    "hub_deployment_env": "QA",
-    "imodel_name": "QueryAgentTestIModel",
-    "project_name": "NodeJsTestProject",
-    "email": "Regular.IModelJsTestUser@mailinator.com",
-    "password": "Regular@iMJs"
-  },
   "scripts": {
     "build": "tsc --rootDir ./src 1>&2",
     "clean": "rimraf lib",
@@ -48,6 +38,7 @@
     "react": "^16.4.2"
   },
   "devDependencies": {
+    "@bentley/config-loader": "0.149.0",
     "@bentley/build-tools": "0.149.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",

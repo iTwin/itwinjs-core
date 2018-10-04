@@ -15,11 +15,9 @@ import * as session from "express-session";
 /** Container class for web server and the iModelJS backend run in the QueryAgent */
 export class QueryAgentWebServer {
     private _server: any;
-    private _config: QueryAgentConfig;
     private _agent: QueryAgent;
 
-    public constructor(app: express.Express, config: QueryAgentConfig = new QueryAgentConfig(), agent: QueryAgent = new QueryAgent(config)) {
-        this._config = config;
+    public constructor(app: express.Express, agent: QueryAgent = new QueryAgent()) {
         this._agent = agent;
         // Enable CORS for all apis
         app.all("/*", (_req, res, next) => {
@@ -37,7 +35,7 @@ export class QueryAgentWebServer {
 
         app.get("/ping", (_request, response) => response.status(200).send("Success"));
 
-        app.set("port", this._config.port);
+        app.set("port", QueryAgentConfig.port);
     }
 
     public async start(app: express.Express) {
@@ -155,7 +153,7 @@ export class QueryAgentWebServer {
 
         // Initialize the iModelJS backend sitting behind this web server
         try {
-            await this._agent.listenForAndHandleChangesets(this._tokenStore, this._config.listenTime);
+            await this._agent.listenForAndHandleChangesets(this._tokenStore, QueryAgentConfig.listenTime);
         } catch (error) {
             return false;
         }

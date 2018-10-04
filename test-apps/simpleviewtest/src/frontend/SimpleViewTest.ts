@@ -101,7 +101,6 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 async function openIModel(state: SimpleViewState) {
   await retrieveProjectConfiguration();
   configuration.iModelName = activeViewState.projectConfig!.iModelName;
-  IModelApp.hubDeploymentEnv = configuration.environment || "QA";
   if (configuration.customOrchestratorUri)
     await initializeCustomCloudEnv(state, configuration.customOrchestratorUri);
   else
@@ -1763,7 +1762,7 @@ async function main() {
   } else {
     const uriPrefix = configuration.customOrchestratorUri;
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.devCorsProxyServer = "https://localhost:3001";
+    Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())

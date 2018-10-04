@@ -6,10 +6,8 @@
 
 import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError } from "./Errors";
-
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
@@ -246,7 +244,7 @@ export class BriefcaseHandler {
     ArgumentCheck.defined("briefcase", briefcase);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
-    if (Config.isBrowser)
+    if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

@@ -73,7 +73,7 @@ describe("ApplyChangeSets (#integration)", () => {
     await testAllChangeSetOperations(accessToken, projectId, iModelId);
   };
 
-  it("should test all change set operations after downloading iModel from the hub", async () => {
+  it("should test all change set operations after downloading iModel from the hub  (#integration)", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
 
     const accessToken = await IModelTestUtils.getTestUserAccessToken();

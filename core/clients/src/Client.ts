@@ -4,23 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
 import * as deepAssign from "deep-assign";
-
 import { AccessToken } from "./Token";
 import { Config } from "./Config";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** The deployment environment of the services - this also identifies the URL location of the service */
-export type DeploymentEnv = "DEV" | "QA" | "PROD" | "PERF";
+export enum KnownRegions {
+  DEV = 103,
+  QA = 102,
+  PROD = 0,
+  PERF = 294,
+}
 
 const loggingCategory = "imodeljs-clients.Clients";
-
-/**
- * Container to hold service URLs for deployment environments
- */
-export class UrlDescriptor {
-  [deploymentEnv: string]: string;
-}
 
 /** Provider for default RequestOptions, used by Client to set defaults.
  */
@@ -33,8 +30,8 @@ export class DefaultRequestOptionsProvider {
     this._defaultOptions = {
       method: "GET",
       headers: {
-        "Mas-App-Guid": Config.host.guid,
-        "Mas-Uuid": Config.host.deviceId,
+        "Mas-App-Guid": Config.App.get("imjs_connect_app_guid"),
+        "Mas-Uuid": Config.App.get("imjs_connect_device_id"),
         // "User-Agent": Config.host.name + "/" + Config.host.version + " (" + Config.host.description + ")",
       },
     };
@@ -63,10 +60,8 @@ export abstract class Client {
 
   /**
    * Creates an instance of Client.
-   * @param deploymentEnv Deployment environment
    */
-  protected constructor(public deploymentEnv: DeploymentEnv) {
-    this.deploymentEnv = deploymentEnv;
+  protected constructor() {
   }
 
   /**
@@ -96,6 +91,12 @@ export abstract class Client {
   protected abstract getUrlSearchKey(): string; // same as the URL Discovery Service ("Buddi") name
 
   /**
+   * Implemented by clients to specify the region for the service.
+   * @protected
+   * @returns region id for the service to be used with url discovery.
+   */
+  protected abstract getRegion(): number | undefined;
+  /**
    * Gets the URL of the service. Attempts to discover and cache the URL from the URL Discovery Service. If not
    * found uses the default URL provided by client implementations. Note that for consistency
    * sake, the URL is stripped of any trailing "/"
@@ -106,11 +107,10 @@ export abstract class Client {
       return Promise.resolve(this._url);
     }
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient("PROD");
+    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     // todo: Investigate why QA/DEV are not working
     const searchKey: string = this.getUrlSearchKey();
-
-    return urlDiscoveryClient.discoverUrl(alctx, searchKey, this.deploymentEnv)
+    return urlDiscoveryClient.discoverUrl(alctx, searchKey, this.getRegion())
       .then((url: string): Promise<string> => {
         this._url = url;
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
@@ -148,22 +148,14 @@ export class AuthenticationError extends ResponseError {
  * (a.k.a. Buddi service)
  */
 export class UrlDiscoveryClient extends Client {
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-buddi-eus2.cloudapp.net/WebService",
-    QA: "https://qa-buddi-eus2.cloudapp.net/WebService",
-    PROD: "https://buddi.bentley.com/WebService",
-    PERF: "https://qa-buddi-eus2.cloudapp.net/WebService",
-  };
-
-  private static readonly _regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
-
+  public static readonly configURL = "imjs_buddi_url";
+  public static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
+  public static readonly configRegion = "imjs_buddi_region";
   /**
-   * Creates an instance of UrlDiscoveryClient. Note that clients should almost always
-   * use "PROD" deployment of the service, and that's setup as the default configuration.
-   * @param deploymentEnv Deployment environment.
+   * Creates an instance of UrlDiscoveryClient.
    */
-  public constructor(public deploymentEnv: DeploymentEnv = "PROD") {
-    super(deploymentEnv);
+  public constructor() {
+    super();
   }
 
   /**
@@ -179,9 +171,22 @@ export class UrlDiscoveryClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return UrlDiscoveryClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(UrlDiscoveryClient.configURL))
+      return Config.App.get(UrlDiscoveryClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${UrlDiscoveryClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(UrlDiscoveryClient.configRegion))
+      return Config.App.get(UrlDiscoveryClient.configRegion);
+
+    return KnownRegions.PROD; // return production
+  }
   /**
    * Gets the URL for the discovery service
    * @returns URL of the discovery service.
@@ -193,24 +198,23 @@ export class UrlDiscoveryClient extends Client {
   /**
    * Discovers a URL given the search key.
    * @param searchKey Search key registered for the service.
-   * @param searchDeploymentEnv The deployment environment to search for.
    * @returns Registered URL for the service.
    */
-  public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, searchDeploymentEnv: string): Promise<string> {
+  public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
-
+    const resolvedRegion = regionId ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion);
     const options: RequestOptions = {
       method: "GET",
       qs: {
         url: searchKey,
-        region: UrlDiscoveryClient._regionMap[searchDeploymentEnv],
+        region: resolvedRegion,
       },
     };
     await this.setupOptionDefaults(options);
     alctx.enter();
 
-    const response: Response = await request(alctx, url, options);
+    const response: Response = await request(alctx, url, options, true);
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
 
     return Promise.resolve(discoveredUrl);
