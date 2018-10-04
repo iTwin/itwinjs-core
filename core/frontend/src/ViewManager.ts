@@ -12,8 +12,9 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "./ViewState";
+import { DrawingViewState, OrthographicViewState, SpatialViewState } from "./ViewState";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { SheetViewState } from "./Sheet";
 
 /** Interface for drawing "decorations" into, or on top of, the active views.
  * Decorators generate Decorations.

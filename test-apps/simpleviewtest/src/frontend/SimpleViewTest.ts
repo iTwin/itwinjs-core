@@ -1177,8 +1177,8 @@ class IncidentMarker extends Marker {
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
   }
 
-  public onDecorate(context: DecorateContext) {
-    super.onDecorate(context);
+  public addMarker(context: DecorateContext) {
+    super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
     builder.setSymbology(ColorDef.white, this._color, 1);

@@ -3,62 +3,33 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64String, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Code,
-  CodeSpec,
-  ElementProps,
-  ElementAspectProps,
-  IModel,
-  IModelProps,
-  IModelVersion,
-  ModelProps,
-  IModelError,
-  IModelStatus,
-  AxisAlignedBox3d,
-  EntityQueryParams,
-  EntityProps,
-  ViewQueryParams,
-  ViewDefinitionProps,
-  FontMap,
-  FontMapProps,
-  FontProps,
-  ElementLoadProps,
-  CreateIModelProps,
-  FilePropertyProps,
-  IModelToken,
-  TileTreeProps,
-  IModelNotFoundResponse,
-  EcefLocation,
-  SnapRequestProps,
-  SnapResponseProps,
-  EntityMetaData,
-  PropertyCallback,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
+  ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  FilePropertyProps, FontMap, FontMapProps, FontProps, IModel, IModelError, IModelNotFoundResponse, IModelProps,
+  IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps, PropertyCallback, SheetProps,
+  SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
   ViewStateData,
-  CategorySelectorProps,
-  ModelSelectorProps,
-  SheetProps,
-  ThumbnailProps,
-  DisplayStyleProps,
 } from "@bentley/imodeljs-common";
+import * as path from "path";
+import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CodeSpecs } from "./CodeSpecs";
+import { ConcurrencyControl } from "./ConcurrencyControl";
+import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
-import { Model } from "./Model";
-import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
-import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
-import { CodeSpecs } from "./CodeSpecs";
 import { Entity } from "./Entity";
-import * as path from "path";
+import { ErrorStatusOrResult, NativeDgnDb, SnapRequest } from "./imodeljs-native-platform-api";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
-import { ConcurrencyControl } from "./ConcurrencyControl";
-import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
-import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { Model } from "./Model";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { KnownLocations } from "./Platform";
-import { IModelJsFs } from "./IModelJsFs";
+import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";

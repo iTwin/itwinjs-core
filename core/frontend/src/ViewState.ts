@@ -3,33 +3,31 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
+
+import { assert, BeTimePoint, Id64, Id64Arg, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d, LowAndHighXYZ, LowAndHighXY,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
+  AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
+  SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
+  ViewFlags, ViewStateData,
 } from "@bentley/imodeljs-common";
-import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState } from "./EntityState";
-import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
-import { ModelSelectorState } from "./ModelSelectorState";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { IModelConnection } from "./IModelConnection";
-import { DecorateContext, SceneContext } from "./ViewContext";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
+import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
-import { Viewport } from "./Viewport";
-import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
-import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { IModelConnection } from "./IModelConnection";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { RenderGraphic } from "./render/System";
-import { Attachments, SheetBorder } from "./Sheet";
-import { TileTree } from "./tile/TileTree";
 import { GraphicType } from "./render/GraphicBuilder";
 import { StandardView, StandardViewId } from "./StandardView";
+import { TileTree } from "./tile/TileTree";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { Viewport } from "./Viewport";
 
 export const enum GridOrientationType {
   View = 0,
@@ -40,6 +38,7 @@ export const enum GridOrientationType {
   GeoCoord = 5,
 }
 
+/** Possible return codes for ViewState methods. */
 export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
@@ -60,8 +59,8 @@ export const enum ViewStatus {
 }
 
 /**
- * Margins for white space to be left around view volumes for ViewDefinition.lookAtVolume.
- * Values mean "percent of view" and must be between 0 and .25.
+ * Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
+ * Values mean "fraction of view size" and must be between 0 and .25.
  */
 export class MarginPercent {
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
@@ -1682,121 +1681,4 @@ export class DrawingViewState extends ViewState2d {
 
   public static get className() { return "DrawingViewDefinition"; }
   public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
-}
-
-/** A view of a SheetModel */
-export class SheetViewState extends ViewState2d {
-  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
-    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
-    // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
-  }
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
-    super(props, iModel, categories, displayStyle);
-    if (categories instanceof SheetViewState) {
-      // we are coming from clone...
-      this.sheetSize = categories.sheetSize.clone();
-      this._attachmentIds = categories._attachmentIds;
-      this._attachments = categories._attachments;
-    } else {
-      this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
-      this._attachmentIds = [];
-      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
-      this._attachments = new Attachments.AttachmentList();
-    }
-  }
-
-  public static get className() { return "SheetViewDefinition"; }
-  public readonly sheetSize: Point2d;
-  private _attachmentIds: Id64Array;
-  private _attachments: Attachments.AttachmentList;
-  private _all3dAttachmentTilesLoaded: boolean = true;
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
-
-  /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
-  public markAttachment3dSceneIncomplete() {
-    // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
-    // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
-    this._all3dAttachmentTilesLoaded = false;
-  }
-
-  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
-  public async load(): Promise<void> {
-    await super.load();
-
-    // Set the size of the sheet
-    const model = this.getViewedModel();
-    if (model === undefined)
-      return;
-
-    this._attachments.clear();
-
-    // Query all of the attachment properties using their ids
-    const attachmentPropList = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
-
-    // For each ViewAttachmentProps, load the view that the attachment references. Once the view is loaded, officially construct the attachment & add it to the array.
-    for (const attachmentProps of attachmentPropList) {
-      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => {
-        if (view.is3d())
-          this._attachments.add(new Attachments.Attachment3d(attachmentProps, view as ViewState3d));
-        else
-          this._attachments.add(new Attachments.Attachment2d(attachmentProps, view as ViewState2d));
-      });
-    }
-  }
-
-  /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
-  public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allReady || !this._all3dAttachmentTilesLoaded)
-      _viewport.sync.invalidateScene();
-  }
-
-  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
-  public createScene(context: SceneContext) {
-    // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
-    this._all3dAttachmentTilesLoaded = true;
-
-    super.createScene(context);
-
-    if (!this._attachments.allReady) {
-      let i = 0;
-      while (i < this._attachments.length) {
-        const loadStatus = this._attachments.load(i, this, context);
-
-        // If load fails, attachment gets dropped from the list
-        if (loadStatus === Attachments.State.Ready || loadStatus === Attachments.State.Loading)
-          i++;
-      }
-    }
-
-    // Draw all attachments that have a status of ready
-    for (const attachment of this._attachments.list)
-      if (attachment.isReady)
-        attachment.tree!.drawScene(context);
-  }
-
-  /** Create a sheet border decoration graphic. */
-  private createBorder(width: number, height: number, context: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, context);
-    const builder = context.createGraphicBuilder(GraphicType.ViewBackground);
-    border.addToBuilder(builder);
-    return builder.finish();
-  }
-
-  public decorate(context: DecorateContext): void {
-    super.decorate(context);
-    if (this.sheetSize !== undefined) {
-      const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      context.setViewBackground(border);
-    }
-  }
-
-  public computeFitRange(): Range3d {
-    const size = this.sheetSize;
-    if (0 >= size.x || 0 >= size.y)
-      return super.computeFitRange();
-    else
-      return new Range3d(0, 0, -1, size.x, size.y, 1);
-  }
 }

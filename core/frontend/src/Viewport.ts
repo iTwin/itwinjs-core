@@ -1830,7 +1830,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /**
-   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTpDiv]].
+   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTipDiv]].
    * @param message The message to display
    * @param location The position of the toolTip, in view coordinates. If undefined, use center of view.
    * @param options the ToolTip options

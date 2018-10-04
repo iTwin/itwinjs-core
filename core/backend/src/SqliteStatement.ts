@@ -101,8 +101,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  number | INTEGER if number is integral or REAL if number is not integral
    *  string | TEXT
    *  ArrayBuffer | BLOB
-   *  [Id64]($common) | INTEGER
-   *  [Guid]($common) | BLOB
+   *  [Id64]($bentley) | INTEGER
+   *  [Guid]($bentley) | BLOB
    *
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
@@ -330,7 +330,7 @@ export class SqliteValue {
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | ArrayBuffer
    *
-   * Note: You cannot retrieve [Id64s]($common) or [Guids]($common) with this property
+   * Note: You cannot retrieve [Id64]($bentley)s or [Guid](bentley)s with this property
    * directly. Use [SqliteValue.getId]($backend) or [SqliteValue.getGuid]($backend) respectively instead.
    */
   public get value(): any {

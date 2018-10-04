@@ -22,10 +22,10 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   }
 }
 
-/** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element. See [[IModelDb.Elements.getUniqueAspect]] */
+/** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element. */
 export class ElementUniqueAspect extends ElementAspect {
 }
 
-/** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element. See [[IModelDb.Elements.getMultiAspects]] */
+/** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element. */
 export class ElementMultiAspect extends ElementAspect {
 }
