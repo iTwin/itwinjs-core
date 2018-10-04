@@ -119,7 +119,7 @@ export class IModelVersion {
     const versions = await imodelClient.Versions().get(alctx, accessToken, new Guid(iModelId), new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId) {
-      return Promise.reject(new IModelError(BentleyStatus.ERROR));
+      return Promise.reject(new IModelError(BentleyStatus.ERROR, "Problem getting versions"));
     }
 
     return versions[0].changeSetId!;

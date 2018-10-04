@@ -15,7 +15,7 @@ import { ErrorStatusOrResult } from "../../imodeljs-native-platform-api";
 function createChangeSet(imodel: IModelDb): ChangeSetToken {
   const res: ErrorStatusOrResult<ChangeSetStatus, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
   if (res.error)
-    throw new IModelError(res.error.status);
+    throw new IModelError(res.error.status, "Error in startCreateChangeSet");
 
   const token: ChangeSetToken = JSON.parse(res.result!);
 
@@ -27,7 +27,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 
   const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
   if (ChangeSetStatus.Success !== status)
-    throw new IModelError(status);
+    throw new IModelError(status, "Error in finishCreateChangeSet");
 
   return token;
 }

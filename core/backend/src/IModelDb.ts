@@ -205,10 +205,10 @@ export class IModelDb extends IModel {
    */
   public static getAccessToken(iModelId: string): AccessToken {
     if (IModelDb._accessTokens === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "Undefined", Logger.logWarning, loggingCategory);
     const token: AccessToken | undefined = IModelDb._accessTokens.get(iModelId);
     if (token === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "AccessToken not found", Logger.logWarning, loggingCategory);
     return token;
   }
 
@@ -562,7 +562,7 @@ export class IModelDb extends IModel {
    */
   public saveChanges(description?: string) {
     if (this.openParams.openMode === OpenMode.Readonly)
-      throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError);
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
@@ -812,11 +812,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(error.status, "Error getting class meta data", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -836,7 +836,7 @@ export class IModelDb extends IModel {
   public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
     const { error } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     return (error === undefined);
   }
@@ -1067,8 +1067,8 @@ export namespace IModelDb {
      * @throws IModelError if the code is invalid
      */
     public queryElementIdByCode(code: Code): Id64 | undefined {
-      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec);
-      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
+      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggingCategory);
+      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggingCategory);
 
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
@@ -1153,7 +1153,7 @@ export namespace IModelDb {
     private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
       const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
-        throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
 
       const aspects: ElementAspect[] = [];
       for (const row of rows) {

@@ -719,8 +719,8 @@ export class BriefcaseManager {
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, new Guid(iModelId));
     actx.enter();
     if (!briefcase) {
-      Logger.logError(loggingCategory, "Could not acquire briefcase"); // Could well be that the current user does not have the appropriate access
-      return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire));
+      // Could well be that the current user does not have the appropriate access
+      return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase", Logger.logError, loggingCategory));
     }
     return briefcase;
   }
@@ -733,7 +733,7 @@ export class BriefcaseManager {
     return BriefcaseManager.imodelClient.Briefcases().download(actx, briefcase, seedPathname)
       .catch(() => {
         actx.enter();
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download briefcase", Logger.logError, loggingCategory));
       });
   }
 
@@ -747,7 +747,7 @@ export class BriefcaseManager {
     await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, new Guid(imodelId), seedPathname)
       .catch(() => {
         actx.enter();
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download briefcase seed file", Logger.logError, loggingCategory));
       });
     perfLogger.dispose();
   }
@@ -821,7 +821,7 @@ export class BriefcaseManager {
         return changeSets;
     }
 
-    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
+    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound, "Version not found", Logger.logWarning, loggingCategory));
   }
 
   private static async downloadChangeSetsInternal(actx: ActivityLoggingContext, iModelId: string, changeSets: ChangeSet[]) {
@@ -841,7 +841,7 @@ export class BriefcaseManager {
       await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSetsToDownload, changeSetsPath)
         .catch(() => {
           actx.enter();
-          return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload));
+          return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download changesets", Logger.logError, loggingCategory));
         });
       perfLogger.dispose();
     }
@@ -1111,7 +1111,7 @@ export class BriefcaseManager {
     // Apply the changes
     const status: ChangeSetStatus = briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
     if (ChangeSetStatus.Success !== status)
-      return Promise.reject(new IModelError(status));
+      return Promise.reject(new IModelError(status, "Error applying changesets", Logger.logError, loggingCategory));
 
     // Mark Db as reopened after merge (if there are schema changes)
     if (containsSchemaChanges)
@@ -1180,14 +1180,14 @@ export class BriefcaseManager {
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
     const res: ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb!.startCreateChangeSet();
     if (res.error)
-      throw new IModelError(res.error.status);
+      throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggingCategory);
     return JSON.parse(res.result!);
   }
 
   private static finishCreateChangeSet(briefcase: BriefcaseEntry) {
     const status = briefcase.nativeDb!.finishCreateChangeSet();
     if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status);
+      throw new IModelError(status, "Error in finishCreateChangeSet", Logger.logError, loggingCategory);
   }
 
   private static abandonCreateChangeSet(briefcase: BriefcaseEntry) {
@@ -1198,7 +1198,7 @@ export class BriefcaseManager {
   private static getPendingChangeSets(briefcase: BriefcaseEntry): string[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.getPendingChangeSets();
     if (res.error)
-      throw new IModelError(res.error.status);
+      throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggingCategory);
     return JSON.parse(res.result!) as string[];
   }
 
@@ -1206,14 +1206,14 @@ export class BriefcaseManager {
   private static addPendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
     const result = briefcase.nativeDb!.addPendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result);
+      throw new IModelError(result, "Error in addPendingChangeSet", Logger.logError, loggingCategory);
   }
 
   /** Remove a pending ChangeSet after its codes have been updated */
   private static removePendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
     const result = briefcase.nativeDb!.removePendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result);
+      throw new IModelError(result, "Error in removePendingChangeSet", Logger.logError, loggingCategory);
   }
 
   /** Update codes for all pending ChangeSets */
@@ -1271,7 +1271,7 @@ export class BriefcaseManager {
   private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
-      throw new IModelError(res.error.status);
+      throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggingCategory);
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
   }
 
@@ -1279,7 +1279,7 @@ export class BriefcaseManager {
   private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
     const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
-      throw new IModelError(res.error.status);
+      throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggingCategory);
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
   }
 
@@ -1328,7 +1328,7 @@ export class BriefcaseManager {
    */
   public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
     if (!briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR);
+      throw new IModelError(BentleyStatus.ERROR, "Error in createStandaloneChangeSet", Logger.logError, loggingCategory);
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
     BriefcaseManager.finishCreateChangeSet(briefcase);
@@ -1339,7 +1339,7 @@ export class BriefcaseManager {
   /** Applies a change set to a standalone iModel */
   public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
     if (!briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR);
+      throw new IModelError(BentleyStatus.ERROR, "Error in applyStandaloneChangeSet", Logger.logError, loggingCategory);
 
     return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
   }
@@ -1466,7 +1466,7 @@ export class BriefcaseManager {
 
     res = nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res);
+      throw new IModelError(res, "Error saving changes", Logger.logError, loggingCategory);
 
     nativeDb.closeIModel();
 

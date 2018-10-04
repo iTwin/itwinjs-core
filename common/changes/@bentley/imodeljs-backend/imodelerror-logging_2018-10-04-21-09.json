@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "IModelError now requires the message parameter",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

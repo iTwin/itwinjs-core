@@ -10,6 +10,7 @@ import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common
 import { Id64, Id64String, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement } from "./ECSqlStatement";
 
+/** @hidden */
 const loggingCategory = "imodeljs-backend.LinkTableRelationship";
 
 /** Properties that are common to all types of link table ECRelationships */
@@ -197,10 +198,10 @@ export class IModelDbLinkTableRelationships {
   /** get the props of a relationship instance */
   private getInstanceProps(relClassSqlName: string, criteria: Id64 | SourceAndTarget): LinkTableRelationshipProps {
     if (criteria instanceof Id64) {
-      return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE ecinstanceid=?", (stmt: ECSqlStatement) => {
+      return this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound);
+          throw new IModelError(IModelStatus.NotFound, "LinkTableRelationship not found", Logger.logWarning, loggingCategory);
         return stmt.getRow() as LinkTableRelationshipProps;
       });
     }
@@ -209,7 +210,7 @@ export class IModelDbLinkTableRelationships {
       stmt.bindId(1, criteria.sourceId);
       stmt.bindId(2, criteria.targetId);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.NotFound);
+        throw new IModelError(IModelStatus.NotFound, "LinkTableRelationship not found", Logger.logWarning, loggingCategory);
       return stmt.getRow() as LinkTableRelationshipProps;
     });
   }

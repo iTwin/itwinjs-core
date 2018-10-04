@@ -82,7 +82,7 @@ export class GeometricModel extends Model {
   public queryExtents(): AxisAlignedBox3d {
     const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
     if (error)
-      throw new IModelError(error.status);
+      throw new IModelError(error.status, "Error querying model extents");
     return AxisAlignedBox3d.fromJSON(JSON.parse(result!).modelExtents);
   }
 }

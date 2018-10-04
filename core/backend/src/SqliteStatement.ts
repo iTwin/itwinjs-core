@@ -132,7 +132,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
+      throw new IModelError(stat, "Error in bindValue");
   }
 
   /** Bind values to all parameters in the statement.
@@ -171,7 +171,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public clearBindings(): void {
     const stat: DbResult = this._stmt!.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
+      throw new IModelError(stat, "Error in clearBindings");
   }
 
   /** Step this statement to the next row.

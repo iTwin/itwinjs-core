@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Codes */
 
-import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Logger } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, CodeSpec } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
+
+/** @hidden */
+const loggingCategory = "imodeljs-backend.CodeSpecs";
 
 /** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]] */
 export class CodeSpecs {
@@ -24,7 +27,7 @@ export class CodeSpecs {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.NotFound);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory, () => ({ name }));
       return new Id64(stmt.getRow().id);
     });
   }
@@ -36,7 +39,7 @@ export class CodeSpecs {
    */
   public getById(codeSpecId: Id64): CodeSpec {
     if (!codeSpecId.isValid)
-      throw new IModelError(IModelStatus.InvalidId);
+      throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
 
     // good chance it is already loaded - check there before running a query
     const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
@@ -65,7 +68,7 @@ export class CodeSpecs {
       return found;
     const codeSpecId = this.queryId(name);
     if (codeSpecId === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory, () => ({ name }));
     return this.getById(codeSpecId);
   }
 
@@ -90,17 +93,16 @@ export class CodeSpecs {
    */
   public load(id: Id64): CodeSpec {
     if (!id.isValid) {
-      throw new IModelError(IModelStatus.InvalidId);
+      throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
     }
 
     return this._imodel.withPreparedStatement("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.InvalidId);
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
 
       const row: any = stmt.getRow();
       return new CodeSpec(this._imodel, id, row.name, JSON.parse(row.jsonProperties));
     });
   }
-
 }
