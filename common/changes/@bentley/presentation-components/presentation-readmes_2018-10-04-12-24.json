@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add README",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}
