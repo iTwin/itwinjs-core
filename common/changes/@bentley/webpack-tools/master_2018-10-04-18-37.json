@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.149.0",
+      "packageName": "@bentley/webpack-tools",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "platform-bld@bentley.com"
+}

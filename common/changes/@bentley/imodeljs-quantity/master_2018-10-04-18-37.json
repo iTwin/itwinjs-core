@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.149.0",
+      "packageName": "@bentley/imodeljs-quantity",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "platform-bld@bentley.com"
+}

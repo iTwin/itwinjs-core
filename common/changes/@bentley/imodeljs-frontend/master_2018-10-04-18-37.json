@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.149.0",
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "platform-bld@bentley.com"
+}

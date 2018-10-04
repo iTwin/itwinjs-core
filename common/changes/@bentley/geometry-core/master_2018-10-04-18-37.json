@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.149.0",
+      "packageName": "@bentley/geometry-core",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "platform-bld@bentley.com"
+}

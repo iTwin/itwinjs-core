@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "changeType": 0,
+      "newVersion": "0.149.0",
+      "packageName": "@bentley/ui-framework",
+      "comment": ""
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "platform-bld@bentley.com"
+}
