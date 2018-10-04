@@ -107,7 +107,7 @@ export class ViewSelector extends React.Component<any, any> {
     const params: ViewQueryParams = {};
     params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
     params.where = "";
-    const viewProps = this._getViewProps(imodel, params);
+    const viewProps = await this._getViewProps(imodel, params);
     return viewProps;
   }
 

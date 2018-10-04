@@ -35,6 +35,7 @@ export interface ModelSelectorWidgetState {
 }
 
 export class ModelSelectorDemoWidget extends WidgetControl {
+  /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -47,6 +48,7 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
   private _removeSelectedViewportChanged?: () => void;
   private _groups: Group[] = [];
 
+  /** Creates a ModelSelectorWidget */
   constructor(props: any) {
     super(props);
 
@@ -55,10 +57,12 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     this.updateState();
   }
 
+  /** Adds listeners */
   public componentDidMount() {
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
+  /** Removes listeners */
   public componentWillUnmount() {
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
@@ -84,7 +88,7 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     });
   }
 
-  // Update viewed models on selected viewport changed
+  /** Update viewed models on selected viewport changed */
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
       alert("Clearing");
@@ -97,12 +101,12 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     alert("search " + value);
   }
 
-  // expand the selected group
+  /** expand the selected group */
   private _onExpand = (group: Group) => {
     this.setState({ activeGroup: group, expand: true });
   }
 
-  // collapse
+  /** collapse widget */
   private _onCollapse = () => {
     this.setState({ expand: false });
   }
@@ -111,17 +115,14 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     this.setState({ showOptions: show });
   }
 
-  // enable or disable a single item
+  /** enable or disable a single item */
   private _onCheckboxClick = (item: ListItem) => {
     item.enabled = !item.enabled;
     this.state.activeGroup.setEnabled(item, item.enabled);
-    // force an update to set the new state in CheckListBoxItem
-    // Note: or should we call activeGroup.updateState()?
-    // this.forceUpdate();
     this.setState({ activeGroup: this.state.activeGroup });
   }
 
-  // enable or disable all items
+  /** enable or disable all items */
   private _onSetEnableAll = (enable: boolean) => {
     for (const item of this.state.activeGroup.items) {
       this.state.activeGroup.setEnabled(item, enable);
@@ -217,18 +218,21 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView);
   }
 
+  /** Add models to current viewport */
   public async updateModelsState() {
     const vp = IModelApp.viewManager.getFirstOpenView();
     if (vp)
       this._updateModelsWithViewport(vp);
   }
 
+  /** Add categories to current viewport */
   public async updateCategoriesState() {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       this._updateCategoriesWithViewport(vp);
   }
 
+  /** Update state for each group */
   public async updateState() {
     this._groups.forEach((group: Group) => {
       if (!group.initialized) {
@@ -238,34 +242,7 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
     });
   }
 
-  // Enable/disable the models and update the state
-  /*
-      // Invert model selection
-    const invert = () => {
-      IModelApp.viewManager.forEachViewport((vp: Viewport) => {
-        if (!(vp.view instanceof SpatialViewState))
-          return;
-
-        const view: SpatialViewState = vp.view.clone();
-        for (const item of self.state.items) {
-          const enabled = !view.modelSelector.has(item.key);
-          if (enabled)
-            view.modelSelector.addModels(item.key);
-          else
-            view.modelSelector.dropModels(item.key);
-
-        }
-
-        vp.changeView(view);
-      });
-
-      // Update the category items in the list picker
-      self.updateState();
-    };
-  */
-
-  //  <SearchBox  placeholder="search..." onValueChanged={this._handleSearchValueChanged} />
-
+  /** @hidden */
   public render() {
     const groupsClassName = classnames("widget-groups", this.state.expand && "hide");
     const listClassName = classnames("fw-modelselector", this.state.expand && "show");

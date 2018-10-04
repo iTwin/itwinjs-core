@@ -5,14 +5,10 @@
 /** @module ValidationTextbox */
 
 import * as React from "react";
-// import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
+import { MessageManager } from "../configurableui";
 
 import "./ValidationTextbox.scss";
-
-// import { XAndY } from "@bentley/geometry-core";b
-import { MessageManager } from "../configurableui";
-// import Css from "@bentley/ui-ninezone/lib/utilities/Css";
 
 export enum InputStatus {
   Valid = 0,
