@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clean up the scripts and remove some that are no longer used.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

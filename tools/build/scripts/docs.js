@@ -6,8 +6,6 @@
 
 process.env.NODE_ENV = "prod";
 
-const isCI = (process.env.TF_BUILD);
-
 const paths = require("./config/paths");
 const path = require("path");
 const cpx = require("cpx");

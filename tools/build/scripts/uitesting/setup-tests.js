@@ -2,8 +2,23 @@
 * Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+const fs = require("fs");
 const path = require("path");
-const utils = require("./utils");
+
+const cwdRequire = (id) => {
+  return require(path.join(process.cwd(), "node_modules", id));
+};
+
+const ensureDirectoryExists = (directoryPath) => {
+  const createDirs = [];
+  let currDir = directoryPath;
+  while (!fs.existsSync(currDir)) {
+    createDirs.push(currDir);
+    currDir = path.resolve(currDir, "../");
+  }
+  createDirs.reverse().forEach((dir) => fs.mkdirSync(dir));
+};
 
 // Get rid of React warning.
 global.requestAnimationFrame = (callback) => {
@@ -11,21 +26,21 @@ global.requestAnimationFrame = (callback) => {
 };
 
 // Configure enzyme (testing utils for React)
-const enzyme = utils.cwdRequire("enzyme");
+const enzyme = cwdRequire("enzyme");
 const Adapter = require("enzyme-adapter-react-16");
 enzyme.configure({ adapter: new Adapter() });
 
 // Register should style
-const chai = utils.cwdRequire("chai");
+const chai = cwdRequire("chai");
 chai.should();
 
 // Use sinon-chai style
-const sinonChai = utils.cwdRequire("sinon-chai");
+const sinonChai = cwdRequire("sinon-chai");
 chai.use(sinonChai);
 
 // Configure snapshot testing
 const { mapSourcePosition } = require("source-map-support");
-const chaiJestSnapshot = utils.cwdRequire("chai-jest-snapshot");
+const chaiJestSnapshot = cwdRequire("chai-jest-snapshot");
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 chai.use(chaiJestSnapshot);
 before(function () {

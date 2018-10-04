@@ -6,10 +6,8 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const url = require('url');
 
 // Make sure any symlinks in the project folder are resolved:
-// https://github.com/facebookincubator/create-react-app/issues/637
 const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 
@@ -30,8 +28,8 @@ module.exports = {
   appAssets: resolveApp('source/assets'),
   appTestAssets: resolveApp('source/test/assets'),
   libExtract: resolveApp('lib/extract'),
-  appLocalesEnglish: resolveApp ('public/locales/en'),
-  appLocalesPseudolocalize: resolveApp ('public/locales/en-pseudo'),
+  appLocalesEnglish: resolveApp('public/locales/en'),
+  appLocalesPseudolocalize: resolveApp('public/locales/en-pseudo'),
   appHtml: resolveApp('public/index.html'),
   appIndexJs: resolveApp('source/frontend/index.tsx'),
   appPackageJson: resolveApp('package.json'),
