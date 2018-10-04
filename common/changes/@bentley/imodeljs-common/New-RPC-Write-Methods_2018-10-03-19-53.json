@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add RPC Changes",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "ray.bentley@bentley.com"
+}
