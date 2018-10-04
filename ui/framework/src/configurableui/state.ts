@@ -14,7 +14,7 @@ export interface ConfigurableUiState {
   toolPrompt: string;
 }
 
-/* used on first call of ConfigurableUiReducer */
+/** used on first call of ConfigurableUiReducer */
 const initialState: ConfigurableUiState = {
   placeHolder: "placeholder",
   snapMode: SnapMode.NearestKeypoint as number,

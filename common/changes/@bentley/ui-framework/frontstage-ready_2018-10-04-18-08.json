@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "FrontstageManager.setActiveFrontstageDef now returns a Promise that is fulfulled when the FrontstageDef & ScreenViewports are ready",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

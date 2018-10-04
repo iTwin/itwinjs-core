@@ -4,18 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { FrontstageProps } from "@bentley/ui-framework";
-import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton } from "@bentley/ui-framework";
-import { ToolWidget } from "@bentley/ui-framework";
-import { ZoneState } from "@bentley/ui-framework";
-import { WidgetState } from "@bentley/ui-framework";
-import { NavigationWidget } from "@bentley/ui-framework";
+import {
+  FrontstageProps,
+  GroupButton,
+  ToolButton,
+  ToolWidget,
+  ZoneState,
+  WidgetState,
+  NavigationWidget,
+  FrontstageDef,
+} from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
-export class Frontstage1 {
+export class Frontstage1 extends FrontstageDef {
+
+  constructor() {
+    super();
+    this.initializeFromProps(this.defineProps());
+  }
 
   public defineProps(): FrontstageProps {
     const frontstageProps: FrontstageProps = {

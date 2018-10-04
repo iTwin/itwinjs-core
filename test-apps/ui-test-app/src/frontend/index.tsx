@@ -18,7 +18,15 @@ import { Config as ClientConfig } from "@bentley/imodeljs-clients/lib/Config";
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
-import { UiFramework, FrameworkState, FrameworkReducer, OverallContent, AppNotificationManager, ProjectInfo, ConfigurableUiManager, FrontstageManager, FrontstageProps } from "@bentley/ui-framework";
+import {
+    UiFramework,
+    FrameworkState,
+    FrameworkReducer,
+    OverallContent,
+    AppNotificationManager,
+    ProjectInfo,
+    FrontstageManager,
+} from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { AppUi } from "./appui/AppUi";
@@ -147,12 +155,11 @@ export class SampleAppIModelApp extends IModelApp {
         SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
 
         // we create a FrontStage that contains the views that we want.
-        const frontstageProps: FrontstageProps | undefined = new ViewsFrontstage(viewIdsSelected, iModelConnection).defineProps();
-        if (frontstageProps) {
-            ConfigurableUiManager.loadFrontstage(frontstageProps);
-            const frontstageDef = FrontstageManager.findFrontstageDef(frontstageProps.id);
-            FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        }
+        const frontstageDef = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+        FrontstageManager.addFrontstageDef(frontstageDef);
+        FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => {
+            // Frontstage & ScreenViewports are ready
+        });
     }
 }
 

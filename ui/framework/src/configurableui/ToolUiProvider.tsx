@@ -37,6 +37,7 @@ export class ToolUiProvider extends ConfigurableBase {
   public get toolItem(): ToolItemDef { return this._toolItem; }
   public set toolItem(v: ToolItemDef) { this._toolItem = v; }
 
+  /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
 }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "FrontstageManager.setActiveFrontstageDef now returns a Promise",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

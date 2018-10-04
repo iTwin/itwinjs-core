@@ -25,7 +25,9 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
     super(info, options);
   }
 
+  /** Gets the React node associated with this StatusBar Widget Control */
   public abstract getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode;
 
+  /** Gets the type of ConfigurableUiControl, which is 'StatusBarWidget' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.StatusBarWidget; }
 }

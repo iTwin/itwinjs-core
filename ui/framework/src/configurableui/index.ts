@@ -43,6 +43,7 @@ export * from "./ToolbarWidgetBase";
 export * from "./ToolSettingsZone";
 export * from "./ToolUiProvider";
 export * from "./ToolWidget";
+export * from "./ViewportContentControl";
 export * from "./WidgetControl";
 export * from "./WidgetDef";
 export * from "./WidgetFactory";

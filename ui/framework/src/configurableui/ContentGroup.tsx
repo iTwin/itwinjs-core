@@ -90,7 +90,7 @@ export class ContentGroup {
     // TODO - should this call getContentControl if widget is sharable
     if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
       const contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
-      if (contentControl.getType() !== ConfigurableUiControlType.Content) {
+      if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
         throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
       }
       this._contentControls.set(id, contentControl);
@@ -99,24 +99,37 @@ export class ContentGroup {
     return this._contentControls.get(id);
   }
 
-  public getContentSet(): React.ReactNode[] {
-    const contentControls: React.ReactNode[] = new Array<React.ReactNode>();
+  public getContentNodes(): React.ReactNode[] {
+    const contentNodes: React.ReactNode[] = new Array<React.ReactNode>();
 
     this._contentSetMap.clear();
 
     this.contentPropsList.map((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
-        contentControls.push(control.reactElement);
+        contentNodes.push(control.reactElement);
         this._contentSetMap.set(control.reactElement, control);
       }
     });
 
-    return contentControls;
+    return contentNodes;
   }
 
   public getControlFromElement(node: React.ReactNode): ContentControl | undefined {
     return this._contentSetMap.get(node);
+  }
+
+  public getContentControls(): ContentControl[] {
+    const contentControls: ContentControl[] = new Array<ContentControl>();
+
+    this.contentPropsList.map((contentProps: ContentProps, index: number) => {
+      const control = this.getContentControl(contentProps, index);
+      if (control) {
+        contentControls.push(control);
+      }
+    });
+
+    return contentControls;
   }
 
 }

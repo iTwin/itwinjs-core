@@ -18,15 +18,19 @@ import { SnapMode } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "../..";
 import { MessageSeverity } from "@bentley/ui-core";
 
-import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
-import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton, ToolItemDef, CommandButton, CommandItemDef } from "@bentley/ui-framework";
-import { ToolWidget } from "@bentley/ui-framework";
-import { ZoneState } from "@bentley/ui-framework";
-import { WidgetState } from "@bentley/ui-framework";
-import { NavigationWidget } from "@bentley/ui-framework";
-import { ContentGroup } from "@bentley/ui-framework";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {
+  FrontstageProps,
+  FrontstageManager,
+  GroupButton,
+  ToolButton, ToolItemDef, CommandButton, CommandItemDef,
+  ToolWidget,
+  ZoneState,
+  WidgetState,
+  NavigationWidget,
+  ContentGroup,
+  ModalDialogManager,
+  FrontstageDef,
+} from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
@@ -35,7 +39,12 @@ import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { TestMessageBox } from "../dialogs/TestMessageBox";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
-export class Frontstage4 {
+export class Frontstage4 extends FrontstageDef {
+
+  constructor() {
+    super();
+    this.initializeFromProps(this.defineProps());
+  }
 
   public defineProps(): FrontstageProps {
     const myContentGroup: ContentGroup = new ContentGroup(

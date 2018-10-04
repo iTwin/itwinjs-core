@@ -201,11 +201,14 @@ export class FrontstageManager {
 
   /** Sets the active FrontstageDef.
    * @param  frontstageDef  FrontstageDef to to set active.
+   * @returns A Promise that is fulfulled when the [[FrontstageDef]] is ready.
    */
-  public static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): void {
+  public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
     this._activeFrontstageDef = frontstageDef;
+
     if (frontstageDef) {
-      frontstageDef.onActivated();
+      await frontstageDef.onActivated();
+
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
     }
   }

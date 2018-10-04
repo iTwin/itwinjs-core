@@ -10,12 +10,6 @@ export interface ConfigurableUiElement {
   uniqueId: string;
   classId: string;
   name: string;
-
-  // adopt(other: ConfigurableUiElement): boolean;
-  // request(requestId: string, options?: any, abortUpdate?: boolean): Promise<any>;
-  // registerMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
-  // unregisterMessageListener(messageName: string, listenerFunction: IMessageListenerFunction): void;
-  // broadcastMessage(messageName: string, messageArguments?: any[]): void;
 }
 
 /** Information for creating a ConfigurableUi element
@@ -41,29 +35,6 @@ export class ConfigurableBase implements ConfigurableUiElement {
   }
 
   /** @hidden */
-  // public adopt(other: ConfigurableUiElement): boolean {
-  //   if (this === other)
-  //     return true;
-
-  //   if (!this._canAdopt(other))
-  //     return false;
-
-  //   this._adopt(other);
-
-  //   // in case the "other" was adopted, the object is going to be disposed;
-  //   // however, it may have created some listeners, etc. in its constructor, so we have to
-  //   // call its OnDestroy callback to give it a chance to clean up
-  //   const onDestroy = (other as any)._OnDestroy;
-  //   if (onDestroy)
-  //     onDestroy();
-
-  //   return true;
-  // }
-
-  // protected _canAdopt(other: ConfigurableUiElement): boolean { return this._classId === other.classId; }
-  // protected _adopt(other: ConfigurableUiElement): void { this._uniqueId = other.uniqueId; }
-
-  /** @hidden */
   public get uniqueId(): string { return this._uniqueId; }
 
   public get classId(): string { return this._classId; }
@@ -82,28 +53,6 @@ export class StageConfigurable extends ConfigurableBase {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
-
-  // protected _adopt(other: ConfigurableUiElement): void {
-  //   super._adopt(other);
-
-  //   const otherStageConfigurable = other as StageConfigurable;
-  //   this.currentStage = otherStageConfigurable.currentStage;
-  // }
-
-  /** @hidden */
-  // public set currentStage(stage: FrontstageDef | undefined) {
-  //   if (stage === this._stage)
-  //     return;
-
-  //   this._stage = stage;
-  //   this._onStageChanged();
-  // }
-
-  // public get currentStage(): FrontstageDef | undefined { return this._stage; }
-
-  // /** Called when the owning stage changes.
-  //  */
-  // protected _onStageChanged(): void { }
 }
 
 /** The type of the ConfigurableUiControl.
@@ -113,14 +62,19 @@ export enum ConfigurableUiControlType {
   NavigationAid,    /** Represents [[NavigationAidControl]] */
   StatusBarWidget,  /** Represents [[StatusBarWidgetControl]]  */
   ToolUiProvider,   /** Represents [[ToolUiProvider]]  */
+  Viewport,         /** Represents [[ViewportContentControl]] */
   Widget,           /** Represents [[WidgetControl]]  */
 }
 
 /** The absract base class for all Frontstage controls.
  *
  * @note This is an abstract class which should not be derived from by the applications.
- * Instead, applications should derive from one of [[ContentControl]], [[WidgetControl]] or [[NavigationAidControl]].
- *
+ * Instead, applications should derive from one of
+ * [[ContentControl]],
+ * [[ViewportContentControl]],
+ * [[WidgetControl]],
+ * [[StatusBarWidgetControl]] or
+ * [[NavigationAidControl]].
  */
 export abstract class ConfigurableUiControl extends StageConfigurable {
   private _cid: string;
@@ -141,13 +95,9 @@ export abstract class ConfigurableUiControl extends StageConfigurable {
    */
   public initialize(): void { this._initialize(); }
 
-  /** Called to initialize the ConfigurableUiControl. Instead of creating all the child views
-   * in its constructor, ConfigurableUiControl should do that in this callback. The reason
-   * is that in cases when a control is adopted, it's immediately destroyed, so creating the
-   * view hierarchy is pointless.
+  /** Called to initialize the ConfigurableUiControl.
    */
   protected _initialize(): void {
-    // this.SetPlatformTargetId(this.m_cid);
   }
 
   /** Returns the ID of this ConfigurableUiControl.
@@ -160,7 +110,7 @@ export abstract class ConfigurableUiControl extends StageConfigurable {
 
   /** Returns a promise that resolves when the control is ready for usage.
    */
-  // public Ready(): Promise<void> { return Promise.Resolve<void>(0); }
+  public get isReady(): Promise<void> { return Promise.resolve(); }
 }
 
 export default ConfigurableUiControl;

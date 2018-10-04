@@ -6,20 +6,30 @@ import * as React from "react";
 
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps } from "@bentley/ui-framework";
-import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton, ToolItemDef, CommandItemDef } from "@bentley/ui-framework";
-import { ToolWidget } from "@bentley/ui-framework";
-import { ZoneState } from "@bentley/ui-framework";
-import { WidgetState } from "@bentley/ui-framework";
-import { NavigationWidget } from "@bentley/ui-framework";
-import { ContentLayoutDef } from "@bentley/ui-framework";
-import { ContentGroup } from "@bentley/ui-framework";
+import {
+  FrontstageProps,
+  GroupButton,
+  ToolButton,
+  ToolItemDef,
+  CommandItemDef,
+  ToolWidget,
+  ZoneState,
+  WidgetState,
+  NavigationWidget,
+  ContentLayoutDef,
+  ContentGroup,
+  FrontstageDef,
+} from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
-export class Frontstage3 {
+export class Frontstage3 extends FrontstageDef {
+
+  constructor() {
+    super();
+    this.initializeFromProps(this.defineProps());
+  }
 
   public defineProps(): FrontstageProps {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(

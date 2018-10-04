@@ -26,7 +26,7 @@ describe("StackedWidget", () => {
     }
   }
 
-  it("Producing a StackedWidget", () => {
+  it("Producing a StackedWidget", async () => {
 
     const myContentGroup: ContentGroup = new ContentGroup({
       contents: [{ classId: "TestContentControl2" }],
@@ -73,7 +73,7 @@ describe("StackedWidget", () => {
 
     const frontstageDef = ConfigurableUiManager.findFrontstageDef("StackedWidget-Frontstage");
     expect(frontstageDef).to.not.be.undefined;
-    FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const stackedWidget = wrapper.find("div.nz-widget-stacked");

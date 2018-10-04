@@ -141,5 +141,5 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/** Snap Mode Field React component that is Redux connected. */ // tslint:disable-next-line:variable-name
 export const SnapModeField = connect(mapStateToProps, mapDispatch)(SnapModeFieldComponent);

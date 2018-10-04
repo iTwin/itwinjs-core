@@ -61,7 +61,7 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    expect(widgetDef.widgetControl).to.not.be.undefined;
+    expect(widgetDef.getWidgetControl(ConfigurableUiControlType.Widget)).to.not.be.undefined;
     expect(widgetDef.reactElement).to.not.be.undefined;
   });
 

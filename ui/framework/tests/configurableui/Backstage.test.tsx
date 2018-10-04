@@ -95,8 +95,10 @@ describe("Backstage", () => {
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-      expect(spyMethod.calledOnce).to.be.true;
-      remove();
+      setImmediate(() => {
+        expect(spyMethod.calledOnce).to.be.true;
+        remove();
+      });
     });
 
     it("FrontstageLaunchBackstageItem renders correctly", () => {
@@ -153,8 +155,10 @@ describe("Backstage", () => {
       const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-      expect(spyMethod.calledOnce).to.be.true;
-      remove();
+      setImmediate(() => {
+        expect(spyMethod.calledOnce).to.be.true;
+        remove();
+      });
     });
 
     it("TaskLaunchBackstageItem renders correctly", () => {

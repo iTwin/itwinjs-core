@@ -163,12 +163,12 @@ export class WidgetDef {
   public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
 
   public get widgetControl(): WidgetControl | undefined {
-    return this.getWidgetControl(ConfigurableUiControlType.Widget);
+    return this._widgetControl;
   }
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
     // TODO - should call getConfigurable if widget is sharable
-    if (!this._widgetControl) {
+    if (!this._widgetControl && this.classId) {
       this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
       if (this._widgetControl.getType() !== type) {
         throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");

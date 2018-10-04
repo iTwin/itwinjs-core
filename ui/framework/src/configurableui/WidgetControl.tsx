@@ -33,6 +33,7 @@ export class WidgetControl extends ConfigurableUiControl {
   public get widgetDef() { return this._widgetDef; }
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
+  /** Gets the type of ConfigurableUiControl, which is 'Widget' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
 
   public setWidgetState(state: WidgetState): void {

@@ -7,8 +7,6 @@
 import * as React from "react";
 import { ReactNode } from "react";
 
-// import { OutputMessageType } from "@bentley/imodeljs-frontend";
-
 import { ZoneDef } from "./ZoneDef";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
@@ -26,7 +24,6 @@ import StatusMessageLayout from "@bentley/ui-ninezone/lib/footer/message/content
 import MessageLabel from "@bentley/ui-ninezone/lib/footer/message/content/Label";
 import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
 import MessageStatus from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-// import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
 import { BlueButton as Button } from "@bentley/bwc/lib/buttons/BlueButton";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend/lib/frontend";
 

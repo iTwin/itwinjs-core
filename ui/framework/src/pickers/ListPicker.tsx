@@ -213,6 +213,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
           if (item.children!.length !== 0) {
             return (
               <ExpandableSection
+                key={itemIndex.toString()}
                 title={item.name}
                 className="ListPickerInnerContainer">
                 <Column>
@@ -221,7 +222,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
               </ExpandableSection>
             );
           } else {
-            return (<div />);
+            return (<div key={itemIndex.toString()} />);
           }
       }
     };

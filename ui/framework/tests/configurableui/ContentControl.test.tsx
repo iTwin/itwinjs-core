@@ -63,7 +63,7 @@ describe("ContentControl", () => {
       expect(contentGroup).to.not.be.undefined;
 
       if (contentGroup) {
-        const contentSet = contentGroup.getContentSet();
+        const contentSet = contentGroup.getContentNodes();
         expect(contentSet.length).to.eq(1);
 
         const contentControl = contentGroup.getControlFromElement(contentSet[0]);
@@ -111,7 +111,7 @@ describe("ContentControl", () => {
       expect(contentGroup).to.not.be.undefined;
 
       if (contentGroup) {
-        const contentSet = contentGroup.getContentSet();
+        const contentSet = contentGroup.getContentNodes();
         expect(contentSet.length).to.eq(2);
 
         const contentControl = contentGroup.getControlFromElement(contentSet[0]);

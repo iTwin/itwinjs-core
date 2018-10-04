@@ -156,6 +156,13 @@ export class ConfigurableUiManager {
     FrontstageManager.loadFrontstage(frontstageProps);
   }
 
+  /** Add a Frontstage via a definition into the [[FrontstageManager]].
+   * @param frontstageDef  Definition of the Frontstage to add
+   */
+  public static addFrontstage(frontstageDef: FrontstageDef): void {
+    FrontstageManager.addFrontstageDef(frontstageDef);
+  }
+
   /** Loads one or more ContentGroups into the [[ContentGroupManager]].
    * @param groupPropsList  the list of ContentGroups to load
    */

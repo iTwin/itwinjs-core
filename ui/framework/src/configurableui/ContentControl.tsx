@@ -11,45 +11,28 @@ import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiContro
 export class ContentControl extends ConfigurableUiControl {
   private _reactElement: React.ReactNode;
 
-  /** Creates an instance of ConfigurableUiContentControl.
+  /** Creates an instance of ContentControl.
    * @param info         An object that the subclass must pass to this base class.
-   * @param options      An object which is created on the native part of this control by the function
-   *                     @link BentleyApi::DgnClientFx::ConfigurableUi::IConfigurable::_SupplyInitializationOptions
-   *                     IConfigurable::_SupplyInitializationOptions @endlink.
-   * @note Subclasses must pass all arguments to the base class and not add themselves
-   * to any container - the control is added automatically by the @ref ConfigurableUiManager.
-   * @protected
+   * @param options      Options provided via the applicationData in a [[Content]].
    */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
-  // protected _canAdopt(other: ConfigurableUiElement): boolean {
-  //   if (!super._canAdopt(other))
-  //     return false;
-
-  //   const otherContentControl = other as ContentControl;
-  //   return this.getConfigurableUiControlId() === otherContentControl.getConfigurableUiControlId();
-  // }
-
-  // protected _adopt(other: ConfigurableUiElement): void {
-  //   super._adopt(other);
-
-  //   const otherContentControl = other as ContentControl;
-  //   // update the layout index of the shelved control to match that specified by the input control
-  //   // this way the order specified in the UIConfig file for the current stage is honored.
-  //   this._defaultLayoutIndex = otherContentControl._defaultLayoutIndex;
-  // }
-
+  /** Called when this ContentControl is activated */
   public onActivated(): void {
   }
 
+  /** Called when this ContentControl is deactivated */
   public onDeactivated(): void {
   }
 
+  /** Gets the type of ConfigurableUiControl, which is 'Content' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Content; }
 
+  /** Gets the React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
+  /** Sets the React element associated with this control */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
 }
 

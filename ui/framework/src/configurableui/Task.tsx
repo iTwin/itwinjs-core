@@ -61,10 +61,10 @@ export class Task extends ItemDefBase {
     return isActive;
   }
 
-  public onActivated(): void {
+  public async onActivated(): Promise<void> {
     const frontstage = FrontstageManager.findFrontstageDef(this.primaryStageId);
     if (frontstage)
-      FrontstageManager.setActiveFrontstageDef(frontstage);
+      await FrontstageManager.setActiveFrontstageDef(frontstage);
   }
 }
 
