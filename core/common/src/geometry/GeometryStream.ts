@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { ColorDef } from "../ColorDef";
+import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
 import { LineStyle } from "./LineStyle";
@@ -24,7 +24,7 @@ export interface GeometryAppearanceProps {
   /** Optional subCategory id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default subCategory for the element's category or is on multiple subCategories */
   subCategory?: Id64String;
   /** Optional color to override the subCategory appearance color for subsequent geometry */
-  color?: ColorDef;
+  color?: ColorDefProps;
   /** Optional weight to override the subCategory appearance weight for subsequent geometry */
   weight?: number;
   /** Optional style to override the subCategory appearance style for subsequent geometry */
@@ -48,7 +48,7 @@ export interface AreaFillProps {
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
   /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
-  color?: ColorDef;
+  color?: ColorDefProps;
   /** Set fill using gradient properties */
   gradient?: Gradient.SymbProps;
 }
@@ -80,7 +80,7 @@ export namespace BRepEntity {
   /** Optional symbology that can be assigned to individual faces of a solid or sheet body */
   export interface FaceSymbologyProps {
     /** Optional color override for face */
-    color?: ColorDef;
+    color?: ColorDefProps;
     /** Optional transparency override for face */
     transparency?: number;
     /** Optional material override for face */
