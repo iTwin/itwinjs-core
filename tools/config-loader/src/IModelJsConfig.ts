@@ -41,7 +41,7 @@ export class IModelJsConfig {
         repositoryRootDir = configDir.replace(/\/$/, "").replace(/\\$/, "");
       }
     }
-    if (!repositoryRootDir) {
+    if (!repositoryRootDir && !__dirname) {
       const parts: string[] = __dirname.split(path.sep).reverse();
       while (parts.length > 0) {
         const resolved = path.join(parts.slice().reverse().join(path.sep), configFolder);

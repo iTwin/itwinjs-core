@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const paths = require("./paths");
 const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
-const configEnv = configLoader.IModelJsConfig.init(false);
+const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
 if (configEnv && process.env) {
   Object.assign(process.env, configEnv);
 } else {
