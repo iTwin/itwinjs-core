@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "config-loader cannot locate imodeljs-config folder automatically in some cases",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "khanaffan@gmail.com"
+}
