@@ -5,7 +5,9 @@
 @import "@bentley/bwc/lib/mixins";
 @import "@bentley/bwc/lib/buttons/classes.scss";
 
-.signout {
+$user-profile-circle-size: 64px;
+
+.user-profile {
   background: white;
   width: auto;
   height: auto;
@@ -14,37 +16,70 @@
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 30px;
-  border-radius: 8px;
+  border-radius: 3px;
+  font-size: $bwc-font-size;
 
-  > span:first-of-type {
-    font-size: $bwc-font-size-headline;
-    color: $bwc-gray;
-  }
-
-  > span:last-of-type {
-    margin-top: 40px;
-    font-size: $bwc-font-size-leading;
-  }
-}
-
-.signout-footer {
-  width: 90%;
-  margin-top: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  > button:first-child {
-    @extend .bwc-buttons-primary;
-    margin-right: 15px;
+  > .profile-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    >.circle {
+      font-size: 2em;
+      width: $user-profile-circle-size;
+      height: $user-profile-circle-size;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      margin-bottom: 10px;
+      background-color: $bwc-dataviz-red;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.1);
+    }
+
+    > span:not(.circle) {
+      margin-top: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: $bwc-gray;
+      overflow: hidden;
+    }
   }
 
-  > button:last-child {
-    @extend .bwc-buttons-hollow;
+  > .user-profile-separator {
+    flex: initial;
+    width: 1px;
+    margin: 10px 20px;
+    background: #eee;
+  }
+
+  > .signout {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    > span:first-of-type {
+      font-size: $bwc-font-size-title;
+      color: $bwc-gray;
+      margin-top: 10px;
+    }
+
+    > span:last-of-type {
+      margin-top: 40px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    > button {
+      @extend .bwc-buttons-primary;
+      width: 75%;
+      margin: auto 0 0 0;
+     }
   }
 }

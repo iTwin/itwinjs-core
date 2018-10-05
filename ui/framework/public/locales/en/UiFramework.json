@@ -76,9 +76,10 @@
     "sheets": "Sheets",
     "others": "Others"
   },
-  "signin": {
+  "userProfile": {
+    "userprofile": "User Profile",
     "signout": "Sign Out",
-    "signoutprompt": "Are you sure you want to sign out?"
+    "signoutprompt": "Do you want to sign out?"
   },
   "buttons": {
     "yes": "Yes",

@@ -309,7 +309,7 @@ export class Backstage extends React.Component<BackstageProps> {
 
   private _onSignOut = () => {
     closeBackStage();
-    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage());
+    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
   }
 
   private _getUserProfile(): React.ReactNode | undefined {

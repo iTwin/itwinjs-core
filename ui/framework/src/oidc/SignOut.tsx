@@ -4,28 +4,66 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo  } from "../configurableui/FrontstageManager";
+import { UserProfile, AccessToken } from "@bentley/imodeljs-clients";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 
 /** Modal frontstage displaying sign out form. */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("UiFramework:signin.signout");
-  private _signOutPrompt = UiFramework.i18n.translate("UiFramework:signin.signoutprompt");
-  private _yesText = UiFramework.i18n.translate("UiFramework:buttons.yes");
-  private _noText = UiFramework.i18n.translate("UiFramework:buttons.no");
+  public title: string = UiFramework.i18n.translate("UiFramework:userProfile.userprofile");
+  private _signOut = UiFramework.i18n.translate("UiFramework:userProfile.signout");
+  private _signOutPrompt = UiFramework.i18n.translate("UiFramework:userProfile.signoutprompt");
+  private _userProfile: UserProfile | undefined = undefined;
+
+  constructor (accessToken?: AccessToken) {
+    if (accessToken) {
+      this._userProfile = accessToken.getUserProfile();
+    }
+  }
+
+  private _getInitials(): string {
+    let initials: string = "";
+    if (this._userProfile) {
+      if (this._userProfile.firstName.length > 0)
+        initials += this._userProfile.firstName[0];
+      if (this._userProfile.lastName.length > 0)
+        initials += this._userProfile.lastName[0];
+    }
+
+    return initials;
+  }
+
+  private _getFullName(): string {
+    let name: string = "";
+    if (this._userProfile) {
+      name = this._userProfile.firstName + " " + this._userProfile.lastName;
+    }
+
+    return name;
+  }
 
   private _onSignOut = () => {
     FrontstageManager.closeModalFrontstage();
   }
 
   public get content(): React.ReactNode {
+    const initials = this._getInitials();
+    const fullName = this._getFullName();
+    const email = (this._userProfile) ? this._userProfile.email : "";
+    const organization = (this._userProfile) ? this._userProfile.organization : "";
     return (
-      <div className="signout">
-        <span>{this.title}</span>
-        <span>{this._signOutPrompt}</span>
-        <div className="signout-footer">
-          <button onClick={this._onSignOut}>{this._yesText}</button>
-          <button onClick={() => FrontstageManager.closeModalFrontstage()}>{this._noText}</button>
+      <div className="user-profile">
+        <div className="profile-info">
+          <span className="circle">{initials}</span>
+          <span>{fullName}</span>
+          <span>{email}</span>
+          <span>{organization}</span>
+        </div>
+        <div className="user-profile-separator" />
+        <div className="signout">
+          <span>{this._signOut}</span>
+          <span>{this._signOutPrompt}</span>
+          <button onClick={this._onSignOut}>{this._signOut}</button>
         </div>
       </div>
     );
