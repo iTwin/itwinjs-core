@@ -8,8 +8,8 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
 import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
+import { AccuDraw } from "./AccuDraw";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
@@ -19,52 +19,66 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
-
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
 
 /**
- * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
+ * Creates an *Application* to show an iModel in a web browser.
  * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
  *
- * Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different
- * implementations of them.
+ * Applications may customize the behavior of their application by subclassing this class and supplying different
+ * implementations of the members.
  *
  * Before any interactive operations may be performed, [[IModelApp.startup]] must be called (typically on a subclass of IModelApp)
  */
 export class IModelApp {
+  /** @hidden */
   protected static _initialized = false;
   private static _renderSystem?: RenderSystem;
+  /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
+  /** The [[ViewManager]] for this session. */
   public static viewManager: ViewManager;
+  /** The [[NotificationManager]] for this session. */
   public static notifications: NotificationManager;
+  /** The [[QuantityFormatter]] for this session. */
   public static quantityFormatter: QuantityFormatter;
+  /** The [[ToolAdmin]] for this session. */
   public static toolAdmin: ToolAdmin;
+  /** The [[AccuDraw]] for this session. */
   public static accuDraw: AccuDraw;
+  /** The [[AccuSnap]] for this session. */
   public static accuSnap: AccuSnap;
+  /** @hidden */
   public static locateManager: ElementLocateManager;
+  /** @hidden */
   public static tentativePoint: TentativePoint;
-  /** Instance of an I18N used to access the iModel.js localization services. */
+  /** The [[I18N]] for this session. */
   public static i18n: I18N;
-  /** Instance of an object implementing the SettingsAdmin interface, used to access the iModel.js Settings services. */
-  public static settingsAdmin: SettingsAdmin;
+  /** The [[SettingsAdmin]] for this session. */
+  public static settings: SettingsAdmin;
+  /** The name of this application. */
   public static applicationId: string;
-
-  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels. */
+  /** @hidden */
   public static readonly features = new FeatureGates();
+  /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
+  /** @hidden */
   protected static _imodelClient?: IModelClient;
+  /** @hidden */
   public static get initialized() { return IModelApp._initialized; }
 
-  /** IModelClient to be used for all frontend operations */
+  /** The [[IModelClient]] for this session. */
   public static get iModelClient(): IModelClient {
     if (!this._imodelClient)
       this._imodelClient = new IModelHubClient();
     return this._imodelClient;
   }
 
+  /** @hidden */
   public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
+  /** @hidden */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
@@ -102,7 +116,7 @@ export class IModelApp {
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!IModelApp.applicationId) IModelApp.applicationId = "IModelJsApp";
-    if (!IModelApp.settingsAdmin) IModelApp.settingsAdmin = new ConnectSettingsClient(IModelApp.applicationId);
+    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
@@ -122,7 +136,7 @@ export class IModelApp {
     IModelApp.tentativePoint.onInitialized();
   }
 
-  /** Should be called before the application exits to release any held resources. */
+  /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
     IModelApp.toolAdmin.onShutDown();
     IModelApp.viewManager.onShutDown();
@@ -136,13 +150,13 @@ export class IModelApp {
    */
   protected static onStartup(): void { }
 
-  /**
-   * Implement this method to supply options for the initialization of the [I18N]($i18n) system.
+  /** Implement this method to supply options for the initialization of the [I18N]($i18n) system.
+   * @hidden
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 
-  /**
-   * Implement this method to supply the RenderSystem that provides display capabilities.
+  /** Implement this method to supply the RenderSystem that provides display capabilities.
+   * @hidden
    */
   protected static supplyRenderSystem(): RenderSystem { return System.create(); }
 }

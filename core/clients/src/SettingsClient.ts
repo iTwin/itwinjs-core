@@ -12,7 +12,8 @@ import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
-/** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored to CONNECT. */
+
+/** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
   private _authToken?: AuthorizationToken;
   private _accessToken?: AccessToken;
@@ -23,9 +24,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * Creates an instance of ConnectSettingsClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public applicationId: string) {
-    super();
-  }
+  public constructor(public applicationId: string) { super(); }
 
   private async getAccessToken(alctx: ActivityLoggingContext, authToken: AuthorizationToken): Promise<AccessToken> {
     const baseUrl: string = await this.getUrl(alctx);
@@ -44,9 +43,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
-  protected getUrlSearchKey(): string {
-    return ConnectSettingsClient.searchKey;
-  }
+  protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 
   /**
    * Gets the default URL for the service.
@@ -146,8 +143,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     }, (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
-      else
-        return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
+      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
     });
   }
 
@@ -171,8 +167,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     }, (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
-      else
-        return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
+      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
     });
   }
 

@@ -15,6 +15,7 @@ export interface I18NOptions {
   urlTemplate?: string;
 }
 
+/** Supplies Internationalization services. Internally, this class uses the [i18next](https://www.i18next.com/) package. */
 export class I18N {
   private _i18n: i18n;
   private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
