@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
+import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UlasClient, UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, LogPostingSource, UsageType } from "../UlasClient";
 import { TestConfig, TestUsers } from "./TestConfig";
 import { Guid, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
@@ -17,7 +18,7 @@ describe("UlasClient", () => {
   before(async function (this: Mocha.IHookCallbackContext) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login(TestUsers.super);
-    accessToken = await ulasClient.getAccessToken(actx, authToken);
+    accessToken = await new ImsDelegationSecureTokenClient().getToken(actx, authToken);
   });
 
   it("Post usage log  (#integration)", async function (this: Mocha.ITestCallbackContext) {

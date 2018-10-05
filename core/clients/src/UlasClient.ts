@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
 import { Client } from "./Client";
-import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { AccessToken, AuthorizationToken } from "./Token";
+import { AccessToken } from "./Token";
 import { request, RequestOptions, Response } from "./Request";
-import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "./UserProfile";
 import { Config } from "./Config";
+import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+
 const loggingCategory: string = "imodeljs-clients.Ulas";
 
 /**
@@ -46,7 +46,7 @@ export interface ProductVersion {
 
 /**
  * Usage log entry data that is submitted to the ULAS Posting Service.
- * See [UlasClient]$(imodeljs-clients)
+ * See [UlasClient]$(clients)
  */
 export class UsageLogEntry {
   /* The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR */
@@ -78,7 +78,7 @@ export class UsageLogEntry {
 }
 /**
  * Feature log entry data that is submitted to the ULAS Posting Service.
- * See [UlasClient]$(imodeljs-clients)
+ * See [UlasClient]$(clients)
  */
 export class FeatureLogEntry {
   /* ID of the feature to log usage for (from FeatureRegistry). */
@@ -118,8 +118,8 @@ export class FeatureLogEntry {
 
 /**
  * Data to log the start of a Feature usage with the ULAS Posting Service.
- * Use [FeatureEndedLogEntry]($imodeljs-clients) to log the end of the feature usage.
- * See [UlasClient]$(imodeljs-clients)
+ * Use [FeatureEndedLogEntry]($clients) to log the end of the feature usage.
+ * See [UlasClient]$(clients)
  */
 export class FeatureStartedLogEntry extends FeatureLogEntry {
   public readonly entryId: Guid;
@@ -132,8 +132,8 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
 
 /**
  * Data to log the end of a Feature usage with the ULAS Posting Service.
- * Must have logged a [FeatureStartedLogEntry]($imodeljs-clients) before.
- * See [UlasClient]$(imodeljs-clients)
+ * Must have logged a [FeatureStartedLogEntry]($clients) before.
+ * See [UlasClient]$(clients)
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
   /* Id of the corresponding [FeatureStartedLogEntry]($imodeljs-clients).
@@ -148,8 +148,7 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
 }
 
 /**
- * Response from posting a Feature Log entry with
- * [UlasClient]$(imodeljs-clients)
+ * Response from posting a Feature Log entry with the [UlasClient]$(clients)
  */
 export interface LogPostingResponse {
   /* The overall status of the request. */
@@ -178,8 +177,6 @@ export class UlasClient extends Client {
   constructor() { super(); }
 
   /**
-   * WIP: iModelBank might not be able to access the BUDDI service. How to solve that?
-   *
    * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
@@ -203,16 +200,6 @@ export class UlasClient extends Client {
       return Config.App.get(UlasClient.configRegion);
 
     return undefined;
-  }
-  /**
-   * Gets the (delegation) access token to access the service
-   * @param authorizationToken Authorization token.
-   * @returns Resolves to the (delegation) access token.
-   */
-  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    alctx.enter();
-    const imsClient = new ImsDelegationSecureTokenClient();
-    return await imsClient.getToken(alctx, authorizationToken);
   }
 
   /**
