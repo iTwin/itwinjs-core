@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "OidcClient split into different classes for various use case",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Ramanujam.Raman@bentley.com"
+}

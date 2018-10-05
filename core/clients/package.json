@@ -81,7 +81,8 @@
     "qs": "^6.5.1",
     "superagent": "^3.7.0",
     "xmldom": "^0.1.27",
-    "xpath": "0.0.24"
+    "xpath": "0.0.27",
+    "oidc-client": "^1.5.2"
   },
   "nyc": {
     "include": [

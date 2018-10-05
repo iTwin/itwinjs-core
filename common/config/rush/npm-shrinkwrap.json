@@ -462,7 +462,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-vHuigIzqgYsZk8qPFJfGTU976yk=",
+      "integrity": "sha1-v/g2ddd5zZU75z/JRroEgO9Y0NE=",
       "requires": {
         "@types/chai": "4.1.6",
         "@types/deep-assign": "0.1.1",
@@ -482,6 +482,7 @@
         "mocha": "5.2.0",
         "nock": "9.6.1",
         "nyc": "13.0.1",
+        "oidc-client": "1.5.2",
         "qs": "6.5.2",
         "source-map-support": "0.5.9",
         "superagent": "3.8.3",
@@ -492,12 +493,12 @@
         "typescript": "3.0.3",
         "webpack": "4.20.2",
         "xmldom": "0.1.27",
-        "xpath": "0.0.24"
+        "xpath": "0.0.27"
       }
     },
     "@rush-temp/imodeljs-clients-backend": {
       "version": "file:projects/imodeljs-clients-backend.tgz",
-      "integrity": "sha1-PGBw9/HvtpUQSmXydmpvjwHTihc=",
+      "integrity": "sha1-HWTLelsg0GIg6rfaWDqW6gL9RO8=",
       "requires": {
         "@types/chai": "4.1.6",
         "@types/mocha": "5.2.5",
@@ -1115,7 +1116,7 @@
     },
     "@rush-temp/webpack-tools": {
       "version": "file:projects/webpack-tools.tgz",
-      "integrity": "sha1-BZG0IqHLKd3DxxFaKfsAZAj4cgU=",
+      "integrity": "sha1-xnzwdllQOsNrUvkjk5Cg79wWvGY=",
       "requires": {
         "@types/chai": "4.1.6",
         "@types/enzyme": "3.1.14",
@@ -19749,9 +19750,9 @@
       "integrity": "sha1-Z/4HXFwk/vOfnWX197f+dRcZaPw="
     },
     "xpath": {
-      "version": "0.0.24",
-      "resolved": "https://registry.npmjs.org/xpath/-/xpath-0.0.24.tgz",
-      "integrity": "sha1-Gt4WLhzFI8jTn8fQavwW6iFvKfs="
+      "version": "0.0.27",
+      "resolved": "https://registry.npmjs.org/xpath/-/xpath-0.0.27.tgz",
+      "integrity": "sha512-fg03WRxtkCV6ohClePNAECYsmpKKTv5L8y/X3Dn1hQrec3POx2jHZ/0P2qQ6HvsrU1BmeqXcof3NGGueG6LxwQ=="
     },
     "xregexp": {
       "version": "4.0.0",

@@ -23,6 +23,7 @@ export * from "./TileDataAccessClient";
 export * from "./UlasClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
+export * from "./oidc";
 
 // NOTE: Do not export UrlFileHandler - "fs" dependency
 // NOTE: Do not export IModelBank - UrlFileHandler dependency
