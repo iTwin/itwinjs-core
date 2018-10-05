@@ -255,6 +255,8 @@ Each RpcInterface has a version. This should not to be confused with the version
 
 You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org).
 
-Interface version incompatibility is a possibility when a client makes requests on a remote server. iModelJs checks that an RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley). What does it mean for an interface to be incompatible?
-* The server may implement a newer version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
-* The server may implement an older version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.
+Interface version incompatibility is a possibility when a client makes requests on a remote server. iModelJs checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
+
+The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
+* The server implements a newer (major) version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
+* The server implements an older (major or minor) version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.

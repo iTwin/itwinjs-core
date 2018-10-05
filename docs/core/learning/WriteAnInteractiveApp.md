@@ -1,8 +1,10 @@
 # Write An Interactive App
 
-To write an [interactive iModeljs app](../learning/App.md#interactive-apps), first divide the app's operations into two categories:
-- Presentation = [frontend](./Glossary.md#frontend)
-- iModel access = [backend](./Glossary.md#backend).
+An [interactive iModeljs app](../learning/App.md#interactive-apps) has two components or layers:
+- [frontend](./Glossary.md#frontend) = user interface and display
+- [backend](./Glossary.md#backend) = iModel access
+
+[Simple Viewer App](https://github.com/imodeljs/simple-viewer-app) is a complete example of an interactive app.
 
 ## 1. Write the Frontend
 See the [frontend learning articles](./frontend/index.md).
