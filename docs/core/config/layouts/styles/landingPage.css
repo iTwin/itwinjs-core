@@ -4,33 +4,23 @@
 }
 
 .imodeljs-header-tagline {
-    max-width: 75%;
-    text-align: center;
-    line-height: 1em;
-    margin: 10px auto;
+  max-width: 50%;
+  text-align: center;
+  line-height: 1em;
+  margin: 3em auto;
+  background: #002A44C0;
 }
 
 .imodeljs-header-tagline p {
   color: white;
-  line-height: 1em;
-  margin-bottom: 1em;
+  line-height: 1.5em;
+  font-size: 48px;
+  text-align: center;
+  text-shadow: 0px 2px 4.5px rgba(0, 42, 68, 0.004);
 }
 
 p.digital-twin {
-  color: yellow;
-  font-size: 350%;
-}
-
-p.tagline-magic {
-  font-size: 160%;
-  margin-bottom: 1.3em;
-}
-
-p.tagline-unlocking {
-  color: rgb(241, 241, 241);
-  font-size: 300%;
-  line-height: 1;
-  margin-bottom: .3em;
+  font-weight: bold;
 }
 
 .overlay {
@@ -70,4 +60,9 @@ p.tagline-unlocking {
   background-color: #6c757d;
   background-image: none;
   color: white;
+}
+
+.nav-landing-container .navbar-nav {
+  background: #002A44C0;
+  border-radius: 25px;
 }
