@@ -170,6 +170,8 @@ export class SampleAppIModelApp extends IModelApp {
         FrontstageManager.addFrontstageDef(frontstageDef);
         FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => {
             // Frontstage & ScreenViewports are ready
+            // tslint:disable-next-line:no-console
+            console.log("Frontstage is ready");
         });
     }
 }

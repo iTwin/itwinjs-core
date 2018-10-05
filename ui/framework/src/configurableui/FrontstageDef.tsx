@@ -190,7 +190,7 @@ export class FrontstageDef {
     FrontstageManager.onToolActivatedEvent.emit({ toolId: toolItem.id, toolItem });
   }
 
-  public onActivated(): Promise<void> {
+  public onActivated(): void {
     if (!this.defaultLayout) {
       this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
     }
@@ -203,7 +203,9 @@ export class FrontstageDef {
     this.zoneDefs.map((zoneDef: ZoneDef) => {
       zoneDef.clearDefaultOpenUsed();
     });
+  }
 
+  public waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
     for (const control of this.widgetControls) {

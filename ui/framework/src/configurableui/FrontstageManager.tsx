@@ -207,9 +207,9 @@ export class FrontstageManager {
     this._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {
-      await frontstageDef.onActivated();
-
+      frontstageDef.onActivated();
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
+      await frontstageDef.waitUntilReady();
     }
   }
 
