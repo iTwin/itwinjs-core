@@ -8,7 +8,7 @@ import * as React from "react";
 // import { CSSProperties } from "react";
 
 import { UiFramework } from "../UiFramework";
-
+import { SignOutModalFrontstage} from "../oidc/SignOut";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps, CommandHandler } from "./ItemProps";
 import { FrontstageManager } from "./FrontstageManager";
@@ -314,6 +314,7 @@ export class Backstage extends React.Component<BackstageProps> {
 
   private _onSignOut = () => {
     closeBackStage();
+    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage());
   }
 
   private _getUserProfile(): React.ReactNode | undefined {

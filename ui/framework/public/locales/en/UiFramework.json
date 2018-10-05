@@ -75,5 +75,13 @@
     "drawings": "Drawings",
     "sheets": "Sheets",
     "others": "Others"
+  },
+  "signin": {
+    "signout": "Sign Out",
+    "signoutprompt": "Are you sure you want to sign out?"
+  },
+  "buttons": {
+    "yes": "Yes",
+    "no": "No"
   }
 }

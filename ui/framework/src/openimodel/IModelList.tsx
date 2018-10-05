@@ -103,8 +103,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     );
   }
 
-  // <SwitchControl id={iModelInfo.wsgId} defaultValue={checked} onChange={this._onIModelOfflineChange}/>
-
   private renderThumbnails(iModels: IModelInfo[]) {
     return (
       <div className="cards">
