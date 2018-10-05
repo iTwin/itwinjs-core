@@ -9,7 +9,7 @@ An [interactive iModeljs app](../learning/App.md#interactive-apps) has two compo
 ## 1. Write the Frontend
 See the [frontend learning articles](./frontend/index.md).
 
-## 2. Write the Backend
+## 2. Write the Backend and/or choose existing backends.
 Some apps can use an already deployed Web service. In that case, there is no need to write a backend. Just write the frontend's main to [point to the remote service](./RpcInterface.md#client-side-configuration).
 
 To write a [customized backend](../learning/App.md#app-backend), see the [backend learning articles](./backend/index.md).

@@ -213,7 +213,7 @@ If the app has its own backend, and if its backend serves both its RpcInterfaces
 
 2. Different Servers
 
-If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `baseUri` property when configuring BentleyCloudRpcManager.
+If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `uriPrefix` property when configuring BentleyCloudRpcManager.
 
 *Web example (separate backend):*
 ``` ts
