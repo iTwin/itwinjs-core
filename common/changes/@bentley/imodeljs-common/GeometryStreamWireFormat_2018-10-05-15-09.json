@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change ColorDef to ColorDefProps in GeometryStream wire format interfaces.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}
