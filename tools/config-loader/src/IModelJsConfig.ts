@@ -24,54 +24,66 @@ export class IModelJsConfig {
         throw new Error(`Could not find config file ${overrideConfigFile}`);
       }
       const overrideConfig: object = JSON5.parse(fs.readFileSync(overrideConfigFile, "utf8").toString());
+      defaultConfig.imjs_config_file_override = overrideConfigFile;
       Object.assign(defaultConfig, overrideConfig);
     }
+
+    defaultConfig.imjs_config_file_default = defaultConfigFile;
     return defaultConfig;
   }
-
-  private static getConfigurationDir(repositoryName: string, configFolder?: string): string {
+  // This function go along up the hierarchy and look for configFolder
+  private static getConfigurationDir(configFolder: string): string {
     let repositoryRootDir;
-    if (process.env.imjs_config_dir) {
-      if (fs.existsSync(process.env.imjs_config_dir)) {
-        repositoryRootDir = process.env.imjs_config_dir.replace(/\/$/, "").replace(/\\$/, "");
+    // tslint:disable-next-line:no-eval
+    const configDir = eval("process.env.imjs_config_dir") as string;
+    if (configDir) {
+      if (fs.existsSync(configDir)) {
+        repositoryRootDir = configDir.replace(/\/$/, "").replace(/\\$/, "");
       }
     }
-    if (!repositoryRootDir) {
-      const parts: string[] = __dirname.split(path.sep);
-      for (let i = 0; i < parts.length; i++) {
-        if (parts[i] === repositoryName) {
-          repositoryRootDir = parts.slice(0, i + 1).join(path.sep) + path.sep + ".." + path.sep + configFolder!;
+    if (!repositoryRootDir && !__dirname) {
+      const parts: string[] = __dirname.split(path.sep).reverse();
+      while (parts.length > 0) {
+        const resolved = path.join(parts.slice().reverse().join(path.sep), configFolder);
+        if (fs.existsSync(resolved)) {
+          repositoryRootDir = resolved;
           break;
         }
+        parts.shift();
       }
     }
     if (!repositoryRootDir || !fs.existsSync(repositoryRootDir)) {
-      throw new Error(`Fail to find configuration for imodeljs at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' at same level '${repositoryName}' repository for auto discovery to work.`);
+      throw new Error(`Fail to find configuration for imodeljs at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
     }
+
+    // tslint:disable-next-line:no-console
+    console.log(`Found configuration folder at: ${chalk.default.bold(repositoryRootDir)}`);
     return repositoryRootDir;
   }
   public static init(suppressError: boolean = false, config?: any): any {
-    if (IModelJsConfig._repositoryPath)
-      return;
+    const shellEnv = process.env;
+    if (IModelJsConfig._repositoryPath || shellEnv.imjs_config_file_default)
+      return shellEnv;
 
     try {
-      const configRepository = IModelJsConfig.getConfigurationDir("imodeljs", "imodeljs-config");
-      const configuration = IModelJsConfig.getConfiguration(configRepository, process.env.imjs_config_env);
+      const configRepository = IModelJsConfig.getConfigurationDir("imodeljs-config");
+      const configuration = IModelJsConfig.getConfiguration(configRepository, shellEnv.imjs_config_env);
       // also set them as shell var
       Object.assign(process.env, configuration);
-      process.env.imjs_config_dir = configRepository;
+      // tslint:disable-next-line:no-eval
+      eval(`process.env.imjs_config_dir="${configRepository}"`);
+      // process.env.imjs_config_dir = configRepository;
       IModelJsConfig._repositoryPath = configRepository;
       if (config) {
-        config.merge(process.env);
+        config.merge(shellEnv);
       }
-      return process.env;
     } catch (err) {
       // tslint:disable-next-line:no-console
       console.log(`${chalk.default.redBright(err.message)}`);
       if (!suppressError) {
         throw err;
       }
-      return process.env;
     }
+    return shellEnv;
   }
 }
