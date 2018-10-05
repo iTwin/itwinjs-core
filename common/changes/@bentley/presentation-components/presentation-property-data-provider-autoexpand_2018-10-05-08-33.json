@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make PresentationPropertyDataProvider.getData non-memoized. Instead, call an internal function which takes care of memoization. This makes the method easy to override.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

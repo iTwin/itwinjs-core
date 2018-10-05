@@ -63,7 +63,7 @@ describe("PropertyDataProvider", () => {
 
   const resetMemoizedCacheSpies = () => {
     memoizedCacheSpies = {
-      getData: spy.on(provider.getData.cache, "clear"),
+      getData: spy.on((provider as any).getMemoizedData.cache, "clear"),
     };
   };
 
