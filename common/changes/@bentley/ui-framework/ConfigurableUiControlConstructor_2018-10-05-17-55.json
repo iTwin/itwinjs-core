@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added support for ConfigurableUiControlConstructor for classId as an alternative to using registerControl/createControl with string Ids",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

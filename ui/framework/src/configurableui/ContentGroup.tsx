@@ -6,7 +6,7 @@
 
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ export interface ViewSpecDef {
 /** Properties for content displayed in a content view */
 export interface ContentProps {
   id?: string;
-  classId: string;
+  classId: string | ConfigurableUiControlConstructor;
 
   featureId?: string;
   sourceFile?: string;
@@ -62,7 +62,7 @@ export interface ContentGroupProps {
 /** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [ContentLayout].
  */
 export class ContentGroup {
-  private static _sId: number;
+  private static _sId = 0;
 
   public groupId: string;
   public contentPropsList: ContentProps[];
@@ -87,13 +87,23 @@ export class ContentGroup {
     else
       id = this.groupId + "-" + index;
 
-    // TODO - should this call getContentControl if widget is sharable
-    if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-      const contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
-      if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
-        throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
+    let contentControl: ContentControl | undefined;
+
+    if (!this._contentControls.get(id)) {
+      if (typeof contentProps.classId === "string") {
+        if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
+          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
+          if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
+            throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
+          }
+        }
+      } else {
+        const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);
+        contentControl = new contentProps.classId(info, contentProps.applicationData) as ContentControl;
       }
-      this._contentControls.set(id, contentControl);
+
+      if (contentControl)
+        this._contentControls.set(id, contentControl);
     }
 
     return this._contentControls.get(id);

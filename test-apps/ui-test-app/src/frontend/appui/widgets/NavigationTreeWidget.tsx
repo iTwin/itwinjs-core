@@ -12,7 +12,7 @@ import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-class NavigationTreeWidgetControl extends WidgetControl {
+export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 

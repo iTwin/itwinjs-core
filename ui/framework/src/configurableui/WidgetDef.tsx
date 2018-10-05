@@ -10,7 +10,7 @@ import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -44,7 +44,7 @@ export enum WidgetType {
 export interface WidgetProps extends IconLabelProps {
   id?: string;
 
-  classId?: string;
+  classId?: string | ConfigurableUiControlConstructor;
   defaultState?: WidgetState;
   priority?: number;
 
@@ -92,10 +92,10 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
 /** A Widget Definition in the 9-Zone Layout system.
  */
 export class WidgetDef {
-  private static _sId: number;
+  private static _sId = 0;
 
   public id: string;
-  public classId: string = "";
+  public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
   public defaultState: WidgetState = WidgetState.Open;
   public priority: number = 0;
 
@@ -167,11 +167,17 @@ export class WidgetDef {
   }
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
-    // TODO - should call getConfigurable if widget is sharable
     if (!this._widgetControl && this.classId) {
-      this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
-      if (this._widgetControl.getType() !== type) {
-        throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
+      if (typeof this.classId === "string") {
+        if (this.classId) {
+          this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
+          if (this._widgetControl.getType() !== type) {
+            throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
+          }
+        }
+      } else {
+        const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
+        this._widgetControl = new this.classId(info, this.applicationData) as WidgetControl;
       }
 
       if (this._widgetControl) {

@@ -34,7 +34,7 @@ export interface ModelSelectorWidgetState {
   showOptions: boolean;
 }
 
-export class ModelSelectorDemoWidget extends WidgetControl {
+export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -44,7 +44,7 @@ export class ModelSelectorDemoWidget extends WidgetControl {
   }
 }
 
-export default class ModelSelectorWidget extends React.Component<any, ModelSelectorWidgetState> {
+export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
   private _groups: Group[] = [];
 
@@ -289,4 +289,6 @@ export default class ModelSelectorWidget extends React.Component<any, ModelSelec
   }
 }
 
-ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorDemoWidget);
+export default ModelSelectorWidget;
+
+ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorWidgetControl);

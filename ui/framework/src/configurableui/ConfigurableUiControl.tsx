@@ -37,9 +37,10 @@ export class ConfigurableBase implements ConfigurableUiElement {
   /** @hidden */
   public get uniqueId(): string { return this._uniqueId; }
 
+  /** Gets the class Id of configurable element */
   public get classId(): string { return this._classId; }
 
-  /** Get internal name of Configurable item. If no name is defined in JSON configuration
+  /** Get internal name of configurable element. If no name is defined in configuration
    * then the name will match the UniqueId.
    */
   public get name(): string { return this._name; }
@@ -65,6 +66,10 @@ export enum ConfigurableUiControlType {
   Viewport,         /** Represents [[ViewportContentControl]] */
   Widget,           /** Represents [[WidgetControl]]  */
 }
+
+/** Prototype for ConfigurableUiControl constructor
+ */
+export type ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement;
 
 /** The absract base class for all Frontstage controls.
  *

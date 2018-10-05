@@ -65,6 +65,19 @@ describe("WidgetDef", () => {
     expect(widgetDef.reactElement).to.not.be.undefined;
   });
 
+  it("widgetControl using constructor classId", () => {
+    const widgetProps: WidgetProps = {
+      classId: TestWidget,
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
+
+    expect(widgetControl).to.not.be.undefined;
+    if (widgetControl)
+      expect(widgetControl.classId).to.eq("TestWidget");
+    expect(widgetDef.reactElement).to.not.be.undefined;
+  });
+
   it("setWidgetState", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",

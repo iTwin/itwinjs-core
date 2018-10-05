@@ -81,8 +81,8 @@ describe("ContentControl", () => {
   const contentGroup2: ContentGroup = new ContentGroup({
     id: "contentGroup2",
     contents: [
-      { classId: "TestContentControl", applicationData: "data1" },
-      { classId: "TestContentControl", applicationData: "data2" },
+      { classId: TestContentControl, applicationData: "data1" },
+      { classId: TestContentControl, applicationData: "data2" },
     ],
   });
 

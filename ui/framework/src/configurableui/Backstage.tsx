@@ -5,10 +5,9 @@
 /** @module Backstage */
 
 import * as React from "react";
-// import { CSSProperties } from "react";
 
 import { UiFramework } from "../UiFramework";
-import { SignOutModalFrontstage} from "../oidc/SignOut";
+import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps, CommandHandler } from "./ItemProps";
 import { FrontstageManager } from "./FrontstageManager";
@@ -23,8 +22,6 @@ import NZ_BackstageSeparator from "@bentley/ui-ninezone/lib/backstage/Separator"
 import NZ_UserProfile from "@bentley/ui-ninezone/lib/backstage/UserProfile";
 
 import { AccessToken } from "@bentley/imodeljs-clients";
-
-// import { BackstageHide } from "../App"; // BARRY_TODO
 
 // -----------------------------------------------------------------------------
 // BackstageItemDef and sub-interfaces
@@ -282,8 +279,6 @@ export interface BackstageCloseEventArgs {
 export class BackstageCloseEventEvent extends UiEvent<BackstageCloseEventArgs> { }
 
 function closeBackStage() {
-  // new BackstageHide().run();  // BARRY_TODO
-
   Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
 }
 
@@ -323,7 +318,7 @@ export class Backstage extends React.Component<BackstageProps> {
       if (userProfile) {
         return (
           <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email}
-                onClick={this._onSignOut.bind(this)} />
+            onClick={this._onSignOut.bind(this)} />
         );
       }
     }

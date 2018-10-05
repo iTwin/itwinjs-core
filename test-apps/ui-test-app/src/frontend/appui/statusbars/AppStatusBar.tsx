@@ -12,7 +12,7 @@ import { MessageCenterField, SnapModeField, PromptField } from "@bentley/ui-fram
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
 
-class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }

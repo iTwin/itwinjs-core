@@ -8,7 +8,7 @@ import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
 import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
-import { ConfigurableCreateInfo, ConfigurableUiElement } from "./ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
@@ -99,7 +99,7 @@ export class ConfigurableUiManager {
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
-  public static registerControl(classId: string, constructor: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement): void {
+  public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
     if (this._registeredControls.hasOwnProperty(classId)) {
       throw Error("ConfigurableUiManager.registerControl error: classId '" + classId + "' already registered");
     }

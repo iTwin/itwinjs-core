@@ -34,20 +34,26 @@ import {
   ContentGroup,
   ContentProps,
   ModalDialogManager,
+  ViewSelector,
+  ModelSelectorWidgetControl,
 } from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
-import ViewSelector from "@bentley/ui-framework/lib/pickers/ViewSelector";
+import { IModelViewportControl } from "../contentviews/IModelViewport";
+import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import rotateIcon from "../icons/rotate.svg";
-import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 // import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
 export class ViewsFrontstage extends FrontstageDef {
@@ -70,7 +76,7 @@ export class ViewsFrontstage extends FrontstageDef {
     const contentProps: ContentProps[] = [];
     for (const viewId of this.viewIds) {
       const thisContentProps: ContentProps = {
-        classId: "IModelViewport",
+        classId: IModelViewportControl,
         applicationData: { viewId, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
@@ -116,7 +122,7 @@ export class ViewsFrontstage extends FrontstageDef {
           {
             defaultState: WidgetState.Open,
             isFreeform: true,
-            reactElement: this.getNavigationWidget(),
+            reactElement: <FrontstageNavigationWidget />,
           },
         ],
       },
@@ -125,19 +131,19 @@ export class ViewsFrontstage extends FrontstageDef {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
+            classId: NavigationTreeWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "BreadcrumbDemoWidget",
+            classId: BreadcrumbDemoWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "ModelSelectorWidget",
+            classId: ModelSelectorWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-3d-cube",
             labelKey: "SampleApp:Test.my-label",
@@ -162,7 +168,7 @@ export class ViewsFrontstage extends FrontstageDef {
         allowsMerging: false,
         widgetProps: [
           {
-            classId: "AppStatusBar",
+            classId: AppStatusBarWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -177,13 +183,13 @@ export class ViewsFrontstage extends FrontstageDef {
         widgetProps: [
           {
             id: "VerticalPropertyGrid",
-            classId: "VerticalPropertyGridDemoWidget",
+            classId: VerticalPropertyGridWidgetControl,
             defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "HorizontalPropertyGridDemoWidget",
+            classId: HorizontalPropertyGridWidgetControl,
             defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -193,41 +199,6 @@ export class ViewsFrontstage extends FrontstageDef {
     };
 
     return frontstageProps;
-  }
-
-  /** Define a NavigationWidget with Buttons to display in the TopRight zone.
-   */
-  private getNavigationWidget(): React.ReactNode {
-    const horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
-        items={
-          <>
-            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
-            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-            <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
-          </>
-        }
-      />;
-
-    const verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Right}
-        items={
-          <>
-            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-          </>
-        }
-      />;
-
-    return (
-      <NavigationWidget
-        navigationAidId="CubeNavigationAid"
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
-      />
-    );
   }
 }
 
@@ -457,6 +428,43 @@ class FrontstageToolWidget extends React.Component<{}> {
     return (
       <ToolWidget
         appButtonId="SampleApp.BackstageToggle"
+        horizontalToolbar={this._horizontalToolbar}
+        verticalToolbar={this._verticalToolbar}
+      />
+    );
+  }
+}
+
+/** Define a NavigationWidget with Buttons to display in the TopRight zone.
+ */
+class FrontstageNavigationWidget extends React.Component {
+  private _horizontalToolbar =
+    <Toolbar
+      expandsTo={Direction.Bottom}
+      items={
+        <>
+          <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
+          <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+        </>
+      }
+    />;
+
+  private _verticalToolbar =
+    <Toolbar
+      expandsTo={Direction.Right}
+      items={
+        <>
+          <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+          <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+        </>
+      }
+    />;
+
+  public render() {
+    return (
+      <NavigationWidget
+        navigationAidId="CubeNavigationAid"
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />

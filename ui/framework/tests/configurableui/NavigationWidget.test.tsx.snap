@@ -30,7 +30,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       },
       "_navigationAidId": "",
       "_verticalIds": Array [],
-      "classId": "",
+      "classId": undefined,
       "defaultOpenUsed": false,
       "defaultState": 1,
       "featureId": "",
@@ -38,7 +38,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "horizontalItems": ItemList {
         "_items": Array [],
       },
-      "id": "Widget-NaN",
+      "id": "Widget-4",
       "isDefaultOpen": true,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
