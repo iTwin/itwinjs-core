@@ -22,6 +22,7 @@
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
   },
   "dependencies": {
+    "@bentley/config-loader": "0.151.0",
     "@bentley/dev-cors-proxy-server": "0.0.8",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",

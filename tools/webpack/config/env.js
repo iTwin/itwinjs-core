@@ -7,7 +7,13 @@
 const fs = require("fs");
 const path = require("path");
 const paths = require("./paths");
-
+const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+const configEnv = configLoader.IModelJsConfig.init(false);
+if (configEnv && process.env) {
+  Object.assign(process.env, configEnv);
+} else {
+  console.log("Webpack failed to locate iModelJs configuration");
+}
 // Make sure that including paths.js after env.js will read .env variables.
 delete require.cache[require.resolve("./paths")];
 
@@ -64,7 +70,7 @@ const REACT_APP = /^REACT_APP_/i;
 const IMJS = /^imjs_/i;
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
-    .filter(key => REACT_APP.test(key) || IMJS.test(key))
+    .filter((key) => { return REACT_APP.test(key) || IMJS.test(key); })
     .reduce(
       (env, key) => {
         env[key] = process.env[key];
