@@ -1,9 +1,6 @@
 {
-  "bankfsRoot": "TBD",
+  "imodelfsRoot": "TBD",
   "port": "TBD",
-  "firstBankPort": "TBD",
-  "firstContextPort": "TBD",
-  "firstBackendPort": "TBD",
   "baseUrl": "TBD",
   "backofficeServicesConfig": {
     "serviceIdentityUserName": "Regular.IModelJsTestUser@mailinator.com",

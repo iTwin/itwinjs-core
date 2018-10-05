@@ -27,10 +27,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   const cfg = require(path.resolve(__dirname, "../assets/LocalOrchestrator.config.json"));
   cfg.baseUrl = "https://localhost";
   cfg.port = 4000;
-  cfg.firstBankPort = cfg.port + 1;
-  cfg.firstContextPort = cfg.port + 20;
-  cfg.firstBackendPort = 0;
-  cfg.bankfsRoot = bankFsRoot;
+  cfg.imodelfsRoot = bankFsRoot;
 
   const serverConfigFile = path.join(workDir, "LocalOrchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
