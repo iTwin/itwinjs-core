@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
 import Schema from "./Schema";
 import Format, { IFormat } from "./Format";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import OverrideFormat from "./OverrideFormat";
 
 export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromise, DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import * as sinon from "sinon";
+import { DelayedPromise, DelayedPromiseWithProps } from "./../../src/DelayedPromise";
 
 describe("DelayedPromise", () => {
   it("should not start until awaited", async () => {

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createSchemaJsonWithItems } from "./../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import ECClass, { MutableClass } from "../../src/Metadata/Class";
-import EntityClass, { MutableEntityClass } from "../../src/Metadata/EntityClass";
-import Mixin from "../../src/Metadata/Mixin";
-import RelationshipClass from "../../src/Metadata/RelationshipClass";
-import { ECClassModifier } from "../../src/ECObjects";
-import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import { ECObjectsError } from "../../src/Exception";
+import Schema, { MutableSchema } from "./../../src/Metadata/Schema";
+import ECClass, { MutableClass } from "./../../src/Metadata/Class";
+import EntityClass, { MutableEntityClass } from "./../../src/Metadata/EntityClass";
+import Mixin from "./../../src/Metadata/Mixin";
+import RelationshipClass from "./../../src/Metadata/RelationshipClass";
+import { ECClassModifier } from "./../../src/ECObjects";
+import { DelayedPromiseWithProps } from "./../../src/DelayedPromise";
+import { ECObjectsError } from "./../../src/Exception";
 
 describe("EntityClass", () => {
   describe("get inherited properties", () => {

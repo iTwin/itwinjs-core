@@ -6,7 +6,7 @@
 import Format, { IFormat } from "./Format";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
-import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption, FormatTraits, FormatType } from "../utils/FormatEnums";
+import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption, FormatTraits, FormatType } from "./../utils/FormatEnums";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.

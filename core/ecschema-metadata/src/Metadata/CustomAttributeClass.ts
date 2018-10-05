@@ -5,7 +5,7 @@
 
 import ECClass from "./Class";
 import { CustomAttributeContainerType, ECClassModifier, SchemaItemType, parseCustomAttributeContainerType, containerTypeToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import Schema from "./Schema";
 
 /**

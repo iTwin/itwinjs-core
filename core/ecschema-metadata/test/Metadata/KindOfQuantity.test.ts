@@ -16,7 +16,7 @@ import Schema from "../../src/Metadata/Schema";
 
 import Unit from "../../src/Metadata/Unit";
 import Format from "../../src/Metadata/Format";
-import { SchemaContext } from "../../src/Context";
+import SchemaContext from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
 
 describe("KindOfQuantity", () => {

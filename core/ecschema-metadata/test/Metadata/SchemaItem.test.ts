@@ -5,11 +5,12 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../src/Metadata/Schema";
-import { ECObjectsError } from "../../src/Exception";
-import SchemaItem from "../../src/Metadata/SchemaItem";
-import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../src/ECObjects";
-import EntityClass from "../../src/Metadata/EntityClass";
+import Schema from "./../../src/Metadata/Schema";
+import { ECObjectsError } from "./../../src/Exception";
+import SchemaItem from "./../../src/Metadata/SchemaItem";
+import { SchemaItemType } from "./../../src/ECObjects";
+import SchemaKey, { SchemaItemKey } from "./../../src/SchemaKey";
+import EntityClass from "./../../src/Metadata/EntityClass";
 
 describe("SchemaItem", () => {
   describe("fromJson", () => {

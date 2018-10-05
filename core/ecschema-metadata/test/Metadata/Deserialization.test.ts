@@ -6,14 +6,14 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../src/Metadata/Schema";
-import { SchemaContext } from "../../src/Context";
-import { ECObjectsError } from "../../src/Exception";
-import { SchemaDeserializationVisitor } from "../../src/Interfaces";
-import SchemaReadHelper from "../../src/Deserialization/Helper";
-import { AnyClass } from "../../src/Interfaces";
-import { SchemaItemType } from "../../src/ECObjects";
-import { NavigationProperty } from "../../src/Metadata/Property";
+import Schema from "./../../src/Metadata/Schema";
+import SchemaContext from "./../../src/Context";
+import { ECObjectsError } from "./../../src/Exception";
+import { SchemaDeserializationVisitor } from "./../../src/Interfaces";
+import SchemaReadHelper from "./../../src/Deserialization/Helper";
+import { AnyClass } from "./../../src/Interfaces";
+import { SchemaItemType } from "./../../src/ECObjects";
+import { NavigationProperty } from "./../../src/Metadata/Property";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {

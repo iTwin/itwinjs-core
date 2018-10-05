@@ -5,10 +5,12 @@
 
 import { assert } from "chai";
 
-import { SchemaJsonFileLocater } from "../../src/Deserialization/SchemaJsonFileLocater";
-import { FileSchemaKey } from "../../src/Deserialization/SchemaFileLocater";
-import { SchemaContext } from "../../src/Context";
-import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType } from "../../src";
+import SchemaJsonFileLocater from "./../../src/Deserialization/SchemaJsonFileLocater";
+import { FileSchemaKey } from "./../../src/Deserialization/SchemaFileLocater";
+import SchemaContext from "./../../src/Context";
+import { SchemaMatchType } from "./../../src/ECObjects";
+import SchemaKey from "./../../src/SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../../src/Exception";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;
@@ -16,6 +18,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   beforeEach(() => {
     locater = new SchemaJsonFileLocater();
+
     locater.addSchemaSearchPath(__dirname + "\\..\\assets\\");
     context = new SchemaContext();
     context.addLocater(locater);

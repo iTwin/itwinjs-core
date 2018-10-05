@@ -3,11 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaXmlFileLocater } from "../src/Deserialization/SchemaXmlFileLocater";
-import { SchemaKey, SchemaContext, SchemaMatchType } from "../src";
-import Schema from "../src/Metadata/Schema";
 import { assert } from "chai";
-import { SchemaGraphUtil } from "../src/Deserialization/SchemaGraphUtil";
+
+import SchemaXmlFileLocater from "./../src/Deserialization/SchemaXmlFileLocater";
+import { SchemaMatchType } from "./../src/ECObjects";
+import SchemaContext from "./../src/Context";
+import SchemaKey from "./../src/SchemaKey";
+import Schema from "./../src/Metadata/Schema";
+import SchemaGraphUtil from "./../src/Deserialization/SchemaGraphUtil";
 
 describe("SchemaGraphUtil tests:", () => {
   const path = __dirname + "\\assets";

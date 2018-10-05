@@ -11,7 +11,7 @@ import Unit from "../../src/Metadata/Unit";
 import { FractionalPrecision, ShowSignOption, FormatTraits } from "../../src/utils/FormatEnums";
 
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaContext } from "../../src/Context";
+import SchemaContext from "../../src/Context";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { InvertedUnit } from "../../src";
 

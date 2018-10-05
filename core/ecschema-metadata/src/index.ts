@@ -6,6 +6,7 @@
 export * from "./ECObjects";
 export * from "./Constants";
 export * from "./Context";
+export * from "./SchemaKey";
 export * from "./Interfaces";
 export * from "./DelayedPromise";
 export * from "./Exception";

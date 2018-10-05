@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "..";
+import Schema from "./../Metadata/Schema";
 
 /** Utility class for working with Schema graphs. */
-export class SchemaGraphUtil {
+export default class SchemaGraphUtil {
   /**
    * Creates a flattened list of schemas in topological order, typically used before schema import
    * so that dependent schemas are processed after their references.

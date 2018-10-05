@@ -3,9 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKey, ECVersion, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus, ISchemaLocater } from "..";
-import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
-import { SchemaContext } from "./../Context";
+import Schema from "./../Metadata/Schema";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaMatchType } from "./../ECObjects";
+import { ISchemaLocater } from "./../Context";
+import SchemaKey, { ECVersion } from "./../SchemaKey";
+import SchemaFileLocater, { FileSchemaKey } from "./SchemaFileLocater";
+import SchemaContext from "./../Context";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -13,7 +17,7 @@ import * as fs from "fs";
  * A SchemaLocator implementation for locationg JSON Schema files
  * from the file system using configurable search paths.
  */
-export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
+export default class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON

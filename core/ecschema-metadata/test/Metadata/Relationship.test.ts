@@ -6,8 +6,8 @@
 import { assert, expect } from "chai";
 import Schema from "../../src/Metadata/Schema";
 import EntityClass from "../../src/Metadata/EntityClass";
-import RelationshipClass from "../../src/Metadata/RelationshipClass";
-import { RelationshipMultiplicity, StrengthType, StrengthDirection } from "../../src/ECObjects";
+import RelationshipClass, { RelationshipMultiplicity } from "../../src/Metadata/RelationshipClass";
+import { StrengthType, StrengthDirection } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 
 describe("RelationshipMultiplicity", () => {

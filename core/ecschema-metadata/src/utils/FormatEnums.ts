@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 export const enum FormatTraits {
   TrailZeroes = 0x1,
@@ -68,18 +68,13 @@ export const enum ShowSignOption { // default is no sign
 // parse and toString methods
 
 export function scientificTypeToString(scientificType: ScientificType): string {
-  if (scientificType === ScientificType.Normalized)
-    return "Normalized";
-  else
-    return "ZeroNormalized";
+  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
 }
 
 export function parseScientificType(scientificType: string, formatName: string): ScientificType {
-  switch (scientificType.toUpperCase()) {
-    case "NORMALIZED":
-      return ScientificType.Normalized;
-    case "ZERONORMALIZED":
-      return ScientificType.ZeroNormalized;
+  switch (scientificType.toLowerCase()) {
+    case "normalized": return ScientificType.Normalized;
+    case "zeronormalized": return ScientificType.ZeroNormalized;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'scientificType' attribute.`);
   }
@@ -87,27 +82,19 @@ export function parseScientificType(scientificType: string, formatName: string):
 
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
-    case ShowSignOption.NegativeParentheses:
-      return "NegativeParentheses";
-    case ShowSignOption.NoSign:
-      return "NoSign";
-    case ShowSignOption.OnlyNegative:
-      return "OnlyNegative";
-    case ShowSignOption.SignAlways:
-      return "SignAlways";
+    case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
+    case ShowSignOption.NoSign: return "NoSign";
+    case ShowSignOption.OnlyNegative: return "OnlyNegative";
+    case ShowSignOption.SignAlways: return "SignAlways";
   }
 }
 
 export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
-  switch (showSignOption.toUpperCase()) {
-    case "NOSIGN":
-      return ShowSignOption.NoSign;
-    case "ONLYNEGATIVE":
-      return ShowSignOption.OnlyNegative;
-    case "SIGNALWAYS":
-      return ShowSignOption.SignAlways;
-    case "NEGATIVEPARENTHESES":
-      return ShowSignOption.NegativeParentheses;
+  switch (showSignOption.toLowerCase()) {
+    case "nosign": return ShowSignOption.NoSign;
+    case "onlynegative": return ShowSignOption.OnlyNegative;
+    case "signalways": return ShowSignOption.SignAlways;
+    case "negativeparentheses": return ShowSignOption.NegativeParentheses;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
   }
@@ -116,31 +103,36 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
   const formatTraitsArr = Array<string>();
   if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes)
-    formatTraitsArr.push("trailZeroes");
+    formatTraitsArr.push("TrailZeroes");
   if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero)
-    formatTraitsArr.push("keepSingleZero");
+    formatTraitsArr.push("KeepSingleZero");
   if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty)
-    formatTraitsArr.push("zeroEmpty");
+    formatTraitsArr.push("ZeroEmpty");
   if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint)
-    formatTraitsArr.push("keepDecimalPoint");
+    formatTraitsArr.push("KeepDecimalPoint");
   if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding)
-    formatTraitsArr.push("applyRounding");
+    formatTraitsArr.push("ApplyRounding");
   if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash)
-    formatTraitsArr.push("fractionDash");
+    formatTraitsArr.push("FractionDash");
   if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel)
-    formatTraitsArr.push("showUnitLabel");
+    formatTraitsArr.push("ShowUnitLabel");
   if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel)
-    formatTraitsArr.push("prependUnitLabel");
+    formatTraitsArr.push("PrependUnitLabel");
   if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator)
-    formatTraitsArr.push("use1000Separator");
+    formatTraitsArr.push("Use1000Separator");
   if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
-    formatTraitsArr.push("exponentOnlyNegative");
+    formatTraitsArr.push("ExponentOnlyNegative");
   return formatTraitsArr;
 }
 
-export function parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits {
+/**
+ *
+ * @param formatTraitsString
+ * @param currentFormatTrait
+ */
+export function parseFormatTrait(formatTraitsString: string, currentFormatTrait: number): FormatTraits {
   let formatTrait = currentFormatTrait;
-  switch (stringToCheck) {
+  switch (formatTraitsString.toLowerCase()) {
     case "trailzeroes":
       formatTrait = currentFormatTrait | FormatTraits.TrailZeroes;
       break;
@@ -179,31 +171,19 @@ export function parseFormatTrait(stringToCheck: string, currentFormatTrait: numb
 
 export function formatTypeToString(type: FormatType): string {
   switch (type) {
-    case FormatType.Decimal:
-      return "Decimal";
-    case FormatType.Scientific:
-      return "Scientific";
-    case FormatType.Station:
-      return "Station";
-    case FormatType.Fractional:
-      return "Fractional";
+    case FormatType.Decimal: return "Decimal";
+    case FormatType.Scientific: return "Scientific";
+    case FormatType.Station: return "Station";
+    case FormatType.Fractional: return "Fractional";
   }
 }
 
 export function parseFormatType(jsonObjType: string, formatName: string): FormatType {
-  switch (jsonObjType.toUpperCase()) {
-    case "DECIMAL":
-      return FormatType.Decimal;
-      break;
-    case "SCIENTIFIC":
-      return FormatType.Scientific;
-      break;
-    case "STATION":
-      return FormatType.Station;
-      break;
-    case "FRACTIONAL":
-      return FormatType.Fractional;
-      break;
+  switch (jsonObjType.toLowerCase()) {
+    case "decimal": return FormatType.Decimal;
+    case "scientific": return FormatType.Scientific;
+    case "station": return FormatType.Station;
+    case "fractional": return FormatType.Fractional;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
@@ -211,45 +191,19 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
 
 export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision {
   switch (jsonObjPrecision) {
-    case 0:
-      return DecimalPrecision.Zero;
-      break;
-    case 1:
-      return DecimalPrecision.One;
-      break;
-    case 2:
-      return DecimalPrecision.Two;
-      break;
-    case 3:
-      return DecimalPrecision.Three;
-      break;
-    case 4:
-      return DecimalPrecision.Four;
-      break;
-    case 5:
-      return DecimalPrecision.Five;
-      break;
-    case 6:
-      return DecimalPrecision.Six;
-      break;
-    case 7:
-      return DecimalPrecision.Seven;
-      break;
-    case 8:
-      return DecimalPrecision.Eight;
-      break;
-    case 9:
-      return DecimalPrecision.Nine;
-      break;
-    case 10:
-      return DecimalPrecision.Ten;
-      break;
-    case 11:
-      return DecimalPrecision.Eleven;
-      break;
-    case 12:
-      return DecimalPrecision.Twelve;
-      break;
+    case 0: return DecimalPrecision.Zero;
+    case 1: return DecimalPrecision.One;
+    case 2: return DecimalPrecision.Two;
+    case 3: return DecimalPrecision.Three;
+    case 4: return DecimalPrecision.Four;
+    case 5: return DecimalPrecision.Five;
+    case 6: return DecimalPrecision.Six;
+    case 7: return DecimalPrecision.Seven;
+    case 8: return DecimalPrecision.Eight;
+    case 9: return DecimalPrecision.Nine;
+    case 10: return DecimalPrecision.Ten;
+    case 11: return DecimalPrecision.Eleven;
+    case 12: return DecimalPrecision.Twelve;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The 'precision' attribute must be an integer in the range 0-12.`);
   }
@@ -257,33 +211,15 @@ export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecisio
 
 export function parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision {
   switch (jsonObjPrecision) {
-    case 1:
-      return FractionalPrecision.One;
-      break;
-    case 2:
-      return FractionalPrecision.Two;
-      break;
-    case 4:
-      return FractionalPrecision.Four;
-      break;
-    case 8:
-      return FractionalPrecision.Eight;
-      break;
-    case 16:
-      return FractionalPrecision.Sixteen;
-      break;
-    case 32:
-      return FractionalPrecision.ThirtyTwo;
-      break;
-    case 64:
-      return FractionalPrecision.SixtyFour;
-      break;
-    case 128:
-      return FractionalPrecision.OneHundredTwentyEight;
-      break;
-    case 256:
-      return FractionalPrecision.TwoHundredFiftySix;
-      break;
+    case 1: return FractionalPrecision.One;
+    case 2: return FractionalPrecision.Two;
+    case 4: return FractionalPrecision.Four;
+    case 8: return FractionalPrecision.Eight;
+    case 16: return FractionalPrecision.Sixteen;
+    case 32: return FractionalPrecision.ThirtyTwo;
+    case 64: return FractionalPrecision.SixtyFour;
+    case 128: return FractionalPrecision.OneHundredTwentyEight;
+    case 256: return FractionalPrecision.TwoHundredFiftySix;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
   }
@@ -295,10 +231,8 @@ export function parsePrecision(precision: number, formatName: string, type: Form
     case FormatType.Scientific:
     case FormatType.Station:
       return parseDecimalPrecision(precision);
-      break;
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);
-      break;
     default:
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }

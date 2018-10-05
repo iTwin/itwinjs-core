@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 
 export default class Phenomenon extends SchemaItem {

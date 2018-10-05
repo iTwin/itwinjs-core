@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import Schema from "../../src/Metadata/Schema";
-import Enumeration, { MutableEnumeration } from "../../src/Metadata/Enumeration";
-import { ECObjectsError } from "../../src/Exception";
-import { PrimitiveType } from "../../src/ECObjects";
 import * as sinon from "sinon";
+import { assert, expect } from "chai";
+
+import Schema from "../../src/Metadata/Schema";
+import Enumeration, { MutableEnumeration } from "./../../src/Metadata/Enumeration";
+import { ECObjectsError } from "./../../src/Exception";
+import { PrimitiveType } from "./../../src/ECObjects";
 
 describe("Enumeration", () => {
   describe("accept", () => {

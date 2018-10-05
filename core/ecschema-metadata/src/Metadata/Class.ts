@@ -3,14 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import Schema from "./Schema";
 import Enumeration from "./Enumeration";
 import SchemaItem from "./SchemaItem";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType, classModifierToString } from "../ECObjects";
+import {
+  ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType,
+  CustomAttributeContainerType, classModifierToString,
+} from "../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
 import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
+import {
+  PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty,
+  EnumerationProperty, EnumerationArrayProperty, Property,
+} from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import Schema from "./Schema";
 import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "../Interfaces";
 
 /**
@@ -141,7 +148,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof(propType) === "number")
+    if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(new EnumerationProperty(this, name, propType));
@@ -160,7 +167,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof(propType) === "number")
+    if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(new EnumerationProperty(this, name, propType));
@@ -178,7 +185,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof(propType) === "number")
+    if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(new EnumerationArrayProperty(this, name, propType));
@@ -196,7 +203,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof(propType) === "number")
+    if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(new EnumerationArrayProperty(this, name, propType));
@@ -252,7 +259,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
-    if (typeof(structType) === "string") {
+    if (typeof (structType) === "string") {
       correctType = await schema.lookupItem<StructClass>(structType);
     } else
       correctType = structType as StructClass | undefined;
@@ -265,7 +272,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
-    if (typeof(structType) === "string") {
+    if (typeof (structType) === "string") {
       correctType = schema.lookupItemSync<StructClass>(structType);
     } else
       correctType = structType as StructClass | undefined;
@@ -280,7 +287,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
 
-    if (typeof(primitiveType) === "string") {
+    if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
@@ -290,7 +297,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
-      if (typeof(resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
+      if (typeof (resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       return resolvedType;
@@ -303,7 +310,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
 
-    if (typeof(primitiveType) === "string") {
+    if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
@@ -321,7 +328,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.modifier = classModifierToString(this.modifier);
-    if (this.baseClass  !== undefined)
+    if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
     if (this.properties !== undefined && this.properties.length > 0) {
       schemaJson.properties = [];
@@ -351,7 +358,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     super.fromJsonSync(jsonObj);
 
     if (undefined !== jsonObj.modifier) {
-      if (typeof(jsonObj.modifier) !== "string")
+      if (typeof (jsonObj.modifier) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
 
       const modifier = parseClassModifier(jsonObj.modifier);
@@ -361,7 +368,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     }
 
     if (undefined !== jsonObj.baseClass) {
-      if (typeof(jsonObj.baseClass) !== "string")
+      if (typeof (jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
       const ecClassSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.baseClass);
@@ -373,7 +380,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
           if (undefined === baseClass)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
           return baseClass;
-      });
+        });
     }
     this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
   }
@@ -388,7 +395,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * This is essentially a depth-first traversal through the inheritance tree.
    */
   public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
-    const baseClasses: ECClass[] = [ this ];
+    const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
         for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
@@ -409,24 +416,24 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   }
 
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
-  const baseClasses: ECClass[] = [ this ];
-  const addBaseClasses = (ecClass: AnyClass) => {
-    if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-      for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
-        baseClasses.push(m);
+    const baseClasses: ECClass[] = [this];
+    const addBaseClasses = (ecClass: AnyClass) => {
+      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
+        for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+          baseClasses.push(m);
+        }
       }
-    }
 
-    const baseClass = ecClass.getBaseClassSync();
-    if (baseClass)
-      baseClasses.push(baseClass);
-  };
+      const baseClass = ecClass.getBaseClassSync();
+      if (baseClass)
+        baseClasses.push(baseClass);
+    };
 
-  while (baseClasses.length > 0) {
-    const baseClass = baseClasses.pop() as AnyClass;
-    addBaseClasses(baseClass);
-    if (baseClass !== this)
-      yield baseClass;
+    while (baseClasses.length > 0) {
+      const baseClass = baseClasses.pop() as AnyClass;
+      addBaseClasses(baseClass);
+      if (baseClass !== this)
+        yield baseClass;
     }
   }
 

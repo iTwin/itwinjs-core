@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType, CustomAttributeContainerType,
-        parseStrength, parseStrengthDirection, SchemaItemKey, strengthToString, strengthDirectionToString } from "../ECObjects";
+import {
+  ECClassModifier, StrengthDirection, RelationshipEnd, SchemaItemType, StrengthType, CustomAttributeContainerType,
+  parseStrength, parseStrengthDirection, strengthToString, strengthDirectionToString,
+} from "./../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import processCustomAttributes, { CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { NavigationProperty } from "./Property";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import Mixin from "./Mixin";
 import Schema from "./Schema";
@@ -62,7 +65,7 @@ export default class RelationshipClass extends ECClass {
     schemaJson.strength = strengthToString(this.strength);
     schemaJson.strengthDirection = strengthDirectionToString(this.strengthDirection);
     schemaJson.source = this.source.toJson();
-    schemaJson.target  = this.target.toJson();
+    schemaJson.target = this.target.toJson();
     return schemaJson;
   }
 
@@ -74,7 +77,7 @@ export default class RelationshipClass extends ECClass {
     await super.fromJson(jsonObj);
 
     if (undefined !== jsonObj.strength) {
-      if (typeof(jsonObj.strength) !== "string")
+      if (typeof (jsonObj.strength) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strength' attribute. It should be of type 'string'.`);
       const strength = parseStrength(jsonObj.strength);
       if (undefined === strength)
@@ -83,7 +86,7 @@ export default class RelationshipClass extends ECClass {
     }
 
     if (undefined !== jsonObj.strengthDirection) {
-      if (typeof(jsonObj.strengthDirection) !== "string")
+      if (typeof (jsonObj.strengthDirection) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
 
       const strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
@@ -188,19 +191,19 @@ export class RelationshipConstraint {
   public async fromJson(jsonObj: any): Promise<void> {
     // TODO: Require all constraints to be fully defined.
     if (undefined !== jsonObj.roleLabel) {
-      if (typeof(jsonObj.roleLabel) !== "string")
+      if (typeof (jsonObj.roleLabel) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
       this._roleLabel = jsonObj.roleLabel;
     }
 
     if (undefined !== jsonObj.polymorphic) {
-      if (typeof(jsonObj.polymorphic) !== "boolean")
+      if (typeof (jsonObj.polymorphic) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
       this._polymorphic = jsonObj.polymorphic;
     }
 
     if (undefined !== jsonObj.multiplicity) {
-      if (typeof(jsonObj.multiplicity) !== "string")
+      if (typeof (jsonObj.multiplicity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
 
       const parsedMultiplicity = RelationshipMultiplicity.fromString(jsonObj.multiplicity);
@@ -212,19 +215,19 @@ export class RelationshipConstraint {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== jsonObj.abstractConstraint) {
-      if (typeof(jsonObj.abstractConstraint) !== "string")
+      if (typeof (jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
       const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(jsonObj.abstractConstraint);
       if (!abstractConstraintSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
       this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
-      async () => {
-        const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(jsonObj.abstractConstraint);
-        if (undefined === tempAbstractConstraint)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
-        return tempAbstractConstraint;
-      });
+        async () => {
+          const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(jsonObj.abstractConstraint);
+          if (undefined === tempAbstractConstraint)
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+          return tempAbstractConstraint;
+        });
     }
 
     if (undefined !== jsonObj.constraintClasses) {
@@ -232,7 +235,7 @@ export class RelationshipConstraint {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
       const loadEachConstraint = async (constraintClassName: any) => {
-        if (typeof(constraintClassName) !== "string")
+        if (typeof (constraintClassName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
         const tempConstraintClass = await relClassSchema.lookupItem<AnyConstraintClass>(constraintClassName);
@@ -253,19 +256,19 @@ export class RelationshipConstraint {
   public fromJsonSync(jsonObj: any): void {
     // TODO: Require all constraints to be fully defined.
     if (undefined !== jsonObj.roleLabel) {
-      if (typeof(jsonObj.roleLabel) !== "string")
+      if (typeof (jsonObj.roleLabel) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
       this._roleLabel = jsonObj.roleLabel;
     }
 
     if (undefined !== jsonObj.polymorphic) {
-      if (typeof(jsonObj.polymorphic) !== "boolean")
+      if (typeof (jsonObj.polymorphic) !== "boolean")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
       this._polymorphic = jsonObj.polymorphic;
     }
 
     if (undefined !== jsonObj.multiplicity) {
-      if (typeof(jsonObj.multiplicity) !== "string")
+      if (typeof (jsonObj.multiplicity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
 
       const parsedMultiplicity = RelationshipMultiplicity.fromString(jsonObj.multiplicity);
@@ -277,19 +280,19 @@ export class RelationshipConstraint {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== jsonObj.abstractConstraint) {
-      if (typeof(jsonObj.abstractConstraint) !== "string")
+      if (typeof (jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
       const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(jsonObj.abstractConstraint);
       if (!abstractConstraintSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
       this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
-      async () => {
-        const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(jsonObj.abstractConstraint);
-        if (undefined === tempAbstractConstraint)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
-        return tempAbstractConstraint;
-      });
+        async () => {
+          const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(jsonObj.abstractConstraint);
+          if (undefined === tempAbstractConstraint)
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${jsonObj.abstractConstraint}.`);
+          return tempAbstractConstraint;
+        });
     }
 
     if (undefined !== jsonObj.constraintClasses) {
@@ -297,7 +300,7 @@ export class RelationshipConstraint {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
       const loadEachConstraint = (constraintClassName: any) => {
-        if (typeof(constraintClassName) !== "string")
+        if (typeof (constraintClassName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
         const tempConstraintClass = relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
@@ -313,6 +316,53 @@ export class RelationshipConstraint {
       }
     }
     this._customAttributes = processCustomAttributes(jsonObj.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
+  }
+}
+
+const INT32_MAX = 2147483647;
+
+/**
+ *
+ */
+export class RelationshipMultiplicity {
+  public static readonly zeroOne = new RelationshipMultiplicity(0, 1);
+  public static readonly zeroMany = new RelationshipMultiplicity(0, INT32_MAX);
+  public static readonly oneOne = new RelationshipMultiplicity(1, 1);
+  public static readonly oneMany = new RelationshipMultiplicity(1, INT32_MAX);
+
+  public readonly lowerLimit: number;
+  public readonly upperLimit: number;
+
+  constructor(lowerLimit: number, upperLimit: number) {
+    this.lowerLimit = lowerLimit;
+    this.upperLimit = upperLimit;
+  }
+
+  public static fromString(str: string): RelationshipMultiplicity | undefined {
+    const matches = /^\(([0-9]*)\.\.([0-9]*|\*)\)$/.exec(str);
+    if (matches === null || matches.length !== 3)
+      return undefined;
+
+    const lowerLimit = parseInt(matches[1], undefined);
+    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], undefined);
+    if (0 === lowerLimit && 1 === upperLimit)
+      return RelationshipMultiplicity.zeroOne;
+    else if (0 === lowerLimit && INT32_MAX === upperLimit)
+      return RelationshipMultiplicity.zeroMany;
+    else if (1 === lowerLimit && 1 === upperLimit)
+      return RelationshipMultiplicity.oneOne;
+    else if (1 === lowerLimit && INT32_MAX === upperLimit)
+      return RelationshipMultiplicity.oneMany;
+
+    return new RelationshipMultiplicity(lowerLimit, upperLimit);
+  }
+
+  public equals(rhs: RelationshipMultiplicity): boolean {
+    return this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit;
+  }
+
+  public toString(): string {
+    return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
 }
 

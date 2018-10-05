@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 
 export default class UnitSystem extends SchemaItem {

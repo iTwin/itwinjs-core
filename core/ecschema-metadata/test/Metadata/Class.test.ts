@@ -9,7 +9,7 @@ import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 import Schema, { MutableSchema } from "../../src/Metadata/Schema";
 import EntityClass from "../../src/Metadata/EntityClass";
-import { SchemaContext } from "../../src/Context";
+import SchemaContext from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import ECClass, { MutableClass } from "../../src/Metadata/Class";
 import { ECObjectsError } from "../../src/Exception";

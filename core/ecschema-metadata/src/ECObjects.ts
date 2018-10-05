@@ -55,7 +55,6 @@ export const enum PrimitiveType {
 /**
  * Defines the valid CustomAttribute container types.
  */
-// Matches the C++ enumeration values.
 export const enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
   EntityClass = (0x0001 << 1),
@@ -144,8 +143,7 @@ export function classModifierToString(modifier: ECClassModifier): string {
  * @returns A valid SchemaItemType if successfully parsed. Otherwise, undefined if the provided string is not a valid SchemaItemType.
  */
 export function parseSchemaItemType(type: string): SchemaItemType | undefined {
-  const lowerType = type.toLowerCase();
-  switch (lowerType) {
+  switch (type.toLowerCase()) {
     case "entityclass": return SchemaItemType.EntityClass;
     case "mixin": return SchemaItemType.Mixin;
     case "structclass": return SchemaItemType.StructClass;
@@ -190,21 +188,23 @@ export function schemaItemTypeToString(value: SchemaItemType): string {
 }
 
 /**
- * Tries to parse the given string as one of the 11 primitive types.
+ * Tries to parse the given string as one of the 10 primitive types.
  * @param type The primitive type string to parse.
  * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
  */
 export function parsePrimitiveType(type: string): PrimitiveType | undefined {
-  if (/^binary$/i.test(type)) return PrimitiveType.Binary;
-  if (/^bool(ean)?$/i.test(type)) return PrimitiveType.Boolean;
-  if (/^dateTime$/i.test(type)) return PrimitiveType.DateTime;
-  if (/^double$/i.test(type)) return PrimitiveType.Double;
-  if (/^int$/i.test(type)) return PrimitiveType.Integer;
-  if (/^long$/i.test(type)) return PrimitiveType.Long;
-  if (/^point2d$/i.test(type)) return PrimitiveType.Point2d;
-  if (/^point3d$/i.test(type)) return PrimitiveType.Point3d;
-  if (/^string$/i.test(type)) return PrimitiveType.String;
-  if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type)) return PrimitiveType.IGeometry;
+  switch (type.toLowerCase()) {
+    case "binary": return PrimitiveType.Binary;
+    case "boolean": case "bool": return PrimitiveType.Boolean;
+    case "datetime": return PrimitiveType.DateTime;
+    case "double": return PrimitiveType.Double;
+    case "int": return PrimitiveType.Integer;
+    case "long": return PrimitiveType.Long;
+    case "point2d": return PrimitiveType.Point2d;
+    case "point3d": return PrimitiveType.Point3d;
+    case "string": return PrimitiveType.String;
+    case "bentley.geometry.common.igeometry": return PrimitiveType.IGeometry;
+  }
 
   return undefined;
 }
@@ -363,8 +363,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
 }
 
 export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
-  const endLower = end.toLowerCase();
-  switch (endLower) {
+  switch (end.toLowerCase()) {
     case "source": return RelationshipEnd.Source;
     case "target": return RelationshipEnd.Target;
   }
@@ -385,8 +384,7 @@ export function relationshipEndToString(end: RelationshipEnd): string {
  * @param strength
  */
 export function parseStrength(strength: string): StrengthType | undefined {
-  const lowerStrength = strength.toLowerCase();
-  switch (lowerStrength) {
+  switch (strength.toLowerCase()) {
     case "referencing": return StrengthType.Referencing;
     case "holding": return StrengthType.Holding;
     case "embedding": return StrengthType.Embedding;
@@ -404,8 +402,7 @@ export function strengthToString(strength: StrengthType): string {
 }
 
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
-  const lowerDirection = direction.toLowerCase();
-  switch (lowerDirection) {
+  switch (direction.toLowerCase()) {
     case "forward": return StrengthDirection.Forward;
     case "backward": return StrengthDirection.Backward;
   }
@@ -417,290 +414,5 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
     case StrengthDirection.Forward: return "Forward";
     case StrengthDirection.Backward: return "Backward";
     default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
-  }
-}
-
-/**
- *
- */
-export class ECVersion {
-  private _read: number = 0;
-  private _write: number = 0;
-  private _minor: number = 0;
-
-  constructor(read?: number, write?: number, minor?: number) {
-    if (undefined !== read) this._read = read;
-    if (undefined !== write) this._write = write;
-    if (undefined !== minor) this._minor = minor;
-
-    if (this._read > 99 || this._read < 0 || this._write > 99 || this._write < 0 || this._minor > 99 || this._minor < 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
-  }
-
-  get read() { return this._read; }
-
-  get write() { return this._write; }
-
-  get minor() { return this._minor; }
-
-  /**
-   * Creates a string, in the format 'RR.ww.mm', representing this ECVersion.
-   * @ note The default is to not pad with zeroes.
-   * @param padZeroes If true, the returned string will strictly follow `RR.ww.mm` and add leading zeroes if necessary.
-   */
-  public toString(padZeroes: boolean = false): string {
-    if (!padZeroes)
-      return `${this.read}.${this.write}.${this.minor}`;
-
-    const padWithZeroes = (num: number) => {
-      return (num < 10 ? "0" : "") + num;
-    };
-
-    return `${padWithZeroes(this.read)}.${padWithZeroes(this.write)}.${padWithZeroes(this.minor)}`;
-  }
-
-  /**
-   * Given a valid version string the
-   * @param versionString A valid version string of the format, 'RR.ww.mm'.
-   */
-  public static fromString(versionString: string): ECVersion {
-    const [read, write, minor] = versionString.split(".");
-    if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
-
-    if (!write)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
-
-    if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
-
-    return new ECVersion(+read, +write, +minor);
-  }
-
-  /**
-   * Compares two schema versions.
-   * @param rhs The schema to compare.
-   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
-   */
-  public compare(rhv: ECVersion): number {
-    if (this.read !== rhv.read)
-      return this.read - rhv.read;
-
-    if (this.write !== rhv.write)
-      return this.write - rhv.write;
-
-    return this.minor - rhv.minor;
-  }
-}
-
-/**
- * An ECName is an invariant, string based, name is needed for an item in a schema.
- */
-export class ECName {
-  private _name: string;
-
-  constructor(name: string) {
-    const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
-    if (!test)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    this._name = name;
-  }
-
-  /**
-   * @param newName string to validate
-   * @return boolean whether newName is a valid ECName
-   */
-  public static validate(newName: string) {
-    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
-  }
-
-  get name() { return this._name; }
-}
-
-/**
- * The SchemaKey contains a Schemas name and version.
- */
-export class SchemaKey {
-  private _name: ECName;
-  protected _version: ECVersion;
-  // public checksum: number;
-  // TODO: need to add a checksum
-
-  constructor(name: string, version: ECVersion);
-  constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
-  constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
-    this._name = new ECName(name);
-    if (readOrVersion !== undefined && readOrVersion instanceof ECVersion)
-      this._version = readOrVersion;
-    else
-      this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
-  }
-
-  get version() { return this._version; }
-
-  get name() { return this._name.name; }
-
-  get readVersion() { return this.version.read; }
-
-  get writeVersion() { return this.version.write; }
-
-  get minorVersion() { return this.version.minor; }
-
-  public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
-
-  public static parseString(fullName: string) {
-    const keyPieces = fullName.split(".");
-    if (keyPieces.length !== 4) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    }
-
-    const schemaName = keyPieces[0];
-    const readVer = Number(keyPieces[1]);
-    const writeVer = Number(keyPieces[2]);
-    const minorVer = Number(keyPieces[3]);
-    return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
-  }
-
-  /*
-   * Compares two schema names, case-sensitive.
-   * @return True if they match; otherwise, false.
-   */
-  public compareByName(rhs: SchemaKey | string | undefined): boolean {
-    if (undefined === rhs || typeof (rhs) === "string")
-      return rhs === this.name;
-    return rhs.name === this.name;
-  }
-
-  /**
-   * Compares two schema versions.
-   * @param rhs The schema to compare.
-   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
-   */
-  public compareByVersion(rhs: SchemaKey): number {
-    return this.version.compare(rhs.version);
-  }
-
-  /**
-   *
-   * @param rhs The SchemaKey to compare with
-   * @param matchType The match type to use for comparison.
-   */
-  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
-    switch (matchType) {
-      case SchemaMatchType.Identical:
-        // TODO: if (this.checksum && rhs.checksum)
-        // TODO:   return this.checksum === rhs.checksum;
-        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-          this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
-      case SchemaMatchType.Exact:
-        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-          this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
-      case SchemaMatchType.LatestReadCompatible:
-        if (!this.compareByName(rhs.name))
-          return false;
-
-        if (rhs.readVersion !== this.readVersion)
-          return false;
-
-        if (this.writeVersion === rhs.writeVersion)
-          return this.minorVersion >= rhs.minorVersion;
-
-        return this.writeVersion > rhs.writeVersion;
-      case SchemaMatchType.LatestWriteCompatible:
-        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-          this.writeVersion === rhs.writeVersion && this.minorVersion >= rhs.minorVersion;
-      case SchemaMatchType.Latest:
-        return this.compareByName(rhs.name);
-      default:
-        return false;
-    }
-  }
-}
-
-/**
- * The SchemaItemKey contains an items name, type, and its schema.
- */
-export class SchemaItemKey {
-  private _name: ECName;
-  protected _schemaKey: SchemaKey;
-
-  constructor(name: string, schema: SchemaKey);
-  constructor(name: string, schema: SchemaKey); // tslint:disable-line
-  constructor(name: string, schema: SchemaKey) {
-    this._name = new ECName(name);
-    this._schemaKey = schema;
-  }
-
-  get schemaKey() { return this._schemaKey; }
-  get name() { return this._name.name; }
-  get schemaName() { return this.schemaKey.name; }
-  get fullName() { return this.schemaName + "." + this.name; }
-
-  /**
-   * Checks whether this SchemaItemKey matches the one provided.
-   * @param rhs The SchemaItemKey to compare to this.
-   */
-  // TODO: Need to add a match type
-  public matches(rhs: SchemaItemKey): boolean {
-    if (rhs.name !== this.name)
-      return false;
-
-    if (!rhs.schemaKey.matches(this.schemaKey, SchemaMatchType.Latest))
-      return false;
-
-    return true;
-  }
-
-  public matchesFullName(rhs: string): boolean {
-    const schemaVersion = this.schemaKey.version.toString().replace(/\./g, "\\.");
-    const fullNameRegex = new RegExp(`^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`, "i");
-    return fullNameRegex.test(rhs);
-  }
-}
-
-const INT32_MAX = 2147483647;
-
-/**
- *
- */
-export class RelationshipMultiplicity {
-  public static readonly zeroOne = new RelationshipMultiplicity(0, 1);
-  public static readonly zeroMany = new RelationshipMultiplicity(0, INT32_MAX);
-  public static readonly oneOne = new RelationshipMultiplicity(1, 1);
-  public static readonly oneMany = new RelationshipMultiplicity(1, INT32_MAX);
-
-  public readonly lowerLimit: number;
-  public readonly upperLimit: number;
-
-  constructor(lowerLimit: number, upperLimit: number) {
-    this.lowerLimit = lowerLimit;
-    this.upperLimit = upperLimit;
-  }
-
-  public static fromString(str: string): RelationshipMultiplicity | undefined {
-    const matches = /^\(([0-9]*)\.\.([0-9]*|\*)\)$/.exec(str);
-    if (matches === null || matches.length !== 3)
-      return undefined;
-
-    const lowerLimit = parseInt(matches[1], undefined);
-    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], undefined);
-    if (0 === lowerLimit && 1 === upperLimit)
-      return RelationshipMultiplicity.zeroOne;
-    else if (0 === lowerLimit && INT32_MAX === upperLimit)
-      return RelationshipMultiplicity.zeroMany;
-    else if (1 === lowerLimit && 1 === upperLimit)
-      return RelationshipMultiplicity.oneOne;
-    else if (1 === lowerLimit && INT32_MAX === upperLimit)
-      return RelationshipMultiplicity.oneMany;
-
-    return new RelationshipMultiplicity(lowerLimit, upperLimit);
-  }
-
-  public equals(rhs: RelationshipMultiplicity): boolean {
-    return this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit;
-  }
-
-  public toString(): string {
-    return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
 }

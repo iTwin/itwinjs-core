@@ -2,9 +2,10 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaContext } from "../Context";
-import { SchemaKey, relationshipEndToString, SchemaItemKey, SchemaItemType, parsePrimitiveType, parseSchemaItemType, ECVersion } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import SchemaContext from "./../Context";
+import { relationshipEndToString, SchemaItemType, parsePrimitiveType, parseSchemaItemType } from "../ECObjects";
+import SchemaKey, { SchemaItemKey, ECVersion } from "../SchemaKey";
 import SchemaItem from "../Metadata/SchemaItem";
 import Schema, { MutableSchema } from "../Metadata/Schema";
 import EntityClass, { MutableEntityClass } from "../Metadata/EntityClass";

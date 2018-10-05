@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaItemType, ECName } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { PrimitiveType, SchemaItemType } from "./../ECObjects";
+import { ECName } from "./../SchemaKey";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 
 export interface Enumerator<T> {
