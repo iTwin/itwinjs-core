@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.152.0",
+      "tag": "@bentley/imodeljs-common_v0.152.0",
+      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change ColorDef to ColorDefProps in GeometryStream wire format interfaces."
+          },
+          {
+            "comment": "IModelError now requires the message parameter"
+          },
+          {
+            "comment": "RpcInterface docs"
+          },
+          {
+            "comment": "more docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.151.0",
       "tag": "@bentley/imodeljs-common_v0.151.0",
       "date": "Thu, 04 Oct 2018 21:10:57 GMT",

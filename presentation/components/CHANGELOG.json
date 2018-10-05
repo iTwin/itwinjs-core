@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.152.0",
+      "tag": "@bentley/presentation-components_v0.152.0",
+      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make PresentationPropertyDataProvider.getData non-memoized. Instead, call an internal function which takes care of memoization. This makes the method easy to override."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.151.0",
       "tag": "@bentley/presentation-components_v0.151.0",
       "date": "Thu, 04 Oct 2018 21:10:57 GMT",

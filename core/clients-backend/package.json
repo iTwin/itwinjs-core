@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.151.0",
+  "version": "0.152.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -34,16 +34,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.151.0"
+    "@bentley/bentleyjs-core": "0.152.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.151.0",
-    "@bentley/bentleyjs-core": "0.151.0",
-    "@bentley/build-tools": "0.151.0",
+    "@bentley/config-loader": "0.152.0",
+    "@bentley/bentleyjs-core": "0.152.0",
+    "@bentley/build-tools": "0.152.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
@@ -62,7 +62,7 @@
     "webpack": "^4.16.4"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "0.151.0",
+    "@bentley/imodeljs-clients": "0.152.0",
     "openid-client": "^2.3.1"
   },
   "nyc": {

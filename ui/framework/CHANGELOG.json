@@ -2,6 +2,21 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.152.0",
+      "tag": "@bentley/ui-framework_v0.152.0",
+      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for ConfigurableUiControlConstructor for classId as an alternative to using registerControl/createControl with string Ids"
+          },
+          {
+            "comment": "Fixed await in FrontstageManager.setActiveFrontstageDef"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.151.0",
       "tag": "@bentley/ui-framework_v0.151.0",
       "date": "Thu, 04 Oct 2018 21:10:57 GMT",

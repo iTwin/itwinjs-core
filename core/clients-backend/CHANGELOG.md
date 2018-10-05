@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Thu, 04 Oct 2018 21:10:57 GMT and should not be manually modified.
+This log was last generated on Fri, 05 Oct 2018 21:52:26 GMT and should not be manually modified.
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+### Updates
+
+- OidcClient split into different classes for various use cases: OidcFrontendClient, OidcAgentClient, OidcDelegationClient, OidcBackendClient (base class). Also renamed methods in these classes. 
 
 ## 0.151.0
 Thu, 04 Oct 2018 21:10:57 GMT
