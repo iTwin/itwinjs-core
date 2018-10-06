@@ -5,6 +5,7 @@
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo  } from "../configurableui/FrontstageManager";
 import { UserProfile, AccessToken } from "@bentley/imodeljs-clients";
+import { getUserColor } from "@bentley/bwc/lib/index";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 
@@ -51,10 +52,11 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     const fullName = this._getFullName();
     const email = (this._userProfile) ? this._userProfile.email : "";
     const organization = (this._userProfile) ? this._userProfile.organization : "";
+    const color = getUserColor(email);
     return (
       <div className="user-profile">
         <div className="profile-info">
-          <span className="circle">{initials}</span>
+          <span className="circle" style={{ backgroundColor: color }}>{initials}</span>
           <span>{fullName}</span>
           <span>{email}</span>
           <span>{organization}</span>
