@@ -5,7 +5,9 @@
 /** @module Utils */
 
 import { UserManager, UserManagerSettings } from "oidc-client";
-import { createUserManager, loadUser } from "redux-oidc";
+import { loadUser } from "redux-oidc";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { OidcFrontendClient, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { LoginServices } from "./clientservices/LoginServices";
 import { DefaultLoginServices } from "./clientservices/DefaultLoginServices";
@@ -29,7 +31,7 @@ export class UiFramework {
   private static _complaint: string = UiFramework._complaint;
   private static _userManager: UserManager;
 
-  public static async initialize(store: Store<any>, i18n: I18N, userManagerSettings: UserManagerSettings, loginServices?: LoginServices, projectServices?: ProjectServices, iModelServices?: IModelServices) {
+  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig: OidcFrontendClientConfiguration, loginServices?: LoginServices, projectServices?: ProjectServices, iModelServices?: IModelServices) {
     UiFramework._store = store;
     UiFramework._i18n = i18n;
     const readFinishedPromise = UiFramework._i18n.registerNamespace("UiFramework").readFinished;
@@ -38,9 +40,16 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
-    UiFramework._userManager = createUserManager(userManagerSettings);
-    const loadUserPromise = loadUser(UiFramework._store, UiFramework._userManager);
-    return Promise.all([readFinishedPromise, loadUserPromise]);
+    const initOidcPromise = this.initializeOidc(oidcConfig);
+
+    return Promise.all([readFinishedPromise, initOidcPromise]);
+  }
+
+  private static async initializeOidc(oidcConfig: OidcFrontendClientConfiguration): Promise<void> {
+    const oidcClient = new OidcFrontendClient(oidcConfig);
+    const userManagerSettings: UserManagerSettings = await oidcClient.getUserManagerSettings(new ActivityLoggingContext(""));
+    UiFramework._userManager = new UserManager(userManagerSettings);
+    await loadUser(UiFramework._store, UiFramework._userManager);
   }
 
   public static get store(): Store<any> {

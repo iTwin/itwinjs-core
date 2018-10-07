@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, KnownRegions } from "@bentley/imodeljs-clients";
+import { Config, KnownRegions, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
@@ -34,7 +34,6 @@ import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./a
 import "./index.scss";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
-import oidcSettings from "./utils/oidcSettings";
 
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
@@ -47,6 +46,8 @@ Config.App.merge({
     imjs_buddi_url: "https://buddi.bentley.com/WebService",
     imjs_buddi_resolve_url_using_region: KnownRegions.QA,
     imjs_use_host_relying_party_uri_as_fallback: true,
+    frontend_test_oidc_client_id: "imodeljs-spa-test-2686",
+    frontend_test_oidc_redirect_path: "/signin-oidc",
 });
 
 // Initialize my application gateway configuration for the frontend
@@ -149,10 +150,18 @@ export class SampleAppIModelApp extends IModelApp {
             Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`); // By default, this will run on port 3001
     }
 
+    private static getOidcConfig(): OidcFrontendClientConfiguration {
+        const clientId = Config.App.get("frontend_test_oidc_client_id");
+        const baseUri = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ``}`;
+        const redirectUri = `${baseUri}${Config.App.get("frontend_test_oidc_redirect_path")}`;
+        return { clientId, redirectUri };
+    }
+
     public static async initialize() {
         UiCore.initialize(SampleAppIModelApp.i18n);
         UiComponents.initialize(SampleAppIModelApp.i18n);
-        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcSettings);
+
+        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, SampleAppIModelApp.getOidcConfig());
 
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);

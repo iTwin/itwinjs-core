@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { FrontstageManager, ModalFrontstageInfo  } from "../configurableui/FrontstageManager";
+import { FrontstageManager, ModalFrontstageInfo } from "../configurableui/FrontstageManager";
 import { UserProfile, AccessToken } from "@bentley/imodeljs-clients";
 import { getUserColor } from "@bentley/bwc/lib/index";
 import { UiFramework } from "../UiFramework";
@@ -16,7 +16,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _signOutPrompt = UiFramework.i18n.translate("UiFramework:userProfile.signoutprompt");
   private _userProfile: UserProfile | undefined = undefined;
 
-  constructor (accessToken?: AccessToken) {
+  constructor(accessToken?: AccessToken) {
     if (accessToken) {
       this._userProfile = accessToken.getUserProfile();
     }
@@ -45,6 +45,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
 
   private _onSignOut = () => {
     FrontstageManager.closeModalFrontstage();
+    UiFramework.userManager.removeUser();
   }
 
   public get content(): React.ReactNode {

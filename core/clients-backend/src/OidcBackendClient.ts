@@ -9,7 +9,9 @@ import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/be
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
 export interface OidcBackendClientConfiguration {
+  /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientId: string;
+  /** Client application's secret key as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientSecret: string;
 }
 

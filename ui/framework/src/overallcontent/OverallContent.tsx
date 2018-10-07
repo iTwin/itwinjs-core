@@ -8,7 +8,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { User } from "oidc-client";
 import { OidcProvider } from "redux-oidc";
-import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
+import { AccessToken, OidcFrontendClient } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { IModelOpen } from "../openimodel/IModelOpen";
 import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";
@@ -39,6 +39,7 @@ export interface OverallContentProps {
   accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
   setAccessToken: (accessToken: AccessToken) => any;
+  clearAccessToken: () => any;
 }
 
 function mapStateToProps(state: any) {
@@ -52,6 +53,7 @@ function mapStateToProps(state: any) {
 const mapDispatch = {
   setOverallPage: OverallContentActions.setOverallPage,
   setAccessToken: OverallContentActions.setAccessToken,
+  clearAccessToken: OverallContentActions.clearAccessToken,
 };
 
 /**
@@ -81,7 +83,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     // open the imodel and set the page
     // Note: this should be refactored, just seems like hack!
     this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
-    this.props.setOverallPage(OverallContentPage.OfflinePage);
+    this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
   }
 
   // called when the "Offline" is clicked on the Sign In.
@@ -91,15 +93,15 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
   public componentDidMount() {
     const user = this.props.user;
-    if (!user || user.expired)
-      return;
+    if (user && !user.expired) {
+      const accessToken: AccessToken = OidcFrontendClient.createAccessToken(user);
+      this.props.setAccessToken(accessToken);
+    }
+  }
 
-    const startsAt: Date = new Date(user.expires_at - user.expires_in!);
-    const expiresAt: Date = new Date(user.expires_at);
-    const userProfile = new UserProfile(user.profile.given_name, user.profile.family_name, user.profile.email!, user.profile.sub, user.profile.org_name!, user.profile.org!, user.profile.ultimate_site!, user.profile.usage_country_iso!);
-
-    const accessToken: AccessToken = AccessToken.fromJsonWebTokenString(user.access_token, userProfile, startsAt, expiresAt);
-    this.props.setAccessToken(accessToken);
+  public componentDidUpdate(oldProps: OverallContentProps) {
+    if ((!this.props.user || this.props.user.expired) && (oldProps.accessToken))
+      this.props.clearAccessToken();
   }
 
   public render(): JSX.Element | undefined {

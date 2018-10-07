@@ -47,6 +47,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
+    "@bentley/config-loader": "0.152.0",
     "@bentley/build-tools": "0.152.0",
     "@bentley/bentleyjs-core": "0.152.0",
     "@bentley/geometry-core": "0.152.0",

@@ -81,8 +81,6 @@
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
     "semver": "^5.5.0",
-    "redux-oidc": "^3.0.2",
-    "oidc-client": "^1.5.2",
     "immutable": "^3.8.2",
     "svg-sprite-loader": "^3.8.0"
   },

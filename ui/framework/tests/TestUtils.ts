@@ -6,8 +6,10 @@ import { UiFramework, FrameworkReducer, FrameworkState } from "../src/index";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
-import { UserManagerSettings, WebStorageStateStore, InMemoryWebStorage } from "oidc-client";
+import { WebStorageStateStore, InMemoryWebStorage } from "oidc-client";
 import { DeepReadonly, ActionsUnion, createAction } from "../src/utils/redux-ts";
+import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/imodeljs-clients";
 
 export interface SampleAppState {
   placeHolder?: boolean;
@@ -39,6 +41,13 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
   return state;
 }
 
+// TODO: Temporary fix to failing tests
+Config.App.merge({
+  frontend_test_oidc_client_id: "imodeljs-spa-test-2686",
+  frontend_test_oidc_redirect_path: "/signin-oidc",
+  imjs_oidc_url: "https://qa-imsoidc.bentley.com/",
+});
+
 export default class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
@@ -55,22 +64,14 @@ export default class TestUtils {
     return TestUtils._i18n;
   }
 
-  private static createOidcSettings(): UserManagerSettings {
-    const oidcSettings: UserManagerSettings = {
-      authority: "https://qa-imsoidc.bentley.com/",
-      client_id: "imodeljs-spa-test-2686",
-      redirect_uri: "http://localhost:3000/signin-oidc",
-      response_type: "id_token token",
-      scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service",
+  private static createOidcConfiguration(): OidcFrontendClientConfiguration {
+    const oidcConfig: OidcFrontendClientConfiguration = {
+      clientId: Config.App.get("frontend_test_oidc_client_id"),
+      redirectUri: "http://localhost:3000" + Config.App.get("frontend_test_oidc_redirect_path"),
+      userStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
+      stateStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
     };
-
-    const stateStoreStorage = new InMemoryWebStorage();
-    const userStoreStorage = new InMemoryWebStorage();
-
-    (oidcSettings as any).stateStore = new WebStorageStateStore({ store: stateStoreStorage });
-    (oidcSettings as any).userStore = new WebStorageStateStore({ store: userStoreStorage });
-
-    return oidcSettings;
+    return oidcConfig;
   }
 
   public static async initializeUiFramework() {
@@ -87,8 +88,8 @@ export default class TestUtils {
       this.store = createStore(this._rootReducer,
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
-      const oidcSettings = TestUtils.createOidcSettings();
-      await UiFramework.initialize(this.store, TestUtils.i18n, oidcSettings);
+      const oidcConfig = TestUtils.createOidcConfiguration();
+      await UiFramework.initialize(this.store, TestUtils.i18n, oidcConfig);
       await UiComponents.initialize(TestUtils.i18n);
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;

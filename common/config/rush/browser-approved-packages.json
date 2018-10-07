@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/config-loader",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
