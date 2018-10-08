@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "skip all test and remove oidc credentials",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "khanaffan@gmail.com"
+}

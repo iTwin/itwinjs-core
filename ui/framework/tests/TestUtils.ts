@@ -11,7 +11,7 @@ import { DeepReadonly, ActionsUnion, createAction } from "../src/utils/redux-ts"
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-IModelJsConfig.init(false, Config.App);
+IModelJsConfig.init(true, Config.App);
 export interface SampleAppState {
   placeHolder?: boolean;
 }
