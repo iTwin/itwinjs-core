@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 import * as JSON5 from "json5";
 import * as fs from "fs";
 import * as path from "path";
@@ -53,7 +52,7 @@ export class IModelJsConfig {
       }
     }
     if (!repositoryRootDir || !fs.existsSync(repositoryRootDir)) {
-      throw new Error(`Fail to find configuration for imodeljs at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
+      throw new Error(`Failed to find configuration for imodeljs at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
     }
 
     // tslint:disable-next-line:no-console

@@ -30,7 +30,7 @@ export class Marker implements CanvasDecoration {
 
   /** Whether this marker is currently enabled. If false, this Marker is not displayed. */
   public visible = true;
-  /** Whether this maker is currently hilited or not. */
+  /** Whether this marker is currently hilited or not. */
   protected _isHilited = false;
   /** The color for the shadowBlur when this Marker is hilited */
   protected _hiliteColor?: ColorDef;
@@ -38,9 +38,9 @@ export class Marker implements CanvasDecoration {
   public worldLocation: Point3d;
   /** The size of this Marker, in pixels. */
   public size: Point2d;
-  /** The current position for the maker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
+  /** The current position for the marker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
   public position: Point3d;
-  /** The current rectangle for the maker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
+  /** The current rectangle for the marker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
   public readonly rect = new ViewRect();
   /** An image to draw for this Marker. If undefined, no image is shown. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage.  */
   public image?: MarkerImage;
@@ -98,7 +98,7 @@ export class Marker implements CanvasDecoration {
     this._scaleFactor = Point2d.create(1, 1);
   }
 
-  /** constructor for Marker
+  /** Constructor for Marker
    * @param worldLocation The location of this Marker in world coordinates.
    * @param size The size of this Marker in pixels.
    */
@@ -124,7 +124,7 @@ export class Marker implements CanvasDecoration {
 
   /**
    * When a Marker is displayed in its hilited state, this method is called first. If it returns true, no further action is taken.
-   * Otherwise the Marker's normal drawing operations are also called. By default, this method add a shadowBlur effect and increases
+   * Otherwise the Marker's normal drawing operations are also called. By default, this method adds a shadowBlur effect and increases
    * the size of the Marker by 25%.
    * @return true to stop drawing this Marker
    */
@@ -285,7 +285,7 @@ export abstract class MarkerSet<T extends Marker> {
           continue;
 
         let added = false;
-        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible makers/clusters
+        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
           const entry = entries[i];
           if (marker.rect.overlaps(entry.rect)) { // does new Marker overlap with this entry?
             added = true; // yes, we're going to save it as a Cluster
