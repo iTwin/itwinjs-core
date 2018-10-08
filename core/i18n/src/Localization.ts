@@ -14,7 +14,6 @@ import { Logger } from "@bentley/bentleyjs-core";
 export interface I18NOptions {
   urlTemplate?: string;
 }
-
 /** Supplies Internationalization services. Internally, this class uses the [i18next](https://www.i18next.com/) package. */
 export class I18N {
   private _i18n: i18n;
