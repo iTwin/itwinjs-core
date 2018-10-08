@@ -4,7 +4,8 @@ middleContent: [
     {
         header: "Infrastructure Digital Twins",
         content:
-"An <i>Infrastructure Digital Twin</i> is a digital representation of an infrastructure asset or system and the context and controls of its surrounding environment. An iModel is a relational database that contains and organizes the digital components that comprise a digital twin. <a href=\"learning/imodelhub\">iModelHub</a> manages the timeline of change to an iModel, and turns it into a distributed database. Use iModel.js to create the connections that integrate your infrastructure digital twin into your digital workflows. It contains the magic for creating, visualizing, querying, mining, synchronizing, aligning, and securing your digital twin."
+"An <i>Infrastructure Digital Twin</i> is a digital representation of an infrastructure asset or system and the context and controls of its surrounding environment. An iModel is a relational database that contains and organizes the digital components that comprise a digital twin. <a href=\"learning/imodelhub\">iModelHub</a> manages the timeline of change to an iModel, and turns it into a distributed database. Use iModel.js to create the connections that integrate your infrastructure digital twin into your digital workflows. It contains the magic for creating, visualizing, querying, mining, synchronizing, aligning, and securing your digital twin.",
+        image: "assets/landing_image_twin.svg"
     },
     {
         header: "Open, for Business",
@@ -19,12 +20,14 @@ middleContent: [
     {
         header: "Open, For Innovation",
         content:
-"Sometimes pushing the envelope in pursuit of new ideas means breaking new ground. A primary reason for open-sourcing the iModel.js library is to permit its use in scenarios outside of those for which it was originally conceived. We know firsthand that simply examining the inner workings of a codebase improves your understanding of its design and limitations. Source level debugging and even local modification can substantially improve programmer productivity. And of course the ability to fix/change the source when necessary means self-help is always available if needed."
+"Sometimes pushing the envelope in pursuit of new ideas means breaking new ground. A primary reason for open-sourcing the iModel.js library is to permit its use in scenarios outside of those for which it was originally conceived. We know firsthand that simply examining the inner workings of a codebase improves your understanding of its design and limitations. Source level debugging and even local modification can substantially improve programmer productivity. And of course the ability to fix/change the source when necessary means self-help is always available if needed.",
+        image: "assets/landing_image_computer.svg"
     },
     {
         header: "Open for suggestions",
         content:
-"iModel.js is built on a solid foundation of Bentley's experience creating infrastructure software over 35 years. We recognize that the opportunities for connecting infrastructure digital twins are so vast and diverse, that you may find problems, have suggestions for enhancements, or have new ideas that will benefit the iModel.js community. In those cases, please don't be shy about getting involved - either with Issue reports, discussion posts, or Pull Requests."
+"iModel.js is built on a solid foundation of Bentley's experience creating infrastructure software over 35 years. We recognize that the opportunities for connecting infrastructure digital twins are so vast and diverse, that you may find problems, have suggestions for enhancements, or have new ideas that will benefit the iModel.js community. In those cases, please don't be shy about getting involved - either with Issue reports, discussion posts, or Pull Requests.",
+        image: "assets/landing_image_ideas.svg"
     },
 ]
 features:

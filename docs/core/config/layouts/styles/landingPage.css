@@ -3,6 +3,10 @@
   background-color: #FAFDFF;
 }
 
+#main-landing-wrapper #middle-content-wrapper {
+  margin: 2em 5% !important;
+}
+
 .imodeljs-header-tagline {
   max-width: 50%;
   text-align: center;
@@ -65,4 +69,10 @@ p.digital-twin {
 .nav-landing-container .navbar-nav {
   background: #002A44C0;
   border-radius: 25px;
+}
+
+.middle-content-image {
+  width: 40%;
+  height: 40%;
+  margin-bottom: 3em;
 }
