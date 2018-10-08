@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";

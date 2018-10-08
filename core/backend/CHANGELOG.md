@@ -1,6 +1,32 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 03 Oct 2018 17:00:37 GMT and should not be manually modified.
+This log was last generated on Fri, 05 Oct 2018 21:52:26 GMT and should not be manually modified.
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+### Updates
+
+- IModelError now requires the message parameter
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- Add IModelJsFs.appendFileSync
+- Add Write methods
+- Add README.md
+- docs
+- Spread various geometry classes to smaller files
+- Updating copyrights
+- Added configuration system to imodeljs and removed urls/credentials
+- Mark test as integeration that were not marked but access imodelhub
 
 ## 0.148.0
 Wed, 03 Oct 2018 17:00:37 GMT

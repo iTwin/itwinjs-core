@@ -1,14 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
 import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
-import { LazyLoadedEntityClass } from "../Interfaces";
-import { ECClassModifier, SchemaItemType, StrengthDirection, SchemaItemKey } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { LazyLoadedEntityClass } from "./../Interfaces";
+import { ECClassModifier, SchemaItemType, StrengthDirection } from "./../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import Schema from "./Schema";
 import RelationshipClass from "./RelationshipClass";
 import { NavigationProperty } from "./Property";
@@ -46,7 +47,7 @@ export default class Mixin extends ECClass {
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     if (undefined !== this.appliesTo) {
-     schemaJson.appliesTo = this.appliesTo.fullName;
+      schemaJson.appliesTo = this.appliesTo.fullName;
     }
     return schemaJson;
   }
@@ -61,7 +62,7 @@ export default class Mixin extends ECClass {
     if (undefined === jsonObj.appliesTo)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} is missing the required 'appliesTo' attribute.`);
 
-    if (typeof(jsonObj.appliesTo) !== "string")
+    if (typeof (jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     const entityClassSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.appliesTo);
     if (!entityClassSchemaItemKey)
@@ -72,6 +73,6 @@ export default class Mixin extends ECClass {
         if (undefined === appliesTo)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${jsonObj.appliesTo}.`);
         return appliesTo;
-    });
+      });
   }
 }

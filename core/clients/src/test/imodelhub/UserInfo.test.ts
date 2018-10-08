@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -41,7 +41,7 @@ function generateUserInfo(userProfiles: UserProfile[]): UserInfo[] {
   return users;
 }
 
-describe("iModelHubClient UserInfoHandler", () => {
+describe("iModelHubClient UserInfoHandler  (#integration)", () => {
   const accessTokens: AccessToken[] = [];
   let imodelId: Guid;
   const actx = new ActivityLoggingContext("");
@@ -67,7 +67,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should get one user info", async function (this: Mocha.ITestCallbackContext) {
+  it("should get one user info (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedUserInfo = generateUserInfo([accessTokens[0].getUserProfile()!]);
       mockGetUserInfo(imodelId, mockedUserInfo, `${mockedUserInfo[0].id}`);
@@ -82,7 +82,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     chai.expect(userInfo[0].lastName).to.be.equal(accessTokens[0].getUserProfile()!.lastName);
   });
 
-  it("should get several users info", async function (this: Mocha.ITestCallbackContext) {
+  it("should get several users info (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedUsersInfo = generateUserInfo([accessTokens[0].getUserProfile()!, accessTokens[1].getUserProfile()!]);
       mockGetUserInfo(imodelId, mockedUsersInfo);
@@ -102,7 +102,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     }
   });
 
-  it("should fail to get users without ids", async () => {
+  it("should fail to get users without ids (#integration)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Users().get(actx, accessTokens[0], imodelId, new UserInfoQuery().byIds([]));

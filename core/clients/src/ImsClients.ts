@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
@@ -9,26 +9,20 @@ import { DOMParser } from "xmldom";
 
 import { request, RequestOptions, Response } from "./Request";
 import { Config } from "./Config";
-import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
+import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client API for the IMS Federated Authentication Service. */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://qa-ims.bentley.com",
-    QA: "https://qa-ims.bentley.com",
-    PROD: "https://ims.bentley.com",
-    PERF: "https://qa-ims.bentley.com",
-  };
-
+  public static readonly configURL = "imjs_ims_federated_auth_url";
+  public static readonly configRegion = "imjs_ims_federated_auth_region";
   /**
    * Creates an instance of ImsFederatedAuthenticationClient.
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv);
+  public constructor() {
+    super();
   }
 
   /**
@@ -44,9 +38,22 @@ export class ImsFederatedAuthenticationClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsFederatedAuthenticationClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(ImsFederatedAuthenticationClient.configURL))
+      return Config.App.get(ImsFederatedAuthenticationClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsFederatedAuthenticationClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(ImsFederatedAuthenticationClient.configRegion))
+      return Config.App.get(ImsFederatedAuthenticationClient.configRegion);
+
+    return undefined;
+  }
   /**
    * Parses the response from the token request to obtain the token and the user profile.
    * @param authTokenResponse Response for the token request.
@@ -67,20 +74,13 @@ export class ImsFederatedAuthenticationClient extends Client {
 /** Client API for the IMS Active Secure Token Service. */
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
-
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
-    QA: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
-    PROD: "https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
-    PERF: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
-  };
-
+  public static readonly configURL = "imjs_ims_active_secure_token_url";
+  public static readonly configRegion = "imjs_ims_active_secure_token_region";
   /**
    * Creates an instance of ImsActiveSecureTokenClient.
-   * @param deploymentEnv Deployment environment
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv);
+  public constructor() {
+    super();
   }
 
   /**
@@ -96,9 +96,22 @@ export class ImsActiveSecureTokenClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsActiveSecureTokenClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(ImsActiveSecureTokenClient.configURL))
+      return Config.App.get(ImsActiveSecureTokenClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsActiveSecureTokenClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(ImsActiveSecureTokenClient.configRegion))
+      return Config.App.get(ImsActiveSecureTokenClient.configRegion);
+
+    return undefined;
+  }
   /**
    * Gets the authorization token given the credentials.
    * @param userName User name
@@ -115,9 +128,9 @@ export class ImsActiveSecureTokenClient extends Client {
         password,
       },
       body: {
-        AppliesTo: Config.host.relyingPartyUri,
-        DeviceId: Config.host.deviceId,
-        AppId: Config.host.name + "/" + Config.host.version,
+        AppliesTo: Config.App.get("imjs_default_relying_party_uri"),
+        DeviceId: Config.App.get("imjs_connect_device_id"),
+        AppId: Config.App.get("imjs_connect_app_name") + "/" + Config.App.get("imjs_connect_app_version"),
         Lifetime: 7 * 24 * 60, // 7 days
       },
     };
@@ -140,20 +153,13 @@ export class ImsActiveSecureTokenClient extends Client {
 /** Client API for the IMS Delegation Secure Token Service. */
 export class ImsDelegationSecureTokenClient extends Client {
   public static readonly searchKey: string = "ActiveSTSDelegationServiceUrl";
-
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://qa-ims.bentley.com/rest/DelegationSTSService",
-    QA: "https://qa-ims.bentley.com/rest/DelegationSTSService",
-    PROD: "https://ims.bentley.com/rest/DelegationSTSService",
-    PERF: "https://qa-ims.bentley.com/rest/DelegationSTSService",
-  };
-
+  public static readonly configURL = "imjs_sts_delegation_service_url";
+  public static readonly configRegion = "imjs_sts_delegation_service_region";
   /**
    * Creates an instance of ImsDelegationSecureTokenClient.
-   * @param {DeploymentEnv} deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv);
+  public constructor() {
+    super();
   }
 
   /**
@@ -169,7 +175,20 @@ export class ImsDelegationSecureTokenClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ImsDelegationSecureTokenClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(ImsDelegationSecureTokenClient.configURL))
+      return Config.App.get(ImsDelegationSecureTokenClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsDelegationSecureTokenClient.configURL}`);
+  }
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(ImsDelegationSecureTokenClient.configRegion))
+      return Config.App.get(ImsDelegationSecureTokenClient.configRegion);
+
+    return undefined;
   }
 
   /**
@@ -178,9 +197,11 @@ export class ImsDelegationSecureTokenClient extends Client {
    * @param relyingPartyUri Relying party URI required by the service - defaults to a value defined by the configuration.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri: string = Config.host.relyingPartyUri): Promise<AccessToken> {
+  public async getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string): Promise<AccessToken> {
     const url: string = await this.getUrl(alctx) + "/json/IssueEx";
-
+    if (!relyingPartyUri) {
+      relyingPartyUri = Config.App.get("imjs_default_relying_party_uri");
+    }
     const options: RequestOptions = {
       method: "POST",
       headers: {
@@ -190,8 +211,8 @@ export class ImsDelegationSecureTokenClient extends Client {
         ActAs: authorizationToken.getSamlAssertion(),
         AppliesTo: relyingPartyUri,
         AppliesToBootstrapToken: relyingPartyUri,
-        DeviceId: Config.host.deviceId,
-        AppId: Config.host.name + "/" + Config.host.version,
+        DeviceId: Config.App.get("imjs_connect_device_id"),
+        AppId: Config.App.get("imjs_connect_app_name") + "/" + Config.App.get("imjs_connect_app_version"),
         Lifetime: 60, // 60 minutes
       },
     };

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -1830,7 +1830,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /**
-   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTpDiv]].
+   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTipDiv]].
    * @param message The message to display
    * @param location The position of the toolTip, in view coordinates. If undefined, use center of view.
    * @param options the ToolTip options

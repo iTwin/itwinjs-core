@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@ class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
-const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
+const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: Guid = new Guid(true);
 const username: string = "";

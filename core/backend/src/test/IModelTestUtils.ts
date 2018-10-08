@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, IDisposable, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
@@ -36,12 +36,12 @@ export class Timer {
 RpcConfiguration.developmentMode = true;
 
 Logger.initializeToConsole();
-if (process.env.imodeljs_test_logging_config === undefined) {
+if (process.env.imodeljs_imjs_test_logging_config === undefined) {
   // tslint:disable-next-line:no-console
-  console.log("FYI You can set the environment variable imodeljs_test_logging_config to point to a logging configuration json file.");
+  console.log("FYI You can set the environment variable imodeljs_imjs_test_logging_config to point to a logging configuration json file.");
 }
 
-const loggingConfigFile: string = process.env.imodeljs_test_logging_config || path.join(__dirname, "logging.config.json");
+const loggingConfigFile: string = process.env.imodeljs_imjs_test_logging_config || path.join(__dirname, "logging.config.json");
 if (IModelJsFs.existsSync(loggingConfigFile)) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
@@ -59,34 +59,43 @@ export interface IModelTestUtilsOpenOptions {
 /** Test users with various permissions */
 export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static readonly regular: UserCredentials = {
-    email: "Regular.IModelJsTestUser@mailinator.com",
-    password: "Regular@iMJs",
-  };
+  public static get regular(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_regular_user_name"),
+      password: Config.App.getString("imjs_test_regular_user_password"),
+    };
+  }
 
   /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static readonly manager: UserCredentials = {
-    email: "Manager.IModelJsTestUser@mailinator.com",
-    password: "Manager@iMJs",
-  };
+  public static get manager(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_manager_user_name"),
+      password: Config.App.getString("imjs_test_manager_user_password"),
+    };
+  }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static readonly super: UserCredentials = {
-    email: "Super.IModelJsTestUser@mailinator.com",
-    password: "Super@iMJs",
-  };
+  public static get super(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_super_user_name"),
+      password: Config.App.getString("imjs_test_super_user_password"),
+    };
+  }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static readonly superManager: UserCredentials = {
-    email: "SuperManager.IModelJsTestUser@mailinator.com",
-    password: "SuperManager@iMJs",
-  };
-
+  public static get superManager(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_super_manager_user_name"),
+      password: Config.App.getString("imjs_test_super_manager_user_password"),
+    };
+  }
   /** Just another user */
-  public static readonly user1: UserCredentials = {
-    email: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-  };
+  public static get user1(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_user1_user_name"),
+      password: Config.App.getString("imjs_test_user1_user_password"),
+    };
+  }
 }
 
 /**
@@ -145,8 +154,8 @@ export class IModelTestUtils {
     return [accessToken, testProjectId, cacheDir];
   }
 
-  public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular, deploymentEnv: DeploymentEnv = "QA"): Promise<AccessToken> {
-    return HubUtility.login(userCredentials, deploymentEnv);
+  public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {
+    return HubUtility.login(userCredentials);
   }
 
   private static getStat(name: string) {
@@ -309,7 +318,6 @@ export class IModelTestUtils {
 
   public static startBackend() {
     const config = new IModelHostConfiguration();
-    config.hubDeploymentEnv = "QA";
     IModelHost.startup(config);
   }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
@@ -17,7 +17,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps, DecorationGeometryProps } from "@bentley/imodeljs-common";
 
-/** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
+/** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them. */
 export class AccuSnap implements Decorator {
   /** Currently active hit */
   public currHit?: HitDetail;

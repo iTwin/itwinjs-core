@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -18,7 +18,7 @@ function init(NODE_ENV, MOCHA_ENV=undefined) {
 
   global.CONTINUOUS_INTEGRATION = process.env.CI;
 
-  // By default, the dev CORS proxy server should run on port 3001 
+  // By default, the dev CORS proxy server should run on port 3001
   if (NODE_ENV === "development" && !process.env.CORS_PROXY_PORT)
     process.env.CORS_PROXY_PORT = "3001";
 
@@ -28,7 +28,7 @@ function init(NODE_ENV, MOCHA_ENV=undefined) {
   process.on("unhandledRejection", err => {
     throw err;
   });
-  
+
   // Ensure environment variables are read.
   require("../../config/env");
 }

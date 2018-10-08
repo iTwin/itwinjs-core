@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OverallContent */
@@ -18,6 +18,7 @@ export enum OverallContentPage {
 export const OverallContentActions = {
   setOverallPage: (newPage: OverallContentPage | number) => createAction("OverallContent:SET_PAGE", newPage),
   setAccessToken: (accessToken: AccessToken) => createAction("OverallContent:SET_ACCESS_TOKEN", accessToken),
+  clearAccessToken: () => createAction("OverallContent:CLEAR_ACCCESS_TOKEN"),
   goToConfigurableUi: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
 };
 
@@ -41,6 +42,8 @@ export function OverallContentReducer(state: OverallContentState = initialState,
       return { ...state, currentPage: action.payload };
     case "OverallContent:SET_ACCESS_TOKEN":
       return { ...state, accessToken: action.payload as any };
+    case "OverallContent:CLEAR_ACCCESS_TOKEN":
+      return { ...state, accessToken: undefined };
     case "OpenIModel:SETSELECTEDVIEWS":
       return { ...state, currentPage: OverallContentPage.ConfigurableUiPage };
   }

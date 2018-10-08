@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
@@ -33,6 +33,7 @@ export class WidgetControl extends ConfigurableUiControl {
   public get widgetDef() { return this._widgetDef; }
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
+  /** Gets the type of ConfigurableUiControl, which is 'Widget' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
 
   public setWidgetState(state: WidgetState): void {

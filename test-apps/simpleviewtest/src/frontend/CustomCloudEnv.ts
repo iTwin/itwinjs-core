@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
@@ -19,5 +19,5 @@ export async function initializeCustomCloudEnv(state: SimpleViewState, url: stri
   const bankContextClient = new IModelBankFileSystemContextClient(url);
   state.project = await bankContextClient.queryContextByName(new ActivityLoggingContext(""), state.accessToken!, state.projectConfig!.projectName);
 
-  IModelApp.iModelClient = new IModelBankClient(url, IModelApp.hubDeploymentEnv, undefined);
+  IModelApp.iModelClient = new IModelBankClient(url, undefined);
 }

@@ -1,70 +1,27 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
+import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UlasClient, UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, LogPostingSource, UsageType } from "../UlasClient";
 import { TestConfig, TestUsers } from "./TestConfig";
-
-import { UrlDiscoveryMock } from "./ResponseBuilder";
-import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { Guid, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-
-export class UlasClientUrlMock {
-  private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    PERF: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-  };
-
-  public static getUrl(env: DeploymentEnv): string {
-    return this._urlDescriptor[env];
-  }
-
-  public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(UlasClient.searchKey, env, this._urlDescriptor[env]);
-  }
-}
 
 describe("UlasClient", () => {
 
   let accessToken: AccessToken;
-  const ulasClient = new UlasClient("QA");
+  const ulasClient = new UlasClient();
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      return;
-
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login(TestUsers.super);
-    accessToken = await ulasClient.getAccessToken(actx, authToken);
+    accessToken = await new ImsDelegationSecureTokenClient().getToken(actx, authToken);
   });
 
-  it("should set up its URLs", async () => {
-    UlasClientUrlMock.mockGetUrl("DEV");
-    let url: string = await new UlasClient("DEV").getUrl(actx);
-    chai.expect(url).equals("https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
-
-    UlasClientUrlMock.mockGetUrl("QA");
-    url = await new UlasClient("QA").getUrl(actx);
-    chai.expect(url).equals("https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
-
-    UlasClientUrlMock.mockGetUrl("PROD");
-    url = await new UlasClient("PROD").getUrl(actx);
-    chai.expect(url).equals("https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
-
-    UlasClientUrlMock.mockGetUrl("PERF");
-    url = await new UlasClient("PERF").getUrl(actx);
-    chai.expect(url).equals("https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi");
-  });
-
-  it("Post usage log", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("Post usage log  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const entry = new UsageLogEntry(43);
     entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
     entry.hostName = "mymachine";
@@ -78,10 +35,7 @@ describe("UlasClient", () => {
     chai.assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post feature log", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("Post feature log  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const myFeatureId = new Guid(true);
     const entry = new FeatureLogEntry(myFeatureId, 43);
     entry.productVersion = { major: 3, minor: 4, sub1: 99 };
@@ -97,10 +51,7 @@ describe("UlasClient", () => {
     chai.assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post multiple feature logs", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("Post multiple feature logs  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const feature1Id = new Guid(true);
     const feature2Id = new Guid(true);
     const entry1 = new FeatureLogEntry(feature1Id, 43);
@@ -129,10 +80,7 @@ describe("UlasClient", () => {
     chai.assert.isTrue(hasThrown, "Passing no FeatureLogEntry to UlasClient.logFeature is expected to throw.");
   });
 
-  it("Post duration feature log", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("Post duration feature log  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const myFeatureId = new Guid(true);
     const startEntry = new FeatureStartedLogEntry(myFeatureId, 43);
     startEntry.productVersion = { major: 3, minor: 4 };

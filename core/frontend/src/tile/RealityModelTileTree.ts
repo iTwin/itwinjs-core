@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -8,7 +8,7 @@ import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common"
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson, Config } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
@@ -192,7 +192,7 @@ export class RealityModelTileClient {
   public rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
   private static _token?: AccessToken;
-  private static _client = new RealityDataServicesClient("QA"); // ###TODO the deployementEnv needs to be customizeable
+  private static _client = new RealityDataServicesClient();
   private static _onCloseListener?: () => void;
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
@@ -229,7 +229,7 @@ export class RealityModelTileClient {
     } else if (undefined === RealityModelTileClient._token) {
       // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
       const alctx = new ActivityLoggingContext(Guid.createValue());
-      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(alctx, "Regular.IModelJsTestUser@mailinator.com", "Regular@iMJs");
+      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient()).getToken(alctx, Config.App.getString("imjs_test_regular_user_name"), Config.App.getString("imjs_test_regular_user_password"));
       RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(alctx, authToken);
     }
     if (undefined === RealityModelTileClient._onCloseListener)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Setup logout, and cleaned up the OIDC API a little. ",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Ramanujam.Raman@bentley.com"
+}

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
@@ -37,6 +37,7 @@ export class ToolUiProvider extends ConfigurableBase {
   public get toolItem(): ToolItemDef { return this._toolItem; }
   public set toolItem(v: ToolItemDef) { this._toolItem = v; }
 
+  /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
 }
 

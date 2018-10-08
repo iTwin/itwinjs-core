@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
@@ -15,6 +15,10 @@ import { ItemMap } from "./ItemFactory";
 import { ContentGroup } from "./ContentGroup";
 import { ContentGroupManager } from "./ContentGroup";
 import { WidgetDef } from "./WidgetDef";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
+import { ViewportContentControl } from "./ViewportContentControl";
+import { WidgetControl } from "./WidgetControl";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -115,52 +119,56 @@ export class FrontstageDef {
   /** Gets the [[ContentGroup]] for this Frontstage */
   public contentGroup?: ContentGroup;
 
-  constructor(frontstageProps: FrontstageProps) {
+  constructor(frontstageProps?: FrontstageProps) {
     if (frontstageProps) {
-      this.id = frontstageProps.id;
-      this.defaultToolId = frontstageProps.defaultToolId;
-
-      if (frontstageProps.defaultContentId !== undefined)
-        this.defaultContentId = frontstageProps.defaultContentId;
-
-      if (typeof frontstageProps.defaultLayout === "string")
-        this.defaultLayoutId = frontstageProps.defaultLayout;
-      else
-        this.defaultLayout = frontstageProps.defaultLayout;
-
-      if (typeof frontstageProps.contentGroup === "string")
-        this.contentGroupId = frontstageProps.contentGroup;
-      else
-        this.contentGroup = frontstageProps.contentGroup;
-
-      if (frontstageProps.type !== undefined)
-        this.type = frontstageProps.type;
-      if (frontstageProps.inheritZoneStates !== undefined)
-        this.inheritZoneStates = frontstageProps.inheritZoneStates;
-      if (frontstageProps.hubEnabled !== undefined)
-        this.hubEnabled = frontstageProps.hubEnabled;
-      if (frontstageProps.contextToolbarEnabled !== undefined)
-        this.contextToolbarEnabled = frontstageProps.contextToolbarEnabled;
-      if (frontstageProps.isInFooterMode !== undefined)
-        this.isInFooterMode = frontstageProps.isInFooterMode;
-      if (frontstageProps.defaultSelectionScope !== undefined)
-        this.defaultSelectionScope = frontstageProps.defaultSelectionScope;
-      if (frontstageProps.availableSelectionScopes !== undefined)
-        this.availableSelectionScopes = frontstageProps.availableSelectionScopes;
-      if (frontstageProps.applicationData !== undefined)
-        this.applicationData = frontstageProps.applicationData;
-
-      this.items.loadItems(frontstageProps);
-
-      this.topLeft = ZoneDefFactory.Create(frontstageProps.topLeft);
-      this.topCenter = ZoneDefFactory.Create(frontstageProps.topCenter);
-      this.topRight = ZoneDefFactory.Create(frontstageProps.topRight);
-      this.centerLeft = ZoneDefFactory.Create(frontstageProps.centerLeft);
-      this.centerRight = ZoneDefFactory.Create(frontstageProps.centerRight);
-      this.bottomLeft = ZoneDefFactory.Create(frontstageProps.bottomLeft);
-      this.bottomCenter = ZoneDefFactory.Create(frontstageProps.bottomCenter);
-      this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
+      this.initializeFromProps(frontstageProps);
     }
+  }
+
+  public initializeFromProps(frontstageProps: FrontstageProps): void {
+    this.id = frontstageProps.id;
+    this.defaultToolId = frontstageProps.defaultToolId;
+
+    if (frontstageProps.defaultContentId !== undefined)
+      this.defaultContentId = frontstageProps.defaultContentId;
+
+    if (typeof frontstageProps.defaultLayout === "string")
+      this.defaultLayoutId = frontstageProps.defaultLayout;
+    else
+      this.defaultLayout = frontstageProps.defaultLayout;
+
+    if (typeof frontstageProps.contentGroup === "string")
+      this.contentGroupId = frontstageProps.contentGroup;
+    else
+      this.contentGroup = frontstageProps.contentGroup;
+
+    if (frontstageProps.type !== undefined)
+      this.type = frontstageProps.type;
+    if (frontstageProps.inheritZoneStates !== undefined)
+      this.inheritZoneStates = frontstageProps.inheritZoneStates;
+    if (frontstageProps.hubEnabled !== undefined)
+      this.hubEnabled = frontstageProps.hubEnabled;
+    if (frontstageProps.contextToolbarEnabled !== undefined)
+      this.contextToolbarEnabled = frontstageProps.contextToolbarEnabled;
+    if (frontstageProps.isInFooterMode !== undefined)
+      this.isInFooterMode = frontstageProps.isInFooterMode;
+    if (frontstageProps.defaultSelectionScope !== undefined)
+      this.defaultSelectionScope = frontstageProps.defaultSelectionScope;
+    if (frontstageProps.availableSelectionScopes !== undefined)
+      this.availableSelectionScopes = frontstageProps.availableSelectionScopes;
+    if (frontstageProps.applicationData !== undefined)
+      this.applicationData = frontstageProps.applicationData;
+
+    this.items.loadItems(frontstageProps);
+
+    this.topLeft = ZoneDefFactory.Create(frontstageProps.topLeft);
+    this.topCenter = ZoneDefFactory.Create(frontstageProps.topCenter);
+    this.topRight = ZoneDefFactory.Create(frontstageProps.topRight);
+    this.centerLeft = ZoneDefFactory.Create(frontstageProps.centerLeft);
+    this.centerRight = ZoneDefFactory.Create(frontstageProps.centerRight);
+    this.bottomLeft = ZoneDefFactory.Create(frontstageProps.bottomLeft);
+    this.bottomCenter = ZoneDefFactory.Create(frontstageProps.bottomCenter);
+    this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
   }
 
   public findItem(id: string): ItemDefBase | undefined {
@@ -195,6 +203,19 @@ export class FrontstageDef {
     this.zoneDefs.map((zoneDef: ZoneDef) => {
       zoneDef.clearDefaultOpenUsed();
     });
+  }
+
+  public waitUntilReady(): Promise<void> {
+    // create an array of control-ready promises
+    const controlReadyPromises = new Array<Promise<void>>();
+    for (const control of this.widgetControls) {
+      controlReadyPromises.push(control.isReady);
+    }
+    for (const control of this.contentControls) {
+      controlReadyPromises.push(control.isReady);
+    }
+
+    return Promise.all(controlReadyPromises).then(() => { });
   }
 
   public setActiveView(newContent: ContentControl, oldContent?: ContentControl): void {
@@ -261,6 +282,41 @@ export class FrontstageDef {
         return widgetDef;
     }
     return undefined;
+  }
+
+  /** Gets the list of [[WidgetControl]] */
+  public get widgetControls(): WidgetControl[] {
+    const widgetControls = new Array<WidgetControl>();
+    for (const zoneDef of this.zoneDefs) {
+      for (const widgetDef of zoneDef.widgetDefs) {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControls.push(widgetControl);
+      }
+    }
+    return widgetControls;
+  }
+
+  /** Gets the list of [[ContentControl]] */
+  public get contentControls(): ContentControl[] {
+    if (this.contentGroup)
+      return this.contentGroup.getContentControls();
+    return [];
+  }
+
+  /** Gets the list of ScreenViewport  */
+  public get viewports(): Readonly<ScreenViewport[]> {
+    const viewports = new Array<ScreenViewport>();
+    if (this.contentControls) {
+      this.contentControls.forEach((control: ContentControl) => {
+        if (control.getType() === ConfigurableUiControlType.Viewport) {
+          const viewportControl = control as ViewportContentControl;
+          if (viewportControl.viewport)
+            viewports.push(viewportControl.viewport);
+        }
+      });
+    }
+    return viewports;
   }
 
 }

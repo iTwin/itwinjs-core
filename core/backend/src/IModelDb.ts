@@ -1,64 +1,35 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, Id64String, BentleyStatus, Id64Arg, JsonUtils, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Code,
-  CodeSpec,
-  ElementProps,
-  ElementAspectProps,
-  IModel,
-  IModelProps,
-  IModelVersion,
-  ModelProps,
-  IModelError,
-  IModelStatus,
-  AxisAlignedBox3d,
-  EntityQueryParams,
-  EntityProps,
-  ViewQueryParams,
-  ViewDefinitionProps,
-  FontMap,
-  FontMapProps,
-  FontProps,
-  ElementLoadProps,
-  CreateIModelProps,
-  FilePropertyProps,
-  IModelToken,
-  TileTreeProps,
-  IModelNotFoundResponse,
-  EcefLocation,
-  SnapRequestProps,
-  SnapResponseProps,
-  EntityMetaData,
-  PropertyCallback,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
+  ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  FilePropertyProps, FontMap, FontMapProps, FontProps, IModel, IModelError, IModelNotFoundResponse, IModelProps,
+  IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps, PropertyCallback, SheetProps,
+  SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
   ViewStateData,
-  CategorySelectorProps,
-  ModelSelectorProps,
-  SheetProps,
-  ThumbnailProps,
-  DisplayStyleProps,
 } from "@bentley/imodeljs-common";
+import * as path from "path";
+import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CodeSpecs } from "./CodeSpecs";
+import { ConcurrencyControl } from "./ConcurrencyControl";
+import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
-import { Model } from "./Model";
-import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
-import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
-import { CodeSpecs } from "./CodeSpecs";
 import { Entity } from "./Entity";
-import * as path from "path";
+import { ErrorStatusOrResult, NativeDgnDb, SnapRequest } from "./imodeljs-native-platform-api";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
-import { ConcurrencyControl } from "./ConcurrencyControl";
-import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
-import { SnapRequest, NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { Model } from "./Model";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { KnownLocations } from "./Platform";
-import { IModelJsFs } from "./IModelJsFs";
+import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -234,10 +205,10 @@ export class IModelDb extends IModel {
    */
   public static getAccessToken(iModelId: string): AccessToken {
     if (IModelDb._accessTokens === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "Undefined", Logger.logWarning, loggingCategory);
     const token: AccessToken | undefined = IModelDb._accessTokens.get(iModelId);
     if (token === undefined)
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "AccessToken not found", Logger.logWarning, loggingCategory);
     return token;
   }
 
@@ -591,7 +562,7 @@ export class IModelDb extends IModel {
    */
   public saveChanges(description?: string) {
     if (this.openParams.openMode === OpenMode.Readonly)
-      throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError);
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
@@ -841,11 +812,11 @@ export class IModelDb extends IModel {
       return;
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const { error, result: metaDataJson } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (error)
-      throw new IModelError(error.status, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(error.status, "Error getting class meta data", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -865,7 +836,7 @@ export class IModelDb extends IModel {
   public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
     const { error } = this.nativeDb.getECClassMetaData(className[0], className[1]);
     return (error === undefined);
   }
@@ -1096,8 +1067,8 @@ export namespace IModelDb {
      * @throws IModelError if the code is invalid
      */
     public queryElementIdByCode(code: Code): Id64 | undefined {
-      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec);
-      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
+      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggingCategory);
+      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggingCategory);
 
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
@@ -1182,7 +1153,7 @@ export namespace IModelDb {
     private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
       const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
-        throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
 
       const aspects: ElementAspect[] = [];
       for (const row of rows) {

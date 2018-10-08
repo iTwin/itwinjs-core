@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -8,7 +8,6 @@ import { IModelList } from "./IModelList";
 import { ProjectDropdown } from "./ProjectDropdown";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
@@ -19,7 +18,7 @@ import "./Common.scss";
 
 export interface IModelOpenProps {
   accessToken: AccessToken;
-  onOpenIModel?: (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  onOpenIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelOpenState {

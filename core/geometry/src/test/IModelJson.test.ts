@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -163,7 +163,7 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createSimpleRotationalSweeps(), true, false);
     exerciseIModelJSon(ck, Sample.createRuledSweeps(), true, false);
 
-    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(), 10, 0), true, false);
+    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(true), 10, 0), true, false);
     exerciseIModelJSon(ck, applyShifts(Sample.createBspline3dHCurves(), 10, 10), true, false);
     exerciseIModelJSon(ck, Sample.createXYGridBsplineSurface(4, 3, 3, 2)!, true, false);
     exerciseIModelJSon(ck, Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!, true, false);

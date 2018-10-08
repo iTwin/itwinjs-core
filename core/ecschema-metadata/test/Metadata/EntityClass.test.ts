@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createSchemaJsonWithItems } from "./../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import ECClass, { MutableClass } from "../../src/Metadata/Class";
-import EntityClass, { MutableEntityClass } from "../../src/Metadata/EntityClass";
-import Mixin from "../../src/Metadata/Mixin";
-import RelationshipClass from "../../src/Metadata/RelationshipClass";
-import { ECClassModifier } from "../../src/ECObjects";
-import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import { ECObjectsError } from "../../src/Exception";
+import Schema, { MutableSchema } from "./../../src/Metadata/Schema";
+import ECClass, { MutableClass } from "./../../src/Metadata/Class";
+import EntityClass, { MutableEntityClass } from "./../../src/Metadata/EntityClass";
+import Mixin from "./../../src/Metadata/Mixin";
+import RelationshipClass from "./../../src/Metadata/RelationshipClass";
+import { ECClassModifier } from "./../../src/ECObjects";
+import { DelayedPromiseWithProps } from "./../../src/DelayedPromise";
+import { ECObjectsError } from "./../../src/Exception";
 
 describe("EntityClass", () => {
   describe("get inherited properties", () => {

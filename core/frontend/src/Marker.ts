@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
+
 import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d } from "@bentley/geometry-core";
 import { ImageUtil } from "./ImageUtil";
 import { DecorateContext } from "./ViewContext";
@@ -12,6 +13,7 @@ import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
 
+/** The types that may be used  */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
 export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
@@ -20,7 +22,7 @@ export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "
 /**
  * A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
  * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
- * see [Markers]($docs/learning/frontend/Markers)
+ * @see [Markers]($docs/learning/frontend/Markers)
  */
 export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
@@ -212,15 +214,17 @@ export class Marker implements CanvasDecoration {
     return true;
   }
 
-  public onDecorate(context: DecorateContext) { context.addCanvasDecoration(this); }
+  /** Add this Marker to the supplied Decorate context. */
+  public addMarker(context: DecorateContext) { context.addCanvasDecoration(this); }
 
-  /** Add this Marker to the supplied DecorateContext, if it's visible
-   * This method should be called from [[Decorator.decorate]].It will add this this Marker to the supplied DecorateContext.
+  /** Set the position and ddd this Marker to the supplied DecorateContext, if it's visible.
+   * This method should be called from your implementation of [[Decorator.decorate]]. It will set this Marker's position based the
+   * Viewport from the context, and add this this Marker to the supplied DecorateContext.
    * @param context The DecorateContext for the Marker
    */
   public addDecoration(context: DecorateContext) {
     if (this.setPosition(context.viewport))
-      this.onDecorate(context);
+      this.addMarker(context);
   }
 }
 
@@ -238,24 +242,31 @@ export class Cluster<T extends Marker> {
   }
 }
 
-/** A *set* of Markers that are logically related, such that they are "clustered" when they overlap. In that case, a "cluster marker"
+/** A *set* of Markers that are logically related, such that they *cluster* when they overlap. In that case, a *cluster marker*
  * is drawn instead of the overlapping Markers.
  */
 export abstract class MarkerSet<T extends Marker> {
+  /** @hidden */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
+  /** @hidden */
   protected readonly _worldToViewMap = Matrix4d.createZero();
 
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
   public minimumClusterSize = 1;
-  /** The set of Markers displayed together. */
+  /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public readonly markers = new Set<T>();
 
-  /** Implement this method to get or create the Marker for a Cluster. */
+  /**
+   * Implement this method to create a new Marker that is shown as a *stand-in* for a Cluster of Markers that overlap one another.
+   * @param cluster The [[Cluster]] that the new Marker will represent.
+   * @returns The Marker that will be displayed to represent the Cluster.
+   * @note You must create a new Marker each time this method is called.
+   */
   protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
 
   /**
    * This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
-   * All Markers that overlap one other are turned into a Cluster.
+   * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
    */
   public addDecoration(context: DecorateContext) {
@@ -295,15 +306,15 @@ export abstract class MarkerSet<T extends Marker> {
     for (const entry of entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?
-          entry.markers.forEach((marker) => marker.onDecorate(context)); // no, just draw all of its Markers
+          entry.markers.forEach((marker) => marker.addMarker(context)); // no, just draw all of its Markers
         } else {
           // yes, get and draw the Marker for this Cluster
           if (undefined === entry.clusterMarker) // have we already created this cluster marker?
             entry.clusterMarker = this.getClusterMarker(entry); // no, get it now.
-          entry.clusterMarker.onDecorate(context);
+          entry.clusterMarker.addMarker(context);
         }
       } else {
-        entry.onDecorate(context); // entry is a non-overlapping Marker, draw it.
+        entry.addMarker(context); // entry is a non-overlapping Marker, draw it.
       }
     }
   }

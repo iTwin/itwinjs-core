@@ -1,18 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import ECClass from "../../src/Metadata/Class";
-import EntityClass from "../../src/Metadata/EntityClass";
-import Mixin from "../../src/Metadata/Mixin";
-import { StructClass } from "../../src/Metadata/Class";
-import { ECObjectsError } from "../../src/Exception";
-import { SchemaKey, SchemaMatchType } from "../../src/ECObjects";
-import { SchemaContext } from "../../src/Context";
+import Schema, { MutableSchema } from "./../../src/Metadata/Schema";
+import ECClass from "./../../src/Metadata/Class";
+import EntityClass from "./../../src/Metadata/EntityClass";
+import Mixin from "./../../src/Metadata/Mixin";
+import SchemaContext from "./../../src/Context";
+import { StructClass } from "./../../src/Metadata/Class";
+import { ECObjectsError } from "./../../src/Exception";
+import { SchemaMatchType } from "./../../src/ECObjects";
+import SchemaKey from "./../../src/SchemaKey";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {

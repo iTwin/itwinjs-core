@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaItemKey, SchemaItemType, parseSchemaItemType, schemaItemTypeToString } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { SchemaItemType, parseSchemaItemType, schemaItemTypeToString } from "./../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
 

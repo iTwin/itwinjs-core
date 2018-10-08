@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ECVersion } from "../src/ECObjects";
-import { ECObjectsError } from "../src/Exception";
+import { ECVersion } from "./../src/SchemaKey";
+import { ECObjectsError } from "./../src/Exception";
 
 describe("ECVersion", () => {
   describe("fromString", () => {

@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
-import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
-import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { AccessToken, AuthorizationToken } from "./Token";
+import { Client } from "./Client";
+import { AccessToken } from "./Token";
 import { request, RequestOptions, Response } from "./Request";
-import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "./UserProfile";
+import { Config } from "./Config";
+import { Logger, BentleyStatus, Guid, GuidProps, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 const loggingCategory: string = "imodeljs-clients.Ulas";
 
@@ -46,7 +46,7 @@ export interface ProductVersion {
 
 /**
  * Usage log entry data that is submitted to the ULAS Posting Service.
- * See [UlasClient]$(imodeljs-clients)
+ * See [UlasClient]$(clients)
  */
 export class UsageLogEntry {
   /* The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR */
@@ -78,7 +78,7 @@ export class UsageLogEntry {
 }
 /**
  * Feature log entry data that is submitted to the ULAS Posting Service.
- * See [UlasClient]$(imodeljs-clients)
+ * See [UlasClient]$(clients)
  */
 export class FeatureLogEntry {
   /* ID of the feature to log usage for (from FeatureRegistry). */
@@ -118,8 +118,8 @@ export class FeatureLogEntry {
 
 /**
  * Data to log the start of a Feature usage with the ULAS Posting Service.
- * Use [FeatureEndedLogEntry]($imodeljs-clients) to log the end of the feature usage.
- * See [UlasClient]$(imodeljs-clients)
+ * Use [FeatureEndedLogEntry]($clients) to log the end of the feature usage.
+ * See [UlasClient]$(clients)
  */
 export class FeatureStartedLogEntry extends FeatureLogEntry {
   public readonly entryId: Guid;
@@ -132,8 +132,8 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
 
 /**
  * Data to log the end of a Feature usage with the ULAS Posting Service.
- * Must have logged a [FeatureStartedLogEntry]($imodeljs-clients) before.
- * See [UlasClient]$(imodeljs-clients)
+ * Must have logged a [FeatureStartedLogEntry]($clients) before.
+ * See [UlasClient]$(clients)
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
   /* Id of the corresponding [FeatureStartedLogEntry]($imodeljs-clients).
@@ -148,8 +148,7 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
 }
 
 /**
- * Response from posting a Feature Log entry with
- * [UlasClient]$(imodeljs-clients)
+ * Response from posting a Feature Log entry with the [UlasClient]$(clients)
  */
 export interface LogPostingResponse {
   /* The overall status of the request. */
@@ -167,26 +166,17 @@ export interface LogPostingResponse {
  */
 export class UlasClient extends Client {
   public static readonly searchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    QA: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    PROD: "https://connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-    // WIP: Is this the right URL?
-    PERF: "https://qa-connect-ulastm.bentley.com/Bentley.ULAS.PostingService/PostingSvcWebApi",
-  };
-
+  public static readonly configURL = "imjs_usage_logging_service_url";
+  public static readonly configRegion = "imjs_usage_logging_service_region";
   // Workaround until these values can be read from Policy API
   private readonly _policyIds: ImsPolicyIds = new ImsPolicyIds();
 
   /**
    * Creates an instance of UlasClient.
-   * @param deploymentEnv Deployment environment
    */
-  constructor(public deploymentEnv: DeploymentEnv) { super(deploymentEnv); }
+  constructor() { super(); }
 
   /**
-   * WIP: iModelBank might not be able to access the BUDDI service. How to solve that?
-   *
    * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
@@ -195,17 +185,21 @@ export class UlasClient extends Client {
   /**
    * @returns Default URL for the service.
    */
-  protected getDefaultUrl(): string { return UlasClient._defaultUrlDescriptor[this.deploymentEnv]; }
+  protected getDefaultUrl(): string {
+    if (Config.App.has(UlasClient.configURL))
+      return Config.App.get(UlasClient.configURL);
 
+    throw new Error(`Service URL not set. Set it in Config.App using key ${UlasClient.configURL}`);
+  }
   /**
-   * Gets the (delegation) access token to access the service
-   * @param authorizationToken Authorization token.
-   * @returns Resolves to the (delegation) access token.
+   * Override default region for this service
+   * @returns region id or undefined
    */
-  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    alctx.enter();
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return await imsClient.getToken(alctx, authorizationToken);
+  protected getRegion(): number | undefined {
+    if (Config.App.has(UlasClient.configRegion))
+      return Config.App.get(UlasClient.configRegion);
+
+    return undefined;
   }
 
   /**

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
@@ -9,17 +9,16 @@ import { Guid, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, Project,
-  ProgressInfo, UrlDescriptor, DeploymentEnv,
+  ProgressInfo,
 } from "../../";
 import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
 } from "../../";
-import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
-import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
 import { IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -79,7 +78,7 @@ let _imodelHubClient: IModelHubClient;
 function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  _imodelHubClient = new IModelHubClient(new AzureFileHandler());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.RequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
@@ -88,28 +87,11 @@ function getImodelHubClient() {
 
 let _imodelBankClient: IModelBankClient;
 
-export class IModelHubUrlMock {
-  private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-imodelhubapi.bentley.com",
-    QA: "https://qa-imodelhubapi.bentley.com",
-    PROD: "https://imodelhubapi.bentley.com",
-    PERF: "https://perf-imodelhubapi.bentley.com",
-  };
-
-  public static getUrl(env: DeploymentEnv): string {
-    return this._urlDescriptor[env];
-  }
-
-  public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this._urlDescriptor[env]);
-  }
-}
-
-export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
+export const defaultUrl: string = "https://qa-imodelhubapi.bentley.com";
 
 export function getDefaultClient() {
-  IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
   return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
+  return getImodelHubClient();
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -159,7 +141,7 @@ export async function login(userCredentials?: UserCredentials): Promise<AccessTo
     return new MockAccessToken();
 
   userCredentials = userCredentials || TestUsers.regular;
-  return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
+  return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials);
 }
 
 export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {

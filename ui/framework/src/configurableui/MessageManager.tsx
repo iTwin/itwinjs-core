@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
@@ -217,7 +217,6 @@ export class MessageManager {
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
   public static outputPrompt(_prompt: string): void {
     UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: _prompt });
-    // TODO - outputPrompt
   }
 
   /** Gets an icon CSS class name based on a given NotifyMessageDetails. */

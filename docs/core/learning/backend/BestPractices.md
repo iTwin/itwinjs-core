@@ -48,15 +48,19 @@ Be prepared for redundant requests. After one client requests a long-running ope
 ## RpcInterfaces and Frontend Design
 
 ### Right-sized requests
+
 RpcInterfaces must be "phrased" so that clients can make right-sized requests. RpcInterfaces must be "chunky" and not "chatty". One good strategy to avoid chatty interfaces is to [write a backend that is tailored to the needs of the frontend](../AppTailoring.md#backends-for-frontends).
 
 ### Paged Queries
+
 A client must not issue a query that produces a very large result. Instead, a client must break up a large query into a series of requests, so that results are returned in small increments. The ECSql limit/offset query parameters are used for this purpose.
 
 ### Event-Driven Design
+
 Frontend and backend never run in the same JavaScript context. Requests are always asynchronous, and it is impossible to predict how long even a right-sized request will take. Frontend code must be designed like a state machine and must be event-driven. For example, the frontend must go into a mode where only part of its UI is available while some long-running backend operation such as opening a briefcase or importing a schema is in progress. Query-paging is another example of the need for a frontend to maintain state data.
 
 ### Refreshing
+
 Web apps must be ready for remote backends to become temporarily or permanently unavailable. If, for example, an RcpInterface method fails with an unexpected error, such as ECONNRESET, the client operation should fail gracefully. The failure may be due to a temporary communications failure. If so, the operation may be re-tried.
 
 <!-- TODO: What if the orchestractor must re-start the backend? Does the client have to acquire a new IModelConnection? -->

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix issue which cause ui-test app to fail because it is unable to find config file",
+      "packageName": "@bentley/config-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "khanaffan@gmail.com"
+}

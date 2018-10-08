@@ -50,11 +50,10 @@
       "frontend": "imodeljs-frontend",
       "backend": "imodeljs-backend",
       "clients": "imodeljs-clients",
+      "quantity": "imodeljs-quantity",
       "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
-    },
-    "editDocsBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fdocs%2Fcore%2F",
-    "editSrcBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fcore%2F"
+    }
   }
 }

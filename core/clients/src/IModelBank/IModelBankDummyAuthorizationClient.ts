@@ -3,7 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "../Token";
 import { UserProfile } from "../UserProfile";
-import { DeploymentEnv } from "../Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
 
@@ -11,7 +10,7 @@ import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
  * be able to tolerate this dummy token.
  */
 export class IModelBankDummyAuthorizationClient implements IModelAuthorizationClient {
-  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any, _env: DeploymentEnv): Promise<AccessToken> {
+  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
     if (!userProfile)
       userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateSite: "", organizationId: "", usageCountryIso: "" };
     const foreignAccessTokenWrapper: any = {};

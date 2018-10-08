@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, Config } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(true, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
@@ -27,10 +29,12 @@ export interface UserCredentials {
 /** Test users with various permissions */
 export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static readonly regular: UserCredentials = {
-    email: "Regular.IModelJsTestUser@mailinator.com",
-    password: "Regular@iMJs",
-  };
+  public static get regular(): UserCredentials {
+    return {
+      email: Config.App.getString("imjs_test_regular_user_name"),
+      password: Config.App.getString("imjs_test_regular_user_password"),
+    };
+  }
 }
 
 export class KnownTestLocations {
@@ -50,12 +54,11 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-  public static hubDeploymentEnv: DeploymentEnv = "QA";
 
   private static _connectClient: ConnectClient | undefined;
   public static get connectClient(): ConnectClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ConnectClient(IModelTestUtils.hubDeploymentEnv);
+      IModelTestUtils._connectClient = new ConnectClient();
     return IModelTestUtils._connectClient!;
   }
 
@@ -63,11 +66,10 @@ export class IModelTestUtils {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     if (userCredentials === undefined)
       userCredentials = TestUsers.regular;
-    const env = IModelTestUtils.hubDeploymentEnv;
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(alctx, userCredentials.email, userCredentials.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx, userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(alctx, authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(alctx, authToken!);
     assert(accessToken);
 
     return accessToken;

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
 import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
@@ -21,11 +21,9 @@ class ProjectInfoImpl implements ProjectInfo {
  */
 export class DefaultProjectServices implements ProjectServices {
   private _connectClient: ConnectClient;
-  public deploymentEnv: DeploymentEnv;
 
-  constructor(deploymentEnvironment: DeploymentEnv) {
-    this.deploymentEnv = deploymentEnvironment;
-    this._connectClient = new ConnectClient(deploymentEnvironment);
+  constructor() {
+    this._connectClient = new ConnectClient();
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {

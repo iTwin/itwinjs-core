@@ -52,20 +52,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend IntegrationTests",
-      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend",
-      "args": [
-        "--testDir=${workspaceFolder}/core/backend/lib/test/integration",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Run Performance test (Offline)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
@@ -493,12 +479,6 @@
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
-      ],
-      "args": [
-        "--listenFor=45000",
-        "--email=Regular.IModelJsTestUser@mailinator.com",
-        "--password=Regular@iMJs",
-        "--listen_time=40000"
       ],
       "protocol": "inspector"
     },

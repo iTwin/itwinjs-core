@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
 import * as React from "react";
 import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { getUserColor } from "@bentley/bwc/lib/index";
 import "./UserProfile.scss";
 
 /** Properties of [[UserProfile]] component. */
@@ -37,9 +38,10 @@ export default class UserProfile extends React.Component<UserProfileProps> {
   }
 
   public render() {
+    const color = getUserColor(this.props.email);
     return (
       <div className="nz-backstage-userprofile" onClick={this.props.onClick}>
-        <span>{this._getInitials()}</span>
+        <span style={{ backgroundColor: color }}>{this._getInitials()}</span>
         <span>{this._getFullName()}</span>
       </div>
     );

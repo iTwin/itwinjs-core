@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKey, Schema, SchemaMatchType } from "..";
+import Schema from "./../Metadata/Schema";
+import { SchemaMatchType } from "./../ECObjects";
+import SchemaKey from "./../SchemaKey";
 import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
@@ -70,7 +72,7 @@ export class FileSchemaKey extends SchemaKey {
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
  */
-export abstract class SchemaFileLocater {
+export default abstract class SchemaFileLocater {
   public searchPaths: string[];
 
   constructor() {

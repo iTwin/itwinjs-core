@@ -60,6 +60,7 @@ The rules are broken into the different parts of the Schema they are validated a
 - Relationship classes must not have a source constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is forward.
 - Relationship classes must not have a target constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is backward.
 - Relationship classes must not have an abstract constraint if there is only one concrete constraint set.
+- Relationship classes must not have an **ElementAspect** target constraint (or source constraint if direction is backwards), unless they derive from **ElementOwnsUniqueAspect** or **ElementOwnsMultiAspect**
 - Embedding relationships should not have 'Has' in the class name.
 
 ### Struct Classes

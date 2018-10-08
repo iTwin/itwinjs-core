@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Picker */
@@ -213,6 +213,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
           if (item.children!.length !== 0) {
             return (
               <ExpandableSection
+                key={itemIndex.toString()}
                 title={item.name}
                 className="ListPickerInnerContainer">
                 <Column>
@@ -221,7 +222,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
               </ExpandableSection>
             );
           } else {
-            return (<div />);
+            return (<div key={itemIndex.toString()} />);
           }
       }
     };

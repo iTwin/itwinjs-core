@@ -1,18 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
 import {
   FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
-  parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, formatTypeToString, showSignOptionToString, formatTraitsToArray, scientificTypeToString,
-} from "../utils/FormatEnums";
+  parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption,
+  formatTypeToString, showSignOptionToString, formatTraitsToArray, scientificTypeToString,
+} from "./../utils/FormatEnums";
 
 export interface IFormat {
   readonly name: string;
@@ -75,7 +77,7 @@ export default class Format extends SchemaItem implements IFormat {
   private verifyFormatTraitsOptions(formatTraitsFromJson: string | string[]) {
     const formatTraits = (Array.isArray(formatTraitsFromJson)) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
     formatTraits.forEach((formatTraitsString: string) => { // for each element in the string array
-      this._formatTraits = parseFormatTrait(formatTraitsString.toLowerCase(), this.formatTraits);
+      this._formatTraits = parseFormatTrait(formatTraitsString, this.formatTraits);
     });
   }
 

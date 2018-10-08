@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -17,7 +17,7 @@ export interface BentleyCloudRpcParams {
   info: OpenAPIInfo;
   /** The protocol for Bentley cloud RPC interface deployments */
   protocol?: typeof BentleyCloudRpcProtocol;
-  /** The URI of the orchestrator that will route requests to the remote RpcInterface server. If not supplied, this default to the origin of the Web page. */
+  /** The URI of the orchestrator that will route requests to the remote RpcInterface server. If not supplied, this default to the origin of the Web page. This is required only when calling initializeClient and only if the server is not the origin of the Web page. */
   uriPrefix?: string;
   /** Handler for RPC request events. */
   pendingRequestListener?: RpcRequestEventHandler;

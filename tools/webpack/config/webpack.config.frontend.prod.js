@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -136,7 +136,9 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       pattern: /.*/,
       includeUndefined: true,
       includePackagesWithoutLicense: true,
-      unacceptablePattern: /^(GPL|.*[^L]GPL)/i,
+      unacceptablePattern: /^L?GPL/i,
+      licenseFileOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseFileOverrides,
+      licenseTypeOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseTypeOverrides,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without

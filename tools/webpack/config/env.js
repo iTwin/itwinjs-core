@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -7,7 +7,13 @@
 const fs = require("fs");
 const path = require("path");
 const paths = require("./paths");
-
+const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
+if (configEnv && process.env) {
+  Object.assign(process.env, configEnv);
+} else {
+  console.log("Webpack failed to locate iModelJs configuration");
+}
 // Make sure that including paths.js after env.js will read .env variables.
 delete require.cache[require.resolve("./paths")];
 
@@ -60,10 +66,11 @@ process.env.NODE_PATH = (process.env.NODE_PATH || "")
 // Grab NODE_ENV and REACT_APP_* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
 const REACT_APP = /^REACT_APP_/i;
-
+// Grab all the imjs_* var for core and test
+const IMJS = /^imjs_/i;
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
-    .filter(key => REACT_APP.test(key))
+    .filter((key) => { return REACT_APP.test(key) || IMJS.test(key); })
     .reduce(
       (env, key) => {
         env[key] = process.env[key];

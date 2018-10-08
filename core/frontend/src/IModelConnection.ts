@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
@@ -286,7 +286,7 @@ export class IModelConnection extends IModel {
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
@@ -298,7 +298,7 @@ export class IModelConnection extends IModel {
   public async saveChanges(description?: string): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     if (OpenMode.ReadWrite !== this.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 

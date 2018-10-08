@@ -1,23 +1,28 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { CSSProperties } from "react";
 
 import { ViewportComponent } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager } from "@bentley/ui-framework";
-import { ContentControl } from "@bentley/ui-framework";
-import { ContentViewManager } from "@bentley/ui-framework";
+import {
+  ConfigurableCreateInfo,
+  ConfigurableUiManager,
+  ContentViewManager,
+  ViewportContentControl,
+} from "@bentley/ui-framework";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 /** iModel Viewport Control
  */
-export class IModelViewportControl extends ContentControl {
+export class IModelViewportControl extends ViewportContentControl {
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     if (options.viewId) {
-      this.reactElement = <ViewportComponent viewDefinitionId={options.viewId} imodel={options.iModelConnection} />;
+      this.reactElement = <ViewportComponent viewportRef={(v: ScreenViewport) => { this.viewport = v; }} viewDefinitionId={options.viewId} imodel={options.iModelConnection} />;
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -12,12 +12,13 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: IModelDb;
-  let accessToken: AccessToken;
+
+  // tslint:prefer-const:false
+  const accessToken: AccessToken = (AccessToken as any);
   const activityContext = new ActivityLoggingContext("");
 
   before(async () => {
     iModel = IModelTestUtils.openIModel("test.bim");
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
   after(() => {

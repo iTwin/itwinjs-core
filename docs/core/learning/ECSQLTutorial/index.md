@@ -1,7 +1,5 @@
 # Learning ECSQL
 
-> The tutorial is still a **work in progress**. The iModelConsole and the sample iModel used in the tutorial are not yet publicly available. However, you can still use the tutorial and learn ECSQL. You won't be able to run and experiment with the examples though.
-
 This tutorial allows you to learn how to use ECSQL to read and query the business data in your iModels.
 
 ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
@@ -15,15 +13,15 @@ In the course of the tutorial you will notice how similar ECSQL and SQL are. To 
 
 ### iModelConsole
 
-**WIP**
-You will also need to use the **iModelConsole** to try out the ECSQL examples in the tutorial yourself and to experiment with your own ECSQL statements. You can download it from here XXX. Follow the instructions on XXX for how to install and run it.
+The tutorial makes reference to the **iModelConsole** application to try out the ECSQL examples in the tutorial yourself and to experiment with your own ECSQL statements.
 
-> In the iModelConsole run the `.help` command to see all available commands.
+> We are working to make the iModelConsole publicly available, but it is not ready yet.
+
+In the iModelConsole run the `.help` command to see all available commands.
 
 ### Sample iModel
 
-**WIP**
-The ECSQL examples in the tutorial work with the sample iModel which you can download from here: XXX
+> The ECSQL examples in the tutorial work with a sample iModel. We are working to make the iModelConsole publicly available, but it is not ready yet.
 
 ### BIS
 
@@ -41,14 +39,14 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 ### Step 1 - Start the iModelConsole
 
-1. Launch the console (TBD)
+1. Launch the console
 1. Authenticate with your CONNECT credentials.
 
 ### Step 2 - Open the sample iModel
 
 Run this command:
 
-> `.open -path:<path to sample imodel>`
+> `.open -project:<project name> -imodel:<iModel name>`
 
 ### Step 3 - Run an ECSQL in the iModelConsole
 

@@ -1,14 +1,16 @@
+
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
+import { Config } from "@bentley/imodeljs-clients";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(true, Config.App);
+
 export class TestConfig {
-
-  // static readonly email: string = 'bentleyvilnius@gmail.com';
-  // static readonly password: string = 'Q!w2e3r4t5';
-
-  public static readonly email: string = "Regular.IModelJsTestUser@mailinator.com";
-  public static readonly password: string = "Regular@iMJs";
-  public static readonly projectName: string = "iModelJsTest";
-  public static readonly iModelName: string = "ReadOnlyTest";
+  public static get email(): string { return Config.App.get("imjs_test_regular_user_name"); }
+  public static get password(): string { return Config.App.get("imjs_test_regular_user_password"); }
+  public static get projectName(): string { return Config.App.get("imjs_test_project_name"); }
+  public static get iModelName(): string { return Config.App.get("imjs_test_imodel_name"); }
 }

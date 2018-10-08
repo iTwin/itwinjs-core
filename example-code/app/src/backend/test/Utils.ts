@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -8,7 +8,9 @@ import { OpenMode, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core"
 import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
-import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(true, Config.App);
 
 export interface IModelTestUtilsOpenOptions {
     copyFilename?: string;
@@ -26,14 +28,18 @@ export interface UserCredentials {
 /** Test users with various permissions */
 export class TestUsers {
     /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-    public static readonly regular: UserCredentials = {
-        email: "Regular.IModelJsTestUser@mailinator.com",
-        password: "Regular@iMJs",
-    };
-    public static readonly superManager: UserCredentials = {
-        email: "SuperManager.IModelJsTestUser@mailinator.com",
-        password: "SuperManager@iMJs",
-    };
+    public static get regular(): UserCredentials {
+        return {
+            email: Config.App.getString("imjs_test_regular_user_name"),
+            password: Config.App.getString("imjs_test_regular_user_password"),
+        };
+    }
+    public static get superManager(): UserCredentials {
+        return {
+            email: Config.App.getString("imjs_test_super_manager_user_name"),
+            password: Config.App.getString("imjs_test_super_manager_user_password"),
+        };
+    }
 }
 
 export class KnownTestLocations {
@@ -63,10 +69,10 @@ export class IModelTestUtils {
     }
 
     // __PUBLISH_EXTRACT_START__ Bridge.getAccessToken.example-code
-    public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any, env: DeploymentEnv): Promise<AccessToken> {
-        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(activityContext, userCredentials.email, userCredentials.password);
+    public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any): Promise<AccessToken> {
+        const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(activityContext, userCredentials.email, userCredentials.password);
         assert(authToken);
-        const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(activityContext, authToken!);
+        const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(activityContext, authToken!);
         assert(accessToken);
         return accessToken;
     }
