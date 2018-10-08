@@ -42,7 +42,6 @@ p.digital-twin {
   align-items: center;
   position: relative;
   margin-bottom: 1em;
-  width: 60%;
   flex-direction: column;
 }
 
@@ -56,8 +55,10 @@ p.digital-twin {
 }
 
 .iframe-viewer {
-  width: 100%;
-  height: 560px;
+  width: 690px;
+  height: 431px;
+  border-width: 1px;
+  border-color: #CFDFEA;
 }
 
 #viewiModelBtn {
