@@ -168,7 +168,6 @@ export class Stacked extends React.PureComponent<StackedProps> {
       >
         <div className="nz-content-area">
           <Content
-            className="nz-content"
             anchor={this.props.horizontalAnchor}
             content={this.props.content}
           />

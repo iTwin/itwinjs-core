@@ -31,7 +31,7 @@ export default class WidgetContent extends React.Component<WidgetContentProps> {
         className={className}
         style={this.props.style}
       >
-        <div>
+        <div className="nz-container">
           {this.props.content}
         </div>
       </div>

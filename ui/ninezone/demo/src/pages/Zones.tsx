@@ -345,7 +345,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           isToolGroupOpen: false,
         } as ToolGroup,
         "cube": {
-          icon: "icon-3d-placeholder",
+          icon: "icon-placeholder",
           trayId: "tray1",
           backTrays: [],
           trays: {
@@ -1632,6 +1632,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             >
               Show Activity Message
             </BlueButton>
+            <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
             <br />
             <BlueButton
               onClick={() => this.setVisibleMessage(Message.Modal)}
@@ -1798,17 +1799,17 @@ export default class ZonesExample extends React.Component<{}, State> {
     const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
     return (
       <StackedWidget
-        horizontalAnchor={zone.horizontalAnchor}
-        verticalAnchor={zone.verticalAnchor}
         content={this.getZoneContent(zoneId)}
+        fillZone={zone.props.isLayoutChanged}
+        horizontalAnchor={zone.horizontalAnchor}
         isDragged={isDragged}
         isFloating={zone.props.floating ? true : false}
         isOpen={isOpen}
-        fillZone={zone.props.isLayoutChanged}
-        tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
         onResize={(x, y, handle, diff) => {
           this._handleOnWidgetResize(zoneId, x, y, handle, diff);
         }}
+        tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
+        verticalAnchor={zone.verticalAnchor}
       />
     );
   }
