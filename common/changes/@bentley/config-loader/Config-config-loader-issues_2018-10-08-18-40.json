@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Output package did not included the require file",
+      "packageName": "@bentley/config-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "khanaffan@gmail.com"
+}
