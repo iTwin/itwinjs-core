@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
@@ -16,24 +16,34 @@ import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
 
-export const enum AsThickenedLine { No = 0, Yes = 1 }
-
+/** Flags indicating whether and how the interiors of closed planar regions is displayed within a view. */
 export enum FillFlags {
-  None = 0,               // No fill, e.g. for any non-planar geometry.
-  ByView = 1 << 0,          // Use element fill color, when fill enabled by view
-  Always = 1 << 1,          // Use element fill color, even when fill is disabled by view
-  Behind = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
-  Blanking = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
-  Background = 1 << 3,          // Use background color specified by view
+  /** No fill */
+  None = 0,
+  /** Use the element's fill color when fill is enabled in the view's [[ViewFlags]]. */
+  ByView = 1 << 0,
+  /** Use the element's fill color even when fill is disabled in the view's [[ViewFlags]]. */
+  Always = 1 << 1,
+  /** Render the fill behind other geometry belonging to the same element.
+   * For example if an element's geometry contains text with background fill, the text always renders in front of the fill.
+   */
+  Behind = 1 << 2,
+  /** Combines Behind and Always flags. */
+  Blanking = Behind | Always,
+  /** Use the view's background color instead of the element's fill color. */
+  Background = 1 << 3,
 }
 
+/** @hidden */
 export enum PolylineTypeFlags {
   Normal = 0,      // Just an ordinary polyline
   Edge = 1 << 0, // A polyline used to define the edges of a planar region.
   Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
 }
 
-/** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points. */
+/** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points.
+ * @hidden
+ */
 export class PolylineFlags {
   public isDisjoint: boolean;
   public isPlanar: boolean;
@@ -89,7 +99,7 @@ export class PolylineFlags {
   }
 }
 
-/* An individual polyline which indexes into a shared set of vertices */
+/** @hidden */
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
@@ -109,6 +119,7 @@ export class PolylineData {
   }
 }
 
+/** @hidden */
 export class MeshPolyline {
   public readonly indices: number[];
   public readonly startDistance: number;
@@ -124,8 +135,10 @@ export class MeshPolyline {
   public clear() { this.indices.length = 0; }
 }
 
+/** @hidden */
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
 
+/** @hidden */
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
@@ -140,6 +153,7 @@ export class MeshEdge {
   }
 }
 
+/** @hidden */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
@@ -148,6 +162,7 @@ export class MeshEdges {
   public constructor() { }
 }
 
+/** @hidden */
 export class EdgeArgs {
   public edges?: MeshEdge[];
 
@@ -164,6 +179,7 @@ export class EdgeArgs {
   public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
 }
 
+/** @hidden */
 export class SilhouetteEdgeArgs extends EdgeArgs {
   public normals?: OctEncodedNormalPair[];
 
@@ -180,6 +196,7 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
   public clear() { this.normals = undefined; super.clear(); }
 }
 
+/** @hidden */
 export class PolylineEdgeArgs {
   public lines?: PolylineData[];
 
@@ -195,10 +212,17 @@ export class PolylineEdgeArgs {
   public clear() { this.lines = undefined; }
 }
 
-/** A Texture for rendering */
+/** Represents a texture image applied to a surface during rendering. */
 export abstract class RenderTexture implements IDisposable {
+  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+   * Textures created on the front-end generally have no key.
+   */
   public readonly key: string | undefined;
+  /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
+  /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
+   * An unowned texture associated with a [[RenderGraphic]] will be disposed when the RenderGraphic is disposed.
+   */
   public readonly isOwned: boolean;
 
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
@@ -211,22 +235,36 @@ export abstract class RenderTexture implements IDisposable {
     this.isOwned = params.isOwned;
   }
 
+  /** Releases any WebGL resources owned by this texture. */
   public abstract dispose(): void;
 }
 
+/** Represents a texture image applied to a surface during rendering. */
 export namespace RenderTexture {
+  /** Enumerates the types of [[RenderTexture]]s. */
   export const enum Type {
+    /** An image applied to a surface, with support for mip-mapping and repeating. */
     Normal,
+    /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
     Glyph,
+    /** A non-repeating image with no mip-maps, used for example for tiled map imagery. */
     TileSection,
+    /** A three-dimensional texture used for rendering a skybox. */
     SkyBox,
-    // ###TODO? RGBE
   }
 
+  /** Parameters used to construct a [[RenderTexture]]. */
   export class Params {
-    public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
+    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+     * Textures created on the front-end generally have no key.
+     */
+    public readonly key?: string; // The ID of a persistent texture
+    /** Indicates the type of texture. */
     public readonly type: Type;
-    public readonly isOwned: boolean; // For unnamed textures, true if another object owns the texture. If true, the owner is responsible for disposing of the texture; otherwise the texture will be disposed along with the [[RenderGraphic]] with which it is associated.
+    /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
+     * An unowned texture associated with a [[RenderGraphic]] will be disposed when the RenderGraphic is disposed.
+     */
+    public readonly isOwned: boolean; // For unnamed textures
 
     public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
       this.key = key;
@@ -243,9 +281,11 @@ export namespace RenderTexture {
   }
 }
 
-/** A Material for rendering */
+/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on. */
 export abstract class RenderMaterial {
+  /** If the material originated from a Material element in the [[IModelDb]], the ID of that element. */
   public readonly key?: string;
+  /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
 
   protected constructor(params: RenderMaterial.Params) {
@@ -256,9 +296,11 @@ export abstract class RenderMaterial {
   public get hasTexture(): boolean { return this.textureMapping !== undefined && this.textureMapping.texture !== undefined; }
 }
 
+/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on. */
 export namespace RenderMaterial {
+  /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
-    public key?: string; // The ID of the renderable material
+    public key?: string;
     public diffuseColor?: ColorDef;
     public specularColor?: ColorDef;
     public emissiveColor?: ColorDef;
@@ -275,7 +317,7 @@ export namespace RenderMaterial {
 
     public constructor(key?: string) { this.key = key; }
 
-    /** Create a RenderMaterial params object with QVision default values. */
+    /** Obtain an immutable instance of a RenderMaterial with all default properties. */
     public static readonly defaults = new Params();
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
@@ -293,6 +335,7 @@ export namespace RenderMaterial {
 }
 Object.freeze(RenderMaterial.Params.defaults);
 
+/** @hidden */
 export namespace ImageLight {
   export class Solar {
     constructor(public direction: Vector3d = new Vector3d(),
@@ -316,13 +359,6 @@ export class GraphicParams {
   public lineTexture?: RenderTexture;
   public material?: RenderMaterial;
   public gradient?: Gradient.Symb;
-
-  // void Cook(GeometryParamsCR, ViewContextR);
-  // void Init() {* this = GraphicParams(); }
-  // Compare two GraphicParams.
-  // DGNPLATFORM_EXPORT bool operator == (GraphicParamsCR rhs) const ;
-  // copy operator
-  // DGNPLATFORM_EXPORT GraphicParamsR operator = (GraphicParamsCR rhs);
 
   /** set the line color
    *  @param lineColor the new line color for this GraphicParams.
@@ -359,11 +395,25 @@ export class GraphicParams {
 
 export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
+/**
+ * Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
+ * Generally speaking,
+ *  - Wireframe draws only edges.
+ *  - SmoothShade draws only surfaces.
+ *  - HiddenLine and SolidFill draw both surfaces and edges.
+ *  - Lighting is only applied in SmoothShade mode.
+ * [[ViewFlags]] has options for enabling display of visible and/or hidden edges in SmoothShade mode.
+ * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
+ */
 export const enum RenderMode {
+  /** Render only edges, no surfaces, with exceptions for planar regions with [[FillFlags]] set up to render the surface in wireframe mode. */
   Wireframe = 0,
-  HiddenLine = 3,
-  SolidFill = 4,
+  /** Render only surfaces, no edges, with lighting. */
   SmoothShade = 6,
+  /** Render edges and surfaces. Surfaces are drawn using the view's background color instead of the element's fill color. */
+  HiddenLine = 3,
+  /** Render edges and surfaces. */
+  SolidFill = 4,
 }
 
 /**
@@ -487,6 +537,7 @@ export class ViewFlags {
     return val;
   }
 
+  /** @hidden */
   public hiddenEdgesVisible(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:
@@ -596,7 +647,9 @@ export class ViewFlags {
   }
 }
 
+/** @hidden */
 export namespace ViewFlag {
+  /** @hidden */
   export const enum PresenceFlag {
     kRenderMode,
     kText,
@@ -626,6 +679,7 @@ export namespace ViewFlag {
 
   /**
    * Overrides a subset of ViewFlags.
+   * @hidden
    */
   export class Overrides {
     private _present = 0;
@@ -712,22 +766,27 @@ export namespace ViewFlag {
   }
 }
 
+/** Enumerates the available patterns for drawing patterned lines.
+ * Each is a 32-bit pattern in which an 'off' bit corresponds to a pixel which is drawn, and an 'on' bit to a pixel which is not drawn.
+ */
 export const enum LinePixels {
   Solid = 0,
-  Code0 = Solid,            // 0
-  Code1 = 0x80808080,       // 1
-  Code2 = 0xf8f8f8f8,       // 2
-  Code3 = 0xffe0ffe0,       // 3
-  Code4 = 0xfe10fe10,       // 4
-  Code5 = 0xe0e0e0e0,       // 5
-  Code6 = 0xf888f888,       // 6
-  Code7 = 0xff18ff18,       // 7
-  HiddenLine = 0xcccccccc,  // hidden lines
-  Invisible = 0x00000001,   // nearly invisible
+  Code0 = Solid,
+  Code1 = 0x80808080,
+  Code2 = 0xf8f8f8f8,
+  Code3 = 0xffe0ffe0,
+  Code4 = 0xfe10fe10,
+  Code5 = 0xe0e0e0e0,
+  Code6 = 0xf888f888,
+  Code7 = 0xff18ff18,
+  HiddenLine = 0xcccccccc,
+  Invisible = 0x00000001,
   Invalid = -1,
 }
 
-/** Represents a frustum as 6 planes and provides containment and intersection testing */
+/** Represents a frustum as 6 planes and provides containment and intersection testing
+ * @hidden
+ */
 export class FrustumPlanes {
   private _planes?: ClipPlane[];
 
@@ -813,13 +872,16 @@ export class FrustumPlanes {
   }
 }
 
+/** @hidden */
 export namespace FrustumPlanes {
+  /** @hidden */
   export const enum Containment {
     Outside = 0,
     Partial = 1,
     Inside = 2,
   }
 
+  /** @hidden */
   export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
     const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
     normal.normalizeInPlace();
@@ -830,54 +892,163 @@ export namespace FrustumPlanes {
   }
 }
 
-/** parameters for displaying hidden lines */
+/** Namespace containing types controlling how edges and surfaces should be drawn in "hidden line" and "solid fill" [[RenderMode]]s. */
 export namespace HiddenLine {
+  /** Describes the symbology with which edges should be drawn. */
+  export interface StyleProps {
+    /** @hidden
+     * This JSON representation is awkward, but it must match that used in the db.
+     * If the JSON came from the db then all members are present and:
+     *  - color is overridden only if ovrColor = true.
+     *  - width is overridden only if width != 0
+     *  - pattern is overridden only if pattern != LinePixels.Invalid
+     * The 'public' JSON representation is more sensible:
+     *  - Color, width, and pattern are each overridden iff they are not undefined.
+     * To make this work for both scenarios, the rules are:
+     *  - color is overridden if color != undefined and ovrColor != false
+     *  - width is overridden if width != undefined and width != 0
+     *  - pattern is overridden if pattern != undefined and pattern != LinePixels.Invalid
+     */
+    readonly ovrColor?: boolean;
+    /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
+    readonly color?: ColorDefProps;
+    /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
+    readonly pattern?: LinePixels;
+    /** If defined, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
+     * @note Non-integer values are truncated, and values are clamped to the range [1, 32].
+     */
+    readonly width?: number;
+  }
 
-  export class Style {
-    public ovrColor: boolean;
-    public color: ColorDef;
-    public pattern: LinePixels;
-    public width: number;
-    public constructor(json: any) {
-      if (undefined !== json) {
-        this.ovrColor = JsonUtils.asBool(json.ovrColor);
+  /** Describes the symbology with which edges should be drawn. */
+  export class Style implements StyleProps {
+    /** @hidden */
+    public get ovrColor(): boolean { return undefined !== this.color; }
+    /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
+    public readonly color?: ColorDef;
+    /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
+    public readonly pattern?: LinePixels;
+    /** If defined, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
+     * @note Non-integer values are truncated, and values are clamped to the range [1, 32].
+     */
+    public readonly width?: number;
+
+    private constructor(json?: StyleProps) {
+      if (undefined === json)
+        return;
+
+      if (undefined !== json.color && false !== json.ovrColor)
         this.color = ColorDef.fromJSON(json.color);
-        this.pattern = JsonUtils.asInt(json.pattern, LinePixels.Solid);
-        this.width = JsonUtils.asInt(json.width);
-      } else {
-        this.ovrColor = false;
-        this.color = new ColorDef(ColorByName.white);
-        this.pattern = LinePixels.Solid;
-        this.width = 0;
+
+      if (undefined !== json.pattern) {
+        const pattern = JsonUtils.asInt(json.pattern, LinePixels.Invalid);
+        if (LinePixels.Invalid !== pattern)
+          this.pattern = pattern;
+      }
+
+      if (undefined !== json.width) {
+        let width = JsonUtils.asInt(json.width, 0);
+        if (0 !== width) {
+          width = Math.max(1, width);
+          this.width = Math.min(32, width);
+        }
       }
     }
+
+    public static defaults = new Style({ });
+
+    public static fromJSON(json?: StyleProps): Style { return undefined !== json ? new Style(json) : this.defaults; }
+
+    /** Create a Style equivalent to this one but with the specified color override. */
+    public overrideColor(color: ColorDef): Style {
+      if (undefined !== this.color && this.color.equals(color))
+        return this;
+
+      return Style.fromJSON({
+        color,
+        ovrColor: true,
+        pattern: this.pattern,
+        width: this.width,
+      });
+    }
+
+    /** Returns true if this Style is equivalent to the supplied Style. */
     public equals(other: Style): boolean {
-      return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
+      if (this === other)
+        return true;
+      else if (this.ovrColor !== other.ovrColor || this.pattern !== other.pattern || this.width !== other.width)
+        return false;
+      else
+        return undefined === this.color || this.color.equals(other.color!);
     }
 
-    public clone(out?: Style): Style {
-      const result = undefined !== out ? out : new Style({});
-      result.copyFrom(this);
-      return result;
-    }
-
-    public copyFrom(other: Style): void {
-      this.ovrColor = other.ovrColor;
-      this.color.setFrom(other.color);
-      this.pattern = other.pattern;
-      this.width = other.width;
+    public toJSON(): StyleProps {
+      return {
+        ovrColor: this.ovrColor,
+        color: undefined !== this.color ? this.color : ColorDef.white,
+        pattern: undefined !== this.pattern ? this.pattern : LinePixels.Invalid,
+        width: undefined !== this.width ? this.width : 0,
+      };
     }
   }
 
-  export class Params {
-    public visible: Style;
-    public hidden: Style;
-    public transparencyThreshold: number = 1.0;
-    public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
-    public constructor(json: any) {
-      this.visible = new HiddenLine.Style(undefined !== json && undefined !== json.visible ? json.visible : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.Solid });
-      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.HiddenLine });
-      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
+  /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
+  export interface SettingsProps {
+    /** Describes how visible edges (those unobscured by other geometry) should be displayed. */
+    readonly visible?: StyleProps;
+    /** Describes how hidden edges (those obscured by other geometry) should be displayed. */
+    readonly hidden?: StyleProps;
+    /** A value in the range [0.0, 1.0] specifying a threshold below which transparent surfaces should not be drawn.
+     * A value of 0.0 indicates any surface that is not 100% opaque should not be drawn.
+     * A value of 0.25 indicates any surface that is less than 25% opaque should not be drawn.
+     * A value of 1.0 indicates that all surfaces should be drawn regardless of transparency.
+     * @note values will be clamped to the range [0.0, 1.0].
+     * @note Defaults to 1.0.
+     */
+    readonly transThreshold?: number;
+  }
+
+  /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
+  export class Settings {
+    /** Describes how visible edges (those unobscured by other geometry) should be displayed. */
+    public readonly visible: Style;
+    /** Describes how hidden edges (those obscured by other geometry) should be displayed. */
+    public readonly hidden: Style;
+    /** A value in the range [0.0, 1.0] specifying a threshold below which transparent surfaces should not be drawn.
+     * A value of 0.0 indicates any surface that is not 100% opaque should not be drawn.
+     * A value of 0.25 indicates any surface that is less than 25% opaque should not be drawn.
+     * A value of 1.0 indicates that all surfaces should be drawn regardless of transparency.
+     * @note values will be clamped to the range [0.0, 1.0].
+     * @note Defaults to 1.0.
+     */
+    public readonly transparencyThreshold: number;
+    public get transThreshold(): number { return this.transparencyThreshold; }
+
+    /** The default display settings. */
+    public static defaults = new Settings({ });
+
+    /** Create a DisplaySettings from its JSON representation. */
+    public static fromJSON(json?: SettingsProps): Settings {
+      if (undefined === json)
+        return this.defaults;
+      else if (json instanceof Settings)
+        return json;
+      else
+        return new Settings(json);
+    }
+
+    public toJSON(): SettingsProps {
+      return {
+        visible: this.visible.toJSON(),
+        hidden: this.hidden.toJSON(),
+        transThreshold: this.transThreshold,
+      };
+    }
+
+    private constructor(json: SettingsProps) {
+      this.visible = Style.fromJSON(json.visible);
+      this.hidden = Style.fromJSON(json.hidden);
+      this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
     }
   }
 }

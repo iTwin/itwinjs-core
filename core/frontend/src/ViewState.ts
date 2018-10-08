@@ -40,6 +40,7 @@ export const enum GridOrientationType {
   GeoCoord = 5,
 }
 
+/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
 export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
@@ -86,7 +87,11 @@ export class ViewSubCategories {
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
   public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
 
-  /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
+  /**
+   * Asynchronously populates this cache with information about subcategories belonging to the specified set of categories.
+   * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
+   * categories in the ViewState's [[CategorySelector]].
+   */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     const where = [...categoryIds].join(",");
     if (0 === where.length)
@@ -98,6 +103,8 @@ export class ViewSubCategories {
 
   /**
    * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
+   * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
+   * categories.
    */
   public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
@@ -209,6 +216,7 @@ export abstract class ViewState extends ElementState {
     return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
+  /** @hidden */
   public cancelAllTileLoads(): void {
     this.forEachModel((model) => {
       const tileTree = model.tileTree;
@@ -238,9 +246,24 @@ export abstract class ViewState extends ElementState {
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
 
+  /**
+   * IDs of a set of elements which should not be rendered within this view.
+   * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
+   * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
+   */
   public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+
+  /**
+   * IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
+   * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
+   * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
+   */
   public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
 
+  /** Clear the set of always-drawn elements.
+   * @see [[alwaysDrawn]]
+   */
   public clearAlwaysDrawn(): void {
     if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
       this.alwaysDrawn.clear();
@@ -249,6 +272,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Clear the set of never-drawn elements.
+   * @see [[neverDrawn]]
+   */
   public clearNeverDrawn(): void {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
@@ -256,30 +282,59 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Specify the IDs of a set of elements which should never be rendered within this view.
+   * @see [[neverDrawn]].
+   */
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this.setFeatureOverridesDirty();
   }
 
+  /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * @param ids The IDs of the elements to always draw.
+   * @param exclusive If true, *only* the specified elements will be drawn.
+   * @see [[alwaysDrawn]]
+   * @see [[isAlwaysDrawnExclusive]]
+   */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this.setFeatureOverridesDirty();
   }
 
+  /** Remove any [[SubCategoryOverride]] for the specified subcategory.
+   * @param id The ID of the subcategory.
+   * @see [[overrideSubCategory]]
+   */
   public dropSubCategoryOverride(id: Id64String) {
     this.displayStyle.dropSubCategoryOverride(id);
     this.setFeatureOverridesDirty();
   }
 
+  /** Override the symbology of geometry belonging to a specific subcategory when rendered within this view.
+   * @param id The ID of the subcategory.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @see [[dropSubCategoryOverride]]
+   */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
     this.displayStyle.overrideSubCategory(id, ovr);
     this.setFeatureOverridesDirty();
   }
 
+  /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this view.
+   * @param id The ID of the subcategory.
+   * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
+   * @see [[overrideSubCategory]]
+   */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
-  /** Returns the appearance of the subcategory with the specified Id within this view, possibly as overridden by the display style. */
+  /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this view.
+   * Every [[SubCategory]] defines a base symbology independent of any [[ViewState]].
+   * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[ViewState]], it will be applied to the subcategory's base symbology.
+   * @param id The ID of the subcategory.
+   * @return The symbology of the subcategory within this view, including any overrides.
+   * @see [[overrideSubCategory]]
+   */
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     const app = this.subCategories.getSubCategoryAppearance(id);
     if (undefined === app)
@@ -289,6 +344,7 @@ export abstract class ViewState extends ElementState {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
+  /** @hidden */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
@@ -301,7 +357,7 @@ export abstract class ViewState extends ElementState {
       return !ovr.invisible;
   }
 
-  /** Returns true if the set of elements returned by getAlwaysDrawn() are the *only* elements rendered by this view controller */
+  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /**
@@ -408,11 +464,13 @@ export abstract class ViewState extends ElementState {
       this.displayStyle.backgroundMap.decorate(context);
   }
 
+  /** @hidden */
   public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
 
+  /** Orient this view to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
-  /**  Get the target point of the view. If there is no camera, center is returned. */
+  /** Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
 
   /**  Get the point at the geometric center of the view. */
@@ -421,6 +479,7 @@ export abstract class ViewState extends ElementState {
     return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
+  /** @hidden */
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
     if (!vp.isGridOn)
@@ -532,7 +591,12 @@ export abstract class ViewState extends ElementState {
 
   /**
    * Initialize the origin, extents, and rotation from an existing Frustum
+   * This function is commonly used in the implementation of [[ViewTool]]s as follows:
+   *  1. Obtain the ViewState's initial frustum.
+   *  2. Modify the frustum based on user input.
+   *  3. Update the ViewState to match the modified frustum.
    * @param frustum the input Frustum.
+   * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
   public setupFromFrustum(inFrustum: Frustum): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
@@ -593,6 +657,7 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
+  /** @hidden */
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
     const viewAspect = extents.x / extents.y;
@@ -619,6 +684,7 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
+  /** @hidden */
   public showFrustumErrorMessage(status: ViewStatus): void {
     let key: string;
     switch (status) {
@@ -632,6 +698,7 @@ export abstract class ViewState extends ElementState {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
   }
 
+  /** @hidden */
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -659,29 +726,37 @@ export abstract class ViewState extends ElementState {
     return error;
   }
 
-  /** Peek to see if a view detail is defined. May return undefined. */
+  /** Returns the view detail associated with the specified name, or undefined if none such exists.
+   * @hidden
+   */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
-  /** Get the current value of a view detail. If not present, return empty object. */
+  /** Get the current value of a view detail. If not present, returns an empty object.
+   * @hidden
+   */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
-  /** Change the value of a view detail. */
+  /** Change the value of a view detail.
+   * @hidden
+   */
   public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
-  /** Remove a view detail. */
+  /** Remove a view detail.
+   * @hidden
+   */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
-  /** get the auxiliary coordinate system state object for this ViewState, if present */
+  /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
     if (!this._auxCoordSystem)
       this._auxCoordSystem = this.createAuxCoordSystem("");
     return this._auxCoordSystem;
   }
 
-  /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
+  /** Get the ID of the auxiliary coordinate system for this ViewState */
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.

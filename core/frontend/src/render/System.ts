@@ -35,7 +35,7 @@ export class RenderPlan {
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
   public readonly activeVolume?: RenderClipVolume;
-  public readonly hline?: HiddenLine.Params;
+  public readonly hline?: HiddenLine.Settings;
   public readonly lights?: SceneLights;
   private _curFrustum: ViewFrustum;
 
@@ -45,7 +45,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;

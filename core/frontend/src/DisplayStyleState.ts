@@ -465,8 +465,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _environment?: Environment;
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
-  public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
-  public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
+  public getHiddenLineParams(): HiddenLine.Settings { return HiddenLine.Settings.fromJSON(this.getStyle("hline")); }
+  public setHiddenLineParams(params: HiddenLine.Settings) { this.setStyle("hline", params.toJSON()); }
 
   /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style */
   public setSceneLight(light: Light) {

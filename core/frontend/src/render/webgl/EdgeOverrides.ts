@@ -91,9 +91,9 @@ export class EdgeOverrides {
       this._weight = undefined;
       this._lineCode = undefined;
     } else {
-      this._color = style.ovrColor ? FloatPreMulRgba.fromColorDef(style.color) : undefined;
-      this._weight = style.width !== 0 ? style.width : undefined;
-      this._lineCode = LinePixels.Invalid !== style.pattern ? LineCode.valueFromLinePixels(style.pattern) : undefined;
+      this._color = undefined !== style.color ? FloatPreMulRgba.fromColorDef(style.color) : undefined;
+      this._weight = style.width;
+      this._lineCode = undefined !== style.pattern ? LineCode.valueFromLinePixels(style.pattern) : undefined;
     }
   }
 }
