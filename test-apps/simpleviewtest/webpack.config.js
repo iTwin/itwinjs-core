@@ -1,5 +1,15 @@
 const path = require("path");
+const webpack = require("webpack");
+const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
+if (configEnv) {
+  Object.assign(process.env, configEnv);
+} else {
+  console.error("Webpack failed to locate iModelJs configuration");
+}
 
+
+const raw = process.env;
 module.exports = {
   mode: "development",
   entry: "./lib/frontend/SimpleViewTest.js",
@@ -21,5 +31,13 @@ module.exports = {
   stats: "errors-only",
   externals: {
     electron: "require('electron')"
-  }
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      "process.env": Object.keys(raw).filter(v => v.match(/^imjs_/i)).reduce((env, key) => {
+        env[key] = JSON.stringify(raw[key]);
+        return env;
+      }, {})
+    })
+  ]
 };

@@ -10,7 +10,8 @@ import { WebStorageStateStore, InMemoryWebStorage } from "oidc-client";
 import { DeepReadonly, ActionsUnion, createAction } from "../src/utils/redux-ts";
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Config } from "@bentley/imodeljs-clients";
-
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(false, Config.App);
 export interface SampleAppState {
   placeHolder?: boolean;
 }
@@ -41,13 +42,6 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
   return state;
 }
 
-// TODO: Temporary fix to failing tests
-Config.App.merge({
-  frontend_test_oidc_client_id: "imodeljs-spa-test-2686",
-  frontend_test_oidc_redirect_path: "/signin-oidc",
-  imjs_oidc_url: "https://qa-imsoidc.bentley.com/",
-});
-
 export default class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
@@ -66,8 +60,8 @@ export default class TestUtils {
 
   private static createOidcConfiguration(): OidcFrontendClientConfiguration {
     const oidcConfig: OidcFrontendClientConfiguration = {
-      clientId: Config.App.get("frontend_test_oidc_client_id"),
-      redirectUri: "http://localhost:3000" + Config.App.get("frontend_test_oidc_redirect_path"),
+      clientId: Config.App.get("imjs_test_oidc_client_id"),
+      redirectUri: "http://localhost:3000" + Config.App.get("imjs_test_oidc_redirect_path"),
       userStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
       stateStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
     };

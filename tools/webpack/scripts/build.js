@@ -25,6 +25,10 @@ exports.builder = (yargs) =>
         describe: "Only build the BACKEND bundle",
         conflicts: "frontend"
       },
+      "skip_imodel_config_lookup": {
+        alias: "SC",
+        describe: "Do not try to search for imodeljs-config",
+      },
     });
 
 exports.handler = async (argv) => {
@@ -36,6 +40,11 @@ exports.handler = async (argv) => {
 
   if ("electron" === buildTarget)
     process.env.ELECTRON_ENV = "production";
+
+  // skip imjs config lookup
+  if (Boolean(argv.skip_imodel_config_lookup)) {
+    process.env.SkipIModelJsConfigLookup = Boolean(argv.skip_imodel_config_lookup);
+  }
 
   const path = require("path");
   const fs = require("fs-extra");
