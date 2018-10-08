@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Highlighted nodes now have a slightly different shade of blue (changed to a standard color from BWC).",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    },
+    {
+      "comment": "Refactored ExpandableBlock to use BWC ExpandableBlock React component and modified css.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "elonas.seviakovas@bentley.com"
+}

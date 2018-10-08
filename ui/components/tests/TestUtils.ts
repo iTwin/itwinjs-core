@@ -29,4 +29,9 @@ export default class TestUtils {
       TestUtils._uiComponentsInitialized = true;
     }
   }
+
+  /** Waits until all async operations finish */
+  public static async flushAsyncOperations() {
+    return new Promise((resolve) => setImmediate(resolve));
+  }
 }

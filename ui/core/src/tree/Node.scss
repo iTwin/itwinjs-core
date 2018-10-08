@@ -81,13 +81,13 @@
     *:hover + * + .whole-row,
     *:hover + .whole-row,
     .whole-row:hover {
-      background: $primary-hover;
+      background: $bwc-blue-highlight;
     }
   }
 
   &.is-selected {
     >.whole-row {
-      background: $primary-tint;
+      background: $bwc-blue-a;
       outline: none;
     }
   }

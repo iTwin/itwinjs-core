@@ -4,29 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "../../src/properties";
+import { PrimitiveValue, PropertyValueFormat } from "../../src/properties";
 import { SimplePropertyDataProvider, PropertyCategory } from "../../src/propertygrid";
-
-class SamplePropertyRecord extends PropertyRecord {
-  constructor(name: string, index: number, value: any, typename: string = "string", editor?: string) {
-    const v: PrimitiveValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value,
-      displayValue: value.toString(),
-    };
-    const p: PropertyDescription = {
-      name: name + index,
-      displayLabel: name,
-      typename,
-    };
-    if (editor)
-      p.editor = { name: editor, params: [] };
-    super(v, p);
-
-    this.description = `${name} - description`;
-    this.isReadonly = false;
-  }
-}
+import { SamplePropertyRecord } from "./PropertyTestHelpers";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {
   constructor() {
