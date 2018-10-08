@@ -91,14 +91,13 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
   /** Update viewed models on selected viewport changed */
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
-      alert("Clearing");
       this._initGroups();
       this.updateState();
     }
   }
 
   private _handleSearchValueChanged = (value: string): void => {
-    alert("search " + value);
+    alert("search " + value);    alert("search " + value);
   }
 
   /** expand the selected group */

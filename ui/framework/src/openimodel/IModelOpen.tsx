@@ -8,7 +8,6 @@ import { IModelList } from "./IModelList";
 import { ProjectDropdown } from "./ProjectDropdown";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
@@ -19,7 +18,7 @@ import "./Common.scss";
 
 export interface IModelOpenProps {
   accessToken: AccessToken;
-  onOpenIModel?: (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  onOpenIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelOpenState {

@@ -24,7 +24,7 @@ import {
     FrameworkReducer,
     OverallContent,
     AppNotificationManager,
-    ProjectInfo,
+    IModelInfo,
     FrontstageManager,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -170,7 +170,15 @@ export class SampleAppIModelApp extends IModelApp {
         MeasurePointsTool.register(this.sampleAppNamespace);
     }
 
-    public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]): void {
+    public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
+
+        const accessToken = SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken!;
+        const projectInfo = iModelInfo.projectInfo;
+        const wsgId = iModelInfo.wsgId;
+
+        // open the imodel
+        const iModelConnection = await UiFramework.iModelServices.openIModel(accessToken, projectInfo, wsgId);
+
         const payload = { iModelConnection };
         SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
 
@@ -182,6 +190,13 @@ export class SampleAppIModelApp extends IModelApp {
             // tslint:disable-next-line:no-console
             console.log("Frontstage is ready");
         });
+    }
+
+    public static handleWorkOffline () {
+        if (!FrontstageManager.activeFrontstageDef) {
+            const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
+            FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        }
     }
 }
 
@@ -203,6 +218,7 @@ SampleAppIModelApp.initialize().then(() => {
         appHeaderMessage: SampleAppIModelApp.i18n.translate("SampleApp:Header.welcome"),
         appBackstage: <AppBackstage />,
         onIModelViewsSelected: SampleAppIModelApp.handleIModelViewsSelected,
+        onWorkOffline: SampleAppIModelApp.handleWorkOffline,
     };
 
     AppUi.initialize();
