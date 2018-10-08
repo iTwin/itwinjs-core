@@ -123,6 +123,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
       widgets.push({
         id: widget.id,
+        isStatusBar: zoneDef.isStatusBar,
         tabs: zoneDef.widgetDefs.map((widgetDef, tabIndex) => {
           let isActive = false;
           if (!activeWidgetDef) {

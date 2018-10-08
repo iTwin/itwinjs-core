@@ -30,6 +30,7 @@ export interface WidgetTabProps {
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
   tabs: WidgetTabProps[];
+  isStatusBar: boolean;
 }
 
 /** Properties for the [[StackedWidget]] React component.
@@ -116,7 +117,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           mode={mode}
           lastPosition={this.props.lastPosition}
           onClick={() => this._handleWidgetTabClick(stackedWidget.id, index)}
-          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset)}
+          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset, stackedWidget.isStatusBar)}
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
@@ -126,8 +127,10 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     });
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, isStatusBar: boolean) => {
     this.props.widgetChangeHandler.handleTabDragStart(widgetId, tabId, initialPosition, offset);
+    if (isStatusBar)
+      this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
   private _handleTabDragEnd = () => {

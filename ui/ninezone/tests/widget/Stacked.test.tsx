@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Stacked from "../../src/widget/Stacked";
+import Stacked, { HorizontalAnchor } from "../../src/widget/Stacked";
 
 describe("<Stacked />", () => {
   it("should render", () => {
-    mount(<Stacked />);
+    mount(<Stacked horizontalAnchor={HorizontalAnchor.Right} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Stacked />).should.matchSnapshot();
+    shallow(<Stacked horizontalAnchor={HorizontalAnchor.Right} />).should.matchSnapshot();
   });
 });

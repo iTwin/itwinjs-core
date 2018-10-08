@@ -2,13 +2,13 @@
 
 exports[`<Stacked /> renders correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-middle-anchor nz-is-closed"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
 >
   <div
     className="nz-content-area"
   >
     <WidgetContent
-      className="nz-content"
+      anchor={1}
     />
     <ResizeGrip
       className="nz-bottom-grip"

@@ -273,10 +273,20 @@ export class StateManager {
   }
 
   public handleWidgetTabDragEnd(state: NineZoneProps): NineZoneProps {
+    if (!state.draggingWidget)
+      return state;
+
     if (!state.target) {
       return {
         ...state,
         draggingWidget: undefined,
+        zones: {
+          ...state.zones,
+          [state.draggingWidget.id]: {
+            ...state.zones[state.draggingWidget.id],
+            floating: undefined,
+          },
+        },
       };
     }
 

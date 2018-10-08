@@ -229,6 +229,30 @@ describe("StateManager", () => {
       const state = DefaultStateManager.handleWidgetTabDragEnd(props);
       expect(state.zones[9].floating).undefined;
     });
+
+    it("should unset floating bounds of dragging widget", () => {
+      const props: NineZoneProps = {
+        ...TestProps.defaultProps,
+        draggingWidget: { id: 8, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        zones: {
+          ...TestProps.defaultProps.zones,
+          8: {
+            ...TestProps.defaultProps.zones[8],
+            floating: {
+              bounds: {
+                bottom: 10,
+                left: 99,
+                right: 999,
+                top: 0,
+              },
+              stackId: 1,
+            },
+          },
+        },
+      };
+      const state = DefaultStateManager.handleWidgetTabDragEnd(props);
+      expect(state.zones[8].floating).undefined;
+    });
   });
 
   describe("handleWidgetTabDragStart", () => {
