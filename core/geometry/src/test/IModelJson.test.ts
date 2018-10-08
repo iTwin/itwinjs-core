@@ -163,7 +163,7 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createSimpleRotationalSweeps(), true, false);
     exerciseIModelJSon(ck, Sample.createRuledSweeps(), true, false);
 
-    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(), 10, 0), true, false);
+    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(true), 10, 0), true, false);
     exerciseIModelJSon(ck, applyShifts(Sample.createBspline3dHCurves(), 10, 10), true, false);
     exerciseIModelJSon(ck, Sample.createXYGridBsplineSurface(4, 3, 3, 2)!, true, false);
     exerciseIModelJSon(ck, Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!, true, false);

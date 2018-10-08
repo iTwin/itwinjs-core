@@ -427,7 +427,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     }
 
     {
-      const data = Sample.createBsplineCurves();
+      const data = Sample.createBsplineCurves(true);
       let d; for (d of data) { exercise(d, false); }
     }
 

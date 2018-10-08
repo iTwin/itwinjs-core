@@ -17,6 +17,8 @@ import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { Path } from "../curve/Path";
+import { prettyPrint } from "./testFunctions";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -172,7 +174,21 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.saveGeometry(geometry, "BezierCurve3d", "SingleBezierSaturation");
     expect(ck.getNumErrors()).equals(0);
   });
-
+  it("DoubleKnots", () => {
+    const ck = new Checker();
+    const bcurve = BSplineCurve3d.create(
+      [Point3d.create(0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(2, 1, 0),
+      Point3d.create(3, 0, 0),
+      Point3d.create(4, 1, 0)],
+      [0, 0, 0.5, 0.5, 0.75, 1, 1], 3)!;
+    const path = Path.create(bcurve);
+    const strokes = path.getPackedStrokes()!;
+    console.log(prettyPrint(strokes));
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("SaturateBspline", () => {
     const ck = new Checker();
     const xStep = 120;

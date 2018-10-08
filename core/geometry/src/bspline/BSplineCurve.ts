@@ -102,9 +102,11 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     const result: BezierCurveBase[] = [];
     const numSpans = this.numSpan;
     for (let i = 0; i < numSpans; i++) {
-      const span = this.getSaturatedBezierSpan3dOr3dH(i, prefer3dH);
-      if (span)
-        result.push(span);
+      if (this._bcurve.knots.isIndexOfRealSpan(i)) {
+        const span = this.getSaturatedBezierSpan3dOr3dH(i, prefer3dH);
+        if (span)
+          result.push(span);
+      }
     }
     return result;
   }
@@ -133,12 +135,14 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     let span: BezierCurve3dH | undefined;
     const numSpans = this.numSpan;
     for (let i = 0; i < numSpans; i++) {
-      span = this.getSaturatedBezierSpan3dOr3dH(i, true, span) as BezierCurve3dH;
-      if (span) {
-        if (span.updateClosestPointByTruePerpendicular(spacePoint, result)) {
-          // the detail records the span bezier -- promote it to the parent curve . ..
-          result.curve = this;
-          result.fraction = span.fractionToParentFraction(result.fraction);
+      if (this._bcurve.knots.isIndexOfRealSpan(i)) {
+        span = this.getSaturatedBezierSpan3dOr3dH(i, true, span) as BezierCurve3dH;
+        if (span) {
+          if (span.updateClosestPointByTruePerpendicular(spacePoint, result)) {
+            // the detail records the span bezier -- promote it to the parent curve . ..
+            result.curve = this;
+            result.fraction = span.fractionToParentFraction(result.fraction);
+          }
         }
       }
     }
@@ -298,9 +302,13 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const numSpan = this.numSpan;
     const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      handler.announceIntervalForUniformStepStrokes(this, numPerSpan,
-        this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
-        this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
+      if (this._bcurve.knots.isIndexOfRealSpan(spanIndex)) {
+        {
+          handler.announceIntervalForUniformStepStrokes(this, numPerSpan,
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
+        }
+      }
     }
   }
 
@@ -309,10 +317,12 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
     const fractionStep = 1.0 / numPerSpan;
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      for (let i = 0; i <= numPerSpan; i++) {
-        const spanFraction = i * fractionStep;
-        const point = this.evaluatePointInSpan(spanIndex, spanFraction);
-        dest.appendStrokePoint(point);
+      if (this._bcurve.knots.isIndexOfRealSpan(spanIndex)) {
+        for (let i = 0; i <= numPerSpan; i++) {
+          const spanFraction = i * fractionStep;
+          const point = this.evaluatePointInSpan(spanIndex, spanFraction);
+          dest.appendStrokePoint(point);
+        }
       }
     }
   }
