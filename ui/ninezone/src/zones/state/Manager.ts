@@ -42,7 +42,7 @@ export class StateManager {
     const isClosing = !isOpening;
 
     if (isClosing && zone.isFloating())
-      return { ...model.props };
+      return state;
 
     // Close all widgets
     const widgets = zone.props.widgets.map((w) => ({
@@ -140,7 +140,7 @@ export class StateManager {
     const model = this._nineZoneFactory(state);
     const root = model.root;
     if (root.isInFooterMode === isInFooterMode)
-      return { ...model.props };
+      return state;
 
     root.isInFooterMode = isInFooterMode;
 
@@ -203,7 +203,7 @@ export class StateManager {
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
     if (!zone.isWidgetOpen)
-      return { ...model.props };
+      return state;
 
     const isUnmerge = zone.getWidgets().length > 1;
     const defaultZone = widget.defaultZone;
@@ -315,11 +315,11 @@ export class StateManager {
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget)
-      return { ...model.props };
+      return state;
 
     const draggingZone = draggingWidget.defaultZone;
     if (!draggingZone.props.floating)
-      return { ...model.props };
+      return state;
 
     const newBounds = Rectangle.create(draggingZone.props.floating.bounds).offset(dragged);
     const lastPosition = Point.create(draggingWidget.props.lastPosition).offset(dragged);
@@ -441,7 +441,7 @@ export class StateManager {
 
     const draggingWidget = model.draggingWidget;
     if (!draggingWidget)
-      return { ...state };
+      return state;
 
     const draggingZone = draggingWidget.zone;
     return {
