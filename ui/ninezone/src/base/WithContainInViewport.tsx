@@ -56,13 +56,10 @@ export const withContainInViewport = <ComponentProps extends {}>(
     }
 
     public render() {
-      const copyProps = Object.assign({}, this.props);
-      delete (copyProps as WithContainInViewportProps).noVerticalContainment;
-      delete (copyProps as WithContainInViewportProps).noHorizontalContainment;
-
+      const { noVerticalContainment, noHorizontalContainment, ...props } = this.props as WithContainInViewportProps;
       return (
         <Component
-          {...copyProps}
+          {...props}
           {...this.state}
         />
       );

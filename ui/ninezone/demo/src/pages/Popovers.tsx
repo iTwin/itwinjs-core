@@ -25,9 +25,10 @@ const container: React.CSSProperties = {
   width: "30px",
 };
 
-const containerRow2 = Object.assign({}, container, {
+const containerRow2: React.CSSProperties = {
+  ...container,
   gridRow: "2",
-} as React.CSSProperties);
+};
 
 const contentCss: React.CSSProperties = {
   backgroundColor: "red",

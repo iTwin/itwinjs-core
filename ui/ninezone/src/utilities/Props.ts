@@ -26,7 +26,7 @@ export interface NoChildrenProps {
 }
 
 /** Omit children property from T. */
-export type OmitChildrenProp<T extends { children?: any; }> = Omit<T, "children">;
+export type OmitChildrenProp<T extends { children?: React.ReactNode; }> = Omit<T, "children">;
 
 /** @returns Children with react fragments flattened. */
 // tslint:disable-next-line:variable-name

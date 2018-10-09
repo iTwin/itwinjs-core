@@ -482,7 +482,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   public componentDidMount(): void {
-    this.layout();
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
+    }));
 
     if (this._app.current) {
       const node = ReactDOM.findDOMNode(this._app.current);
@@ -737,17 +739,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleWindowResize = () => {
-    this.layout();
-  }
-
-  private layout() {
-    this.setState((prevState) => {
-      const element = ReactDOM.findDOMNode(this);
-      const nineZone = NineZoneManager.layout(new Size((element! as any).clientWidth, (element! as any).clientHeight), prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
+    }));
   }
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
