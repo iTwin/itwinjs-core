@@ -54,6 +54,8 @@
       "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
-    }
+    },
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "ogShareImage": "landing-page/assets/twitter-share.png"
   }
 }
