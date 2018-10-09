@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.153.0",
+  "version": "0.154.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -22,7 +22,7 @@
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/config-loader": "0.153.0",
+    "@bentley/config-loader": "0.154.0",
     "@bentley/dev-cors-proxy-server": "0.0.8",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",

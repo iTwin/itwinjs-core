@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Tue, 09 Oct 2018 12:08:40 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 16:09:16 GMT and should not be manually modified.
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+### Updates
+
+- Increase timeouts for iModelHub file based requests
+- Fix for the iModelHub integration tests
+- Removed UlasClient as it cannot be open-sourced.
 
 ## 0.153.0
 Tue, 09 Oct 2018 12:08:40 GMT
