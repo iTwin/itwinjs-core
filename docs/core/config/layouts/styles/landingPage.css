@@ -80,4 +80,15 @@ p.digital-twin {
 
 .middle-content-text {
   max-width: 900px;
+  min-width: 300px;
+}
+
+@media screen and (max-width: 600px) {
+  .middle-content-group {
+    flex-flow: column;
+    align-items: center;
+  }
+  .imodeljs-header-tagline p {
+    font-size: 29px;
+  }
 }
