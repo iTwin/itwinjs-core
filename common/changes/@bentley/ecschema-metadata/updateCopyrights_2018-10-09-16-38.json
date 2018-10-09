@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updating copyrights",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Caleb.Shafer@bentley.com"
+}

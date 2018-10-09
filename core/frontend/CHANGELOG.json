@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.154.0",
+      "tag": "@bentley/imodeljs-frontend_v0.154.0",
+      "date": "Tue, 09 Oct 2018 16:09:16 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.153.0",
       "tag": "@bentley/imodeljs-frontend_v0.153.0",
       "date": "Tue, 09 Oct 2018 12:08:40 GMT",

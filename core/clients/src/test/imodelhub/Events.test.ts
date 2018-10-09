@@ -171,6 +171,29 @@ describe("iModelHub EventHandler", () => {
     chai.expect(result).to.be.equal(undefined);
   });
 
+  it("should return undefined when timeout is set", async () => {
+    const timeout = !TestConfig.enableMocks ? 10 : 1;
+
+    mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 1);
+    const result = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, timeout);
+    chai.expect(result).to.be.equal(undefined);
+  });
+
+  it("should timeout if response wasn't returned in time", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 20000);
+    let error;
+    try {
+      await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 1);
+    } catch (err) {
+      error = err;
+    }
+    chai.assert(error);
+    chai.expect(error.message).to.be.equal("Timeout of 1500ms exceeded");
+  });
+
   it("should receive code event", async () => {
     const codes = [utils.randomCode(briefcaseId)];
     if (!TestConfig.enableMocks) {
