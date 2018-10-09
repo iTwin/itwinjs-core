@@ -5,37 +5,16 @@
 /** @module Zone */
 
 import Rectangle from "../../../utilities/Rectangle";
-import Size, { SizeProps } from "../../../utilities/Size";
-import Layout from "./Layout";
+import { SizeProps } from "../../../utilities/Size";
 
-export default class Root extends Layout {
+export default class Root {
   public static readonly FOOTER_HEIGHT = 48;
   private _isInFooterMode: boolean;
+  private _bounds: Rectangle;
 
   public constructor(size: SizeProps, isInFooterMode: boolean) {
-    super(Rectangle.createFromSize(size));
-
+    this._bounds = Rectangle.createFromSize(size);
     this._isInFooterMode = isInFooterMode;
-  }
-
-  protected get _topZone() {
-    return this;
-  }
-
-  protected get _bottomZone() {
-    return this;
-  }
-
-  protected get _leftZone() {
-    return this;
-  }
-
-  protected get _rightZone() {
-    return this;
-  }
-
-  public get isRoot() {
-    return true;
   }
 
   public get isInFooterMode() {
@@ -46,39 +25,11 @@ export default class Root extends Layout {
     this._isInFooterMode = isInFooterMode;
   }
 
-  public setSize(size: Size) {
-    this.setBounds(Rectangle.createFromSize(size));
+  public set size(size: SizeProps) {
+    this._bounds = Rectangle.createFromSize(size);
   }
 
-  public tryGrowTop(): number {
-    return 0;
-  }
-
-  public tryShrinkTop(): number {
-    return 0;
-  }
-
-  public tryGrowBottom(): number {
-    return 0;
-  }
-
-  public tryShrinkBottom(): number {
-    return 0;
-  }
-
-  public tryGrowLeft(): number {
-    return 0;
-  }
-
-  public tryShrinkLeft(): number {
-    return 0;
-  }
-
-  public tryGrowRight(): number {
-    return 0;
-  }
-
-  public tryShrinkRight(): number {
-    return 0;
+  public get bounds() {
+    return this._bounds;
   }
 }

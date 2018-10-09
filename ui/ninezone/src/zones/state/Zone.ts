@@ -6,9 +6,8 @@
 
 import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
 import Cell from "../../utilities/Cell";
-import Layout from "./layout/Layout";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
-import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9 } from "./layout/Layouts";
+import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9, NineZoneRoot, WidgetZoneLayout } from "./layout/Layouts";
 import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
 import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
@@ -22,10 +21,20 @@ export enum DropTarget {
 export interface ZoneProps {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
-  readonly floatingBounds?: RectangleProps;
+  readonly isLayoutChanged: boolean;
+  readonly floating?: FloatingProps;
   readonly widgets: ReadonlyArray<WidgetProps>;
   readonly anchor?: HorizontalAnchor;
   readonly allowsMerging: boolean;
+}
+
+export interface FloatingZoneProps extends ZoneProps {
+  readonly floating: FloatingProps;
+}
+
+export interface FloatingProps {
+  readonly bounds: RectangleProps;
+  readonly stackId: number;
 }
 
 export interface StatusZoneProps extends ZoneProps {
@@ -48,6 +57,7 @@ export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
       right: 0,
       bottom: 0,
     },
+    isLayoutChanged: false,
     widgets: [
       getDefaultWidgetProps(id),
     ],
@@ -59,6 +69,7 @@ export const getDefaultStatusZoneProps = (): StatusZoneProps => {
   return {
     id: 8,
     isInFooterMode: true,
+    isLayoutChanged: false,
     bounds: {
       left: 0,
       top: 0,
@@ -84,24 +95,24 @@ export namespace ZoneIdToWidget {
 }
 
 export class LayoutFactory {
-  public create(zone: WidgetZone): Layout {
+  public create(zone: WidgetZone, root: NineZoneRoot): WidgetZoneLayout {
     switch (zone.props.id) {
       case 1:
-        return new Layout1(zone);
+        return new Layout1({ zone, root });
       case 2:
-        return new Layout2(zone);
+        return new Layout2({ zone, root });
       case 3:
-        return new Layout3(zone);
+        return new Layout3({ zone, root });
       case 4:
-        return new Layout4(zone);
+        return new Layout4({ zone, root });
       case 6:
-        return new Layout6(zone);
+        return new Layout6({ zone, root });
       case 7:
-        return new Layout7(zone);
+        return new Layout7({ zone, root });
       case 8:
-        return new Layout8(zone);
+        return new Layout8({ zone, root });
       case 9:
-        return new Layout9(zone);
+        return new Layout9({ zone, root });
     }
     throw new RangeError();
   }
@@ -109,7 +120,6 @@ export class LayoutFactory {
 
 export default class Zone {
   private readonly _id: ZoneIndex;
-  protected _layout: Layout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
   public readonly cell: Cell;
@@ -156,8 +166,9 @@ export default class Zone {
 }
 
 export class WidgetZone extends Zone {
-  protected _layout: Layout | undefined = undefined;
+  protected _layout: WidgetZoneLayout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
+  protected _widget: Widget | undefined = undefined;
   protected _cell: Cell | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
 
@@ -169,9 +180,13 @@ export class WidgetZone extends Zone {
     return this.props.id;
   }
 
-  public getLayout(): Layout {
+  public get bounds() {
+    return this.props.bounds;
+  }
+
+  public getLayout(): WidgetZoneLayout {
     if (!this._layout)
-      this._layout = new LayoutFactory().create(this);
+      this._layout = new LayoutFactory().create(this, this.nineZone.root);
     return this._layout;
   }
 
@@ -182,6 +197,24 @@ export class WidgetZone extends Zone {
         this._widgets.push(new Widget(this, widget));
     }
     return this._widgets;
+  }
+
+  public get isEmpty() {
+    return this.props.widgets.length === 0;
+  }
+
+  public get hasMergedWidgets() {
+    return this.props.widgets.length > 1;
+  }
+
+  public get hasSingleDefaultWidget() {
+    return this.props.widgets.length === 1 && this.props.widgets[0].id === this.id;
+  }
+
+  public get defaultWidget(): Widget {
+    if (!this._widget)
+      this._widget = this.nineZone.getWidget(this.id);
+    return this._widget;
   }
 
   public get isWidgetOpen(): boolean {
@@ -198,20 +231,24 @@ export class WidgetZone extends Zone {
     return this._isWidgetOpen;
   }
 
-  public get isFloating() {
-    if (this.props.floatingBounds)
+  public isFloating(): this is { props: FloatingZoneProps } {
+    if (this.props.floating)
       return true;
     return false;
   }
 
   public get isMergedVertically(): boolean {
+    if (!this.hasMergedWidgets)
+      return false;
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.cell.isColumnAlignedWith(widgets[1].defaultZone.cell);
+    return widgets[0].defaultZone.cell.isColumnAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get isMergedHorizontally(): boolean {
+    if (!this.hasMergedWidgets)
+      return false;
     const widgets = this.getWidgets();
-    return widgets.length > 1 && widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
+    return widgets[0].defaultZone.cell.isRowAlignedWith(widgets[1].defaultZone.cell);
   }
 
   public get defaultHorizontalAnchor(): HorizontalAnchor {
@@ -258,6 +295,34 @@ export class WidgetZone extends Zone {
     return false;
   }
 
+  public canBeMergedTo(zone: WidgetZone): boolean {
+    if (!this.isMergeable)
+      return false;
+    if (!zone.isMergeable)
+      return false;
+    if (this.equals(zone))
+      return false;
+
+    const cellsBetween = this.cell.getAlignedCellsTo(zone.cell);
+    for (const cell of cellsBetween) {
+      const zoneBetween = this.nineZone.findZone(cell);
+      if (!zoneBetween.isMergeable)
+        return false;
+    }
+
+    if (this.cell.isRowAlignedWith(zone.cell))
+      if (this.isMergedHorizontally || this.props.widgets.length === 1)
+        if (zone.isMergedHorizontally || zone.props.widgets.length === 1)
+          return true;
+
+    if (this.cell.isColumnAlignedWith(zone.cell))
+      if (this.isMergedVertically || this.props.widgets.length === 1)
+        if (zone.isMergedVertically || zone.props.widgets.length === 1)
+          return true;
+
+    return false;
+  }
+
   public getDropTarget(): DropTarget {
     const draggingWidget = this.nineZone.draggingWidget;
     if (!draggingWidget)
@@ -270,24 +335,8 @@ export class WidgetZone extends Zone {
     if (draggingZone.equals(this))
       return DropTarget.Back;
 
-    const draggingCell = draggingZone.cell;
-    const targetCell = this.cell;
-    const cellsBetween = draggingCell.getAlignedCellsTo(targetCell);
-    for (const cell of cellsBetween) {
-      const zone = this.nineZone.findZone(cell);
-      if (!zone.isMergeable)
-        return DropTarget.None;
-    }
-
-    if (draggingCell.isRowAlignedWith(targetCell))
-      if (draggingZone.isMergedHorizontally || draggingZone.props.widgets.length === 1)
-        if (this.isMergedHorizontally || this.props.widgets.length === 1)
-          return DropTarget.Merge;
-
-    if (draggingCell.isColumnAlignedWith(targetCell))
-      if (draggingZone.isMergedVertically || draggingZone.props.widgets.length === 1)
-        if (this.isMergedVertically || this.props.widgets.length === 1)
-          return DropTarget.Merge;
+    if (draggingZone.canBeMergedTo(this))
+      return DropTarget.Merge;
 
     return DropTarget.None;
   }

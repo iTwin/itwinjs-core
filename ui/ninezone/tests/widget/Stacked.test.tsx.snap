@@ -9,7 +9,6 @@ exports[`<Stacked /> renders correctly 1`] = `
   >
     <WidgetContent
       anchor={1}
-      className="nz-content"
     />
     <ResizeGrip
       className="nz-bottom-grip"
@@ -17,7 +16,7 @@ exports[`<Stacked /> renders correctly 1`] = `
       onResize={[Function]}
     />
     <ResizeGrip
-      className="nz-right-grip"
+      className="nz-content-grip"
       direction={0}
       onResize={[Function]}
     />
@@ -29,15 +28,18 @@ exports[`<Stacked /> renders correctly 1`] = `
       className="nz-tabs"
     />
     <div
-      className="nz-left-grip-container"
+      className="nz-tabs-grip-container"
     >
       <ResizeGrip
-        className="nz-left-grip"
+        className="nz-tabs-grip"
         direction={0}
         onResize={[Function]}
       />
     </div>
   </div>
+  <div
+    className="nz-height-expander"
+  />
   <ResizeGrip
     className="nz-top-grip"
     direction={1}

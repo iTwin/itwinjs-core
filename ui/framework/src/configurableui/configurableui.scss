@@ -13,21 +13,6 @@
   user-select: none;
 }
 
-// Workarounds for ui-ninezone Widget scrollbar issues
-.nz-content-area {
-  overflow-x: hidden;
-  overflow-y: hidden;
-  height: 100%;
-
-  > .nz-content > div {
-    height: 100%;
-
-    > div {
-      height: 100%;
-    }
-  }
-}
-
 .centered {
   display: flex;
   justify-content: center;

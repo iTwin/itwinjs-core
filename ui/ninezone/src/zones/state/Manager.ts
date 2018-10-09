@@ -10,19 +10,28 @@ import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
 import Widget from "./Widget";
-import { WidgetZone, StatusZone, StatusZoneProps } from "./Zone";
+import { WidgetZone, StatusZone, StatusZoneProps, ZoneProps } from "./Zone";
 import { TargetType, TargetProps } from "./Target";
 
+export type NineZoneFactory = (props: NineZoneProps) => NineZone;
+
 export class StateManager {
+  private _lastStackId = 1;
+  private _nineZoneFactory: NineZoneFactory;
+
+  public constructor(nineZoneFactory: NineZoneFactory) {
+    this._nineZoneFactory = nineZoneFactory;
+  }
+
   public handleTabClick(widgetId: number, tabIndex: number, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
 
     const isClosing = tabIndex === widget.props.tabIndex;
 
-    if (isClosing && zone.isFloating)
+    if (isClosing && zone.isFloating())
       return { ...model.props };
 
     // Close all widgets
@@ -56,8 +65,8 @@ export class StateManager {
   }
 
   public layout(size: SizeProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
-    model.root.setSize(size);
+    const model = this._nineZoneFactory(state);
+    model.root.size = size;
 
     const newState: NineZoneProps = {
       ...model.props,
@@ -71,6 +80,7 @@ export class StateManager {
           const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
           acc[id] = {
             ...model.props.zones[id],
+            isLayoutChanged: false,
             bounds,
           };
           return acc;
@@ -82,9 +92,9 @@ export class StateManager {
     return newState;
   }
 
-  public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
-    model.getWidgetZone(zoneId).getLayout().resize(x, y, handle);
+  public handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number, state: NineZoneProps): NineZoneProps {
+    const model = this._nineZoneFactory(state);
+    model.getWidgetZone(zoneId).getLayout().resize(x, y, handle, filledHeightDiff);
 
     const newState: NineZoneProps = {
       ...model.props,
@@ -92,9 +102,20 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
-          const bounds = model.getWidgetZone(id).getLayout().bounds;
+          const layout = model.getWidgetZone(id).getLayout();
+          const bounds = layout.bounds;
+          const floatingBounds = layout.floatingBounds;
+
           acc[id] = {
             ...model.props.zones[id],
+            ...zoneId === id ? { isLayoutChanged: true } : {},
+            ...floatingBounds && state.zones[id].floating ? {
+              floating: {
+                ...state.zones[id].floating,
+                stackId: state.zones[id].floating!.stackId,
+                bounds: floatingBounds,
+              },
+            } : {},
             bounds,
           };
           return acc;
@@ -106,7 +127,7 @@ export class StateManager {
   }
 
   public setIsInFooterMode(isInFooterMode: boolean, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const root = model.root;
     if (root.isInFooterMode === isInFooterMode)
       return { ...model.props };
@@ -136,8 +157,38 @@ export class StateManager {
     return newState;
   }
 
+  public mergeZone(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex, state: NineZoneProps): NineZoneProps {
+    const model = this._nineZoneFactory(state);
+    const zone = model.getWidgetZone(toMergeId);
+    const target = model.getWidgetZone(targetId);
+    if (!zone.canBeMergedTo(target))
+      return state;
+
+    const newState: NineZoneProps = {
+      ...state,
+      zones: {
+        ...state.zones,
+        [toMergeId]: {
+          ...state.zones[toMergeId],
+          widgets: [],
+        },
+        [targetId]: {
+          ...state.zones[targetId],
+          widgets: [
+            ...state.zones[targetId].widgets,
+            {
+              id: toMergeId,
+              tabIndex: -1,
+            },
+          ],
+        },
+      },
+    };
+    return newState;
+  }
+
   public handleWidgetTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
@@ -152,7 +203,7 @@ export class StateManager {
     const unmergeBounds = zone.getUnmergeWidgetBounds(widget);
     let floatingBounds: RectangleProps = Rectangle.create(widget.zone.props.bounds).offset(offset);
     if (widget.isInHomeZone)
-      floatingBounds = defaultZone.props.floatingBounds ? defaultZone.props.floatingBounds : defaultZone.props.bounds;
+      floatingBounds = defaultZone.props.floating ? defaultZone.props.floating.bounds : defaultZone.props.bounds;
 
     const keepSomeZonesMerged = zone.getWidgets().length > unmergeBounds.length;
     return {
@@ -195,7 +246,12 @@ export class StateManager {
 
           acc[id] = {
             ...model.props.zones[id],
-            ...defaultZone.id === id ? { floatingBounds } : {},
+            ...defaultZone.id === id ? {
+              floating: {
+                bounds: floatingBounds,
+                stackId: this._lastStackId++,
+              },
+            } : {},
             ...unsetAnchor ? { anchor: undefined } : {},
             bounds: mergedZone.bounds,
             widgets,
@@ -217,10 +273,20 @@ export class StateManager {
   }
 
   public handleWidgetTabDragEnd(state: NineZoneProps): NineZoneProps {
+    if (!state.draggingWidget)
+      return state;
+
     if (!state.target) {
       return {
         ...state,
         draggingWidget: undefined,
+        zones: {
+          ...state.zones,
+          [state.draggingWidget.id]: {
+            ...state.zones[state.draggingWidget.id],
+            floating: undefined,
+          },
+        },
       };
     }
 
@@ -235,17 +301,17 @@ export class StateManager {
   }
 
   public handleWidgetTabDrag(dragged: PointProps, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget)
       return { ...model.props };
 
     const draggingZone = draggingWidget.defaultZone;
-    if (!draggingZone.props.floatingBounds)
+    if (!draggingZone.props.floating)
       return { ...model.props };
 
-    const newBounds = Rectangle.create(draggingZone.props.floatingBounds).offset(dragged);
+    const newBounds = Rectangle.create(draggingZone.props.floating.bounds).offset(dragged);
     const lastPosition = Point.create(draggingWidget.props.lastPosition).offset(dragged);
     const newState: NineZoneProps = {
       ...model.props,
@@ -253,8 +319,11 @@ export class StateManager {
         ...model.props.zones,
         [draggingZone.props.id]: {
           ...model.props.zones[draggingZone.props.id],
-          floatingBounds: newBounds,
-        },
+          floating: {
+            ...model.props.zones[draggingZone.props.id].floating,
+            bounds: newBounds,
+          },
+        } as ZoneProps,
       },
       draggingWidget: {
         ...draggingWidget.props,
@@ -266,7 +335,7 @@ export class StateManager {
   }
 
   public handleTargetChanged(target: TargetProps | undefined, state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget || !target)
@@ -285,7 +354,7 @@ export class StateManager {
   }
 
   private mergeDrop(state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     if (!model.target)
       return model.props;
@@ -325,7 +394,7 @@ export class StateManager {
         zonesToUpdate[zone.props.id] = {
           ...model.props.zones[zone.props.id],
           bounds,
-          floatingBounds: undefined,
+          floating: undefined,
           widgets: [
             ...widgets.map((w) => {
               if (w.equals(draggingWidget.widget))
@@ -343,7 +412,7 @@ export class StateManager {
       else
         zonesToUpdate[zone.props.id] = {
           ...model.props.zones[zone.props.id],
-          floatingBounds: undefined, // dragging zone is merged and should not float anymore
+          floating: undefined, // dragging zone is merged and should not float anymore
           widgets: [], // dragging zone is merged and should contain no widgets
         };
 
@@ -358,7 +427,7 @@ export class StateManager {
   }
 
   private backDrop(state: NineZoneProps): NineZoneProps {
-    const model = new NineZone(state);
+    const model = this._nineZoneFactory(state);
 
     const draggingWidget = model.draggingWidget;
     if (!draggingWidget)
@@ -371,7 +440,7 @@ export class StateManager {
         ...model.props.zones,
         [draggingZone.id]: {
           ...model.props.zones[draggingZone.id],
-          floatingBounds: undefined,
+          floating: undefined,
           anchor: undefined,
         },
       },
@@ -396,6 +465,10 @@ export class StateManager {
   }
 }
 
+const defaultFactory = (props: NineZoneProps): NineZone => {
+  return new NineZone(props);
+};
+
 // tslint:disable-next-line:variable-name
-export const Manager = new StateManager();
+export const Manager = new StateManager(defaultFactory);
 export default Manager;

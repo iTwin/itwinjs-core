@@ -9,6 +9,8 @@ import * as React from "react";
 import PointerCaptor from "../../base/PointerCaptor";
 import CommonProps from "../../utilities/Props";
 import "./ResizeGrip.scss";
+import Rectangle from "../../utilities/Rectangle";
+import Point, { PointProps } from "../../utilities/Point";
 
 /** Properties of [[ResizeGrip]] component. */
 export interface ResizeGripProps extends CommonProps {
@@ -52,9 +54,8 @@ export class ResizeDirectionHelpers {
 
 /** Resize grip used by [[Stacked]] component. */
 export default class ResizeGrip extends React.Component<ResizeGripProps> {
-  private _isDragging = false;
-  private _lastX = 0;
-  private _lastY = 0;
+  private _relativePosition?: Point;
+  private _grip = React.createRef<HTMLDivElement>();
 
   public render() {
     const { className, ...props } = this.props;
@@ -71,46 +72,64 @@ export default class ResizeGrip extends React.Component<ResizeGripProps> {
         onMouseUp={this._handleMouseUp}
         onMouseMove={this._handleMouseMove}
         {...props}
-      />
+      >
+        <div ref={this._grip} />
+      </PointerCaptor>
     );
   }
 
+  private _getRelativePosition(grip: HTMLDivElement, clientPos: PointProps) {
+    const clientRect = grip.getBoundingClientRect();
+    const bounds = Rectangle.create(clientRect);
+
+    return bounds.topLeft().getOffsetTo(clientPos);
+  }
+
   private _handleMouseDown = (e: MouseEvent) => {
-    this._isDragging = true;
+    const grip = this._grip.current;
+    if (!grip)
+      return;
+
     e.preventDefault();
 
-    this._lastX = e.clientX;
-    this._lastY = e.clientY;
+    this._relativePosition = this._getRelativePosition(grip, {
+      x: e.clientX,
+      y: e.clientY,
+    });
   }
 
   private _handleMouseUp = () => {
-    if (!this._isDragging)
+    if (!this._relativePosition)
       return;
 
-    this._isDragging = false;
+    this._relativePosition = undefined;
   }
 
   private _handleMouseMove = (e: MouseEvent) => {
-    if (!this._isDragging)
+    if (!this._relativePosition)
       return;
 
-    let x = e.clientX - this._lastX;
-    let y = e.clientY - this._lastY;
+    const grip = this._grip.current;
+    if (!grip)
+      return;
 
+    const relativePosition = this._getRelativePosition(grip, {
+      x: e.clientX,
+      y: e.clientY,
+    });
+
+    let difference = this._relativePosition.getOffsetTo(relativePosition);
     switch (this.props.direction) {
       case ResizeDirection.NorthSouth: {
-        x = 0;
+        difference = difference.setX(0);
         break;
       }
       case ResizeDirection.EastWest: {
-        y = 0;
+        difference = difference.setY(0);
         break;
       }
     }
 
-    this.props.onResize && this.props.onResize(x, y);
-
-    this._lastX = e.clientX;
-    this._lastY = e.clientY;
+    this.props.onResize && this.props.onResize(difference.x, difference.y);
   }
 }
