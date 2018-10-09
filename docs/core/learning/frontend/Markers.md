@@ -1,6 +1,6 @@
 # Markers
 
-A [Marker]($frontend) is a [CanvasDecoration]($frontend), whose position follows a fixed location in world space. Markers draw on top of all scene graphics, and provide visual cues about locations of interest. The name and the concept derive from the eponymous type in the [Google Maps api](https://developers.google.com/maps/documentation/javascript/markers).
+A [Marker]($frontend) is a [CanvasDecoration]($frontend), whose position follows a fixed location in world space. Markers draw on top of all scene graphics, and provide visual cues about locations of interest. The name and the concept derive from the same type in the [Google Maps api](https://developers.google.com/maps/documentation/javascript/markers).
 
 Markers are often used to show locations in physical space where records from an external data source are located. They provide a way for applications to show additional information from the external source as the cursor hovers over them, and  actions to be performed when they are clicked.
 
