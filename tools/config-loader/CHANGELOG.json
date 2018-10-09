@@ -2,6 +2,21 @@
   "name": "@bentley/config-loader",
   "entries": [
     {
+      "version": "0.153.0",
+      "tag": "@bentley/config-loader_v0.153.0",
+      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Output package did not included the require file"
+          },
+          {
+            "comment": "Fix issue which cause ui-test app to fail because it is unable to find config file"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.152.0",
       "tag": "@bentley/config-loader_v0.152.0",
       "date": "Fri, 05 Oct 2018 21:52:26 GMT",

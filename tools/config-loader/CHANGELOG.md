@@ -1,6 +1,14 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Fri, 05 Oct 2018 21:52:26 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 12:08:40 GMT and should not be manually modified.
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- Output package did not included the require file
+- Fix issue which cause ui-test app to fail because it is unable to find config file
 
 ## 0.152.0
 Fri, 05 Oct 2018 21:52:26 GMT

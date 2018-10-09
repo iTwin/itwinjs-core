@@ -2,6 +2,24 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.153.0",
+      "tag": "@bentley/ui-framework_v0.153.0",
+      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "skip all test and remove oidc credentials"
+          },
+          {
+            "comment": "Setup logout, and cleaned up the OIDC API a little. "
+          },
+          {
+            "comment": "Made UiFramework.initialize's oidcConfiguration argument optional."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.152.0",
       "tag": "@bentley/ui-framework_v0.152.0",
       "date": "Fri, 05 Oct 2018 21:52:26 GMT",
