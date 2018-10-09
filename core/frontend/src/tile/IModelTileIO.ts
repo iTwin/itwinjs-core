@@ -341,7 +341,7 @@ export namespace IModelTileIO {
         else if (JsonUtils.asBool(namedTex.isTileSection))
           textureType = RenderTexture.Type.TileSection;
 
-        const params = new RenderTexture.Params(name, textureType);
+        const params = new RenderTexture.Params(namedTex.isGlyph ? undefined : name, textureType);
         return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
       });
     }
