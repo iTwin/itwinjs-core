@@ -103,6 +103,7 @@ export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, 
     method,
     headers: { authorization: sasToken },
     agent: handler.getAgent(),
+    retries: 0,
   };
 
   // Request timeout is in seconds, wait 50% more than the expected timeout from server

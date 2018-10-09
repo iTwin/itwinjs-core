@@ -142,6 +142,9 @@ export class AzureFileHandler implements FileHandler {
         sareq
           .get(downloadUrl)
           .agent(this.agent)
+          .timeout({
+            response: 10000,
+          })
           .pipe(outputStream)
           .on("error", (error: any) => {
             const parsedError = ResponseError.parse(error);
@@ -184,6 +187,7 @@ export class AzureFileHandler implements FileHandler {
       body: buffer,
       progressCallback: callback,
       agent: this.agent,
+      timeout: 60000,
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
@@ -229,6 +233,10 @@ export class AzureFileHandler implements FileHandler {
       },
       body: blockList,
       agent: this.agent,
+      timeout: {
+        response: 5000,
+        deadline: 60000,
+      },
     };
 
     const uploadUrl = `${uploadUrlString}&comp=blocklist`;
