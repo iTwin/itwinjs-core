@@ -1,6 +1,6 @@
 #main-landing-wrapper {
   margin-bottom: 0em !important;
-  background-color: #FAFDFF;
+  background-color: #EFF8FF;
 }
 
 #main-landing-wrapper #middle-content-wrapper {
@@ -76,4 +76,8 @@ p.digital-twin {
   width: 40%;
   height: 40%;
   margin-bottom: 3em;
+}
+
+.middle-content-text {
+  max-width: 900px;
 }
