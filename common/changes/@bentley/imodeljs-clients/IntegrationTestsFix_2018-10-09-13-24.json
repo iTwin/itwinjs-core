@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix for the iModelHub integration tests",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

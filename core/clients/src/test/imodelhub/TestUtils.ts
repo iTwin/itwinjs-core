@@ -32,12 +32,12 @@ import { IModelBaseHandler } from "../../imodelhub";
 const bankProjects: string[] = [];
 
 function configMockSettings() {
-  try {
-    const url = Config.App.get("imjs_imodelhub_url");
-    if (url)
-      return;
-  } catch (_err) {
-  }
+  if (!TestConfig.enableMocks)
+    return;
+
+  const url = Config.App.get("imjs_buddi_url", "");
+  if (url)
+    return;
 
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
@@ -112,10 +112,12 @@ let _imodelBankClient: IModelBankClient;
 export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
-    return Config.App.get("imjs_imodelhub_url");
+    return Config.App.get("imjs_imodelhub_url", "");
   }
 
   public static mockGetUrl() {
+    if (!TestConfig.enableMocks)
+      return;
     const url = IModelHubUrlMock.getUrl();
     UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, Config.App.get("imjs_buddi_resolve_url_using_region"), url);
   }
