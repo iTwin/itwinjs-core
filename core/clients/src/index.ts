@@ -20,7 +20,6 @@ export * from "./TilesGeneratorClient";
 export * from "./IModelWebNavigatorClient";
 export * from "./RealityDataServicesClient";
 export * from "./TileDataAccessClient";
-export * from "./UlasClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
 export * from "./oidc";
