@@ -24,7 +24,7 @@ function mockGetBriefcaseById(imodelId: Guid, briefcase: Briefcase) {
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", `${briefcase.briefcaseId!}`);
   const requestResponse = ResponseBuilder.generateGetResponse(briefcase);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 function mockGetBriefcaseWithDownloadUrl(imodelId: Guid, briefcase: Briefcase) {
@@ -37,7 +37,7 @@ function mockGetBriefcaseWithDownloadUrl(imodelId: Guid, briefcase: Briefcase) {
   briefcase.fileName = "TestModel.bim";
   briefcase.fileSize = utils.getMockFileSize();
   const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(briefcase);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 function mockDeleteBriefcase(imodelId: Guid, briefcaseId: number) {
@@ -45,10 +45,10 @@ function mockDeleteBriefcase(imodelId: Guid, briefcaseId: number) {
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", briefcaseId.toString());
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, {});
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, {});
 }
 
-describe("iModelHub BriefcaseHandler (#integration)", () => {
+describe("iModelHub BriefcaseHandler", () => {
   let accessToken: AccessToken;
   let imodelId: Guid;
   let iModelClient: IModelClient;
@@ -94,14 +94,14 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should acquire a briefcase (#integration)", async () => {
+  it("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(imodelId, 3);
     const briefcase = await iModelClient.Briefcases().create(actx, accessToken, imodelId);
     chai.expect(briefcase.briefcaseId).to.be.greaterThan(1);
     acquiredBriefcaseId = briefcase.briefcaseId!;
   });
 
-  it("should get all briefcases  (#integration)", async () => {
+  it("should get all briefcases ", async () => {
     utils.mockGetBriefcase(imodelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
     const briefcases = await iModelClient.Briefcases().get(actx, accessToken, imodelId);
     chai.expect(briefcases.length).to.be.greaterThan(0);
@@ -112,7 +112,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     }
   });
 
-  it("should delete a briefcase (#integration)", async () => {
+  it("should delete a briefcase", async () => {
     utils.mockGetBriefcase(imodelId, utils.generateBriefcase(2), utils.generateBriefcase(acquiredBriefcaseId));
     const originalBriefcaseCount = (await iModelClient.Briefcases().get(actx, accessToken, imodelId)).length;
 
@@ -125,7 +125,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(briefcaseCount).to.be.lessThan(originalBriefcaseCount);
   });
 
-  it("should fail getting an invalid briefcase (#integration)", async () => {
+  it("should fail getting an invalid briefcase", async () => {
     let error: any;
     try {
       await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(-1));
@@ -137,7 +137,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should get information on a briefcase by id (#integration)", async () => {
+  it("should get information on a briefcase by id", async () => {
     mockGetBriefcaseById(imodelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(briefcaseId)))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
@@ -146,7 +146,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(briefcase.iModelId!.toString()).to.be.equal(imodelId.toString());
   });
 
-  it("should fail deleting an invalid briefcase (#integration)", async () => {
+  it("should fail deleting an invalid briefcase", async () => {
     let error: any;
     try {
       await iModelClient.Briefcases().delete(actx, accessToken, imodelId, -1);
@@ -158,7 +158,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should get the download URL for a Briefcase (#integration)", async () => {
+  it("should get the download URL for a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
@@ -168,7 +168,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.assert(briefcase.downloadUrl!.startsWith("https://"));
   });
 
-  it("should download a Briefcase (#integration)", async () => {
+  it("should download a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
@@ -184,7 +184,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should download a Briefcase without buffered write (#integration)", async () => {
+  it("should download a Briefcase without buffered write", async () => {
     mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
@@ -201,12 +201,12 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should get error 409 and fail to get briefcase (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get error 409 and fail to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
     let error;
     try {
       (await iModelClient.Briefcases().get(actx, accessToken, imodelId));
@@ -218,12 +218,12 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(error.name).to.be.equal("NoServerLicense");
   });
 
-  it("should get error 500 and retry to get briefcase (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get error 500 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
     let error;
     try {
       (await iModelClient.Briefcases().get(actx, accessToken, imodelId));
@@ -234,7 +234,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(error.status).to.be.equal(500);
   });
 
-  it("should fail downloading briefcase with no file handler (#integration)", async () => {
+  it("should fail downloading briefcase with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
@@ -247,7 +247,7 @@ describe("iModelHub BriefcaseHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail downloading briefcase with no file url (#integration)", async () => {
+  it("should fail downloading briefcase with no file url", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.Briefcases().download(actx, new Briefcase(), utils.workDir);

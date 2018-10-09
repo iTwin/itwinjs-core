@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Reenabling iModelHub unit tests",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

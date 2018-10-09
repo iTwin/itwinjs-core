@@ -23,10 +23,10 @@ function mockDeleteAllLocks(imodelId: Guid, briefcaseId: number) {
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Lock", `DeleteAll-${briefcaseId}`);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
 }
 
-describe("iModelHubClient LockHandler  (#integration)", () => {
+describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
   let imodelId: Guid;
   let iModelClient: IModelClient;
@@ -67,7 +67,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should acquire one Lock (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should acquire one Lock", async function (this: Mocha.ITestCallbackContext) {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
     utils.mockUpdateLocks(imodelId, [generatedLock]);
@@ -79,7 +79,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(lock.lockType).equal(generatedLock.lockType);
   });
 
-  it("should acquire multiple Locks (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should acquire multiple Locks", async function (this: Mocha.ITestCallbackContext) {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
@@ -92,7 +92,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(locks.length).to.be.equal(2);
   });
 
-  it("should update Lock multiple times (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should update Lock multiple times", async function (this: Mocha.ITestCallbackContext) {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
 
@@ -115,7 +115,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(lock.lockLevel).equals(LockLevel.Shared);
   });
 
-  it("should get information on Locks (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
 
     utils.mockGetLocks(imodelId, "", ResponseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
@@ -123,7 +123,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(locks.length).to.be.greaterThan(0);
   });
 
-  it("should get locks by briefcaseId (#integration)", async () => {
+  it("should get locks by briefcaseId", async () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcases[0].briefcaseId}`;
     utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
 
@@ -134,7 +134,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     locks.forEach((lock) => chai.expect(lock.briefcaseId).to.be.equal(briefcases[0].briefcaseId));
   });
 
-  it("should get lock by objectId (#integration)", async () => {
+  it("should get lock by objectId", async () => {
     const objectId = new Id64("0x1");
     utils.mockGetLocks(imodelId, undefined, utils.generateLock(undefined, objectId));
 
@@ -145,7 +145,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     locks.forEach((lock) => chai.expect(lock.objectId!.toString()).to.be.equal(objectId!.toString()));
   });
 
-  it("should get locks by releasedWithChangeset (#integration)", async () => {
+  it("should get locks by releasedWithChangeset", async () => {
     const filter = `?$filter=ReleasedWithChangeSet+eq+%27${changeSet.id}%27`;
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
@@ -160,7 +160,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(locks.length).to.be.lessThan(allLocks.length);
   });
 
-  it("should get locks by releasedWithChangeSetIndex (#integration)", async () => {
+  it("should get locks by releasedWithChangeSetIndex", async () => {
     const filter = `?$filter=ReleasedWithChangeSetIndex+eq+${changeSet.index}`;
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
@@ -175,7 +175,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(locks.length).to.be.lessThan(allLocks.length);
   });
 
-  it("should get locks by lock level and lock type (#integration)", async () => {
+  it("should get locks by lock level and lock type", async () => {
     const filter = `?$filter=LockLevel+eq+${LockLevel.Shared}+and+LockType+eq+${LockType.Model}`;
     utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
 
@@ -189,7 +189,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     });
   });
 
-  it("should get locks by instance ids (#integration)", async () => {
+  it("should get locks by instance ids", async () => {
     const fileId = new Guid(true);
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
     utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
@@ -212,7 +212,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     }
   });
 
-  it("should get unavailable locks (#integration)", async () => {
+  it("should get unavailable locks", async () => {
     if (TestConfig.enableMocks) {
       const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
       utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
@@ -231,7 +231,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     });
   });
 
-  it("should fail on conflicting locks (#integration)", async () => {
+  it("should fail on conflicting locks", async () => {
     const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
@@ -263,7 +263,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(receivedError).to.be.instanceof(AggregateResponseError);
   });
 
-  it("should fail updating and return conflicting lock (#integration)", async () => {
+  it("should fail updating and return conflicting lock", async () => {
     const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
@@ -295,7 +295,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(receivedError!.conflictingLocks![0].lockType).to.be.equal(lock2.lockType);
   });
 
-  it("should return conflicting locks (#integration)", async () => {
+  it("should return conflicting locks", async () => {
     const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock3 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
@@ -332,7 +332,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(receivedError!.conflictingLocks![1].lockType).to.be.equal(lock3.lockType);
   });
 
-  it("should delete all locks (#integration)", async () => {
+  it("should delete all locks", async () => {
     for (const briefcase of briefcases) {
       mockDeleteAllLocks(imodelId, briefcase.briefcaseId!);
       await iModelClient.Locks().deleteAll(alctx, accessToken, imodelId, briefcase.briefcaseId!);
@@ -365,7 +365,7 @@ describe("iModelHubClient LockHandler  (#integration)", () => {
     chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should fail deleting all locks with invalid briefcase id (#integration)", async () => {
+  it("should fail deleting all locks with invalid briefcase id", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.Locks().deleteAll(alctx, accessToken, imodelId, 0);

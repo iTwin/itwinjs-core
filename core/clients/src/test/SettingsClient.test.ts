@@ -170,7 +170,7 @@ describe.skip("ConnectSettingsClient-User", () => {
   });
 
   // Project/User -specific  Setting
-  it("should save and retrieve a Project User setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project User setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -208,7 +208,7 @@ describe.skip("ConnectSettingsClient-User", () => {
   });
 
   // IModel/User -specific  Setting
-  it("should save and retrieve an IModel User setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an IModel User setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -279,7 +279,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application Setting
-  it("should save and retrieve an Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -316,7 +316,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application/Project Setting
-  it("should save and retrieve a Project/Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -354,7 +354,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application/IModel Setting
-  it("should save and retrieve an iModel/Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an iModel/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -392,7 +392,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   });
 
   // Project Setting (application independent)
-  it("should save and retrieve a Project Setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -430,7 +430,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   });
 
   // IModel Setting (application independent)
-  it("should save and retrieve an iModel Setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an iModel Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -498,7 +498,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application Setting
-  it("should successfully retrieve an Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -509,7 +509,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application/Project Setting
-  it("should successfully retrieve a Project/Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -521,7 +521,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application/IModel Setting
-  it("should successfully retrieve an iModel/Application Setting  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an iModel/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -545,7 +545,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // IModel Setting (application independent)
-  it("should successfully retrieve an iModel Setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an iModel Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "../index";
 import nock = require("nock");
+import { TestConfig } from "./TestConfig";
+import { KnownRegions } from "../Client";
+import { Config } from "../Config";
 
 export enum RequestType {
   Get,
@@ -266,5 +269,14 @@ export class ResponseBuilder {
    */
   public static clearMocks(): void {
     nock.cleanAll();
+  }
+}
+
+export class UrlDiscoveryMock {
+  public static mockGetUrl(searchKey: string, env: KnownRegions, returnedUrl: string) {
+    if (!TestConfig.enableMocks)
+      return;
+    ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,
+      `/GetUrl/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
   }
 }

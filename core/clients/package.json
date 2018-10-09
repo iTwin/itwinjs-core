@@ -19,7 +19,7 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pretest": "rimraf \"./lib/test/iModelClientsTests.log\"",
-    "test": "npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/test.js  --grep=\"#integration|URL Whitelist Validator\" --invert",
+    "test": "npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|URL Whitelist Validator\" --invert",
     "test:online": "npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"URL Whitelist Validator\" --invert",
     "test:integration": "npm run pretest && npm run test:online & npm run test:url",
     "test:settings": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep Setting",

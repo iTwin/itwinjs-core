@@ -21,10 +21,10 @@ function mockGetUserInfo(imodelId: Guid, userInfo: UserInfo[], query?: string) {
   let requestPath;
   if (query === undefined) {
     requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "UserInfo", "$query");
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
   } else {
     requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "UserInfo", `${query ? query : ""}`);
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
   }
 }
 
@@ -41,7 +41,7 @@ function generateUserInfo(userProfiles: UserProfile[]): UserInfo[] {
   return users;
 }
 
-describe("iModelHubClient UserInfoHandler  (#integration)", () => {
+describe("iModelHubClient UserInfoHandler", () => {
   const accessTokens: AccessToken[] = [];
   let imodelId: Guid;
   const actx = new ActivityLoggingContext("");
@@ -67,7 +67,7 @@ describe("iModelHubClient UserInfoHandler  (#integration)", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should get one user info (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get one user info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedUserInfo = generateUserInfo([accessTokens[0].getUserProfile()!]);
       mockGetUserInfo(imodelId, mockedUserInfo, `${mockedUserInfo[0].id}`);
@@ -82,7 +82,7 @@ describe("iModelHubClient UserInfoHandler  (#integration)", () => {
     chai.expect(userInfo[0].lastName).to.be.equal(accessTokens[0].getUserProfile()!.lastName);
   });
 
-  it("should get several users info (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get several users info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedUsersInfo = generateUserInfo([accessTokens[0].getUserProfile()!, accessTokens[1].getUserProfile()!]);
       mockGetUserInfo(imodelId, mockedUsersInfo);
@@ -102,7 +102,7 @@ describe("iModelHubClient UserInfoHandler  (#integration)", () => {
     }
   });
 
-  it("should fail to get users without ids (#integration)", async () => {
+  it("should fail to get users without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Users().get(actx, accessTokens[0], imodelId, new UserInfoQuery().byIds([]));
