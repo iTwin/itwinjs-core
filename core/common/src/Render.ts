@@ -15,6 +15,7 @@ import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
+import { ViewFlagProps } from "./ViewProps";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view. */
 export enum FillFlags {
@@ -212,7 +213,10 @@ export class PolylineEdgeArgs {
   public clear() { this.lines = undefined; }
 }
 
-/** Represents a texture image applied to a surface during rendering. */
+/** Represents a texture image applied to a surface during rendering.
+ * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
+ * @see [[RenderSystem]] for functions used to create RenderTextures.
+ */
 export abstract class RenderTexture implements IDisposable {
   /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
    * Textures created on the front-end generally have no key.
@@ -235,11 +239,17 @@ export abstract class RenderTexture implements IDisposable {
     this.isOwned = params.isOwned;
   }
 
-  /** Releases any WebGL resources owned by this texture. */
+  /** Releases any WebGL resources owned by this texture.
+   * If [[Texture.isOwned]] is true, then whatever object claims ownership of the texture is reponsible for disposing of it when it is no longer needed.
+   * Otherwise, imodeljs will handle its disposal.
+   */
   public abstract dispose(): void;
 }
 
-/** Represents a texture image applied to a surface during rendering. */
+/** Represents a texture image applied to a surface during rendering.
+ * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
+ * @see [[RenderSystem]] for functions used to create RenderTextures.
+ */
 export namespace RenderTexture {
   /** Enumerates the types of [[RenderTexture]]s. */
   export const enum Type {
@@ -281,7 +291,7 @@ export namespace RenderTexture {
   }
 }
 
-/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on. */
+/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on. */
 export abstract class RenderMaterial {
   /** If the material originated from a Material element in the [[IModelDb]], the ID of that element. */
   public readonly key?: string;
@@ -300,6 +310,7 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
   /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
+    /** If the material originates from a Material element in the [[IModelDb]], the ID of that element. */
     public key?: string;
     public diffuseColor?: ColorDef;
     public specularColor?: ColorDef;
@@ -402,6 +413,8 @@ export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
  *  - SmoothShade draws only surfaces.
  *  - HiddenLine and SolidFill draw both surfaces and edges.
  *  - Lighting is only applied in SmoothShade mode.
+ *
+ * The [[FillFlags]] associated with planar regions controls whether and how the region's interior area is displayed in Wireframe mode.
  * [[ViewFlags]] has options for enabling display of visible and/or hidden edges in SmoothShade mode.
  * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
  */
@@ -465,7 +478,7 @@ export class ViewFlags {
   public styles: boolean = true;
   /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
   public transparency: boolean = true;
-  /** Controls whether continuous rendering is used. */
+  /** @hidden This doesn't belong here - it is not persistent. */
   public continuousRendering: boolean = false;
   /** Controls whether the fills on filled elements are displayed. */
   public fill: boolean = true;
@@ -501,7 +514,7 @@ export class ViewFlags {
   public backgroundMap: boolean = false;
   /** Use material colors for hidden lines */
   public hLineMaterialColors: boolean = false;
-  /** 0=none, 1=generate mask, 2=use mask */
+  /** @hidden 0=none, 1=generate mask, 2=use mask */
   public edgeMask: number = 0;
 
   public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
@@ -549,8 +562,8 @@ export class ViewFlags {
     return true;
   }
 
-  public toJSON(): any {
-    const out: any = {};
+  public toJSON(): ViewFlagProps {
+    const out: ViewFlagProps = {};
     if (!this.constructions) out.noConstruct = true;
     if (!this.dimensions) out.noDim = true;
     if (!this.patterns) out.noPattern = true;
@@ -579,10 +592,11 @@ export class ViewFlags {
     return out;
   }
 
-  public static fromJSON(json: any): ViewFlags {
+  public static fromJSON(json?: ViewFlagProps): ViewFlags {
     const val = new ViewFlags();
     if (!json)
       return val;
+
     val.constructions = !JsonUtils.asBool(json.noConstruct);
     val.dimensions = !JsonUtils.asBool(json.noDim);
     val.patterns = !JsonUtils.asBool(json.noPattern);
@@ -618,7 +632,7 @@ export class ViewFlags {
     return val;
   }
 
-  public isEqualTo(other: ViewFlags): boolean {
+  public equals(other: ViewFlags): boolean {
     return this.renderMode === other.renderMode
       && this.dimensions === other.dimensions
       && this.patterns === other.patterns
@@ -767,7 +781,7 @@ export namespace ViewFlag {
 }
 
 /** Enumerates the available patterns for drawing patterned lines.
- * Each is a 32-bit pattern in which an 'off' bit corresponds to a pixel which is drawn, and an 'on' bit to a pixel which is not drawn.
+ * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel.
  */
 export const enum LinePixels {
   Solid = 0,
@@ -1054,12 +1068,17 @@ export namespace HiddenLine {
 }
 
 export namespace Gradient {
+  /** Flags applied to a [[Gradient.Symb]]. */
   export const enum Flags {
+    /** No flags. */
     None = 0,
+    /** Reverse the order of the gradient keys. */
     Invert = 1,
+    /** Draw an outline around the surface to which the gradient is applied. */
     Outline = 2,
   }
 
+  /** Enumerates the modes by which a [[Gradient.Symb]]'s keys are applied to create an image. */
   export const enum Mode {
     None = 0,
     Linear = 1,
@@ -1067,9 +1086,11 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
+    /** @hidden */
     Thematic = 6,
   }
 
+  /** @hidden */
   export const enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
@@ -1077,6 +1098,7 @@ export namespace Gradient {
     IsoLines = 3,
   }
 
+  /** @hidden */
   export const enum ThematicColorScheme {
     BlueRed = 0,
     RedBlue = 1,
@@ -1086,6 +1108,7 @@ export namespace Gradient {
     Custom = 5,
   }
 
+  /** @hidden */
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
@@ -1130,6 +1153,9 @@ export namespace Gradient {
     color: ColorDefProps;
   }
 
+  /** Gradient fraction value to [[ColorDef]] pair
+   * @see [[Gradient.KeyColorProps]]
+   */
   export class KeyColor implements KeyColorProps {
     public value: number;
     public color: ColorDef;
@@ -1157,6 +1183,10 @@ export namespace Gradient {
     thematicSettings?: ThematicSettingsProps;
   }
 
+  /** Multi-color area fill defined by a range of colors that vary by position.
+   * Gradient fill can be applied to planar regions.
+   * @see [[Gradient.SymbProps]]
+   */
   export class Symb implements SymbProps {
     public mode = Mode.None;
     public flags: Flags = Flags.None;
@@ -1181,6 +1211,8 @@ export namespace Gradient {
 
       return result;
     }
+
+    /** @hidden */
     public static createThematic(settings: ThematicSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
@@ -1203,12 +1235,16 @@ export namespace Gradient {
     }
 
     /** Returns true if this symbology is equal to another, false otherwise. */
-    public isEqualTo(other: Symb): boolean {
+    public equals(other: Symb): boolean {
       return Symb.compareSymb(this, other) === 0;
     }
 
-    /** Compares two gradient symbologies. */
-    public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb) {
+    /** Compares two gradient symbologies. Used for ordering Gradient.Symb objects.
+     * @param lhs First gradient to compare
+     * @param rhs Second gradient to compare
+     * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+     */
+    public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number {
       if (lhs === rhs)
         return 0; // Same pointer
       if (lhs.mode !== rhs.mode)
@@ -1252,7 +1288,9 @@ export namespace Gradient {
       return 0;
     }
 
-    /** Compare this symbology to another. */
+    /** Compare this symbology to another.
+     * @see [[Gradient.Symb.compareSymb]]
+     */
     public compare(other: Symb): number {
       return Gradient.Symb.compareSymb(this, other);
     }
@@ -1312,9 +1350,10 @@ export namespace Gradient {
       return false;
     }
 
+    /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
     public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
 
-    /** Writes the image in 'reverse'. */
+    /** Applies this gradient's settings to produce a bitmap image. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
         width = 1;
@@ -1499,6 +1538,7 @@ export const enum FillDisplay {
   Blanking = 3,
 }
 
+/** Describes how a view's background color affects the interior area of a closed region. */
 export const enum BackgroundFill {
   /** single color fill uses the fill color and line color to draw either a solid or outline fill */
   None = 0,
@@ -1508,14 +1548,23 @@ export const enum BackgroundFill {
   Outline = 2,
 }
 
+/** Categorizes a piece of geometry within a GeometryStream. Visibility of classes of geometry can be toggled
+ * within a view using [[ViewFlags]].
+ * @see [[GeometryStreamProps]].
+ * @see [[Feature]].
+ */
 export const enum GeometryClass {
+  /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */
   Primary = 0,
+  /** Used to classify geometry used as a drawing aid in constructing the Primary geometry. For example, grid lines. */
   Construction = 1,
+  /** Used to classify annotations which dimension the Primary geometry. */
   Dimension = 2,
+  /** Used to classify area pattern geometry. */
   Pattern = 3,
 }
 
-/** A list of Lights, plus the f-stop setting for the camera */
+/** @hidden */
 export class SceneLights {
   private _list: Light[] = [];
   public get isEmpty(): boolean { return this._list.length === 0; }
@@ -1618,7 +1667,7 @@ export class GeometryParams {
 
     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
       return false;
-    if (this.styleInfo && !this.styleInfo.isEqualTo(other.styleInfo!))
+    if (this.styleInfo && !this.styleInfo.equals(other.styleInfo!))
       return false;
 
     if (this.fillDisplay !== other.fillDisplay)
@@ -1627,7 +1676,7 @@ export class GeometryParams {
     if (this.fillDisplay !== undefined && this.fillDisplay !== FillDisplay.Never) {
       if ((this.gradient === undefined) !== (other.gradient === undefined))
         return false;
-      if (this.gradient && !this.gradient.isEqualTo(other.gradient!))
+      if (this.gradient && !this.gradient.equals(other.gradient!))
         return false;
       if (this.backgroundFill !== other.backgroundFill)
         return false;
@@ -1641,7 +1690,7 @@ export class GeometryParams {
 
     if ((this.pattern === undefined) !== (other.pattern === undefined))
       return false;
-    if (this.pattern && !this.pattern.isEqualTo(other.pattern!))
+    if (this.pattern && !this.pattern.equals(other.pattern!))
       return false;
 
     return true;
@@ -1660,10 +1709,10 @@ export class GeometryParams {
       this.resetAppearance();
   }
 
-  /**  Get whether this GeometryParams contains information that needs to be transformed (ex. to apply local to world). */
+  /** Get whether this GeometryParams contains information that needs to be transformed (ex. to apply local to world). */
   public get isTransformable() { return this.pattern || this.styleInfo; }
 
-  /**  Transform GeometryParams data like PatternParams and LineStyleInfo. */
+  /** Transform GeometryParams data like PatternParams and LineStyleInfo. */
   public applyTransform(transform: Transform) {
     if (this.pattern)
       this.pattern.applyTransform(transform);
@@ -1672,45 +1721,51 @@ export class GeometryParams {
   }
 }
 
+/** Contains types related to display of hilited elements within a [[Viewport]]. */
 export namespace Hilite {
-  /**  Describes the width of the outline applied to hilited geometry. */
+  /**  Describes the width of the outline applied to hilited geometry. The outline is drawn around the union of all hilited geometry and is visible behind non-hilited geometry.
+   * @see [[Hilite.Settings]]
+   */
   export const enum Silhouette {
+    /** No outline. */
     None,
+    /** 1-pixel-wide outline. */
     Thin,
+    /** 2-pixel-wide outline. */
     Thick,
   }
 
-  const defaultColor = ColorDef.from(0x23, 0xbb, 0xfc);
-  const defaultVisibleRatio = 0.25;
-  const defaultHiddenRatio = 0.0;
-  const defaultWidth = Silhouette.Thin;
-
   /**
-   * Describes the effect applied to hilited elements within a view.
+   * Describes how the hilite effect is applied to elements within a [[Viewport]].
+   * The hilite effect is applied to elements contained in either the [[IModelConnection]]'s [[HilitedSet]] or its [[SelectionSet]].
+   * It is designed to draw attention to those elements. The effect is produced as follows:
+   *  1. All hilited elements are drawn as normal, except that their element color is mixed with the hilite color.
+   *  2. The union of the regions of the screen corresponding to hilited elements is computed.
+   *  3. A silhouette is drawn using the hilite color around the boundaries of the hilited region. This silhouette is visible behind other geometry.
+   *  4. The hilite color is mixed with the color of each pixel within the hilited region. This enables surfaces of hilited geometry to be visible behind other geometry.
+   *
+   * The Settings allow an application to customize how this effect is applied.
+   * @see [[Viewport.hilite]]
    */
   export class Settings {
+    /** The color that is used to draw the outline and which is mixed with element color. */
+    public readonly color: ColorDef;
+    /** The ratio of hilite color to element color used when drawing unobscured portions of hilited geometry, in the range [0, 1].
+     * A ratio of 0.0 uses only the element color. A ratio of 1.0 uses only the hilite color. A ratio of 0.5 mixes the hilite color and element color evenly.
+     */
+    public readonly visibleRatio: number;
+    /** The ratio of hilite color to screen color used when drawing the hilited region overtop of the screen contents, in the range [0, 1]. */
+    public readonly hiddenRatio: number;
+    /** The type of outline to be drawn around the boundaries of the hilited region. */
+    public silhouette: Silhouette;
+
     private static clamp(value: number) { return Math.min(1.0, Math.max(0.0, value)); }
-    public constructor(public readonly color = defaultColor.clone(), public visibleRatio = defaultVisibleRatio, public hiddenRatio = defaultHiddenRatio, public silhouette = defaultWidth) {
-      this.visibleRatio = Settings.clamp(this.visibleRatio);
-      this.hiddenRatio = Settings.clamp(this.hiddenRatio);
-    }
-    /** Change the color, preserving all other settings */
-    public setColor(color: ColorDef) { this.color.setFrom(color); }
 
-    public clone(out?: Settings): Settings {
-      if (undefined !== out) {
-        out.copyFrom(this);
-        return out;
-      } else {
-        return new Settings(this.color, this.visibleRatio, this.hiddenRatio, this.silhouette);
-      }
-    }
-
-    public copyFrom(other: Settings): void {
-      this.color.setFrom(other.color);
-      this.visibleRatio = other.visibleRatio;
-      this.hiddenRatio = other.hiddenRatio;
-      this.silhouette = other.silhouette;
+    public constructor(color = ColorDef.from(0x23, 0xbb, 0xfc), visibleRatio = 0.25, hiddenRatio = 0.0, silhouette = Silhouette.Thin) {
+      this.color = color;
+      this.silhouette = silhouette;
+      this.visibleRatio = Settings.clamp(visibleRatio);
+      this.hiddenRatio = Settings.clamp(hiddenRatio);
     }
   }
 }
@@ -1727,6 +1782,8 @@ export namespace Hilite {
  * contain 3 Features. Each vertex within the mesh would be associated with the
  * index of the Feature to which it belongs, where the index is determined by the
  * FeatureTable associated with the primitive.
+ *
+ * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
  */
 export class Feature implements Comparable<Feature> {
   public readonly elementId: string;
@@ -1760,15 +1817,15 @@ export class Feature implements Comparable<Feature> {
 }
 
 /**
- * Describes the type of a 'batch' of graphics as produced by RenderSystem.createBatch().
+ * Describes the type of a 'batch' of graphics as produced by [[RenderSystem.createBatch]].
  * The most commonly-encountered batches are [[Tile]]s, which can be of either Primary or
  * Classifier type.
  */
 export const enum BatchType {
-  /** This batch contains graphics derived from a model's primary geometry. */
+  /** This batch contains graphics derived from a model's visible geometry. */
   Primary,
   /**
-   * This batch contains graphics which are used to classify a model's primary geometry.
+   * This batch contains graphics which are used to classify a model's visible geometry.
    * The graphics themselves are not rendered to the screen; instead they are rendered to the stencil buffer
    * to resymbolize the primary geometry.
    */
@@ -1776,26 +1833,33 @@ export const enum BatchType {
 }
 
 /**
- * Defines a look-up table for Features within a batched [[RenderGraphic]]. Consecutive 32-bit
+ * Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
  * indices are assigned to each unique Feature. Primitives within the [[RenderGraphic]] can
  * use per-vertex indices to specify the distribution of Features within the primitive.
  * A FeatureTable can be shared amongst multiple primitives within a single [[RenderGraphic]], and
  * amongst multiple sub-Graphics of a [[RenderGraphic]].
+ * @see [[FeatureSymbology]] for mechanisms for resymbolizing features within a [[ViewState]].
  */
 export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64;
   public readonly type: BatchType;
 
+  /** Construct an empty FeatureTable. */
   public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId, type: BatchType = BatchType.Primary) {
     super(compare, maxFeatures);
     this.modelId = modelId;
     this.type = type;
   }
 
+  /** Returns the maximum number of [[Feature]]s this FeatureTable can contain. */
   public get maxFeatures(): number { return this._maximumSize; }
+  /** @hidden */
   public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
+  /** Returns true if this FeatureTable contains exactly one [[Feature]]. */
   public get isUniform(): boolean { return 1 === this.length; }
+  /** If this FeatureTable contains exactly one [[Feature]], returns that Feature; otherwise returns undefined. */
   public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
+  /** Returns true if this FeatureTable is associated with [[BatchType.Classifier]] geometry. */
   public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
@@ -1820,8 +1884,13 @@ export class FeatureTable extends IndexMap<Feature> {
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
+/** Describes how to map a [[RenderTexture]] image onto a surface.
+ * @see [[RenderMaterial]].
+ */
 export class TextureMapping {
+  /** The texture to be mapped to the surface. */
   public readonly texture: RenderTexture;
+  /** The parameters describing how the texture image is mapped to the surface. */
   public readonly params: TextureMapping.Params;
 
   public constructor(tx: RenderTexture, params: TextureMapping.Params) {
@@ -1829,26 +1898,34 @@ export class TextureMapping {
     this.params = params;
   }
 
+  /** @hidden */
   public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
     return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
   }
 }
 
 export namespace TextureMapping {
-
+  /** Enumerates the possible texture mapping modes. */
   export const enum Mode {
     None = -1,
     Parametric = 0,
     ElevationDrape = 1,
     Planar = 2,
+    /** @hidden */
     DirectionalDrape = 3,
+    /** @hidden */
     Cubic = 4,
+    /** @hidden */
     Spherical = 5,
+    /** @hidden */
     Cylindrical = 6,
+    /** @hidden */
     Solid = 7,
-    FrontProject = 8, // Only valid for lights.
+    /** @hidden Only valid for lights */
+    FrontProject = 8,
   }
 
+  /** A 2x3 matrix for mapping a texture image to a surface. */
   export class Trans2x3 {
     private _vals = new Array<[number, number, number]>(2);
     private _transform?: Transform;
@@ -1874,17 +1951,34 @@ export namespace TextureMapping {
     public get transform(): Transform { if (undefined === this._transform) this.setTransform(); return this._transform!; }
   }
 
+  /** Properties used to construct a [[TextureMapping.Params]]. */
   export interface ParamProps {
+    /** The matrix used to map the image to a surface. */
     textureMat2x3?: TextureMapping.Trans2x3;
+    /** The ratio in [0, 1] with which to mix the color sampled from the texture with the element's color.
+     * A value of 0.0 uses only the element color. A value of 1.0 uses only the texture color.
+     * @note Defaults to 1.0
+     */
     textureWeight?: number;
+    /** The mode by which to map the image to a surface.
+     * @note Defaults to [[TextureMapping.Mode.Parametric]].
+     */
     mapMode?: TextureMapping.Mode;
+    /** @hidden */
     worldMapping?: boolean;
   }
 
+  /** Parameters describing how a texture image is mapped to a surface. */
   export class Params {
+    /** The matrix used to map the image to a surface. */
     public textureMatrix: TextureMapping.Trans2x3;
+    /** The ratio in [0, 1] with which to mix the color sampled from the texture with the element's color.
+     * A value of 0.0 uses only the element color. A value of 1.0 uses only the texture color.
+     */
     public weight: number;
+    /** The mode by which to map the image to a surface. */
     public mode: TextureMapping.Mode;
+    /** @hidden */
     public worldMapping: boolean;
 
     constructor(props = {} as TextureMapping.ParamProps) {
@@ -1894,6 +1988,7 @@ export namespace TextureMapping {
 
     /**
      * Generates UV parameters for textured surfaces. Returns undefined on failure.
+     * @hidden
      */
     public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
       switch (this.mode) {

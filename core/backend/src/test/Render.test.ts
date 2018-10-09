@@ -88,7 +88,7 @@ describe("Render", () => {
     });
 
     const symbCopy = symb.clone();
-    assert.isTrue(symb.isEqualTo(symbCopy));
+    assert.isTrue(symb.equals(symbCopy));
 
     // Assert that ordering of symbology is correct using implemented compare method
     const symbArr: Gradient.Symb[] = [];
@@ -142,7 +142,7 @@ describe("Render", () => {
         assert.isTrue(current.keys[0].color.tbgr > prev.keys[0].color.tbgr);
         continue;
       }
-      assert.isTrue(current.isEqualTo(prev));
+      assert.isTrue(current.equals(prev));
     }
   });
 });

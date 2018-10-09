@@ -8,7 +8,7 @@ import { defaultClone, lowerBound } from "./SortedArray";
 
 /**
  * Maintains a mapping of keys to values.
- * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type.
+ * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type (and for any other type).
  * The user supplies a key comparison function to the constructor, which must meet the following criteria given 'lhs' and 'rhs' of type K:
  *  - If lhs is equal to rhs, returns 0
  *  - If lhs is less than rhs, returns a negative value

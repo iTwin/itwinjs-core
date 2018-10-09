@@ -173,7 +173,7 @@ export abstract class ViewState extends ElementState {
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
   public set viewFlags(newFlags: ViewFlags) {
-    if (!this.viewFlags.isEqualTo(newFlags)) {
+    if (!this.viewFlags.equals(newFlags)) {
       this.setFeatureOverridesDirty();
       this.displayStyle.viewFlags = newFlags;
     }

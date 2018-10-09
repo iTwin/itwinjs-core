@@ -114,7 +114,7 @@ export namespace AreaPattern {
       return Params.fromJSON(this);
     }
 
-    public isEqualTo(other: Params): boolean {
+    public equals(other: Params): boolean {
       if (this === other)
         return true;    // Same pointer
 

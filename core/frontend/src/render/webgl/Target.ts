@@ -195,7 +195,7 @@ export abstract class Target extends RenderTarget {
   public readonly frustumUniforms = new FrustumUniforms();
   public readonly bgColor = ColorDef.red.clone();
   public readonly monoColor = ColorDef.white.clone();
-  public readonly hiliteSettings = new Hilite.Settings();
+  public hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
   public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
@@ -487,7 +487,7 @@ export abstract class Target extends RenderTarget {
 
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
-    this.hiliteSettings.copyFrom(plan.hiliteSettings);
+    this.hiliteSettings = plan.hiliteSettings;
     this._transparencyThreshold = 0.0;
 
     let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;

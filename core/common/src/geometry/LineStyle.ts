@@ -77,7 +77,7 @@ export namespace LineStyle {
     }
 
     /** Compare two LineStyle.Modifier for equivalence */
-    public isEqualTo(other: Modifier): boolean {
+    public equals(other: Modifier): boolean {
       if (this === other)   // same pointer
         return true;
 
@@ -174,14 +174,14 @@ export namespace LineStyle {
       return new Info(this.styleId, this.styleMod ? this.styleMod.clone() : undefined);
     }
 
-    public isEqualTo(other: Info): boolean {
+    public equals(other: Info): boolean {
       if (this === other)
         return true;
       if (!this.styleId.equals(other.styleId))
         return false;
       if ((this.styleMod === undefined) !== (other.styleMod === undefined))
         return false;
-      if (this.styleMod && !this.styleMod.isEqualTo(other.styleMod!))
+      if (this.styleMod && !this.styleMod.equals(other.styleMod!))
         return false;
       return true;
     }

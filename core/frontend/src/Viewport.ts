@@ -17,7 +17,6 @@ import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
@@ -902,7 +901,7 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public readonly sync = new SyncFlags();
   /** The settings that control how elements are hilited in this Viewport. */
-  public readonly hilite = new Hilite.Settings();
+  public hilite = new Hilite.Settings();
 
   /**
    * Determine whether the Grid display is currently enabled in this Viewport.
@@ -1478,7 +1477,7 @@ export abstract class Viewport implements IDisposable {
       eyeVec = this._viewFrustum.rotation.getRow(2).clone();
 
     eyeVec.normalizeInPlace();
-    LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
+    linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
     // // get origin and point in view coordinate system
     const pointView = point.clone();
@@ -1830,7 +1829,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /**
-   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[toolTpDiv]].
+   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[Viewport.toolTipDiv]].
    * @param message The message to display
    * @param location The position of the toolTip, in view coordinates. If undefined, use center of view.
    * @param options the ToolTip options
@@ -2058,4 +2057,24 @@ export class OffScreenViewport extends Viewport {
     this.target.setViewRect(rect, temporary);
     this.changeView(this.view);
   }
+}
+
+/** @hidden */
+export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void {
+  let dot = 0;
+  if (lineNormal)
+    dot = lineNormal.dotProduct(planeNormal);
+  else
+    perpendicular = true;
+
+  let temp: Vector3d;
+  if (perpendicular || Math.abs(dot) < .001) {
+    const t = linePt.vectorTo(planePt).dotProduct(planeNormal);
+    temp = planeNormal.scale(t);
+  } else {
+    const t = (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;
+    temp = lineNormal!.scale(t);
+  }
+
+  outP.setFrom(temp.plus(linePt));
 }
