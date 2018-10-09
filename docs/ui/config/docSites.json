@@ -1,34 +1,26 @@
 {
-  "overview": {
-    "docSiteId": 1,
-    "displayName": "Overview"
-  },
   "getting-started": {
-    "docSiteId": 2,
+    "docSiteId": 1,
     "displayName": "Getting Started"
   },
   "learning": {
-    "docSiteId": 3,
+    "docSiteId": 2,
     "displayName": "Learning"
   },
   "reference": {
-    "docSiteId": 4,
+    "docSiteId": 3,
     "displayName": "API Reference"
   },
   "metadata": {
-    "home": "overview",
-    "logo": "overview/imodeljs.ico",
-    "favicon": "overview/imodeljs.ico",
+    "home": "getting-started",
+    "logo": "getting-started/imodeljs.ico",
+    "favicon": "getting-started/imodeljs.ico",
     "docSiteOrder": [
-      "overview",
       "getting-started",
       "learning",
       "reference"
     ],
     "headerTabs": {
-      "Overview": {
-        "docSite": "overview"
-      },
       "Getting Started": {
         "docSite": "getting-started"
       },
