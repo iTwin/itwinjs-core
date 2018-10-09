@@ -16,7 +16,7 @@ Programming questions and requests for programming advice are best asked on [Sta
 
 ### Videos
 
-We frequently post helpful background and training videos on the iModel.js [YouTube channel]().
+We frequently post helpful background and training videos on the iModel.js (coming soon)
 
 ### Notifications and Updates
 
