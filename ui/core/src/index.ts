@@ -31,6 +31,10 @@ export * from "./utils";
  * Low-level classes and components for building application UI.
  */
 /**
+ * @docs-group-description CheckBoxList
+ * Classes for working with a CheckBox list.
+ */
+/**
  * @docs-group-description Common
  * Common classes used across various UI components.
  */

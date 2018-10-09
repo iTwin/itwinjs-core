@@ -121,10 +121,10 @@ export class FrontstageManager {
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  /** Get Fronstage Activated event. */
+  /** Get Frontstage Activated event. */
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
 
-  /** Get Modal Fronstage Changed event. */
+  /** Get Modal Frontstage Changed event. */
   public static get onModalFrontstageChangedEvent(): ModalFrontstageChangedEvent { return this._modalFrontstageChangedEvent; }
 
   /** Get Tool Activated event. */

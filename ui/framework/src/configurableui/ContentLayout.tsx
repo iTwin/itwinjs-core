@@ -212,7 +212,8 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
   }
 }
 
-export interface LayoutSplit {
+/** Common interface for [[HorizontalSplit]] and [[VerticalSplit]] */
+interface LayoutSplit {
   getSize(): number;
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
   getMaxUsedIndex(currentMax: number): number;

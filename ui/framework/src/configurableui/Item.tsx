@@ -138,6 +138,7 @@ export class CommandItemDef extends ItemDefBase {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/** State for the various Toolbar button React components */
 export interface ItemButtonState {
   itemDef: ItemDefBase;
 }
@@ -170,6 +171,7 @@ export class CommandButton extends React.Component<CommandItemProps, ItemButtonS
   }
 }
 
+/** State for the ToolButton React component */
 export interface ToolItemButtonState {
   itemDef: ToolItemDef;
   activeTool: boolean;

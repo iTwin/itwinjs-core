@@ -25,6 +25,7 @@ export interface PropertyGridProps {
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
 }
 
+/** Property Category in the [[PropertyGrid]] state */
 export interface PropertyGridCategory {
   propertyCategory: PropertyCategory;
   propertyCount: number;

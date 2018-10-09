@@ -20,17 +20,20 @@ import MessageCenterTab from "@bentley/ui-ninezone/lib/footer/message-center/Tab
 import MessageCenterMessage from "@bentley/ui-ninezone/lib/footer/message-center/Message";
 import MessageCenter, { MessageCenterButton } from "@bentley/ui-ninezone/lib/footer/message-center/MessageCenter";
 
+/** Properties for the [[MessageCenterField]] React component */
 export interface MessageCenterProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
 }
 
+/** Enum for the [[MessageCenterField]] active tab */
 export enum MessageCenterActiveTab {
   AllMessages,
   Problems,
 }
 
+/** State for the [[MessageCenterField]] React component */
 export interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
 }
