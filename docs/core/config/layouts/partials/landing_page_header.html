@@ -10,6 +10,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{site.name}}</title>
+  <meta name="og:title" content="{{pageTitle this site.name}}">
+  <meta name="twitter:title" content="{{pageTitle this site.name}}">
   <meta name="description" content="{{site.description}}">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -30,6 +32,13 @@
   {{/each}}
   {{#if this.docSiteMetadata.favicon}}
   <link rel='shortcut icon' type='image/x-icon' href='{{site.siteRoot}}{{this.docSiteMetadata.favicon}}' />
+  {{/if}}
+  {{#if this.docSiteMetadata.headerHTML}}
+  {{{this.docSiteMetadata.headerHTML}}}
+  {{/if}}
+  {{#if this.docSiteMetadata.ogShareImage}}
+  <meta property="og:image" content="{{site.siteRoot}}{{this.docSiteMetadata.ogShareImage}}">
+  <meta />
   {{/if}}
 </head>
 

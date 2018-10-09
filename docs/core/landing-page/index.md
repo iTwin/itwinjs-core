@@ -32,12 +32,12 @@ middleContent: [
 ]
 features:
   [
-    {header: "Aligned", icon: "assets/bullet-code.svg", description: "An iModel can combine information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The <a href=\"bis/index.html\">vocabulary of iModels</a> is BIS."},
-    {header: "Accountable", icon: "assets/bullet-lock.svg", description: "Change is a first class concept in iModel.js. Knowing who changed what and when adds a new dimension (time) to your Digital Twin, since iModelHub stores the timeline of changes."},
-    {header: "Accessible", icon: "assets/bullet-users.svg", description: "Your digital twin becomes valuable for a multitude of use cases and an unlimited number of users. iModel.js apps can be <a href=\"learning/softwarearchitecture\">infinitely scalable</a>."},
-    {header: "Approachable", icon: "assets/bullet-chat.svg", description: "Programmers love iModel.js because it purposely builds on the most <a href=\"https://insights.stackoverflow.com/survey/2018#technology\">modern and popular</a> technologies and frameworks available, minimizing the out-of-the-box learning  curve." },
+    {header: "Aligned", icon: "assets/bullet-aligned.svg", description: "An iModel can combine information from many sources - CAD files, BIM files, databases, schematics, spreadsheets, etc. The <a href=\"bis/index.html\">vocabulary of iModels</a> is BIS."},
+    {header: "Accountable", icon: "assets/bullet-accountable.svg", description: "Change is a first class concept in iModel.js. Knowing who changed what and when adds a new dimension (time) to your Digital Twin, since iModelHub stores the timeline of changes."},
+    {header: "Accessible", icon: "assets/bullet-accessible.svg", description: "Your digital twin becomes valuable for a multitude of use cases and an unlimited number of users. iModel.js apps can be <a href=\"learning/softwarearchitecture\">infinitely scalable</a>."},
+    {header: "Approachable", icon: "assets/bullet-code.svg", description: "Programmers love iModel.js because it purposely builds on the most <a href=\"https://insights.stackoverflow.com/survey/2018#technology\">modern and popular</a> technologies and frameworks available, minimizing the out-of-the-box learning  curve." },
     {header: "Anywhere", icon: "assets/bullet-devices.svg", description: "Write your application logic and user interface once and run it on <a href=\"learning/portability\">Cloud, Web, Desktop, and Mobile devices</a>."},
-    {header: "Amazing", icon: "assets/bullet-speed.svg", description: "iModel.js handles the complexity of managing a large scale distributed digital twin efficiently so you can focus on other things. The library is modular so you only use what you need." },
+    {header: "Amazing", icon: "assets/bullet-amazing.svg", description: "iModel.js handles the complexity of managing a large scale distributed digital twin efficiently so you can focus on other things. The library is modular so you only use what you need." },
     {header: "About", icon: "assets/bullet-chat.svg", description: "There's lots of <a href=\"learning/communityresources\">resources</a> to ask questions, make suggestions, and get help. We'd also love to have your contributions!"}
   ]
 ---
