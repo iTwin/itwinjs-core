@@ -1,6 +1,13 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Tue, 09 Oct 2018 16:09:16 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
 
 ## 0.154.0
 Tue, 09 Oct 2018 16:09:16 GMT
