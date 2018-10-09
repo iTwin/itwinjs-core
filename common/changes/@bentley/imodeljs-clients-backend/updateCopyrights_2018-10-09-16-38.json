@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updating copyrights",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Caleb.Shafer@bentley.com"
+}

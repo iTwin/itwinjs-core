@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import { render, within, cleanup, fireEvent, waitForElement } from "react-testing-library";
@@ -45,7 +46,7 @@ describe("Breadcrumb", () => {
       fireEvent.click(dropdownBackground);
       const inputRoot = await waitForElement(() => getByTestId("breadcrumb-input-root"));
       const primaryInputMenu = within(inputRoot!).getByTestId("context-menu-root");
-      fireEvent.keyUp(primaryInputMenu, {keyCode: 27});
+      fireEvent.keyUp(primaryInputMenu, { keyCode: 27 });
     });
     it("should return from input mode to dropdown mode when Return is pressed", async () => {
       const path = new BreadcrumbPath(mockTreeDataProvider);
@@ -54,7 +55,7 @@ describe("Breadcrumb", () => {
       fireEvent.click(dropdownBackground);
       const inputRoot = await waitForElement(() => getByTestId("breadcrumb-input-root"));
       const primaryInputMenu = within(inputRoot!).getByTestId("context-menu-root");
-      fireEvent.keyUp(primaryInputMenu, {keyCode: 13});
+      fireEvent.keyUp(primaryInputMenu, { keyCode: 13 });
     });
     it("should autocomplete when menu item is clicked", async () => {
       const path = new BreadcrumbPath(mockTreeDataProvider);
