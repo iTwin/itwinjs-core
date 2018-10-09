@@ -21,10 +21,8 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { UiFramework } from "../UiFramework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ProjectInfo } from "../clientservices/ProjectServices";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) => void;
+type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -35,6 +33,7 @@ export interface OverallContentProps {
   appBackstage?: React.ReactNode;
   currentPage: OverallContentPage | number;
   onIModelViewsSelected: IModelViewsSelectedFunc;
+  onWorkOffline?: () => void; // Note: this will be removed!
   user: User;
   accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
@@ -66,13 +65,8 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     super(props);
   }
 
-  // called when the "Sign In" button is clicked
-  private _onSignIn() {
-    UiFramework.userManager.signinRedirect();
-  }
-
   // called when an imodel (and views) have been selected on the IModelOpen
-  private _onOpenIModel(iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) {
+  private _onOpenIModel(iModelInfo: IModelInfo, views: ViewDefinitionProps[]) {
 
     // view ids are passed as params
     const viewIds: Id64String[] = new Array<Id64String>();
@@ -82,12 +76,14 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
     // open the imodel and set the page
     // Note: this should be refactored, just seems like hack!
-    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
+    this.props.onIModelViewsSelected(iModelInfo, viewIds);
     this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
   }
 
   // called when the "Offline" is clicked on the Sign In.
   private _onOffline() {
+    if (this.props.onWorkOffline)
+      this.props.onWorkOffline();
     this.props.setOverallPage(OverallContentPage.OfflinePage);
   }
 
@@ -118,7 +114,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignIn onSignIn={this._onSignIn} onOffline={this._onOffline.bind(this)} />
+          <SignIn onSignIn={() => UiFramework.userManager.signinRedirect()} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {

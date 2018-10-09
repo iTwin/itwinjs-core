@@ -7,16 +7,23 @@
 @import "../_variables";
 
 .nz-widget-rectangular-content {
-  max-height: 100%;
+  $padding: 10px;
+
+  height: 100%;
   overflow: auto;
+  padding-left: $padding;
+  padding-right: $padding;
 
   &.nz-left-anchor {
+    display: flex;
+    flex-direction: row-reverse;
     direction: rtl;
+    margin-right: $padding;
+
+    > .nz-container {
+      direction: ltr;
+    }
   }
 
   @include nz-scrollbar($color: $background-4);
-
-  > div {
-    direction: ltr;
-  }
 }

@@ -30,12 +30,15 @@ export interface WidgetTabProps {
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
   tabs: WidgetTabProps[];
+  isStatusBar: boolean;
 }
 
 /** Properties for the [[StackedWidget]] React component.
  */
 export interface StackedWidgetProps {
   children?: React.ReactNode;
+  fillZone: boolean;
+  isFloating: boolean;
   zoneId: number;
   widgets: EachWidgetProps[];
   widgetChangeHandler: WidgetChangeHandler;
@@ -77,17 +80,19 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
 
     return (
       <NZ_StackedWidget
-        horizontalAnchor={this.props.horizontalAnchor}
-        verticalAnchor={this.props.verticalAnchor}
         content={this.props.children}
-        tabs={tabs}
-        isOpen={isWidgetOpen}
+        fillZone={this.props.fillZone}
+        horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
+        isFloating={this.props.isFloating}
+        isOpen={isWidgetOpen}
         onResize={
-          (x, y, handle) => {
-            this._handleOnWidgetResize(this.props.zoneId, x, y, handle);
+          (x, y, handle, filledHeightDiff) => {
+            this._handleOnWidgetResize(this.props.zoneId, x, y, handle, filledHeightDiff);
           }
         }
+        tabs={tabs}
+        verticalAnchor={this.props.verticalAnchor}
       />
     );
   }
@@ -112,7 +117,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           mode={mode}
           lastPosition={this.props.lastPosition}
           onClick={() => this._handleWidgetTabClick(stackedWidget.id, index)}
-          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset)}
+          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset, stackedWidget.isStatusBar)}
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
@@ -122,16 +127,18 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     });
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, isStatusBar: boolean) => {
     this.props.widgetChangeHandler.handleTabDragStart(widgetId, tabId, initialPosition, offset);
+    if (isStatusBar)
+      this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
   private _handleTabDragEnd = () => {
     this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
-  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
-    this.props.widgetChangeHandler.handleResize(zoneId, x, y, handle);
+  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this.props.widgetChangeHandler.handleResize(zoneId, x, y, handle, filledHeightDiff);
   }
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {

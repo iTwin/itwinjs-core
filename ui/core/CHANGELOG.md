@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 05 Oct 2018 21:52:26 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 12:08:40 GMT and should not be manually modified.
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- Highlighted nodes now have a slightly different shade of blue (changed to a standard color from BWC).
+- Refactored ExpandableBlock to use BWC ExpandableBlock React component and modified css.
 
 ## 0.152.0
 Fri, 05 Oct 2018 21:52:26 GMT

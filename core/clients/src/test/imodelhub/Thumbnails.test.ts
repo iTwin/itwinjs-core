@@ -23,7 +23,7 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
 
   let response = "";
   for (let i = 0; i < getThumbnailLength(size); i++) { response += "a"; }
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, { response });
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
 function mockDownloadLatestThumbnail(_projectId: string, imodelId: Guid, size: ThumbnailSize) {
@@ -45,7 +45,7 @@ async function getIModelId(accessToken: AccessToken, name: string) {
   return new Guid(await utils.getIModelId(accessToken, name));
 }
 
-describe("iModelHub ThumbnailHandler  (#integration)", () => {
+describe("iModelHub ThumbnailHandler", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let accessToken: AccessToken;
   let _projectId: string;

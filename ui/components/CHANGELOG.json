@@ -2,6 +2,30 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.153.0",
+      "tag": "@bentley/ui-components_v0.153.0",
+      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix bleeding react-data-grid-wrapper styles"
+          },
+          {
+            "comment": "Removed ExpandableBlock, one from ui/core should now be used instead."
+          },
+          {
+            "comment": "Changed prop name in PropertyCategoryBlock from \"onBlockHeaderPressed\" to \"onExpansionToggled\" and it now accepts categoryName as a parameter."
+          },
+          {
+            "comment": "Added two new props to PropertyGrid: isPropertySelectionEnabled and onPropertySelectionChanged, and reduced the number of unnecessary renders."
+          },
+          {
+            "comment": "PropertyRenderer now allows selection of properties and has new props: uniqueKey, isSelected and onClick."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.152.0",
       "tag": "@bentley/ui-components_v0.152.0",
       "date": "Fri, 05 Oct 2018 21:52:26 GMT",

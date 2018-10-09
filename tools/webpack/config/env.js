@@ -7,13 +7,16 @@
 const fs = require("fs");
 const path = require("path");
 const paths = require("./paths");
-const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
-const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
-if (configEnv && process.env) {
-  Object.assign(process.env, configEnv);
-} else {
-  console.log("Webpack failed to locate iModelJs configuration");
+if (process.env && !process.env.SkipIModelJsConfigLookup) {
+  const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+  const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
+  if (configEnv && process.env) {
+    Object.assign(process.env, configEnv);
+  } else {
+    console.log("Webpack failed to locate iModelJs configuration");
+  }
 }
+
 // Make sure that including paths.js after env.js will read .env variables.
 delete require.cache[require.resolve("./paths")];
 

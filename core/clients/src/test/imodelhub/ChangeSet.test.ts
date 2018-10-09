@@ -28,10 +28,10 @@ function mockPostNewChangeSet(imodelId: Guid, changeSet: ChangeSet) {
   const cs = new ChangeSet();
   deepAssign(cs, changeSet);
   cs.id! = cs.id!;
-  cs.uploadUrl = `${utils.defaultUrl}/imodelhub-${imodelId}/123456`;
+  cs.uploadUrl = `${utils.IModelHubUrlMock.getUrl()}/imodelhub-${imodelId}/123456`;
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
@@ -45,7 +45,7 @@ function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
 
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockCreateChangeSet(imodelId: Guid, changeSet: ChangeSet) {
@@ -57,7 +57,7 @@ function mockCreateChangeSet(imodelId: Guid, changeSet: ChangeSet) {
   mockPostUpdatedChangeSet(imodelId, changeSet);
 }
 
-describe("iModelHub ChangeSetHandler (#integration)", () => {
+describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
   let imodelId: Guid;
   let iModelClient: IModelClient;
@@ -108,7 +108,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should create a new ChangeSet (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
 
     utils.mockGetChangeSet(imodelId, false, undefined, mockChangeSets[0], mockChangeSets[1]);
@@ -125,7 +125,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     progressTracker.check();
   });
 
-  it("should get information on ChangeSets (#integration)", async () => {
+  it("should get information on ChangeSets", async () => {
     const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
     utils.mockGetChangeSet(imodelId, true, undefined, ...mockedChangeSets);
 
@@ -153,13 +153,13 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${followingChangesetBackwardChangesetId}+eq+%27${lastButOneId}%27`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
     }
     const followingChangeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().fromId(lastButOneId));
     chai.expect(followingChangeSets.length).to.be.equal(1);
   });
 
-  it("should download ChangeSets (#integration)", async () => {
+  it("should download ChangeSets", async () => {
     utils.mockGetChangeSet(imodelId, true, undefined, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
 
@@ -178,7 +178,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     }
   });
 
-  it("should get ChangeSets skipping the first one (#integration)", async () => {
+  it("should get ChangeSets skipping the first one", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$skip=1", mockChangeSets[2]);
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().skip(1));
@@ -186,7 +186,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(1);
   });
 
-  it("should get latest ChangeSets (#integration)", async () => {
+  it("should get latest ChangeSets", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().latest().top(2));
@@ -200,7 +200,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
   });
 
-  it("should fail getting a ChangeSet by invalid id (#integration)", async () => {
+  it("should fail getting a ChangeSet by invalid id", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().byId("InvalidId"));
@@ -212,7 +212,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should fail downloading ChangeSets with no file handler (#integration)", async () => {
+  it("should fail downloading ChangeSets with no file handler", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=1", mockChangeSets[2]);
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().latest().top(1));
@@ -229,7 +229,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail downloading ChangeSets with no file url (#integration)", async () => {
+  it("should fail downloading ChangeSets with no file url", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.ChangeSets().download(actx, [new ChangeSet()], utils.workDir);
@@ -241,7 +241,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
   });
 
-  it("should fail creating a ChangeSet with no file handler (#integration)", async () => {
+  it("should fail creating a ChangeSet with no file handler", async () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
@@ -254,7 +254,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail creating a ChangeSet with no file (#integration)", async () => {
+  it("should fail creating a ChangeSet with no file", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.ChangeSets().create(actx, accessToken, imodelId, new ChangeSet(), utils.workDir + "InvalidChangeSet.cs");
@@ -266,7 +266,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  it("should fail creating a ChangeSet with directory path (#integration)", async () => {
+  it("should fail creating a ChangeSet with directory path", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.ChangeSets().create(actx, accessToken, imodelId, new ChangeSet(), utils.workDir);
@@ -278,7 +278,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  it("should query between changesets (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should query between changesets", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(imodelId, true, undefined, ...mockedChangeSets);
@@ -290,7 +290,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
@@ -305,7 +305,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
-  it("should query between changeset (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should query between changeset", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(imodelId, true, undefined, ...mockedChangeSets);
@@ -314,7 +314,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[0], mockedChangeSets[1], mockedChangeSets[2]]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
@@ -331,7 +331,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[2].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
-  it("should get version changesets (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get version changesets", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = utils.generateVersion();
       utils.mockGetVersions(imodelId, undefined, mockedVersion);
@@ -342,7 +342,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
       const filter = `${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersion.id!}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
     }
 
@@ -359,7 +359,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
   });
 
-  it("should get changesets after version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get changesets after version", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = Array(3).fill(0).map(() => utils.generateVersion());
       utils.mockGetVersions(imodelId, undefined, ...mockedVersion);
@@ -370,7 +370,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
       const filter = `${followingChangeSetBackwardVersionId}+eq+%27${mockedVersion[1].id!}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[2], mockedChangeSets[1]]));
     }
 
@@ -387,7 +387,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
-  it("should query changesets between versions (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should query changesets between versions", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
       utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
@@ -402,7 +402,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
 
@@ -421,7 +421,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
-  it("should query changesets between version and changeset (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should query changesets between version and changeset", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = utils.generateVersion();
       utils.mockGetVersions(imodelId, undefined, mockedVersion);
@@ -437,7 +437,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[1]));
     }
 
@@ -454,7 +454,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
     chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
   });
 
-  it("should query changesets by seed file id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should query changesets by seed file id", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(imodelId, true, undefined, ...mockedChangeSets);
@@ -463,7 +463,7 @@ describe("iModelHub ChangeSetHandler (#integration)", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());

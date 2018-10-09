@@ -51,4 +51,14 @@ export default class Point implements PointProps {
   public equals(other: PointProps) {
     return other.x === this.x && other.y === this.y;
   }
+
+  /** @returns New [[Point]] with modified x value. */
+  public setX(x: number) {
+    return new Point(x, this.y);
+  }
+
+  /** @returns New [[Point]] with modified y value. */
+  public setY(y: number) {
+    return new Point(this.x, y);
+  }
 }

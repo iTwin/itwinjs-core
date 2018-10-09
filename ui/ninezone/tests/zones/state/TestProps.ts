@@ -71,11 +71,14 @@ export namespace TestProps {
       ...openedZone6.zones,
       6: {
         ...openedZone6.zones[6],
-        floatingBounds: {
-          left: 0,
-          top: 0,
-          right: 10,
-          bottom: 10,
+        floating: {
+          bounds: {
+            left: 0,
+            top: 0,
+            right: 10,
+            bottom: 10,
+          },
+          stackId: 1,
         },
       },
     },

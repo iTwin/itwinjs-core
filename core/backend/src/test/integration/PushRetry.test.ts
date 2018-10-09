@@ -183,7 +183,7 @@ describe("PushRetry", () => {
       }
     };
 
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get,
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
@@ -208,7 +208,7 @@ describe("PushRetry", () => {
     pushRetryIModel.saveChanges("User created model, category, and two elements");
 
     const response = ResponseBuilder.generateError("UnknownPushError");
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get,
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       response, 5, undefined, undefined, 409);
 

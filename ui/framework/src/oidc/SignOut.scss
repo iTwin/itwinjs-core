@@ -5,7 +5,7 @@
 @import "@bentley/bwc/lib/mixins";
 @import "@bentley/bwc/lib/buttons/classes.scss";
 
-$user-profile-circle-size: 64px;
+$user-profile-circle-size: 60px;
 
 .user-profile {
   background: white;
@@ -53,7 +53,7 @@ $user-profile-circle-size: 64px;
   > .user-profile-separator {
     flex: initial;
     width: 1px;
-    margin: 10px 20px;
+    margin: 10px 30px;
     background: #eee;
   }
 

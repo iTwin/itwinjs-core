@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, KnownRegions, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
@@ -24,7 +24,7 @@ import {
     FrameworkReducer,
     OverallContent,
     AppNotificationManager,
-    ProjectInfo,
+    IModelInfo,
     FrontstageManager,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -36,19 +36,6 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
 
 import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
-
-Config.App.merge({
-    imjs_host_name: "ConnectClientJsApi",
-    imjs_host_version: "1.0",
-    imjs_host_guid: "ConnectClientJsApiGuid",
-    imjs_host_device_id: "ConnectClientJsApiDeviceId",
-    imjs_host_relying_party_uri: "https://connect-wsg20.bentley.com",
-    imjs_buddi_url: "https://buddi.bentley.com/WebService",
-    imjs_buddi_resolve_url_using_region: KnownRegions.QA,
-    imjs_use_host_relying_party_uri_as_fallback: true,
-    frontend_test_oidc_client_id: "imodeljs-spa-test-2686",
-    frontend_test_oidc_redirect_path: "/signin-oidc",
-});
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
@@ -151,9 +138,9 @@ export class SampleAppIModelApp extends IModelApp {
     }
 
     private static getOidcConfig(): OidcFrontendClientConfiguration {
-        const clientId = Config.App.get("frontend_test_oidc_client_id");
+        const clientId = Config.App.get("imjs_test_oidc_client_id");
         const baseUri = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ``}`;
-        const redirectUri = `${baseUri}${Config.App.get("frontend_test_oidc_redirect_path")}`;
+        const redirectUri = `${baseUri}${Config.App.get("imjs_test_oidc_redirect_path")}`;
         return { clientId, redirectUri };
     }
 
@@ -170,7 +157,15 @@ export class SampleAppIModelApp extends IModelApp {
         MeasurePointsTool.register(this.sampleAppNamespace);
     }
 
-    public static handleIModelViewsSelected(_project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]): void {
+    public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
+
+        const accessToken = SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken!;
+        const projectInfo = iModelInfo.projectInfo;
+        const wsgId = iModelInfo.wsgId;
+
+        // open the imodel
+        const iModelConnection = await UiFramework.iModelServices.openIModel(accessToken, projectInfo, wsgId);
+
         const payload = { iModelConnection };
         SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
 
@@ -182,6 +177,13 @@ export class SampleAppIModelApp extends IModelApp {
             // tslint:disable-next-line:no-console
             console.log("Frontstage is ready");
         });
+    }
+
+    public static handleWorkOffline() {
+        if (!FrontstageManager.activeFrontstageDef) {
+            const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
+            FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        }
     }
 }
 
@@ -203,6 +205,7 @@ SampleAppIModelApp.initialize().then(() => {
         appHeaderMessage: SampleAppIModelApp.i18n.translate("SampleApp:Header.welcome"),
         appBackstage: <AppBackstage />,
         onIModelViewsSelected: SampleAppIModelApp.handleIModelViewsSelected,
+        onWorkOffline: SampleAppIModelApp.handleWorkOffline,
     };
 
     AppUi.initialize();

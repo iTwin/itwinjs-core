@@ -7,7 +7,6 @@ import * as classnames from "classnames";
 import { IModelCard } from "./IModelCard";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { ProjectDialog } from "./ProjectDialog";
 import { IModelViewPicker } from "./IModelViewPicker";
@@ -17,7 +16,7 @@ import "./IModelList.scss";
 export interface IModelListProps {
   accessToken: AccessToken;
   iModels?: IModelInfo[];
-  onIModelSelected?: (iModel: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  onIModelSelected?: (iModel: IModelInfo, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelListState {
@@ -70,9 +69,9 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.setState({ showViews: false });
   }
 
-  private _onViewsSelected = (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+  private _onViewsSelected = (views: ViewDefinitionProps[]) => {
     if (this.props.onIModelSelected && this.state.currentIModel)
-      this.props.onIModelSelected(this.state.currentIModel, iModelConnection, views);
+      this.props.onIModelSelected(this.state.currentIModel, views);
   }
 
   private _onIModelClick = (iModelInfo: IModelInfo) => {

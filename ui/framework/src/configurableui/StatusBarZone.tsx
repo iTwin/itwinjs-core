@@ -35,7 +35,7 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
       <>
         <NZ_FooterZone
           isInFooterMode={this.props.zoneState.isInFooterMode}
-          bounds={this.props.zoneState.floatingBounds || this.props.zoneState.bounds}
+          bounds={this.props.zoneState.floating ? this.props.zoneState.floating.bounds : this.props.zoneState.bounds}
         >
           {
             this.props.zoneDef &&

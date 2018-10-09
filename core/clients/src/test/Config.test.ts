@@ -5,9 +5,9 @@
 import { assert } from "chai";
 import { Config } from "../Config";
 
-describe("ConfigTest111", () => {
+describe("Config", () => {
 
-  it("Primitive config values", () => {
+  it("should set primitive values", () => {
     Config.App.set("A", 1);
     Config.App.set("B", "strValue");
     Config.App.set("C", "${A}_${B}");

@@ -24,10 +24,10 @@ function mockGetUserStatistics(imodelId: Guid, userStatistics: UserStatistics[],
   let requestPath;
   if (query === undefined) {
     requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "UserInfo", "$query");
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
   } else {
     requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "UserInfo", `${query ? query : ""}`);
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
   }
 }
 
@@ -56,7 +56,7 @@ function sortStatistics(value: UserStatistics[]) {
   value.sort((a: UserStatistics, b: UserStatistics) => a.wsgId.localeCompare(b.wsgId));
 }
 
-describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
+describe("iModelHubClient UserStatisticsHandler", () => {
   const accessTokens: AccessToken[] = [];
   let imodelId: Guid;
 
@@ -99,7 +99,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should get user briefcases count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get user briefcases count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId).selectBriefcasesCount();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.BriefcasesCount`;
 
@@ -111,7 +111,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(briefcasesCount.briefcasesCount).to.be.equal(user1BriefcasesCount);
   });
 
-  it("should get user owned locks count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get user owned locks count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId).selectOwnedLocksCount();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.OwnedLocksCount`;
 
@@ -124,7 +124,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(ownedLocksCount.ownedLocksCount).to.be.equal(user1OwnedLocksCount);
   });
 
-  it("should get user pushed changesets count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get user pushed changesets count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId).selectPushedChangeSetsCount();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.PushedChangeSetsCount`;
 
@@ -138,7 +138,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(pushedChangesetsCount.pushedChangeSetsCount).to.be.equal(user1PushedChangesetsCount);
   });
 
-  it("should get user last changeset push date (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get user last changeset push date", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId).selectLastChangeSetPushDate();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.LastChangeSetPushDate`;
 
@@ -153,7 +153,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(lastChangeSetPushDate.lastChangeSetPushDate!.length > 1);
   });
 
-  it("should get user pushed changesets count and last changeset push date (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get user pushed changesets count and last changeset push date", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId)
       .selectPushedChangeSetsCount().selectLastChangeSetPushDate();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.PushedChangeSetsCount,`
@@ -170,7 +170,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(changesetStatistics.pushedChangeSetsCount).to.be.equal(user1PushedChangesetsCount);
   });
 
-  it("should get briefcases and owned locks count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get briefcases and owned locks count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().byId(accessTokens[0].getUserProfile()!.userId).selectBriefcasesCount().selectOwnedLocksCount();
     const textQuery = `${accessTokens[0].getUserProfile()!.userId}?$select=*,HasStatistics-forward-Statistics.BriefcasesCount,`
       + "HasStatistics-forward-Statistics.OwnedLocksCount";
@@ -186,7 +186,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(briefcasesLocksStatistics.briefcasesCount).to.be.equal(user1BriefcasesCount);
   });
 
-  it("should get all iModel users Briefcases count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get all iModel users Briefcases count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().selectBriefcasesCount();
     const textQuery = "?$select=*,HasStatistics-forward-Statistics.BriefcasesCount";
 
@@ -203,7 +203,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(iModelStatistics[1].briefcasesCount).to.be.equal(user2BriefcasesCount);
   });
 
-  it("should get two users Pushed Changesets count (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get two users Pushed Changesets count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery()
       .byIds([accessTokens[0].getUserProfile()!.userId, accessTokens[1].getUserProfile()!.userId])
       .selectPushedChangeSetsCount();
@@ -221,7 +221,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(iModelStatistics[1].pushedChangeSetsCount).to.be.equal(user2PushedChangesetsCount);
   });
 
-  it("should get all iModel statistics (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get all iModel statistics", async function (this: Mocha.ITestCallbackContext) {
     const textQuery = "?$select=*,HasStatistics-forward-Statistics.*";
 
     mockGetUserStatistics(imodelId, generateUsersStatistics(2,
@@ -243,7 +243,7 @@ describe("iModelHubClient UserStatisticsHandler  (#integration)", () => {
     chai.expect(iModelStatistics[1].pushedChangeSetsCount).to.be.equal(user2PushedChangesetsCount);
   });
 
-  it("should fail to get user statistics without ids (#integration)", async () => {
+  it("should fail to get user statistics without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, new UserStatisticsQuery().byIds([]));
