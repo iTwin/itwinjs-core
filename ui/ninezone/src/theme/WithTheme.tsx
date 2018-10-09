@@ -35,7 +35,7 @@ export const withTheme = <ComponentProps extends ClassNameProps>(
       return (
         <ThemeContext.Consumer>
           {
-            (theme) =>
+            ({ theme }) =>
               <Component
                 {...this.props}
                 className={classnames(this.props.className, `nz-theme-${this.getTheme(theme).name}`)}

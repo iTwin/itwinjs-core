@@ -8,7 +8,9 @@ import * as React from "react";
 import { Theme, PrimaryTheme } from "./Theme";
 
 /** Properties of [[ThemeContext]]. */
-export interface ThemeContextProps extends Theme {
+export interface ThemeContextProps {
+  /** Actual theme of the context. */
+  theme: Theme;
   /**
    * Function called when [[Theme]] change is requested.
    * @note [[ThemeContext]] consumers can call this function to initiate [[Theme]] change.
@@ -19,6 +21,6 @@ export interface ThemeContextProps extends Theme {
 /** Theme context of 9-Zone UI. Used to provide [[Theme]] property to every themed component. */
 // tslint:disable-next-line:variable-name
 export const ThemeContext = React.createContext<ThemeContextProps>({
-  name: PrimaryTheme.name,
+  theme: PrimaryTheme,
   change: () => { },
 });

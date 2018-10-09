@@ -84,7 +84,7 @@ import BackTarget from "@src/zones/target/Back";
 import Zone from "@src/zones/Zone";
 import Zones from "@src/zones/Zones";
 import GhostOutline from "@src/zones/GhostOutline";
-import ThemeContext from "@src/theme/Context";
+import ThemeContext, { ThemeContextProps } from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import "./Zones.scss";
@@ -109,7 +109,7 @@ export interface State {
   secondZoneContent: SecondZoneContent;
   nineZone: NineZoneProps;
   isOverflowItemOpen: boolean;
-  currentTheme: Theme;
+  themeContext: ThemeContextProps;
   showAllItems: boolean;
 }
 
@@ -184,6 +184,10 @@ export interface ToolGroup {
 
 const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup => {
   return (toolState as ToolGroup).trays !== undefined;
+};
+
+const customTheme: Theme = {
+  name: "custom",
 };
 
 export default class ZonesExample extends React.PureComponent<{}, State> {
@@ -460,7 +464,19 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         y: 0,
       },
       isOverflowItemOpen: false,
-      currentTheme: PrimaryTheme,
+      themeContext: {
+        theme: PrimaryTheme,
+        change: (theme: Theme) => {
+          this.setState((prevProps) => {
+            return {
+              themeContext: {
+                ...prevProps.themeContext,
+                theme,
+              },
+            };
+          });
+        },
+      },
       showAllItems: true,
     };
   }
@@ -476,11 +492,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
     window.addEventListener("resize", this._handleWindowResize, true);
     this._temporaryMessageTimer.setOnExecute(() => {
-      this.setState(() => {
-        return {
-          isTemporaryMessageVisible: false,
-        };
-      });
+      this.setState(() => ({
+        isTemporaryMessageVisible: false,
+      }));
     });
   }
 
@@ -559,17 +573,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   public render() {
     return (
-      <ThemeContext.Provider value={{
-        name: this.state.currentTheme.name,
-        change: (newTheme) => {
-          this.setState((prevState) => {
-            return {
-              ...prevState,
-              currentTheme: newTheme,
-            };
-          });
-        },
-      }}>
+      <ThemeContext.Provider value={this.state.themeContext}>
         <App
           className={"nzdemo-pages-zones"}
           ref={this._app}
@@ -593,70 +597,59 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       return;
 
     this._temporaryMessageTimer.start();
-    this.setState((prevState) => {
-      return {
-        isTemporaryMessageVisible: true,
-        temporaryMessageX: prevState.mousePosition.x,
-        temporaryMessageY: prevState.mousePosition.y,
-      };
-    });
+    this.setState((prevState) => ({
+      isTemporaryMessageVisible: true,
+      temporaryMessageX: prevState.mousePosition.x,
+      temporaryMessageY: prevState.mousePosition.y,
+    }));
   }
 
   private _handleTooltipTimeout = () => {
-    this.setState(() => {
-      return {
-        isTooltipVisible: false,
-      };
-    });
+    this.setState(() => ({
+      isTooltipVisible: false,
+    }));
   }
 
   private _handleOnExpandableItemClick = (toolKey: string) => {
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        tools: {
-          ...Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-            const tool = prevState.tools[current];
-            if (isToolGroup(tool)) {
-              previous[current] = {
-                ...tool,
-                isToolGroupOpen: (toolKey === current) ? !tool.isToolGroupOpen : false,
-              };
-            } else {
-              previous[current] = { ...tool };
-            }
-            return previous;
-          }, {}),
-        },
-      };
-    });
+    this.setState((prevState) => ({
+      tools: {
+        ...Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
+          const tool = prevState.tools[current];
+          if (isToolGroup(tool)) {
+            previous[current] = {
+              ...tool,
+              isToolGroupOpen: (toolKey === current) ? !tool.isToolGroupOpen : false,
+            };
+          } else {
+            previous[current] = { ...tool };
+          }
+          return previous;
+        }, {}),
+      },
+    }));
   }
 
   private _handleOnIsHistoryExtendedChange = (isExtended: boolean, toolKey: string) => {
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        tools: {
-          ...prevState.tools,
-          [toolKey]: {
-            ...prevState.tools[toolKey],
-            isExtended,
-          },
+    this.setState((prevState) => ({
+      tools: {
+        ...prevState.tools,
+        [toolKey]: {
+          ...prevState.tools[toolKey],
+          isExtended,
         },
-      };
-    });
+      },
+    }));
   }
 
   private handleToolGroupItemClicked(toolKey: string, trayKey: string, columnKey: string, itemKey: string) {
     this.setState((prevState) => {
       const tool = prevState.tools[toolKey];
       if (!isToolGroup(tool))
-        return prevState;
+        return null;
 
       const key = columnKey + "-" + itemKey;
       const item = { toolKey, trayKey, columnKey, itemKey };
       return {
-        ...prevState,
         tools: {
           ...prevState.tools,
           [toolKey]: {
@@ -674,9 +667,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     this.setState((prevState) => {
       const tool = prevState.tools[item.toolKey];
       if (!isToolGroup(tool))
-        return prevState;
+        return null;
       return {
-        ...prevState,
         tools: {
           ...prevState.tools,
           [item.toolKey]: {
@@ -690,76 +682,58 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleOnScrollableToolbarScroll = () => {
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        tools:
-          Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-            const tool = prevState.tools[current];
-            if (isToolGroup(tool)) {
-              previous[current] = {
-                ...tool,
-                isToolGroupOpen: false,
-              };
-            } else {
-              previous[current] = { ...tool };
-            }
-            return previous;
-          }, {}),
-      };
-    });
+    this.setState((prevState) => ({
+      tools:
+        Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
+          const tool = prevState.tools[current];
+          if (isToolGroup(tool)) {
+            previous[current] = {
+              ...tool,
+              isToolGroupOpen: false,
+            };
+          } else {
+            previous[current] = { ...tool };
+          }
+          return previous;
+        }, {}),
+    }));
   }
 
   private _handleMessageIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => {
-      const openWidget = prevState.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages;
-      return {
-        openWidget,
-      };
-    });
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages,
+    }));
   }
 
   private _handleToolAssistanceIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => {
-      const openWidget = prevState.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance;
-      return {
-        openWidget,
-      };
-    });
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance,
+    }));
   }
 
   private _handleSnapModeIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => {
-      const openWidget = prevState.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode;
-      return {
-        openWidget,
-      };
-    });
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode,
+    }));
   }
 
   private _handlePopoverToggleClick = () => {
-    this.setState((prevState) => {
-      return {
-        isNestedPopoverOpen: false,
-        isPopoverOpen: !prevState.isPopoverOpen,
-      };
-    });
+    this.setState((prevState) => ({
+      isNestedPopoverOpen: false,
+      isPopoverOpen: !prevState.isPopoverOpen,
+    }));
   }
 
   private _handleNestedPopoverToggleClick = () => {
-    this.setState((prevState) => {
-      return {
-        isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
-      };
-    });
+    this.setState((prevState) => ({
+      isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
+    }));
   }
 
   private _handleNestedToolSettingsBackButtonClick = () => {
-    this.setState(() => {
-      return {
-        isNestedPopoverOpen: false,
-      };
-    });
+    this.setState(() => ({
+      isNestedPopoverOpen: false,
+    }));
   }
 
   private _handleWindowResize = () => {
@@ -777,113 +751,91 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
-    this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
+    }));
   }
 
   private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
+    }));
   }
 
   private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
-    this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
+    }));
   }
 
   private _handleWidgetTabDragEnd = () => {
-    this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone),
+    }));
   }
 
   private _handleWidgetTabDrag = (dragged: PointProps) => {
-    this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone);
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone),
+    }));
   }
 
   private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean) => {
-    this.setState((prevState) => {
-      const nineZone = isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
-        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone);
-
-      return {
-        nineZone,
-      };
-    });
+    this.setState((prevState) => ({
+      nineZone: isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
+        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone),
+    }));
   }
 
   private _handleOnAllMessagesTabClick = () => {
-    this.changeTab(MessageCenterActiveTab.AllMessages);
+    this.setActiveTab(MessageCenterActiveTab.AllMessages);
   }
 
   private _handleOnProblemsTabClick = () => {
-    this.changeTab(MessageCenterActiveTab.Problems);
+    this.setActiveTab(MessageCenterActiveTab.Problems);
   }
 
   private _handleDisableItemsClick = () => {
-    this.setState((prevState) => {
-      return {
-        tools: {
-          ...prevState.tools,
-          cube: {
-            ...prevState.tools.cube,
-            isDisabled: !prevState.tools.cube.isDisabled,
-            isToolGroupOpen: false,
-          },
-          validate: {
-            ...prevState.tools.validate,
-            isDisabled: !prevState.tools.validate.isDisabled,
-            isToolGroupOpen: false,
-          },
-          channel: {
-            ...prevState.tools.channel,
-            isDisabled: !prevState.tools.channel.isDisabled,
-            isToolGroupOpen: false,
-          },
-          chat: {
-            ...prevState.tools.chat,
-            isDisabled: !prevState.tools.chat.isDisabled,
-            isToolGroupOpen: false,
-          },
-          browse: {
-            ...prevState.tools.browse,
-            isDisabled: !prevState.tools.browse.isDisabled,
-            isToolGroupOpen: false,
-          },
-          chat1: {
-            ...prevState.tools.chat1,
-            isDisabled: !prevState.tools.chat1.isDisabled,
-            isToolGroupOpen: false,
-          },
+    this.setState((prevState) => ({
+      tools: {
+        ...prevState.tools,
+        cube: {
+          ...prevState.tools.cube,
+          isDisabled: !prevState.tools.cube.isDisabled,
+          isToolGroupOpen: false,
         },
-      };
-    });
+        validate: {
+          ...prevState.tools.validate,
+          isDisabled: !prevState.tools.validate.isDisabled,
+          isToolGroupOpen: false,
+        },
+        channel: {
+          ...prevState.tools.channel,
+          isDisabled: !prevState.tools.channel.isDisabled,
+          isToolGroupOpen: false,
+        },
+        chat: {
+          ...prevState.tools.chat,
+          isDisabled: !prevState.tools.chat.isDisabled,
+          isToolGroupOpen: false,
+        },
+        browse: {
+          ...prevState.tools.browse,
+          isDisabled: !prevState.tools.browse.isDisabled,
+          isToolGroupOpen: false,
+        },
+        chat1: {
+          ...prevState.tools.chat1,
+          isDisabled: !prevState.tools.chat1.isDisabled,
+          isToolGroupOpen: false,
+        },
+      },
+    }));
   }
 
-  private changeTab(newTab: MessageCenterActiveTab) {
-    this.setState((prevState) => ({
-      ...prevState,
-      activeTab: newTab,
+  private setActiveTab(activeTab: MessageCenterActiveTab) {
+    this.setState(() => ({
+      activeTab,
     }));
   }
 
@@ -892,11 +844,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private setVisibleMessage(visibleMessage: Message) {
-    this.setState(() => {
-      return {
-        visibleMessage,
-      };
-    });
+    this.setState(() => ({
+      visibleMessage,
+    }));
   }
 
   private getHistoryTray(toolKey: string): React.ReactNode {
@@ -1043,14 +993,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         icon={
           <i className={`icon ${tool.icon}`} />
         }
-        onClick={() => this.setState((prevState) => {
-          let secondZoneContent = SecondZoneContent.None;
-          if (prevState.secondZoneContent === SecondZoneContent.None)
-            secondZoneContent = SecondZoneContent.ToolSettings;
-          return {
-            secondZoneContent,
-          };
-        })}
+        onClick={() => this.setState((prevState) => ({
+          secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
+        }))}
       />
     );
   }
@@ -1081,7 +1026,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     onClick={() => this.setState((prevState) => {
                       const toolGroup = prevState.tools[toolKey] as ToolGroup;
                       return {
-                        ...prevState,
                         tools: {
                           ...prevState.tools,
                           [toolKey]: {
@@ -1127,7 +1071,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
             const backTrays = tool.backTrays.slice(0, -1);
             return {
-              ...prevState,
               tools: {
                 ...prevState.tools,
                 [toolKey]: {
@@ -1156,14 +1099,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         isActive={this.state.secondZoneContent === SecondZoneContent.ToolSettings}
         onClick={
           () => {
-            this.setState((prevState) => {
-              let secondZoneContent = SecondZoneContent.Minimized;
-              if (prevState.secondZoneContent === SecondZoneContent.Minimized)
-                secondZoneContent = SecondZoneContent.ToolSettings;
-              return {
-                secondZoneContent,
-              };
-            });
+            this.setState((prevState) => ({
+              secondZoneContent: prevState.secondZoneContent === SecondZoneContent.Minimized ? SecondZoneContent.ToolSettings : SecondZoneContent.Minimized,
+            }));
           }
         }
       >
@@ -1341,12 +1279,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             animateOutTo={this._footerMessages.current || undefined}
             onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
-            onStageChange={(stage) => {
-              this.setState(() => {
-                return {
-                  toastMessageStage: stage,
-                };
-              });
+            onStageChange={(toastMessageStage) => {
+              this.setState(() => ({
+                toastMessageStage,
+              }));
             }}
             content={
               <StatusMessage
@@ -1594,24 +1530,24 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         return (
           <ThemeContext.Consumer>
             {
-              (theme) => (
+              ({ theme, change: changeTheme }) => (
                 <BlueButton
                   onClick={() => {
-                    switch (theme.name) {
-                      case PrimaryTheme.name: {
-                        theme.change && theme.change(LightTheme);
+                    switch (theme) {
+                      case PrimaryTheme: {
+                        changeTheme && changeTheme(LightTheme);
                         break;
                       }
-                      case LightTheme.name: {
-                        theme.change && theme.change(DarkTheme);
+                      case LightTheme: {
+                        changeTheme && changeTheme(DarkTheme);
                         break;
                       }
-                      case DarkTheme.name: {
-                        theme.change && theme.change({ name: "custom" });
+                      case DarkTheme: {
+                        changeTheme && changeTheme(customTheme);
                         break;
                       }
-                      case "custom": {
-                        theme.change && theme.change(PrimaryTheme);
+                      case customTheme: {
+                        changeTheme && changeTheme(PrimaryTheme);
                         break;
                       }
                     }
@@ -1643,11 +1579,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             <BlueButton
               onClick={() => {
                 this.setVisibleMessage(Message.Toast);
-                this.setState(() => {
-                  return {
-                    toastMessageStage: ToastMessageStage.Visible,
-                  };
-                });
+                this.setState(() => ({
+                  toastMessageStage: ToastMessageStage.Visible,
+                }));
               }}
             >
               Show Toast Message
@@ -1662,11 +1596,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             <br />
             <BlueButton
               onClick={() => {
-                this.setState(() => {
-                  return {
-                    isTooltipVisible: true,
-                  };
-                });
+                this.setState(() => ({
+                  isTooltipVisible: true,
+                }));
               }}
             >
               Show Tooltip
@@ -1675,13 +1607,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             <br />
             <BlueButton
               onClick={() => {
-                this.setState((prevState) => {
-                  const nineZone = NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone);
-                  return {
-                    nineZone,
-                    openWidget: FooterWidget.None,
-                  };
-                });
+                this.setState((prevState) => ({
+                  nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone),
+                  openWidget: FooterWidget.None,
+                }));
               }}
             >
               Change Footer Mode
@@ -1938,7 +1867,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                       <OverflowItem
                         key="0"
                         onClick={() => this.setState((prevState) => ({
-                          ...prevState,
                           isOverflowItemOpen: !prevState.isOverflowItemOpen,
                         }))}
                         panel={
@@ -1951,7 +1879,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                                   <GroupColumn>
                                     <GroupTool
                                       onClick={() => this.setState((prevState) => ({
-                                        ...prevState,
                                         isOverflowItemOpen: !prevState.isOverflowItemOpen,
                                       }))}
                                     >
@@ -2071,8 +1998,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                                 <i className={"icon icon-placeholder"} />
                               </MessageCenterButton>
                               <MessageCenterButton onClick={() => {
-                                this.setState((prevState) => ({
-                                  ...prevState,
+                                this.setState(() => ({
                                   openWidget: FooterWidget.None,
                                 }));
                               }}>
