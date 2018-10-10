@@ -48,7 +48,7 @@ Each package will have its own **node_modules** directory which will contain sym
 * [Git](https://git-scm.com/)
 * [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 8.11.x. The Node installation also includes the **npm** package manager.
 * [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
-* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 2.7.2
+* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 3.0 of TypeScript.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 ### Linux
@@ -63,9 +63,13 @@ You must install the following on a Linux computer before attempting to run imod
 2. Install dependencies: `rush install`
 3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
-5. Run tests: `npm test -s`
+5. Run tests:
+    * All tests: `rush test`
+    * Core tests: `npm test -s`
+    * UI tests: `npm run test:ui -s`
+    * Presentation tests: `npm run test:presentation -s`
 
-The `-s` option is short for `--silent` which results in a less verbose command.
+The `-s` option for `npm` is short for `--silent` which results in a less verbose command.
 That part of the command is optional depending on the desired verbosity level.
 
 Note that all build instructions are designed to run from the imodeljs-core root directory.
