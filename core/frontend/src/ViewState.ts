@@ -29,12 +29,21 @@ import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 
+/** Describes the orientation of the grid displayed within a [[Viewport]]. */
 export const enum GridOrientationType {
+  /** Oriented with the view. */
   View = 0,
+  /** Top */
   WorldXY = 1, // Top
+  /** Right */
   WorldYZ = 2, // Right
+  /** Front */
   WorldXZ = 3, // Front
+  /** Oriented by the [[AuxCoordSystem]] */
   AuxCoord = 4,
+  /** @hidden
+   * ###TODO not implemented - see ViewState.drawGrid.
+   */
   GeoCoord = 5,
 }
 
@@ -138,8 +147,8 @@ export class ViewSubCategories {
 }
 
 /**
- * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
- * Subclasses of ViewDefinition determine which model(s) are viewed.
+ * The front-end state of a [[ViewDefinition]] element.
+ * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState {
@@ -150,9 +159,13 @@ export abstract class ViewState extends ElementState {
   public isPrivate?: boolean;
   /** Time this ViewState was saved in view undo. */
   public undoTime?: BeTimePoint;
+  /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
+   * It is populated on-demand as new categories are added to the selector.
+   */
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
+  /** @hidden */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -164,9 +177,18 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** @hidden */
   public static createFromStateData(_viewStateData: ViewStateData, _cat: CategorySelectorState, _iModel: IModelConnection): ViewState | undefined { return undefined; }
 
-  /** Get the ViewFlags from the displayStyle of this ViewState. */
+  /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
+   * @note Do not modify this object directly. Instead, use the setter as follows:
+   *
+   *  ```ts
+   *  const flags = viewState.viewFlags.clone();
+   *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
+   *  viewState.viewFlags = flags;
+   *  ```ts
+   */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
@@ -177,10 +199,14 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** Determine whether this ViewState exactly matches another */
+  /** Determine whether this ViewState exactly matches another.
+   * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
+   */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
-  /** Determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  /** Determine whether this ViewState is equivalent to another for the purposes of display.
+   * @see [[ViewState.equals]] for determining exact equality.
+   */
   public equalState(other: ViewState): boolean {
     return (this.isPrivate === other.isPrivate &&
       this.categorySelector.id.equals(other.categorySelector.id) &&
@@ -223,7 +249,7 @@ export abstract class ViewState extends ElementState {
     });
   }
 
-  /** Returns true if all the tile trees for this view are loaded. */
+  /** @hidden */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachModel((model: GeometricModelState) => {
@@ -234,10 +260,10 @@ export abstract class ViewState extends ElementState {
     return allLoaded;
   }
 
-  /** Get the name of the ViewDefinition of this ViewState */
+  /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
   public get name(): string { return this.code.getValue(); }
 
-  /** Get the background color */
+  /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
   private _neverDrawn?: Id64Set;
@@ -407,36 +433,54 @@ export abstract class ViewState extends ElementState {
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
+  /** @hidden */
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
+  /** Mark the [[FeatureSymbology.Overrides]] associated with this view as "dirty".
+   * Typically this is handled internally.
+   * Conditions that may cause the overrides to become dirty include:
+   *  - Toggling the display of a category within the view.
+   *  - Changing the symbology associated with a [[SubCategory]] within the view by adding a [[SubCategoryOverride]]
+   *  - Changes in some application state that affects the [[AddFeatureOverrides]] function registered with [[Viewport]].
+   * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
+   */
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
+  /** @hidden */
   public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
+  /** @hidden */
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
+  /** Get the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract getViewedExtents(): AxisAlignedBox3d;
+  /** Compute a range in [[CoordSystem.World]] coordinates that tightly encloses the contents of this view.
+   * @see [[FitViewTool]].
+   */
   public abstract computeFitRange(): Range3d;
 
-  /** Override this if you want to perform some logic on each iteration of the render loop. */
+  /** Override this if you want to perform some logic on each iteration of the render loop.
+   * @hidden
+   */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
-  /** Determine whether this ViewDefinition views a given model */
+  /** Returns true if this view displays the contents of a [[Model]] specified by ID. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
-  /** Get the origin of this view */
+  /** Get the origin of this view in [[CoordSystem.World]] coordinates. */
   public abstract getOrigin(): Point3d;
 
-  /** Get the extents of this view */
+  /** Get the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract getExtents(): Vector3d;
 
   /** Get the 3x3 ortho-normal Matrix3d for this view. */
   public abstract getRotation(): Matrix3d;
 
-  /** Set the origin of this view */
+  /** Set the origin of this view in [[CoordSystem.World]] coordinates. */
   public abstract setOrigin(viewOrg: Point3d): void;
 
-  /** Set the extents of this view */
+  /** Set the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
@@ -447,15 +491,21 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
+  /** @hidden */
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
 
+  /** @hidden */
   public createTerrain(context: SceneContext): void {
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
   }
+
+  /** @hidden */
   public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
 
-  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
+  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
+   * @hidden
+   */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
     if (undefined !== this.displayStyle.backgroundMapPlane)

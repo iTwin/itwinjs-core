@@ -12,9 +12,10 @@ import { IModelApp } from "./IModelApp";
 export const enum SelectEventType { Add, Remove, Replace, Clear }
 
 /** A set of *hilited* elements for an [[IModelConnection]], by element id.
- * Hilited elements are displayed with a customizable [[Hilite]] effect within a [[Viewport]].
+ * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HilitedSet allows additional
- * elements to be displayed with the [[Hilite]] effect without adding them to the [[SelectionSet]].
+ * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]].
+ * @see [[Hilite.Settings]] for customization of the hilite effect.
  */
 export class HilitedSet {
   /** The IDs of the hilited elements.
@@ -50,7 +51,8 @@ export class HilitedSet {
 }
 
 /** A set of *currently selected* elements for an IModelConnection.
- * Selected elements are displayed with a customizable [[Hilite]] effect within a [[Viewport]].
+ * Selected elements are displayed with a customizable hilite effect within a [[Viewport]].
+ * @see [[Hilite.Settings]] for customization of the hilite effect.
  */
 export class SelectionSet {
   /** The IDs of the selected elements.

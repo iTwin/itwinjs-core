@@ -18,7 +18,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile, TileLoader, TileRequests, TileTree } from "./tile/TileTree";
-import { DecorateContext, SceneContext, ViewContext } from "./ViewContext";
+import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
@@ -37,7 +37,7 @@ export class SheetBorder {
   }
 
   /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
-  public static create(width: number, height: number, context?: ViewContext) {
+  public static create(width: number, height: number, context?: DecorateContext) {
     // Rect
     const rect: Point3d[] = [
       Point3d.create(0, height),

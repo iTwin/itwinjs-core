@@ -12,7 +12,7 @@ import { CategorySelectorProps } from "@bentley/imodeljs-common";
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.
  * By default, geometry belonging to any [[SubCategory]] of a visible Category is also visible in the view,
  * unless the [[SubCategoryAppearance]] or [[SubCategoryOverride]] specifies that it should be invisible.
- * @note: To change the set of categories visible in a [[ViewState]] currently associated with a [[Viewport]],
+ * @note To change the set of categories visible in a [[ViewState]] currently associated with a [[Viewport]],
  * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
  */

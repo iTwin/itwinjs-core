@@ -240,7 +240,7 @@ export abstract class RenderTexture implements IDisposable {
   }
 
   /** Releases any WebGL resources owned by this texture.
-   * If [[Texture.isOwned]] is true, then whatever object claims ownership of the texture is reponsible for disposing of it when it is no longer needed.
+   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is reponsible for disposing of it when it is no longer needed.
    * Otherwise, imodeljs will handle its disposal.
    */
   public abstract dispose(): void;
@@ -1817,7 +1817,7 @@ export class Feature implements Comparable<Feature> {
 }
 
 /**
- * Describes the type of a 'batch' of graphics as produced by [[RenderSystem.createBatch]].
+ * Describes the type of a 'batch' of graphics representing multiple [[Feature]]s.
  * The most commonly-encountered batches are Tiles, which can be of either Primary or
  * Classifier type.
  */

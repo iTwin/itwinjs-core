@@ -180,7 +180,7 @@ export class Decorations implements IDisposable {
   /** Decorations drawn as if they were part of the scene. @see [[GraphicType.Scene]]. */
   public get normal(): GraphicList | undefined { return this._normal; }
   public set normal(normal: GraphicList | undefined) { disposeArray(this._normal); this._normal = normal; }
-  /** Decorations drawn as if they were part of the world, but ignoring the view's [[ViewFlags]]. @see [[GraphicType.World]]. */
+  /** Decorations drawn as if they were part of the world, but ignoring the view's [[ViewFlags]]. @see [[GraphicType.WorldDecoration]]. */
   public get world(): GraphicList | undefined { return this._world; }
   public set world(world: GraphicList | undefined) { disposeArray(this._world); this._world = world; }
   /** Overlay decorations drawn in world coordinates. @see [[GraphicType.WorldOverlay]]. */
@@ -228,7 +228,7 @@ export class GraphicBranch implements IDisposable {
   public dispose() { this.clear(); }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 
-  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[GraphicBranch.isOwned]] flag is set, also disposes of them. */
+  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[GraphicBranch.ownsEntries]] flag is set, also disposes of them. */
   public clear(): void {
     if (this.ownsEntries)
       disposeArray(this.entries);
@@ -570,7 +570,7 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within the specified viewport.
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
    * @see [[RenderContext.createGraphicBuilder]].
-   * @see [[Decorators]]
+   * @see [[Decorator]]
    */
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 

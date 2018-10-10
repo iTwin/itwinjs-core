@@ -411,7 +411,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 /**
- * The position in space of a [[Light]]
+ * The position in space of a Light.
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
   /** Whether this light is currently turned on. */
