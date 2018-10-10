@@ -9,6 +9,7 @@ import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
+import * as semver from "semver";
 
 const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -326,15 +327,64 @@ describe("RpcInterface", () => {
 
   it("should reject a mismatched RPC interface request", async () => {
     const realVersion = TestRpcInterface.version;
-    TestRpcInterface.version = "999.999.999";
 
-    try {
-      await TestRpcInterface.getClient().op1(new TestOp1Params(0, 0));
-      assert(false);
-    } catch (err) {
-      assert(true);
-    }
+    const test = (code: string | null, expectValid: boolean) => {
+      return new Promise(async (resolve, reject) => {
+        if (code === null) {
+          reject();
+        }
 
-    TestRpcInterface.version = realVersion;
+        TestRpcInterface.version = code as string;
+        try {
+          await TestRpcInterface.getClient().op1(new TestOp1Params(0, 0));
+          TestRpcInterface.version = realVersion;
+          if (expectValid) {
+            resolve();
+          } else {
+            reject();
+          }
+        } catch (err) {
+          TestRpcInterface.version = realVersion;
+          if (expectValid) {
+            reject();
+          } else {
+            resolve();
+          }
+        }
+      });
+    };
+
+    await test("", false);
+
+    const current = semver.parse(realVersion)!;
+    await test(current.format(), true);
+
+    const incMajor = semver.parse(realVersion)!;
+    incMajor.inc("major");
+    await (test(incMajor.format(), false));
+
+    const incMinor = semver.parse(realVersion)!;
+    incMinor.inc("minor");
+    await (test(incMinor.format(), true));
+
+    const incPatch = semver.parse(realVersion)!;
+    incPatch.inc("patch");
+    await (test(incPatch.format(), true));
+
+    const incPre = semver.parse(realVersion)!;
+    incPre.inc("prerelease");
+    await (test(incPre.format(), false));
+
+    const decMajor = semver.parse(realVersion)!;
+    --decMajor.major;
+    await (test(decMajor.format(), false));
+
+    const decMinor = semver.parse(realVersion)!;
+    --decMinor.minor;
+    await (test(decMinor.format(), false));
+
+    const decPatch = semver.parse(realVersion)!;
+    --decPatch.patch;
+    await (test(decPatch.format(), true));
   });
 });

@@ -38,7 +38,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
 
-  public static version = "1.0.0";
+  public static version = "1.1.1";
 
   public static types = () => [
     TestOp1Params,

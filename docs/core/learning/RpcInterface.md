@@ -260,3 +260,4 @@ Interface version incompatibility is a possibility when a client makes requests 
 The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
 * The server implements a newer (major) version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
 * The server implements an older (major or minor) version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.
+* The server and client versions are different, and either the server or the client version is an unstable pre-release version where the normal compatibility rules may not apply.

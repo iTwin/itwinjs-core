@@ -79,10 +79,9 @@ export class RpcInvocation {
       try {
         this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
 
-        // TODO: Use semver
         const backend = this.operation.interfaceVersion;
         const frontend = this.request.operation.interfaceVersion;
-        if (backend !== frontend) {
+        if (!RpcInterface.isVersionCompatible(frontend, backend)) {
           throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
         }
       } catch (error) {

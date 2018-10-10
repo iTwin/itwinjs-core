@@ -6,6 +6,7 @@
 
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import * as semver from "semver";
 
 // tslint:disable-next-line:ban-types
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; }
@@ -15,6 +16,16 @@ export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = 
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
  */
 export abstract class RpcInterface {
+  /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
+  public static isVersionCompatible(backend: string, frontend: string): boolean {
+    const difference = semver.diff(backend, frontend);
+    if (semver.prerelease(backend) || semver.prerelease(frontend)) {
+      return difference === null;
+    } else {
+      return difference === null || difference === "patch" || (difference === "minor" && semver.minor(frontend) < semver.minor(backend));
+    }
+  }
+
   /** The configuration for the RPC interface. */
   public readonly configuration = RpcConfiguration.supply(this);
 
