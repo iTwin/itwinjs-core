@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Inc. 2018
 
 ## Description
 
-The __@bentley/ecschema-metadata__ package contains classes for working with CAD geometry including:
+The __@bentley/ecschema-metadata__ package contains classes for working with EC metadata.
 
 ## Documentation
 
