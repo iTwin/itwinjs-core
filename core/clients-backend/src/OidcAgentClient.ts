@@ -22,7 +22,7 @@ export class OidcAgentClient extends OidcBackendClient {
 
   public async getToken(actx: ActivityLoggingContext, scope?: string): Promise<AccessToken> {
     // Note: for now we start with an IMS saml token, and use OIDC delegation to get a JWT token
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, this._configuration.serviceUserEmail, this._configuration.serviceUserPassword);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, this._configuration.serviceUserEmail, this._configuration.serviceUserPassword, this._configuration.clientId);
     const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
 
     const delegationClient = new OidcDelegationClient(this._configuration as OidcBackendClientConfiguration);

@@ -29,11 +29,6 @@ export class DefaultRequestOptionsProvider {
   constructor() {
     this._defaultOptions = {
       method: "GET",
-      headers: {
-        "Mas-App-Guid": Config.App.get("imjs_connect_app_guid"),
-        "Mas-Uuid": Config.App.get("imjs_connect_device_id"),
-        // "User-Agent": Config.host.name + "/" + Config.host.version + " (" + Config.host.description + ")",
-      },
     };
   }
 

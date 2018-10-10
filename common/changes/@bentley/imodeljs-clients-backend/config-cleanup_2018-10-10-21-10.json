@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed disallowed or otherwise unwanted references to private configuration.",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

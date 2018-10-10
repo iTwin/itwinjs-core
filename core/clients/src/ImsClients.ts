@@ -112,14 +112,16 @@ export class ImsActiveSecureTokenClient extends Client {
 
     return undefined;
   }
+
   /**
    * Gets the authorization token given the credentials.
    * @param userName User name
    * @param password  Password
    * @returns Resolves to the token and user profile.
    */
-  public async getToken(alctx: ActivityLoggingContext, user: string, password: string): Promise<AuthorizationToken> {
+  public async getToken(alctx: ActivityLoggingContext, user: string, password: string, appId?: string): Promise<AuthorizationToken> {
     const url: string = await this.getUrl(alctx);
+    const imjsAppId = appId ? `imodeljs ${appId}` : "imodeljs";
 
     const options: RequestOptions = {
       method: "POST",
@@ -129,8 +131,8 @@ export class ImsActiveSecureTokenClient extends Client {
       },
       body: {
         AppliesTo: Config.App.get("imjs_default_relying_party_uri"),
-        DeviceId: Config.App.get("imjs_connect_device_id"),
-        AppId: Config.App.get("imjs_connect_app_name") + "/" + Config.App.get("imjs_connect_app_version"),
+        DeviceId: (typeof window === "undefined") ? "backend" : "frontend",
+        AppId: imjsAppId,
         Lifetime: 7 * 24 * 60, // 7 days
       },
     };
@@ -195,24 +197,29 @@ export class ImsDelegationSecureTokenClient extends Client {
    * Gets the (delegation) access token given the authorization token.
    * @param authTokenInfo Access token.
    * @param relyingPartyUri Relying party URI required by the service - defaults to a value defined by the configuration.
+   * @param appId Application id that's used for logging and tracing the authorization request
    * @returns Resolves to the (delegation) access token.
    */
-  public async getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string): Promise<AccessToken> {
+  public async getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken> {
     const url: string = await this.getUrl(alctx) + "/json/IssueEx";
     if (!relyingPartyUri) {
       relyingPartyUri = Config.App.get("imjs_default_relying_party_uri");
     }
+
+    const imjsAppId = appId ? `imodeljs ${appId}` : "imodeljs";
+
     const options: RequestOptions = {
       method: "POST",
       headers: {
-        authorization: authorizationToken.toTokenString(),
+        "authorization": authorizationToken.toTokenString(),
+        "User-Agent": imjsAppId,
       },
       body: {
         ActAs: authorizationToken.getSamlAssertion(),
         AppliesTo: relyingPartyUri,
         AppliesToBootstrapToken: relyingPartyUri,
-        DeviceId: Config.App.get("imjs_connect_device_id"),
-        AppId: Config.App.get("imjs_connect_app_name") + "/" + Config.App.get("imjs_connect_app_version"),
+        DeviceId: (typeof window === "undefined") ? "backend" : "frontend",
+        AppId: imjsAppId,
         Lifetime: 60, // 60 minutes
       },
     };

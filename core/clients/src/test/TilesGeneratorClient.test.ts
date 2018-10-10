@@ -60,13 +60,4 @@ describe("TilesGeneratorClient", () => {
     chai.expect(job.wsgId).equals(instanceId);
   });
 
-  it("should be able to generate the URL to view an imodel in Web Navigator  (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
-    const url: string = await tilesGeneratorClient.buildWebNavigatorUrl(actx, accessToken, projectId, iModelId, versionId);
-    chai.expect(url).equals("https://qa-connect-imodelweb.bentley.com/?id=8ee4458a-53e2-46c3-af7c-e2a1cd5b08d1&projectId=52d1633d-88a1-404d-a060-98d70f777db4&dataId=6541fcb4-d1fa-4c58-8385-d73c9459d6d6");
-    // https://qa-connect-imodelweb.bentley.com/?id=<tilesId>&projectId=<projectId>&dataId=<dataId>
-  });
-
 });

@@ -38,8 +38,6 @@ function configMockSettings() {
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
   Config.App.set("imjs_buddi_resolve_url_using_region", KnownRegions.DEV);
-  Config.App.set("imjs_connect_app_guid", Guid.createValue());
-  Config.App.set("imjs_connect_device_id", Guid.createValue());
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");
