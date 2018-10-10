@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed no longer used interfaces",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "haroldas.vitunskas@bentley.com"
+}

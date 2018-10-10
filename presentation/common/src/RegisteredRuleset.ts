@@ -11,16 +11,16 @@ import { Ruleset, Rule, VariablesGroup, SupplementationInfo, SchemasSpecificatio
  * A ruleset that is registered in a ruleset manager.
  */
 export class RegisteredRuleset implements IDisposable, Ruleset {
-  private _manager: IRulesetManager;
   private _ruleset: Ruleset;
   private _uniqueIdentifier: string;
-  public constructor(manager: IRulesetManager, ruleset: Ruleset, uniqueIdentifier: string) {
-    this._manager = manager;
+  private _disposeFunc: (ruleset: RegisteredRuleset) => void;
+  public constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void) {
+    this._disposeFunc = disposeFunc;
     this._ruleset = ruleset;
     this._uniqueIdentifier = uniqueIdentifier;
   }
   public dispose() {
-    this._manager.remove(this);
+    this._disposeFunc(this);
   }
   public get uniqueIdentifier() { return this._uniqueIdentifier; }
   public get id(): string { return this._ruleset.id; }
@@ -31,32 +31,10 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   public toJSON(): Ruleset { return this._ruleset; }
 }
 
-/**
- * Interface for manager which stores rulesets.
- */
-export interface IRulesetManager {
-  /**
-   * Get a ruleset with the specified id.
-   */
-  get(id: string): Promise<RegisteredRuleset | undefined>;
+/** @hidden */
+export type RulesetManagerState = Ruleset[];
 
-  /**
-   * Register the supplied ruleset
-   */
-  add(ruleset: Ruleset): Promise<RegisteredRuleset>;
-
-  /**
-   * Unregister the supplied ruleset
-   */
-  remove(remove: RegisteredRuleset | [string, string]): Promise<boolean>;
-
-  /**
-   * Remove all rulesets registered in this session.
-   */
-  clear(): Promise<void>;
-}
-
-export namespace IRulesetManager {
+/** @hidden */
+export namespace RulesetManagerState {
   export const STATE_ID = "rulesets";
-  export type State = Ruleset[];
 }

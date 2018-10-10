@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added usage of ActivityLoggingContext in async functions",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "haroldas.vitunskas@bentley.com"
+}

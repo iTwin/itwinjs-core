@@ -7,7 +7,7 @@ import * as faker from "faker";
 import { createRandomId } from "@bentley/presentation-common/tests/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import RulesetVariablesManager from "../lib/RulesetVariablesManager";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/RulesetVariables";
 
 describe("RulesetVariablesManager", () => {
 

@@ -33,6 +33,7 @@ describe("Rulesets", async () => {
       expect(rootNodes.length).to.be.equal(1);
       expect(rootNodes[0].label).to.be.equal(spec.label);
     });
+    await Presentation.presentation.rulesets().clear();
   });
 
   it("removes ruleset", async () => {
