@@ -44,7 +44,6 @@ const config = {
     nodeExternals({
       whitelist: [
         ...helpers.modulesToExcludeFromTests,
-        /bwc-polymer/,
         /\.s?css$/,
         /\.svg$/,
         /\.d\.ts$/,

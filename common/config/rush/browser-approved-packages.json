@@ -31,7 +31,7 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/icons-webfont",
+      "name": "@bentley/icons-generic-webfont",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
@@ -77,10 +77,6 @@
     {
       "name": "@bentley/presentation-frontend",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/svg-icons",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@bentley/ui-components",
