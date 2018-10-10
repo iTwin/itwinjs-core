@@ -41,6 +41,13 @@ for (const k of Object.keys(shrinkwrap.dependencies)) {
   }
 }
 
+if (jsonOut.error) {
+  console.error(jsonOut.error.summary);
+  console.log("##vso[task.logissue type=error;]Rush audit failed. This may be caused by a problem with the npm-shrinkwrap.json.");
+  console.log("##vso[task.complete result=Failed;]DONE")
+  process.exit(0);
+}
+
 for (const action of jsonOut.actions) {
   for (const issue of action.resolves) {
     const advisory = jsonOut.advisories[issue.id];
