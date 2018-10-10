@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update copyright headers",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Caleb.Shafer@bentley.com"
+}

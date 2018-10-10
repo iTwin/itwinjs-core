@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
 
 .column-drag-layer {
@@ -35,7 +36,7 @@
   &.on {
     .react-grid-Row * {
       /* !important used because react-data-grid did. only way to override */
-      background-color: $bwc-blue-8 !important; 
+      background-color: $bwc-blue-8 !important;
     }
   }
   &.below {
