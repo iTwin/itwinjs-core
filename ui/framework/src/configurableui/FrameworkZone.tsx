@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
@@ -74,7 +74,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   public render(): React.ReactNode {
     return (
       <>
-        <NZ_Zone bounds={this.props.zoneState.floatingBounds || this.props.zoneState.bounds}>
+        <NZ_Zone bounds={this.props.zoneState.floating ? this.props.zoneState.floating.bounds : this.props.zoneState.bounds}>
           {this._getWidget()}
         </NZ_Zone>
         <NZ_Zone bounds={this.props.zoneState.bounds}>
@@ -123,6 +123,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
       widgets.push({
         id: widget.id,
+        isStatusBar: zoneDef.isStatusBar,
         tabs: zoneDef.widgetDefs.map((widgetDef, tabIndex) => {
           let isActive = false;
           if (!activeWidgetDef) {
@@ -168,14 +169,16 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <StackedWidget
-        zoneId={this.props.zoneState.id}
+        fillZone={this.props.zoneState.isLayoutChanged}
+        horizontalAnchor={this.props.horizontalAnchor}
+        isDragged={this.props.isDragged}
+        isFloating={this.props.zoneState.floating ? true : false}
+        isUnmergeDrag={this.props.isUnmergeDrag}
+        lastPosition={this.props.lastPosition}
+        verticalAnchor={this.props.verticalAnchor}
         widgets={widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        horizontalAnchor={this.props.horizontalAnchor}
-        verticalAnchor={this.props.verticalAnchor}
-        isDragged={this.props.isDragged}
-        lastPosition={this.props.lastPosition}
-        isUnmergeDrag={this.props.isUnmergeDrag}
+        zoneId={this.props.zoneState.id}
       >
         {content}
       </StackedWidget>

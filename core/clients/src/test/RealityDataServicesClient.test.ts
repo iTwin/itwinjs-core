@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -9,35 +9,18 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
-import { UrlDiscoveryMock } from "./ResponseBuilder";
-import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { IModelHubClient } from "..";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { KnownRegions } from "../Client";
+import { Config } from "../Config";
 chai.should();
-
-export class RealityDataUrlMock {
-  private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-realitydataservices-eus.cloudapp.net",
-    QA: "https://qa-connect-realitydataservices.bentley.com",
-    PROD: "https://connect-realitydataservices.bentley.com",
-    PERF: "https://perf-realitydataservices-eus.cloudapp.net",
-  };
-
-  public static getUrl(env: DeploymentEnv): string {
-    return this._urlDescriptor[env];
-  }
-
-  public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(RealityDataServicesClient.searchKey, env, this._urlDescriptor[env]);
-  }
-}
 
 describe.skip("RealityDataServicesClient", () => {
 
   let accessToken: AccessToken;
-  const imodelHubClient: IModelHubClient = new IModelHubClient("DEV");
-  const tilesGeneratorClient: TilesGeneratorClient = new TilesGeneratorClient("DEV");
-  const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient("DEV");
+  const imodelHubClient: IModelHubClient = new IModelHubClient();
+  const tilesGeneratorClient: TilesGeneratorClient = new TilesGeneratorClient();
+  const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient();
   const projectId: string = "b2101b1a-0c1f-451e-97f2-6599bf900d36";
   const iModelId: string = "0c315eb1-d10c-4449-9c09-f36d54ad37f2";
   let versionId: string;
@@ -45,8 +28,8 @@ describe.skip("RealityDataServicesClient", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      return;
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
+      this.skip();
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
@@ -73,43 +56,19 @@ describe.skip("RealityDataServicesClient", () => {
     tilesId = job.tilesId!;
   });
 
-  it("should setup its URLs", async () => {
-    RealityDataUrlMock.mockGetUrl("DEV");
-    let url: string = await new RealityDataServicesClient("DEV").getUrl(actx, true);
-    chai.expect(url).equals("https://dev-realitydataservices-eus.cloudapp.net");
-
-    RealityDataUrlMock.mockGetUrl("QA");
-    url = await new RealityDataServicesClient("QA").getUrl(actx, true);
-    chai.expect(url).equals("https://qa-connect-realitydataservices.bentley.com");
-
-    RealityDataUrlMock.mockGetUrl("PROD");
-    url = await new RealityDataServicesClient("PROD").getUrl(actx, true);
-    chai.expect(url).equals("https://connect-realitydataservices.bentley.com");
-
-    RealityDataUrlMock.mockGetUrl("PERF");
-    url = await new RealityDataServicesClient("PERF").getUrl(actx, true);
-    chai.expect(url).equals("https://perf-realitydataservices-eus.cloudapp.net");
-  });
-
-  it("should be able to retrieve reality data properties", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to retrieve reality data properties  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityData(actx, accessToken, projectId, tilesId);
 
     chai.assert(realityData);
   });
 
-  it("should be able to retrieve app data json blob url", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to retrieve app data json blob url  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const url: string = await realityDataServiceClient.getAppDataBlobUrl(actx, accessToken, projectId, tilesId);
 
     chai.assert(url);
   });
 
-  it("should be able to get app data json", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to get app data json  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -118,10 +77,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(appData);
   });
 
-  it("should be able to get model data json", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to get model data json  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const appData: any = await realityDataServiceClient.getAppData(actx, accessToken, projectId, tilesId);
     const appDataJson = JSON.parse(appData.toString("utf8"));
 
@@ -135,10 +91,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to get model data content  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const appData: any = await realityDataServiceClient.getAppData(actx, accessToken, projectId, tilesId);
     const appDataJson = JSON.parse(appData.toString("utf8"));
     const modelName = appDataJson.models[Object.keys(appDataJson.models)[0]].tilesetUrl;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Task */
@@ -61,10 +61,10 @@ export class Task extends ItemDefBase {
     return isActive;
   }
 
-  public onActivated(): void {
+  public async onActivated(): Promise<void> {
     const frontstage = FrontstageManager.findFrontstageDef(this.primaryStageId);
     if (frontstage)
-      FrontstageManager.setActiveFrontstageDef(frontstage);
+      await FrontstageManager.setActiveFrontstageDef(frontstage);
   }
 }
 

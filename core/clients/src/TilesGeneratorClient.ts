@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OtherServices */
 
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { IModelWebNavigatorClient } from "./IModelWebNavigatorClient";
 import { RequestQueryOptions } from "./Request";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Config } from "./Config";
 
 /** Job */
 @ECJsonTypeMap.classToJson("wsg", "TilePublisher.Job", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -55,20 +55,14 @@ export class Job extends WsgInstance {
  */
 export class TilesGeneratorClient extends WsgClient {
   public static readonly searchKey: string = "3dTilesGenerator.URL";
-
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-3dtilesgenerator.bentley.com",
-    QA: "https://qa-3dtilesgenerator.bentley.com",
-    PROD: "https://3dtilesgenerator.bentley.com",
-    PERF: "https://perf-3dtilesgenerator.bentley.com",
-  };
-
+  public static readonly configURL = "imjs_3dtile_generator_url";
+  public static readonly configRelyingPartyUri = "imjs_3dtile_generator_relying_party_uri";
+  public static readonly configRegion = "imjs_3dtile_generator_region";
   /**
    * Creates an instance of TilesGeneratorClient.
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", TilesGeneratorClient._defaultUrlDescriptor[deploymentEnv] + "/");
+  public constructor() {
+    super("v2.5");
   }
 
   /**
@@ -84,9 +78,38 @@ export class TilesGeneratorClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return TilesGeneratorClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(TilesGeneratorClient.configURL))
+      return Config.App.get(TilesGeneratorClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${TilesGeneratorClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(TilesGeneratorClient.configRegion))
+      return Config.App.get(TilesGeneratorClient.configRegion);
+
+    return undefined;
+  }
+
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(TilesGeneratorClient.configRelyingPartyUri))
+      return Config.App.get(TilesGeneratorClient.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${TilesGeneratorClient.configRelyingPartyUri}`);
+  }
   /**
    * Queries for tile generator jobs
    * @param token Delegation token of the authorized user issued for this service.
@@ -130,7 +153,7 @@ export class TilesGeneratorClient extends WsgClient {
 
     const job: Job = await this.getJob(alctx, accessToken, queryOptions);
 
-    const webNavigatorClient = new IModelWebNavigatorClient(this.deploymentEnv);
+    const webNavigatorClient = new IModelWebNavigatorClient();
     const webNavigatorUrl: string = await webNavigatorClient.getUrl(alctx);
 
     return `${webNavigatorUrl}/?id=${job.tilesId}&projectId=${job.contextId}&dataId=${job.dataId}`;

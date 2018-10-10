@@ -1,21 +1,29 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { FrontstageProps } from "@bentley/ui-framework";
-import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton } from "@bentley/ui-framework";
-import { ToolWidget } from "@bentley/ui-framework";
-import { ZoneState } from "@bentley/ui-framework";
-import { WidgetState } from "@bentley/ui-framework";
-import { NavigationWidget } from "@bentley/ui-framework";
+import {
+  FrontstageProps,
+  GroupButton,
+  ToolButton,
+  ToolWidget,
+  ZoneState,
+  WidgetState,
+  NavigationWidget,
+  FrontstageDef,
+} from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
-export class Frontstage1 {
+export class Frontstage1 extends FrontstageDef {
+
+  constructor() {
+    super();
+    this.initializeFromProps(this.defineProps());
+  }
 
   public defineProps(): FrontstageProps {
     const frontstageProps: FrontstageProps = {

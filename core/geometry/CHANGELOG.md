@@ -1,6 +1,46 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 03 Oct 2018 17:00:37 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+*Version update only*
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- When visiting spans within bspline curves, test for degenerate (replicated knot) cases
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+*Version update only*
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- Distribute classes to smaller files: Point2dVector2d, Point3dVector3d, YawPitchRollAngles, Segment1d, Matrix3d XYZProps
+- Add README.md
+- Spread various geometry classes to smaller files
+- Updating copyrights
+- Updating README to remove internal links
 
 ## 0.148.0
 Wed, 03 Oct 2018 17:00:37 GMT

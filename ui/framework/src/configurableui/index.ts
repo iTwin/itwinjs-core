@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -43,6 +43,7 @@ export * from "./ToolbarWidgetBase";
 export * from "./ToolSettingsZone";
 export * from "./ToolUiProvider";
 export * from "./ToolWidget";
+export * from "./ViewportContentControl";
 export * from "./WidgetControl";
 export * from "./WidgetDef";
 export * from "./WidgetFactory";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { NineZoneProps, getDefaultProps } from "../../../src/zones/state/NineZone";
@@ -71,11 +71,14 @@ export namespace TestProps {
       ...openedZone6.zones,
       6: {
         ...openedZone6.zones[6],
-        floatingBounds: {
-          left: 0,
-          top: 0,
-          right: 10,
-          bottom: 10,
+        floating: {
+          bounds: {
+            left: 0,
+            top: 0,
+            right: 10,
+            bottom: 10,
+          },
+          stackId: 1,
         },
       },
     },

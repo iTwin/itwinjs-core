@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -166,7 +166,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     IModelHost.startup();
     const activityContext = new ActivityLoggingContext(Guid.createValue());
-    accessToken = await IModelTestUtils.getAccessToken(activityContext, TestUsers.superManager, "QA");
+    accessToken = await IModelTestUtils.getAccessToken(activityContext, TestUsers.superManager);
     testProjectId = (await queryProjectIdByName(activityContext, accessToken, "iModelJsTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(activityContext, accessToken, testProjectId, "BridgeTest", seedPathname);

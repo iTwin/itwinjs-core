@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,7 +7,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Config as ClientConfig } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,
@@ -50,7 +50,7 @@ export class SampleApp extends IModelApp {
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
-      ClientConfig.devCorsProxyServer = `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`;
+      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`);
 
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({

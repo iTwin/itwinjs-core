@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module MessageBox */
@@ -12,7 +12,7 @@ import { MessageBox, MessageSeverity } from "@bentley/ui-core";
 
 import { ModalDialogManager } from "./ModalDialogManager";
 
-/** Props for StandardMessageBox React component */
+/** Properties for [[StandardMessageBox]] React component */
 export interface StandardMessageBoxProps {
   /** Indicates whether the message box is open */
   opened: boolean;
@@ -26,6 +26,7 @@ export interface StandardMessageBoxProps {
   onResult?: (result: MessageBoxValue) => void;
 }
 
+/** State for [[StandardMessageBox]] React component */
 export interface StandardMessageBoxState {
   opened: boolean;
 }

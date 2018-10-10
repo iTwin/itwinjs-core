@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
@@ -204,7 +204,13 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     this._dialogContainer = document.createElement("div");
 
-    const nineZone = NineZoneManager.setAllowsMerging(4, false, getDefaultNineZone());
+    const nineZone =
+      NineZoneManager.mergeZone(9, 6,
+        NineZoneManager.setAllowsMerging(4, false,
+          getDefaultNineZone(),
+        ),
+      );
+
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
@@ -339,7 +345,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           isToolGroupOpen: false,
         } as ToolGroup,
         "cube": {
-          icon: "icon-3d-placeholder",
+          icon: "icon-placeholder",
           trayId: "tray1",
           backTrays: [],
           trays: {
@@ -484,6 +490,22 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getZones() {
+    const zones = Object.keys(this.state.nineZone.zones)
+      .map((key) => Number(key) as WidgetZoneIndex)
+      .sort((id1, id2) => {
+        const z1 = this.state.nineZone.zones[id1];
+        const z2 = this.state.nineZone.zones[id2];
+        if (!z1.floating && !z2.floating)
+          return z1.id - z2.id;
+
+        if (!z1.floating)
+          return -1;
+
+        if (!z2.floating)
+          return 1;
+
+        return z1.floating.stackId - z2.floating.stackId;
+      });
     return (
       <Zones ref={this._zones}>
         <MouseTracker onPositionChange={this._handlePositionChange} />
@@ -507,14 +529,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         >
           Text element required.
         </TemporaryMessage>
-        {this.getZone(1)}
-        {this.getZone(2)}
-        {this.getZone(3)}
-        {this.getZone(4)}
-        {this.getZone(6)}
-        {this.getZone(7)}
-        {this.getZone(8)}
-        {this.getZone(9)}
+        {zones.map((z) => this.getZone(z))}
       </Zones>
     );
   }
@@ -770,9 +785,9 @@ export default class ZonesExample extends React.Component<{}, State> {
     });
   }
 
-  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle) => {
+  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => {
-      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
+      const nineZone = NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone);
       return {
         nineZone,
       };
@@ -1419,7 +1434,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     const handleMode = this.getTabHandleMode(zone, widget);
     switch (widget.id) {
       case 3: {
-        return ([
+        return (
           <WidgetTab
             key="3_1"
             mode={mode1}
@@ -1431,8 +1446,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-tools" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 4: {
         return (
@@ -1467,7 +1482,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         );
       }
       case 6: {
-        return ([
+        return (
           <WidgetTab
             key="6_1"
             mode={mode1}
@@ -1479,11 +1494,11 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 7: {
-        return ([
+        return (
           <WidgetTab
             key="7_1"
             mode={mode1}
@@ -1495,11 +1510,11 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 8: {
-        return ([
+        return (
           <WidgetTab
             key="8_1"
             mode={mode1}
@@ -1514,8 +1529,8 @@ export default class ZonesExample extends React.Component<{}, State> {
             anchor={anchor}
           >
             <i className="icon icon-placeholder" />
-          </WidgetTab>,
-        ]);
+          </WidgetTab>
+        );
       }
       case 9: {
         return (
@@ -1617,6 +1632,7 @@ export default class ZonesExample extends React.Component<{}, State> {
             >
               Show Activity Message
             </BlueButton>
+            <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
             <br />
             <BlueButton
               onClick={() => this.setVisibleMessage(Message.Modal)}
@@ -1746,7 +1762,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   }
 
   private getTabs(zoneId: WidgetZoneIndex, isOpen: boolean, anchor: HorizontalAnchor) {
-    let tabs: JSX.Element[] = [];
+    const tabs: JSX.Element[] = [];
     let i = -1;
 
     const zone = this.state.nineZone.zones[zoneId];
@@ -1758,7 +1774,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
       if (i !== 0)
         tabs.push(<TabSeparator key={i} />);
-      tabs = tabs.concat(widgetTabs);
+      tabs.push(widgetTabs);
     }
 
     return tabs;
@@ -1783,15 +1799,17 @@ export default class ZonesExample extends React.Component<{}, State> {
     const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
     return (
       <StackedWidget
-        horizontalAnchor={zone.horizontalAnchor}
-        verticalAnchor={zone.verticalAnchor}
         content={this.getZoneContent(zoneId)}
+        fillZone={zone.props.isLayoutChanged}
+        horizontalAnchor={zone.horizontalAnchor}
         isDragged={isDragged}
+        isFloating={zone.props.floating ? true : false}
         isOpen={isOpen}
-        onResize={(x, y, handle) => {
-          this._handleOnWidgetResize(zoneId, x, y, handle);
+        onResize={(x, y, handle, diff) => {
+          this._handleOnWidgetResize(zoneId, x, y, handle, diff);
         }}
         tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
+        verticalAnchor={zone.verticalAnchor}
       />
     );
   }
@@ -1815,8 +1833,8 @@ export default class ZonesExample extends React.Component<{}, State> {
     const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
-      <>
-        <Zone bounds={zone.props.floatingBounds || zone.props.bounds}>
+      <React.Fragment key={zoneId}>
+        <Zone bounds={zone.props.floating ? zone.props.floating.bounds : zone.props.bounds}>
           {this.getWidget(zoneId)}
         </Zone>
         <Zone bounds={zone.props.bounds}>
@@ -1825,13 +1843,16 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 
   private getZone1() {
     return (
-      <Zone bounds={this.state.nineZone.zones[1].bounds}>
+      <Zone
+        bounds={this.state.nineZone.zones[1].bounds}
+        key={1}
+      >
         <ToolsWidget
           button={
             <AppButton
@@ -1881,7 +1902,10 @@ export default class ZonesExample extends React.Component<{}, State> {
 
   private getZone2() {
     return (
-      <Zone bounds={this.state.nineZone.zones[2].bounds}>
+      <Zone
+        bounds={this.state.nineZone.zones[2].bounds}
+        key={2}
+      >
         {this.getToolSettingsWidget()}
       </Zone>
     );
@@ -1898,8 +1922,10 @@ export default class ZonesExample extends React.Component<{}, State> {
     const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
-      <>
-        <Zone bounds={this.state.nineZone.zones[zoneId].floatingBounds || this.state.nineZone.zones[zoneId].bounds}>
+      <React.Fragment key={zoneId}>
+        <Zone
+          bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
+        >
           <ToolsWidget
             isNavigation
             preserveSpace
@@ -1969,7 +1995,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 
@@ -1979,7 +2005,7 @@ export default class ZonesExample extends React.Component<{}, State> {
 
     if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
       return (
-        <>
+        <React.Fragment key={statusZone.id}>
           <FooterZone
             isInFooterMode={statusZone.props.isInFooterMode}
             bounds={statusZone.props.bounds}
@@ -2131,12 +2157,12 @@ export default class ZonesExample extends React.Component<{}, State> {
           {!outlineBounds ? undefined :
             <GhostOutline bounds={outlineBounds} />
           }
-        </>
+        </React.Fragment>
       );
 
     return (
-      <>
-        <Zone bounds={statusZone.props.floatingBounds || statusZone.props.bounds}>
+      <React.Fragment key={statusZone.id}>
+        <Zone bounds={statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds}>
           {this.getWidget(statusZone.id)}
         </Zone>
         <Zone bounds={statusZone.props.bounds}>
@@ -2145,7 +2171,7 @@ export default class ZonesExample extends React.Component<{}, State> {
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
-      </>
+      </React.Fragment>
     );
   }
 }

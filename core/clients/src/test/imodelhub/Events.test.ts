@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -34,7 +34,7 @@ function mockCreateEventSubscription(imodelId: Guid, eventTypes: EventType[]) {
     new Map<string, any>([
       ["eventTypes", eventTypes],
     ])));
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockUpdateEventSubscription(imodelId: Guid, subscriptionId: string, eventTypes: EventType[]) {
@@ -52,7 +52,7 @@ function mockUpdateEventSubscription(imodelId: Guid, subscriptionId: string, eve
       ["wsgId", subscriptionId],
       ["eventTypes", eventTypes],
     ])));
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockGetEventSASToken(imodelId: Guid) {
@@ -63,11 +63,11 @@ function mockGetEventSASToken(imodelId: Guid) {
   const responseObject = ResponseBuilder.generateObject<EventSAS>(EventSAS,
     new Map<string, any>([
       ["sasToken", Guid.createValue()],
-      ["baseAddress", `${utils.defaultUrl}/sv1.1/Repositories/iModel--${imodelId}/iModelScope`],
+      ["baseAddress", `${utils.IModelHubUrlMock.getUrl()}/sv1.1/Repositories/iModel--${imodelId}/iModelScope`],
     ]));
   const requestResponse = ResponseBuilder.generatePostResponse<EventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<EventSAS>(ResponseBuilder.generateObject<EventSAS>(EventSAS));
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockGetEvent(imodelId: Guid, subscriptionId: string, eventBody: object | (() => object), eventType?: string, timeout?: number, statusCode = 200, delay = 0) {
@@ -79,7 +79,7 @@ function mockGetEvent(imodelId: Guid, subscriptionId: string, eventBody: object 
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Subscriptions", query);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, {}, headers, statusCode, delay);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, eventBody, 1, {}, headers, statusCode, delay);
 }
 
 function mockDeleteEventSubscription(imodelId: Guid, subscriptionId: string) {
@@ -87,7 +87,7 @@ function mockDeleteEventSubscription(imodelId: Guid, subscriptionId: string) {
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "EventSubscription", subscriptionId);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
 }
 
 describe("iModelHub EventHandler", () => {
@@ -100,7 +100,8 @@ describe("iModelHub EventHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   const alctx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
@@ -168,6 +169,29 @@ describe("iModelHub EventHandler", () => {
     mockGetEvent(imodelId, subscription.wsgId, {}, undefined, undefined, 204);
     const result = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(result).to.be.equal(undefined);
+  });
+
+  it("should return undefined when timeout is set", async () => {
+    const timeout = !TestConfig.enableMocks ? 10 : 1;
+
+    mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 1);
+    const result = await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, timeout);
+    chai.expect(result).to.be.equal(undefined);
+  });
+
+  it("should timeout if response wasn't returned in time", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 20000);
+    let error;
+    try {
+      await imodelHubClient.Events().getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 1);
+    } catch (err) {
+      error = err;
+    }
+    chai.assert(error);
+    chai.expect(error.message).to.be.equal("Timeout of 1500ms exceeded");
   });
 
   it("should receive code event", async () => {

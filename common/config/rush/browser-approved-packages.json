@@ -12,11 +12,15 @@
     },
     {
       "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/bwc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/config-loader",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
@@ -371,6 +375,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "json5",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -448,7 +456,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "openid-client",

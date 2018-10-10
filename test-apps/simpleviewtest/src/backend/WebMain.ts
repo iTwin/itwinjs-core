@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -70,7 +70,7 @@ if (serverConfig === undefined) {
   });
 
   // Initialize additional web-specific backend parts
-  Config.devCorsProxyServer = "https://localhost:3001";
+  Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
   setupStandaloneConfiguration();
 
   serverConfig = { port: 3000, baseUrl: "https://localhost" };

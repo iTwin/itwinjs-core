@@ -1,16 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType, SchemaItemKey } from "../ECObjects";
-import { SchemaItemVisitor, LazyLoadedUnitSystem, LazyLoadedUnit } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItemVisitor, LazyLoadedUnitSystem, LazyLoadedUnit } from "./../Interfaces";
 import Schema from "./Schema";
 import UnitSystem from "./UnitSystem";
 import Unit from "./Unit";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.

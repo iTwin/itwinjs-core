@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import * as path from "path";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
-  IPresentationManager, IRulesetManager, IRulesetVariablesManager,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -48,12 +48,16 @@ export interface Props {
  * Backend Presentation manager which pulls the presentation data from
  * an iModel using native platform.
  */
-export default class PresentationManager implements IPresentationManager<IModelDb> {
+export default class PresentationManager {
 
   private _props: Props;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
   private _isDisposed: boolean;
+
+  /**
+   * Get / set active locale used for localizing presentation data
+   */
   public activeLocale: string | undefined;
 
   /**
@@ -90,13 +94,13 @@ export default class PresentationManager implements IPresentationManager<IModelD
   /**
    * Get rulesets manager
    */
-  public rulesets(): IRulesetManager { return this._rulesets; }
+  public rulesets(): RulesetManager { return this._rulesets; }
 
   /**
    * Get ruleset variables manager for specific ruleset
    * @param rulesetId Id of the ruleset to get variables manager for
    */
-  public vars(rulesetId: string): IRulesetVariablesManager {
+  public vars(rulesetId: string): RulesetVariablesManager {
     return new RulesetVariablesManager(this.getNativePlatform, rulesetId);
   }
 
@@ -122,83 +126,173 @@ export default class PresentationManager implements IPresentationManager<IModelD
     this.getNativePlatform().setupLocaleDirectories(localeDirectories);
   }
 
-  public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {
+  /**
+   * Retrieves root nodes.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @return A promise object that returns either an array of nodes on success or an error string on error.
+   */
+  public async getRootNodes(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
-    return this.request<Node[]>(requestOptions.imodel, params, nodesListReviver);
+    return this.request<Node[]>(activityLoggingContext, requestOptions.imodel, params, nodesListReviver);
   }
 
-  public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelDb>): Promise<number> {
+  /**
+   * Retrieves root nodes count.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @return A promise object that returns the number of root nodes.
+   */
+  public async getRootNodesCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<number> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
-    return this.request<number>(requestOptions.imodel, params);
+    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
   }
 
-  public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+  /**
+   * Retrieves children of the specified parent node.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param parentKey    Key of the parent node.
+   * @return A promise object that returns either an array of nodes on success or an error string on error.
+   */
+  public async getChildren(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, {
       nodeKey: parentKey,
     });
-    return this.request<Node[]>(requestOptions.imodel, params, nodesListReviver);
+    return this.request<Node[]>(activityLoggingContext, requestOptions.imodel, params, nodesListReviver);
   }
 
-  public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelDb>, parentKey: Readonly<NodeKey>): Promise<number> {
+  /**
+   * Retrieves children count for the specified parent node.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param parentKey Key of the parent node.
+   * @return A promise object that returns the number of child nodes.
+   */
+  public async getChildrenCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey: Readonly<NodeKey>): Promise<number> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, {
       nodeKey: parentKey,
     });
-    return this.request<number>(requestOptions.imodel, params);
+    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
   }
 
-  public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param paths Paths from root node to some child node.
+   * @param markedIndex Index of the path in `paths` that will be marked.
+   * @return A promise object that returns either an array of paths on success or an error string on error.
+   */
+  public async getNodePaths(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
       paths,
       markedIndex,
     });
-    return this.request<NodePathElement[]>(requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(activityLoggingContext, requestOptions.imodel, params, nodePathElementReviver);
   }
 
-  public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param filterText Text to filter nodes against.
+   * @return A promise object that returns either an array of paths on success or an error string on error.
+   */
+  public async getFilteredNodePaths(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
       filterText,
     });
-    return this.request<NodePathElement[]>(requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(activityLoggingContext, requestOptions.imodel, params, nodePathElementReviver);
   }
 
-  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+  /**
+   * Retrieves the content descriptor which can be used to get content.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param displayType  The preferred display type of the return content.
+   * @param keys         Keys of ECInstances to get the content for.
+   * @param selection    Optional selection info in case the content is being requested due to selection change.
+   * @return A promise object that returns either a descriptor on success or an error string on error.
+   */
+  public async getContentDescriptor(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
       displayType,
       keys,
       selection,
     });
-    return this.request<Descriptor | undefined>(requestOptions.imodel, params, Descriptor.reviver);
+    return this.request<Descriptor | undefined>(activityLoggingContext, requestOptions.imodel, params, Descriptor.reviver);
   }
 
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+  /**
+   * Retrieves the content set size based on the supplied content descriptor override.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param descriptor           Content descriptor which specifies how the content should be returned.
+   * @param keys                 Keys of ECInstances to get the content for.
+   * @return A promise object that returns either a number on success or an error string on error.
+   * Even if concrete implementation returns content in pages, this function returns the total
+   * number of records in the content set.
+   */
+  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
     });
-    return this.request<number>(requestOptions.imodel, params);
+    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
   }
 
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+  /**
+   * Retrieves the content based on the supplied content descriptor override.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param descriptor           Content descriptor which specifies how the content should be returned.
+   * @param keys                 Keys of ECInstances to get the content for.
+   * @return A promise object that returns either content on success or an error string on error.
+   */
+  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
     });
-    return this.request<Content>(requestOptions.imodel, params, Content.reviver);
+    return this.request<Content>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
   }
 
-  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+  /**
+   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   * @param descriptor           Content descriptor which specifies how the content should be returned.
+   * @param keys                 Keys of ECInstances to get the content for.
+   * @param fieldName            Name of the field from which to take values.
+   * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
+   * @return A promise object that returns either distinct values on success or an error string on error.
+   */
+  public async getDistinctValues(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+    activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       keys,
       fieldName,
       maximumValueCount,
     });
-    return this.request<string[]>(requestOptions.imodel, params);
+    return this.request<string[]>(activityLoggingContext, requestOptions.imodel, params);
   }
 
-  private async request<T>(imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
+  private async request<T>(activityLoggingContext: ActivityLoggingContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
+    activityLoggingContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, params);
+    const serializedResponse = await this.getNativePlatform().handleRequest(activityLoggingContext, imodelAddon, params);
+    activityLoggingContext.enter();
     if (!serializedResponse)
       throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);

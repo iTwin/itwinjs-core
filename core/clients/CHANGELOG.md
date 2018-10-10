@@ -1,6 +1,61 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+### Updates
+
+- Increase timeouts for iModelHub file based requests
+- Fix for the iModelHub integration tests
+- Removed UlasClient as it cannot be open-sourced.
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- Setup logout, and cleaned up the OIDC API a little. 
+- Reenabling iModelHub unit tests
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+### Updates
+
+- imodel-bank local-orchestrator changes
+- OidcClient split into different classes for various use case
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- Added UlasClient to index.ts
+- Added missing URL to the whitelist
+- use imodel-bank local-orchestrator for tests
+- further simplification
+- Marking some tests as integration
+- Better OIDC support for agents.
+- Add README.md
+- imodel-bank mode
+- Updating copyrights
+- Added configuration system to imodeljs and removed urls/credentials
+- Rename config var to what they do.
+- Mark test as integeration that were not marked but access imodelhub
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

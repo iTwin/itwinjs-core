@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
-import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { request, RequestQueryOptions, Response } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Config } from "./Config";
 
 /** Connect project */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -118,16 +118,12 @@ export enum IModelHubPermissions {
 /** Client API to access the connect services. */
 export class RbacClient extends WsgClient {
   public static readonly searchKey: string = "RBAC.URL";
+  public static readonly configURL = "imjs_rbac_url";
+  public static readonly configRegion = "imjs_rbac_region";
+  public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-rbac-eus.cloudapp.net",
-    QA: "https://qa-connect-rbac.bentley.com",
-    PROD: "https://connect-rbac.bentley.com",
-    PERF: "https://perf-rbac-eus.cloudapp.net",
-  };
-
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.4", "https://connect-wsg20.bentley.com");
+  public constructor() {
+    super("v2.4");
   }
 
   /**
@@ -143,7 +139,37 @@ export class RbacClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return RbacClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(RbacClient.configURL))
+      return Config.App.get(RbacClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${RbacClient.configURL}`);
+  }
+
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(RbacClient.configRelyingPartyUri))
+      return Config.App.get(RbacClient.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
+  }
+
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(RbacClient.configRegion))
+      return Config.App.get(RbacClient.configRegion);
+
+    return undefined;
   }
 
   /**
@@ -241,17 +267,13 @@ export class RbacClient extends WsgClient {
 /** Client API to access the connect services. */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  private readonly _rbacClient: RbacClient = new RbacClient(this.deploymentEnv);
+  public static readonly configURL = "imjs_connected_context_service_url";
+  public static readonly configRegion = "imjs_connected_context_service_region";
+  public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
+  private readonly _rbacClient: RbacClient = new RbacClient();
 
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-contextregistry.bentley.com",
-    QA: "https://qa-connect-contextregistry.bentley.com",
-    PROD: "https://connect-wsg20.bentley.com",
-    PERF: "https://perf-connect-contextregistry.bentley.com",
-  };
-
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "sv1.0", "https://connect-wsg20.bentley.com");
+  public constructor() {
+    super("sv1.0");
   }
 
   /**
@@ -267,7 +289,37 @@ export class ConnectClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ConnectClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(ConnectClient.configURL))
+      return Config.App.get(ConnectClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key  ${ConnectClient.configURL}`);
+  }
+
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(ConnectClient.configRegion))
+      return Config.App.get(ConnectClient.configRegion);
+
+    return undefined;
+  }
+
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(ConnectClient.configRelyingPartyUri))
+      return Config.App.get(ConnectClient.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ConnectClient.configRelyingPartyUri}`);
   }
 
   /**

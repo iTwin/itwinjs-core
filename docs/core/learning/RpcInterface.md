@@ -73,7 +73,7 @@ The interface definition class should define a method for each operation that is
 
 The definition class must also define two static properties as interface metadata:
 * `types`. Specifies any non-primitive types used in the methods of interface.
-* `version`. The interface version number.
+* `version`. The interface version number. See [below](#rpcinterface-version) for more on interface versioning.
 
 The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
 
@@ -213,7 +213,7 @@ If the app has its own backend, and if its backend serves both its RpcInterfaces
 
 2. Different Servers
 
-If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `baseUri` property when configuring BentleyCloudRpcManager.
+If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `uriPrefix` property when configuring BentleyCloudRpcManager.
 
 *Web example (separate backend):*
 ``` ts
@@ -248,3 +248,15 @@ Briefly, here is how it works:
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
 See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLoggingContext.md) for details.
+
+## RpcInterface Versioning
+
+Each RpcInterface has a version. This should not to be confused with the version of the package that implements the interface. The version of an RpcInterface refers to the shape of the interface itself.
+
+You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org).
+
+Interface version incompatibility is a possibility when a client makes requests on a remote server. iModelJs checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
+
+The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
+* The server implements a newer (major) version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
+* The server implements an older (major or minor) version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.

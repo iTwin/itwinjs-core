@@ -1,0 +1,14 @@
+{
+  "baseUrl": "https://localhost",
+  "port": 3002,
+  "keyFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.key",
+  "certFile": "${IMODELJS_CLIENTS_TEST_IMODEL_BANK}/dev/local_dev_server.crt",
+  "usageServiceConfig": {
+    "connectUserName": "${imjs_test_regular_user_name}",
+    "connectPassword": "${imjs_test_regular_user_password}"
+  },
+  "backofficeServicesConfig": {
+    "serviceIdentityUserName": "${imjs_test_regular_user_name}",
+    "serviceIdentityPassword": "${imjs_test_regular_user_password}"
+  }
+}

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
@@ -9,14 +9,13 @@ import { Guid, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, Project,
-  ProgressInfo, UrlDescriptor, DeploymentEnv,
+  ProgressInfo,
 } from "../../";
 import {
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
 } from "../../";
-import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
@@ -26,8 +25,30 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelBankClient } from "../../IModelBank";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
+import { Config } from "../../Config";
+import { KnownRegions } from "../../Client";
+import { IModelBaseHandler } from "../../imodelhub";
 
 const bankProjects: string[] = [];
+
+function configMockSettings() {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const url = Config.App.get("imjs_buddi_url", "");
+  if (url)
+    return;
+
+  Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
+  Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
+  Config.App.set("imjs_buddi_resolve_url_using_region", KnownRegions.DEV);
+  Config.App.set("imjs_connect_app_guid", Guid.createValue());
+  Config.App.set("imjs_connect_device_id", Guid.createValue());
+  Config.App.set("imjs_test_serviceAccount1_user_name", "test");
+  Config.App.set("imjs_test_serviceAccount1_user_password", "test");
+  Config.App.set("imjs_test_manager_user_name", "test");
+  Config.App.set("imjs_test_manager_user_password", "test");
+}
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -79,7 +100,7 @@ let _imodelHubClient: IModelHubClient;
 function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
-  _imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  _imodelHubClient = new IModelHubClient(new AzureFileHandler());
   if (!TestConfig.enableMocks) {
     _imodelHubClient.RequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
@@ -89,26 +110,21 @@ function getImodelHubClient() {
 let _imodelBankClient: IModelBankClient;
 
 export class IModelHubUrlMock {
-  private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-imodelhubapi.bentley.com",
-    QA: "https://qa-imodelhubapi.bentley.com",
-    PROD: "https://imodelhubapi.bentley.com",
-    PERF: "https://perf-imodelhubapi.bentley.com",
-  };
-
-  public static getUrl(env: DeploymentEnv): string {
-    return this._urlDescriptor[env];
+  public static getUrl(): string {
+    configMockSettings();
+    return Config.App.get("imjs_imodelhub_url", "");
   }
 
-  public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, env, this._urlDescriptor[env]);
+  public static mockGetUrl() {
+    if (!TestConfig.enableMocks)
+      return;
+    const url = IModelHubUrlMock.getUrl();
+    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, Config.App.get("imjs_buddi_resolve_url_using_region"), url);
   }
 }
 
-export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
-
 export function getDefaultClient() {
-  IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
+  IModelHubUrlMock.mockGetUrl();
   return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
 }
 
@@ -159,7 +175,7 @@ export async function login(userCredentials?: UserCredentials): Promise<AccessTo
     return new MockAccessToken();
 
   userCredentials = userCredentials || TestUsers.regular;
-  return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials, TestConfig.deploymentEnv);
+  return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials);
 }
 
 export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {
@@ -229,9 +245,9 @@ export function getMockFileSize(): string {
 export function mockUploadFile(imodelId: Guid, chunks = 1) {
   for (let i = 0; i < chunks; ++i) {
     const blockId = Base64.encode(i.toString(16).padStart(5, "0"));
-    ResponseBuilder.mockResponse(defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456&comp=block&blockid=${blockId}`);
+    ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Put, `/imodelhub-${imodelId}/123456&comp=block&blockid=${blockId}`);
   }
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456&comp=blocklist`);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Put, `/imodelhub-${imodelId}/123456&comp=blocklist`);
 }
 
 /** Briefcases */
@@ -271,7 +287,7 @@ export function mockGetBriefcase(imodelId: Guid, ...briefcases: Briefcase[]) {
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Briefcase>(briefcases);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockCreateBriefcase(imodelId: Guid, id: number) {
@@ -281,7 +297,7 @@ export function mockCreateBriefcase(imodelId: Guid, id: number) {
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
   const postBody = ResponseBuilder.generatePostBody<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
   const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(generateBriefcase(id));
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 /** ChangeSets */
@@ -319,7 +335,7 @@ export function mockGetChangeSet(imodelId: Guid, getDownloadUrl: boolean, query?
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
     getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 /** Codes */
@@ -365,11 +381,11 @@ export function mockGetCodes(imodelId: Guid, query?: string, ...codes: HubCode[]
   if (query === undefined) {
     const requestResponse = ResponseBuilder.generateGetArrayResponse<HubCode>(codes);
     const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Code", "$query");
-    ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
   } else {
     const requestResponse = ResponseBuilder.generateGetArrayResponse<MultiCode>(convertCodesToMultiCodes(codes));
     const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "MultiCode", query);
-    ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
   }
 }
 
@@ -382,7 +398,7 @@ export function mockUpdateCodes(imodelId: Guid, ...codes: HubCode[]) {
   const requestPath = `/sv1.1/Repositories/iModel--${imodelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateChangesetResponse<MultiCode>(multicodes);
   const postBody = ResponseBuilder.generateChangesetBody<MultiCode>(multicodes);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 export function mockDeniedCodes(imodelId: Guid, requestOptions?: object, ...codes: HubCode[]) {
@@ -401,7 +417,7 @@ export function mockDeniedCodes(imodelId: Guid, requestOptions?: object, ...code
       }))],
     ]));
   const postBody = ResponseBuilder.generateChangesetBody<MultiCode>(multicodes, requestOptions);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
 export function mockDeleteAllCodes(imodelId: Guid, briefcaseId: number) {
@@ -409,7 +425,7 @@ export function mockDeleteAllCodes(imodelId: Guid, briefcaseId: number) {
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Code", `DiscardReservedCodes-${briefcaseId}`);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Delete, requestPath, {});
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, {});
 }
 
 /** Locks */
@@ -479,11 +495,11 @@ export function mockGetLocks(imodelId: Guid, query?: string, ...locks: Lock[]) {
   if (query === undefined) {
     const requestResponse = ResponseBuilder.generateGetArrayResponse<Lock>(locks);
     const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock", "$query");
-    ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
   } else {
     const requestResponse = ResponseBuilder.generateGetArrayResponse<MultiLock>(convertLocksToMultiLocks(locks));
     const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "MultiLock", query);
-    ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
   }
 }
 
@@ -495,7 +511,7 @@ export function mockUpdateLocks(imodelId: Guid, locks: Lock[], requestOptions?: 
   const requestPath = `/sv1.1/Repositories/iModel--${imodelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateChangesetResponse<MultiLock>(multilocks);
   const postBody = ResponseBuilder.generateChangesetBody<MultiLock>(multilocks, requestOptions);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 export function mockDeniedLocks(imodelId: Guid, locks: Lock[], requestOptions?: object) {
@@ -513,7 +529,7 @@ export function mockDeniedLocks(imodelId: Guid, locks: Lock[], requestOptions?: 
       }))],
     ]));
   const postBody = ResponseBuilder.generateChangesetBody<MultiLock>(multilocks, requestOptions);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
 /** Named versions */
@@ -536,7 +552,7 @@ export function mockGetVersions(imodelId: Guid, query?: string, ...versions: Ver
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockGetVersionById(imodelId: Guid, version: Version) {
@@ -545,7 +561,7 @@ export function mockGetVersionById(imodelId: Guid, version: Version) {
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", version.wsgId);
   const requestResponse = ResponseBuilder.generateGetResponse<Version>(version);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockCreateVersion(imodelId: Guid, name?: string, changesetId?: string) {
@@ -557,7 +573,7 @@ export function mockCreateVersion(imodelId: Guid, name?: string, changesetId?: s
   delete (postBodyObject.wsgId);
   const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject);
   const requestResponse = ResponseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId, true));
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 export function mockUpdateVersion(imodelId: Guid, version: Version) {
@@ -567,7 +583,7 @@ export function mockUpdateVersion(imodelId: Guid, version: Version) {
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", version.wsgId);
   const postBody = ResponseBuilder.generatePostBody<Version>(version);
   const requestResponse = ResponseBuilder.generatePostResponse<Version>(version);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 /** Thumbnails */
@@ -582,7 +598,7 @@ function mockThumbnailResponse(requestPath: string, size: "Small" | "Large", ...
   const requestResponse = size === "Small" ?
     ResponseBuilder.generateGetArrayResponse<SmallThumbnail>(thumbnails) :
     ResponseBuilder.generateGetArrayResponse<LargeThumbnail>(thumbnails);
-  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockGetThumbnails(imodelId: Guid, size: "Small" | "Large", ...thumbnails: Thumbnail[]) {

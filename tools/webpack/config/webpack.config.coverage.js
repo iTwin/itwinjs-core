@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -9,7 +9,7 @@ const helpers = require("./helpers");
 
 const baseConfiguration = require("./webpack.config.test");
 
-module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {  
+module.exports = helpers.mergeWebpackConfigs(baseConfiguration, {
   module: {
     rules: [
       {

@@ -1,16 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
 import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
-import { LazyLoadedMixin } from "../Interfaces";
-import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection, SchemaItemKey } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedMixin } from "./../Interfaces";
+import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection } from "./../ECObjects";
+import { SchemaItemKey } from "./../SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { NavigationProperty, AnyProperty, Property } from "./Property";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import Schema from "./Schema";
 
 /**

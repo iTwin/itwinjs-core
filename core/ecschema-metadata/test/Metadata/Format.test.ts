@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../src/Metadata/Schema";
-import Format from "../../src/Metadata/Format";
-import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "../../src/utils/FormatEnums";
-import { ECObjectsError } from "../../src/Exception";
-import Unit from "../../src/Metadata/Unit";
-import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
+import Schema from "./../../src/Metadata/Schema";
+import Format from "./../../src/Metadata/Format";
+import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "./../../src/utils/FormatEnums";
+import { ECObjectsError } from "./../../src/Exception";
+import Unit from "./../../src/Metadata/Unit";
+import { schemaItemTypeToString, SchemaItemType } from "./../../src/ECObjects";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -2185,8 +2185,8 @@ describe("Format tests", () => {
       testFormat.fromJsonSync(json);
       const formatSerialization = testFormat.toJson(false, true);
       assert.isDefined(formatSerialization);
-      assert(formatSerialization.formatTraits.indexOf("keepSingleZero") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("trailZeroes") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("KeepSingleZero") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("TrailZeroes") !== -1);
     });
     it("String with valid options", () => {
       const json = {
@@ -2206,16 +2206,16 @@ describe("Format tests", () => {
       testFormat.fromJsonSync(json);
       const formatSerialization = testFormat.toJson(false, true);
       assert.isDefined(formatSerialization);
-      assert(formatSerialization.formatTraits.indexOf("trailZeroes") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("keepSingleZero") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("zeroEmpty") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("keepDecimalPoint") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("applyRounding") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("fractionDash") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("showUnitLabel") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("prependUnitLabel") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("use1000Separator") !== -1);
-      assert(formatSerialization.formatTraits.indexOf("exponentOnlyNegative") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("TrailZeroes") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("KeepSingleZero") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("ZeroEmpty") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("KeepDecimalPoint") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("ApplyRounding") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("FractionDash") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("ShowUnitLabel") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("PrependUnitLabel") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("Use1000Separator") !== -1);
+      assert(formatSerialization.formatTraits.indexOf("ExponentOnlyNegative") !== -1);
     });
     it("Empty string should make formatTraits undefined", () => {
       const json = {

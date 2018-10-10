@@ -1,15 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
 import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, ArgumentCheck } from "./Errors";
-
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Config } from "../Config";
 import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
@@ -293,7 +291,7 @@ export class ChangeSetHandler {
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("downloadToPath", downloadToPath);
 
-    if (Config.isBrowser)
+    if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)
@@ -350,7 +348,7 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("changeSetPathname", changeSetPathname);
 
-    if (Config.isBrowser)
+    if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
 
     if (!this._fileHandler)

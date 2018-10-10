@@ -4,6 +4,8 @@ exports[`<Content /> renders correctly 1`] = `
 <div
   className="nz-widget-rectangular-content"
 >
-  <div />
+  <div
+    className="nz-container"
+  />
 </div>
 `;

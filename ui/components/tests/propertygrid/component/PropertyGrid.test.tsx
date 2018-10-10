@@ -1,19 +1,43 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as moq from "typemoq";
+import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid } from "../../../src/propertygrid/component/PropertyGrid";
+import { PropertyGrid, PropertyGridCategory } from "../../../src/propertygrid/component/PropertyGrid";
 import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory } from "../../../src/propertygrid/PropertyDataProvider";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyDescription } from "../../../src/properties";
+import { SamplePropertyRecord } from "../PropertyTestHelpers";
 import { SimplePropertyDataProvider } from "../../../src/propertygrid";
-import { ExpandableBlock } from "../../../src/propertygrid/component/ExpandableBlock";
+import { PropertyCategoryBlock } from "../../../src/propertygrid/component/PropertyCategoryBlock";
+import TestUtils from "../../TestUtils";
+
+class SamplePropertyDataProvider extends SimplePropertyDataProvider {
+  constructor() {
+    super();
+
+    const category1: PropertyCategory = { name: "Group_1", label: "Group 1", expand: true };
+    this.addCategory(category1);
+
+    const category2: PropertyCategory = { name: "Group_2", label: "Group 2", expand: false };
+    this.addCategory(category2);
+
+    const pr1 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
+    this.addProperty(pr1, 0);
+
+    const pr2 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
+    this.addProperty(pr2, 1);
+  }
+}
 
 describe("PropertyGrid", () => {
+
+  before(() => {
+    TestUtils.initializeUiComponents();
+  });
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();
@@ -40,121 +64,118 @@ describe("PropertyGrid", () => {
     expect(evt2.numberOfListeners).to.eq(0, "listener should be removed when component is unmounted");
   });
 
-  class SamplePropertyRecord extends PropertyRecord {
-    constructor(name: string, index: number, value: any, typename: string = "string", editor?: string) {
-      const v: PrimitiveValue = {
-        valueFormat: PropertyValueFormat.Primitive,
-        value,
-        displayValue: value.toString(),
-      };
-      const p: PropertyDescription = {
-        name: name + index,
-        displayLabel: name,
-        typename,
-      };
-      if (editor)
-        p.editor = { name: editor, params: [] };
-      super(v, p);
-
-      this.description = `${name} - description`;
-      this.isReadonly = false;
-    }
-  }
-
-  class SamplePropertyDataProvider extends SimplePropertyDataProvider {
-    constructor() {
-      super();
-
-      const category1: PropertyCategory = { name: "Group_1", label: "Group 1", expand: true };
-      this.addCategory(category1);
-
-      const category2: PropertyCategory = { name: "Group_2", label: "Group 2", expand: false };
-      this.addCategory(category2);
-
-      const pr1 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
-      this.addProperty(pr1, 0);
-
-      const pr2 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
-      this.addProperty(pr2, 1);
-    }
-  }
-
-  it("should render horizontally", () => {
-    const dataProvider = new SamplePropertyDataProvider();
-    mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-  });
-
-  it("should render vertically", () => {
-    const dataProvider = new SamplePropertyDataProvider();
-    mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />);
-  });
-
-  it("renders correctly horizontally", () => {
-    const dataProvider = new SamplePropertyDataProvider();
-    shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />).should.matchSnapshot();
-  });
-
-  it("renders correctly vertically", () => {
-    const dataProvider = new SamplePropertyDataProvider();
-    shallow(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />).should.matchSnapshot();
-  });
-
-  it("click a Category header", (done) => {
+  it("renders correctly horizontally", async () => {
     const dataProvider = new SamplePropertyDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
-    setImmediate(() => {
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
 
-      let categoryBlock = wrapper.find(ExpandableBlock).at(0);
-      expect(categoryBlock).to.not.be.null;
-      if (categoryBlock) {
-        expect(categoryBlock.prop("isExpanded")).to.be.true;
-        categoryBlock.find(".header").simulate("click");
-        categoryBlock = wrapper.find(ExpandableBlock).at(0);
-        expect(categoryBlock.prop("isExpanded")).to.be.false;
-      }
+    wrapper.update();
 
-      categoryBlock = wrapper.find(ExpandableBlock).at(1);
-      expect(categoryBlock).to.not.be.null;
-      if (categoryBlock) {
-        expect(categoryBlock.prop("isExpanded")).to.be.false;
-        categoryBlock.find(".header").simulate("click");
-        categoryBlock = wrapper.find(ExpandableBlock).at(1);
-        expect(categoryBlock.prop("isExpanded")).to.be.true;
-      }
-
-      done();
-    }, 0);
+    expect(wrapper.find(".components-property-list--horizontal").first().exists()).to.be.true;
   });
 
-  it("press Enter on a Category header", (done) => {
+  it("renders correctly vertically", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    expect(wrapper.find(".components-property-list--vertical").first().exists()).to.be.true;
+  });
+
+  it("renders PropertyCategoryBlocks correctly", async () => {
     const dataProvider = new SamplePropertyDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
-    setImmediate(() => {
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
 
-      let categoryBlock = wrapper.find(ExpandableBlock).at(0);
-      expect(categoryBlock).to.not.be.null;
-      if (categoryBlock) {
-        expect(categoryBlock.prop("isExpanded")).to.be.true;
-        categoryBlock.find(".header").simulate("keyPress", { key: " ", which: 32 });
-        categoryBlock = wrapper.find(ExpandableBlock).at(0);
-        expect(categoryBlock.prop("isExpanded")).to.be.false;
-      }
+    wrapper.update();
 
-      categoryBlock = wrapper.find(ExpandableBlock).at(1);
-      expect(categoryBlock).to.not.be.null;
-      if (categoryBlock) {
-        expect(categoryBlock.prop("isExpanded")).to.be.false;
-        categoryBlock.find(".header").simulate("keyPress", { key: "Enter", which: 13 });
-        categoryBlock = wrapper.find(ExpandableBlock).at(1);
-        expect(categoryBlock.prop("isExpanded")).to.be.true;
-      }
+    let categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "First category block does not exist").to.be.true;
 
-      done();
-    }, 0);
+    categoryBlock = wrapper.find(PropertyCategoryBlock).at(1);
+    expect(categoryBlock.exists(), "Second category block does not exist").to.be.true;
+  });
+
+  it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".header").simulate("click");
+
+    const isExpanded = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+    expect(isExpanded, "Category did not get collapsed").to.be.false;
+  });
+
+  it("calls onPropertySelectionChanged when property gets clicked and selection is enabled", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const onPropertySelectionChanged = sinon.spy();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertySelectionEnabled={true}
+        onPropertySelectionChanged={onPropertySelectionChanged}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+
+    expect(onPropertySelectionChanged.called).to.be.true;
+  });
+
+  it("does not call onPropertySelectionChanged when property gets clicked and selection is disabled", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const onPropertySelectionChanged = sinon.spy();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertySelectionEnabled={false}
+        onPropertySelectionChanged={onPropertySelectionChanged}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+
+    expect(onPropertySelectionChanged.called).to.be.false;
+  });
+
+  it("rerenders if data in the provider changes", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+
+    dataProvider.addCategory({ name: "Group_3", label: "Group 3", expand: false });
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlocks = wrapper.find(PropertyCategoryBlock);
+    expect(categoryBlocks.children().length).to.be.eq(3);
   });
 
 });

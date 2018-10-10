@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export { default as UiCore } from "./UiCore";
@@ -29,6 +29,10 @@ export * from "./utils";
 /**
  * @docs-group-description Base
  * Low-level classes and components for building application UI.
+ */
+/**
+ * @docs-group-description CheckBoxList
+ * Classes for working with a CheckBox list.
  */
 /**
  * @docs-group-description Common

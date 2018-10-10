@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
@@ -7,16 +7,23 @@
 @import "../_variables";
 
 .nz-widget-rectangular-content {
-  max-height: 100%;
+  $padding: 10px;
+
+  height: 100%;
   overflow: auto;
+  padding-left: $padding;
+  padding-right: $padding;
 
   &.nz-left-anchor {
+    display: flex;
+    flex-direction: row-reverse;
     direction: rtl;
+    margin-right: $padding;
+
+    > .nz-container {
+      direction: ltr;
+    }
   }
 
   @include nz-scrollbar($color: $background-4);
-
-  > div {
-    direction: ltr;
-  }
 }

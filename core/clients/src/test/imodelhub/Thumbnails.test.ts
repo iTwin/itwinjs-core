@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -23,7 +23,7 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
 
   let response = "";
   for (let i = 0; i < getThumbnailLength(size); i++) { response += "a"; }
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, { response });
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
 function mockDownloadLatestThumbnail(_projectId: string, imodelId: Guid, size: ThumbnailSize) {
@@ -55,7 +55,8 @@ describe("iModelHub ThumbnailHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   const actx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
       imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());

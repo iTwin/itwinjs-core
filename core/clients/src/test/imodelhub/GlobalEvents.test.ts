@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -27,7 +27,7 @@ function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, {}, headers, responseCode, delay);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, eventBody, 1, {}, headers, responseCode, delay);
 }
 
 function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, eventType?: string, timeout?: number, responseCode: number = 201, delay?: number) {
@@ -35,7 +35,7 @@ function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, even
     return;
 
   const headerLocationQuery = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
-  const responseHeaderLocation = utils.defaultUrl + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
+  const responseHeaderLocation = utils.IModelHubUrlMock.getUrl() + utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", headerLocationQuery);
 
   const headers = eventType ? {
     "content-type": eventType!,
@@ -45,7 +45,7 @@ function mockPeekLockGlobalEvent(subscriptionId: string, eventBody: object, even
   if (timeout)
     query += `?timeout=${timeout}`;
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, eventBody, 1, undefined, headers, responseCode, delay);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, eventBody, 1, undefined, headers, responseCode, delay);
 }
 
 function mockDeleteLockedEvent(subscriptionId: string, responseCode: number = 200) {
@@ -54,7 +54,7 @@ function mockDeleteLockedEvent(subscriptionId: string, responseCode: number = 20
   const query = subscriptionId + "/messages/2/7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547";
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", query);
 
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, undefined, 1, undefined, undefined, responseCode);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath, undefined, 1, undefined, undefined, responseCode);
 }
 
 function mockCreateGlobalEventsSubscription(subscriptionId: string, eventTypes: GlobalEventType[]) {
@@ -75,7 +75,7 @@ function mockCreateGlobalEventsSubscription(subscriptionId: string, eventTypes: 
         ["eventTypes", eventTypes],
         ["subscriptionId", subscriptionId],
       ])));
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockUpdateGlobalEventSubscription(wsgId: string, subscriptionId: string, eventTypes: GlobalEventType[]) {
@@ -91,7 +91,7 @@ function mockUpdateGlobalEventSubscription(wsgId: string, subscriptionId: string
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSubscription", wsgId);
   const requestResponse = ResponseBuilder.generatePostResponse<GlobalEventSubscription>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<GlobalEventSubscription>(responseObject);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockDeleteGlobalEventsSubscription(wsgId: string) {
@@ -99,7 +99,7 @@ function mockDeleteGlobalEventsSubscription(wsgId: string) {
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSubscription", wsgId);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
 }
 
 function mockGetGlobalEventSASToken() {
@@ -109,10 +109,10 @@ function mockGetGlobalEventSASToken() {
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSAS");
   const responseObject = ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS, new Map<string, any>([
     ["sasToken", "12345"],
-    ["baseAddress", `${utils.defaultUrl}/sv1.1/Repositories/Global--Global/GlobalScope`]]));
+    ["baseAddress", `${utils.IModelHubUrlMock.getUrl()}/sv1.1/Repositories/Global--Global/GlobalScope`]]));
   const requestResponse = ResponseBuilder.generatePostResponse<GlobalEventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<HubIModel>(ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS));
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 describe("iModelHub GlobalEventHandler", () => {

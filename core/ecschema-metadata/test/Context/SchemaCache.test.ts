@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -10,10 +10,10 @@ const expect = chai.expect;
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
-import { SchemaCache } from "../../src/Context";
-import Schema from "../../src/Metadata/Schema";
-import { ECObjectsError } from "../../src/Exception";
-import { SchemaKey } from "../../src/ECObjects";
+import { SchemaCache } from "./../../src/Context";
+import Schema from "./../../src/Metadata/Schema";
+import { ECObjectsError } from "./../../src/Exception";
+import SchemaKey from "./../../src/SchemaKey";
 
 describe("Schema Cache", () => {
   it("adding should succeed", async () => {

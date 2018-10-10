@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
@@ -17,7 +17,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps, DecorationGeometryProps } from "@bentley/imodeljs-common";
 
-/** AccuSnap is an aide for snapping to interesting points on elements as the cursor moves over them. */
+/** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them. */
 export class AccuSnap implements Decorator {
   /** Currently active hit */
   public currHit?: HitDetail;
@@ -88,11 +88,11 @@ export class AccuSnap implements Decorator {
   }
 
   /** Can be implemented by a subclass of AccuSnap to implement a SnapMode override that applies only to the next point.
-   * This method will be called whenever a new tool is installed and on a button event.
+   * This method will be called whenever a new tool is installed and on button events.
    */
   public synchSnapMode(): void { }
 
-  /** Check whether current tentative snap has valid urve geometry for finding extended intersections. */
+  /** Check whether current tentative snap has valid curve geometry for finding extended intersections. */
   private get _searchForExtendedIntersections(): boolean {
     const snap = IModelApp.tentativePoint.getCurrSnap();
     return (undefined !== snap && undefined !== snap.primitive);
@@ -119,7 +119,7 @@ export class AccuSnap implements Decorator {
     this._lastCursorPos.setFrom(IModelApp.toolAdmin.currentInputState.lastMotion);
   }
 
-  /** Clear any AccuSnap info on the screen and release any hit path references */
+  /** Clear the current AccuSnap info. */
   public clear(): void { this.setCurrHit(undefined); }
   public setCurrHit(newHit?: HitDetail): void {
     const newSnap = AccuSnap.toSnapDetail(newHit);
@@ -156,7 +156,7 @@ export class AccuSnap implements Decorator {
     this.showSnapSprite();
   }
 
-  /**  flash a hit in a single view. */
+  /** flash a hit in a single view. */
   private flashHitInView(hit: HitDetail, context: DecorateContext) {
     const viewport = context.viewport;
     if (!viewport || !this.hitShouldBeHilited(hit) || !this.needsFlash(viewport))
@@ -496,7 +496,7 @@ export class AccuSnap implements Decorator {
 
       if (1 === snapModes.length && undefined === requestProps.intersectCandidates) {
         if (out) out.snapStatus = SnapStatus.NoSnapPossible;
-        return undefined; // Don't make back end request when only doing intersection snap when we don't have another hit to interesect with...
+        return undefined; // Don't make back end request when only doing intersection snap when we don't have another hit to intersect with...
       }
     }
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -263,16 +263,30 @@ export class KnotVector {
       if (u < this.knots[i + 1]) return i;  // testing against right side skips over multiple knot cases???
     return lastLeftKnot;
   }
+  /**
+   * Given a span index, return the index of the knot at its left.
+   * @param spanIndex index of span
+   */
   public spanIndexToLeftKnotIndex(spanIndex: number): number {
     const d = this.degree;
     if (spanIndex <= 0.0) return d - 1;
-
     return Math.min(spanIndex + d - 1, this.knots.length - d);
   }
-  public spanIndexToSpanLength(spanIndex: number) {
+  public spanIndexToSpanLength(spanIndex: number): number {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
     return this.knots[k + 1] - this.knots[k];
   }
+/**
+ * Given a span index, test if it is withn range and has nonzero length.
+ * * note that a false return does not imply there are no more spans.  This may be a double knot (zero length span) followed by more real spans
+ * @param spanIndex index of span to test.
+ */
+  public isIndexOfRealSpan(spanIndex: number): boolean {
+    if (spanIndex >= 0 && spanIndex < this.knots.length - this.degree)
+      return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
+    return false;
+  }
+
   public reflectKnots() {
     const a = this.leftKnot;
     const b = this.rightKnot;

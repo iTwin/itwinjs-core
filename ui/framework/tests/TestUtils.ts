@@ -1,14 +1,13 @@
-/*--------------------------------------------------------------------------------------------
-| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *-------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiFramework, FrameworkReducer, FrameworkState } from "../src/index";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
-import { UserManagerSettings, WebStorageStateStore, InMemoryWebStorage } from "oidc-client";
 import { DeepReadonly, ActionsUnion, createAction } from "../src/utils/redux-ts";
-
 export interface SampleAppState {
   placeHolder?: boolean;
 }
@@ -55,24 +54,6 @@ export default class TestUtils {
     return TestUtils._i18n;
   }
 
-  private static createOidcSettings(): UserManagerSettings {
-    const oidcSettings: UserManagerSettings = {
-      authority: "https://qa-imsoidc.bentley.com/",
-      client_id: "imodeljs-spa-test-2686",
-      redirect_uri: "http://localhost:3000/signin-oidc",
-      response_type: "id_token token",
-      scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service",
-    };
-
-    const stateStoreStorage = new InMemoryWebStorage();
-    const userStoreStorage = new InMemoryWebStorage();
-
-    (oidcSettings as any).stateStore = new WebStorageStateStore({ store: stateStoreStorage });
-    (oidcSettings as any).userStore = new WebStorageStateStore({ store: userStoreStorage });
-
-    return oidcSettings;
-  }
-
   public static async initializeUiFramework() {
     if (!TestUtils._uiFrameworkInitialized) {
       // This is required by our I18n module (specifically the i18next package).
@@ -87,8 +68,7 @@ export default class TestUtils {
       this.store = createStore(this._rootReducer,
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
-      const oidcSettings = TestUtils.createOidcSettings();
-      await UiFramework.initialize(this.store, TestUtils.i18n, oidcSettings);
+      await UiFramework.initialize(this.store, TestUtils.i18n);
       await UiComponents.initialize(TestUtils.i18n);
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
@@ -101,7 +101,6 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 async function openIModel(state: SimpleViewState) {
   await retrieveProjectConfiguration();
   configuration.iModelName = activeViewState.projectConfig!.iModelName;
-  IModelApp.hubDeploymentEnv = configuration.environment || "QA";
   if (configuration.customOrchestratorUri)
     await initializeCustomCloudEnv(state, configuration.customOrchestratorUri);
   else
@@ -1177,8 +1176,8 @@ class IncidentMarker extends Marker {
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
   }
 
-  public onDecorate(context: DecorateContext) {
-    super.onDecorate(context);
+  public addMarker(context: DecorateContext) {
+    super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
     builder.setSymbology(ColorDef.white, this._color, 1);
@@ -1763,7 +1762,7 @@ async function main() {
   } else {
     const uriPrefix = configuration.customOrchestratorUri;
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.devCorsProxyServer = "https://localhost:3001";
+    Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())

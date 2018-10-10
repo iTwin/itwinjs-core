@@ -3,174 +3,175 @@
  *--------------------------------------------------------------------------------------------*/
  @import "@bentley/bwc/lib/mixins";
 
- div.react-data-grid-wrapper {
+.react-data-grid-wrapper {
+
   /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
   user-select: none;
-}
 
-.react-grid-Canvas {
-  height: calc(100% - 25px) !important;
+  .react-grid-Canvas {
+    height: calc(100% - 25px) !important;
 
-  @supports (-webkit-overflow-scrolling: touch) {
-    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
-    -webkit-overflow-scrolling: touch;
+    @supports (-webkit-overflow-scrolling: touch) {
+      overflow-y: scroll; /* overflow-y has to be scroll, not auto */
+      -webkit-overflow-scrolling: touch;
+    }
   }
-}
 
-.react-grid-Container,
-.react-grid-Grid,
-.react-grid-Main,
-.react-grid-Viewport
- {
-  min-height: 100% !important;
-  height: 100% !important;
-}
+  .react-grid-Container,
+  .react-grid-Grid,
+  .react-grid-Main,
+  .react-grid-Viewport
+  {
+    min-height: 100% !important;
+    height: 100% !important;
+  }
 
-.react-grid-Container,
-.react-grid-Canvas {
-  width: 100% !important;
-}
+  .react-grid-Container,
+  .react-grid-Canvas {
+    width: 100% !important;
+  }
 
-.react-grid-HeaderRow {
-  width: calc(100% - 28px) !important;
-}
+  .react-grid-HeaderRow {
+    width: calc(100% - 28px) !important;
+  }
 
-.react-grid-Main,
-.react-grid-Grid,
-.react-grid-Viewport,
-.react-grid-Canvas,
-.react-grid-Row * {
-  border: none;
-  background: #F9F9F9;
-  outline: none;
-  font-size: 14px;
-}
+  .react-grid-Main,
+  .react-grid-Grid,
+  .react-grid-Viewport,
+  .react-grid-Canvas,
+  .react-grid-Row * {
+    border: none;
+    background: #F9F9F9;
+    outline: none;
+    font-size: 14px;
+  }
 
-.react-grid-Row {
-  width: fit-content;
-}
+  .react-grid-Row {
+    width: fit-content;
+  }
 
-.is-hover-enabled .react-grid-Row:hover,.is-hover-enabled .react-grid-Row:hover * {
-  background: #e4f5fd !important;
-}
+  .is-hover-enabled .react-grid-Row:hover,.is-hover-enabled .react-grid-Row:hover * {
+    background: #e4f5fd !important;
+  }
 
-.react-grid-Row.row-selected, .react-grid-Row.row-selected * {
-  background: #a6d7f5;
-}
+  .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
+    background: #a6d7f5;
+  }
 
-.react-grid-Cell {
-  padding-left: 0px;
-  padding-right: 0px;
-}
+  .react-grid-Cell {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
 
-.react-grid-Cell--locked:last-of-type {
-  border: none;
-  box-sizing: border-box;
-}
+  .react-grid-Cell--locked:last-of-type {
+    border: none;
+    box-sizing: border-box;
+  }
 
-.react-grid-Cell:focus {
-  outline: none !important;
-}
+  .react-grid-Cell:focus {
+    outline: none !important;
+  }
 
-.react-grid-Header {
-  background: #dce0e3;
-}
+  .react-grid-Header {
+    background: #dce0e3;
+  }
 
-.react-grid-HeaderCell {
-  padding: 4px 0 0 8px;
-  box-sizing: border-box;
-  background: #dce0e3;
-  font-size: 14px;
-  border: none;
-}
+  .react-grid-HeaderCell {
+    padding: 4px 0 0 8px;
+    box-sizing: border-box;
+    background: #dce0e3;
+    font-size: 14px;
+    border: none;
+  }
 
-.react-grid-HeaderCell .react-grid-HeaderCell__draggable {
-  background: #dce0e3;
-  width: 8px !important;
-  left: 100%;
-  z-index: 2;
-}
+  .react-grid-HeaderCell .react-grid-HeaderCell__draggable {
+    background: #dce0e3;
+    width: 8px !important;
+    left: 100%;
+    z-index: 2;
+  }
 
-.react-grid-HeaderCell--locked {
-  z-index: 3;
-}
+  .react-grid-HeaderCell--locked {
+    z-index: 3;
+  }
 
-.react-grid-HeaderCell .react-grid-HeaderCell__draggable::after {
-  content: ' ';
-  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E');
-  height: 10px;
-  width: 2px;
-  position: relative;
-  display: block;
-  position: relative;
-  background-size: contain;
-  top: calc(50% - 5px);
-  left: calc(50% - 1px);
-  pointer-events: none;
-}
+  .react-grid-HeaderCell .react-grid-HeaderCell__draggable::after {
+    content: ' ';
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E');
+    height: 10px;
+    width: 2px;
+    position: relative;
+    display: block;
+    position: relative;
+    background-size: contain;
+    top: calc(50% - 5px);
+    left: calc(50% - 1px);
+    pointer-events: none;
+  }
 
 
-.property-name-cell span {
-  height: 100%;
-  display: inline-block;
-  vertical-align: text-bottom;
-  padding: 0 0 2px 6px;
-}
+  .property-name-cell span {
+    height: 100%;
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding: 0 0 2px 6px;
+  }
 
-.property-name-cell be-svg-icon {
-  width: 24px;
-  height: 16px;
-  margin-top: 4px;
-}
+  .property-name-cell be-svg-icon {
+    width: 24px;
+    height: 16px;
+    margin-top: 4px;
+  }
 
-.angry-text{
-  font-weight: 400;
-  color: red;
-}
+  .angry-text{
+    font-weight: 400;
+    color: red;
+  }
 
-.row, .row * {
-  width: 100%;
-  height: 100%;
-}
+  .row, .row * {
+    width: 100%;
+    height: 100%;
+  }
 
-.cell, .cell * {
-  padding-left: 8px;
-  padding-right: 8px;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top:0px;
-  left:0px;
-  background-color: #F9F9F9;
-  user-select: none;
-  display: flex;
-  align-items: center;
-}
+  .cell, .cell * {
+    padding-left: 8px;
+    padding-right: 8px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top:0px;
+    left:0px;
+    background-color: #F9F9F9;
+    user-select: none;
+    display: flex;
+    align-items: center;
+  }
 
-.cell.is-selected {
-  background-color: #a6d7f5;
-}
+  .cell.is-selected {
+    background-color: #a6d7f5;
+  }
 
-.cell.is-hover-enabled:hover {
-  background: #e4f5fd !important;
-}
+  .cell.is-hover-enabled:hover {
+    background: #e4f5fd !important;
+  }
 
-.react-grid-Cell__value {
-  position: absolute;
-  width:100%;
-  height:100%;
-}
+  .react-grid-Cell__value {
+    position: absolute;
+    width:100%;
+    height:100%;
+  }
 
-.icon {
-  padding-left: 0px;
-  background: inherit;
-}
+  .icon {
+    padding-left: 0px;
+    background: inherit;
+  }
 
-.cell-editor {
-  border: $bwc-blue solid 2px;
-  background: #F9F9F9 !important;
-  box-sizing: border-box;
-  height: 100%;
+  .cell-editor {
+    border: $bwc-blue solid 2px;
+    background: #F9F9F9 !important;
+    box-sizing: border-box;
+    height: 100%;
+  }
 }

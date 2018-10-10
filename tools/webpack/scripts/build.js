@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const chalk = require("chalk");
-
 exports.command = "build <target>";
 exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>
@@ -25,11 +24,23 @@ exports.builder = (yargs) =>
         alias: "B",
         describe: "Only build the BACKEND bundle",
         conflicts: "frontend"
-      },
+      }
+
+    })
+    .options({
+      "noConfigLoader": {
+        type: "boolean",
+        default: "false",
+        describe: "do not run config-loader to locate a iModelJS config"
+      }
     });
 
 exports.handler = async (argv) => {
-
+  if (!argv.noConfigLoader) {
+    process.env.IMODELJS_NO_CONFIG_LOADER = true;
+  } else {
+    console.log("Skipping search for iModelJS config directory");
+  }
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("production");
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -204,7 +204,7 @@ export class Sample {
       quadrant4.clone()]));
     return result;
   }
-  public static createBsplineCurves(): BSplineCurve3d[] {
+  public static createBsplineCurves(includeMultipleKnots: boolean = false): BSplineCurve3d[] {
     const result: BSplineCurve3d[] = [];
     const zScale = 0.1;
     for (const order of [2, 3, 4, 5]) {
@@ -215,9 +215,27 @@ export class Sample {
       const curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
       result.push(curve);
     }
+    if (includeMultipleKnots) {
+      const interiorKnotCandidates = [1, 2, 2, 3, 4, 5, 5, 6, 7, 7, 8];
+      for (const order of [3, 4]) {
+        const numPoints = 8;
+        const points = [];
+        for (let i = 0; i < numPoints; i++)
+          points.push(Point3d.create(i, i * i, 0));
+        const knots = [];
+        for (let i = 0; i < order - 1; i++) knots.push(0);
+        const numInteriorNeeded = numPoints - order;
+        for (let i = 0; i < numInteriorNeeded; i++)knots.push(interiorKnotCandidates[i]);
+        const lastKnot = knots[knots.length - 1] + 1;
+        for (let i = 0; i < order - 1; i++) knots.push(lastKnot);
+        const curve = BSplineCurve3d.create(points, knots, order);
+        if (curve)
+          result.push(curve);
+      }
+    }
     return result;
-
   }
+
   public static createBspline3dHCurves(): BSplineCurve3dH[] {
     const result: BSplineCurve3dH[] = [];
     const zScale = 0.1;

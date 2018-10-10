@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OverallContent */
@@ -8,7 +8,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { User } from "oidc-client";
 import { OidcProvider } from "redux-oidc";
-import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
+import { AccessToken, OidcFrontendClient } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { IModelOpen } from "../openimodel/IModelOpen";
 import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";
@@ -21,10 +21,8 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { UiFramework } from "../UiFramework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ProjectInfo } from "../clientservices/ProjectServices";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-type IModelViewsSelectedFunc = (project: ProjectInfo, iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) => void;
+type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -35,10 +33,12 @@ export interface OverallContentProps {
   appBackstage?: React.ReactNode;
   currentPage: OverallContentPage | number;
   onIModelViewsSelected: IModelViewsSelectedFunc;
+  onWorkOffline?: () => void; // Note: this will be removed!
   user: User;
   accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
   setAccessToken: (accessToken: AccessToken) => any;
+  clearAccessToken: () => any;
 }
 
 function mapStateToProps(state: any) {
@@ -52,6 +52,7 @@ function mapStateToProps(state: any) {
 const mapDispatch = {
   setOverallPage: OverallContentActions.setOverallPage,
   setAccessToken: OverallContentActions.setAccessToken,
+  clearAccessToken: OverallContentActions.clearAccessToken,
 };
 
 /**
@@ -64,13 +65,8 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     super(props);
   }
 
-  // called when the "Sign In" button is clicked
-  private _onSignIn() {
-    UiFramework.userManager.signinRedirect();
-  }
-
   // called when an imodel (and views) have been selected on the IModelOpen
-  private _onOpenIModel(iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) {
+  private _onOpenIModel(iModelInfo: IModelInfo, views: ViewDefinitionProps[]) {
 
     // view ids are passed as params
     const viewIds: Id64String[] = new Array<Id64String>();
@@ -80,26 +76,28 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
     // open the imodel and set the page
     // Note: this should be refactored, just seems like hack!
-    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
-    this.props.setOverallPage(OverallContentPage.OfflinePage);
+    this.props.onIModelViewsSelected(iModelInfo, viewIds);
+    this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
   }
 
   // called when the "Offline" is clicked on the Sign In.
   private _onOffline() {
+    if (this.props.onWorkOffline)
+      this.props.onWorkOffline();
     this.props.setOverallPage(OverallContentPage.OfflinePage);
   }
 
   public componentDidMount() {
     const user = this.props.user;
-    if (!user || user.expired)
-      return;
+    if (user && !user.expired) {
+      const accessToken: AccessToken = OidcFrontendClient.createAccessToken(user);
+      this.props.setAccessToken(accessToken);
+    }
+  }
 
-    const startsAt: Date = new Date(user.expires_at - user.expires_in!);
-    const expiresAt: Date = new Date(user.expires_at);
-    const userProfile = new UserProfile(user.profile.given_name, user.profile.family_name, user.profile.email!, user.profile.sub, user.profile.org_name!, user.profile.org!, user.profile.ultimate_site!, user.profile.usage_country_iso!);
-
-    const accessToken: AccessToken = AccessToken.fromJsonWebTokenString(user.access_token, userProfile, startsAt, expiresAt);
-    this.props.setAccessToken(accessToken);
+  public componentDidUpdate(oldProps: OverallContentProps) {
+    if ((!this.props.user || this.props.user.expired) && (oldProps.accessToken))
+      this.props.clearAccessToken();
   }
 
   public render(): JSX.Element | undefined {
@@ -116,7 +114,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignIn onSignIn={this._onSignIn} onOffline={this._onOffline.bind(this)} />
+          <SignIn onSignIn={() => UiFramework.userManager.signinRedirect()} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {

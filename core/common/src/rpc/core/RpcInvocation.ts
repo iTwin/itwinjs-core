@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
 import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
@@ -79,10 +79,11 @@ export class RpcInvocation {
       try {
         this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
 
+        // TODO: Use semver
         const backend = this.operation.interfaceVersion;
         const frontend = this.request.operation.interfaceVersion;
         if (backend !== frontend) {
-          throw new IModelError(BentleyStatus.ERROR, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
+          throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
         }
       } catch (error) {
         if (this.handleUnknownOperation(error)) {

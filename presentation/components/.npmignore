@@ -4,6 +4,7 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 !lib/**/*.scss
+!lib/public/**/*
 !package.json
 !*.md
 # then ignore some stuff again

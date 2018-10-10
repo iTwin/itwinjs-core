@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -8,7 +8,6 @@ import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Popup, Position} from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
 import "./IModelCard.scss";
@@ -17,7 +16,7 @@ export interface IModelCardProps {
   showDescription?: boolean;
   iModel: IModelInfo;
   accessToken: AccessToken;
-  onSelectIModel?: (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  onSelectIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelCardState {
@@ -71,10 +70,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showViews: false });
   }
 
-  private _onViewsSelected = (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
+  private _onViewsSelected = (views: ViewDefinitionProps[]) => {
     this._onViewsClose();
     if (this.props.onSelectIModel)
-      this.props.onSelectIModel (this.props.iModel, iModelConnection, views);
+      this.props.onSelectIModel (this.props.iModel, views);
   }
 
   private _onViewsClicked = () => {

@@ -3,7 +3,8 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [{
+  "configurations": [
+    {
       "type": "node",
       "request": "launch",
       "name": "LocalOrchestrator",
@@ -52,20 +53,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend IntegrationTests",
-      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend",
-      "args": [
-        "--testDir=${workspaceFolder}/core/backend/lib/test/integration",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Run Performance test (Offline)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
@@ -88,7 +75,10 @@
         "--testDir=${workspaceFolder}/core/clients/lib/test",
         "--debug",
         "--offline",
-        "mock"
+        "mock",
+        "--grep",
+        "#integration",
+        "--invert"
       ],
       "port": 9229,
       "protocol": "inspector",
@@ -494,12 +484,6 @@
       "outFiles": [
         "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
       ],
-      "args": [
-        "--listenFor=45000",
-        "--email=Regular.IModelJsTestUser@mailinator.com",
-        "--password=Regular@iMJs",
-        "--listen_time=40000"
-      ],
       "protocol": "inspector"
     },
     {
@@ -517,11 +501,13 @@
       "outputCapture": "std"
     },
   ],
-  "compounds": [{
-    "name": "Run Testbed (all)",
-    "configurations": [
-      "_Testbed (frontend)",
-      "_Testbed (backend)"
-    ]
-  }]
+  "compounds": [
+    {
+      "name": "Run Testbed (all)",
+      "configurations": [
+        "_Testbed (frontend)",
+        "_Testbed (backend)"
+      ]
+    }
+  ]
 }

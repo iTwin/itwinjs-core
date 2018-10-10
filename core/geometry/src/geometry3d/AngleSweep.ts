@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { GrowableFloat64Array } from "./GrowableArray";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
@@ -183,15 +187,15 @@ export class AngleSweep implements BeJSONFunctions {
         const fraction2 = Geometry.safeDivideFraction(delta2, -sweep, 0.0);
         return fraction2;
     }
-   /** map an angle to a fractional coordinate which is:
-    *
-    * *  the start angle is at fraction 0
-    * *  the end angle is at fraction 1
-    * *  interior angles are between 0 and 1
-    * *  small negative for angles just "before" the start angle
-    * *  more than one for angles just "after" the end angle
-    * *  the periodic jump is at the middle of the "outside" interval
-    */
+    /** map an angle to a fractional coordinate which is:
+     *
+     * *  the start angle is at fraction 0
+     * *  the end angle is at fraction 1
+     * *  interior angles are between 0 and 1
+     * *  small negative for angles just "before" the start angle
+     * *  more than one for angles just "after" the end angle
+     * *  the periodic jump is at the middle of the "outside" interval
+     */
     public angleToSignedPeriodicFraction(theta: Angle): number {
         return this.radiansToSignedPeriodicFraction(theta.radians);
     }

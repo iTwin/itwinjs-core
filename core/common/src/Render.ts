@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -1818,7 +1818,7 @@ export class Feature implements Comparable<Feature> {
 
 /**
  * Describes the type of a 'batch' of graphics as produced by [[RenderSystem.createBatch]].
- * The most commonly-encountered batches are [[Tile]]s, which can be of either Primary or
+ * The most commonly-encountered batches are Tiles, which can be of either Primary or
  * Classifier type.
  */
 export const enum BatchType {
@@ -1835,7 +1835,7 @@ export const enum BatchType {
 /**
  * Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
  * indices are assigned to each unique Feature. Primitives within the [[RenderGraphic]] can
- * use per-vertex indices to specify the distribution of Features within the primitive.
+ * use per-vertex indices to specify the distribution of Features within the primitive.V
  * A FeatureTable can be shared amongst multiple primitives within a single [[RenderGraphic]], and
  * amongst multiple sub-Graphics of a [[RenderGraphic]].
  * @see [[FeatureSymbology]] for mechanisms for resymbolizing features within a [[ViewState]].

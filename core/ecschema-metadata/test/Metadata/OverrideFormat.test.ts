@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -11,7 +11,7 @@ import Unit from "../../src/Metadata/Unit";
 import { FractionalPrecision, ShowSignOption, FormatTraits } from "../../src/utils/FormatEnums";
 
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaContext } from "../../src/Context";
+import SchemaContext from "../../src/Context";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { InvertedUnit } from "../../src";
 

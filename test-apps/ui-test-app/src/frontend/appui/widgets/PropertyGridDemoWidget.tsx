@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -93,7 +93,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
   }
 }
 
-class VerticalPropertyGridWidgetControl extends WidgetControl {
+export class VerticalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -119,7 +119,7 @@ class VerticalPropertyGridWidget extends React.Component<WidgetControlProps> {
 
 ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
-class HorizontalPropertyGridWidgetControl extends WidgetControl {
+export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -153,7 +153,7 @@ class HorizontalPropertyGridContentControl extends ContentControl {
   }
 }
 
-class HorizontalPropertyGridContent extends React.Component {
+export class HorizontalPropertyGridContent extends React.Component {
   private _dataProvider: PropertyDataProvider;
 
   constructor(props: any) {

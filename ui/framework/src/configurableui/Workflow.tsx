@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Workflow */
@@ -78,7 +78,7 @@ export class Workflow extends ItemDefBase {
   }
 
   /** Override of the execute method. A Workflow's execute does nothing. */
-  public execute(): void {
+  public async execute(): Promise<void> {
   }
 
   /** Override of the toolbarReactNode method. A Workflow provides no Toolbar React node. */
@@ -231,7 +231,7 @@ export class WorkflowManager {
   /** Sets the active Workflow
    * @param workflow  The Workflow to set as active
    */
-  public static setActiveWorkflow(workflow: Workflow) {
+  public static setActiveWorkflow(workflow: Workflow): void {
     this._activeWorkflow = workflow;
     WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
   }
@@ -240,12 +240,12 @@ export class WorkflowManager {
    * @param workflow  The Workflow to set as active
    * @param task      The Task to set as active
    */
-  public static setActiveWorkflowAndTask(workflow: Workflow, task: Task) {
+  public static async setActiveWorkflowAndTask(workflow: Workflow, task: Task): Promise<void> {
     if (!workflow.isActive)
       this.setActiveWorkflow(workflow);
 
     if (!task.isActive)
-      workflow.setActiveTask(task);
+      await workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */
@@ -258,7 +258,7 @@ export class WorkflowManager {
     return this._defaultWorkflowId;
   }
 
-  /** Gets the Task Picker properrties */
+  /** Gets the Task Picker properties */
   public static get taskPickerProps(): TaskPickerProps {
     return this._taskPickerProps;
   }

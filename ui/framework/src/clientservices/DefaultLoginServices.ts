@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
@@ -16,8 +16,8 @@ import { LoginServices } from "./LoginServices";
  */
 export class DefaultLoginServices implements LoginServices {
   /** The current open IModelConnection. Will be `undefined` until [[openIModel]] is called. */
-  private readonly _authClient = new ImsActiveSecureTokenClient("QA");
-  private readonly _accessClient = new ImsDelegationSecureTokenClient("QA");
+  private readonly _authClient = new ImsActiveSecureTokenClient();
+  private readonly _accessClient = new ImsDelegationSecureTokenClient();
 
   /** Logs in to IMS and returns an AccessToken. Called from the Login page */
   public async imsLogin(userName: string, password: string): Promise<AccessToken> {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Picker */
@@ -107,7 +107,7 @@ export class ViewSelector extends React.Component<any, any> {
     const params: ViewQueryParams = {};
     params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
     params.where = "";
-    const viewProps = this._getViewProps(imodel, params);
+    const viewProps = await this._getViewProps(imodel, params);
     return viewProps;
   }
 

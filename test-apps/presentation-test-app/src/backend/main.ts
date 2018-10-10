@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -18,6 +18,12 @@ IModelHost.startup();
 
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { Presentation } from "@bentley/presentation-backend";
+import { Config } from "@bentley/imodeljs-clients";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+
+IModelJsConfig.init();
+Config.App.merge(process.env);
+
 Presentation.initialize({
   rulesetDirectories: [path.join("assets", "presentation_rules")],
   localeDirectories: [path.join("assets", "locales")],

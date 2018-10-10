@@ -1,0 +1,50 @@
+.components-property-record--horizontal {
+  display: table-row;
+
+  .components-property-record-label {
+    display: table-cell;
+    border: 1px solid #ccc;
+    font-size: 0.85em;
+    padding-right: 1em;
+    width: 25%;
+  }
+
+  .components-property-record-value {
+    display: table-cell;
+    border: 1px solid #ccc;
+    font-size: 0.85em;
+  }
+}
+
+.components-property-record--vertical {
+
+  margin-bottom: 5px;
+
+  .components-property-record-label {
+    border-top: 1px solid #ccc;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  .components-property-record-value {
+    margin-top: -1px;
+    min-height: 0.85em;
+    font-size: 0.85em;
+  }
+
+  &:last-child .components-property-record-value {
+    margin-bottom: 0px;
+  }
+}
+
+@mixin record-cell {
+  padding: 0.25em;
+}
+
+.components-property-record-label {
+  @include record-cell;
+}
+
+.components-property-record-value {
+  @include record-cell;
+}

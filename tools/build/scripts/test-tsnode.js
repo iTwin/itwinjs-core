@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -7,7 +7,6 @@
 process.env.NODE_ENV = "test";
 process.env.TEST_ENV = "tsnode";
 
-const isCoverage = (process.env.MOCHA_ENV === "coverage");
 const isCI = (process.env.TF_BUILD);
 
 const paths = require("./config/paths");
@@ -40,12 +39,9 @@ const options = [
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
-const reporterOptions = (!isCI) ? [
+const reporterOptions = [
   "-R", "spec"
-] : [
-    "--reporter", "mocha-junit-reporter",
-    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-  ]
+];
 
 const debugOptions = argv.debug ?
   [

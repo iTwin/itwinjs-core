@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
@@ -50,5 +50,15 @@ export default class Point implements PointProps {
   /** @returns True if position of this and other points are equal. */
   public equals(other: PointProps) {
     return other.x === this.x && other.y === this.y;
+  }
+
+  /** @returns New [[Point]] with modified x value. */
+  public setX(x: number) {
+    return new Point(x, this.y);
+  }
+
+  /** @returns New [[Point]] with modified y value. */
+  public setY(y: number) {
+    return new Point(this.x, y);
   }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Viewport */
@@ -28,10 +28,10 @@ import { Transform } from "@bentley/geometry-core";
 export interface ViewportProps {
   /** IModel to display */
   imodel: IModelConnection;
-
   /** Id of a default view definition to load as a starting point */
   viewDefinitionId: Id64String;
-
+  /** Function to get a reference to the ScreenViewport */
+  viewportRef?: (v: ScreenViewport) => void;
   /** @hidden */
   onContextMenu?: (e: React.MouseEvent) => boolean;
 }
@@ -59,6 +59,9 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
     this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);
+
+    if (this.props.viewportRef)
+      this.props.viewportRef(this._vp);
 
     ViewRotationCube.initialize();
     ViewRotationCube.cubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);

@@ -254,8 +254,7 @@ For public-facing APIs we have decided to prefer exceptions (`throw new Error`) 
 2. Exceptions let you return the natural return value of success rather than an unnatural composite object.
 3. Exceptions can carry more information than a status return.
 4. Status returns can be ignored, but exceptions can't. If the immediate layer does not handle the exception it will be bubbled up to the outer layer.
-5. Note that TypeScript/JavaScript doesn't have the same library boundary issues that C++ has with exceptions
-6. The optional `message` property of an `Error` should (if defined) hold an English debugging message that is not meant to be localized. Instead, applications should catch errors and then separately provide a context-appropriate localized message.
+5. The optional `message` property of an `Error` should (if defined) hold an English debugging message that is not meant to be localized. Instead, applications should catch errors and then separately provide a context-appropriate localized message.
 
 > Note: Returning `SomeType` and throwing an `Error` is generally preferred over returning `SomeType | undefined`.
 

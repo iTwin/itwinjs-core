@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -12,8 +12,9 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "./ViewState";
+import { DrawingViewState, OrthographicViewState, SpatialViewState } from "./ViewState";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { SheetViewState } from "./Sheet";
 
 /** Interface for drawing "decorations" into, or on top of, the active views.
  * Decorators generate Decorations.

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
@@ -121,10 +121,10 @@ export class FrontstageManager {
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
 
-  /** Get Fronstage Activated event. */
+  /** Get Frontstage Activated event. */
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
 
-  /** Get Modal Fronstage Changed event. */
+  /** Get Modal Frontstage Changed event. */
   public static get onModalFrontstageChangedEvent(): ModalFrontstageChangedEvent { return this._modalFrontstageChangedEvent; }
 
   /** Get Tool Activated event. */
@@ -201,12 +201,15 @@ export class FrontstageManager {
 
   /** Sets the active FrontstageDef.
    * @param  frontstageDef  FrontstageDef to to set active.
+   * @returns A Promise that is fulfilled when the [[FrontstageDef]] is ready.
    */
-  public static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): void {
+  public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
     this._activeFrontstageDef = frontstageDef;
+
     if (frontstageDef) {
       frontstageDef.onActivated();
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
+      await frontstageDef.waitUntilReady();
     }
   }
 

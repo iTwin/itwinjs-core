@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { DeploymentEnv } from "./Client";
 import { FileHandler } from "./FileHandler";
 import { BriefcaseHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler } from "./imodelhub/index";
 import { ThumbnailHandler } from "./imodelhub/Thumbnails";
@@ -19,10 +18,9 @@ export abstract class IModelClient {
   private _fileHandler?: FileHandler;
   /**
    * Creates an instance of [[IModelClient]].
-   * @param deploymentEnv Deployment environment.
    * @param fileHandler File handler to handle file upload/download and file system operations. See [[AzureFileHandler]].
    */
-  public constructor(baseHandler: IModelBaseHandler, public deploymentEnv: DeploymentEnv = "PROD", fileHandler?: FileHandler) {
+  public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = baseHandler;
     this._fileHandler = fileHandler || this._handler.getFileHandler();
     if (this._fileHandler)

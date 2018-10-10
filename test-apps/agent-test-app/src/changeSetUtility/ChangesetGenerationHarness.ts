@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ChangesetGenerationConfig } from "./Config";
+import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { ChangesetGenerator } from "./ChangesetGenerator";
@@ -31,12 +31,11 @@ export class ChangesetGenerationHarness {
     private _codeSpecId?: Id64;
     private _categoryId?: Id64;
     private _isInitialized: boolean = false;
-    public constructor(private readonly _changesetGenerationConfig: ChangesetGenerationConfig,
-        hubUtility?: HubUtility, iModelDbHandler?: IModelDbHandler, localIModelDbPath?: string) {
+    public constructor(hubUtility?: HubUtility, iModelDbHandler?: IModelDbHandler, localIModelDbPath?: string) {
         this._iModelDbHandler = iModelDbHandler ? iModelDbHandler : new IModelDbHandler();
-        this._iModelName = _changesetGenerationConfig.iModelName;
+        this._iModelName = ChangeSetUtilityConfig.iModelName;
         this._hubUtility = hubUtility;
-        this._localIModelDbPath = localIModelDbPath ? localIModelDbPath : _changesetGenerationConfig.outputDir;
+        this._localIModelDbPath = localIModelDbPath ? localIModelDbPath : ChangeSetUtilityConfig.outputDir;
         if (!IModelHost.configuration)
             this._initializeIModelHost();
     }
@@ -47,9 +46,9 @@ export class ChangesetGenerationHarness {
             this._initializeLogger();
             // Login using the Bentley Identity Management Service (IMS)
             if (!this._hubUtility)
-                this._hubUtility = new HubUtility(this._changesetGenerationConfig);
+                this._hubUtility = new HubUtility();
             this._accessToken = await this._hubUtility.login();
-            this._projectId = await this._hubUtility.queryProjectIdByName(this._accessToken, this._changesetGenerationConfig.projectName);
+            this._projectId = await this._hubUtility.queryProjectIdByName(this._accessToken, ChangeSetUtilityConfig.projectName);
             const pathname: string = this._createStandalone();
             this._iModelId = await this._hubUtility.pushIModel(this._accessToken!, this._projectId, pathname);
             this._iModelDb = await this._iModelDbHandler.openLatestIModelDb(this._accessToken!, this._projectId!, this._iModelId!);
@@ -94,16 +93,15 @@ export class ChangesetGenerationHarness {
     private _initializeLogger(): void {
         Logger.initializeToConsole();
         Logger.setLevelDefault(LogLevel.Error);
-        Logger.setLevel(ChangesetGenerationConfig.loggingCategory, LogLevel.Trace);
+        Logger.setLevel(ChangeSetUtilityConfig.loggingCategory, LogLevel.Trace);
 
-        if (this._changesetGenerationConfig.hubDeploymentEnv === "DEV") {
+        if (process.env.NODE_ENV === "development") {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-            Logger.logTrace(ChangesetGenerationConfig.loggingCategory, "Setting NODE_TLS_REJECT_UNAUTHORIZED = 0");
+            Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, "Setting NODE_TLS_REJECT_UNAUTHORIZED = 0");
         }
     }
     private _initializeIModelHost(): void {
         const configuration = new IModelHostConfiguration();
-        configuration.hubDeploymentEnv = this._changesetGenerationConfig.hubDeploymentEnv;
         IModelHost.startup(configuration);
     }
     /** Clean up the test output directory to prepare for fresh output */

@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
 
-import { SchemaXmlFileLocater } from "../../src/Deserialization/SchemaXmlFileLocater";
-import { FileSchemaKey } from "../../src/Deserialization/SchemaFileLocater";
-import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, SchemaContext, ECVersion } from "../../src";
+import SchemaXmlFileLocater from "./../../src/Deserialization/SchemaXmlFileLocater";
+import { FileSchemaKey } from "./../../src/Deserialization/SchemaFileLocater";
+import SchemaContext from "./../../src/Context";
+import { SchemaMatchType } from "./../../src/ECObjects";
+import SchemaKey, { ECVersion } from "./../../src/SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../../src/Exception";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -265,26 +268,26 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("getSchemaKey, invalid xml, throws", () => {
     const schemaXml = "<ECSchemaBad schemaName=\"SchemaA\" version=\"1.1.1\"> </ECSchemaBad>"
     // Act / Assert
-    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError,  `Could not find '<ECSchema>' tag in the given file`);
+    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find '<ECSchema>' tag in the given file`);
   });
   it("getSchemaKey, invalid schemaName attribute, throws", () => {
     const schemaXml = "<ECSchema schemaNameBad=\"SchemaA\" version=\"1.1.1\"> </ECSchema>"
     // Act / Assert
-    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError,  `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid schemaName, throws", () => {
     const schemaXml = "<ECSchema version=\"1.1.1\" schemaName=\"\"> </ECSchema>"
     // Act / Assert
-    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError,  `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid version attribute, throws", () => {
     const schemaXml = "<ECSchema schemaName=\"SchemaA\" versionBad=\"1.1.1\"> </ECSchema>"
     // Act / Assert
-    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError,  `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = "<ECSchema schemaName=\"SchemaA\" version=\"\"> </ECSchema>"
     // Act / Assert
-    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError,  `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
 });

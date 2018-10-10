@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import "@bentley/presentation-common/tests/_helpers/Promises";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { PresentationError } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 import "./IModelHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "../lib/NativePlatform";
 
@@ -56,7 +57,7 @@ describe("default NativePlatform", () => {
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: "0" }); })
       .verifiable();
-    expect(await nativePlatform.handleRequest(undefined, "")).to.equal("0");
+    expect(await nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.equal("0");
     addonMock.verifyAll();
   });
 
@@ -64,21 +65,21 @@ describe("default NativePlatform", () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb(undefined as any); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError);
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError, "test");
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
   });
 
   it("throws on handleRequest success response without result", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: undefined }); });
-    await expect(nativePlatform.handleRequest(undefined, "")).to.be.rejectedWith(PresentationError);
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("calls addon's setupRulesetDirectories", async () => {

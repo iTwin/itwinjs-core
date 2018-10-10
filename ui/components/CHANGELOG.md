@@ -1,6 +1,52 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+*Version update only*
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- Fix bleeding react-data-grid-wrapper styles
+- Removed ExpandableBlock, one from ui/core should now be used instead.
+- Changed prop name in PropertyCategoryBlock from "onBlockHeaderPressed" to "onExpansionToggled" and it now accepts categoryName as a parameter.
+- Added two new props to PropertyGrid: isPropertySelectionEnabled and onPropertySelectionChanged, and reduced the number of unnecessary renders.
+- PropertyRenderer now allows selection of properties and has new props: uniqueKey, isSelected and onClick.
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+*Version update only*
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:02 GMT
+
+### Updates
+
+- Fixed invalid tag
+- FrontstageManager.setActiveFrontstageDef now returns a Promise
+- Updated/added README.md files for ui packages. Changed case to 'ConfigurableUi'
+- ViewportComponent disposes of its Viewport when it is unmounted.
+- UI package documentation
+- Upgraded BWC to 6.0.3 and icons-webfont to 6.6.1. Made 'ConfigurableUI' case consistent across uses.
+- Updating copyrights
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

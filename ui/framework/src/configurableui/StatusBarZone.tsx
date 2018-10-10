@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
@@ -35,7 +35,7 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
       <>
         <NZ_FooterZone
           isInFooterMode={this.props.zoneState.isInFooterMode}
-          bounds={this.props.zoneState.floatingBounds || this.props.zoneState.bounds}
+          bounds={this.props.zoneState.floating ? this.props.zoneState.floating.bounds : this.props.zoneState.bounds}
         >
           {
             this.props.zoneDef &&

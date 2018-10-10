@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -254,9 +254,9 @@ describe("Zone", () => {
     it("should return merge drop target for adjacent zone in same col", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
-        draggingWidget: { id: 1, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        draggingWidget: { id: 4, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
       };
-      new NineZone(props).getWidgetZone(4).getDropTarget().should.eq(DropTarget.Merge);
+      new NineZone(props).getWidgetZone(7).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return merge drop target for distant zone in same row", () => {
@@ -265,14 +265,6 @@ describe("Zone", () => {
         draggingWidget: { id: 7, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
       };
       new NineZone(props).getWidgetZone(9).getDropTarget().should.eq(DropTarget.Merge);
-    });
-
-    it("should return merge drop target for distant zone in same col", () => {
-      const props: NineZoneProps = {
-        ...TestProps.defaultProps,
-        draggingWidget: { id: 1, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
-      };
-      new NineZone(props).getWidgetZone(7).getDropTarget().should.eq(DropTarget.Merge);
     });
 
     it("should return back drop target for same zone", () => {

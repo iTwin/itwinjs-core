@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
@@ -84,6 +84,12 @@ export default class Widget {
 
   public get isMiddle(): boolean {
     if (this.zone.props.widgets.length === 3 && this.zone.props.widgets[1].id === this.props.id)
+      return true;
+    return false;
+  }
+
+  public get isAlone(): boolean {
+    if (this.zone.props.widgets.length === 1)
       return true;
     return false;
   }

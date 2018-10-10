@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -349,7 +349,7 @@ export namespace IModelTileIO {
         else if (JsonUtils.asBool(namedTex.isTileSection))
           textureType = RenderTexture.Type.TileSection;
 
-        const params = new RenderTexture.Params(name, textureType);
+        const params = new RenderTexture.Params(namedTex.isGlyph ? undefined : name, textureType);
         return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
       });
     }

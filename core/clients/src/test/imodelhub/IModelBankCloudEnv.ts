@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
 import * as path from "path";
@@ -10,7 +11,6 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelClient } from "../../IModelClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { IModelBankClient } from "../../IModelBank";
-import { TestConfig } from "../TestConfig";
 import { workDir } from "./TestUtils";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 
@@ -28,10 +28,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   const cfg = require(path.resolve(__dirname, "../assets/LocalOrchestrator.config.json"));
   cfg.baseUrl = "https://localhost";
   cfg.port = 4000;
-  cfg.firstBankPort = cfg.port + 1;
-  cfg.firstContextPort = cfg.port + 20;
-  cfg.firstBackendPort = 0;
-  cfg.bankfsRoot = bankFsRoot;
+  cfg.imodelfsRoot = bankFsRoot;
 
   const serverConfigFile = path.join(workDir, "LocalOrchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
@@ -51,7 +48,7 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
   child_process.spawn("node", cmdargs, { stdio: "inherit" });
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
-  const bankClient = new IModelBankClient(orchestratorUrl, TestConfig.deploymentEnv, new UrlFileHandler());
+  const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {

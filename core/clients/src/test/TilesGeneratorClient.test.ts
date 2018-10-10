@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -8,46 +8,24 @@ import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
-import { UrlDiscoveryMock } from "./ResponseBuilder";
-import { DeploymentEnv, UrlDescriptor } from "../Client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-
 chai.should();
-
-export class TilesGeneratorUrlMock {
-  private static readonly _urlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-3dtilesgenerator.bentley.com",
-    QA: "https://qa-3dtilesgenerator.bentley.com",
-    PROD: "https://3dtilesgenerator.bentley.com",
-    PERF: "https://perf-3dtilesgenerator.bentley.com",
-  };
-
-  public static getUrl(env: DeploymentEnv): string {
-    return this._urlDescriptor[env];
-  }
-
-  public static mockGetUrl(env: DeploymentEnv) {
-    UrlDiscoveryMock.mockGetUrl(TilesGeneratorClient.searchKey, env, this._urlDescriptor[env]);
-  }
-}
 
 describe("TilesGeneratorClient", () => {
   let accessToken: AccessToken;
-  const connectClient = new ConnectClient(TestConfig.deploymentEnv);
-  const tilesGeneratorClient: TilesGeneratorClient = new TilesGeneratorClient(TestConfig.deploymentEnv);
+  const connectClient = new ConnectClient();
+  const tilesGeneratorClient: TilesGeneratorClient = new TilesGeneratorClient();
   let projectId: string;
   let iModelId: string;
   let versionId: string;
   const actx = new ActivityLoggingContext("");
 
-  before(async () => {
-    if (TestConfig.enableMocks)
-      return;
-
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(actx, authToken);
 
-    const { project, iModel, version } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, "Hackathon", "Demo - ChangeSets", "First stage");
+    const { project, iModel, version } = await TestConfig.queryTestCase(accessToken, "Hackathon", "Demo - ChangeSets", "First stage");
 
     projectId = project.wsgId;
     chai.expect(projectId);
@@ -62,28 +40,7 @@ describe("TilesGeneratorClient", () => {
     accessToken = await tilesGeneratorClient.getAccessToken(actx, authToken);
   });
 
-  it("should setup its URLs", async () => {
-    TilesGeneratorUrlMock.mockGetUrl("DEV");
-    let url: string = await new TilesGeneratorClient("DEV").getUrl(actx, true);
-    chai.expect(url).equals("https://dev-3dtilesgenerator.bentley.com");
-
-    TilesGeneratorUrlMock.mockGetUrl("QA");
-    url = await new TilesGeneratorClient("QA").getUrl(actx, true);
-    chai.expect(url).equals("https://qa-3dtilesgenerator.bentley.com");
-
-    TilesGeneratorUrlMock.mockGetUrl("PROD");
-    url = await new TilesGeneratorClient("PROD").getUrl(actx, true);
-    chai.expect(url).equals("https://3dtilesgenerator.bentley.com");
-
-    TilesGeneratorUrlMock.mockGetUrl("PERF");
-    url = await new TilesGeneratorClient("PERF").getUrl(actx, true);
-    chai.expect(url).equals("https://perf-3dtilesgenerator.bentley.com");
-  });
-
-  it("should be able to retrieve a tile generator job", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to retrieve a tile generator job  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     // The service can be queried ONLY by single instance ID filter.
     const instanceId: string = `${projectId}--${iModelId}--${versionId}`;
     const queryOptions: RequestQueryOptions = {
@@ -103,7 +60,7 @@ describe("TilesGeneratorClient", () => {
     chai.expect(job.wsgId).equals(instanceId);
   });
 
-  it("should be able to generate the URL to view an imodel in Web Navigator", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to generate the URL to view an imodel in Web Navigator  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

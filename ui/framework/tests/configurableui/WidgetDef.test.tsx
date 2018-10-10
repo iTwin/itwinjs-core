@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -61,7 +61,20 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    expect(widgetDef.widgetControl).to.not.be.undefined;
+    expect(widgetDef.getWidgetControl(ConfigurableUiControlType.Widget)).to.not.be.undefined;
+    expect(widgetDef.reactElement).to.not.be.undefined;
+  });
+
+  it("widgetControl using constructor classId", () => {
+    const widgetProps: WidgetProps = {
+      classId: TestWidget,
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
+
+    expect(widgetControl).to.not.be.undefined;
+    if (widgetControl)
+      expect(widgetControl.classId).to.eq("TestWidget");
     expect(widgetDef.reactElement).to.not.be.undefined;
   });
 

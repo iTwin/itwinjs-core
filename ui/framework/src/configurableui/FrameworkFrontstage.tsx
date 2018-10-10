@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
@@ -85,7 +85,22 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
       pointerEvents: "none",
     };
 
-    const zones: WidgetZoneIndex[] = [1, 2, 3, 4, 6, 7, 8, 9];
+    const zones = Object.keys(this.props.nineZone.zones)
+      .map((key) => Number(key) as WidgetZoneIndex)
+      .sort((id1, id2) => {
+        const z1 = this.props.nineZone.zones[id1];
+        const z2 = this.props.nineZone.zones[id2];
+        if (!z1.floating && !z2.floating)
+          return z1.id - z2.id;
+
+        if (!z1.floating)
+          return -1;
+
+        if (!z2.floating)
+          return 1;
+
+        return z1.floating.stackId - z2.floating.stackId;
+      });
     const nineZone = new NineZone(this.props.nineZone);
     return (
       <div style={divStyle}>

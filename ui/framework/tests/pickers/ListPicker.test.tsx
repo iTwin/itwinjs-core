@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
@@ -128,38 +129,9 @@ describe("ListPickerItem", () => {
 });
 
 describe("ExpandableSection", () => {
-  // let expandableSectionWrapper: enzyme.ReactWrapper<any>;
-  // let expandableSectionInstance: ExpandableSection;
-
-  beforeEach(() => {
-    // expandableSectionWrapper = enzyme.mount(
-    //   <ListPickerBase
-    //     title={title}
-    //     items={listItems}
-    //     setEnabled={setEnabled}
-    //   />);
-    // expandableSectionInstance = expandableSectionWrapper.instance() as ExpandableSection;
-  });
-
   it("should render correctly", () => {
     enzyme.shallow(<ExpandableSection />);
   });
-
-  // it("should expand on click when minimized", () => {
-  //   expandableSectionWrapper.setState({ expanded: false });
-  //   expandableSectionWrapper.update();
-  //   const section = expandableSectionWrapper.find("ListPickerInnerContainer-header");
-  //   section.simulate("click");
-  //   expect(expandableSectionInstance.state.expanded).to.be.true;
-  // });
-
-  // it("should minimize on click when expanded", () => {
-  //   expandableSectionWrapper.setState({ expanded: true });
-  //   expandableSectionWrapper.update();
-  //   const section = expandableSectionWrapper.find("ListPickerInnerContainer-header-expanded");
-  //   section.simulate("click");
-  //   expect(expandableSectionInstance.state.expanded).to.be.false;
-  // });
 
   it("should unmount correctly", () => {
     const component = enzyme.mount(

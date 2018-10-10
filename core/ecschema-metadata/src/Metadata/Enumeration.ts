@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaItemType, ECName } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { PrimitiveType, SchemaItemType } from "./../ECObjects";
+import { ECName } from "./../SchemaKey";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 
 export interface Enumerator<T> {

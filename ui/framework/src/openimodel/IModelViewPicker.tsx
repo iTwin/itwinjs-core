@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -60,7 +60,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
 interface ViewsProps {
   accessToken: AccessToken;
   iModel: IModelInfo;
-  OnViewsSelected?: (iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => void;
+  OnViewsSelected?: (views: ViewDefinitionProps[]) => void;
   onClose: () => void;
 }
 
@@ -104,7 +104,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private _onOKPressed = () => {
     if (this.props.OnViewsSelected && this.state.views)
-      this.props.OnViewsSelected(this._iModelConnection!, this.state.selectedViews);
+      this.props.OnViewsSelected(this.state.selectedViews);
   }
 
   private async startRetrieveViews() {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentLayout */
@@ -212,7 +212,8 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
   }
 }
 
-export interface LayoutSplit {
+/** Common interface for [[HorizontalSplit]] and [[VerticalSplit]] */
+interface LayoutSplit {
   getSize(): number;
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
   getMaxUsedIndex(currentMax: number): number;
@@ -464,7 +465,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
     contentGroup = this.props.contentGroup;
 
     if (contentGroup) {
-      const content: React.ReactNode[] = contentGroup.getContentSet();
+      const content: React.ReactNode[] = contentGroup.getContentNodes();
       let contentLayout: ContentLayoutDef;
 
       contentLayout = this.props.contentLayout;
@@ -490,7 +491,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
     const contentGroup: ContentGroup = args.contentGroup;
     if (contentGroup) {
-      const content: React.ReactNode[] = contentGroup.getContentSet();
+      const content: React.ReactNode[] = contentGroup.getContentNodes();
 
       const contentLayout = args.contentLayout;
       if (contentLayout)
@@ -559,8 +560,6 @@ export class ContentLayoutManager {
   public static addLayout(layoutId: string, layout: ContentLayoutDef) {
     this._layoutDefs.set(layoutId, layout);
   }
-
-  public static OnContentLayoutCreated(_layout: ContentLayoutDef): void { /*this.m_layouts[layout.GetContentLayoutId()] = layout;*/ }
 
   public static get activeLayout(): ContentLayoutDef | undefined { return this._activeLayout; }
 

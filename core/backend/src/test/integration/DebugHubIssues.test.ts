@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
 import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, Config, KnownRegions } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
@@ -21,7 +21,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    accessToken = await HubUtility.login(TestUsers.super, "QA");
+    accessToken = await HubUtility.login(TestUsers.super);
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
@@ -106,12 +106,15 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {
-    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.regular, "PROD");
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.PROD)) {
+      assert.fail("this test require production environment");
+    }
+
+    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.regular);
 
     // Restart host on PROD
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.hubDeploymentEnv = "PROD";
     IModelHost.startup(hostConfig);
 
     const projectName = "1MWCCN01 - North Project";
@@ -122,12 +125,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in DEV", async () => {
-    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1, "QA");
+    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
 
     // Restart host on DEV
     IModelHost.shutdown();
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
-    hostConfig.hubDeploymentEnv = "DEV";
     IModelHost.startup(hostConfig);
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
 
