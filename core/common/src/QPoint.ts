@@ -6,7 +6,7 @@
 
 import { Range2d, Range3d } from "@bentley/geometry-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
-import { assert, Iterable } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -15,6 +15,7 @@ import { assert, Iterable } from "@bentley/bentleyjs-core";
  * `min`, scaling the result according to `max`, and truncating the result to an integer.
  * Therefore min quantizes to 0, max to 0xffff, (min+max)/2 to 0x7fff, and so on.
  * These routines are chiefly used internally by classes like QPoint2d and QPoint3d.
+ * @hidden
  */
 export namespace Quantization {
   const rangeScale = 0xffff;
@@ -27,7 +28,9 @@ export namespace Quantization {
   export function isQuantized(qpos: number) { return isInRange(qpos) && qpos === Math.floor(qpos); }
 }
 
-/** Parameters used for quantization of 2d points. */
+/** Parameters used for quantization of 2d points.
+ * @hidden
+ */
 export class QParams2d {
   public readonly origin = new Point2d();
   public readonly scale = new Point2d();
@@ -70,7 +73,9 @@ export class QParams2d {
   public static fromZeroToOne() { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)])); }
 }
 
-/** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff]. */
+/** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff].
+ * @hidden
+ */
 export class QPoint2d {
   private _x: number = 0;
   private _y: number = 0;
@@ -133,7 +138,9 @@ export class QPoint2d {
   }
 }
 
-/** A list of 2d points all quantized to the same range. */
+/** A list of 2d points all quantized to the same range.
+ * @hidden
+ */
 export class QPoint2dList {
   public readonly params: QParams2d;
   private readonly _list = new Array<QPoint2d>();
@@ -189,7 +196,9 @@ export class QPoint2dList {
   }
 }
 
-/** Parameters used for quantization of 3d points. */
+/** Parameters used for quantization of 3d points.
+ * @hidden
+ */
 export class QParams3d {
   public readonly origin = new Point3d();
   public readonly scale = new Point3d();
@@ -245,7 +254,9 @@ export class QParams3d {
   public static fromZeroToOne() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)])); }
 }
 
-/** Represents a quantized 3d point as an (x, y, z) tripliet in the integer range [0, 0xffff]. */
+/** Represents a quantized 3d point as an (x, y, z) tripliet in the integer range [0, 0xffff].
+ * @hidden
+ */
 export class QPoint3d {
   private _x: number = 0;
   private _y: number = 0;
@@ -333,13 +344,15 @@ export class QPoint3d {
   }
 }
 
-/** A list of 3d points all quantized to the same range. */
-export class QPoint3dList extends Iterable<QPoint3d> {
+/** A list of 3d points all quantized to the same range.
+ * @hidden
+ */
+export class QPoint3dList {
+  private readonly _list: QPoint3d[] = [];
   public readonly params: QParams3d;
   public get list(): QPoint3d[] { return this._list; }
 
   public constructor(paramsIn?: QParams3d) {
-    super();
     this.params = paramsIn ? paramsIn.clone() : QParams3d.fromRange(Range3d.createNull());
   }
 
@@ -403,5 +416,10 @@ export class QPoint3dList extends Iterable<QPoint3d> {
     const list = new QPoint3dList(params);
     for (const point of points) list.add(point);
     return list;
+  }
+
+  public [Symbol.iterator]() {
+    let key = 0;
+    return { next: (): IteratorResult<QPoint3d> => { const result = key < this._list.length ? { value: this._list[key], done: false } : { value: this._list[key - 1], done: true }; key++; return result; } };
   }
 }

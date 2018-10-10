@@ -7,7 +7,7 @@
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -195,7 +195,7 @@ export abstract class Target extends RenderTarget {
   public readonly frustumUniforms = new FrustumUniforms();
   public readonly bgColor = ColorDef.red.clone();
   public readonly monoColor = ColorDef.white.clone();
-  public readonly hiliteSettings = new Hilite.Settings();
+  public hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
   public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
@@ -399,8 +399,6 @@ export abstract class Target extends RenderTarget {
     viewZ: new Vector3d(),
     vec3: new Vector3d(),
     point3: new Point3d(),
-    visibleEdges: new HiddenLine.Style({}),
-    hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
   public changeFrustum(plan: RenderPlan): void {
@@ -489,7 +487,7 @@ export abstract class Target extends RenderTarget {
 
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
-    this.hiliteSettings.copyFrom(plan.hiliteSettings);
+    this.hiliteSettings = plan.hiliteSettings;
     this._transparencyThreshold = 0.0;
 
     let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
@@ -502,8 +500,8 @@ export abstract class Target extends RenderTarget {
     this._activeClipVolume = clipVolume;
 
     const scratch = Target._scratch;
-    const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
-    const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
+    let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
+    let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
 
@@ -527,9 +525,8 @@ export abstract class Target extends RenderTarget {
         if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
           // ###TODO? Probably supposed to be contrast with fill and/or background color...
           assert(undefined !== hidEdgeOvrs);
-          visEdgeOvrs.color.setFrom(ColorDef.white);
-          hidEdgeOvrs!.color.setFrom(ColorDef.white);
-          visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
+          visEdgeOvrs = visEdgeOvrs.overrideColor(ColorDef.white);
+          hidEdgeOvrs = hidEdgeOvrs!.overrideColor(ColorDef.white);
         }
       }
       /* falls through */

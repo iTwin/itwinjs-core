@@ -39,7 +39,9 @@ export namespace AreaPattern {
     }
   }
 
-  /** GeometryStream entry for adding a hatch, cross-hatch, or area pattern to a planar region */
+  /** Definition of a hatch, cross-hatch, or area pattern that can be applied to the interior of a planar region.
+   * @see [[GeometryStreamEntryProps]]
+   */
   export interface ParamsProps {
     /** Pattern offset (relative to placement), 0.0,0.0,0.0 if undefined */
     origin?: XYZProps;
@@ -63,9 +65,9 @@ export namespace AreaPattern {
     invisibleBoundary?: boolean;
     /** Set to allow snapping to pattern geometry, false if undefined */
     snappable?: boolean;
-    /** GeometryPart id to use for tiled area pattern display */
+    /** [[GeometryPart]] id to use for tiled area pattern display */
     symbolId?: Id64String;
-    /** Define an area pattern by supplying hatch line definitions instead of using a GeometryPart */
+    /** Define an area pattern by supplying hatch line definitions instead of using a [[GeometryPart]] */
     defLines?: HatchDefLineProps[];
   }
 
@@ -114,7 +116,7 @@ export namespace AreaPattern {
       return Params.fromJSON(this);
     }
 
-    public isEqualTo(other: Params): boolean {
+    public equals(other: Params): boolean {
       if (this === other)
         return true;    // Same pointer
 

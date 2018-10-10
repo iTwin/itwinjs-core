@@ -13,7 +13,9 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Transform, Point3d, Matrix3d, Angle, Vector3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../IModelConnection";
 
-/** Deserializes a Pnts tile. */
+/** Deserializes a Pnts tile.
+ * @hidden
+ */
 export namespace PntsTileIO {
   /** @hidden */
   class Header extends TileIO.Header {
@@ -34,7 +36,9 @@ export namespace PntsTileIO {
     }
   }
 
-  /** Deserialize a point cloud tile and return it as a RenderGraphic */
+  /** Deserialize a point cloud tile and return it as a RenderGraphic.
+   * @hidden
+   */
   export function readPointCloud(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
     const header: Header = new Header(stream);
 

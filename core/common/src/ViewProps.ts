@@ -48,7 +48,7 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   description?: string;
 }
 
-/** Properties of [[ViewFlags]] */
+/** JSON representation of [[ViewFlags]] */
 export interface ViewFlagProps {
   /** If true, don't show construction class. */
   noConstruct?: boolean;
@@ -62,7 +62,7 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** If true, use continuous rendering. */
+  /** @hidden This doesn't belong here - it is not persistent. */
   contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
@@ -92,10 +92,12 @@ export interface ViewFlagProps {
   hlMatColors?: boolean;
   /** If true, show view with monochrome settings. */
   monochrome?: boolean;
-  /** Edge mask. 0=none, 1=generate mask, 2=use mask. */
+  /** @hidden unused */
   edgeMask?: number;
   /** [[RenderMode]] */
   renderMode?: number;
+  /** Display background map. */
+  backgroundMap?: boolean;
 }
 
 /** properties of a camera */

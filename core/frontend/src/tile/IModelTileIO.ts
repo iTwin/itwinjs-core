@@ -48,9 +48,13 @@ import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
 
-/** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
+/** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
+ * @hidden
+ */
 export namespace IModelTileIO {
-  /** Flags describing the geometry contained within a tile */
+  /** Flags describing the geometry contained within a tile.
+   * @hidden
+   */
   export const enum Flags {
     /** No special flags */
     None = 0,
@@ -60,7 +64,9 @@ export namespace IModelTileIO {
     Incomplete = 1 << 2,
   }
 
-  /** Header embedded at the beginning of the binary tile data describing its contents */
+  /** Header embedded at the beginning of the binary tile data describing its contents.
+   * @hidden
+   */
   export class Header extends TileIO.Header {
     /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
@@ -113,7 +119,9 @@ export namespace IModelTileIO {
   const maxLeafTolerance = 1.0;
   const minElementsPerTile = 100;
 
-  /** Deserializes an iModel tile. */
+  /** Deserializes an iModel tile.
+   * @hidden
+   */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
 

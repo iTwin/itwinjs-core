@@ -9,7 +9,6 @@ import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
 import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
 import { DecorateContext } from "../ViewContext";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Vector3d, Point3d, Matrix3d, Geometry, Transform } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { AuxCoordSystemState, ACSDisplayOptions } from "../AuxCoordSys";
@@ -17,6 +16,8 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { SnapDetail, SnapMode } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 
+function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
+function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
 /**
  * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
  * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
@@ -42,7 +43,7 @@ export class AccuDrawShortcuts {
 
     // Snap point and compass origin coincide...
     const xVec = new Vector3d();
-    if (LegacyMath.normalizedDifference(point, accudraw.planePt, xVec) < Geometry.smallAngleRadians)
+    if (normalizedDifference(point, accudraw.planePt, xVec) < Geometry.smallAngleRadians)
       return false;
 
     accudraw.axes.x.setFrom(xVec);
@@ -79,22 +80,22 @@ export class AccuDrawShortcuts {
         break;
 
       case 2:
-        if (LegacyMath.normalizedDifference(points[1], points[0], vec[0]) < 0.00001) {
+        if (normalizedDifference(points[1], points[0], vec[0]) < 0.00001) {
           accept = true;
           break;
         }
 
         if (vp.view.is3d()) {
-          if (LegacyMath.normalizedCrossProduct(accudraw.axes.y, vec[0], vec[1]) < 0.00001) {
+          if (normalizedCrossProduct(accudraw.axes.y, vec[0], vec[1]) < 0.00001) {
             vec[2].set(0.0, 0.0, 1.0);
 
-            if (LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]) < 0.00001) {
+            if (normalizedCrossProduct(vec[2], vec[0], vec[1]) < 0.00001) {
               vec[2].set(0.0, 1.0, 0.0);
-              LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
+              normalizedCrossProduct(vec[2], vec[0], vec[1]);
             }
           }
 
-          LegacyMath.normalizedCrossProduct(vec[0], vec[1], vec[2]);
+          normalizedCrossProduct(vec[0], vec[1], vec[2]);
           acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
 
           if (!isDynamics) {
@@ -106,20 +107,20 @@ export class AccuDrawShortcuts {
         }
 
         vec[2].set(0.0, 0.0, 1.0);
-        LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
+        normalizedCrossProduct(vec[2], vec[0], vec[1]);
         acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;
 
       case 3:
-        if (LegacyMath.normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
-          LegacyMath.normalizedDifference(points[2], points[0], vec[1]) < 0.00001 ||
-          LegacyMath.normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001) {
+        if (normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
+          normalizedDifference(points[2], points[0], vec[1]) < 0.00001 ||
+          normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001) {
           accept = true;
           break;
         }
 
-        LegacyMath.normalizedCrossProduct(vec[2], vec[0], vec[1]);
+        normalizedCrossProduct(vec[2], vec[0], vec[1]);
         acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
         accept = true;
         break;

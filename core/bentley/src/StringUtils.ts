@@ -8,6 +8,7 @@
 // ###TODO use TextDecoder where available
 // From https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Core/getStringFromTypedArray.js
 // which is itself inspired by https://github.com/inexorabletash/text-encoding
+// @hidden
 namespace Utf8ToString {
   function inRange(a: number, min: number, max: number): boolean { return min <= a && a <= max; }
 

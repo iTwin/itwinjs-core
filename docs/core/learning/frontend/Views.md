@@ -106,7 +106,6 @@ This includes the :
   * Background color
   * [RenderMode]($common)
   * [Environment]($frontend)
-  * [Light]($common)s
   * Other view-specific parameters
 
 They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.

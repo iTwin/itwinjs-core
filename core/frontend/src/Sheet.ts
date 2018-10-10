@@ -18,11 +18,13 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile, TileLoader, TileRequests, TileTree } from "./tile/TileTree";
-import { DecorateContext, SceneContext, ViewContext } from "./ViewContext";
+import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
-/** Describes the geometry and styling of a sheet border decoration. */
+/** Describes the geometry and styling of a sheet border decoration.
+ * The sheet border decoration mimics a sheet of paper with a drop shadow.
+ */
 export class SheetBorder {
   private _rect: Point2d[];
   private _shadow: Point2d[];
@@ -35,7 +37,7 @@ export class SheetBorder {
   }
 
   /** Create a new sheet border. If a context is supplied, points are transformed to view coordinates. */
-  public static create(width: number, height: number, context?: ViewContext) {
+  public static create(width: number, height: number, context?: DecorateContext) {
     // Rect
     const rect: Point3d[] = [
       Point3d.create(0, height),
@@ -80,6 +82,7 @@ export class SheetBorder {
     return new SheetBorder(rect2d, shadow2d, gradient);
   }
 
+  /** @hidden */
   public getRange(): Range2d {
     const range = Range2d.createArray(this._rect);
     const shadowRange = Range2d.createArray(this._shadow);

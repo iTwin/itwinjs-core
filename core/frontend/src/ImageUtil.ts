@@ -12,7 +12,7 @@ export class ImageUtil {
   /** Get a string describing the mime type associated with an ImageSource format. */
   public static getImageSourceMimeType(format: ImageSourceFormat): string { return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png"; }
 
-  /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify an ImageSourceFormat. */
+  /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
   public static getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
     switch (mimeType) {
       case "image/jpeg": return ImageSourceFormat.Jpeg;

@@ -13,7 +13,7 @@
 export function defaultClone<T>(value: T) { return value; }
 
 /**
- * Computes the position at which the specified value should be inserted to maintain sorted order within a sorted array.
+ * Given a sorted array, computes the position at which the specified value should be inserted into the array so that the array remains sorted.
  * @param value The value whose position is to be computed.
  * @param list An array of U already sorted according to the comparison criterion.
  * @param compare A function accepting a value of type T and a value of type U and returning a negative value if lhs < rhs,

@@ -13,7 +13,7 @@ import { IModelApp } from "./IModelApp";
 import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
-/** The state of a Model */
+/** Represents the front-end state of a [Model]($backend). */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -54,14 +54,18 @@ export class ModelState extends EntityState implements ModelProps {
   public useRangeForFit(): boolean { return true; }
 }
 
-/** The state of a geometric model */
+/** Represents the front-end state of a [GeometricModel]($backend).
+ * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
+ */
 export abstract class GeometricModelState extends ModelState {
   /** @hidden */
   protected _tileTreeState: TileTreeState = new TileTreeState(this);
   /** @hidden */
   protected _classifierTileTreeState: TileTreeState = new TileTreeState(this);
 
+  /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
+  /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
@@ -71,7 +75,7 @@ export abstract class GeometricModelState extends ModelState {
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   /** @hidden */
   public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
-  /** Override of ModelState method, returns true */
+  /** @hidden */
   public get isGeometricModel(): boolean { return true; }
   /** @hidden */
   public getOrLoadTileTree(): TileTree | undefined {
@@ -109,13 +113,15 @@ export abstract class GeometricModelState extends ModelState {
 
     return tileTreeState.loadStatus;
   }
+
+  /** @hidden */
   public onIModelConnectionClose() {
     dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tiletree level
     super.onIModelConnectionClose();
   }
 }
 
-/** The state of a 2d Geometric Model */
+/** Represents the front-end state of a [GeometricModel2d]($backend). */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
   constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
@@ -123,6 +129,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
+  /** Returns false. */
   public get is3d(): boolean { return false; }
 
   public toJSON(): GeometricModel2dProps {
@@ -132,26 +139,20 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   }
 }
 
-/** The state of a 3d Geometric Model */
+/** Represents the front-end state of a [GeometricModel3d]($backend). */
 export class GeometricModel3dState extends GeometricModelState {
   /** Returns true. */
   public get is3d(): boolean { return true; }
 }
 
-/**
- * The state of a SheetModel.
- *
- * A SheetModel is a GeometricModel2d that has the following characteristics:
- * * Has finite extents, specified in meters (the *page size*.)
- * * Can contain views of other models, like pictures pasted on a photo album.
- */
+/** Represents the front-end state of a [SheetModel]($backend). */
 export class SheetModelState extends GeometricModel2dState { }
 
-/** The state of a SpatialModel */
+/** Represents the front-end state of a [SpatialModel]($backend). */
 export class SpatialModelState extends GeometricModel3dState { }
 
-/** The state of a DrawingModel */
+/** Represents the front-end state of a [DrawingModel]($backend). */
 export class DrawingModelState extends GeometricModel2dState { }
 
-/** The state of a SectionDrawingModel */
+/** Represents the front-end state of a [SectionDrawingModel]($backend). */
 export class SectionDrawingModelState extends DrawingModelState { }

@@ -7,6 +7,8 @@ Generally, it is not expected that the API Reference documentation will be read 
 is consulted to explain details of the APIs. It elaborates on topics introduced in the [Learning](../learning/index.md) sections. Start there to get a
 better understanding of the *big picture* concepts upon which the API is based.
 
+The iModel.js packages contain some APIs which are intentionally excluded from the API Reference documentation. These APIs should be considered internal implementation details subject to change at any time.
+
 The iModel.js library is organized into the following separately downloadable [npm](https://www.npmjs.com/) packages under the `@bentley` scope:
 
 - ($backend)

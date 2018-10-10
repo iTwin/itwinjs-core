@@ -23,7 +23,9 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 
-/* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
+/* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
+ * @hidden
+ */
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
@@ -35,7 +37,7 @@ export class RenderPlan {
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
   public readonly activeVolume?: RenderClipVolume;
-  public readonly hline?: HiddenLine.Params;
+  public readonly hline?: HiddenLine.Settings;
   public readonly lights?: SceneLights;
   private _curFrustum: ViewFrustum;
 
@@ -45,7 +47,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Params, lights?: SceneLights) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -76,7 +78,12 @@ export class RenderPlan {
   }
 }
 
-/** Abstract representation of an object which can be rendered by a RenderSystem */
+/** Abstract representation of an object which can be rendered by a [[RenderSystem]].
+ * Two broad classes of graphics exist:
+ *  - "Scene" graphics generated on the back-end to represent the contents of the models displayed in a [[Viewport]]; and
+ *  - [[Decorations]] created on the front-end to be rendered along with the scene.
+ * The latter are produced using a [[GraphicBuilder]].
+ */
 export abstract class RenderGraphic implements IDisposable {
   public abstract dispose(): void;
 }
@@ -91,7 +98,7 @@ export const enum ClippingType {
   Planes,
 }
 
-/** Interface adopted by a type which can apply a clipping volume to a Target. */
+/** An opaque representation of a clip volume applied to geometry within a [[Viewport]]. */
 export abstract class RenderClipVolume implements IDisposable {
   /** Returns the type of this clipping volume. */
   public abstract get type(): ClippingType;
@@ -99,7 +106,7 @@ export abstract class RenderClipVolume implements IDisposable {
   public abstract dispose(): void;
 }
 
-/** An array of RenderGraphics */
+/** An array of [[RenderGraphic]]s. */
 export type GraphicList = RenderGraphic[];
 
 /** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations))] that is drawn onto the
@@ -148,11 +155,10 @@ export interface CanvasDecoration {
   decorationCursor?: string;
 }
 
-/** An array of CanvasDecorations */
+/** An array of [[CanvasDecoration]]s */
 export type CanvasDecorationList = CanvasDecoration[];
 
-/**
- * Various of lists of RenderGraphics that are "decorated" into the RenderTarget, in addition to the Scene.
+/** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
  */
 export class Decorations implements IDisposable {
   private _skyBox?: RenderGraphic;
@@ -161,18 +167,26 @@ export class Decorations implements IDisposable {
   private _world?: GraphicList;        // drawn with zbuffer, with default lighting, smooth shading
   private _worldOverlay?: GraphicList; // drawn in overlay mode, world units
   private _viewOverlay?: GraphicList;  // drawn in overlay mode, view units
+
   public canvasDecorations?: CanvasDecorationList;
 
+  /** @hidden */
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
+  /** @hidden */
   public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
+  /** A view decoration drawn as the background of the view. @see [[GraphicType.ViewBackground]]. */
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
   public set viewBackground(viewBackground: RenderGraphic | undefined) { dispose(this._viewBackground); this._viewBackground = viewBackground; }
+  /** Decorations drawn as if they were part of the scene. @see [[GraphicType.Scene]]. */
   public get normal(): GraphicList | undefined { return this._normal; }
   public set normal(normal: GraphicList | undefined) { disposeArray(this._normal); this._normal = normal; }
+  /** Decorations drawn as if they were part of the world, but ignoring the view's [[ViewFlags]]. @see [[GraphicType.WorldDecoration]]. */
   public get world(): GraphicList | undefined { return this._world; }
   public set world(world: GraphicList | undefined) { disposeArray(this._world); this._world = world; }
+  /** Overlay decorations drawn in world coordinates. @see [[GraphicType.WorldOverlay]]. */
   public get worldOverlay(): GraphicList | undefined { return this._worldOverlay; }
   public set worldOverlay(worldOverlay: GraphicList | undefined) { disposeArray(this._worldOverlay); this._worldOverlay = worldOverlay; }
+  /** Overlay decorations drawn in view coordinates. @see [[GraphicType.ViewOverlay]]. */
   public get viewOverlay(): GraphicList | undefined { return this._viewOverlay; }
   public set viewOverlay(viewOverlay: GraphicList | undefined) { disposeArray(this._viewOverlay); this._viewOverlay = viewOverlay; }
 
@@ -188,8 +202,9 @@ export class Decorations implements IDisposable {
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
- * and a transform, view flag overrides, symbology overrides, and clip volume which are to be applied when rendering them.
+ * and a transform, symbology overrides, and clip volume which are to be applied when rendering them.
  * Branches can be nested to build an arbitrarily-complex scene graph.
+ * @see [[RenderSystem.createBranch]]
  */
 export class GraphicBranch implements IDisposable {
   /** The child nodes of this branch */
@@ -203,12 +218,17 @@ export class GraphicBranch implements IDisposable {
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
   public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
+  /** @hidden */
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
+  /** @hidden */
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
+  /** @hidden */
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
+
   public dispose() { this.clear(); }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 
+  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[GraphicBranch.ownsEntries]] flag is set, also disposes of them. */
   public clear(): void {
     if (this.ownsEntries)
       disposeArray(this.entries);
@@ -217,8 +237,11 @@ export class GraphicBranch implements IDisposable {
   }
 }
 
-/** Describes aspects of a pixel as read from a RenderTarget. */
+/** Describes aspects of a pixel as read from a [[Viewport]].
+ * @see [[Viewport.readPixels]]
+ */
 export namespace Pixel {
+  /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     public constructor(public readonly elementId?: Id64,
       public readonly distanceFraction: number = -1.0,
@@ -226,44 +249,55 @@ export namespace Pixel {
       public readonly planarity: Planarity = Planarity.Unknown) { }
   }
 
-  /** Describes the foremost type of geometry which produced the pixel. */
+  /** Describes the foremost type of geometry which produced the [[Pixel.Data]]. */
   export const enum GeometryType {
+    /** [[Pixel.Selector.Geometry]] was not specified, or the type could not be determined. */
     Unknown, // Geometry was not selected, or type could not be determined
-    None, // No geometry was rendered to this pixel
-    Surface, // A surface
-    Linear, // A polyline
-    Edge, // The edge of a surface
-    Silhouette, // A silhouette of a surface
+    /** No geometry was rendered to this pixel. */
+    None,
+    /** A surface produced this pixel. */
+    Surface,
+    /** A point primitive or polyline produced this pixel. */
+    Linear,
+    /** This pixel was produced by an edge of a surface. */
+    Edge,
+    /** This pixel was produced by a silhouette edge of a curved surface. */
+    Silhouette,
   }
 
   /** Describes the planarity of the foremost geometry which produced the pixel. */
   export const enum Planarity {
-    Unknown, // Geometry was not selected, or planarity could not be determined
-    None, // No geometry was rendered to this pixel
-    Planar, // Planar geometry
-    NonPlanar, // Non-planar geometry
+    /** [[Pixel.Selector.Geometry]] was not specified, or the planarity could not be determined. */
+    Unknown,
+    /** No geometry was rendered to this pixel. */
+    None,
+    /** Planar geometry produced this pixel. */
+    Planar,
+    /** Non-planar geometry produced this pixel. */
+    NonPlanar,
   }
 
   /**
    * Bit-mask by which callers of [[Viewport.readPixels]] specify which aspects are of interest.
-   *
    * Aspects not specified will be omitted from the returned data.
    */
   export const enum Selector {
     None = 0,
-    /** Select element Ids */
+    /** Select the ID of the element which produced each pixel. */
     ElementId = 1 << 0,
-    /** Select distances from near plane */
+    /** For each pixel, select the fraction of its distance between the near and far planes. */
     Distance = 1 << 1,
-    /** Select geometry type and planarity */
+    /** Select the type and planarity of geometry which produced each pixel. */
     Geometry = 1 << 2,
-    /** Select geometry type/planarity and distance from near plane */
+    /** Select geometry type/planarity and distance fraction associated with each pixel. */
     GeometryAndDistance = Geometry | Distance,
-    /** Select all aspects */
+    /** Select all aspects of each pixel. */
     All = GeometryAndDistance | ElementId,
   }
 
-  /** A rectangular array of pixels as read from a RenderTarget's frame buffer. */
+  /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
+   * @see [[Viewport.readPixels]].
+   */
   export interface Buffer {
     /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
     getPixel(x: number, y: number): Data;
@@ -282,7 +316,10 @@ export class PackedFeatureTable {
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
 
-  /** Construct a PackedFeatureTable from the packed binary data. Typically the data originates from a Tile serialized in iMdl format. */
+  /** Construct a PackedFeatureTable from the packed binary data.
+   * This is used internally when deserializing Tiles in iMdl format.
+   * @hidden
+   */
   public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number, type: BatchType) {
     this._data = data;
     this.modelId = modelId;
@@ -411,51 +448,75 @@ export class PackedFeatureTable {
   }
 }
 
-/**
- * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
- * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
- *
- * A RenderTarget holds a reference to a RenderSystem.
- *
- * Every Viewport holds a reference to a RenderTarget.
+/** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
+ * Application code rarely interacts directly with a RenderTarget - instead, it interacts with a Viewport which forwards requests to the implementation
+ * of the RenderTarget.
  */
 export abstract class RenderTarget implements IDisposable {
+  /** @hidden */
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
+  /** @hidden */
   public static get frustumDepth2d(): number { return 1.0; } // one meter
+  /** @hidden */
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
+  /** @hidden */
   public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
 
-  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
+  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d.
+   * @hidden
+   */
   public static depthFromDisplayPriority(priority: number): number {
     return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
   }
 
+  /** @hidden */
   public abstract get renderSystem(): RenderSystem;
+  /** @hidden */
   public abstract get cameraFrustumNearScaleLimit(): number;
+  /** @hidden */
   public abstract get viewRect(): ViewRect;
+  /** @hidden */
   public abstract get wantInvertBlackBackground(): boolean;
 
+  /** @hidden */
   public abstract get animationFraction(): number;
+  /** @hidden */
   public abstract set animationFraction(fraction: number);
 
+  /** @hidden */
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public abstract dispose(): void;
+  /** @hidden */
   public abstract reset(): void;
+  /** @hidden */
   public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
+  /** @hidden */
   public abstract changeDynamics(dynamics?: GraphicList): void;
+  /** @hidden */
   public abstract changeDecorations(decorations: Decorations): void;
+  /** @hidden */
   public abstract changeRenderPlan(plan: RenderPlan): void;
+  /** @hidden */
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
+  /** @hidden */
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  /** @hidden */
   public abstract setHiliteSet(hilited: Set<string>): void;
+  /** @hidden */
   public abstract setFlashed(elementId: Id64, intensity: number): void;
+  /** @hidden */
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
+  /** @hidden */
   public abstract onResized(): void;
+  /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
+  /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  /** @hidden */
   public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
 }
 
@@ -467,8 +528,8 @@ export interface TextureImage {
   format: ImageSourceFormat | undefined;
 }
 
-/**
- * A RenderSystem is the renderer-specific factory for creating rendering-related resources like RenderGraphics, RenderTexture, and RenderMaterials.
+/** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
+ * @see [[IModelApp.renderSystem]].
  */
 export abstract class RenderSystem implements IDisposable {
   /** @hidden */
@@ -485,13 +546,32 @@ export abstract class RenderSystem implements IDisposable {
   /** @hidden */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
-  /** Find a previously-created Material by key. Returns null if no such material exists. */
+  /** Find a previously-created [[RenderMaterial]] by its ID.
+   * @param _key The unique ID of the material within the context of the IModelConnection. Typically an element ID.
+   * @param _imodel The IModelConnection with which the material is associated.
+   * @returns A previously-created material matching the specified ID, or undefined if no such material exists.
+   */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a RenderMaterial from parameters */
+  /** Create a [[RenderMaterial]] from parameters
+   * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
+   * that it can later be retrieved by the same key using [[RenderSystem.findMaterial]].
+   * @param _params A description of the material's properties.
+   * @param _imodel The IModelConnection associated with the material.
+   * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
+   */
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a GraphicBuilder from parameters */
+  /** Creates a [[GraphicBuilder]] for creating a [[RenderGraphic]].
+   * @param placement The local-to-world transform in which the builder's geometry is to be defined.
+   * @param type The type of builder to create.
+   * @param viewport The viewport in which the resultant [[RenderGraphic]] will be rendered.
+   * @param pickableId If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
+   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within the specified viewport.
+   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @see [[RenderContext.createGraphicBuilder]].
+   * @see [[Decorator]]
+   */
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
   /** @hidden */
@@ -524,7 +604,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @hidden */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
 
-  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
+  /** @hidden */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
 
   /** @hidden */
@@ -551,22 +631,36 @@ export abstract class RenderSystem implements IDisposable {
     return this.createTriMesh(rasterTile);
   }
 
-  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams. */
+  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams.
+   * @hidden
+   */
   public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
-  /** Create a RenderGraphic consisting of a list of Graphics */
+  /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
+  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and symbology overrides applied to the list */
   public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
 
-  /** Create a RenderGraphic consisting of batched Features. */
+  /** Create a RenderGraphic consisting of batched [[Feature]]s.
+   * @hidden
+   */
   public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
-  /** Locate a previously-created Texture given its key. */
+  /** Find a previously-created [[RenderTexture]] by its ID.
+   * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
+   * @param _imodel The IModelConnection with which the texture is associated.
+   * @returns A previously-created texture matching the specified ID, or undefined if no such texture exists.
+   */
   public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
-  /** Find or create a texture from a texture element. */
+  /** Find or create a [[RenderTexture]] from a persistent texture element.
+   * @param id The ID of the texture element.
+   * @param iModel The IModel containing the texture element.
+   * @returns A Promise resolving to the created RenderTexture or to undefined if the texture could not be created.
+   * @note If the texture is successfully created, it will be cached on the IModelConnection such that it can later be retrieved by its ID using [[RenderSystem.findTexture]].
+   * @see [[RenderSystem.loadTextureImage]].
+   */
   public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
     let texture = this.findTexture(id.toString(), iModel);
     if (undefined === texture) {
@@ -580,7 +674,13 @@ export abstract class RenderSystem implements IDisposable {
     return texture;
   }
 
-  /** Load a texture image given the ID of a texture element */
+  /**
+   * Load a texture image given the ID of a texture element.
+   * @param id The ID of the texture element.
+   * @param iModel The IModel containing the texture element.
+   * @returns A Promise resolving to a TextureImage created from the texture element's data, or to undefined if the TextureImage could not be created.
+   * @see [[RenderSystem.loadTexture]]
+   */
   public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
@@ -599,21 +699,30 @@ export abstract class RenderSystem implements IDisposable {
     return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
   }
 
-  /** Create a new Texture from gradient symbology. */
+  /** Obtain a texture created from a gradient.
+   * @param _symb The description of the gradient.
+   * @param _imodel The IModelConnection with which the texture is associated.
+   * @returns A texture created from the gradient image, or undefined if the texture could not be created.
+   * @note If a texture matching the specified gradient already exists, it will be returned.
+   * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
+   * return the previously-created texture.
+   */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an ImageBuffer. */
+  /** Create a new texture from an [[ImageBuffer]]. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[ImageUtil.extractImage]] */
   public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new Texture from an ImageSource. */
+  /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
   }
 
-  /** Create a new Texture from a cube of HTML images. Typically the images were extracted from a binary representation of a jpeg or png via ImageUtil.extractImage() */
+  /** Create a new texture from a cube of HTML images.
+   * @hidden
+   */
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** @hidden */
