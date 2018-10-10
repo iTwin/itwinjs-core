@@ -35,10 +35,6 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
-  const url = Config.App.get("imjs_buddi_url", "");
-  if (url)
-    return;
-
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
   Config.App.set("imjs_buddi_resolve_url_using_region", KnownRegions.DEV);
