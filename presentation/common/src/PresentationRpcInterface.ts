@@ -8,7 +8,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
-import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
+import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./PresentationManagerOptions";
 import KeySet from "./KeySet";
 import { InstanceKey } from "./EC";
 import { Omit } from "./Utils";

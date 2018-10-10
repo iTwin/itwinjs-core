@@ -10,7 +10,7 @@ import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-IModelJsConfig.init(true, Config.App);
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 

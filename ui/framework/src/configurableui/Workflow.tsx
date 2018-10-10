@@ -258,7 +258,7 @@ export class WorkflowManager {
     return this._defaultWorkflowId;
   }
 
-  /** Gets the Task Picker properrties */
+  /** Gets the Task Picker properties */
   public static get taskPickerProps(): TaskPickerProps {
     return this._taskPickerProps;
   }

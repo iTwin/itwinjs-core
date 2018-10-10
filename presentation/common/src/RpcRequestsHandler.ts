@@ -11,7 +11,7 @@ import { PresentationStatus } from "./Error";
 import { InstanceKey } from "./EC";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
-import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./IPresentationManager";
+import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./PresentationManagerOptions";
 import PresentationRpcInterface, { RpcRequestOptions } from "./PresentationRpcInterface";
 
 /**

@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
-import { IRulesetManager, RegisteredRuleset } from "../lib/IRulesetManager";
+import { RegisteredRuleset } from "../lib/RegisteredRuleset";
 import { Ruleset, RuleTypes } from "../lib/rules";
 
 describe("RegisteredRuleset", () => {
 
   let uniqueIdentifier: string;
-  const managerMock = moq.Mock.ofType<IRulesetManager>();
+  const managerMock = moq.Mock.ofInstance(function remove(ruleset: RegisteredRuleset): void { ruleset; });
 
   beforeEach(() => {
     managerMock.reset();
@@ -38,7 +38,7 @@ describe("RegisteredRuleset", () => {
           vars: [],
         }],
       };
-      registered = new RegisteredRuleset(managerMock.object, ruleset, uniqueIdentifier);
+      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (ruleset: RegisteredRuleset) => managerMock.object(ruleset));
     });
 
     it("returns wrapper ruleset properties", () => {
@@ -60,9 +60,9 @@ describe("RegisteredRuleset", () => {
         id: faker.random.uuid(),
         rules: [],
       };
-      const registered = new RegisteredRuleset(managerMock.object, ruleset, uniqueIdentifier);
+      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (ruleset: RegisteredRuleset) => managerMock.object(ruleset));
       registered.dispose();
-      managerMock.verify((x) => x.remove(registered), moq.Times.once());
+      managerMock.verify((x) => x(registered), moq.Times.once());
     });
 
   });

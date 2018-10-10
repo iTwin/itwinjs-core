@@ -71,7 +71,7 @@ export enum ConfigurableUiControlType {
  */
 export type ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement;
 
-/** The absract base class for all Frontstage controls.
+/** The abstract base class for all Frontstage controls.
  *
  * @note This is an abstract class which should not be derived from by the applications.
  * Instead, applications should derive from one of

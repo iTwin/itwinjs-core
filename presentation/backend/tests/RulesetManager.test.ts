@@ -24,7 +24,7 @@ describe("RulesetManager", () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
       addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable();
-      const result = await manager.get(ruleset.id);
+      const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
       expect(result!.toJSON()).to.deep.eq(ruleset);
@@ -34,7 +34,7 @@ describe("RulesetManager", () => {
     it("handles empty array response", async () => {
       const rulesetId = faker.random.uuid();
       addonMock.setup((x) => x.getRulesets(rulesetId)).returns(() => JSON.stringify([])).verifiable();
-      const result = await manager.get(rulesetId);
+      const result = manager.get(rulesetId);
       addonMock.verifyAll();
       expect(result).to.be.undefined;
     });
@@ -46,11 +46,11 @@ describe("RulesetManager", () => {
     it("calls addon's addRuleset", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
       const hash = faker.random.uuid();
-      const registeredRuleset = new RegisteredRuleset(manager, ruleset, hash);
       addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable();
-      const result = await manager.add(ruleset);
+      const result = manager.add(ruleset);
       addonMock.verifyAll();
-      expect(result).to.deep.equal(registeredRuleset);
+      expect(ruleset).to.deep.equal(result.toJSON());
+      expect(hash).to.equal(result.uniqueIdentifier);
     });
 
   });
@@ -68,9 +68,9 @@ describe("RulesetManager", () => {
 
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      const registered = new RegisteredRuleset(manager, ruleset, faker.random.uuid());
+      const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (ruleset: RegisteredRuleset) => manager.remove(ruleset));
       addonMock.setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier)).returns(() => true).verifiable();
-      const result = await manager.remove(registered);
+      const result = manager.remove(registered);
       addonMock.verifyAll();
       expect(result).to.be.true;
     });
@@ -81,7 +81,7 @@ describe("RulesetManager", () => {
 
     it("calls addon's clearRulesets", async () => {
       addonMock.setup((x) => x.clearRulesets()).verifiable();
-      await manager.clear();
+      manager.clear();
       addonMock.verifyAll();
     });
 

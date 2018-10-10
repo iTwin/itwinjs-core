@@ -39,6 +39,7 @@ import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 
+/** Enum for StatusBar Message Type */
 export enum StatusBarMessageType {
   None,
   Activity,
@@ -47,6 +48,7 @@ export enum StatusBarMessageType {
   Sticky,
 }
 
+/** State for the [[StatusBar]] React component */
 export interface StatusBarState {
   openWidget: StatusBarFieldId;
   visibleMessage: StatusBarMessageType;
@@ -56,6 +58,7 @@ export interface StatusBarState {
   toastMessageStage: ToastMessageStage;
 }
 
+/** Properties for the [[StatusBar]] React component */
 export interface StatusBarProps {
   zoneDef: ZoneDef;
   isInFooterMode: boolean;
@@ -154,7 +157,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   /**
-   * Hides ActivityMessage after cancelation
+   * Hides ActivityMessage after cancellation
    */
   private _handleActivityMessageCancelledEvent = () => {
     this.setState((_prevState) => ({
@@ -279,7 +282,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   /**
-   * Returns ActvityMessage to display with most recent values
+   * Returns ActivityMessage to display with most recent values
    * reflecting activity progress.
    */
   private getActivityMessage(): React.ReactNode {

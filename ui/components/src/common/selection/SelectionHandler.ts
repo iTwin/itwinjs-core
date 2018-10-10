@@ -6,6 +6,7 @@
 import { SelectionMode, hasFlag, SelectionModeFlags } from "./SelectionModes";
 import { Range2d } from "@bentley/geometry-core";
 
+/** Prototype for a Selection Changed handler */
 export declare type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void;
 
 /**
@@ -170,11 +171,11 @@ export class DragAction<Item> {
         const insideCurrent = currentRange.containsXY(c, r);
         // If item is in only one of the ranges that means it's selection needs to be toggled.
         if ((insidePrevious || insideCurrent) && insideCurrent !== insidePrevious) {
-          const itemHanlder = this._itemSelectionHandlers[r][c];
-          if (itemHanlder.isSelected())
-            deselections.push(itemHanlder.item());
+          const itemHandler = this._itemSelectionHandlers[r][c];
+          if (itemHandler.isSelected())
+            deselections.push(itemHandler.item());
           else
-            selections.push(itemHanlder.item());
+            selections.push(itemHandler.item());
         }
       }
     }

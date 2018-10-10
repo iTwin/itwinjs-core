@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
@@ -44,17 +44,17 @@ describe("NativePlatform", () => {
 
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
   it("throws on not handled request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
 });

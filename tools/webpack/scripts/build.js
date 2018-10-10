@@ -24,15 +24,23 @@ exports.builder = (yargs) =>
         alias: "B",
         describe: "Only build the BACKEND bundle",
         conflicts: "frontend"
-      },
-      "skip_imodel_config_lookup": {
-        alias: "SC",
-        describe: "Do not try to search for imodeljs-config",
-      },
+      }
+
+    })
+    .options({
+      "noConfigLoader": {
+        type: "boolean",
+        default: "false",
+        describe: "do not run config-loader to locate a iModelJS config"
+      }
     });
 
 exports.handler = async (argv) => {
-
+  if (!argv.noConfigLoader) {
+    process.env.IMODELJS_NO_CONFIG_LOADER = true;
+  } else {
+    console.log("Skipping search for iModelJS config directory");
+  }
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("production");
 
@@ -40,11 +48,6 @@ exports.handler = async (argv) => {
 
   if ("electron" === buildTarget)
     process.env.ELECTRON_ENV = "production";
-
-  // skip imjs config lookup
-  if (Boolean(argv.skip_imodel_config_lookup)) {
-    process.env.SkipIModelJsConfigLookup = Boolean(argv.skip_imodel_config_lookup);
-  }
 
   const path = require("path");
   const fs = require("fs-extra");

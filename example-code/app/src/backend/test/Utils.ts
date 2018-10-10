@@ -10,7 +10,7 @@ import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IMode
 import * as path from "path";
 import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-IModelJsConfig.init(true, Config.App);
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export interface IModelTestUtilsOpenOptions {
     copyFilename?: string;

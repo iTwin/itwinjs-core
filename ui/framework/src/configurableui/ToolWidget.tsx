@@ -61,7 +61,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 }
 
-/** Props for the ToolWidget React component.
+/** Properties for the [[ToolWidget]] React component.
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps {
   button?: React.ReactNode;
@@ -69,6 +69,8 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps {
   verticalToolbar?: React.ReactNode;
 }
 
+/** State for the [[ToolWidget]] React component.
+ */
 export interface ToolWidgetState {
   toolWidgetProps: ToolWidgetPropsEx;
   toolWidgetDef: ToolWidgetDef;
@@ -78,7 +80,7 @@ export interface ToolWidgetState {
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<ToolWidgetState>;
 
   constructor(props: ToolWidgetPropsEx, context?: any) {

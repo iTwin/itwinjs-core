@@ -18,7 +18,7 @@ export class ViewportContentControl extends ContentControl {
 
   /** Creates an instance of ViewportContentControl.
    * @param info         An object that the subclass must pass to this base class.
-   * @param options      Options provided via the applicationData in a [[Content]].
+   * @param options      Options provided via the applicationData in a [[ContentProps]].
    */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);

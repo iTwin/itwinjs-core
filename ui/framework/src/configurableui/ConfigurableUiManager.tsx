@@ -31,7 +31,7 @@ export class ConfigurableUiManager {
 
   private static _commonItemMap: ItemMap = new ItemMap();
 
-  /** Initializes the ConfigurableUiManager and registeres core controls. */
+  /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {
     // Register core controls
     ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
@@ -93,8 +93,7 @@ export class ConfigurableUiManager {
    * [[ContentControl]],
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
-   * [[ToolUiProvider]]
-   * or
+   * [[ToolUiProvider]] or
    * [[WidgetControl]].
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register

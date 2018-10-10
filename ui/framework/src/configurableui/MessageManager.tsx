@@ -99,7 +99,7 @@ export class MessageManager {
   private static _InputFieldMessageAddedEvent: InputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
   private static _InputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
 
-  /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.ouptputMessage(). */
+  /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
   public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
 
   /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */

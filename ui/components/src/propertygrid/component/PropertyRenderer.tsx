@@ -12,7 +12,7 @@ import { PropertyDescription, PropertyRecord } from "../../properties";
 import "./PropertyRenderer.scss";
 
 /**
- * Props for the PropertyRenderer React component
+ * Properties for the [[PropertyRenderer]] React component
  */
 export interface PropertyRendererProps {
   /** Unique string, that identifies this property component. Should be used if onClick is provided */

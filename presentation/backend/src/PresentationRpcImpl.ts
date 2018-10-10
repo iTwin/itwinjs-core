@@ -13,7 +13,7 @@ import {
   Content, Descriptor, SelectionInfo,
   PresentationError, PresentationStatus,
   Paged, RequestOptions, InstanceKey, KeySet,
-  IRulesetManager, IRulesetVariablesManager,
+  RulesetManagerState, RulesetVariablesState,
   Omit,
 } from "@bentley/presentation-common";
 import {
@@ -85,43 +85,56 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   public async getRootNodes(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return [...await this.getManager(requestOptions.clientId).getRootNodes(this.toIModelDbOptions(token, requestOptions))];
+    const rootNodes: Node[] = [...await this.getManager(requestOptions.clientId).getRootNodes(actx, this.toIModelDbOptions(token, requestOptions))];
+    actx.enter();
+    return rootNodes;
   }
 
   public async getRootNodesCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): Promise<number> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getRootNodesCount(this.toIModelDbOptions(token, requestOptions));
+    const rootNodesCount: number = await this.getManager(requestOptions.clientId).getRootNodesCount(actx, this.toIModelDbOptions(token, requestOptions));
+    actx.enter();
+    return rootNodesCount;
   }
 
   public async getChildren(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return [...await this.getManager(requestOptions.clientId).getChildren(this.toIModelDbOptions(token, requestOptions), parentKey)];
+    const children: Node[] = [...await this.getManager(requestOptions.clientId).getChildren(actx, this.toIModelDbOptions(token, requestOptions), parentKey)];
+    actx.enter();
+    return children;
   }
 
   public async getChildrenCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, parentKey: Readonly<NodeKey>): Promise<number> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getChildrenCount(this.toIModelDbOptions(token, requestOptions), parentKey);
+    const childrenCount: number = await this.getManager(requestOptions.clientId).getChildrenCount(actx, this.toIModelDbOptions(token, requestOptions), parentKey);
+    actx.enter();
+    return childrenCount;
   }
 
   public async getNodePaths(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getNodePaths(this.toIModelDbOptions(token, requestOptions), paths, markedIndex);
+    const nodePaths: NodePathElement[] = await this.getManager(requestOptions.clientId).getNodePaths(actx, this.toIModelDbOptions(token, requestOptions), paths, markedIndex);
+    actx.enter();
+    return nodePaths;
   }
 
   public async getFilteredNodePaths(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, filterText: string): Promise<NodePathElement[]> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getFilteredNodePaths(this.toIModelDbOptions(token, requestOptions), filterText);
+    const filteredNodePaths: NodePathElement[] = await this.getManager(requestOptions.clientId).getFilteredNodePaths(actx, this.toIModelDbOptions(token, requestOptions), filterText);
+    actx.enter();
+    return filteredNodePaths;
   }
 
   public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(this.toIModelDbOptions(token, requestOptions), displayType, keys, selection);
+    const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(actx, this.toIModelDbOptions(token, requestOptions), displayType, keys, selection);
+    actx.enter();
     if (descriptor)
       descriptor.resetParentship();
     return descriptor;
@@ -130,13 +143,16 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getContentSetSize(this.toIModelDbOptions(token, requestOptions), descriptor, keys);
+    const contentSetSize: number = await this.getManager(requestOptions.clientId).getContentSetSize(actx, this.toIModelDbOptions(token, requestOptions), descriptor, keys);
+    actx.enter();
+    return contentSetSize;
   }
 
   public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    const content: Content = await this.getManager(requestOptions.clientId).getContent(this.toIModelDbOptions(token, requestOptions), descriptor, keys);
+    const content: Content = await this.getManager(requestOptions.clientId).getContent(actx, this.toIModelDbOptions(token, requestOptions), descriptor, keys);
+    actx.enter();
     content.descriptor.resetParentship();
     return content;
   }
@@ -144,7 +160,9 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
   public async getDistinctValues(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
     const actx = ActivityLoggingContext.current; actx.enter();
     this.verifyRequest(requestOptions);
-    return await this.getManager(requestOptions.clientId).getDistinctValues(this.toIModelDbOptions(token, requestOptions), descriptor, keys, fieldName, maximumValueCount);
+    const distinctValues: string[] = await this.getManager(requestOptions.clientId).getDistinctValues(actx, this.toIModelDbOptions(token, requestOptions), descriptor, keys, fieldName, maximumValueCount);
+    actx.enter();
+    return distinctValues;
   }
 
   public async syncClientState(_token: IModelToken, options: ClientStateSyncRequestOptions): Promise<void> {
@@ -152,30 +170,34 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     if (!options.clientStateId)
       throw new PresentationError(PresentationStatus.InvalidArgument, "clientStateId must be set when syncing with client state");
 
-    if (options.state.hasOwnProperty(IRulesetManager.STATE_ID)) {
-      const rulesetsState = options.state[IRulesetManager.STATE_ID];
+    if (options.state.hasOwnProperty(RulesetManagerState.STATE_ID)) {
+      const rulesetsState = options.state[RulesetManagerState.STATE_ID];
       if (!Array.isArray(rulesetsState))
         throw new PresentationError(PresentationStatus.InvalidArgument, "rulesets in client state should be an array");
-      await this.syncClientRulesetsState(options.clientId, rulesetsState);
+      await this.syncClientRulesetsState(actx, options.clientId, rulesetsState);
+      actx.enter();
     }
 
-    if (options.state.hasOwnProperty(IRulesetVariablesManager.STATE_ID)) {
-      const varsState = options.state[IRulesetVariablesManager.STATE_ID];
+    if (options.state.hasOwnProperty(RulesetVariablesState.STATE_ID)) {
+      const varsState = options.state[RulesetVariablesState.STATE_ID];
       if (typeof varsState !== "object")
         throw new PresentationError(PresentationStatus.InvalidArgument, "ruleset variables in client state should be an array");
-      await this.syncClientRulesetVariablesState(options.clientId, varsState as IRulesetVariablesManager.State);
+      await this.syncClientRulesetVariablesState(actx, options.clientId, varsState as RulesetVariablesState);
+      actx.enter();
     }
 
     this._clientStateIds.set(options.clientId || "", options.clientStateId);
   }
 
-  private async syncClientRulesetsState(clientId: string | undefined, rulesets: IRulesetManager.State): Promise<void> {
+  private async syncClientRulesetsState(actx: ActivityLoggingContext, clientId: string | undefined, rulesets: RulesetManagerState): Promise<void> {
+    actx.enter();
     const manager = this.getManager(clientId).rulesets();
-    await manager.clear();
-    await Promise.all(rulesets.map((r) => manager.add(r)));
+    manager.clear();
+    Promise.all(rulesets.map((r) => manager.add(r)));
   }
 
-  private async syncClientRulesetVariablesState(clientId: string | undefined, vars: IRulesetVariablesManager.State): Promise<void> {
+  private async syncClientRulesetVariablesState(actx: ActivityLoggingContext, clientId: string | undefined, vars: RulesetVariablesState): Promise<void> {
+    actx.enter();
     for (const rulesetId in vars) {
       // istanbul ignore if
       if (!vars.hasOwnProperty(rulesetId))
@@ -185,6 +207,7 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
       const values = vars[rulesetId];
       // todo: need to somehow clear client state before setting new values
       await Promise.all(values.map((v) => manager.setValue(v[0], v[1], v[2])));
+      actx.enter();
     }
   }
 }

@@ -8,7 +8,7 @@ import * as React from "react";
 import { ExpandableBlock as BwcExpandableBlock } from "@bentley/bwc/lib/";
 import "./ExpandableBlock.scss";
 
-/** Propertiess for the [[ExpandableBlock]] React component */
+/** Properties for the [[ExpandableBlock]] React component */
 export interface ExpandableBlockProps {
   /** Label */
   title: string;

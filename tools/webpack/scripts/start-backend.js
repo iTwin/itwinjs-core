@@ -16,39 +16,50 @@ exports.builder = (yargs) =>
       describe: `The port for the web backend to listen on for (inspector) debugging.`
     },
   })
-  .options({
-    "electronDebug": {
-      type: "string",
-      describe: `The port for the electron main process to listen on for (inspector) debugging.`
-    },
-  })
-  .options({
-    "electronRemoteDebug": {
-      type: "string",
-      describe: `The port for the electron render process to listen on for (chrome) debugging.`
-    },
-  })
-  .options({
-    "noElectron": {
-      type: "boolean",
-      describe: `Don't start the electron app.`
-    },
-  })
-  .options({
-    "noWeb": {
-      type: "boolean",
-      describe: `Don't start the web backend.`
-    },
-  });
+    .options({
+      "electronDebug": {
+        type: "string",
+        describe: `The port for the electron main process to listen on for (inspector) debugging.`
+      },
+    })
+    .options({
+      "electronRemoteDebug": {
+        type: "string",
+        describe: `The port for the electron render process to listen on for (chrome) debugging.`
+      },
+    })
+    .options({
+      "noElectron": {
+        type: "boolean",
+        describe: `Don't start the electron app.`
+      },
+    })
+    .options({
+      "noWeb": {
+        type: "boolean",
+        describe: `Don't start the web backend.`
+      },
+    })
+    .options({
+      "noConfigLoader": {
+        type: "boolean",
+        default: "false",
+        describe: "do not run config-loader to locate a iModelJS config",
+      },
+    });
 
 exports.handler = async (argv) => {
+  if (!argv.noConfigLoader) {
+    process.env.IMODELJS_NO_CONFIG_LOADER = true;
+  } else {
+    console.log("Skipping search for iModelJS config directory");
+  }
 
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("development");
-
   const paths = require("../config/paths");
   const config = require("../config/webpack.config.backend.dev");
-  const { watchBackend }= require("./utils/webpackWrappers");
+  const { watchBackend } = require("./utils/webpackWrappers");
 
   const nodeDebugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
   const electronDebugOptions = (argv.electronDebug) ? ["--inspect-brk=" + argv.electronDebug] : [];
