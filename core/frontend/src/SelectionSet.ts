@@ -11,25 +11,51 @@ import { IModelApp } from "./IModelApp";
 /** event types for SelectionSet.onChanged  */
 export const enum SelectEventType { Add, Remove, Replace, Clear }
 
-/** A set of *hilited* elements for an IModelConnection, by element id. */
+/** A set of *hilited* elements for an [[IModelConnection]], by element id.
+ * Hilited elements are displayed with a customizable [[Hilite]] effect within a [[Viewport]].
+ * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HilitedSet allows additional
+ * elements to be displayed with the [[Hilite]] effect without adding them to the [[SelectionSet]].
+ */
 export class HilitedSet {
+  /** The IDs of the hilited elements.
+   * @note Do not modify this set directly. Instead, use methods like [[HilitedSet.setHilite]] and [[HilitedSet.clearAll]].
+   */
   public readonly elements = new Set<string>();
+
   public constructor(public iModel: IModelConnection) { }
-  public setHilite(arg: Id64Arg, onOff: boolean) {
+
+  /** Toggle the hilited state of one or more elements.
+   * @param arg the ID(s) of the elements whose state is to be toggled.
+   * @param onOff True to add the elements to the hilited set, false to remove them.
+   */
+  public setHilite(arg: Id64Arg, onOff: boolean): void {
     Id64.toIdSet(arg).forEach((id) => onOff ? this.elements.add(id) : this.elements.delete(id));
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
+
+  /** Remove all elements from the hilited set. */
   public clearAll() {
     this.elements.clear();
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
+
+  /** Returns true if the specified element ID is contained in the hilite set. */
   public has(id: string) { return this.elements.has(id); }
+
+  /** Returns true if the specified element ID is contained in the hilite set. */
   public isHilited(id: Id64) { return this.elements.has(id.value); }
+
+  /** Returns the number of elements in the hilited set. */
   public get size() { return this.elements.size; }
 }
 
-/** A set of *currently selected* elements for an IModelConnection. */
+/** A set of *currently selected* elements for an IModelConnection.
+ * Selected elements are displayed with a customizable [[Hilite]] effect within a [[Viewport]].
+ */
 export class SelectionSet {
+  /** The IDs of the selected elements.
+   * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
+   */
   public readonly elements = new Set<string>();
   /** Called whenever elements are added or removed from this SelectionSet */
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Id64Set) => void>();
@@ -51,7 +77,7 @@ export class SelectionSet {
    */
   public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
 
-  /** Query whether an Ids is in the selection set.
+  /** Query whether an Id is in the selection set.
    * @see [[has]]
    */
   public isSelected(elemId?: Id64): boolean { return !!elemId && this.elements.has(elemId.value); }

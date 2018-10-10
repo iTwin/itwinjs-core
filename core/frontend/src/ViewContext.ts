@@ -17,10 +17,18 @@ import { ViewState3d } from "./ViewState";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
+/** Provides context for certain [[Viewport]]-related activities.
+ * @see [[DecorateContext]]
+ * @see [[DynamicsContext]]
+ */
 export class ViewContext {
+  /** ViewFlags extracted from the context's [[Viewport]]. */
   public readonly viewFlags: ViewFlags;
+  /** The [[Viewport]] associated with this context. */
   public readonly viewport: Viewport;
+  /** Frustum extracted from the context's [[Viewport]]. */
   public readonly frustum: Frustum;
+  /** Frustum planes extracted from the context's [[Viewport]]. */
   public readonly frustumPlanes: FrustumPlanes;
 
   constructor(vp: Viewport) {
@@ -30,6 +38,7 @@ export class ViewContext {
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
+  /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
   public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
 }
 
@@ -37,9 +46,23 @@ export class ViewContext {
 export class NullContext extends ViewContext {
 }
 
+/** Provides context for creating [[RenderGraphic]]s associated with a [[Viewport]].
+ * @see [[DecorateContext]]
+ * @see [[DynamicsContext]]
+ */
 export class RenderContext extends ViewContext {
   constructor(vp: Viewport) { super(vp); }
+
+  /** @hidden */
   public get target(): RenderTarget { return this.viewport.target; }
+
+  /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @param type The type of builder to create.
+   * @param transform the local-to-world transform in which the builder's geometry is to be defined.
+   * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
+   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   */
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
   public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
 }

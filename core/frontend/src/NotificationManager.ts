@@ -7,15 +7,18 @@ import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 
-/** Message Types for outputMessage */
+/** Describes the type and behavior of a [[NotifyMessageDetails]]. */
 export const enum OutputMessageType {
+  /** Temporary messagebox that displays at the bottom of the screen. */
   Toast = 0,
   Pointer = 1,
   Sticky = 2,
   InputField = 3,
-  Alert = 4, // Modal
+  /** Modal message box. */
+  Alert = 4,
 }
 
+/** Classifies a [[NotifyMessageDetails]] by its level of importance. */
 export const enum OutputMessagePriority {
   None = 0,
   Error = 10,
@@ -25,7 +28,7 @@ export const enum OutputMessagePriority {
   Fatal = 17,
 }
 
-/** Values for outputMessage */
+/** Describes the alert behavior of a [[NotifyMessageDetails]]. */
 export const enum OutputMessageAlert {
   None = 0,
   Dialog = 1,
@@ -50,6 +53,7 @@ export const enum ActivityMessageEndReason {
   Cancelled = 1,
 }
 
+/** Describes the set of buttons displayed in a messagebox opened using [[NotificationManager.openMessageBox]]. */
 export const enum MessageBoxType {
   OkCancel,
   Ok,
@@ -59,6 +63,7 @@ export const enum MessageBoxType {
   YesNo,
 }
 
+/** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]]. */
 export const enum MessageBoxIconType {
   NoSymbol = 0,   // Means Don't draw Symbol
   Information = 1,   // Lower Case i
@@ -67,6 +72,7 @@ export const enum MessageBoxIconType {
   Critical = 4,   // Stop Sign
 }
 
+/** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]]. */
 export const enum MessageBoxValue {
   Apply = 1,
   Reset = 2,
@@ -82,11 +88,13 @@ export const enum MessageBoxValue {
   NoToAll = 12,
 }
 
+/** Describes the behavior of a tooltip created using [[NotificationManager.openToolTip]]. */
 export interface ToolTipOptions {
   duration?: BeDuration;
   placement?: string;
 }
 
+/** Describes a message to be displayed to the user. */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
   public viewport?: HTMLElement;

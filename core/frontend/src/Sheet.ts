@@ -32,7 +32,9 @@ import { RenderTarget, GraphicList, RenderPlan, PackedFeatureTable } from "./ren
 import { OffScreenViewport, CoordSystem, ViewRect } from "./Viewport";
 import { IModelConnection } from "./IModelConnection";
 
-/** Describes the geometry and styling of a sheet border decoration. */
+/** Describes the geometry and styling of a sheet border decoration.
+ * The sheet border decoration mimics a sheet of paper with a drop shadow.
+ */
 export class SheetBorder {
   private _rect: Point2d[];
   private _shadow: Point2d[];
@@ -90,6 +92,7 @@ export class SheetBorder {
     return new SheetBorder(rect2d, shadow2d, gradient);
   }
 
+  /** @hidden */
   public getRange(): Range2d {
     const range = Range2d.createArray(this._rect);
     const shadowRange = Range2d.createArray(this._shadow);

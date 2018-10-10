@@ -35,16 +35,16 @@ import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimiti
 import { ImageUtil } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 
-/** Provides facilities for deserializing glTF tile data. */
+/** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
 export namespace GltfTileIO {
-  /** Known version of the glTF format. */
+  /** Known version of the [glTF format](https://www.khronos.org/gltf/). */
   export const enum Versions {
     Version1 = 1,
     Version2 = 2,
     CurrentVersion = Version1,
     SceneFormat = 0,
   }
-  /** The result of Reader.read(). */
+  /** The result of [[GltfTileIO.Reader.read]]. */
   export interface ReaderResult {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
@@ -204,7 +204,7 @@ export namespace GltfTileIO {
     }
   }
 
-  /** Data required for creating a Reader capable of deserializing glTF tile data. */
+  /** Data required for creating a Reader capable of deserializing [glTF tile data](https://www.khronos.org/gltf/). */
   export class ReaderProps {
     private constructor(public readonly buffer: TileIO.StreamBuffer,
       public readonly binaryData: Uint8Array,
@@ -252,7 +252,7 @@ export namespace GltfTileIO {
   /** A function that returns true if Reader.read() should abort because the tile data is no longer needed. */
   export type IsCanceled = (reader: Reader) => boolean;
 
-  /** Deserializes glTF tile data. */
+  /** Deserializes [(glTF tile data](https://www.khronos.org/gltf/). */
   export abstract class Reader {
     /** @hidden */
     protected readonly _buffer: TileIO.StreamBuffer;

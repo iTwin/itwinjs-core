@@ -8,9 +8,9 @@ import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOver
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
+/** Contains types that enable an application to customize how [[Feature]]s are drawn within a [[Viewport]]. */
 export namespace FeatureSymbology {
-
-  /** The properties that define an Appearance. */
+  /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {
     /** The color of the Appearance */
     rgb?: RgbColor;
