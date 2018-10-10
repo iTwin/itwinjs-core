@@ -54,10 +54,6 @@ function isOfflineSet(): boolean {
 }
 
 /** Basic configuration used by all tests
- * Note: Setup test cases at both the DEV and QA environments, so that
- * the tests can be run at either place.
- * QA: https://qa-connect-webportal.bentley.com/
- * DEV: https://dev-webportal-eus.cloudapp.net/ and
  */
 export class TestConfig {
   /** Name of project used by most tests */

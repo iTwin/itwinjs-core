@@ -108,7 +108,6 @@ export abstract class Client {
     }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    // todo: Investigate why QA/DEV are not working
     const searchKey: string = this.getUrlSearchKey();
     return urlDiscoveryClient.discoverUrl(alctx, searchKey, this.getRegion())
       .then((url: string): Promise<string> => {
