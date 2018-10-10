@@ -15,11 +15,21 @@ exports.builder = (yargs) =>
       type: "boolean",
       describe: `Don't start a web browser.`
     },
+    "noConfigLoader": {
+      type: "boolean",
+      default: "false",
+      describe: "do not run config-loader to locate a iModelJS config",
+    },
   });
 
 let devServerInfo;
 
 exports.handler = async (argv) => {
+  if (!argv.noConfigLoader) {
+    process.env.IMODELJS_NO_CONFIG_LOADER = true;
+  } else {
+    console.log("Skipping search for iModelJS config directory");
+  }
 
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("development");

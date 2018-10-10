@@ -15,7 +15,7 @@ import * as fs from "fs";
 import { Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-IModelJsConfig.init(true, Config.App);
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export const whitelistPath = "./lib/test/assets/whitelist.txt";
 export const logPath = "./lib/test/iModelClientsTests.log";

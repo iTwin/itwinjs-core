@@ -14,7 +14,7 @@ import { IModelHubClient, HubIModel, IModelQuery, Config } from "@bentley/imodel
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcBackendClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration, OidcDelegationClient } from "../index";
 
-IModelJsConfig.init(true, Config.App);
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 chai.should();
 

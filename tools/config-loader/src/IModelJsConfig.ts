@@ -51,15 +51,16 @@ export class IModelJsConfig {
         parts.shift();
       }
     }
+
     if (!repositoryRootDir || !fs.existsSync(repositoryRootDir)) {
-      throw new Error(`Failed to find configuration for imodeljs at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
+      throw new Error(`Failed to find configuration for iModelJS at '${repositoryRootDir}'. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
     }
 
     // tslint:disable-next-line:no-console
     console.log(`Found configuration folder at: ${chalk.default.bold(repositoryRootDir)}`);
     return repositoryRootDir;
   }
-  public static init(suppressError: boolean = false, config?: any): any {
+  public static init(suppressException: boolean = false, suppressErrorMessage: boolean = false, config?: any): any {
     const shellEnv = process.env;
     if (IModelJsConfig._repositoryPath || shellEnv.imjs_config_file_default)
       return shellEnv;
@@ -77,9 +78,11 @@ export class IModelJsConfig {
         config.merge(shellEnv);
       }
     } catch (err) {
-      // tslint:disable-next-line:no-console
-      console.log(`${chalk.default.redBright(err.message)}`);
-      if (!suppressError) {
+      if (!suppressErrorMessage) {
+        // tslint:disable-next-line:no-console
+        console.log(`${chalk.default.redBright(err.message)}`);
+      }
+      if (!suppressException) {
         throw err;
       }
     }
