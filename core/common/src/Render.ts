@@ -969,7 +969,7 @@ export namespace HiddenLine {
       }
     }
 
-    public static defaults = new Style({ });
+    public static defaults = new Style({});
 
     public static fromJSON(json?: StyleProps): Style { return undefined !== json ? new Style(json) : this.defaults; }
 
@@ -1039,7 +1039,7 @@ export namespace HiddenLine {
     public get transThreshold(): number { return this.transparencyThreshold; }
 
     /** The default display settings. */
-    public static defaults = new Settings({ });
+    public static defaults = new Settings({});
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
@@ -1526,15 +1526,15 @@ export namespace Gradient {
   }
 }
 
-/**  Whether a closed region should be drawn for wireframe display with its internal area filled or not. */
+/** Whether a closed region should be drawn for wireframe display with its internal area filled or not. */
 export const enum FillDisplay {
   /** don't fill, even if fill attribute is on for the viewport */
   Never = 0,
   /** fill if the fill attribute is on for the viewport */
   ByView = 1,
-  /**  always fill, even if the fill attribute is off for the viewport */
+  /** always fill, even if the fill attribute is off for the viewport */
   Always = 2,
-  /** always fill, fill will always be behind subsequent geometry */
+  /** always fill, fill will always be behind other geometry */
   Blanking = 3,
 }
 
@@ -1574,23 +1574,66 @@ export class SceneLights {
   public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
-/**
- * Geometry display properties used to override or augment the SubCategory Appearance.
+/** Describes the display properties of geometry in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
+ * @see [[GeometryStreamProps]].
  */
 export class GeometryParams {
-  public materialId?: Id64; // render material Id.
-  public elmPriority?: number; // display priority (applies to 2d only)
-  public weight?: number; // integer value from 0 to 32
+  /** Optional render material to override [[SubCategoryAppearance.materialId]].
+   * Specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material.
+   */
+  public materialId?: Id64;
+  /** Optional display priority added to [[SubCategoryAppearance.priority]].
+   * The net display priority value is used to control z ordering when drawing to 2d views.
+   */
+  public elmPriority?: number;
+  /** Optional line weight to override [[SubCategoryAppearance.weight]].
+   * The weight is an integer in the range of [0,32] that by default corresponds to a pixel width of weight+1.
+   */
+  public weight?: number;
+  /** Optional line color to override [[SubCategoryAppearance.color]].
+   * The transparency component is ignored and should instead be specified using [[elmTransparency]].
+   */
   public lineColor?: ColorDef;
-  public fillColor?: ColorDef; // fill color (applicable only if filled)
-  public backgroundFill?: BackgroundFill; // support for fill using the view's background color, default BackgroundFill.None
-  public fillDisplay?: FillDisplay; // whether or not the element should be displayed filled, default FillDisplay.Never
-  public elmTransparency?: number; // line transparency, 0.0 for completely opaque, 1.0 for completely transparent
-  public fillTransparency?: number;  // fill transparency, 0.0 for completely opaque, 1.0 for completely transparent
-  public geometryClass?: GeometryClass; // geometry class, default GeometryClass.Primary
-  public styleInfo?: LineStyle.Info; // line style id plus modifiers.
-  public gradient?: Gradient.Symb; // gradient fill settings.
-  public pattern?: AreaPattern.Params; // area pattern settings.
+  /** Optional fill color for region interiors. Set the same as [[lineColor]] for an opaque fill.
+   * Valid when [[fillDisplay]] is not [[FillDisplay.Never]], [[gradient]] is undefined, and [[backgroundFill]] is [[BackgroundFill.None]].
+   * The transparency component is ignored and should instead be specified using [[fillTransparency]].
+   */
+  public fillColor?: ColorDef;
+  /** Optional fill using the current view background color for region interiors.
+   * Valid when [[fillDisplay]] is not [[FillDisplay.Never]] and [[gradient]] is undefined. Default is [[BackgroundFill.None]].
+   */
+  public backgroundFill?: BackgroundFill;
+  /** Optional fill specification that determines when and if a region interior will display using [[gradient]], [[backgroundFill]], or [[fillColor]] in that order of preference.
+   * Fill only applies to [[RenderMode.Wireframe]] views. In a [[RenderMode.SmoothShade]] or [[RenderMode.SolidFill]] view, regions will always display as surfaces prefering [[fillColor]] when present over [[lineColor]].
+   * Default is [[FillDisplay.Never]].
+   */
+  public fillDisplay?: FillDisplay;
+  /** Optional line color transparency to combine with [[SubCategoryAppearance.transparency]].
+   * Transparency values are combined by multiplying the opaqueness. A 50% transparent element on a 50% transparent sub-category creates a 75% transparent result (1 - ((1 - .5) * (1 - .5)) = 0.75).
+   * Value range is [0.0,1.0]. Pass 0.0 for completely opaque and 1.0 for completely transparent.
+   */
+  public elmTransparency?: number;
+  /** Optional fill color transparency to combine with [[SubCategoryAppearance.transparency]].
+   * Transparency values are combined by multiplying the opaqueness. A 50% transparent fill on a 50% transparent sub-category creates a 75% transparent result (1 - ((1 - .5) * (1 - .5)) = 0.75).
+   * Value range is [0.0,1.0]. Pass 0.0 for completely opaque, 1.0 for completely transparent, or leave undefined to use [[elmTransparency]].
+   */
+  public fillTransparency?: number;
+  /** Optional geometry classification that can be toggled off with a [[ViewFlags]] independent of [[SubCategoryAppearance.invisible]].
+   * Default is [[GeometryClass.Primary]].
+   */
+  public geometryClass?: GeometryClass;
+  /** Optional line style to override [[SubCategoryAppearance.styleId]] plus modifiers to override the line style definition.
+   * Specify an invalid [[Id64]] to override [[SubCategoryAppearance.styleId]] with a solid line.
+   */
+  public styleInfo?: LineStyle.Info;
+  /** Optional gradient fill settings for region interiors.
+   * Valid when [[fillDisplay]] is not [[FillDisplay.Never]].
+   */
+  public gradient?: Gradient.Symb;
+  /** Optional area pattern settings for region interiors.
+   * Independent of fill, a region can have both fill and pattern.
+   */
+  public pattern?: AreaPattern.Params;
 
   constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
@@ -1612,9 +1655,7 @@ export class GeometryParams {
     return retVal;
   }
 
-  /**
-   *  Clears appearance overrides while preserving category and sub-category.
-   */
+  /** Clears [[SubCategoryAppearance]] overrides while preserving [[categoryId]] and [[subCategoryId]]. */
   public resetAppearance() {
     this.materialId = undefined;
     this.elmPriority = undefined;
@@ -1631,9 +1672,7 @@ export class GeometryParams {
     this.pattern = undefined;
   }
 
-  /**
-   *  Compare two GeometryParams for equivalence, i.e. both values are from sub-category appearance or have the same override.
-   */
+  /** Compare two [[GeometryParams]] for equivalence, i.e. both values are undefined and inherited from [[SubCategoryAppearance]] or have the same override. */
   public isEquivalent(other: GeometryParams): boolean {
     if (this === other)
       return true; // Same pointer
@@ -1696,28 +1735,19 @@ export class GeometryParams {
     return true;
   }
 
-  /** Setting the Category Id also sets the SubCategory to the default. */
+  /** Change [[categoryId]] to the supplied id, [[subCategoryId]] to the supplied category's the default subCategory, and optionally clear any [[SubCategoryAppearance]] overrides. */
   public setCategoryId(categoryId: Id64, clearAppearanceOverrides = true) {
     this.categoryId = categoryId;
     this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
     if (clearAppearanceOverrides)
       this.resetAppearance();
   }
+
+  /** Change [[subCategoryId]] to the supplied id and optionally clear any [[SubCategoryAppearance]] overrides. */
   public setSubCategoryId(subCategoryId: Id64, clearAppearanceOverrides = true) {
     this.subCategoryId = subCategoryId;
     if (clearAppearanceOverrides)
       this.resetAppearance();
-  }
-
-  /** Get whether this GeometryParams contains information that needs to be transformed (ex. to apply local to world). */
-  public get isTransformable() { return this.pattern || this.styleInfo; }
-
-  /** Transform GeometryParams data like PatternParams and LineStyleInfo. */
-  public applyTransform(transform: Transform) {
-    if (this.pattern)
-      this.pattern.applyTransform(transform);
-    if (this.styleInfo && this.styleInfo.styleMod)
-      this.styleInfo.styleMod.applyTransform(transform);
   }
 }
 

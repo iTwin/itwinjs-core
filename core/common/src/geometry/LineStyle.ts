@@ -9,9 +9,10 @@ import { Id64 } from "@bentley/bentleyjs-core";
 
 export namespace LineStyle {
 
-  /** GeometryStream entry to modify the line style appearance without changing the line style definition.
-   * Applies to the style previously established by a GeometryAppearanceProps or current subCategory appearance.
+  /** Modify the line style appearance without changing the line style definition.
+   * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
    * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
+   * @see [[GeometryStreamEntryProps]]
    */
   export interface ModifierProps {
     /** Optional scale to apply to all length values, 1.0 if undefined */
