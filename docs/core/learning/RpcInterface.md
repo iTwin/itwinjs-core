@@ -147,7 +147,7 @@ The server must call [RpcManager.registerImpl]($common) to register the impl cla
 ```
 
 ### Choose Interfaces
-The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters. A server will often use [FeatureGates]($common) to decide which interfaces to expose.
+The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
 *Example:*
 

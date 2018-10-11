@@ -87,7 +87,3 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Geometry Functions]($docs/learning/GeometrySqlFuncs.md)
  */
-/**
- * @docs-group-description FeatureGates
- * Classes for configuring and gating (limiting at runtime) access to features.
- */

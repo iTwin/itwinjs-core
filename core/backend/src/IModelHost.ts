@@ -54,7 +54,7 @@ export class IModelHost {
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** Configured FeatureGates for this IModelHost. */
+  /** @hidden */
   public static readonly features = new FeatureGates();
 
   /** This method must be called before any iModel.js services are used.
