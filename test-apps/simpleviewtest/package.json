@@ -35,7 +35,6 @@
     "@bentley/imodeljs-frontend": "0.155.0",
     "@bentley/imodeljs-backend": "0.155.0",
     "body-parser": "^1.18.2",
-    "electron-devtools-installer": "^2.2.4",
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
@@ -48,7 +47,6 @@
     "cpx": "^1.5.0",
     "child_process": "^1.0.2",
     "electron": "2.0.1",
-    "electron-builder": "^20.13.3",
     "express": "^4.16.3",
     "node-glob": "^1.2.0",
     "null-loader": "^0.1.1",
