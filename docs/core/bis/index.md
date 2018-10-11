@@ -1,6 +1,6 @@
 # Base Infrastructure Schemas (BIS)
 
-The **Base Infrastructure Schemas** (BIS) are a family of schemas covering all lifecycle phases and all disciplines relevant to physical infrastructure. BIS defines the semantics, data structures, and business concepts used by for software for modeling infrastructure. Importantly, BIS is used in [iModels](..\learning\iModels.md), but can also be used to define the semantics and structure for infrastructure data in REST APIs, messages, and various serialized data formats.
+The **Base Infrastructure Schemas** (BIS) are a family of schemas covering all lifecycle phases and all disciplines relevant to physical infrastructure. BIS defines the semantics, data structures, and business concepts used by for software for modeling infrastructure. Importantly, BIS is used in [iModels](../learning/iModels.md), but can also be used to define the semantics and structure for infrastructure data in REST APIs, messages, and various serialized data formats.
 
 BIS covers:
 
