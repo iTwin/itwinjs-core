@@ -449,9 +449,6 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Query ChangeSummary content", async () => {
-    // accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
-    // testProjectId = "d46de192-6cad-4086-b968-71b517edc215";
-    // const testIModelId: string = "a237be2f-7a59-4f40-a0bd-14bf9c0634f1";
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 

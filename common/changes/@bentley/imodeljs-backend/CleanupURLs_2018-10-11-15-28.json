@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed uncessary comments",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Affan.Khan"
+}
