@@ -16,6 +16,7 @@ import {
   RenderMaterial,
   Gradient,
   SubCategoryOverride,
+  AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -31,12 +32,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _AnalysisStyle?: AnalysisStyle;
   private _backgroundMap: BackgroundMapState;
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    this._AnalysisStyle = AnalysisStyle.fromJSON(this.styles.analysisStyle);
     const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
     const monoJson = this.styles[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
@@ -69,6 +72,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   public get backgroundMap() { return this._backgroundMap; }
+  public get AnalysisStyle() { return this._AnalysisStyle }
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }

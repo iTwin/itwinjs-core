@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef } from "./ColorDef";
-import { ViewFlags } from "./Render";
+import { ViewFlags, AnalysisStyle } from "./Render";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
 export interface ViewStateData {
@@ -35,6 +35,7 @@ export interface DisplayStyleProps extends ElementProps {
   viewFlags: ViewFlags;
   backgroundColor: ColorDef;
   monochromeColor: ColorDef;
+  AnalysisStyle?: AnalysisStyle;
 }
 
 export interface ViewQueryParams extends EntityQueryParams {

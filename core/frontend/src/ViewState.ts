@@ -12,7 +12,7 @@ import {
 import {
   AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
   SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-  ViewFlags, ViewStateData,
+  ViewFlags, ViewStateData, AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -162,7 +162,6 @@ export abstract class ViewState extends ElementState {
 
   /** Get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
-
   /** Set the ViewFlags and mark them as dirty if they have changed. */
   public set viewFlags(newFlags: ViewFlags) {
     if (!this.viewFlags.isEqualTo(newFlags)) {
@@ -170,6 +169,8 @@ export abstract class ViewState extends ElementState {
       this.displayStyle.viewFlags = newFlags;
     }
   }
+  /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.AnalysisStyle; }
 
   /** Determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }

@@ -18,7 +18,7 @@ import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps, AnalysisStyle } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -924,6 +924,8 @@ export abstract class Viewport implements IDisposable {
       this.invalidateScene();
     }
   }
+  /** @hidden */
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
