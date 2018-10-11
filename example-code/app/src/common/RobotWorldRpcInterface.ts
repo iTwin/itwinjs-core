@@ -26,6 +26,5 @@ export abstract class RobotWorldWriteRpcInterface extends RpcInterface {
   public static getClient() { return RpcManager.getClientForInterface(this); }
   public insertRobot(_iModelToken: IModelToken, _modelId: Id64String, _name: string, _location: Point3d): Promise<Id64String> { return this.forward.apply(this, arguments); }
   public moveRobot(_iModelToken: IModelToken, _id: Id64String, _location: Point3d): Promise<void> { return this.forward.apply(this, arguments); }
-  public fuseRobots(_iModelToken: IModelToken, _r1: Id64String, _r2: Id64String): Promise<void> { return this.forward.apply(this, arguments); }
   public insertBarrier(_iModelToken: IModelToken, _modelId: Id64String, _location: Point3d, _angle: Angle, _length: number): Promise<Id64String> { return this.forward.apply(this, arguments); }
 }

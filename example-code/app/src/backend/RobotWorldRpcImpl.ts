@@ -46,11 +46,6 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
         RobotWorldEngine.moveRobot(IModelDb.find(iModelToken), id, location);
     }
 
-    public async fuseRobots(iModelToken: IModelToken, r1: Id64String, r2: Id64String): Promise<void> {
-        const activityContext = ActivityLoggingContext.current; activityContext.enter();
-        RobotWorldEngine.fuseRobots(IModelDb.find(iModelToken), r1, r2);
-    }
-
     public async insertBarrier(iModelToken: IModelToken, modelId: Id64String, location: Point3d, angle: Angle, length: number): Promise<Id64String> {
         const activityContext = ActivityLoggingContext.current; activityContext.enter();
         return RobotWorldEngine.insertBarrier(IModelDb.find(iModelToken), modelId, location, angle, length);

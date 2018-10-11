@@ -2,14 +2,16 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module FeatureGates */
-
 import { BeEvent } from "@bentley/bentleyjs-core";
 
+/**
+ * @hidden
+ */
 export type GateValue = number | boolean | string | undefined;
 
 /**
- * A set of "gates" that can enable or disable [features at runtime]($docs/learning/common/FeatureGates.md).
+ * A set of "gates" that can enable or disable features at runtime.
+ * @hidden
  */
 export class FeatureGates {
   /** Event raised every time any feature changes. */
