@@ -15,9 +15,7 @@ exports[`SheetNavigationAid <SheetNavigationAid /> renders correctly 1`] = `
   <div
     className="sheet-name"
     onClick={[Function]}
-  >
-    Sheet 1
-  </div>
+  />
   <div
     className="sheet-container"
   >
@@ -30,7 +28,7 @@ exports[`SheetNavigationAid <SheetNavigationAid /> renders correctly 1`] = `
        
       general.of
        
-      7
+      0
     </div>
     <div
       className="sheet-caret icon icon-caret-right"

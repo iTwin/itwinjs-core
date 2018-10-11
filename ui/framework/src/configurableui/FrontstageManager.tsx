@@ -14,6 +14,7 @@ import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -77,6 +78,7 @@ export class ContentControlActivatedEvent extends UiEvent<ContentControlActivate
  */
 export interface NavigationAidActivatedEventArgs {
   navigationAidId: string;
+  iModelConnection: IModelConnection;
 }
 
 /** NavigationAid Activated Event class.
@@ -299,8 +301,9 @@ export class FrontstageManager {
 
   /** Sets the active Navigation Aid via its Id.
    * @param navigationAidId  Id of the Navigation Aid to set as active
+   * @param iModelConnection IModelConnection to query for view data
    */
-  public static setActiveNavigationAid(navigationAidId: string) {
-    this.onNavigationAidActivatedEvent.emit({ navigationAidId });
+  public static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection) {
+    this.onNavigationAidActivatedEvent.emit({ navigationAidId, iModelConnection });
   }
 }

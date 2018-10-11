@@ -84,5 +84,8 @@
   "buttons": {
     "yes": "Yes",
     "no": "No"
+  },
+  "navigationAid": {
+    "sheetsModalFrontstage": "Sheets Modal Frontstage"
   }
 }

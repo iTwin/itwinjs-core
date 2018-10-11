@@ -8,68 +8,90 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { ModalFrontstageInfo, FrontstageManager } from "../FrontstageManager";
-import { SearchBox } from "@bentley/ui-core";
+import { SearchBox, UiEvent } from "@bentley/ui-core";
 import "./SheetsModalFrontstage.scss";
 import { UiFramework } from "../../UiFramework";
+import { SheetData } from "./SheetNavigationAid";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 
-interface CardInfo {
+/** Data about a sheet card */
+export interface CardInfo {
+  index: number;
   label: string;
   iconClass: string;
   isActive?: boolean;
+  viewId: any;
 }
+
+/** Arguments for CardSelectedEvent */
+export interface CardSelectedEventArgs {
+  id: any;
+  index: number;
+}
+
+/** Class for CardSelectedEvent */
+export class CardSelectedEvent extends UiEvent<CardSelectedEventArgs> { }
 
 /** Modal frontstage displaying sheet information in cards. */
 export class SheetsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = "Modal Frontstage Title";
-  private _cards: CardInfo[] = [
-    { label: "Gist Sheet 1-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 2-A1 Size", iconClass: "icon-document", isActive: true },
-    { label: "Gist Sheet 3-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 4-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 5-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 6-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 7-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 8-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 9-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 10-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 11-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 12-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 13-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 14-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 15-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 16-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 17-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 18-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 19-A1 Size", iconClass: "icon-document" },
-    { label: "Gist Sheet 20-A1 Size", iconClass: "icon-document" },
-  ];
-
+  public title: string = UiFramework.i18n.translate("UiFramework:navigationAid.sheetsModalFrontstage");
+  private _cards: CardInfo[] = [];
+  private _connection: IModelConnection;
   private _searchValue: string = "";
 
-  public get content(): React.ReactNode {
-    return (
-      <TestCardContainer cards={this._cards} searchValue={this._searchValue} />
-    );
+  /**
+   * Creates a SheetsModalFrontstage
+   * @param sheets Collection of sheets available in SheetNavigationAid
+   * @param connection IModelConnection to query for sheet ViewState
+   */
+  constructor(sheets: SheetData[], connection: IModelConnection) {
+    this._connection = connection;
+    this._storeSheetsAsCards(sheets);
   }
 
+  /**
+   * Gathers card info from available sheets
+   * @param sheets SheetData from available sheets
+   */
+  private _storeSheetsAsCards(sheets: SheetData[]) {
+    let index = 0;
+    sheets.forEach((sheet) => {
+      this._cards.push({ index: index++, label: sheet.name, iconClass: "icon-document", viewId: sheet.viewId });
+    });
+  }
+
+  /** Gets set of cards */
+  public get content(): React.ReactNode {
+    return <CardContainer cards={this._cards} searchValue={this._searchValue} connection={this._connection} />;
+  }
+
+  /** Gets components to be placed in the app bar */
   public get appBarRight(): React.ReactNode {
     return (
       <SearchBox placeholder={UiFramework.i18n.translate("UiCore:general.search")} onValueChanged={this._handleSearchValueChanged} valueChangedDelay={250} />
     );
   }
 
+  /** Updates stage based on search value */
   private _handleSearchValueChanged = (value: string): void => {
     this._searchValue = value;
     FrontstageManager.updateModalFrontstage();
   }
 }
 
-interface TestCardContainerProps {
+/** Props for CardContainer */
+interface CardContainerProps {
   cards: CardInfo[];
   searchValue: string;
+  connection: IModelConnection;
 }
 
-class TestCardContainer extends React.Component<TestCardContainerProps> {
+/** Displays cards in SheetModalFrontstage */
+export class CardContainer extends React.Component<CardContainerProps> {
+  private static _cardSelectedEvent: CardSelectedEvent = new CardSelectedEvent();
+  public static get onCardSelectedEvent(): CardSelectedEvent { return CardContainer._cardSelectedEvent; }
+
+  /** @hidden */
   public render() {
     return (
       <div className="sheets-scrollview">
@@ -84,7 +106,7 @@ class TestCardContainer extends React.Component<TestCardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <TestCard key={card.label} label={card.label} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this.handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
                 );
               }
 
@@ -96,6 +118,13 @@ class TestCardContainer extends React.Component<TestCardContainerProps> {
     );
   }
 
+  /**
+   * Determines if string contains a substring
+   * @param valueA The string to search through
+   * @param valueB The value to search for
+   * @param caseSensitive Flag for if the search should be case sensitive
+   * @return True if valueB can be found in valueA, false otherwise
+   */
   private contains(valueA: string, valueB: string, caseSensitive: boolean): boolean {
     if (!valueA || !valueB)
       return false;
@@ -109,22 +138,34 @@ class TestCardContainer extends React.Component<TestCardContainerProps> {
     return valueA.toLocaleUpperCase().indexOf(valueB.toLocaleUpperCase(), 0) !== -1;
   }
 
-  private handleCardSelected(card: CardInfo) {
-    // tslint:disable-next-line:no-console
-    console.log("Card selected: " + card.label);
+  /**
+   * Updates view with ViewState for selected card.
+   * @param card Data about the sheet card selected.
+   */
+  private async _handleCardSelected(card: CardInfo) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return;
+    const viewState = await this.props.connection.views.load(card.viewId);
+    vp.changeView(viewState);
 
+    card.isActive = true;
     FrontstageManager.closeModalFrontstage();
+    CardContainer.onCardSelectedEvent.emit({ id: card.viewId, index: card.index });
   }
 }
 
-interface TestCardProps {
+/** Props for SheetCard */
+interface SheetCardProps {
   label: string;
   iconClass: string;
   isActive?: boolean;
   onClick?: () => void;
 }
 
-class TestCard extends React.Component<TestCardProps> {
+/** Displays information about an individual sheet */
+export class SheetCard extends React.Component<SheetCardProps> {
+  /** @hidden */
   public render() {
     const { label, iconClass, isActive, onClick } = this.props;
 

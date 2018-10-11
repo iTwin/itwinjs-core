@@ -465,6 +465,7 @@ class FrontstageNavigationWidget extends React.Component {
     return (
       <NavigationWidget
         navigationAidId="CubeNavigationAid"
+        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection!}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />
