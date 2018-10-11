@@ -78,20 +78,25 @@ p.digital-twin {
 }
 
 .middle-content-image {
-  width: 25%;
-  height: 25%;
+  width: 20%;
+  height: 20%;
   margin-bottom: 3em;
 }
 
 .middle-content-text {
   max-width: 900px;
   min-width: 300px;
+  margin-bottom: 3em;
 }
 
 @media screen and (max-width: 767px) {
   .nav-landing-container .navbar-nav {
     padding-right: 15px;
     max-width: 38%;
+  }
+  .middle-content-image {
+    width: 40%;
+    height: 40%;
   }
 }
 
