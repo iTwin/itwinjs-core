@@ -16,6 +16,8 @@ import ZoneTargets from "./pages/ZoneTargets";
 import Footer from "./pages/Footer";
 import Tools from "./pages/Tools";
 
+const openPopovers = () => <Popovers isPopoverOpen />;
+
 export default class Demo extends React.PureComponent {
   public render() {
     return (
@@ -24,7 +26,7 @@ export default class Demo extends React.PureComponent {
           <Route exact path="/" component={Home} />
           <Route path="/zones" component={Zones} />
           <Route path="/backstage" component={Backstage} />
-          <Route path="/popovers" component={() => <Popovers isPopoverOpen />} />
+          <Route path="/popovers" component={openPopovers} />
           <Route path="/zone-targets" component={ZoneTargets} />
           <Route path="/footer" component={Footer} />
           <Route path="/tools" component={Tools} />

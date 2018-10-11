@@ -11,7 +11,7 @@ export interface Props {
 }
 
 export default class CodeBlock extends React.PureComponent<Props> {
-  private _code: HTMLElement | undefined = undefined;
+  private _code = React.createRef<HTMLElement>();
 
   public componentDidMount() {
     this.highlightCode();
@@ -24,7 +24,7 @@ export default class CodeBlock extends React.PureComponent<Props> {
   public render() {
     return (
       <pre>
-        <code ref={(ref) => ref && (this._code = ref)} className={this.props.language}>
+        <code ref={this._code} className={this.props.language}>
           {this.props.value}
         </code>
       </pre>
@@ -32,9 +32,9 @@ export default class CodeBlock extends React.PureComponent<Props> {
   }
 
   private highlightCode() {
-    if (!this._code)
+    if (!this._code.current)
       return;
 
-    HighlightJs.highlightBlock(this._code);
+    HighlightJs.highlightBlock(this._code.current);
   }
 }

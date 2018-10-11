@@ -46,39 +46,127 @@ export default class Tools extends React.PureComponent<{}, State> {
     direction: Direction.Right,
   };
 
-  private _toggleIsPanelVisible = () => {
-    this.setState((prevState) => ({
-      ...prevState,
-      isPanelVisible: !prevState.isPanelVisible,
-    }));
-  }
+  public render() {
+    let path = "../";
+    for (let i = 0; i < this.state.onBackCount; i++) {
+      path = "../" + path;
+    }
 
-  private _toggleDirection = () => {
-    this.setState((prevState) => {
-      let direction = prevState.direction;
-      switch (direction) {
-        case Direction.Left: {
-          direction = Direction.Top;
-          break;
-        }
-        case Direction.Top: {
-          direction = Direction.Right;
-          break;
-        }
-        case Direction.Right: {
-          direction = Direction.Bottom;
-          break;
-        }
-        case Direction.Bottom: {
-          direction = Direction.Left;
-          break;
-        }
-      }
-      return {
-        ...prevState,
-        direction,
-      };
-    });
+    const icon = <i className="icon icon-placeholder" />;
+    return (
+      <div style={{ padding: "10px" }}>
+        <h1>Toolbar</h1>
+        <div style={cols2}>
+          <Toolbar
+            expandsTo={Direction.Left}
+            items={this.getToolbarIcons1(Direction.Left)}
+          />
+          <Toolbar
+            items={this.getToolbarIcons1(Direction.Bottom)}
+          />
+          <Toolbar
+            expandsTo={Direction.Right}
+            items={this.getToolbarIcons1(Direction.Right)}
+          />
+        </div>
+        <h1>Overflow</h1>
+        <Toolbar
+          expandsTo={Direction.Right}
+          items={
+            <Overflow
+              key="0"
+              onClick={this._handleToggleIsPanelVisible}
+              panel={!this.state.isPanelVisible ? undefined :
+                <Panel>
+                  Other Tools
+                </Panel>
+              }
+            />
+          }
+        />
+        <br />
+        <div style={cols2}>
+          <Scrollable
+            expandsTo={Direction.Left}
+            items={this.getToolbarIcons2(Direction.Left)}
+          />
+          <Scrollable
+            items={this.getToolbarIcons2(Direction.Bottom)}
+          />
+          <Scrollable
+            expandsTo={Direction.Right}
+            items={this.getToolbarIcons2(Direction.Right)}
+          />
+          <Scrollable
+            items={this.getToolbarIcons1(Direction.Bottom)}
+          />
+        </div>
+        <h1>Tool Buttons</h1>
+        <div style={cols2}>
+          <Button>
+            Anything here :)
+          </Button>
+          <IconButton
+            icon={
+              <i className="icon icon-placeholder" />
+            }
+          />
+          <App
+            icon={
+              <i className="icon icon-home" />
+            }
+          />
+          <Back
+            icon={
+              <i className="icon icon-progress-backward-2" />
+            }
+          />
+          <ExpandableButton
+            expanded={
+              !this.state.isPanelVisible ? undefined :
+                <div style={{ backgroundColor: "teal" }}>
+                  Hello world
+                </div>
+            }
+            direction={this.state.direction}
+            button={
+              <IconButton
+                onClick={this._handleExpandableButtonClick}
+                icon={
+                  <i className="icon icon-placeholder" />
+                }
+              />
+            }
+          />
+        </div>
+        <h1>Tool Group</h1>
+        <Panel>
+          Panel with custom content
+        </Panel>
+        <br />
+        <Group
+          title="Tool Group"
+          columns={
+            <>
+              <Column>
+                <Tool icon={icon} label="Tool1" />
+                <Expander icon={icon} label="Expander" />
+              </Column>
+              <Column>
+                <Tool icon={icon} label="Tool3" />
+                <Tool icon={icon} label="Tool4" />
+              </Column>
+            </>
+          }
+        />
+        <br />
+        <Nested
+          title="Nested"
+          columns={path}
+          onBack={this._handleBackClick}
+        />
+      </div >
+    );
   }
 
   private getToolbarIcons1(direction: Direction) {
@@ -139,7 +227,7 @@ export default class Tools extends React.PureComponent<{}, State> {
             <i className="icon icon-placeholder" />
           }
           isActive
-          onClick={this._toggleIsPanelVisible}
+          onClick={this._handleToggleIsPanelVisible}
         />
       </Expandable>,
       <Expandable
@@ -211,134 +299,46 @@ export default class Tools extends React.PureComponent<{}, State> {
     ];
   }
 
-  public render() {
-    let path = "../";
-    for (let i = 0; i < this.state.onBackCount; i++) {
-      path = "../" + path;
-    }
+  private _handleToggleIsPanelVisible = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      isPanelVisible: !prevState.isPanelVisible,
+    }));
+  }
 
-    const icon = <i className="icon icon-placeholder" />;
-    return (
-      <div style={{ padding: "10px" }}>
-        <h1>Toolbar</h1>
-        <div style={cols2}>
-          <Toolbar
-            expandsTo={Direction.Left}
-            items={this.getToolbarIcons1(Direction.Left)}
-          />
-          <Toolbar
-            items={this.getToolbarIcons1(Direction.Bottom)}
-          />
-          <Toolbar
-            expandsTo={Direction.Right}
-            items={this.getToolbarIcons1(Direction.Right)}
-          />
-        </div>
-        <h1>Overflow</h1>
-        <Toolbar
-          expandsTo={Direction.Right}
-          items={
-            <Overflow
-              key="0"
-              onClick={this._toggleIsPanelVisible}
-              panel={!this.state.isPanelVisible ? undefined :
-                <Panel>
-                  Other Tools
-                </Panel>
-              }
-            />
-          }
-        />
-        <br />
-        <div style={cols2}>
-          <Scrollable
-            expandsTo={Direction.Left}
-            items={this.getToolbarIcons2(Direction.Left)}
-          />
-          <Scrollable
-            items={this.getToolbarIcons2(Direction.Bottom)}
-          />
-          <Scrollable
-            expandsTo={Direction.Right}
-            items={this.getToolbarIcons2(Direction.Right)}
-          />
-          <Scrollable
-            items={this.getToolbarIcons1(Direction.Bottom)}
-          />
-        </div>
-        <h1>Tool Buttons</h1>
-        <div style={cols2}>
-          <Button>
-            Anything here :)
-          </Button>
-          <IconButton
-            icon={
-              <i className="icon icon-placeholder" />
-            }
-          />
-          <App
-            icon={
-              <i className="icon icon-home" />
-            }
-          />
-          <Back
-            icon={
-              <i className="icon icon-progress-backward-2" />
-            }
-          />
-          <ExpandableButton
-            expanded={
-              !this.state.isPanelVisible ? undefined :
-                <div style={{ backgroundColor: "teal" }}>
-                  Hello world
-                </div>
-            }
-            direction={this.state.direction}
-            button={
-              <IconButton
-                onClick={() => {
-                  this._toggleIsPanelVisible();
-                  if (!this.state.isPanelVisible)
-                    return;
-                  this._toggleDirection();
-                }}
-                icon={
-                  <i className="icon icon-placeholder" />
-                }
-              />
-            }
-          />
-        </div>
-        <h1>Tool Group</h1>
-        <Panel>
-          Panel with custom content
-        </Panel>
-        <br />
-        <Group
-          title="Tool Group"
-          columns={
-            <>
-              <Column>
-                <Tool icon={icon} label="Tool1" />
-                <Expander icon={icon} label="Expander" />
-              </Column>
-              <Column>
-                <Tool icon={icon} label="Tool3" />
-                <Tool icon={icon} label="Tool4" />
-              </Column>
-            </>
-          }
-        />
-        <br />
-        <Nested
-          title="Nested"
-          columns={path}
-          onBack={() => this.setState((prevState) => ({
-            ...prevState,
-            onBackCount: prevState.onBackCount + 1,
-          }))}
-        />
-      </div >
-    );
+  private _handleBackClick = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      onBackCount: prevState.onBackCount + 1,
+    }));
+  }
+
+  private _handleExpandableButtonClick = () => {
+    this.setState((prevState) => {
+      let direction = prevState.direction;
+      switch (direction) {
+        case Direction.Left: {
+          direction = Direction.Top;
+          break;
+        }
+        case Direction.Top: {
+          direction = Direction.Right;
+          break;
+        }
+        case Direction.Right: {
+          direction = Direction.Bottom;
+          break;
+        }
+        case Direction.Bottom: {
+          direction = Direction.Left;
+          break;
+        }
+      }
+      return {
+        ...prevState,
+        direction: this.state.isPanelVisible ? prevState.direction : direction,
+        isPanelVisible: !prevState.isPanelVisible,
+      };
+    });
   }
 }

@@ -505,6 +505,21 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     this._temporaryMessageTimer.stop();
   }
 
+  public render() {
+    return (
+      <ThemeContext.Provider value={this.state.themeContext}>
+        <App
+          className={"nzdemo-pages-zones"}
+          ref={this._app}
+        >
+          {this.getZones()}
+          {this.getBackstage()}
+          {this.getContent()}
+        </App>
+      </ThemeContext.Provider>
+    );
+  }
+
   private getZones() {
     const zones = Object.keys(this.state.nineZone.zones)
       .map((key) => Number(key) as WidgetZoneIndex)
@@ -573,276 +588,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  public render() {
-    return (
-      <ThemeContext.Provider value={this.state.themeContext}>
-        <App
-          className={"nzdemo-pages-zones"}
-          ref={this._app}
-        >
-          {this.getZones()}
-          {this.getBackstage()}
-          {this.getContent()}
-        </App>
-      </ThemeContext.Provider>
-    );
-  }
-
-  private _handlePositionChange = (mousePosition: PointProps) => {
-    this.setState(() => ({
-      mousePosition,
-    }));
-  }
-
-  private _handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
-    if (e.target !== e.currentTarget)
-      return;
-
-    this._temporaryMessageTimer.start();
-    this.setState((prevState) => ({
-      isTemporaryMessageVisible: true,
-      temporaryMessageX: prevState.mousePosition.x,
-      temporaryMessageY: prevState.mousePosition.y,
-    }));
-  }
-
-  private _handleTooltipTimeout = () => {
-    this.setState(() => ({
-      isTooltipVisible: false,
-    }));
-  }
-
-  private _handleOnExpandableItemClick = (toolKey: string) => {
-    this.setState((prevState) => ({
-      tools: {
-        ...Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-          const tool = prevState.tools[current];
-          if (isToolGroup(tool)) {
-            previous[current] = {
-              ...tool,
-              isToolGroupOpen: (toolKey === current) ? !tool.isToolGroupOpen : false,
-            };
-          } else {
-            previous[current] = { ...tool };
-          }
-          return previous;
-        }, {}),
-      },
-    }));
-  }
-
-  private _handleOnIsHistoryExtendedChange = (isExtended: boolean, toolKey: string) => {
-    this.setState((prevState) => ({
-      tools: {
-        ...prevState.tools,
-        [toolKey]: {
-          ...prevState.tools[toolKey],
-          isExtended,
-        },
-      },
-    }));
-  }
-
-  private handleToolGroupItemClicked(toolKey: string, trayKey: string, columnKey: string, itemKey: string) {
-    this.setState((prevState) => {
-      const tool = prevState.tools[toolKey];
-      if (!isToolGroup(tool))
-        return null;
-
-      const key = columnKey + "-" + itemKey;
-      const item = { toolKey, trayKey, columnKey, itemKey };
-      return {
-        tools: {
-          ...prevState.tools,
-          [toolKey]: {
-            ...prevState.tools[toolKey],
-            isExtended: false,
-            isToolGroupOpen: false,
-            history: DefaultHistoryManager.addItem(key, item, tool.history),
-          },
-        },
-      };
-    });
-  }
-
-  private _handleOnHistoryItemClick = (item: HistoryItem) => {
-    this.setState((prevState) => {
-      const tool = prevState.tools[item.toolKey];
-      if (!isToolGroup(tool))
-        return null;
-      return {
-        tools: {
-          ...prevState.tools,
-          [item.toolKey]: {
-            ...prevState.tools[item.toolKey],
-            isExtended: false,
-            history: DefaultHistoryManager.addItem(item.columnKey + "-" + item.itemKey, item, tool.history),
-          },
-        },
-      };
-    });
-  }
-
-  private _handleOnScrollableToolbarScroll = () => {
-    this.setState((prevState) => ({
-      tools:
-        Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-          const tool = prevState.tools[current];
-          if (isToolGroup(tool)) {
-            previous[current] = {
-              ...tool,
-              isToolGroupOpen: false,
-            };
-          } else {
-            previous[current] = { ...tool };
-          }
-          return previous;
-        }, {}),
-    }));
-  }
-
-  private _handleMessageIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages,
-    }));
-  }
-
-  private _handleToolAssistanceIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance,
-    }));
-  }
-
-  private _handleSnapModeIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode,
-    }));
-  }
-
-  private _handlePopoverToggleClick = () => {
-    this.setState((prevState) => ({
-      isNestedPopoverOpen: false,
-      isPopoverOpen: !prevState.isPopoverOpen,
-    }));
-  }
-
-  private _handleNestedPopoverToggleClick = () => {
-    this.setState((prevState) => ({
-      isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
-    }));
-  }
-
-  private _handleNestedToolSettingsBackButtonClick = () => {
-    this.setState(() => ({
-      isNestedPopoverOpen: false,
-    }));
-  }
-
-  private _handleWindowResize = () => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
-    }));
-  }
-
-  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabDragEnd = () => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabDrag = (dragged: PointProps) => {
-    this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone),
-    }));
-  }
-
-  private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean) => {
-    this.setState((prevState) => ({
-      nineZone: isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
-        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone),
-    }));
-  }
-
-  private _handleOnAllMessagesTabClick = () => {
-    this.setActiveTab(MessageCenterActiveTab.AllMessages);
-  }
-
-  private _handleOnProblemsTabClick = () => {
-    this.setActiveTab(MessageCenterActiveTab.Problems);
-  }
-
-  private _handleDisableItemsClick = () => {
-    this.setState((prevState) => ({
-      tools: {
-        ...prevState.tools,
-        cube: {
-          ...prevState.tools.cube,
-          isDisabled: !prevState.tools.cube.isDisabled,
-          isToolGroupOpen: false,
-        },
-        validate: {
-          ...prevState.tools.validate,
-          isDisabled: !prevState.tools.validate.isDisabled,
-          isToolGroupOpen: false,
-        },
-        channel: {
-          ...prevState.tools.channel,
-          isDisabled: !prevState.tools.channel.isDisabled,
-          isToolGroupOpen: false,
-        },
-        chat: {
-          ...prevState.tools.chat,
-          isDisabled: !prevState.tools.chat.isDisabled,
-          isToolGroupOpen: false,
-        },
-        browse: {
-          ...prevState.tools.browse,
-          isDisabled: !prevState.tools.browse.isDisabled,
-          isToolGroupOpen: false,
-        },
-        chat1: {
-          ...prevState.tools.chat1,
-          isDisabled: !prevState.tools.chat1.isDisabled,
-          isToolGroupOpen: false,
-        },
-      },
-    }));
-  }
-
-  private setActiveTab(activeTab: MessageCenterActiveTab) {
-    this.setState(() => ({
-      activeTab,
-    }));
-  }
-
-  private _hideMessages = () => {
-    this.setVisibleMessage(Message.None);
-  }
-
-  private setVisibleMessage(visibleMessage: Message) {
-    this.setState(() => ({
-      visibleMessage,
-    }));
-  }
-
   private getHistoryTray(toolKey: string): React.ReactNode {
     const tool = this.state.tools[toolKey] as ToolGroup;
     if (tool.isToolGroupOpen)
@@ -860,7 +605,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             return (
               <HistoryIcon
                 key={entry.key}
-                onClick={() => this._handleOnHistoryItemClick(entry.item)}
+                onClick={this._handleOnHistoryItemClick(entry.item)}
               >
                 <i className={`icon ${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
               </HistoryIcon>
@@ -871,80 +616,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private getMessagesCenterMessages() {
-    if (this.state.activeTab === MessageCenterActiveTab.AllMessages)
-      return (
-        <>
-          <MessageCenterMessage
-            icon={<i className={"icon icon-status-success nzdemo-success"} />}
-            content={"Document saved successfully."}
-          />
-          <MessageCenterMessage
-            icon={<i className={"icon icon-clock nzdemo-progress"} />}
-            content={
-              <>
-                <span>Downloading required assets.</span>
-                <br />
-                <i><small>75% complete</small></i>
-              </>
-            }
-          />
-          <MessageCenterMessage
-            icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
-            content={
-              <>
-                <span>Cannot attach reference.</span>
-                <br />
-                <i><u><small>Details...</small></u></i>
-              </>
-            }
-          />
-          <MessageCenterMessage
-            icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
-            content={"Missing 10 fonts. Replaces with Arial."}
-          />
-          <MessageCenterMessage
-            icon={<i className={"icon icon-star nzdemo-favorite"} />}
-            content={"Your document has been favorited by 5 people in the..."}
-          />
-          <MessageCenterMessage
-            icon={<i className={"icon icon-status-success nzdemo-success"} />}
-            content={"Navigator has successfully updated"}
-          />
-        </>
-      );
-
-    return (
-      <>
-        <MessageCenterMessage
-          icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
-          content={"Missing 10 fonts. Replaced with Arial."}
-        />
-        <MessageCenterMessage
-          content={"Cannot attach reference"}
-        />
-        <MessageCenterMessage
-          content={"Problem1"}
-        />
-        <MessageCenterMessage
-          content={"Problem2"}
-        />
-        <MessageCenterMessage
-          content={"Problem3"}
-        />
-        <MessageCenterMessage
-          content={"Problem4"}
-        />
-        <MessageCenterMessage
-          content={"Problem5"}
-        />
-        <MessageCenterMessage
-          content={"Problem6"}
-        />
-      </>
-    );
-  }
-
   private getToolbarItem(toolKey: string) {
     const tool = this.state.tools[toolKey];
     if (isToolGroup(tool)) {
@@ -952,15 +623,15 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         <ExpandableItem
           history={this.getHistoryTray(toolKey)}
           key={toolKey}
-          onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended, toolKey)}
+          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange(toolKey)}
           panel={this.getToolGroup(toolKey)}
           isDisabled={tool.isDisabled}
         >
-          <Item
+          <ToolbarIcon
             icon={
               <i className={`icon ${tool.icon}`} />
             }
-            onClick={() => this._handleOnExpandableItemClick(toolKey)}
+            onClick={this._handleOnExpandableItemClick(toolKey)}
             isDisabled={tool.isDisabled}
           />
         </ExpandableItem>
@@ -968,7 +639,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }
 
     return (
-      <Item
+      <ToolbarIcon
         key={toolKey}
         icon={
           <i className={`icon ${tool.icon}`} />
@@ -981,15 +652,13 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private getToolbarItemWithToolSettings(toolKey: string) {
     const tool = this.state.tools[toolKey];
     return (
-      <Item
+      <ToolbarIcon
         key={toolKey}
         isActive={this.state.secondZoneContent !== SecondZoneContent.None}
         icon={
           <i className={`icon ${tool.icon}`} />
         }
-        onClick={() => this.setState((prevState) => ({
-          secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
-        }))}
+        onClick={this._handleToggleToolSettings}
       />
     );
   }
@@ -1017,19 +686,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     icon={
                       <i className={`icon ${item.icon}`} />
                     }
-                    onClick={() => this.setState((prevState) => {
-                      const toolGroup = prevState.tools[toolKey] as ToolGroup;
-                      return {
-                        tools: {
-                          ...prevState.tools,
-                          [toolKey]: {
-                            ...prevState.tools[toolKey],
-                            trayId,
-                            backTrays: [...toolGroup.backTrays, toolGroup.trayId],
-                          },
-                        },
-                      };
-                    })}
+                    onClick={this._handleExpandToolGroup(toolKey, trayId)}
                     isDisabled={item.isDisabled}
                   />
                 );
@@ -1038,7 +695,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                   key={itemKey}
                   ref={itemKey}
                   label={itemKey}
-                  onClick={() => this.handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
+                  onClick={this._handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
                   icon={
                     <i className={`icon ${item.icon}`} />
                   }
@@ -1057,24 +714,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           title={tray.title}
           container={this._zones}
           columns={columns}
-          onBack={() => this.setState((prevState) => {
-            const t = prevState.tools[toolKey] as ToolGroup;
-            let trayId = tool.trayId;
-            if (t.backTrays.length > 0)
-              trayId = tool.backTrays[t.backTrays.length - 1];
-
-            const backTrays = tool.backTrays.slice(0, -1);
-            return {
-              tools: {
-                ...prevState.tools,
-                [toolKey]: {
-                  ...prevState.tools[toolKey],
-                  trayId,
-                  backTrays,
-                },
-              },
-            };
-          })}
+          onBack={this._handleNestedToolGroupBack(toolKey)}
         />
       );
 
@@ -1174,168 +814,19 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return undefined;
   }
 
-  private getFooterMessage() {
-    switch (this.state.visibleMessage) {
-      case (Message.Activity): {
-        return (
-          <ActivityMessage>
-            <StatusMessage
-              status={Status.Information}
-              icon={
-                <i className="icon icon-activity" />
-              }
-            >
-              <StatusLayout
-                label={
-                  <MessageLabel text="Rendering 'big-image.png'" />
-                }
-                buttons={
-                  <MessageHyperlink
-                    onClick={this._hideMessages}
-                    text="Ok"
-                  />
-                }
-                progress={
-                  <MessageProgress status={Status.Information} progress={33.33} />
-                }
-              />
-            </StatusMessage>
-          </ActivityMessage>
-        );
-      }
-      case (Message.Modal): {
-        return (
-          <ModalMessage
-            renderTo={() => this._dialogContainer}
-            dialog={
-              <MessageDialog
-                titleBar={
-                  <MessageTitleBar
-                    title={
-                      <MessageTitle text="Dialog" />
-                    }
-                    buttons={
-                      <MessageDialogButton onClick={this._hideMessages}>
-                        <i className="icon icon-close" />
-                      </MessageDialogButton>
-                    }
-                  />
-                }
-                content={
-                  <MessageDialogButtonsContent
-                    buttons={
-                      <>
-                        <BlueButton
-                          onClick={this._hideMessages}
-                        >
-                          Yes
-                        </BlueButton>
-                        <HollowButton
-                          onClick={this._hideMessages}
-                        >
-                          No
-                        </HollowButton>
-                      </>
-                    }
-                    content={
-                      <MessageDialogScrollableContent
-                        content={
-                          <>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
-                          <br />
-                            <br />
-                            In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
-                          <br />
-                            <br />
-                            Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
-                          <br />
-                            <br />
-                            Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
-                          <br />
-                            <br />
-                            Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
-                        </>
-                        }
-                      />
-                    }
-                  />
-                }
-                resizeHandle={< DialogResizeHandle />}
-              />
-            }
-          />
-        );
-      }
-      case (Message.Toast): {
-        return (
-          <ToastMessage
-            stage={this.state.toastMessageStage}
-            animateOutTo={this._footerMessages.current || undefined}
-            onAnimatedOut={() => this._hideMessages()}
-            timeout={2500}
-            onStageChange={(toastMessageStage) => {
-              this.setState(() => ({
-                toastMessageStage,
-              }));
-            }}
-            content={
-              <StatusMessage
-                status={Status.Success}
-                icon={
-                  <i className="icon icon-status-success-hollow" />
-                }
-              >
-                <StatusLayout
-                  label={
-                    <MessageLabel text="Image 'big.png' saved." />
-                  }
-                />
-              </StatusMessage>
-            }
-          />
-        );
-      }
-      case (Message.Sticky): {
-        return (
-          <StickyMessage>
-            <StatusMessage
-              status={Status.Error}
-              icon={
-                <i className="icon icon-status-error-hollow" />
-              }
-            >
-              <StatusLayout
-                label={
-                  <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
-                }
-                buttons={
-                  <MessageButton onClick={this._hideMessages}>
-                    <i className="icon icon-close" />
-                  </MessageButton>
-                }
-              />
-            </StatusMessage>
-          </StickyMessage>
-        );
-      }
-    }
-
-    return undefined;
-  }
-
-  private getTarget(zoneId: WidgetZoneIndex) {
-    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+  private getTarget(zoneId: WidgetZoneIndex, nineZone: NineZone) {
+    const zone = nineZone.getWidgetZone(zoneId);
     const dropTarget = zone.getDropTarget();
     return (
       <TargetContainer>
         {dropTarget === DropTarget.Merge ? (
           <MergeTarget
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Merge, isTargeted)}
+            onTargetChanged={this._handleTargetChanged(zoneId, TargetType.Merge)}
           />
         ) : undefined}
         {dropTarget === DropTarget.Back ? (
           <BackTarget
-            onTargetChanged={(isTargeted) => this._handleTargetChanged(zoneId, TargetType.Back, isTargeted)}
+            onTargetChanged={this._handleTargetChanged(zoneId, TargetType.Back)}
             zoneIndex={zoneId}
           />
         ) : undefined}
@@ -1368,9 +859,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           <WidgetTab
             key="3_1"
             mode={mode1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+            onClick={this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
             onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1388,9 +879,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           >
             <WidgetTab
               mode={mode1}
-              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              onClick={this._handleWidgetTabClick(widget.id, 1)}
               lastPosition={tabIndex === 1 ? lastPosition : undefined}
-              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
               onDragEnd={this._handleWidgetTabDragEnd}
               onDrag={this._handleWidgetTabDrag}
               anchor={anchor}
@@ -1399,9 +890,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             </WidgetTab>
             <WidgetTab
               mode={mode2}
-              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              onClick={this._handleWidgetTabClick(widget.id, 2)}
               lastPosition={tabIndex === 2 ? lastPosition : undefined}
-              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragStart={this._handleWidgetTabDragStart(widget.id, 2)}
               onDragEnd={this._handleWidgetTabDragEnd}
               onDrag={this._handleWidgetTabDrag}
               anchor={anchor}
@@ -1416,9 +907,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           <WidgetTab
             key="6_1"
             mode={mode1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+            onClick={this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
             onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1432,9 +923,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           <WidgetTab
             key="7_1"
             mode={mode1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+            onClick={this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
             onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1448,12 +939,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           <WidgetTab
             key="8_1"
             mode={mode1}
-            onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+            onClick={this._handleWidgetTabClick(widget.id, 1)}
             lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={(initialPosition, offset) => {
-              this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset);
-              this._handleWidgetTabDragEnd();
-            }}
+            onDragStart={this._handleStatusWidgetTabDragStart(widget.id, 1)}
             onDragEnd={this._handleWidgetTabDragEnd}
             onDrag={this._handleWidgetTabDrag}
             anchor={anchor}
@@ -1471,9 +959,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           >
             <WidgetTab
               mode={mode1}
-              onClick={() => this._handleWidgetTabClick(widget.id, 1)}
+              onClick={this._handleWidgetTabClick(widget.id, 1)}
               lastPosition={tabIndex === 1 ? lastPosition : undefined}
-              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 1, initialPosition, offset)}
+              onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
               onDragEnd={this._handleWidgetTabDragEnd}
               onDrag={this._handleWidgetTabDrag}
               anchor={anchor}
@@ -1482,9 +970,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             </WidgetTab>
             <WidgetTab
               mode={mode2}
-              onClick={() => this._handleWidgetTabClick(widget.id, 2)}
+              onClick={this._handleWidgetTabClick(widget.id, 2)}
               lastPosition={tabIndex === 2 ? lastPosition : undefined}
-              onDragStart={(initialPosition, offset) => this._handleWidgetTabDragStart(widget.id, 2, initialPosition, offset)}
+              onDragStart={this._handleWidgetTabDragStart(widget.id, 2)}
               onDragEnd={this._handleWidgetTabDragEnd}
               onDrag={this._handleWidgetTabDrag}
               anchor={anchor}
@@ -1524,28 +1012,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         return (
           <ThemeContext.Consumer>
             {
-              ({ theme, change: changeTheme }) => (
+              ({ theme, change }) => (
                 <BlueButton
-                  onClick={() => {
-                    switch (theme) {
-                      case PrimaryTheme: {
-                        changeTheme && changeTheme(LightTheme);
-                        break;
-                      }
-                      case LightTheme: {
-                        changeTheme && changeTheme(DarkTheme);
-                        break;
-                      }
-                      case DarkTheme: {
-                        changeTheme && changeTheme(customTheme);
-                        break;
-                      }
-                      case customTheme: {
-                        changeTheme && changeTheme(PrimaryTheme);
-                        break;
-                      }
-                    }
-                  }}
+                  onClick={this._handleToggleTheme(theme, change)}
                 >
                   Theme: {theme.name}
                 </BlueButton>
@@ -1557,55 +1026,33 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       case 7: {
         return (
           <>
-            <BlueButton
-              onClick={() => this.setVisibleMessage(Message.Activity)}
-            >
+            <BlueButton onClick={this._handleOpenActivityMessage}>
               Show Activity Message
             </BlueButton>
             <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
             <br />
-            <BlueButton
-              onClick={() => this.setVisibleMessage(Message.Modal)}
-            >
+            <BlueButton onClick={this._handleOpenModalMessage}>
               Show Modal Message
             </BlueButton>
             <br />
-            <BlueButton
-              onClick={() => {
-                this.setVisibleMessage(Message.Toast);
-                this.setState(() => ({
-                  toastMessageStage: ToastMessageStage.Visible,
-                }));
-              }}
-            >
+            <BlueButton onClick={this._handleOpenToastMessage}>
               Show Toast Message
             </BlueButton>
             <br />
-            <BlueButton
-              onClick={() => this.setVisibleMessage(Message.Sticky)}
-            >
+            <BlueButton onClick={this._handleOpenStickyMessage}>
               Show Sticky Message
             </BlueButton>
             <br />
             <br />
             <BlueButton
-              onClick={() => {
-                this.setState(() => ({
-                  isTooltipVisible: true,
-                }));
-              }}
+              onClick={this._handleShowTooltip}
             >
               Show Tooltip
             </BlueButton>
             <br />
             <br />
             <BlueButton
-              onClick={() => {
-                this.setState((prevState) => ({
-                  nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone),
-                  openWidget: FooterWidget.None,
-                }));
-              }}
+              onClick={this._handleToggleFooterMode}
             >
               Change Footer Mode
             </BlueButton>
@@ -1713,8 +1160,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return undefined;
   }
 
-  private getWidget(zoneId: WidgetZoneIndex) {
-    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+  private getWidget(zoneId: WidgetZoneIndex, nineZone: NineZone) {
+    const zone = nineZone.getWidgetZone(zoneId);
     if (zone.props.widgets.length === 0)
       return undefined;
 
@@ -1728,9 +1175,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         isDragged={isDragged}
         isFloating={zone.props.floating ? true : false}
         isOpen={isOpen}
-        onResize={(x, y, handle, diff) => {
-          this._handleOnWidgetResize(zoneId, x, y, handle, diff);
-        }}
+        onResize={this._handleWidgetResize(zoneId)}
         tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
         verticalAnchor={zone.verticalAnchor}
       />
@@ -1745,23 +1190,25 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         return this.getZone2();
       case 3:
         return this.getZone3();
-      case 8:
+      case 8: {
         return this.getStatusZone();
+      }
       default:
         return this.getFloatingZone(zoneId);
     }
   }
 
   private getFloatingZone(zoneId: WidgetZoneIndex) {
-    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
+    const nineZone = new NineZone(this.state.nineZone);
+    const zone = nineZone.getWidgetZone(zoneId);
     const outlineBounds = zone.getGhostOutlineBounds();
     return (
       <React.Fragment key={zoneId}>
         <Zone bounds={zone.props.floating ? zone.props.floating.bounds : zone.props.bounds}>
-          {this.getWidget(zoneId)}
+          {this.getWidget(zoneId, nineZone)}
         </Zone>
         <Zone bounds={zone.props.bounds}>
-          {this.getTarget(zoneId)}
+          {this.getTarget(zoneId, nineZone)}
         </Zone>
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
@@ -1790,12 +1237,11 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                 <>
                   {this.state.showAllItems && this.getToolbarItem("2d")}
                   <ToolbarIcon
-                    isActive={this.state.showAllItems}
                     key={"angle"}
                     icon={
                       <i className={`icon ${this.state.tools.angle.icon}`} />
                     }
-                    onClick={() => this.setState((prevState) => ({ showAllItems: !prevState.showAllItems }))}
+                    onClick={this._handleToggleShowAllItems}
                   />
                 </>
               }
@@ -1807,7 +1253,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               items={
                 <>
                   {this.state.showAllItems && this.getToolbarItem("cube")}
-                  <Item
+                  <ToolbarIcon
                     key={"attach"}
                     icon={
                       <i className={`icon ${this.state.tools.attach.icon}`} />
@@ -1837,92 +1283,76 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private getZone3() {
     const zoneId = 3;
-    const isRectangular = this.state.nineZone.zones[zoneId].widgets.length !== 1 ||
-      this.state.nineZone.zones[zoneId].widgets[0].id !== zoneId;
-
-    if (isRectangular)
-      return this.getFloatingZone(zoneId);
-
-    const zone = new NineZone(this.state.nineZone).getWidgetZone(zoneId);
-    const outlineBounds = zone.getGhostOutlineBounds();
+    const nineZone = new NineZone(this.state.nineZone);
+    const zone = nineZone.getWidgetZone(zoneId);
     return (
-      <React.Fragment key={zoneId}>
-        <Zone
-          bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
-        >
-          <ToolsWidget
-            isNavigation
-            preserveSpace
-            horizontalToolbar={
-              <Toolbar
-                items={
-                  <>
-                    {this.state.showAllItems &&
-                      <OverflowItem
-                        key="0"
-                        onClick={() => this.setState((prevState) => ({
-                          isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                        }))}
-                        panel={
-                          !this.state.isOverflowItemOpen ? undefined :
-                            (
-                              <ToolGroupComponent
-                                title={"Overflow Button"}
-                                container={this._zones}
-                                columns={
-                                  <GroupColumn>
-                                    <GroupTool
-                                      onClick={() => this.setState((prevState) => ({
-                                        isOverflowItemOpen: !prevState.isOverflowItemOpen,
-                                      }))}
-                                    >
-                                      Tool1
+      <Zone
+        bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
+        key={zoneId}
+      >
+        <ToolsWidget
+          isNavigation
+          preserveSpace
+          horizontalToolbar={
+            <Toolbar
+              items={
+                <>
+                  {this.state.showAllItems &&
+                    <OverflowItem
+                      key="0"
+                      onClick={this._handleToggleOverflowItemOpen}
+                      panel={
+                        !this.state.isOverflowItemOpen ? undefined :
+                          (
+                            <ToolGroupComponent
+                              title={"Overflow Button"}
+                              container={this._zones}
+                              columns={
+                                <GroupColumn>
+                                  <GroupTool
+                                    onClick={this._handleToggleOverflowItemOpen}
+                                  >
+                                    Tool1
                                 </GroupTool>
-                                  </GroupColumn>
-                                }
-                              />
-                            )
+                                </GroupColumn>
+                              }
+                            />
+                          )
 
-                        }
-                      />
-                    }
-                    {this.getToolbarItemWithToolSettings("chat")}
-                  </>
-                }
-                panelAlignment={ToolbarPanelAlignment.End}
-              />
-            }
-            verticalToolbar={
-              <ScrollableToolbar
-                expandsTo={Direction.Left}
-                onScroll={this._handleOnScrollableToolbarScroll}
-                items={
-                  <>
-                    {this.state.showAllItems && this.getToolbarItem("channel")}
-                    {this.getToolbarItem("chat")}
-                    {this.state.showAllItems && this.getToolbarItem("browse")}
-                    {this.getToolbarItem("clipboard")}
-                    {this.state.showAllItems && this.getToolbarItem("calendar")}
-                    {this.getToolbarItem("chat1")}
-                    {this.getToolbarItem("document")}
-                  </>
-                }
-              />
-            }
-          />
-        </Zone>
-        <Zone bounds={this.state.nineZone.zones[zoneId].bounds}>
-          {this.getTarget(zoneId)}
-        </Zone>
-        {!outlineBounds ? undefined :
-          <GhostOutline bounds={outlineBounds} />
-        }
-      </React.Fragment>
+                      }
+                    />
+                  }
+                  {this.getToolbarItemWithToolSettings("chat")}
+                </>
+              }
+              panelAlignment={ToolbarPanelAlignment.End}
+            />
+          }
+          verticalToolbar={
+            <ScrollableToolbar
+              expandsTo={Direction.Left}
+              onScroll={this._handleOnScrollableToolbarScroll}
+              items={
+                <>
+                  {this.state.showAllItems && this.getToolbarItem("channel")}
+                  {this.getToolbarItem("chat")}
+                  {this.state.showAllItems && this.getToolbarItem("browse")}
+                  {this.getToolbarItem("clipboard")}
+                  {this.state.showAllItems && this.getToolbarItem("calendar")}
+                  {this.getToolbarItem("chat1")}
+                  {this.getToolbarItem("document")}
+                </>
+              }
+            />
+          }
+        />
+      </Zone>
     );
   }
 
   private getStatusZone() {
-    const statusZone = new NineZone(this.state.nineZone).getStatusZone();
+    const nineZone = new NineZone(this.state.nineZone);
+    const statusZone = nineZone.getStatusZone();
     const outlineBounds = statusZone.getGhostOutlineBounds();
 
     if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
@@ -1947,21 +1377,21 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                               <ToolAssistanceItem>
                                 <i className="icon icon-cursor" />
                                 Identify piece to trim
-                            </ToolAssistanceItem>
+                              </ToolAssistanceItem>
                               <ToolAssistanceSeparator label="Inputs" />
                               <ToolAssistanceItem>
                                 <i className="icon icon-cursor-click" />
                                 Clink on element
-                            </ToolAssistanceItem>
+                              </ToolAssistanceItem>
                               <ToolAssistanceItem>
                                 <i className="icon  icon-placeholder" />
                                 Drag across elements
-                            </ToolAssistanceItem>
+                              </ToolAssistanceItem>
                               <ToolAssistanceSeparator />
                               <ToolAssistanceItem>
                                 <input type="checkbox" />
                                 Show prompt @ cursor
-                            </ToolAssistanceItem>
+                              </ToolAssistanceItem>
                             </>
                           }
                         />
@@ -1972,14 +1402,14 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                         <i className="icon icon-add" />
                       </>
                     }
-                    isStepStringVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    isStepStringVisible={statusZone.props.isInFooterMode}
                     onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
                     stepString="Start Point"
                   />
                   <MessageCenterIndicator
                     ref={this._footerMessages}
                     label="Message(s):"
-                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    isLabelVisible={statusZone.props.isInFooterMode}
                     balloonLabel="9+"
                     onClick={this._handleMessageIndicatorIsDialogOpenChange}
                     dialog={
@@ -1991,11 +1421,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                               <MessageCenterButton>
                                 <i className={"icon icon-placeholder"} />
                               </MessageCenterButton>
-                              <MessageCenterButton onClick={() => {
-                                this.setState(() => ({
-                                  openWidget: FooterWidget.None,
-                                }));
-                              }}>
+                              <MessageCenterButton onClick={this._handleCloseMessageCenter}>
                                 <i className={"icon icon-close"} />
                               </MessageCenterButton>
                             </>
@@ -2016,14 +1442,80 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                           </MessageCenterTab>
                             </>
                           }
-                          messages={this.getMessagesCenterMessages()}
+                          messages={this.state.activeTab === MessageCenterActiveTab.AllMessages ?
+                            <>
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                                content={"Document saved successfully."}
+                              />
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-clock nzdemo-progress"} />}
+                                content={
+                                  <>
+                                    <span>Downloading required assets.</span>
+                                    <br />
+                                    <i><small>75% complete</small></i>
+                                  </>
+                                }
+                              />
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
+                                content={
+                                  <>
+                                    <span>Cannot attach reference.</span>
+                                    <br />
+                                    <i><u><small>Details...</small></u></i>
+                                  </>
+                                }
+                              />
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
+                                content={"Missing 10 fonts. Replaces with Arial."}
+                              />
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-star nzdemo-favorite"} />}
+                                content={"Your document has been favorited by 5 people in the..."}
+                              />
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                                content={"Navigator has successfully updated"}
+                              />
+                            </> :
+                            <>
+                              <MessageCenterMessage
+                                icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
+                                content={"Missing 10 fonts. Replaced with Arial."}
+                              />
+                              <MessageCenterMessage
+                                content={"Cannot attach reference"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem1"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem2"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem3"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem4"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem5"}
+                              />
+                              <MessageCenterMessage
+                                content={"Problem6"}
+                              />
+                            </>
+                          }
                           prompt="No messages."
                         />
                     }
                   />
                   <SnapModeIndicator
                     label="Snap Mode"
-                    isLabelVisible={this.state.nineZone.zones[8].isInFooterMode}
+                    isLabelVisible={statusZone.props.isInFooterMode}
                     onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
                     icon={
                       <SnapModeIcon text="k" />
@@ -2073,7 +1565,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             />
           </FooterZone>
           <Zone bounds={statusZone.props.bounds}>
-            {this.getTarget(statusZone.id)}
+            {this.getTarget(statusZone.id, nineZone)}
           </Zone>
           {!outlineBounds ? undefined :
             <GhostOutline bounds={outlineBounds} />
@@ -2084,15 +1576,540 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return (
       <React.Fragment key={statusZone.id}>
         <Zone bounds={statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds}>
-          {this.getWidget(statusZone.id)}
+          {this.getWidget(statusZone.id, nineZone)}
         </Zone>
         <Zone bounds={statusZone.props.bounds}>
-          {this.getTarget(statusZone.id)}
+          {this.getTarget(statusZone.id, nineZone)}
         </Zone>
         {!outlineBounds ? undefined :
           <GhostOutline bounds={outlineBounds} />
         }
       </React.Fragment>
     );
+  }
+
+  private getFooterMessage() {
+    switch (this.state.visibleMessage) {
+      case (Message.Activity): {
+        return (
+          <ActivityMessage>
+            <StatusMessage
+              status={Status.Information}
+              icon={
+                <i className="icon icon-activity" />
+              }
+            >
+              <StatusLayout
+                label={
+                  <MessageLabel text="Rendering 'big-image.png'" />
+                }
+                buttons={
+                  <MessageHyperlink
+                    onClick={this._handleHideMessage}
+                    text="Ok"
+                  />
+                }
+                progress={
+                  <MessageProgress status={Status.Information} progress={33.33} />
+                }
+              />
+            </StatusMessage>
+          </ActivityMessage>
+        );
+      }
+      case (Message.Modal): {
+        return (
+          <ModalMessage
+            renderTo={this._handleRenderToModalMessage}
+            dialog={
+              <MessageDialog
+                titleBar={
+                  <MessageTitleBar
+                    title={
+                      <MessageTitle text="Dialog" />
+                    }
+                    buttons={
+                      <MessageDialogButton onClick={this._handleHideMessage}>
+                        <i className="icon icon-close" />
+                      </MessageDialogButton>
+                    }
+                  />
+                }
+                content={
+                  <MessageDialogButtonsContent
+                    buttons={
+                      <>
+                        <BlueButton
+                          onClick={this._handleHideMessage}
+                        >
+                          Yes
+                        </BlueButton>
+                        <HollowButton
+                          onClick={this._handleHideMessage}
+                        >
+                          No
+                        </HollowButton>
+                      </>
+                    }
+                    content={
+                      <MessageDialogScrollableContent
+                        content={
+                          <>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
+                          <br />
+                            <br />
+                            In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
+                          <br />
+                            <br />
+                            Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
+                          <br />
+                            <br />
+                            Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
+                          <br />
+                            <br />
+                            Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
+                        </>
+                        }
+                      />
+                    }
+                  />
+                }
+                resizeHandle={< DialogResizeHandle />}
+              />
+            }
+          />
+        );
+      }
+      case (Message.Toast): {
+        return (
+          <ToastMessage
+            stage={this.state.toastMessageStage}
+            animateOutTo={this._footerMessages.current || undefined}
+            onAnimatedOut={this._handleHideMessage}
+            timeout={2500}
+            onStageChange={this._handleToastStageChange}
+            content={
+              <StatusMessage
+                status={Status.Success}
+                icon={
+                  <i className="icon icon-status-success-hollow" />
+                }
+              >
+                <StatusLayout
+                  label={
+                    <MessageLabel text="Image 'big.png' saved." />
+                  }
+                />
+              </StatusMessage>
+            }
+          />
+        );
+      }
+      case (Message.Sticky): {
+        return (
+          <StickyMessage>
+            <StatusMessage
+              status={Status.Error}
+              icon={
+                <i className="icon icon-status-error-hollow" />
+              }
+            >
+              <StatusLayout
+                label={
+                  <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
+                }
+                buttons={
+                  <MessageButton onClick={this._handleHideMessage}>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                }
+              />
+            </StatusMessage>
+          </StickyMessage>
+        );
+      }
+    }
+
+    return undefined;
+  }
+
+  private _handlePositionChange = (mousePosition: PointProps) => {
+    this.setState(() => ({
+      mousePosition,
+    }));
+  }
+
+  private _handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (e.target !== e.currentTarget)
+      return;
+
+    this._temporaryMessageTimer.start();
+    this.setState((prevState) => ({
+      isTemporaryMessageVisible: true,
+      temporaryMessageX: prevState.mousePosition.x,
+      temporaryMessageY: prevState.mousePosition.y,
+    }));
+  }
+
+  private _handleTooltipTimeout = () => {
+    this.setState(() => ({
+      isTooltipVisible: false,
+    }));
+  }
+
+  private _handleOnExpandableItemClick = (toolKey: string) => () => {
+    this.setState((prevState) => ({
+      tools: {
+        ...Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
+          const tool = prevState.tools[current];
+          if (isToolGroup(tool)) {
+            previous[current] = {
+              ...tool,
+              isToolGroupOpen: (toolKey === current) ? !tool.isToolGroupOpen : false,
+            };
+          } else {
+            previous[current] = { ...tool };
+          }
+          return previous;
+        }, {}),
+      },
+    }));
+  }
+
+  private _handleOnIsHistoryExtendedChange = (toolKey: string) => (isExtended: boolean) => {
+    this.setState((prevState) => ({
+      tools: {
+        ...prevState.tools,
+        [toolKey]: {
+          ...prevState.tools[toolKey],
+          isExtended,
+        },
+      },
+    }));
+  }
+
+  private _handleToolGroupItemClicked = (toolKey: string, trayKey: string, columnKey: string, itemKey: string) => () => {
+    this.setState((prevState) => {
+      const tool = prevState.tools[toolKey];
+      if (!isToolGroup(tool))
+        return null;
+
+      const key = columnKey + "-" + itemKey;
+      const item = { toolKey, trayKey, columnKey, itemKey };
+      return {
+        tools: {
+          ...prevState.tools,
+          [toolKey]: {
+            ...prevState.tools[toolKey],
+            isExtended: false,
+            isToolGroupOpen: false,
+            history: DefaultHistoryManager.addItem(key, item, tool.history),
+          },
+        },
+      };
+    });
+  }
+
+  private _handleOnHistoryItemClick = (item: HistoryItem) => () => {
+    this.setState((prevState) => {
+      const tool = prevState.tools[item.toolKey];
+      if (!isToolGroup(tool))
+        return null;
+      return {
+        tools: {
+          ...prevState.tools,
+          [item.toolKey]: {
+            ...prevState.tools[item.toolKey],
+            isExtended: false,
+            history: DefaultHistoryManager.addItem(item.columnKey + "-" + item.itemKey, item, tool.history),
+          },
+        },
+      };
+    });
+  }
+
+  private _handleOnScrollableToolbarScroll = () => {
+    this.setState((prevState) => ({
+      tools:
+        Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
+          const tool = prevState.tools[current];
+          if (isToolGroup(tool)) {
+            previous[current] = {
+              ...tool,
+              isToolGroupOpen: false,
+            };
+          } else {
+            previous[current] = { ...tool };
+          }
+          return previous;
+        }, {}),
+    }));
+  }
+
+  private _handleMessageIndicatorIsDialogOpenChange = () => {
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages,
+    }));
+  }
+
+  private _handleToolAssistanceIndicatorIsDialogOpenChange = () => {
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance,
+    }));
+  }
+
+  private _handleSnapModeIndicatorIsDialogOpenChange = () => {
+    this.setState((prevState) => ({
+      openWidget: prevState.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode,
+    }));
+  }
+
+  private _handlePopoverToggleClick = () => {
+    this.setState((prevState) => ({
+      isNestedPopoverOpen: false,
+      isPopoverOpen: !prevState.isPopoverOpen,
+    }));
+  }
+
+  private _handleNestedPopoverToggleClick = () => {
+    this.setState((prevState) => ({
+      isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
+    }));
+  }
+
+  private _handleNestedToolSettingsBackButtonClick = () => {
+    this.setState(() => ({
+      isNestedPopoverOpen: false,
+    }));
+  }
+
+  private _handleWindowResize = () => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
+    }));
+  }
+
+  private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => () => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
+    }));
+  }
+
+  private _handleWidgetResize = (zoneId: WidgetZoneIndex) => (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
+    }));
+  }
+
+  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number) => (initialPosition: PointProps, offset: PointProps) => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
+    }));
+  }
+
+  private _handleStatusWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number) => (initialPosition: PointProps, offset: PointProps) => {
+    this._handleWidgetTabDragStart(widgetId, tabId)(initialPosition, offset);
+    this._handleWidgetTabDragEnd();
+  }
+
+  private _handleWidgetTabDragEnd = () => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone),
+    }));
+  }
+
+  private _handleWidgetTabDrag = (dragged: PointProps) => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone),
+    }));
+  }
+
+  private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType) => (isTargeted: boolean) => {
+    this.setState((prevState) => ({
+      nineZone: isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
+        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone),
+    }));
+  }
+
+  private _handleOnAllMessagesTabClick = () => {
+    this.setState(() => ({
+      activeTab: MessageCenterActiveTab.AllMessages,
+    }));
+  }
+
+  private _handleOnProblemsTabClick = () => {
+    this.setState(() => ({
+      activeTab: MessageCenterActiveTab.Problems,
+    }));
+  }
+
+  private _handleDisableItemsClick = () => {
+    this.setState((prevState) => ({
+      tools: {
+        ...prevState.tools,
+        cube: {
+          ...prevState.tools.cube,
+          isDisabled: !prevState.tools.cube.isDisabled,
+          isToolGroupOpen: false,
+        },
+        validate: {
+          ...prevState.tools.validate,
+          isDisabled: !prevState.tools.validate.isDisabled,
+          isToolGroupOpen: false,
+        },
+        channel: {
+          ...prevState.tools.channel,
+          isDisabled: !prevState.tools.channel.isDisabled,
+          isToolGroupOpen: false,
+        },
+        chat: {
+          ...prevState.tools.chat,
+          isDisabled: !prevState.tools.chat.isDisabled,
+          isToolGroupOpen: false,
+        },
+        browse: {
+          ...prevState.tools.browse,
+          isDisabled: !prevState.tools.browse.isDisabled,
+          isToolGroupOpen: false,
+        },
+        chat1: {
+          ...prevState.tools.chat1,
+          isDisabled: !prevState.tools.chat1.isDisabled,
+          isToolGroupOpen: false,
+        },
+      },
+    }));
+  }
+
+  private _handleHideMessage = () => {
+    this.setState(() => ({
+      visibleMessage: Message.None,
+    }));
+  }
+
+  private _handleOpenActivityMessage = () => {
+    this.setState(() => ({
+      visibleMessage: Message.Activity,
+    }));
+  }
+
+  private _handleOpenModalMessage = () => {
+    this.setState(() => ({
+      visibleMessage: Message.Modal,
+    }));
+  }
+
+  private _handleOpenToastMessage = () => {
+    this.setState(() => ({
+      visibleMessage: Message.Toast,
+      toastMessageStage: ToastMessageStage.Visible,
+    }));
+  }
+
+  private _handleOpenStickyMessage = () => {
+    this.setState(() => ({
+      visibleMessage: Message.Sticky,
+    }));
+  }
+
+  private _handleShowTooltip = () => {
+    this.setState(() => ({
+      isTooltipVisible: true,
+    }));
+  }
+
+  private _handleCloseMessageCenter = () => {
+    this.setState(() => ({
+      openWidget: FooterWidget.None,
+    }));
+  }
+
+  private _handleToggleToolSettings = () => {
+    this.setState((prevState) => ({
+      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
+    }));
+  }
+
+  private _handleExpandToolGroup = (toolKey: string, trayId: string | undefined) => () => {
+    this.setState((prevState) => {
+      const toolGroup = prevState.tools[toolKey] as ToolGroup;
+      return {
+        tools: {
+          ...prevState.tools,
+          [toolKey]: {
+            ...prevState.tools[toolKey],
+            trayId,
+            backTrays: [...toolGroup.backTrays, toolGroup.trayId],
+          },
+        },
+      };
+    });
+  }
+
+  private _handleNestedToolGroupBack = (toolKey: string) => () => {
+    this.setState((prevState) => {
+      const tool = prevState.tools[toolKey] as ToolGroup;
+      let trayId = tool.trayId;
+      if (tool.backTrays.length > 0)
+        trayId = tool.backTrays[tool.backTrays.length - 1];
+
+      const backTrays = tool.backTrays.slice(0, -1);
+      return {
+        tools: {
+          ...prevState.tools,
+          [toolKey]: {
+            ...prevState.tools[toolKey],
+            trayId,
+            backTrays,
+          },
+        },
+      };
+    });
+  }
+
+  private _handleRenderToModalMessage = () => this._dialogContainer;
+
+  private _handleToggleTheme = (theme: Theme, changeTheme?: (_: Theme) => void) => () => {
+    switch (theme) {
+      case PrimaryTheme: {
+        changeTheme && changeTheme(LightTheme);
+        break;
+      }
+      case LightTheme: {
+        changeTheme && changeTheme(DarkTheme);
+        break;
+      }
+      case DarkTheme: {
+        changeTheme && changeTheme(customTheme);
+        break;
+      }
+      case customTheme: {
+        changeTheme && changeTheme(PrimaryTheme);
+        break;
+      }
+    }
+  }
+
+  private _handleToggleFooterMode = () => {
+    this.setState((prevState) => ({
+      nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone),
+      openWidget: FooterWidget.None,
+    }));
+  }
+
+  private _handleToggleShowAllItems = () => {
+    this.setState((prevState) => ({ showAllItems: !prevState.showAllItems }));
+  }
+
+  private _handleToggleOverflowItemOpen = () => {
+    this.setState((prevState) => ({
+      isOverflowItemOpen: !prevState.isOverflowItemOpen,
+    }));
+  }
+
+  private _handleToastStageChange = (toastMessageStage: ToastMessageStage) => {
+    this.setState(() => ({
+      toastMessageStage,
+    }));
   }
 }
