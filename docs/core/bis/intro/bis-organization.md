@@ -55,4 +55,4 @@ A key organizational strategy for both the BIS schemas and the organization of d
 
 Within a BIS repository, the representation of the physical world becomes the framework upon which we can organize other data. All data in BIS repositories is expected to be about or related to physical infrastructure. The physical infrastructure is modeled as a hierarchy and other non-physical information is stored relative to that hierarchy.
 
-> Next: [BIS Ecosystem](./bis-ecosystem.md)
+> Next: [Fabric of the Universe](./fabric-of-the-universe.md)

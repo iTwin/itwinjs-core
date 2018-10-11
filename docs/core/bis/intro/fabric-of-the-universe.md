@@ -4,13 +4,13 @@
 
 This section briefly describes the few core concepts that form the foundation for all of BIS. All information in a BIS Repository is defined using `Element`s, `ElementAspect`s, `Model`s and relationships. We refer to these core concepts a “the fabric of the universe”.
 
-BIS is expressed using the EC Information Modeling Language (aka “using ECSchemas”). However BIS imposes additional rules, naming conventions, and other restrictions. It is assumed that the reader is familiar with ECObjects. See \_\_\_\_\_ ECObjects 3.0 Specification\_\_\_\_\_.
+BIS is expressed using the EC Information Modeling Language (aka “using ECSchemas”). However BIS imposes additional rules, naming conventions, and other restrictions. It is assumed that the reader is familiar with ECObjects. See [ECSchema](..\ec\ec-schema.md).
 
 Most of the concepts below are defined as ECClasses in the “BisCore” domain schema, which has the alias “bis”, and thus we write “{ClassName}” to denote an ECClass defined in BisCore.
 
 ## Elements
 
-An `Element` is an object in the virtual world that represents some entity in the real world, e.g. pumps, beams, contracts, companies, etc.). Elements are contained in Models. Elements are defined through ECProperties. Elements are the finest-grained object in BIS that can be individually identified and locked.
+An `Element` is an object in the digital world that represents some entity in the real world, e.g. pumps, beams, contracts, companies, etc.). Elements are contained in Models. Elements are defined through ECProperties. Elements are the finest-grained object in BIS that can be individually identified and locked.
 
 See [Element Fundamentals](./element-fundamentals.md) for a more detailed discussion.
 
