@@ -29,6 +29,7 @@ export class DefaultRequestOptionsProvider {
   constructor() {
     this._defaultOptions = {
       method: "GET",
+      useCorsProxy: true,
     };
   }
 
@@ -208,7 +209,7 @@ export class UrlDiscoveryClient extends Client {
     await this.setupOptionDefaults(options);
     alctx.enter();
 
-    const response: Response = await request(alctx, url, options, true);
+    const response: Response = await request(alctx, url, options);
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
 
     return Promise.resolve(discoveredUrl);

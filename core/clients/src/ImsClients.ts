@@ -113,6 +113,11 @@ export class ImsActiveSecureTokenClient extends Client {
     return undefined;
   }
 
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    options.useCorsProxy = true;
+  }
+
   /**
    * Gets the authorization token given the credentials.
    * @param userName User name
@@ -191,6 +196,11 @@ export class ImsDelegationSecureTokenClient extends Client {
       return Config.App.get(ImsDelegationSecureTokenClient.configRegion);
 
     return undefined;
+  }
+
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    options.useCorsProxy = true;
   }
 
   /**

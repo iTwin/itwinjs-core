@@ -58,18 +58,12 @@ export interface RequestQueryStringifyOptions {
   // sep -> delimiter, eq deprecated, encode -> encode
 }
 
-export interface RequestProxyConfig {
-  host: string;
-  port: number;
-}
-
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
   auth?: RequestBasicCredentials;
   body?: any;
   qs?: any | RequestQueryOptions;
-  proxy?: RequestProxyConfig;
   responseType?: string;
   timeout?: number | { deadline?: number, response?: number }; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
   stream?: any; // Optional stream to read the response to/from (only for NodeJs applications)
@@ -83,6 +77,7 @@ export interface RequestOptions {
   progressCallback?: (progress: ProgressInfo) => void;
   agent?: https.Agent;
   retries?: number;
+  useCorsProxy?: boolean;
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299
@@ -203,10 +198,10 @@ export class ResponseError extends BentleyError {
  * @throws ResponseError if the request fails due to network issues, or if the
  * returned status is *outside* the range of 200-299 (inclusive)
  */
-export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions, skipCorsProxy: boolean = false): Promise<Response> {
+export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
   alctx.enter();
   let proxyUrl = "";
-  if (skipCorsProxy === false) {
+  if (options.useCorsProxy === true) {
     proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
     if (proxyUrl === "")
       proxyUrl = url;
