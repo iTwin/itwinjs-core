@@ -19,31 +19,29 @@ describe("FeatureSymbology.Appearance", () => {
     const app = FeatureSymbology.Appearance.fromJSON();
     assert.isUndefined(app.rgb);
     assert.isUndefined(app.weight);
-    assert.isUndefined(app.alpha);
+    assert.isUndefined(app.transparency);
     assert.isUndefined(app.linePixels);
-    assert.isFalse(app.ignoresMaterial);
+    assert.isUndefined(app.ignoresMaterial);
   });
 
   it("AppearanceProps passed in constructor works as expected", () => {
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 200, linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const props2 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 200, linePixels: LinePixels.Code2 } as FeatureSymbology.AppearanceProps;
+    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const props2 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code2 } as FeatureSymbology.AppearanceProps;
     let app = FeatureSymbology.Appearance.fromJSON(props1);
     assert.isTrue(app.overridesRgb);
     assert.isTrue(app.overridesWeight);
-    assert.isTrue(app.overridesAlpha);
+    assert.isTrue(app.overridesTransparency);
     assert.isTrue(app.overridesLinePixels);
     assert.isTrue(app.ignoresMaterial);
 
-    // keep ignoresMaterial defined as false by default not undfined
     app = FeatureSymbology.Appearance.fromJSON(props2);
-    assert.isFalse(app.ignoresMaterial);
-    assert.exists(app.ignoresMaterial);
+    assert.isUndefined(app.ignoresMaterial);
   });
 
   it("extend works as expected", () => {
     const props1 = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const props2 = { rgb: new RgbColor(250, 180, 150), weight: 1, alpha: 200, linePixels: LinePixels.Code3 } as FeatureSymbology.AppearanceProps;
-    const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, alpha: 200 } as FeatureSymbology.AppearanceProps;
+    const props2 = { rgb: new RgbColor(250, 180, 150), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code3 } as FeatureSymbology.AppearanceProps;
+    const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     let app1 = FeatureSymbology.Appearance.fromJSON(props1);
     const app2 = FeatureSymbology.Appearance.fromJSON(props2);
     app1 = app2.extendAppearance(app1);
@@ -185,11 +183,11 @@ describe("FeatureSymbology.Overrides", () => {
     const subCategoryId = new Id64("0x129");
     const geometryClass = GeometryClass.Construction;
     const feature = new Feature(elementId, subCategoryId, geometryClass);
-    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const modelProps = { ...props, alpha: 200 } as FeatureSymbology.AppearanceProps;
-    const badModelProps = { ...props, alpha: 356 } as FeatureSymbology.AppearanceProps;
-    const elemProps = { alpha: 200, linePixels: LinePixels.HiddenLine } as FeatureSymbology.AppearanceProps;
-    const subCatProps = { linePixels: LinePixels.Code3, alpha: 90 } as FeatureSymbology.AppearanceProps;
+    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const modelProps = { ...props, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
+    const badModelProps = { ...props, transparency: 356 / 255 } as FeatureSymbology.AppearanceProps;
+    const elemProps = { transparency: 200 / 255, linePixels: LinePixels.HiddenLine } as FeatureSymbology.AppearanceProps;
+    const subCatProps = { linePixels: LinePixels.Code3, transparency: 90 / 255 } as FeatureSymbology.AppearanceProps;
     let modelApp = FeatureSymbology.Appearance.fromJSON(modelProps);
     const elemApp = FeatureSymbology.Appearance.fromJSON(elemProps);
     const subCatApp = FeatureSymbology.Appearance.fromJSON(subCatProps);
@@ -248,7 +246,9 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setAlwaysDrawn(elementId);
     overrides.overrideModel(id, modelApp);
     appearance = overrides.getAppearance(feature, id);
-    assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid alpha value, then getAppearance returns false");
+    assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid transparency value, then getAppearance returns false");
+    // NOTE: The above assertion appears to have assumed that getAppearance() returns undefined because it rejects the "invalid" transparency value.
+    // In reality it detects that transparency is above the threshold considered "fully transparent" and therefore not visible.
 
     overrides = new FeatureSymbology.Overrides();
     appearance = FeatureSymbology.Appearance.fromJSON(props);
@@ -289,8 +289,8 @@ describe("FeatureSymbology.Overrides", () => {
   it("overrideModel works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
     const id = new Id64("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
+    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const modelApp1 = FeatureSymbology.Appearance.fromJSON(props1);
     const modelApp2 = FeatureSymbology.Appearance.fromJSON(props2);
     overrides.overrideModel(id, modelApp1);
@@ -309,8 +309,8 @@ describe("FeatureSymbology.Overrides", () => {
   it("overrideSubCategory works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
     const id = new Id64("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
+    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const subCatApp1 = FeatureSymbology.Appearance.fromJSON(props1);
     const subCatApp2 = FeatureSymbology.Appearance.fromJSON(props2);
 
@@ -331,8 +331,8 @@ describe("FeatureSymbology.Overrides", () => {
   it("overrideElement works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
     const id = new Id64("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
-    const props2 = { ...props1, alpha: 200 } as FeatureSymbology.AppearanceProps;
+    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const elemApp1 = FeatureSymbology.Appearance.fromJSON(props1);
     const elemApp2 = FeatureSymbology.Appearance.fromJSON(props2);
 
@@ -355,7 +355,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides = new FeatureSymbology.Overrides();
     assert.isTrue(overrides.defaultOverrides.equals(FeatureSymbology.Appearance.fromJSON()), "initial default overrides are equivalent to default appearance instance");
 
-    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, alpha: 100, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
+    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const app = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
     assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");

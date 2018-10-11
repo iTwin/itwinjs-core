@@ -60,13 +60,14 @@ const curCategories: Set<string> = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
+let overrideTransparency: number | undefined;
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
-  if (undefined === overrideColor)
+  if (undefined === overrideColor && undefined === overrideTransparency)
     return;
 
-  const color = RgbColor.fromColorDef(overrideColor);
-  const app = FeatureSymbology.Appearance.fromJSON({ rgb: color, weight: 4, linePixels: LinePixels.Code1 });
+  const color = undefined !== overrideColor ? RgbColor.fromColorDef(overrideColor) : undefined;
+  const app = FeatureSymbology.Appearance.fromJSON({ rgb: color, weight: 4, linePixels: LinePixels.Code1, transparency: overrideTransparency });
   for (const elemId of viewport.iModel.selectionSet.elements)
     ovrs.overrideElement(elemId, app);
 }
@@ -1344,7 +1345,16 @@ function startRotateView(_event: any) {
 // override symbology for selected elements
 function changeOverrideColor() {
   const select = (document.getElementById("colorList") as HTMLSelectElement)!;
-  overrideColor = new ColorDef(select.value);
+  const value = select.value;
+  const transparency = Number.parseFloat(value);
+  if (Number.isNaN(transparency)) {
+    overrideTransparency = undefined;
+    overrideColor = new ColorDef(select.value);
+  } else {
+    overrideTransparency = transparency;
+    overrideColor = undefined;
+  }
+
   theViewport!.view.setFeatureOverridesDirty();
 }
 

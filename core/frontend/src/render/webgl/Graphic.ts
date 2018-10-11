@@ -33,7 +33,7 @@ class OvrUniform {
 
   public get anyOverridden() { return OvrFlags.None !== this.flags; }
   public get allHidden() { return this.isFlagSet(OvrFlags.Visibility); }
-  public get anyOpaque() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 === this.rgba.alpha; } // ###TODO: alpha???
+  public get anyOpaque() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 === this.rgba.alpha; }
   public get anyTranslucent() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 > this.rgba.alpha; }
   public get anyHilited() { return this.isFlagSet(OvrFlags.Hilited); }
 
@@ -85,8 +85,8 @@ class OvrUniform {
       this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.b, 1.0)); // NB: Alpha ignored unless OvrFlags.Alpha set...
     }
 
-    if (app.overridesAlpha && app.alpha) {
-      const alpha = (255.0 - app.alpha) / 255.0; // ###TODO: app.alpha appears to actually be transparency - fix property name!
+    if (undefined !== app.transparency) {
+      const alpha = 1.0 - app.transparency;
       this.flags |= OvrFlags.Alpha;
       this.rgba = new FloatRgba(this.rgba.red, this.rgba.green, this.rgba.blue, alpha); // NB: rgb ignored unless OvrFlags.Rgb set...
     }
@@ -163,7 +163,7 @@ class OvrNonUniform {
       const dataIndex = i * 4 * 2;
 
       const app = ovr.getAppearance(feature, map.modelId, map.type);
-      if (undefined === app || (app.overridesAlpha && 0.0 === app.alpha)) { // ###TODO - transparency v alpha
+      if (undefined === app || app.isFullyTransparent) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
         nHidden++;
@@ -185,11 +185,13 @@ class OvrNonUniform {
         data.setByteAtIndex(dataIndex + 6, rgb.b);
       }
 
-      if (app.overridesAlpha && app.alpha) {
+      if (undefined !== app.transparency) {
+        // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
         flags |= OvrFlags.Alpha;
-        const alpha = 255 - app.alpha; // ###TODO: ???
+        let alpha = 1.0 - app.transparency;
+        alpha = Math.floor(0xff * alpha + 0.5);
         data.setByteAtIndex(dataIndex + 7, alpha);
-        if (255 === alpha)
+        if (0xff === alpha)
           this.anyOpaque = true;
         else
           this.anyTranslucent = true;
