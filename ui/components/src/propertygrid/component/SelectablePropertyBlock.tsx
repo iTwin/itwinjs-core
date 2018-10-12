@@ -6,14 +6,10 @@ import React from "react";
 import { PropertyRecord } from "../../properties";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
-import { PropertyRenderer } from "./PropertyRenderer";
-import { Orientation } from "@bentley/ui-core";
+import { PropertyList, PropertyListProps } from "./PropertyList";
 
 /** @hidden */
 export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, PropertyListProps {
-  properties: PropertyRecord[];
-  selectedPropertyKey?: string;
-  onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
 }
 
 /** @hidden */
@@ -27,6 +23,7 @@ export interface SelectablePropertyBlockState {
  */
 export class SelectablePropertyBlock extends React.Component<SelectablePropertyBlockProps, SelectablePropertyBlockState> {
   public state: SelectablePropertyBlockState = { keyMatched: false };
+
   public shouldComponentUpdate(nextProps: SelectablePropertyBlockProps, nextState: SelectablePropertyBlockState): boolean {
     if (this.props.category !== nextProps.category
       || this.props.properties !== nextProps.properties
@@ -61,39 +58,11 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
   }
 
   public render() {
-    return (<PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}>
-      <PropertyList orientation={this.props.orientation}>
-        {this.props.properties.map((propertyRecord: PropertyRecord) => {
-          const key = this.props.category.name + propertyRecord.property.name;
-          return (
-            <PropertyRenderer
-              key={key}
-              uniqueKey={key}
-              isSelected={key === this.props.selectedPropertyKey}
-              propertyRecord={propertyRecord}
-              orientation={this.props.orientation}
-              onClick={this.props.onPropertyClicked}
-            />);
-        })}
-      </PropertyList>
-    </PropertyCategoryBlock>);
-  }
-}
-
-interface PropertyListProps {
-  orientation: Orientation;
-}
-
-/** Container component for properties within a category.
- */
-class PropertyList extends React.PureComponent<PropertyListProps> {
-  public render() {
-    const propertyListClassName = this.props.orientation === Orientation.Horizontal ? "components-property-list--horizontal" : "components-property-list--vertical";
-
     return (
-      <div className={propertyListClassName}>
-        {this.props.children}
-      </div>
+      <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}>
+        <PropertyList orientation={this.props.orientation} properties={this.props.properties}
+          selectedPropertyKey={this.props.selectedPropertyKey} onPropertyClicked={this.props.onPropertyClicked} />
+      </PropertyCategoryBlock>
     );
   }
 }

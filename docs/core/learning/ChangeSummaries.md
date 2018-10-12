@@ -71,12 +71,11 @@ SELECT ... FROM MySchema.MyClass.Changes(12, 'AfterInsert')
 
 > Notes when specifying [ChangedValueState.BeforeUpdate]($common) or [ChangedValueState.AfterUpdate]($common):
 >
-> For any property in the ECSQL select clause the value of which has not changed in the specified change summary,
-> the **value of the current state of the file** is returned. The function does **NOT** return the value it was at the
-> revision the change summary referred to.
+> For any property in the ECSQL select clause, the value of which has not changed in the specified change summary,
+> the **value of the current state of the file** is returned. The function does **NOT** return the value it had in the
+> version the change summary referred to.
 >
-> If the row in the current state does not exist anymore (because it was deleted in subsequent changesets), *null* will be returned
-> for the unchanged values.
+> If the row in the current state does not exist anymore (because it was deleted in subsequent changesets), *null* will be returned for the unchanged values.
 
 ## Example Scenario
 

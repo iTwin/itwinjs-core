@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Display arrays & structs in property grid",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -9,7 +9,7 @@ The following app configurations are supported:
 * [Desktop app](../App.md#desktop-apps)
 * [Mobile app](../App.md#mobile-apps)
 
-See the [app architecture overview](../../learning/SoftwareArchitecture.md) for more on app structure.
+See the [app architecture overview](../SoftwareArchitecture.md) for more on app structure.
 
 See [best practices](../backend/BestPractices.md) for writing frontend code and using ECSQL efficiently.
 
@@ -18,7 +18,7 @@ An app's frontend always implements its own frontend script and resources.
 An app's frontend will often depend on npm packages to help implement its GUI.
 
 An app's frontend script requires the `@bentley/imodeljs-frontend` npm package.
-The [common packages](..\common\index.md) will also be required.
+The [common packages](../common/index.md) will also be required.
 
 These packages provide the following functions that a frontend requires:
 

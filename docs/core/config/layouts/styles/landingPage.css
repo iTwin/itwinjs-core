@@ -70,6 +70,8 @@ p.digital-twin {
   background-color: #6c757d;
   background-image: none;
   color: white;
+  max-width: 500px;
+  white-space: normal;
 }
 
 .nav-landing-container .navbar-nav {
@@ -98,6 +100,11 @@ p.digital-twin {
     width: 40%;
     height: 40%;
   }
+
+  .iframe-viewer {
+    width: 500px;
+    height: 313px;
+  }
 }
 
 @media screen and (max-width: 600px) {
@@ -107,5 +114,9 @@ p.digital-twin {
   }
   .imodeljs-header-tagline p {
     font-size: 29px;
+  }
+  .iframe-viewer {
+    width: 300px;
+    height: 188px;
   }
 }

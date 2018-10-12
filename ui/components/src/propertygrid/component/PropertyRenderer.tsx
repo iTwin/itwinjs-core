@@ -7,7 +7,8 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
-import { PropertyDescription, PropertyRecord } from "../../properties";
+import { PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue, StructValue, ArrayValue, PropertyValue } from "../../properties";
+import { PropertyList } from "./PropertyList";
 
 import "./PropertyRenderer.scss";
 
@@ -58,8 +59,8 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
     this.updateDisplayValue(this.props);
   }
 
-  public componentDidUpdate(oldProps: PropertyRendererProps) {
-    if (oldProps.propertyRecord !== this.props.propertyRecord)
+  public componentDidUpdate(prevProps: PropertyRendererProps) {
+    if (prevProps.propertyRecord !== this.props.propertyRecord)
       this.updateDisplayValue(this.props);
   }
 
@@ -75,8 +76,42 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
     return (
       <div className={propertyRecordClassName} onClick={this._onClick}>
         <div className="components-property-record-label">{propertyDescription.displayLabel}</div>
-        <div className="components-property-record-value">{this.state.displayValue}</div>
+        <div className="components-property-record-value"><PropertyValueRenderer orientation={this.props.orientation} value={this.props.propertyRecord.value} /></div>
       </div>
     );
+  }
+}
+
+class PropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: PropertyValue }> {
+  public render() {
+    switch (this.props.value.valueFormat) {
+      case PropertyValueFormat.Primitive: return <PrimitivePropertyValueRenderer value={this.props.value} />;
+      case PropertyValueFormat.Struct: return <StructPropertyValueRenderer orientation={this.props.orientation} value={this.props.value} />;
+      case PropertyValueFormat.Array: return <ArrayPropertyValueRenderer orientation={this.props.orientation} value={this.props.value} />;
+    }
+    return undefined;
+  }
+}
+
+class PrimitivePropertyValueRenderer extends React.PureComponent<{ value: PrimitiveValue }> {
+  public render() {
+    return this.props.value.displayValue;
+  }
+}
+
+class StructPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: StructValue }> {
+  public render() {
+    const members = new Array<PropertyRecord>();
+    for (const key in this.props.value.members) {
+      if (this.props.value.members.hasOwnProperty(key))
+        members.push(this.props.value.members[key]);
+    }
+    return <PropertyList orientation={this.props.orientation} properties={members} />;
+  }
+}
+
+class ArrayPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: ArrayValue }> {
+  public render() {
+    return <PropertyList orientation={this.props.orientation} properties={this.props.value.items} />;
   }
 }

@@ -158,8 +158,8 @@ The server must decide which interfaces it wants to expose. A server can expose 
 ### Configure Interfaces
 The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients.
 If the server is an app backend, the RPC configuration must correspond to the app configuration.
-If the server is a [service](..App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
-A backend should configure its RpcInterfaces in its [configuration-specific main](..AppTailoring.md#configuration-specific-main).
+If the server is a [service](./App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
+A backend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
 *Desktop Example:*
 ``` ts

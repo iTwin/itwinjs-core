@@ -34,7 +34,7 @@ We will cover relationships more in the next chapter on joins.
 
 Joins are a powerful feature of ECSQL to combine data from different classes. **The syntax is the same as as in SQL**.
 
-Unlike a plain database, ECSchemas provide first-class concepts like [ECRelationshipClasses](#ecrelationshipclasses) and [Navigation properties](.\ECSQLDataTypes.md#navigation-properties) which are helpful when using joins in ECSQL. However, you can also use the joins as you did in SQL without being aware of the above-mentioned concepts.
+Unlike a plain database, ECSchemas provide first-class concepts like [ECRelationshipClasses](#ecrelationshipclasses) and [Navigation properties](./ECSQLDataTypes.md#navigation-properties) which are helpful when using joins in ECSQL. However, you can also use the joins as you did in SQL without being aware of the above-mentioned concepts.
 
 ### Quick Recap
 

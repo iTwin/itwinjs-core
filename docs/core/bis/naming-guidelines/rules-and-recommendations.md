@@ -36,7 +36,7 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 
 |   | Description | Note |
 |---|-------------|------|
-| Rule | All EcSchema/BIS Domain Names must be registered with BIS workgroup to avoid conflicts.<br>This includes the aliases. |E.g. `BisCore` (schema name) and `bis`<br><br>_See [list of BIS Schemas](list-of-bis-schemas)_ |
+| Rule | All EcSchema/BIS Domain Names must be registered with BIS workgroup to avoid conflicts.<br>This includes the aliases. |E.g. `BisCore` (schema name) and `bis`<br><br>_See [list of BIS Schemas](../domains/domains.md) |
 | Rule | BIS Schema aliases must be in lowercase | |
 | Rule | BIS Schema aliases must be less than 7 characters long | |
 

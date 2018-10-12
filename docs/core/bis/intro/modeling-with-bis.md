@@ -1,6 +1,6 @@
 # Modeling with BIS
 
-This section describes how [BIS](./glossary.md#bis) models the world, and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS and how those blocks are used to construct a cohesive "Digital Twin"—which is significantly different from how one would define the data model of an application-specific "silo" database.
+This section describes how [BIS](./glossary.md#bis) models the world, and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS and how those blocks are used to construct the core models of a cohesive [Digital Twin](./glossary.md#digital-twin)—which is significantly different from how one would define the data model of an application-specific "silo" database.
 
 This section uses terms without fully defining them. See more-detailed definitions in the [BIS Glossary](./glossary.md).
 
@@ -9,7 +9,7 @@ This section uses terms without fully defining them. See more-detailed definitio
 To "model" reality is to represent it in a simplified, purposeful way that we call a modeling [Perspective](./glossary.md#perspective). Consider a real-world physical [Object](./glossary.md#object). We can model both its physical form (Physical Perspective) and the role it plays in a functioning system (Functional Perspective). BIS conceives of Objects as composed of multiple Entities, where each [Entity](./glossary.md#entity) has a subset of the Object's attributes (relevant to a given Perspective).
 ![01](./media/bis-modeling-01.png "An Object is comprised of multiple Entities") <!--style="width:5.51546in;height:1.97637in"-->
 
-A BIS [Digital Twin](./glossary.md#digital-twin) models Entities like:
+A [BIS Repository](./glossary.md#bis-repository) is an information repository with structure and semantics governed by BIS. It contains models of Entities like:
 
 - The physical forms of built infrastructure
 
@@ -17,7 +17,7 @@ A BIS [Digital Twin](./glossary.md#digital-twin) models Entities like:
 
 - Intangible Objects (e.g. documents, requirements, electronic drawings, etc.) that support the design, construction, and operation of built infrastructure.
 
-A [BIS Repository](./glossary.md#bis-repository) is an information repository with structure and semantics governed by BIS. It is the "digital universe" in which BIS Digital Twin(s) reside.
+## Modeling Perspectives
 
 BIS supports multiple modeling "[Perspectives](./glossary.md#perspective)" within one BIS Repository. For physical Objects, the physical Perspective is primary, but there are additional Perspectives for the roles the Object plays in different systems, e.g. in a functional process, a thermal system, a safety analysis, a spatial layout, a structural system, a financial system, a logistics system, etc.
 
@@ -25,7 +25,7 @@ BIS also supports modeling an Object at multiple [Granularities](./glossary.md#g
 
 ## The BIS Building Blocks and How to Use Them
 
-The fundamental building blocks for a Digital Twin in a BIS Repository are information records called: [Model](./glossary.md#model), [Element](./glossary.md#element), [ElementAspect](./glossary.md#elementaspect), and [Relationship](./glossary.md#relationship).
+The fundamental building blocks in a BIS Repository are information records called: [Model](./glossary.md#model), [Element](./glossary.md#element), [ElementAspect](./glossary.md#elementaspect), and [Relationship](./glossary.md#relationship).
 
 ### Element
 
