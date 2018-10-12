@@ -9,7 +9,7 @@ The following app configurations are supported:
 * [Desktop app](../App.md#desktop-apps)
 * [Mobile app](../App.md#mobile-apps)
 
-See the [app architecture overview](../../learning/SoftwareArchitecture.md) for more on app structure.
+See the [app architecture overview](../SoftwareArchitecture.md) for more on app structure.
 
 See [best practices](../backend/BestPractices.md) for writing frontend code and using ECSQL efficiently.
 

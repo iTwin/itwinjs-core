@@ -62,7 +62,7 @@ To be able to detect schema changes that are backward compatible for reading dat
 | 2nd (write) |   Sub-generation of the schema that guarantees (*if digit matches*) that newer schemas' data can be **written** by older software. |  Additions have been made to the schema which break existing *write* logic (but not *read* logic)  |
 | 3rd (minor) | Least significant version number that increments with *read/write* compatible additions.  | Additions have been made to the schema, but they do not break existing schema *read* or *write* logic.  |
 
-This 3-digit system is a little different from the standard 3-digit versioning strategy described at [Semantic Versioning](https:://semver.org). This is due primarily due to Semantic Versioning pertaining to APIs and code instead of schemas.
+This 3-digit system is a little different from the standard 3-digit versioning strategy described at [Semantic Versioning](https://semver.org). This is due primarily due to Semantic Versioning pertaining to APIs and code instead of schemas.
 
 ### The Middle Version Number
 
