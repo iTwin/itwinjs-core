@@ -58,10 +58,10 @@
       var isBlink = (isChrome || isOpera) && !!window.CSS;
 
       function replaceViewer(e) {
-        if (isChrome || isFirefox || isEdge || isSafari) {
-          document.getElementById("demo-container").innerHTML = "<iframe src='./learning/public-viewer-demonstrator/' class='iframe-viewer'></iframe>";
+        if (isIE || isEdge) {
+          document.getElementById("viewiModelBtn").innerHTML = "Sorry, the browser you are using is not supported. Please open the iModel.js viewer with one of the following browsers:<br>Firefox, Chrome, Safari";
         } else {
-          document.getElementById("viewiModelBtn").innerHTML = "Sorry, the browser you are using is not supported. Please open the iModel.js viewer with one of the following browsers:<br>Firefox, Chrome, Edge, Safari";
+          document.getElementById("demo-container").innerHTML = "<iframe src='./learning/public-viewer-demonstrator/' class='iframe-viewer'></iframe>";
         }
         e.preventDefault();
       }
