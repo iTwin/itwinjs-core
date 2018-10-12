@@ -6,11 +6,12 @@ import * as bodyParser from "body-parser";
 import * as express from "express";
 import { QueryAgent } from "./QueryAgent";
 import { QueryAgentConfig } from "./QueryAgentConfig";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, OidcClient, Config } from "@bentley/imodeljs-clients";
 import { Issuer, Strategy, TokenSet, UserInfo, Client } from "openid-client";
 import { OpenIdConnectTokenStore } from "./OpenIdConnectTokenStore";
 import * as passport from "passport";
 import * as session from "express-session";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Container class for web server and the iModelJS backend run in the QueryAgent */
 export class QueryAgentWebServer {
@@ -106,16 +107,19 @@ export class QueryAgentWebServer {
     private _tokenStore?: OpenIdConnectTokenStore;
 
     private async setupAuthStrategy() {
-        const issuer: Issuer = await Issuer.discover("https://qa-imsoidc.bentley.com/");
+        const actx = new ActivityLoggingContext("");
+        const url: string = await (new OidcClient()).getUrl(actx);
+
+        const issuer: Issuer = await Issuer.discover(url);
 
         const oidcClient: Client = new issuer.Client({
-            client_id: "imodeljs-agent-hybrid-test-2686",
-            client_secret: "PFgarffwuVkAwOomMpHmxQshrKtHUM2gwXxqYwdU/HOGlvgPVHBdKu8BSDJswJd/8s9VL5jHpT184Qs122sdug==",
+            client_id: Config.App.get("hybrid_test_oidc_client_id"),
+            client_secret: Config.App.get("hybrid_test_oidc_client_secret"),
         });
 
         const startParams = {
-            redirect_uri: "http://localhost:3000/signin-oidc",
-            scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service offline_access https://dev-wsg20-eus.cloudapp.net https://qa-connect-wsg20.bentley.com",
+            redirect_uri: "http://localhost:3000" + Config.App.get("hybrid_test_oidc_redirect_path"),
+            scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service offline_access",
             response_type: "code id_token",
             response_mode: "form_post",
             response: ["userinfo"],

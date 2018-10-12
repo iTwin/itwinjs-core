@@ -1,12 +1,14 @@
 # Domains
 
+The following domains exist in [BIS](../index.md)
+
 ## Core
 
-### [BisCore](./biscore/BisCore.ecschema.md)
+### [BisCore](./BisCore.ecschema.md)
 
-### [Functional](./Core/Functional.ecschema.md)
+### [Functional](./Functional.ecschema.md)
 
-### [Generic](./Core/Generic.ecschema.md)
+### [Generic](./Generic.ecschema.md)
 
 ## Shared across disciplines
 
@@ -14,7 +16,7 @@
 
 ### [ClassificationSystems](./classification-systems.md)
 
-### [Grids](./grids.md)
+### [Grids](./grids.remarks.md)
 
 ## Building discipline
 

@@ -21,7 +21,7 @@ A Functional Breakdown is a 'folder' node in the functional hierarchy.
 
 **modifier:** Abstract
 
-**baseClass:** [link_to functional.ecschema/#functionalelement text="Functional:FunctionalElement"]
+**baseClass:** [Functional:FunctionalElement](#functionalelement)
 
 ### FunctionalComponentElement
 
@@ -33,7 +33,7 @@ A Functional Component is a 'leaf' node in the functional hierarchy.
 
 **modifier:** Abstract
 
-**baseClass:** [link_to functional.ecschema/#functionalelement text="Functional:FunctionalElement"]
+**baseClass:** [Functional:FunctionalElement](#functionalelement)
 
 ### FunctionalComposite
 
@@ -43,7 +43,7 @@ A Functional Component is a 'leaf' node in the functional hierarchy.
 
 **modifier:** None
 
-**baseClass:** [link_to functional.ecschema/#functionalbreakdownelement text="Functional:FunctionalBreakdownElement"]
+**baseClass:** [Functional:FunctionalBreakdownElement](#functionalbreakdownelement)
 
 ### FunctionalElement
 
@@ -55,13 +55,13 @@ A Functional Element captures functional requirements that will ultimately be fu
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#roleelement text="BisCore:RoleElement"]
+**baseClass:** [BisCore:RoleElement](./BisCore.ecschema.md#roleelement)
 
 #### Properties
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|TypeDefinition||[link_to functional.ecschema/#functionalelementisoftype text="navigation"]||
+|TypeDefinition||[navigation](#functionalelementisoftype)||
 
 ### FunctionalModel
 
@@ -73,7 +73,7 @@ A container for persisting Functional Elements.
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#rolemodel text="BisCore:RoleModel"]
+**baseClass:** [BisCore:RoleModel](./BisCore.ecschema.md#rolemodel)
 
 ### FunctionalPartition
 
@@ -85,7 +85,7 @@ A Functional Partition element is a key part of the DgnDb information hierarchy 
 
 **modifier:** Sealed
 
-**baseClass:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**baseClass:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### FunctionalPortion
 
@@ -97,7 +97,7 @@ A Functional Portion is a Functional Component that will be broken down in more 
 
 **modifier:** None
 
-**baseClass:** [link_to functional.ecschema/#functionalcomponentelement text="Functional:FunctionalComponentElement"]
+**baseClass:** [Functional:FunctionalComponentElement](#functionalcomponentelement)
 
 ### FunctionalType
 
@@ -109,7 +109,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#typedefinitionelement text="BisCore:TypeDefinitionElement"]
+**baseClass:** [BisCore:TypeDefinitionElement](./BisCore.ecschema.md#typedefinitionelement)
 
 ## Relationship Classes
 
@@ -119,7 +119,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#drawinggraphicrepresentselement text="BisCore:DrawingGraphicRepresentsElement"]
+**baseClass:** [BisCore:DrawingGraphicRepresentsElement](./BisCore.ecschema.md#drawinggraphicrepresentselement)
 
 **Strength:** Referencing
 
@@ -135,7 +135,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to biscore.ecschema/#drawinggraphic text="DrawingGraphic"]
+- [DrawingGraphic](./BisCore.ecschema.md#drawinggraphic)
 
 #### Target
 
@@ -147,7 +147,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to functional.ecschema/#functionalelement text="FunctionalElement"]
+- [FunctionalElement](#functionalelement)
 
 ### FunctionalElementIsOfType
 
@@ -169,7 +169,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to functional.ecschema/#functionalelement text="FunctionalElement"]
+- [FunctionalElement](#functionalelement)
 
 #### Target
 
@@ -181,7 +181,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to functional.ecschema/#functionaltype text="FunctionalType"]
+- [FunctionalType](#functionaltype)
 
 ### PhysicalElementFulfillsFunction
 
@@ -189,7 +189,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**baseClass:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Strength:** Referencing
 
@@ -205,7 +205,7 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to biscore.ecschema/#physicalelement text="PhysicalElement"]
+- [PhysicalElement](./BisCore.ecschema.md#physicalelement)
 
 #### Target
 
@@ -217,4 +217,4 @@ Defines a set of properties (the 'type') that can be associated with a Functiona
 
 ##### Constraint Classes
 
-- [link_to functional.ecschema/#functionalelement text="FunctionalElement"]
+- [FunctionalElement](#functionalelement)

@@ -15,7 +15,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement) with id 0x10000000021.
+> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#SpatialElement) with id 0x10000000021.
 >
 > *ECSQL*
 > ```sql
@@ -37,7 +37,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 
 > **Try it yourself**
 >
-> *Goal:* Find out which [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model) are private or not.
+> *Goal:* Find out which [Model](../../bis/domains/BisCore.ecschema.md#Model) are private or not.
 >
 > *ECSQL*
 > ```sql
@@ -61,7 +61,7 @@ boolean value already.
 
 > **Try it yourself**
 >
-> *Goal:* Find private [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model)s.
+> *Goal:* Find private [Model](../../bis/domains/BisCore.ecschema.md#Model)s.
 >
 > *ECSQL*
 > ```sql
@@ -84,7 +84,7 @@ And the same example with `False`:
 
 > **Try it yourself**
 >
-> *Goal:* Find non-private [Model](../../bis/domains/biscore/BisCore.ecschema.md#Model)s.
+> *Goal:* Find non-private [Model](../../bis/domains/BisCore.ecschema.md#Model)s.
 >
 > *ECSQL*
 > ```sql
@@ -199,7 +199,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -215,7 +215,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -231,7 +231,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) separately for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) separately for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql

@@ -15,13 +15,13 @@ The BIS core classes that all other domain schemas extend.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalelement2d text="BisCore:GraphicalElement2d"]
+**Base class:** [BisCore:GraphicalElement2d](./BisCore.ecschema.md#graphicalelement2d)
 
 ### AnnotationFrameStyle
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -35,7 +35,7 @@ The BIS core classes that all other domain schemas extend.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -49,7 +49,7 @@ The BIS core classes that all other domain schemas extend.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -76,7 +76,7 @@ Applied to an element's property to indicate that select, update, and insert of 
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -92,7 +92,7 @@ A 2D coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#auxcoordsystem text="BisCore:AuxCoordSystem"]
+**Base class:** [BisCore:AuxCoordSystem](./BisCore.ecschema.md#auxcoordsystem)
 
 **Class Properties:**
 
@@ -108,7 +108,7 @@ A 3D coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#auxcoordsystem text="BisCore:AuxCoordSystem"]
+**Base class:** [BisCore:AuxCoordSystem](./BisCore.ecschema.md#auxcoordsystem)
 
 **Class Properties:**
 
@@ -126,7 +126,7 @@ A spatial coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#auxcoordsystem3d text="BisCore:AuxCoordSystem3d"]
+**Base class:** [BisCore:AuxCoordSystem3d](./BisCore.ecschema.md#auxcoordsystem3d)
 
 ### BaseModelForView2d
 
@@ -144,7 +144,7 @@ A spatial coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -158,7 +158,7 @@ A spatial coordinate system.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -172,13 +172,13 @@ A spatial coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 ### CategorySelectorRefersToCategories
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -231,7 +231,7 @@ A Code Specification captures the rules for encoding and decoding significant bu
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -259,7 +259,7 @@ A Definition Element holds configuration-related information that is meant to be
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 **Class Properties:**
 
@@ -274,7 +274,7 @@ A container for persisting definition elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationmodel text="BisCore:InformationModel"]
+**Base class:** [BisCore:InformationModel](./BisCore.ecschema.md#informationmodel)
 
 ### DefinitionPartition
 
@@ -282,7 +282,7 @@ A Definition Partition element indicates that there is a definition-related mode
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### DictionaryModel
 
@@ -290,31 +290,31 @@ The singleton container for repository-specific definition elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionmodel text="BisCore:DefinitionModel"]
+**Base class:** [BisCore:DefinitionModel](./BisCore.ecschema.md#definitionmodel)
 
 ### DisplayStyle
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 ### DisplayStyle2d
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#displaystyle text="BisCore:DisplayStyle"]
+**Base class:** [BisCore:DisplayStyle](./BisCore.ecschema.md#displaystyle)
 
 ### DisplayStyle3d
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#displaystyle text="BisCore:DisplayStyle"]
+**Base class:** [BisCore:DisplayStyle](./BisCore.ecschema.md#displaystyle)
 
 ### Document
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 ### DocumentCarrier
 
@@ -322,7 +322,7 @@ A Document Carrier is an Information Carrier that carries a Document. An electro
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcarrierelement text="BisCore:InformationCarrierElement"]
+**Base class:** [BisCore:InformationCarrierElement](./BisCore.ecschema.md#informationcarrierelement)
 
 ### DocumentListModel
 
@@ -330,7 +330,7 @@ Contains a list of document elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationmodel text="BisCore:InformationModel"]
+**Base class:** [BisCore:InformationModel](./BisCore.ecschema.md#informationmodel)
 
 ### DocumentPartition
 
@@ -338,19 +338,19 @@ A Document Partition element indicates that there is a document-related modeling
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### Drawing
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#document text="BisCore:Document"]
+**Base class:** [BisCore:Document](./BisCore.ecschema.md#document)
 
 ### DrawingCategory
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#category text="BisCore:Category"]
+**Base class:** [BisCore:Category](./BisCore.ecschema.md#category)
 
 ### DrawingGraphic
 
@@ -358,7 +358,7 @@ A Document Partition element indicates that there is a document-related modeling
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalelement2d text="BisCore:GraphicalElement2d"]
+**Base class:** [BisCore:GraphicalElement2d](./BisCore.ecschema.md#graphicalelement2d)
 
 ### DrawingGraphicRepresentsElement
 
@@ -366,7 +366,7 @@ Relates a 2D DrawingGraphic to the Element that it represents.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -382,13 +382,13 @@ A container for persisting drawing graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalmodel2d text="BisCore:GraphicalModel2d"]
+**Base class:** [BisCore:GraphicalModel2d](./BisCore.ecschema.md#graphicalmodel2d)
 
 ### DrawingModelBreaksDownDrawing
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#modelmodelselement text="BisCore:ModelModelsElement"]
+**Base class:** [BisCore:ModelModelsElement](./BisCore.ecschema.md#modelmodelselement)
 
 **Relationship Class:**
 
@@ -402,7 +402,7 @@ A container for persisting drawing graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition2d text="BisCore:ViewDefinition2d"]
+**Base class:** [BisCore:ViewDefinition2d](./BisCore.ecschema.md#viewdefinition2d)
 
 ### DriverBundleElement
 
@@ -410,7 +410,7 @@ Element used in conjunction with bis:ElementDrivesElement relationships to bundl
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 ### Element
 
@@ -465,7 +465,7 @@ A relationship that indicates that child Elements are meant to be hidden.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -479,7 +479,7 @@ A relationship that indicates that child Elements are meant to be hidden.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -502,7 +502,7 @@ Associates links to an element.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -518,7 +518,7 @@ An Element Multi-Aspect is an Element Aspect where there can be N instances of t
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#elementaspect text="BisCore:ElementAspect"]
+**Base class:** [BisCore:ElementAspect](./BisCore.ecschema.md#elementaspect)
 
 **Class Properties:**
 
@@ -595,7 +595,7 @@ An Element Unique Aspect is an Element Aspect where there can be only zero or on
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#elementaspect text="BisCore:ElementAspect"]
+**Base class:** [BisCore:ElementAspect](./BisCore.ecschema.md#elementaspect)
 
 **Class Properties:**
 
@@ -610,7 +610,7 @@ An information element that links to an embedded file.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#linkelement text="BisCore:LinkElement"]
+**Base class:** [BisCore:LinkElement](./BisCore.ecschema.md#linkelement)
 
 **Class Properties:**
 
@@ -626,7 +626,7 @@ Geometric Element is an abstract base class used to model real world entities th
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#element text="BisCore:Element"]
+**Base class:** [BisCore:Element](./BisCore.ecschema.md#element)
 
 ### GeometricElement2d
 
@@ -634,7 +634,7 @@ Geometric Element is an abstract base class used to model real world entities th
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement text="BisCore:GeometricElement"]
+**Base class:** [BisCore:GeometricElement](./BisCore.ecschema.md#geometricelement)
 
 **Class Properties:**
 
@@ -681,7 +681,7 @@ Element is in Category
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement text="BisCore:GeometricElement"]
+**Base class:** [BisCore:GeometricElement](./BisCore.ecschema.md#geometricelement)
 
 **Class Properties:**
 
@@ -731,7 +731,7 @@ A container for persisting geometric elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#model text="BisCore:Model"]
+**Base class:** [BisCore:Model](./BisCore.ecschema.md#model)
 
 ### GeometricModel2d
 
@@ -739,7 +739,7 @@ A container for persisting 2D geometric elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricmodel text="BisCore:GeometricModel"]
+**Base class:** [BisCore:GeometricModel](./BisCore.ecschema.md#geometricmodel)
 
 **Class Properties:**
 
@@ -754,7 +754,7 @@ A container for persisting 3D geometric elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricmodel text="BisCore:GeometricModel"]
+**Base class:** [BisCore:GeometricModel](./BisCore.ecschema.md#geometricmodel)
 
 ### GeometryPart
 
@@ -762,7 +762,7 @@ A Definition Element that specifies a collection of geometry that is meant to be
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -779,13 +779,13 @@ Abstract base class for 2D Geometric Elements that are used to convey informatio
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement2d text="BisCore:GeometricElement2d"]
+**Base class:** [BisCore:GeometricElement2d](./BisCore.ecschema.md#geometricelement2d)
 
 ### GraphicalElement2dIsOfType
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement2dhastypedefinition text="BisCore:GeometricElement2dHasTypeDefinition"]
+**Base class:** [BisCore:GeometricElement2dHasTypeDefinition](./BisCore.ecschema.md#geometricelement2dhastypedefinition)
 
 **Relationship Class:**
 
@@ -799,7 +799,7 @@ Abstract base class for 2D Geometric Elements that are used to convey informatio
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement3d text="BisCore:GeometricElement3d"]
+**Base class:** [BisCore:GeometricElement3d](./BisCore.ecschema.md#geometricelement3d)
 
 ### GraphicalElement3dRepresentsElement
 
@@ -807,7 +807,7 @@ Relates a 3D graphical annotation to the Element that it represents.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -823,7 +823,7 @@ A container for persisting 2D graphical elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricmodel2d text="BisCore:GeometricModel2d"]
+**Base class:** [BisCore:GeometricModel2d](./BisCore.ecschema.md#geometricmodel2d)
 
 ### GraphicalType2d
 
@@ -831,13 +831,13 @@ Defines a set of properties (the 'type') that can be associated with a 2D Graphi
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#typedefinitionelement text="BisCore:TypeDefinitionElement"]
+**Base class:** [BisCore:TypeDefinitionElement](./BisCore.ecschema.md#typedefinitionelement)
 
 ### GraphicalType2dHasTemplateRecipe
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#typedefinitionhasrecipe text="BisCore:TypeDefinitionHasRecipe"]
+**Base class:** [BisCore:TypeDefinitionHasRecipe](./BisCore.ecschema.md#typedefinitionhasrecipe)
 
 **Relationship Class:**
 
@@ -853,7 +853,7 @@ Group Information is an abstract base class for modeling entities whose main pur
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationreferenceelement text="BisCore:InformationReferenceElement"]
+**Base class:** [BisCore:InformationReferenceElement](./BisCore.ecschema.md#informationreferenceelement)
 
 ### GroupInformationModel
 
@@ -861,7 +861,7 @@ A container for persisting group information elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationmodel text="BisCore:InformationModel"]
+**Base class:** [BisCore:InformationModel](./BisCore.ecschema.md#informationmodel)
 
 ### GroupInformationPartition
 
@@ -869,7 +869,7 @@ A Group Information Partition element indicates that there is a group-informatio
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### IParentElement
 
@@ -889,7 +889,7 @@ An Information Carrier carries information, but is not the information itself. F
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#element text="BisCore:Element"]
+**Base class:** [BisCore:Element](./BisCore.ecschema.md#element)
 
 ### InformationContentElement
 
@@ -897,7 +897,7 @@ Information Content Element is an abstract base class for modeling pure informat
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#element text="BisCore:Element"]
+**Base class:** [BisCore:Element](./BisCore.ecschema.md#element)
 
 ### InformationModel
 
@@ -905,7 +905,7 @@ A container for persisting information elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#model text="BisCore:Model"]
+**Base class:** [BisCore:Model](./BisCore.ecschema.md#model)
 
 ### InformationPartitionElement
 
@@ -913,7 +913,7 @@ Information Partition is an abstract base class for elements that indicate that 
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 **Class Properties:**
 
@@ -928,7 +928,7 @@ Information Record Element is an abstract base class for modeling information re
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 ### InformationRecordModel
 
@@ -936,7 +936,7 @@ A container for persisting Information Record Elements
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationmodel text="BisCore:InformationModel"]
+**Base class:** [BisCore:InformationModel](./BisCore.ecschema.md#informationmodel)
 
 ### InformationRecordPartition
 
@@ -944,7 +944,7 @@ A Information Record Partition element indicates that there is an information-re
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### InformationReferenceElement
 
@@ -952,7 +952,7 @@ Information Reference is an abstract base class for modeling entities whose main
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationcontentelement text="BisCore:InformationContentElement"]
+**Base class:** [BisCore:InformationContentElement](./BisCore.ecschema.md#informationcontentelement)
 
 ### LightLocation
 
@@ -960,7 +960,7 @@ The spatial location of a light source
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatiallocationelement text="BisCore:SpatialLocationElement"]
+**Base class:** [BisCore:SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement)
 
 **Class Properties:**
 
@@ -973,7 +973,7 @@ The spatial location of a light source
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -989,7 +989,7 @@ An information element that specifies a link.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationreferenceelement text="BisCore:InformationReferenceElement"]
+**Base class:** [BisCore:InformationReferenceElement](./BisCore.ecschema.md#informationreferenceelement)
 
 ### LinkModel
 
@@ -997,7 +997,7 @@ A container for persisting link elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationmodel text="BisCore:InformationModel"]
+**Base class:** [BisCore:InformationModel](./BisCore.ecschema.md#informationmodel)
 
 ### LinkPartition
 
@@ -1005,7 +1005,7 @@ A Link Partition element indicates that there is a link-related modeling perspec
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### Model
 
@@ -1070,7 +1070,7 @@ The relationship that is used to build a model hierarchy index. This is done for
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 ### ModelSelectorRefersToModels
 
@@ -1090,13 +1090,13 @@ A spatial view that always show an parallel projection.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialviewdefinition text="BisCore:SpatialViewDefinition"]
+**Base class:** [BisCore:SpatialViewDefinition](./BisCore.ecschema.md#spatialviewdefinition)
 
 ### PartitionOriginatesFromRepository
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementreferstoelements text="BisCore:ElementRefersToElements"]
+**Base class:** [BisCore:ElementRefersToElements](./BisCore.ecschema.md#elementreferstoelements)
 
 **Relationship Class:**
 
@@ -1112,7 +1112,7 @@ A Physical Element is spatially located, has mass, and can be 'touched'.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialelement text="BisCore:SpatialElement"]
+**Base class:** [BisCore:SpatialElement](./BisCore.ecschema.md#spatialelement)
 
 ### PhysicalElementAssemblesElements
 
@@ -1120,7 +1120,7 @@ A relationship that indicates a physical assembly of child PhysicalElements.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -1134,7 +1134,7 @@ A relationship that indicates a physical assembly of child PhysicalElements.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement3dhastypedefinition text="BisCore:GeometricElement3dHasTypeDefinition"]
+**Base class:** [BisCore:GeometricElement3dHasTypeDefinition](./BisCore.ecschema.md#geometricelement3dhastypedefinition)
 
 **Relationship Class:**
 
@@ -1148,7 +1148,7 @@ A relationship that indicates a physical assembly of child PhysicalElements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 ### PhysicalModel
 
@@ -1156,13 +1156,13 @@ A container for persisting physical elements that model physical space.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialmodel text="BisCore:SpatialModel"]
+**Base class:** [BisCore:SpatialModel](./BisCore.ecschema.md#spatialmodel)
 
 ### PhysicalModelBreaksDownPhysicalPortion
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#modelmodelselement text="BisCore:ModelModelsElement"]
+**Base class:** [BisCore:ModelModelsElement](./BisCore.ecschema.md#modelmodelselement)
 
 **Relationship Class:**
 
@@ -1178,7 +1178,7 @@ A Physical Partition element indicates that there is a physical modeling perspec
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### PhysicalPortion
 
@@ -1186,7 +1186,7 @@ A Physical Portion represents an arbitrary portion of a larger Physical Element 
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#physicalelement text="BisCore:PhysicalElement"]
+**Base class:** [BisCore:PhysicalElement](./BisCore.ecschema.md#physicalelement)
 
 ### PhysicalType
 
@@ -1194,13 +1194,13 @@ Defines a set of properties (the 'type') that can be associated with a Physical 
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#typedefinitionelement text="BisCore:TypeDefinitionElement"]
+**Base class:** [BisCore:TypeDefinitionElement](./BisCore.ecschema.md#typedefinitionelement)
 
 ### PhysicalTypeHasTemplateRecipe
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#typedefinitionhasrecipe text="BisCore:TypeDefinitionHasRecipe"]
+**Base class:** [BisCore:TypeDefinitionHasRecipe](./BisCore.ecschema.md#typedefinitionhasrecipe)
 
 **Relationship Class:**
 
@@ -1216,13 +1216,13 @@ Defines a recipe for generating a type.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 ### RenderMaterial
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1236,7 +1236,7 @@ Defines a recipe for generating a type.
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -1252,7 +1252,7 @@ An information element that links to a repository.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#urllink text="BisCore:UrlLink"]
+**Base class:** [BisCore:UrlLink](./BisCore.ecschema.md#urllink)
 
 **Class Properties:**
 
@@ -1267,7 +1267,7 @@ The singleton container of repository-related information elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionmodel text="BisCore:DefinitionModel"]
+**Base class:** [BisCore:DefinitionModel](./BisCore.ecschema.md#definitionmodel)
 
 ### RoleElement
 
@@ -1275,7 +1275,7 @@ A real world entity is modeled as a Role Element when a set of external circumst
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#element text="BisCore:Element"]
+**Base class:** [BisCore:Element](./BisCore.ecschema.md#element)
 
 ### RoleModel
 
@@ -1283,13 +1283,13 @@ A container for persisting role elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#model text="BisCore:Model"]
+**Base class:** [BisCore:Model](./BisCore.ecschema.md#model)
 
 ### SectionDrawing
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#drawing text="BisCore:Drawing"]
+**Base class:** [BisCore:Drawing](./BisCore.ecschema.md#drawing)
 
 ### SectionDrawingModel
 
@@ -1297,13 +1297,13 @@ A container for persisting section drawing graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#drawingmodel text="BisCore:DrawingModel"]
+**Base class:** [BisCore:DrawingModel](./BisCore.ecschema.md#drawingmodel)
 
 ### Sheet
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#document text="BisCore:Document"]
+**Base class:** [BisCore:Document](./BisCore.ecschema.md#document)
 
 **Class Properties:**
 
@@ -1319,7 +1319,7 @@ A container for persisting section drawing graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#drawinggraphic text="BisCore:DrawingGraphic"]
+**Base class:** [BisCore:DrawingGraphic](./BisCore.ecschema.md#drawinggraphic)
 
 **Class Properties:**
 
@@ -1344,7 +1344,7 @@ A container for persisting section drawing graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#document text="BisCore:Document"]
+**Base class:** [BisCore:Document](./BisCore.ecschema.md#document)
 
 **Class Properties:**
 
@@ -1372,13 +1372,13 @@ A container for persisting sheet views and graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalmodel2d text="BisCore:GraphicalModel2d"]
+**Base class:** [BisCore:GraphicalModel2d](./BisCore.ecschema.md#graphicalmodel2d)
 
 ### SheetModelBreaksDownSheet
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#modelmodelselement text="BisCore:ModelModelsElement"]
+**Base class:** [BisCore:ModelModelsElement](./BisCore.ecschema.md#modelmodelselement)
 
 **Relationship Class:**
 
@@ -1392,7 +1392,7 @@ A container for persisting sheet views and graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#document text="BisCore:Document"]
+**Base class:** [BisCore:Document](./BisCore.ecschema.md#document)
 
 **Class Properties:**
 
@@ -1419,13 +1419,13 @@ A container for persisting sheet views and graphics.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition2d text="BisCore:ViewDefinition2d"]
+**Base class:** [BisCore:ViewDefinition2d](./BisCore.ecschema.md#viewdefinition2d)
 
 ### SpatialCategory
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#category text="BisCore:Category"]
+**Base class:** [BisCore:Category](./BisCore.ecschema.md#category)
 
 ### SpatialElement
 
@@ -1433,7 +1433,7 @@ A Spatial Element occupies real world space.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement3d text="BisCore:GeometricElement3d"]
+**Base class:** [BisCore:GeometricElement3d](./BisCore.ecschema.md#geometricelement3d)
 
 ### SpatialIndex
 
@@ -1459,13 +1459,13 @@ A Spatial Location Element identifies a 'tracked' real world location but has no
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialelement text="BisCore:SpatialElement"]
+**Base class:** [BisCore:SpatialElement](./BisCore.ecschema.md#spatialelement)
 
 ### SpatialLocationIsOfType
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#geometricelement3dhastypedefinition text="BisCore:GeometricElement3dHasTypeDefinition"]
+**Base class:** [BisCore:GeometricElement3dHasTypeDefinition](./BisCore.ecschema.md#geometricelement3dhastypedefinition)
 
 **Relationship Class:**
 
@@ -1481,7 +1481,7 @@ A container for persisting spatial location elements.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialmodel text="BisCore:SpatialModel"]
+**Base class:** [BisCore:SpatialModel](./BisCore.ecschema.md#spatialmodel)
 
 ### SpatialLocationPartition
 
@@ -1489,7 +1489,7 @@ A Spatial Location Partition element indicates that there is a spatial-location-
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationpartitionelement text="BisCore:InformationPartitionElement"]
+**Base class:** [BisCore:InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement)
 
 ### SpatialLocationPortion
 
@@ -1497,7 +1497,7 @@ A Spatial Location Portion represents an arbitrary portion of a larger Spatial L
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatiallocationelement text="BisCore:SpatialLocationElement"]
+**Base class:** [BisCore:SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement)
 
 ### SpatialLocationType
 
@@ -1505,7 +1505,7 @@ Defines a set of properties (the 'type') that can be associated with a Spatial L
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#typedefinitionelement text="BisCore:TypeDefinitionElement"]
+**Base class:** [BisCore:TypeDefinitionElement](./BisCore.ecschema.md#typedefinitionelement)
 
 ### SpatialModel
 
@@ -1513,7 +1513,7 @@ A container for persisting 3D geometric elements that are spatially located.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#geometricmodel3d text="BisCore:GeometricModel3d"]
+**Base class:** [BisCore:GeometricModel3d](./BisCore.ecschema.md#geometricmodel3d)
 
 ### SpatialViewDefinition
 
@@ -1521,7 +1521,7 @@ A view of a spatially located volume.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition3d text="BisCore:ViewDefinition3d"]
+**Base class:** [BisCore:ViewDefinition3d](./BisCore.ecschema.md#viewdefinition3d)
 
 **Class Properties:**
 
@@ -1546,7 +1546,7 @@ A view of a spatially located volume.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1562,7 +1562,7 @@ A Subject is an information element that describes what this repository (or part
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#informationreferenceelement text="BisCore:InformationReferenceElement"]
+**Base class:** [BisCore:InformationReferenceElement](./BisCore.ecschema.md#informationreferenceelement)
 
 **Class Properties:**
 
@@ -1575,7 +1575,7 @@ A Subject is an information element that describes what this repository (or part
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -1589,7 +1589,7 @@ A Subject is an information element that describes what this repository (or part
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownschildelements text="BisCore:ElementOwnsChildElements"]
+**Base class:** [BisCore:ElementOwnsChildElements](./BisCore.ecschema.md#elementownschildelements)
 
 **Relationship Class:**
 
@@ -1605,7 +1605,7 @@ A recipe that uses a 2D template for creating new instances.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#recipedefinitionelement text="BisCore:RecipeDefinitionElement"]
+**Base class:** [BisCore:RecipeDefinitionElement](./BisCore.ecschema.md#recipedefinitionelement)
 
 ### TemplateRecipe3d
 
@@ -1613,7 +1613,7 @@ A recipe that uses a 3D template for creating new instances.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#recipedefinitionelement text="BisCore:RecipeDefinitionElement"]
+**Base class:** [BisCore:RecipeDefinitionElement](./BisCore.ecschema.md#recipedefinitionelement)
 
 ### TemplateViewDefinition2d
 
@@ -1621,7 +1621,7 @@ A View Definition used to display a 2D template model.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition2d text="BisCore:ViewDefinition2d"]
+**Base class:** [BisCore:ViewDefinition2d](./BisCore.ecschema.md#viewdefinition2d)
 
 ### TemplateViewDefinition3d
 
@@ -1629,19 +1629,19 @@ A View Definition used to display a 3D template model.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition3d text="BisCore:ViewDefinition3d"]
+**Base class:** [BisCore:ViewDefinition3d](./BisCore.ecschema.md#viewdefinition3d)
 
 ### TextAnnotation2d
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#annotationelement2d text="BisCore:AnnotationElement2d"]
+**Base class:** [BisCore:AnnotationElement2d](./BisCore.ecschema.md#annotationelement2d)
 
 ### TextAnnotation2dOwnsTextAnnotationData
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownsuniqueaspect text="BisCore:ElementOwnsUniqueAspect"]
+**Base class:** [BisCore:ElementOwnsUniqueAspect](./BisCore.ecschema.md#elementownsuniqueaspect)
 
 **Relationship Class:**
 
@@ -1655,13 +1655,13 @@ A View Definition used to display a 3D template model.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalelement3d text="BisCore:GraphicalElement3d"]
+**Base class:** [BisCore:GraphicalElement3d](./BisCore.ecschema.md#graphicalelement3d)
 
 ### TextAnnotation3dOwnsTextAnnotationData
 
 **Class Type:** RelationshipClass
 
-**Base class:** [link_to biscore.ecschema/#elementownsuniqueaspect text="BisCore:ElementOwnsUniqueAspect"]
+**Base class:** [BisCore:ElementOwnsUniqueAspect](./BisCore.ecschema.md#elementownsuniqueaspect)
 
 **Relationship Class:**
 
@@ -1677,7 +1677,7 @@ The aspect used to store text annotation data for 2D and 3D text annotation elem
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#elementuniqueaspect text="BisCore:ElementUniqueAspect"]
+**Base class:** [BisCore:ElementUniqueAspect](./BisCore.ecschema.md#elementuniqueaspect)
 
 **Class Properties:**
 
@@ -1690,7 +1690,7 @@ The aspect used to store text annotation data for 2D and 3D text annotation elem
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1704,7 +1704,7 @@ The aspect used to store text annotation data for 2D and 3D text annotation elem
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1724,7 +1724,7 @@ Defines a set of properties (the 'type') that can be associated with an element.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1751,7 +1751,7 @@ An information element that specifies a URL link.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#linkelement text="BisCore:LinkElement"]
+**Base class:** [BisCore:LinkElement](./BisCore.ecschema.md#linkelement)
 
 **Class Properties:**
 
@@ -1765,7 +1765,7 @@ An information element that specifies a URL link.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#graphicalelement2d text="BisCore:GraphicalElement2d"]
+**Base class:** [BisCore:GraphicalElement2d](./BisCore.ecschema.md#graphicalelement2d)
 
 **Class Properties:**
 
@@ -1778,7 +1778,7 @@ An information element that specifies a URL link.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#definitionelement text="BisCore:DefinitionElement"]
+**Base class:** [BisCore:DefinitionElement](./BisCore.ecschema.md#definitionelement)
 
 **Class Properties:**
 
@@ -1795,7 +1795,7 @@ A view of a 2D model that has its own local coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition text="BisCore:ViewDefinition"]
+**Base class:** [BisCore:ViewDefinition](./BisCore.ecschema.md#viewdefinition)
 
 **Class Properties:**
 
@@ -1811,7 +1811,7 @@ A view of a 2D model that has its own local coordinate system.
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#viewdefinition text="BisCore:ViewDefinition"]
+**Base class:** [BisCore:ViewDefinition](./BisCore.ecschema.md#viewdefinition)
 
 **Class Properties:**
 
@@ -1870,11 +1870,11 @@ A Volume Element is a Spatial Location Element that is restricted to defining a 
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatiallocationelement text="BisCore:SpatialLocationElement"]
+**Base class:** [BisCore:SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement)
 
 ### WebMercatorModel
 
 **Class Type:** EntityClass
 
-**Base class:** [link_to biscore.ecschema/#spatialmodel text="BisCore:SpatialModel"]
+**Base class:** [BisCore:SpatialModel](./BisCore.ecschema.md#spatialmodel)
 

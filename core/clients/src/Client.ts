@@ -198,7 +198,7 @@ export class UrlDiscoveryClient extends Client {
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
-    const resolvedRegion = regionId ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion);
     const options: RequestOptions = {
       method: "GET",
       qs: {
