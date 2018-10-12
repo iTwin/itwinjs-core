@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial release",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Caleb.Shafer@bentley.com"
+}

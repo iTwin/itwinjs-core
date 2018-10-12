@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial release",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Caleb.Shafer@bentley.com"
+}

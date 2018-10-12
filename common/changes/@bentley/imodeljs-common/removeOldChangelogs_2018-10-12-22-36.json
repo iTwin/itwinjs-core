@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial release",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Caleb.Shafer@bentley.com"
+}

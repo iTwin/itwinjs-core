@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial release",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}
