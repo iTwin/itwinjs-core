@@ -57,7 +57,7 @@ p.digital-twin {
 .example-view-demonstrator {
   display: block;
   width: 690px;
-  width: 431px;
+  height: 431px;
 }
 
 .iframe-viewer {
@@ -122,7 +122,7 @@ span.gradient {
   }
   .example-view-demonstrator {
     width: 500px;
-    width: 313px;
+    height: 313px;
   }
 }
 
@@ -140,6 +140,6 @@ span.gradient {
   }
   .example-view-demonstrator {
     width: 300px;
-    width: 188px;
+    height: 188px;
   }
 }
