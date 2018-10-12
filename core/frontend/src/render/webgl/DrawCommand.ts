@@ -96,7 +96,8 @@ export abstract class DrawCommand {
   public get featureIndexType(): FeatureIndexType { return undefined !== this.primitive ? this.primitive.featureIndexType : FeatureIndexType.Empty; }
   public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
-  public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; } public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
+  public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
+  public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
 
   public isPushCommand(branch?: Branch) {

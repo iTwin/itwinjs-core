@@ -36,26 +36,26 @@ export class VertexLUT implements IDisposable {
     this.colorInfo = colorInfo;
     this.qOrigin = qorigin3dToArray(qparams.origin);
     this.qScale = qscale3dToArray(qparams.scale);
-    if (undefined !== uvParams) {
+    if (undefined !== uvParams)
       this.uvQParams = qparams2dToArray(uvParams);
 
-      if (undefined !== table.auxDisplacements) {
-        this.auxDisplacements = new Map<string, AuxDisplacement>();
-        for (const auxDisplacement of table.auxDisplacements)
-          this.auxDisplacements.set(auxDisplacement.name, auxDisplacement);
-      }
-      if (undefined !== table.auxParams) {
-        this.auxParams = new Map<string, AuxParam>();
-        for (const auxParam of table.auxParams)
-          this.auxParams.set(auxParam.name, auxParam);
-      }
-      if (undefined !== table.auxNormals) {
-        this.auxNormals = new Map<string, AuxNormal>();
-        for (const auxNormal of table.auxNormals)
-          this.auxNormals.set(auxNormal.name, auxNormal);
-      }
+    if (undefined !== table.auxDisplacements) {
+      this.auxDisplacements = new Map<string, AuxDisplacement>();
+      for (const auxDisplacement of table.auxDisplacements)
+        this.auxDisplacements.set(auxDisplacement.name, auxDisplacement);
+    }
+    if (undefined !== table.auxParams) {
+      this.auxParams = new Map<string, AuxParam>();
+      for (const auxParam of table.auxParams)
+        this.auxParams.set(auxParam.name, auxParam);
+    }
+    if (undefined !== table.auxNormals) {
+      this.auxNormals = new Map<string, AuxNormal>();
+      for (const auxNormal of table.auxNormals)
+        this.auxNormals.set(auxNormal.name, auxNormal);
     }
   }
+
   public dispose() {
     dispose(this.texture);
   }

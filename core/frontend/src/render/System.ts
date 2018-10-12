@@ -38,6 +38,7 @@ export class RenderPlan {
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
   public readonly analysisStyle?: AnalysisStyle;
+  public analysisTexture?: RenderTexture;
   private _curFrustum: ViewFrustum;
 
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
@@ -71,8 +72,9 @@ export class RenderPlan {
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-
     const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.AnalysisStyle);
+    if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
+      rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
     return rp;
   }

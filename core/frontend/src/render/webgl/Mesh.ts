@@ -142,6 +142,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get texture() { return this._mesh.texture; }
   public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
   public get lut() { return this._mesh.lut; }
+  public get hasScalarAnimation() { return this._mesh.lut.auxParams !== undefined; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
     super();
