@@ -2,7 +2,7 @@
 
 <!-- Responsible for this page: Allan Bommer -->
 
-![Preliminary Documentation Warning](./media/preliminary-documentation-see-discussion.png)
+[!alert text="<img src="./media/clean-01.svg" style="width:2%;height:2%;">  Please be aware that this documentation is a work in progress, and is subject to change." kind="danger"]
 
 ## Introduction
 
