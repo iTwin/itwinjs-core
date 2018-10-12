@@ -105,7 +105,7 @@ A grid is a collection of gridsurfaces.
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#spatiallocationportion text="BisCore:SpatialLocationPortion"]
+**baseClass:** [BisCore:SpatialLocationPortion](./BisCore.ecschema.md#spatiallocationportion)
 
 ### GridArc
 
@@ -135,7 +135,7 @@ an element which groups (typically parallel) GridSurfaces
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#groupinformationelement text="BisCore:GroupInformationElement"]
+**baseClass:** [BisCore:GroupInformationElement](./BisCore.ecschema.md#groupinformationelement)
 
 #### Properties
 
@@ -152,7 +152,7 @@ an element representing a gridcurve - typically intersection of 2 surfaces
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#spatiallocationelement text="BisCore:SpatialLocationElement"]
+**baseClass:** [BisCore:SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement)
 
 ### GridCurveBundle
 
@@ -162,7 +162,7 @@ an element representing a gridcurve - typically intersection of 2 surfaces
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#driverbundleelement text="BisCore:DriverBundleElement"]
+**baseClass:** [BisCore:DriverBundleElement](./BisCore.ecschema.md#driverbundleelement)
 
 #### Properties
 
@@ -178,7 +178,7 @@ a portion which holds GridCurves
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#spatiallocationportion text="BisCore:SpatialLocationPortion"]
+**baseClass:** [BisCore:SpatialLocationPortion](./BisCore.ecschema.md#spatiallocationportion)
 
 ### GridLine
 
@@ -228,7 +228,7 @@ A grid surface element.
 
 **modifier:** Abstract
 
-**baseClass:** [link_to biscore.ecschema/#spatiallocationelement text="BisCore:SpatialLocationElement"]
+**baseClass:** [BisCore:SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement)
 
 #### Properties
 
@@ -513,7 +513,7 @@ a driving relationship which tells that gridcurve was created by the mapped Grid
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#elementdriveselement text="BisCore:ElementDrivesElement"]
+**baseClass:** [BisCore:ElementDrivesElement](./BisCore.ecschema.md#elementdriveselement)
 
 **Strength:** Referencing
 
@@ -587,7 +587,7 @@ a driving relationship which tells that a grid is driving a gridsurface.
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#elementdriveselement text="BisCore:ElementDrivesElement"]
+**baseClass:** [BisCore:ElementDrivesElement](./BisCore.ecschema.md#elementdriveselement)
 
 **Strength:** Referencing
 
@@ -661,7 +661,7 @@ a driving relationship which tells that gridsurface influences the creation of G
 
 **modifier:** None
 
-**baseClass:** [link_to biscore.ecschema/#elementdriveselement text="BisCore:ElementDrivesElement"]
+**baseClass:** [BisCore:ElementDrivesElement](./BisCore.ecschema.md#elementdriveselement)
 
 **Strength:** Referencing
 
