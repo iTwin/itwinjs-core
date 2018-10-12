@@ -26,13 +26,13 @@ description of the class
 
 <u>Naming:</u>
 
-1.  naming consideration - 1
-2.  `DgnCode`: ("value", parentId, Element) | default
+1. naming consideration - 1
+2. `DgnCode`: ("value", parentId, Element) | default
 
 <u>Geometry Use:</u>
 
-1.  how is geometry stored?
-2.  Local Coordinates : how are local coordinates computed?
+1. how is geometry stored?
+2. Local Coordinates : how are local coordinates computed?
 
 <u>Schema:</u>
 
@@ -64,7 +64,7 @@ relationship description here
 
 <u>Naming:</u>
 
-1.  naming consideration - 1
+1. naming consideration - 1
 
 <u>Schema:</u>
 

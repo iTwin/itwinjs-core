@@ -1,5 +1,13 @@
 # Domains
 
+## Core
+
+### [BisCore](./biscore/BisCore.ecschema.md)
+
+### [Functional](./Core/Functional.ecschema.md)
+
+### [Generic](./Core/Generic.ecschema.md)
+
 ## Shared across disciplines
 
 ### [SpatialComposition](./spatial-composition.md)
