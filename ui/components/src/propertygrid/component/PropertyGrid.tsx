@@ -9,9 +9,8 @@ import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-
-import "./PropertyGrid.scss";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
+import "./PropertyGrid.scss";
 
 /** Props for PropertyGrid React component */
 export interface PropertyGridProps {
@@ -152,7 +151,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 orientation={this.props.orientation}
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
-                onPropertyClicked={this._onPropertyClicked}
+                onPropertyClicked={this.props.isPropertySelectionEnabled ? this._onPropertyClicked : undefined}
               />
             ))
           }

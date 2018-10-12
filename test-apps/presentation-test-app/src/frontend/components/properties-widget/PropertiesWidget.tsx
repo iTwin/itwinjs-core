@@ -42,8 +42,6 @@ export default class PropertiesWidget extends React.Component<Props, State> {
       pane = (<SamplePropertyGrid
         orientation={Orientation.Horizontal}
         dataProvider={this.state.dataProvider}
-        isPropertySelectionEnabled={true}
-        onPropertySelectionChanged={() => { }}
       />);
     }
     return (

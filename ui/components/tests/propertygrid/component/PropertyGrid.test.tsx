@@ -159,7 +159,7 @@ describe("PropertyGrid", () => {
     const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
     expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
 
-    categoryBlock.find(".components--clickable").simulate("click");
+    categoryBlock.find(".components-property-record--horizontal").simulate("click");
 
     expect(onPropertySelectionChanged.called).to.be.false;
   });
