@@ -79,16 +79,20 @@ p.digital-twin {
   border-radius: 25px;
 }
 
+.middle-content-group {
+  margin-bottom: 2em;
+}
+
 .middle-content-image {
   width: 20%;
-  height: 20%;
   margin-bottom: 3em;
+  min-width: 0;
+  flex-shrink: 0;
 }
 
 .middle-content-text {
   max-width: 900px;
   min-width: 300px;
-  margin-bottom: 3em;
 }
 
 @media screen and (max-width: 767px) {
@@ -98,9 +102,7 @@ p.digital-twin {
   }
   .middle-content-image {
     width: 40%;
-    height: 40%;
   }
-
   .iframe-viewer {
     width: 500px;
     height: 313px;
