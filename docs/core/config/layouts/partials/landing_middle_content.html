@@ -3,8 +3,8 @@
   {{#each this.middleContent}}
   <div class="middle-content-group" style="order:{{addOne @index}}">
     {{#if_even @index}}
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" style="order: 1;" />
-    <div class="middle-content-text" style="order:2; margin-bottom: 2em">
+    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 1;" />
+    <div class="middle-content-text" style="order:2;">
       {{#if this.header}}
       <h4> {{{this.header}}} </h4>
       {{/if}}
@@ -14,7 +14,7 @@
       {{/if}}
     </div>
     {{else}}
-    <div class="middle-content-text" style="order:1; margin-bottom: 2em">
+    <div class="middle-content-text" style="order:1;">
       {{#if this.header}}
       <h4> {{{this.header}}} </h4>
       {{/if}}
@@ -23,7 +23,7 @@
       {{{this.content}}}
       {{/if}}
     </div>
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" style="order: 2;" />
+    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 2;" />
     {{/if_even}}
   </div>
   {{/each}}

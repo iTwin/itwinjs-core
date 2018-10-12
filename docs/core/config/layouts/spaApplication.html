@@ -1,0 +1,179 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbwsBbQlK6RBphfKaHo-XrgU6URzqpihoT00pxvOIUWfOS29O2Sc/exec">
+        <h2>Register Browser Application</h2>
+        <h4>A browser application, such as the sample Simple Viewer App.</h4>
+        <hr />
+
+        <div class="form-elements">
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer(s) who will own this application. These are the only individuals who will be
+              able to request updates to the client registrations.</em>
+          </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid IMS login.</em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required />
+                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid IMS login.</em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required />
+                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Application Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ClientName">Client Name: <br />
+                    <em>Something users will recognize and trust</em></label>
+                </td>
+                <td>
+                  <input id="ClientName" name="ClientName" size="35" required />
+                </td>
+
+              <tr>
+                <td>
+                  <label for="DescOfApplication">Description of Application: <br /><em>This may be displayed to
+                      potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="DescOfApplication" name="DescOfApplication" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="AppHomepageURL">Application Homepage URL: <br /><em>This may be displayed to potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="AppHomepageURL" name="AppHomepageURL" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="ClientLogoURL">Client Logo URL: <br /><em>Will be shown on consent screen</em> </label>
+                </td>
+                <td>
+                  <textarea id="ClientLogoURL" name="ClientLogoURL" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="LinkToAppPrivacyPolicy">Link To Application Privacy Policy: <br /><em>Will be shown on
+                      consent
+                      screen</em> </label>
+                </td>
+                <td>
+                  <textarea id="LinkToAppPrivacyPolicy" name="LinkToAppPrivacyPolicy" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="LinkToAppTOS">Link To Application Terms of Service: <br /><em>Will be shown on consent
+                      screen</em>
+                  </label>
+                </td>
+                <td>
+                  <textarea id="LinkToAppTOS" name="LinkToAppTOS" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Register URIs</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="RedirectURIs">Redirect URIs: <br /><em>Your applications callback URI which specifies<br />
+                      where we redirect users after they have chosen <br />
+                      whether or not to authenticate your application.<br />
+                      Enter as many as you would like. <br />
+                      Must be over HTTPS. </em> </label>
+                </td>
+                <td>
+                  <textarea id="RedirectURIs" name="RedirectURIs" cols="37" rows="5" required></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="PostLogoutURI">Post Logout URI: <br /><em>Where users can be returned to after logging
+                      out.<br />
+                      This must be HTTPS.</em></label>
+                </td>
+                <td>
+                  <input id="PostLogoutURI" name="PostLogoutURI" placeholder="Optional" size="35" />
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+          <button class="button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        <!-- Customise the Thankyou Message People See when they submit the form: -->
+        <div class="thankyou_message" style="display:none;">
+          <h2>We are processing your request. You can expect an email response from
+            iModeljs.App.Registration@bentley.com within 24 hours.</h2>
+        </div>
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+
+<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')" -->
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+<script>
+  function generateEmail(callingForm, emailTo, emailSubject) {
+    var emailBody = '';
+    $('#' + $(callingForm)[0].id).children('input').each(function () {
+      if ($(this)[0].type !== 'submit' && $(this)[0].type !== 'reset')
+        emailBody += $(this)[0].name + ": " + $(this).val() + '%0D%0A';
+    });
+    location.href = "mailto:" + emailTo + "?" +
+      (emailSubject ? "&subject=" + emailSubject : "") +
+      (emailBody ? "&body=" + emailBody : "");
+  }
+</script>
+
+
+{{>footer}}
