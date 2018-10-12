@@ -1,0 +1,22 @@
+{
+  "name": "@bentley/webpack-tools",
+  "entries": [
+    {
+      "version": "0.156.0",
+      "tag": "@bentley/webpack-tools_v0.156.0",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/dev-cors-proxy-server\" from `0.0.8` to `0.0.9`"
+          }
+        ]
+      }
+    }
+  ]
+}
