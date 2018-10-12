@@ -89,7 +89,7 @@
   ],
   "dependencies": {
     "@bentley/bwc": "^7.0.1",
-    "@bentley/icons-generic-webfont": "^0.0.4",
+    "@bentley/icons-generic-webfont": "^0.0.5",
     "classnames": "^2.2.5",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
