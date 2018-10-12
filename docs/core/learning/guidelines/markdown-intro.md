@@ -3,7 +3,7 @@
 We have standardized on [markdown](http://commonmark.org/) files for programmer guide documentation.
 The goal is to combine the programmer guide documentation (extracted from markdown source) with reference documentation (extracted from JavaDoc-style source code comments) to produce the final documentation set as a static HTML web site.
 
-[There](http://assemble.io/docs/Cheatsheet-Markdown.html) are [tons](https://www.cheatography.com/simon-fermor/cheat-sheets/markdown/) of [cheatsheets](https://beegit.com/markdown-cheat-sheet) for markdown, and wide support for the format in source code editors (including VS Code).
+[There](http://assemble.io/docs/Cheatsheet-Markdown.html) are [tons](https://www.cheatography.com/simon-fermor/cheat-sheets/markdown/) of [cheatsheets](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) for markdown, and wide support for the format in source code editors (including VS Code).
 
 >**Note**: If you are editing Markdown in VS Code, please install the [Markdown Lint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) and the [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) extensions.
 

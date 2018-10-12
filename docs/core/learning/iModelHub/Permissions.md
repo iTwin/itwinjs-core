@@ -1,5 +1,5 @@
 # Permissions
-Every iModelHub operation requires that user would be authorized to perform it. iModelHub uses Role Based Access Control (RBAC) service to manage authorization. RBAC allows to create roles with a chosen set of permissions. Every user can be assigned one of these roles. RBAC permissions are configured per [Project]($clients). You can access RBAC permissions management through [CONNECT portal](https://https://connect.bentley.com). You can also query permissions for a specific Project through [RbacClient]($clients).
+Every iModelHub operation requires that user would be authorized to perform it. iModelHub uses Role Based Access Control (RBAC) service to manage authorization. RBAC allows to create roles with a chosen set of permissions. Every user can be assigned one of these roles. RBAC permissions are configured per [Project]($clients). You can access RBAC permissions management through [CONNECT portal](https://connect.bentley.com). You can also query permissions for a specific Project through [RbacClient]($clients).
 
 iModelHub uses 6 permissions:
 1. [Create iModel](#create-imodel)
