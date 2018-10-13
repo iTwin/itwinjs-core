@@ -8,7 +8,7 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
-    "copy:rules": "cpx ./node_modules/tslint-consistent-codestyle/rules/**/* ./tslint-rules/tslint-consistent-codestyle/rules && cpx ./node_modules/tslint-consistent-codestyle/src/**/* ./tslint-rules/tslint-consistent-codestyle/src",
+    "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src",
     "build": "tsc 1>&2 && npm run copy:rules",
     "clean": "rimraf tslint-rules",
     "docs": "",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixing scripts for linux",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Caleb.Shafer@bentley.com"
+}

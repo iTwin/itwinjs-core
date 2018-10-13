@@ -11,7 +11,7 @@
     "build": "tsc 1>&2 && npm run copy:scss",
     "build:demo": "webpack --config ./demo/webpack.config.js",
     "clean": "rimraf lib out demo/lib package-deps.json",
-    "copy:scss": "cpx src/**/*.scss lib",
+    "copy:scss": "cpx \"src/**/*.scss\" lib",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2 && tslint --project ./tests/tsconfig.json 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",

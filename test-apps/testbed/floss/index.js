@@ -81,6 +81,9 @@ function floss(options, done) {
     childProcess.stdout.on('data', (data) => {
         process.stdout.write(data);
     });
+    childProcess.stderr.on('data', (data) => {
+        process.stderr.write(data);
+    });
     childProcess.on('close', (code) => {
         if (code !== 0) {
             return done(new Error('Mocha tests failed'));

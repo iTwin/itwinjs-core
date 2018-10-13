@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run extract",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
-    "copy:assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
+    "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "lint": "tslint --project . 1>&2",

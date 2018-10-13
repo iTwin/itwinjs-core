@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixing scripts for linux",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

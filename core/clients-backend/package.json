@@ -10,9 +10,9 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs",
-    "copy:typedefs": "cpx ./src/openid-client.d.ts ./lib/",
+    "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "clean": "rimraf lib package-deps.json",
-    "cover": "npm run crimraf ./.nyc_output && npm run cover:unit & npm run cover:integration & cpx ./.nyc_output/unit/*.json ./.nyc_output & cpx ./.nyc_output/integration/*.json ./.nyc_output & nyc report --report-dir ./lib/test/coverage",
+    "cover": "npm run crimraf ./.nyc_output && npm run cover:unit & npm run cover:integration & cpx \"./.nyc_output/unit/*.json\" ./.nyc_output & cpx \"./.nyc_output/integration/*.json\" ./.nyc_output & nyc report --report-dir ./lib/test/coverage",
     "cover:unit": "nyc --temp-directory ./.nyc_output/unit --report-dir ./lib/test/coverage/unit mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts --offline \"mock\"",
     "cover:integration": "nyc --temp-directory ./.nyc_output/integration --report-dir ./lib/test/coverage/integration mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",

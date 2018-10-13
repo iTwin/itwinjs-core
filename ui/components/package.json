@@ -11,8 +11,8 @@
   "typings": "lib/index",
   "scripts": {
     "build": "tsc 1>&2 && npm run build:scss && npm run copy:public",
-    "build:scss": "cpx ./src/**/*.scss ./lib",
-    "copy:public": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
+    "build:scss": "cpx \"./src/**/*.scss\" ./lib",
+    "copy:public": "cpx \"./public/**/*\" ./lib/public && npm run pseudolocalize",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-components/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",

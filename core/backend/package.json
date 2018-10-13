@@ -12,16 +12,16 @@
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
-    "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
+    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep \"#integration|#WebGLPerformance\" --invert",
     "cover:integration": "nyc mocha --timeout 60000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
     "lint": "tslint --project . 1>&2",
-    "pretest": "cpx ./src/test/logging.config.json ./lib/test",
+    "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
-    "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
+    "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {
     "type": "git",
