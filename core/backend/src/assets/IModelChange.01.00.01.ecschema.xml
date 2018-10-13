@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="ECDbChange" version="01.00" alias="change"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
+
+  <ECEntityClass typeName="ChangeSet" modifier="Sealed">
+    <ECCustomAttributes>
+      <DbIndexList xmlns="ECDbMap.02.00">
+        <Indexes>
+          <DbIndex>
+            <Name>ix_imodelchange_ChangeSet_ParentWsgId</Name>
+            <Properties>
+              <string>ParentWsgId</string>
+            </Properties>
+          </DbIndex>
+          <DbIndex>
+            <Name>uix_imodelchange_ChangeSet_WsgId</Name>
+            <IsUnique>True</IsUnique>
+            <Properties>
+              <string>WsgId</string>
+            </Properties>
+          </DbIndex>
+          <DbIndex>
+            <Name>ix_imodelchange_ChangeSet_PushDate</Name>
+            <Properties>
+              <string>PushDate</string>
+            </Properties>
+          </DbIndex>
+          <DbIndex>
+            <Name>ix_imodelchange_ChangeSet_Author</Name>
+            <Properties>
+              <string>Author</string>
+            </Properties>
+          </DbIndex>
+        </Indexes>
+      </DbIndexList>
+    </ECCustomAttributes>
+    <ECNavigationProperty propertyName="Summary" relationshipName="ChangeSummaryIsExtractedFromChangeset" direction="backward">
+        <ECCustomAttributes>
+            <ForeignKeyConstraint xmlns="ECDbMap.02.00">
+                <OnDeleteAction>Cascade</OnDeleteAction>
+            </ForeignKeyConstraint>
+        </ECCustomAttributes>
+    </ECNavigationProperty>
+    <ECProperty propertyName="ParentWsgId" typeName="string">
+      <ECCustomAttributes>
+        <PropertyMap xmlns="ECDbMap.02.00">
+          <Collation>NoCase</Collation>
+        </PropertyMap>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECProperty propertyName="WsgId" typeName="string">
+      <ECCustomAttributes>
+        <PropertyMap xmlns="ECDbMap.02.00">
+          <Collation>NoCase</Collation>
+        </PropertyMap>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECProperty propertyName="Description" typeName="string">
+      <ECCustomAttributes>
+        <PropertyMap xmlns="ECDbMap.02.00">
+          <Collation>NoCase</Collation>
+        </PropertyMap>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECProperty propertyName="PushDate" typeName="dateTime">
+      <ECCustomAttributes>
+        <DateTimeInfo xmlns="CoreCustomAttributes.01.00">
+          <DateTimeKind>Utc</DateTimeKind>
+        </DateTimeInfo>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECProperty propertyName="Author" typeName="string">
+      <ECCustomAttributes>
+        <PropertyMap xmlns="ECDbMap.02.00">
+          <Collation>NoCase</Collation>
+        </PropertyMap>
+      </ECCustomAttributes>
+    </ECProperty>
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="ChangeSummaryIsExtractedFromChangeset" modifier="Sealed" strength="embedding">
+    <Source multiplicity="(1..1)" roleLabel="is created from" polymorphic="false">
+      <Class class="change:ChangeSummary"/>
+    </Source>
+    <Target multiplicity="(0..1)" roleLabel="is source of" polymorphic="false">
+      <Class class="ChangeSet"/>
+    </Target>
+  </ECRelationshipClass>
+</ECSchema>

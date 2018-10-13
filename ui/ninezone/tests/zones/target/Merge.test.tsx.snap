@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Merge /> renders correctly 1`] = `
+<Target
+  className="nz-zones-target-merge"
+>
+  <Component
+    className="nz-arrow"
+  />
+  <Component
+    className="nz-mirrored"
+  />
+</Target>
+`;

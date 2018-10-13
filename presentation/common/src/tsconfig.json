@@ -1,0 +1,12 @@
+{
+  "extends": "../node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "composite": true,
+    "declarationMap": true,
+    "outDir": "../lib"
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

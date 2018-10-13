@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Item fromJSON creates valid Item from valid JSON 1`] = `
+Item {
+  "classInfo": Object {
+    "id": "0x397c000000f221",
+    "label": "XSS Unbranded",
+    "name": "harness",
+  },
+  "displayValues": Object {
+    "key1": "Generic Concrete Ball technologies Ergonomic",
+    "key2": "Sports orchestrate Music",
+  },
+  "imageId": "bc24c3cf-c6dc-4a16-8097-7434afabfe4b",
+  "label": "Soft",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": 7008,
+    "key2": "seize Grenada Branding",
+  },
+}
+`;
+
+exports[`Item fromJSON creates valid Item from valid JSON without classInfo 1`] = `
+Item {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key1": "Greenland",
+    "key2": "Barbados Dollar",
+  },
+  "imageId": "4b46a857-e4f2-48a5-8df2-6ce9acb15edc",
+  "label": "Central Practical",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": 49793,
+    "key2": "Plains Accounts",
+  },
+}
+`;
+
+exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
+Item {
+  "classInfo": Object {
+    "id": "0xa3b70000013601",
+    "label": "Bulgarian Lev Program Tools",
+    "name": "magnetic",
+  },
+  "displayValues": Object {
+    "key1": "reboot payment Future",
+    "key2": "port Borders neutral",
+  },
+  "imageId": "1ba212b4-dc31-4912-8d4b-70a2f087a19f",
+  "label": "Mobility Vietnam redundant",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": 67657,
+    "key2": "demand-driven",
+  },
+}
+`;

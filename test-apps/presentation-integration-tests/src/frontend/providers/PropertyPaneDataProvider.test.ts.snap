@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PropertyDataProvider creates property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Mìsçêllãñéòús",
+      "name": "Miscellaneous",
+    },
+  ],
+  "description": "Physical Model",
+  "label": "Properties_60InstancesWithUrl2",
+  "records": Object {
+    "Miscellaneous": Array [
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "/DisplayLabel/",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "PhysicalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider favorites properties 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Fàvórîtë",
+      "name": "Favorite",
+    },
+    Object {
+      "expand": false,
+      "label": "Mìsçêllãñéòús",
+      "name": "Miscellaneous",
+    },
+  ],
+  "description": "Physical Model",
+  "label": "Properties_60InstancesWithUrl2",
+  "records": Object {
+    "Favorite": Array [
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "/DisplayLabel/",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "PhysicalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Miscellaneous": Array [
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "£ábêl",
+          "name": "/DisplayLabel/",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": "Properties_60InstancesWithUrl2",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "Properties_60InstancesWithUrl2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "name": "PhysicalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "value": Object {
+          "displayValue": "Properties_60InstancesWithUrl2",
+          "value": 28,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;

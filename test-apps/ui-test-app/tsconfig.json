@@ -1,0 +1,15 @@
+{
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "./lib",
+    "jsx": "react",
+    "types": [
+      "@bentley/webpack-tools"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ],
+}

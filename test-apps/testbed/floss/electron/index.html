@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Floss Tests</title>
+        <link id="mocha-css" rel="stylesheet" />
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <div id="messages"></div>
+        <div id="fixtures"></div>
+        <script>
+            const Renderer = require('./renderer');
+            new Renderer('mocha-css');
+        </script>
+    </body>
+</html>

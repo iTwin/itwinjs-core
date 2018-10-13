@@ -1,0 +1,109 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbwl7ZBBWJLAs_9_x1MgJQ5q8WsmVmBaF37lx9rTpLamDwwjuUc/exec">
+        <h2>Register Agent Application</h2>
+        <h4>Such as iModel Query Agent</h4>
+        <h4 style="margin-top:0px;">Machine to Machine communication with no human interaction</h4>
+        <hr />
+
+        <div class="form-elements">
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer(s) who will own this application. These are the only individauls who will be
+              able to request updates to the client registrations.</em>
+          </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid IMS login.</em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid IMS login.</em> </label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Application Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ClientName">Client Name: <br /><em>Something users will recognize and trust</em> </label>
+                </td>
+                <td>
+                  <input id="ClientName" name="ClientName" required />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DescOfApplication">Description of Application: <br /><em>This may be displayed to
+                      potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="DescOfApplication" name="DescOfApplication" rows="3" cols="30" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <button class="button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        <!-- Customise the Thankyou Message People See when they submit the form: -->
+        <div class="thankyou_message" style="display:none;">
+          <h2>We are processing your request. You can expect an email response from
+            iModeljs.App.Registration@bentley.com within 24 hours.</h2>
+        </div>
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+
+<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')" -->
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+<script>
+  function generateEmail(callingForm, emailTo, emailSubject) {
+    var emailBody = '';
+    $('#' + $(callingForm)[0].id).children('input').each(function () {
+      if ($(this)[0].type !== 'submit' && $(this)[0].type !== 'reset')
+        emailBody += $(this)[0].name + ": " + $(this).val() + '%0D%0A';
+    });
+    location.href = "mailto:" + emailTo + "?" +
+      (emailSubject ? "&subject=" + emailSubject : "") +
+      (emailBody ? "&body=" + emailBody : "");
+  }
+</script>
+
+
+{{>footer}}

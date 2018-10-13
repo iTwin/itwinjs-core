@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "@bentley/bwc/lib/mixins";
+
+.core-property-block {
+  @include bwc-expandable-blocks-block;
+
+  .header {
+    padding: 4px;
+
+    .icon-container {
+      line-height: 23px;
+      width: 23px;
+    }
+
+    .title {
+      font-size: 0.95em;
+      line-height: 23px;
+    }
+  }
+}

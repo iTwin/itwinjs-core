@@ -1,0 +1,44 @@
+{
+  "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
+  "commands": [
+    {
+      "name": "clean",
+      "commandKind": "bulk",
+      "summary": "Cleans build output within each package",
+      "description": "Iterates through each package in the monorepo and runs the 'clean' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": false
+    },
+    {
+      "name": "docs",
+      "commandKind": "bulk",
+      "summary": "Builds the API reference docs for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'docs' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": false
+    },
+    {
+      "name": "lint",
+      "commandKind": "bulk",
+      "summary": "Run lint rules on each package",
+      "description": "Iterates through each package in the monorepo and runs the 'lint' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": false
+    },
+    {
+      "name": "test",
+      "commandKind": "bulk",
+      "summary": "Run test script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'test' script",
+      "enableParallelism": false,
+      "ignoreMissingScript": false
+    },
+    {
+      "name": "audit",
+      "commandKind": "global",
+      "summary": "Runs npm audit for the entire monorepo",
+      "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
+      "shellCommand": "node common/scripts/audit.js"
+    }
+  ]
+}

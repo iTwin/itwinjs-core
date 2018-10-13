@@ -1,0 +1,30 @@
+{
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "outDir": "./lib"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../presentation/common"
+    },
+    {
+      "path": "../../presentation/backend"
+    },
+    {
+      "path": "../../presentation/frontend"
+    },
+    {
+      "path": "../../presentation/components"
+    }
+  ]
+}

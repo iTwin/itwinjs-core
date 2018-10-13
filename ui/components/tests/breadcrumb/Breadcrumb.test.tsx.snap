@@ -1,0 +1,249 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Breadcrumb <Breadcrumb /> renders correctly 1`] = `
+<div
+  className="breadcrumb"
+>
+  <div
+    className="breadcrumb-head"
+  >
+    <BreadcrumbDropdown
+      button={[Function]}
+      dataProvider={
+        Object {
+          "getChildNodes": [Function],
+          "getChildNodesCount": [Function],
+          "getRootNodes": [Function],
+          "getRootNodesCount": [Function],
+          "onTreeNodeChanged": TreeDataChangeEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+        }
+      }
+      delimiter="\\\\"
+      dragProps={Object {}}
+      dropProps={Object {}}
+      onModeSwitch={[Function]}
+      path={
+        BreadcrumbPath {
+          "_breadcrumbUpdateEvent": BreadcrumbUpdateEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+          "_currentNode": undefined,
+          "_dataProvider": Object {
+            "getChildNodes": [Function],
+            "getChildNodesCount": [Function],
+            "getRootNodes": [Function],
+            "getRootNodesCount": [Function],
+            "onTreeNodeChanged": TreeDataChangeEvent {
+              "_insideRaiseEvent": false,
+              "_listeners": Array [
+                EventContext {
+                  "listener": [Function],
+                  "once": false,
+                  "scope": undefined,
+                },
+              ],
+            },
+          },
+        }
+      }
+      width=""
+    />
+    <BreadcrumbInput
+      buttonElement={null}
+      dataProvider={
+        Object {
+          "getChildNodes": [Function],
+          "getChildNodesCount": [Function],
+          "getRootNodes": [Function],
+          "getRootNodesCount": [Function],
+          "onTreeNodeChanged": TreeDataChangeEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+        }
+      }
+      delimiter="\\\\"
+      input={[Function]}
+      onModeSwitch={[Function]}
+      path={
+        BreadcrumbPath {
+          "_breadcrumbUpdateEvent": BreadcrumbUpdateEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+          "_currentNode": undefined,
+          "_dataProvider": Object {
+            "getChildNodes": [Function],
+            "getChildNodesCount": [Function],
+            "getRootNodes": [Function],
+            "getRootNodesCount": [Function],
+            "onTreeNodeChanged": TreeDataChangeEvent {
+              "_insideRaiseEvent": false,
+              "_listeners": Array [
+                EventContext {
+                  "listener": [Function],
+                  "once": false,
+                  "scope": undefined,
+                },
+              ],
+            },
+          },
+        }
+      }
+      width=""
+    />
+  </div>
+</div>
+`;
+
+exports[`Breadcrumb <Breadcrumb /> renders with width correctly 1`] = `
+<div
+  className="breadcrumb"
+>
+  <div
+    className="breadcrumb-head"
+  >
+    <BreadcrumbDropdown
+      button={[Function]}
+      dataProvider={
+        Object {
+          "getChildNodes": [Function],
+          "getChildNodesCount": [Function],
+          "getRootNodes": [Function],
+          "getRootNodesCount": [Function],
+          "onTreeNodeChanged": TreeDataChangeEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+        }
+      }
+      delimiter="\\\\"
+      dragProps={Object {}}
+      dropProps={Object {}}
+      onModeSwitch={[Function]}
+      path={
+        BreadcrumbPath {
+          "_breadcrumbUpdateEvent": BreadcrumbUpdateEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+          "_currentNode": undefined,
+          "_dataProvider": Object {
+            "getChildNodes": [Function],
+            "getChildNodesCount": [Function],
+            "getRootNodes": [Function],
+            "getRootNodesCount": [Function],
+            "onTreeNodeChanged": TreeDataChangeEvent {
+              "_insideRaiseEvent": false,
+              "_listeners": Array [
+                EventContext {
+                  "listener": [Function],
+                  "once": false,
+                  "scope": undefined,
+                },
+              ],
+            },
+          },
+        }
+      }
+      width={200}
+    />
+    <BreadcrumbInput
+      buttonElement={null}
+      dataProvider={
+        Object {
+          "getChildNodes": [Function],
+          "getChildNodesCount": [Function],
+          "getRootNodes": [Function],
+          "getRootNodesCount": [Function],
+          "onTreeNodeChanged": TreeDataChangeEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+        }
+      }
+      delimiter="\\\\"
+      input={[Function]}
+      onModeSwitch={[Function]}
+      path={
+        BreadcrumbPath {
+          "_breadcrumbUpdateEvent": BreadcrumbUpdateEvent {
+            "_insideRaiseEvent": false,
+            "_listeners": Array [
+              EventContext {
+                "listener": [Function],
+                "once": false,
+                "scope": undefined,
+              },
+            ],
+          },
+          "_currentNode": undefined,
+          "_dataProvider": Object {
+            "getChildNodes": [Function],
+            "getChildNodesCount": [Function],
+            "getRootNodes": [Function],
+            "getRootNodesCount": [Function],
+            "onTreeNodeChanged": TreeDataChangeEvent {
+              "_insideRaiseEvent": false,
+              "_listeners": Array [
+                EventContext {
+                  "listener": [Function],
+                  "once": false,
+                  "scope": undefined,
+                },
+              ],
+            },
+          },
+        }
+      }
+      width={200}
+    />
+  </div>
+</div>
+`;

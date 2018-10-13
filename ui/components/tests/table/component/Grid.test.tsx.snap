@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Grid renders correctly 1`] = `
+<div
+  className="react-data-grid-wrapper"
+>
+  <ReactDataGrid
+    cellNavigationMode="none"
+    columnEquality={[Function]}
+    columns={
+      Array [
+        Object {
+          "key": "id",
+          "name": "ID",
+        },
+        Object {
+          "key": "title",
+          "name": "Title",
+        },
+        Object {
+          "key": "count",
+          "name": "Count",
+        },
+      ]
+    }
+    enableCellAutoFocus={true}
+    enableCellSelect={false}
+    enableRowSelect={false}
+    headerFiltersHeight={45}
+    headerRowHeight={25}
+    minColumnWidth={80}
+    minHeight={500}
+    onBeforeEdit={[Function]}
+    onRowClick={[Function]}
+    overScan={
+      Object {
+        "colsEnd": 5,
+        "colsStart": 5,
+        "rowsEnd": 5,
+        "rowsStart": 5,
+      }
+    }
+    rowGetter={[Function]}
+    rowHeight={25}
+    rowKey="id"
+    rowScrollTimeout={0}
+    rowSelection={
+      Object {
+        "enableShiftSelect": true,
+        "selectBy": Object {
+          "indexes": Array [
+            undefined,
+          ],
+        },
+        "showCheckbox": false,
+      }
+    }
+    rowsCount={200}
+    scrollToRowIndex={0}
+    tabIndex={-1}
+  />
+</div>
+`;

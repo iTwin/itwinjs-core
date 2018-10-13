@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/dev-cors-proxy-server",
+  "entries": [
+    {
+      "version": "0.0.9",
+      "tag": "@bentley/dev-cors-proxy-server_v0.0.9",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Initial release"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Tooltip /> renders correctly 1`] = `
+<div
+  className="nz-popup-tooltip-tooltip"
+  style={
+    Object {
+      "left": 0,
+      "top": 0,
+    }
+  }
+/>
+`;

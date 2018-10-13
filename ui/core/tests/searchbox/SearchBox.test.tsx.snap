@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchBox <SearchBox /> renders correctly 1`] = `
+<div
+  className="searchbox"
+>
+  <input
+    onChange={[Function]}
+    onCut={[Function]}
+    onKeyUp={[Function]}
+    onPaste={[Function]}
+    placeholder="searchbox.search"
+  />
+  <div
+    onClick={[Function]}
+  >
+    <span
+      className="searchbox-icon icon icon-search"
+    />
+  </div>
+</div>
+`;

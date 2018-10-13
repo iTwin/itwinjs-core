@@ -1,0 +1,161 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tree withFilteringSupport render passes expanded nodes 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={
+      Array [
+        "Solomon Islands Dollar",
+        "Focused",
+      ]
+    }
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with full highlightingProps 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    activeHighlightedIndex={6}
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": Object {
+          "id": "test",
+          "index": 0,
+        },
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with overlay if connection is different 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with overlay if filter is different 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with overlay if rulesetId is different 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders without overlay if filter is empty 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={Array []}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders without overlay if filter is undefined 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={Array []}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": undefined,
+      }
+    }
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders without overlay if nothing is different 1`] = `
+<div
+  className="filteredTree"
+>
+  <DataTree
+    dataProvider={null}
+    expandedNodes={undefined}
+    nodeHighlightingProps={
+      Object {
+        "activeResultNode": undefined,
+        "searchText": "filter",
+      }
+    }
+  />
+</div>
+`;

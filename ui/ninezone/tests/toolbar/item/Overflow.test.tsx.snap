@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Overflow /> renders correctly 1`] = `
+<ExpandableItem
+  className="nz-toolbar-item-overflow"
+>
+  <Icon
+    className="nz-ellipsis-icon"
+    icon={
+      <div
+        className="nz-ellipsis"
+      />
+    }
+  />
+</ExpandableItem>
+`;

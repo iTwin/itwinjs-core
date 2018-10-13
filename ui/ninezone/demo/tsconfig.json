@@ -1,0 +1,18 @@
+{
+  "extends": "../node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "jsx": "react",
+    "baseUrl": "../node_modules/",
+    "paths": {
+      "@src/*": [
+        "../src/*"
+      ]
+    },
+  },
+  "include": [
+    "./src/**/*.ts*",
+    "./src/typings.d.ts"
+  ]
+}

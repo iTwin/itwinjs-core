@@ -1,0 +1,17 @@
+{
+  "general": {
+    "true": "true",
+    "false": "false",
+    "loading": "loading",
+    "noData": "No data"
+  },
+  "button": {
+    "label": {
+      "search": "Search",
+      "cancel": "Cancel"
+    }
+  },
+  "tree": {
+    "noResultsForFilter": "0 matches found for \"{{searchText}}\""
+  }
+}

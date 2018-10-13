@@ -1,0 +1,91 @@
+{
+  "iModelPanelHeader": {
+    "projects": "Projects"
+  },
+  "iModelPanel": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "general": {
+    "sheet": "Sheet",
+    "of": "of",
+    "alert": "Alert"
+  },
+  "rotations": {
+    "top": "Top",
+    "bottom": "Bottom",
+    "left": "Left",
+    "right": "Right",
+    "front": "Front",
+    "rear": "Rear",
+    "isoLeft": "Iso Left",
+    "isoRight": "Iso Right"
+  },
+  "cube": {
+    "front": "FRONT",
+    "back": "BACK",
+    "top": "TOP",
+    "bottom": "BOTTOM",
+    "left": "LEFT",
+    "right": "RIGHT"
+  },
+  "messageCenter": {
+    "messages": "Messages",
+    "all": "All",
+    "problems": "Problems",
+    "prompt": "No messages."
+  },
+  "activityCenter": {
+    "percentComplete": "% complete"
+  },
+  "snapModeField": {
+    "snapMode": "Snap Mode",
+    "keypoint": "Keypoint",
+    "intersection": "Intersection",
+    "center": "Center",
+    "nearest": "Nearest",
+    "origin": "Origin",
+    "midpoint": "Midpoint",
+    "bisector": "Bisector",
+    "multi": "Multiple"
+  },
+  "tests": {
+    "singleContent": "Single Content",
+    "label": "Test Label",
+    "subtitle": "Test Subtitle"
+  },
+  "ContentLayoutDef": {
+    "SingleContent": "Single Content",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "ThreeRightStacked": "Three Right Stacked",
+    "FourQuadrants": "Four Quadrants"
+  },
+  "pickerButtons": {
+    "all": "All",
+    "none": "None",
+    "invert": "Invert",
+    "seperator": "Seperator"
+  },
+  "categoriesModels": {
+    "categories": "Categories",
+    "models": "Models"
+  },
+  "savedViews": {
+    "views": "Views",
+    "spatialViews": "Spatial Views",
+    "drawings": "Drawings",
+    "sheets": "Sheets",
+    "others": "Others"
+  },
+  "userProfile": {
+    "userprofile": "User Profile",
+    "signout": "Sign Out",
+    "signoutprompt": "Do you want to sign out?"
+  },
+  "buttons": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigationAid": {
+    "sheetsModalFrontstage": "Sheets Modal Frontstage"
+  }
+}

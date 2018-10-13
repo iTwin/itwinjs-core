@@ -1,0 +1,18 @@
+{
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "outDir": "./lib",
+    "skipLibCheck": true,
+    "jsx": "react"
+  },
+  "include": [
+    "./src/**/*.ts",
+    "../components/src/viewport/ViewRotationCub.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
+}

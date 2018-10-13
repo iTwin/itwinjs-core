@@ -1,0 +1,69 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "_variables";
+
+.nz-toolbar-item-icon {
+  border-width: 0;
+
+  > .nz-icon {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    color: $icon-color;
+    filter: $icon-shadow;
+    transition: all 500ms ease;
+
+    svg {
+      filter: $icon-shadow;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &:hover {
+    > .nz-icon {
+      color: $hovered-icon-color;
+      transition-duration: 150ms;
+    }
+  }
+
+  &:active {
+    > .nz-icon {
+      color: $pressed-icon-color;
+      filter: $no-shadow;
+
+      svg {
+        filter: $no-shadow;
+      }
+    }
+  }
+
+  &.nz-is-active {
+    &:not(:active):not(.nz-is-disabled) {
+      > .nz-icon {
+        color: $primary-base;
+        filter: $no-shadow;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+        svg {
+          filter: $no-shadow;
+        }
+      }
+    }
+  }
+
+  &.nz-is-disabled {
+    > .nz-icon {
+      color: $disabled-icon-color;
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "require": [
+    "source-map-support/register",
+    "ts-node/register"
+  ],
+  "include": [
+    "src/**/*",
+    "lib/**/*"
+  ],
+  "exclude": [
+    "lib/test/**/*"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "temp-directory": "./lib/test/coverage/.nyc_output",
+  "report-dir": "./lib/test/coverage",
+  "reporter": [
+    "text-summary",
+    "lcov",
+    "cobertura"
+  ],
+  "cache": false,
+  "check-coverage": true,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "lines": 100
+}

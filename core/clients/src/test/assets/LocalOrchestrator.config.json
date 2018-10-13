@@ -1,0 +1,10 @@
+{
+  "imodelfsRoot": "TBD",
+  "port": "TBD",
+  "baseUrl": "TBD",
+  "backofficeServicesConfig": {
+    "serviceIdentityUserName": "Regular.IModelJsTestUser@mailinator.com",
+    "serviceIdentityPassword": "Regular@iMJs",
+    "deploymentEnv": "QA"
+  }
+}

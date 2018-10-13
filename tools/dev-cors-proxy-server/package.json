@@ -1,0 +1,55 @@
+{
+  "name": "@bentley/dev-cors-proxy-server",
+  "version": "0.0.9",
+  "description": "CORS Anywhere is a reverse proxy which adds CORS headers to the proxied request. Request URL is taken from the path",
+  "license": "MIT",
+  "author": "Rob Wu <rob@robwu.nl>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rob--W/cors-anywhere.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rob--W/cors-anywhere/issues/",
+    "email": "rob@robwu.nl"
+  },
+  "keywords": [
+    "cors",
+    "cross-domain",
+    "http-proxy",
+    "proxy",
+    "heroku"
+  ],
+  "main": "server.js",
+  "dependencies": {
+    "http-proxy": "1.11.1",
+    "https-proxy-agent": "^2.2.0",
+    "proxy-from-env": "0.0.1"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "eslint": "^2.2.0",
+    "istanbul": "^0.4.2",
+    "lolex": "^2.7.1",
+    "mocha": "^5.2.0",
+    "nock": "^9.2.3",
+    "rimraf": "^2.6.2",
+    "supertest": "^2.0.1",
+    "cross-env": "^5.1.4"
+  },
+  "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": "",
+    "test": "",
+    "start": "cross-env PORT=3001 node ./server.js",
+    "skip:lint": "eslint .",
+    "skip:test": "mocha ./test/test*.js --reporter spec",
+    "skip:test-coverage": "istanbul cover ./node_modules/.bin/_mocha -- test/test.js test/test-ratelimit.js --reporter spec",
+    "uninstall": "rimraf package-lock.json node_modules"
+  },
+  "engines": {
+    "node": ">=0.10.0",
+    "npm": ">=1.1.0"
+  }
+}

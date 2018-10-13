@@ -1,0 +1,61 @@
+{
+  "landing-page": {
+    "docSiteId": 1,
+    "displayName": ""
+  },
+  "getting-started": {
+    "docSiteId": 2,
+    "displayName": "Getting Started"
+  },
+  "reference": {
+    "docSiteId": 3,
+    "displayName": "API Reference"
+  },
+  "bis": {
+    "docSiteId": 4,
+    "displayName": "Base Infrastructure Schema"
+  },
+  "learning": {
+    "docSiteId": 5,
+    "displayName": "Learning"
+  },
+  "metadata": {
+    "home": "landing-page",
+    "logo": "landing-page/assets/imodeljs-logo.svg",
+    "sponsoredByLogo": "landing-page/assets/bentley.svg",
+    "favicon": "landing-page/assets/imodeljs_16.png",
+    "docSiteOrder": [
+      "landing-page",
+      "getting-started",
+      "learning",
+      "bis",
+      "reference"
+    ],
+    "headerTabs": {
+      "Getting Started": {
+        "docSite": "getting-started"
+      },
+      "BIS": {
+        "docSite": "bis"
+      },
+      "Learning": {
+        "docSite": "learning"
+      },
+      "API Reference": {
+        "docSite": "reference"
+      }
+    },
+    "packageAliases": {
+      "common": "imodeljs-common",
+      "frontend": "imodeljs-frontend",
+      "backend": "imodeljs-backend",
+      "clients": "imodeljs-clients",
+      "quantity": "imodeljs-quantity",
+      "i18n": "imodeljs-i18n",
+      "geometry": "geometry-core",
+      "bentley": "bentleyjs-core"
+    },
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "ogShareImage": "landing-page/assets/twitter-share.png"
+  }
+}

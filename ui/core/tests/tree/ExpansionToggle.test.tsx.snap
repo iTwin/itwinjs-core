@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ExpansionToggle /> renders correctly 1`] = `
+<div
+  className="nz-tree-expansionToggle"
+>
+  <svg
+    className="toggle"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m4.7 0l-1.4 1.4 6.6 6.6-6.6 6.6 1.4 1.4 8-8z"
+    />
+  </svg>
+</div>
+`;
+
+exports[`<ExpansionToggle /> should set is-focused class 1`] = `
+<div
+  className="nz-tree-expansionToggle is-expanded"
+>
+  <svg
+    className="toggle"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m4.7 0l-1.4 1.4 6.6 6.6-6.6 6.6 1.4 1.4 8-8z"
+    />
+  </svg>
+</div>
+`;

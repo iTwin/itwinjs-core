@@ -1,0 +1,145 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+#main-landing-wrapper {
+  margin-bottom: 0em !important;
+  background-color: #EFF8FF;
+}
+
+#main-landing-wrapper #middle-content-wrapper {
+  margin: 2em 5% !important;
+}
+
+a:hover.nav-link {
+  text-decoration: underline;
+}
+
+.imodeljs-header-tagline {
+  max-width: 50%;
+  text-align: center;
+  line-height: 1em;
+  margin: 3em auto;
+  background: #002A44C0;
+}
+
+.imodeljs-header-tagline p {
+  color: white;
+  line-height: 1.5em;
+  font-size: 48px;
+  text-align: center;
+  text-shadow: 0px 2px 4.5px rgba(0, 42, 68, 1);
+}
+
+p.digital-twin {
+  font-weight: bold;
+}
+
+.overlay {
+  opacity: 1;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  text-align: center;
+  position: absolute;
+}
+
+#demo-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 1em;
+  flex-direction: column;
+}
+
+.example-view-demonstrator {
+  display: block;
+  width: 690px;
+  height: 431px;
+}
+
+.iframe-viewer {
+  width: 690px;
+  height: 431px;
+  border-width: 1px;
+  border-color: #CFDFEA;
+}
+
+#viewiModelBtn {
+  background-color: #6c757d;
+  background-image: none;
+  color: white;
+  max-width: 500px;
+  white-space: normal;
+}
+
+.nav-landing-container .navbar-nav {
+  background: #002A44C0;
+  border-radius: 25px;
+}
+
+.middle-content-group {
+  margin-bottom: 2em;
+}
+
+.middle-content-image {
+  width: 21%;
+  margin-bottom: 3em;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.feature-header {
+  color: #335569;
+}
+
+ul.list-unstyled.list-inline {
+  margin-bottom: 0;
+}
+
+.middle-content-text {
+  max-width: 900px;
+  min-width: 300px;
+}
+
+span.gradient {
+  background: linear-gradient(90deg, #038cd6 0%, #67b225 43%, #EFF8FF 100%) !important;
+}
+
+@media screen and (max-width: 767px) {
+  .nav-landing-container .navbar-nav {
+    padding-right: 15px;
+    max-width: 38%;
+  }
+  .middle-content-image {
+    width: 40%;
+  }
+  .iframe-viewer {
+    width: 500px;
+    height: 313px;
+  }
+  .example-view-demonstrator {
+    width: 500px;
+    height: 313px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .middle-content-group {
+    flex-flow: column;
+    align-items: center;
+  }
+  .imodeljs-header-tagline p {
+    font-size: 29px;
+  }
+  .iframe-viewer {
+    width: 300px;
+    height: 188px;
+  }
+  .example-view-demonstrator {
+    width: 300px;
+    height: 188px;
+  }
+}

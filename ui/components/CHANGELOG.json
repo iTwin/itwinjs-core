@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/ui-components",
+  "entries": [
+    {
+      "version": "0.156.0",
+      "tag": "@bentley/ui-components_v0.156.0",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release"
+          }
+        ]
+      }
+    }
+  ]
+}

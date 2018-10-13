@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MessageCenter /> renders correctly 1`] = `
+<Component
+  className="nz-footer-messageCenter-messageCenter"
+  content={
+    <WithContainInViewport
+      content={
+        <Unknown
+          messages={undefined}
+          prompt={undefined}
+          tabs={undefined}
+        />
+      }
+      noVerticalContainment={true}
+      titleBar={
+        <Unknown
+          buttons={undefined}
+          title={
+            <Unknown
+              text={undefined}
+            />
+          }
+        />
+      }
+    />
+  }
+  direction={1}
+/>
+`;

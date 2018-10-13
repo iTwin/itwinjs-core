@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Item /> renders correctly 1`] = `
+<li
+  className="nz-backstage-item"
+>
+  <span />
+</li>
+`;
+
+exports[`<Item /> should apply style 1`] = `
+<li
+  className="nz-backstage-item"
+  style={
+    Object {
+      "backgroundColor": "red",
+    }
+  }
+>
+  <span />
+</li>
+`;
+
+exports[`<Item /> should set is-active class 1`] = `
+<li
+  className="nz-backstage-item nz-is-active"
+>
+  <span />
+</li>
+`;

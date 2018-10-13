@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestSchema" alias="ts" version="01.00" description="Comprehensive Schema to demonstrate use of all ECSchema concepts." displayLabel="Comprehensive Schema" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference  name="Bentley_Standard_CustomAttributes" version="01.12" alias="bsca"/>
+
+	<ECCustomAttributeClass typeName="CustomEntityClassAttribute" description="Custom Attribute that can be applied to an ECEntityClass." modifier="None" appliesTo="EntityClass">
+        <ECProperty propertyName="EntityClassStringPrimitive" typeName="string" readOnly="false"/>
+        <ECProperty propertyName="EntityClassBinaryPrimitive" typeName="binary" readOnly="true"/>
+        <ECProperty propertyName="EntityClassDateTimePrimitive" typeName="dateTime" readOnly="true"/>
+        <ECProperty propertyName="EntityClassDoublePrimitive" typeName="double" readOnly="false"/>
+        <ECProperty propertyName="EntityClassIGeometryPrimitive" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false"/>
+        <ECProperty propertyName="EntityClassIntPrimitive" typeName="int" readOnly="false"/>
+        <ECProperty propertyName="EntityClassLongPrimitive" typeName="long" readOnly="false"/>
+        <ECProperty propertyName="EntityClassPoint2dPrimitive" typeName="point2d" readOnly="false"/>
+        <ECProperty propertyName="EntityClassPoint3dPrimitive" typeName="point3d" readOnly="false"/>
+        <ECProperty propertyName="EntityClassIntEnumerationPrimitive" typeName="IntEnumeration"/>
+        <ECProperty propertyName="EntityClassStringEnumerationPrimitive" typeName="StringEnumeration"/>
+        <ECStructProperty propertyName="CAStructProperty" typeName="DerivedStruct"/>
+        <ECArrayProperty propertyName="CAPrimitiveArrayProperty" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+        <ECStructArrayProperty propertyName="CAStructArrayProperty" typeName="Struct" minOccurs="0" maxOccurs="unbounded"/>
+    </ECCustomAttributeClass>
+    <ECCustomAttributeClass typeName="GeneralCustomAttribute" description="Custom Attribute that can be applied to anything." modifier="None" appliesTo="Any" />
+    <ECCustomAttributeClass typeName="CustomRelationshipConstraintAttribute" description="Custom Attribute that can be applied to relationshipConstraint." modifier="None" appliesTo="AnyRelationshipConstraint" />
+    <ECCustomAttributeClass typeName="CustomRelationshipConstraintAttributeSecond" description="Custom Attribute that can be applied to relationshipConstraint." modifier="None" appliesTo="SourceRelationshipConstraint|TargetRelationshipConstraint" />
+    <ECCustomAttributeClass typeName="SchemaCustomAttribute" description="Custom Attribute that can be applied to a schema." modifier="None" appliesTo="Schema" />
+    <ECCustomAttributeClass typeName="CustomAnyClassAttribute" description="Custom Attribute that can be applied to relationshipConstraint." modifier="None" appliesTo="AnyClass" />
+    <ECCustomAttributeClass typeName="CustomCustomAttributeClassAttribute" description="Custom Attribute that can be applied to an ECCustomAttributeClass." modifier="None" appliesTo="CustomAttributeClass" />
+    <ECCustomAttributeClass typeName="CustomStructClassAttribute" description="Custom Attribute that can be applied to an ECStructClass." modifier="None" appliesTo="StructClass" />
+    <ECCustomAttributeClass typeName="CustomRelationshipClassAttribute" description="Custom Attribute that can be applied to an ECRelationshipClass." modifier="None" appliesTo="RelationshipClass" />
+    <ECCustomAttributeClass typeName="CustomPrimitivePropertyAttribute" description="Custom Attribute that can be applied to an ECProperty." modifier="None" appliesTo="PrimitiveProperty" />
+    <ECCustomAttributeClass typeName="CustomStructPropertyAttribute" description="Custom Attribute that can be applied to an ECStructProperty." modifier="None" appliesTo="StructProperty" />
+    <ECCustomAttributeClass typeName="CustomArrayPropertyAttribute" description="Custom Attribute that can be applied to an ECArrayProperty." modifier="None" appliesTo="ArrayProperty" />
+    <ECCustomAttributeClass typeName="CustomStructArrayPropertyAttribute" description="Custom Attribute that can be applied to an ECStructArrayProperty." modifier="None" appliesTo="StructArrayProperty" />
+    <ECCustomAttributeClass typeName="CustomNavigationPropertyAttribute" description="Custom Attribute that can be applied to an ECNavigationProperty." modifier="None" appliesTo="NavigationProperty" />
+    <ECCustomAttributeClass typeName="CustomAnyPropertyAttribute" description="Custom Attribute that can be applied to any of the property types." modifier="None" appliesTo="AnyProperty" />
+    <ECCustomAttributeClass typeName="UsingCustomAttributeClass" description="Custom Attribute class that use an ECCustomAttributeClass" >
+        <ECCustomAttributes>
+            <GeneralCustomAttribute xmlns="TestSchema.01.00">
+            </GeneralCustomAttribute>
+            <CustomCustomAttributeClassAttribute xmlns="TestSchema.01.00">
+            </CustomCustomAttributeClassAttribute>
+            <CustomAnyClassAttribute xmlns="TestSchema.01.00">
+            </CustomAnyClassAttribute>
+        </ECCustomAttributes>
+    </ECCustomAttributeClass>
+    <ECCustomAttributes>
+        <GeneralCustomAttribute xmlns="TestSchema.01.00">
+        </GeneralCustomAttribute>
+        <SchemaCustomAttribute xmlns="TestSchema.01.00">
+        </SchemaCustomAttribute>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="IntEnumeration" backingTypeName="int" description="Int Enumeration" displayLabel="This is a display label." strict="true"  >
+        <ECEnumerator value="1" displayLabel="First"  />
+        <ECEnumerator value="2" displayLabel="Second"/>
+        <ECEnumerator value="3" displayLabel="Third"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StringEnumeration" backingTypeName="string" description="String Enumeration" strict="false" >
+        <ECEnumerator value="spring" displayLabel="FirstSeason"/>
+        <ECEnumerator value="summer" displayLabel="SecondSeason"/>
+        <ECEnumerator value="fall" displayLabel="ThirdSeason"/>
+        <ECEnumerator value="winter" displayLabel="FourthSeason"/>
+    </ECEnumeration>
+    <ECEntityClass typeName="NormalEntityClass" description="Normal class with no modifier" modifier="None">
+        <ECProperty propertyName="Property1" typeName="int"/>
+        <ECCustomAttributes>
+            <CustomEntityClassAttribute xmlns="TestSchema.01.00">
+            </CustomEntityClassAttribute>
+            <GeneralCustomAttribute xmlns="TestSchema.01.00">
+            </GeneralCustomAttribute>
+        </ECCustomAttributes>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="MixinClass" description="A Mixin is designed to avoid issues with multiple inheritance">
+        <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.01.00">
+                <AppliesToEntityClass>BaseEntity</AppliesToEntityClass>
+            </IsMixin>
+        </ECCustomAttributes>
+        <ECProperty propertyName="MixinStringPrimitive" typeName="string" readOnly="false"/>
+        <ECProperty propertyName="MixinBinaryPrimitive" typeName="binary" readOnly="true"/>
+        <ECProperty propertyName="MixinDateTimePrimitive" typeName="dateTime" readOnly="true"/>
+        <ECProperty propertyName="MixinDoublePrimitive" typeName="double" readOnly="false"/>
+        <ECProperty propertyName="MixinIGeometryPrimitive" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false"/>
+        <ECProperty propertyName="MixinIntPrimitive" typeName="int" readOnly="false"/>
+        <ECProperty propertyName="MixinLongPrimitive" typeName="long" readOnly="false"/>
+        <ECProperty propertyName="MixinPoint2dPrimitive" typeName="point2d" readOnly="false"/>
+        <ECProperty propertyName="MixinPoint3dPrimitive" typeName="point3d" readOnly="false"/>
+        <ECProperty propertyName="MixinIntEnumerationPrimitive" typeName="IntEnumeration"/>
+        <ECProperty propertyName="MixinStringEnumerationPrimitive" typeName="StringEnumeration"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DerivedMixin" description="A Mixin class derived from a Mixin class">
+        <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.01.00">
+                <AppliesToEntityClass>Entity</AppliesToEntityClass>
+            </IsMixin>
+        </ECCustomAttributes>
+        <BaseClass>MixinClass</BaseClass>
+        <ECProperty propertyName="DerivedMixinStringPrimitive" typeName="string" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinBinaryPrimitive" typeName="binary" readOnly="true"/>
+        <ECProperty propertyName="DerivedMixinDateTimePrimitive" typeName="dateTime" readOnly="true"/>
+        <ECProperty propertyName="DerivedMixinDoublePrimitive" typeName="double" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinIGeometryPrimitive" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinIntPrimitive" typeName="int" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinLongPrimitive" typeName="long" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinPoint2dPrimitive" typeName="point2d" readOnly="false"/>
+        <ECProperty propertyName="DerivedMixinPoint3dPrimitive" typeName="point3d" readOnly="false"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="DerivedNormal" description="A class derived from a normal class">
+        <BaseClass>NormalEntityClass</BaseClass>
+        <ECProperty propertyName="DerivedProperty1" typeName="string"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="AbstractEntityClass" description="Abstract class, cannot be instantiated" modifier="Abstract">
+        <ECProperty propertyName="AbstractClassProperty1" typeName="dateTime"/>
+        <ECNavigationProperty propertyName="FromAbstractToNormalClass" relationshipName="NormalReferAbstractForward" direction="backward"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="SealedEntityClass" description="Instantiable, but cannot be used as base class" modifier="Sealed">
+        <ECProperty propertyName="SealedClassProperty1" typeName="boolean"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="SealedDerivedNormal" description="A sealed class derived from a normal class" modifier="Sealed">
+        <BaseClass>NormalEntityClass</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="DerivedNormalSecond" description="A class derived from a normal class">
+        <BaseClass>NormalEntityClass</BaseClass>
+        <ECProperty propertyName="DerivedProperty2" typeName="long"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="AbstractDerivedAbstract" description="An abstract class derived from an abstract class" modifier="Abstract">
+        <BaseClass>AbstractEntityClass</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="SealedDerivedAbstract" description="A sealed class derived from an abstract class" modifier="Sealed">
+        <BaseClass>AbstractEntityClass</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="DerivedAbstract" description="A class derived from an abstract class">
+        <BaseClass>AbstractEntityClass</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="DerivedAbstractSecond" description="A class derived from an abstract class">
+        <BaseClass>AbstractEntityClass</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseEntity" description="Base Entity Description" displayLabel="Base Entity" modifier="Abstract"  >
+         <BaseClass>MixinClass</BaseClass>
+        <ECProperty propertyName="InheritedProperty" typeName="string" readOnly="false"  />
+    </ECEntityClass>
+    <ECCustomAttributeClass typeName="ClassCustomAttribute"   description="Custom Attribute that can only be applied to classes." modifier="None" appliesTo="EntityClass, CustomAttributeClass, StructClass, RelationshipClass, AnyClass">
+        <ECProperty propertyName="Primitive" typeName="string" readOnly="false" />
+    </ECCustomAttributeClass>
+    <ECStructClass typeName="Struct" displayLabel="Struct Class" modifier="None"  >
+        <ECProperty propertyName="StructStringPrimitive" typeName="string" readOnly="false"/>
+        <ECProperty propertyName="StructBinaryPrimitive" typeName="binary" readOnly="true"/>
+        <ECProperty propertyName="StructDateTimePrimitive" typeName="dateTime" readOnly="true"/>
+        <ECProperty propertyName="StructDoublePrimitive" typeName="double" readOnly="false"/>
+        <ECProperty propertyName="StructIGeometryPrimitive" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false"/>
+        <ECProperty propertyName="StructIntPrimitive" typeName="int" readOnly="false"/>
+        <ECProperty propertyName="StructLongPrimitive" typeName="long" readOnly="false"/>
+        <ECProperty propertyName="StructPoint2dPrimitive" typeName="point2d" readOnly="false"/>
+        <ECProperty propertyName="StructPoint3dPrimitive" typeName="point3d" readOnly="false"/>
+        <ECProperty propertyName="StructIntEnumerationPrimitive" typeName="IntEnumeration"/>
+        <ECProperty propertyName="StructStringEnumerationPrimitive" typeName="StringEnumeration"/>
+        <ECCustomAttributes>
+            <GeneralCustomAttribute xmlns="TestSchema.01.00">
+            </GeneralCustomAttribute>
+            <CustomStructClassAttribute xmlns="TestSchema.01.00">
+            </CustomStructClassAttribute>
+            <CustomAnyClassAttribute xmlns="TestSchema.01.00">
+            </CustomAnyClassAttribute>
+        </ECCustomAttributes>
+    </ECStructClass>
+    <ECStructClass typeName="DerivedStruct" displayLabel="A Struct derived from a Struct" >
+        <BaseClass>Struct</BaseClass>
+    </ECStructClass>
+    <ECEntityClass typeName="Entity" modifier="None"  >
+        <BaseClass>BaseEntity</BaseClass>
+        <BaseClass>DerivedMixin</BaseClass>
+        <ECProperty propertyName="InheritedProperty" typeName="string" readOnly="false" description="A property override." />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="PropertyCollection" modifier="Sealed" >
+        <ECCustomAttributes>
+            <ClassCustomAttribute xmlns="TestSchema.01.00">
+                <Primitive>General Value on Class</Primitive>
+            </ClassCustomAttribute>
+            <CustomAnyClassAttribute xmlns="TestSchema.01.00">
+            </CustomAnyClassAttribute>
+        </ECCustomAttributes>
+        <ECProperty propertyName="PropCollectionBinaryPrimitive" typeName="binary" displayLabel="Property Display Label" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionBooleanPrimitive" typeName="boolean" description="Property Description" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionDateTimePrimitive" typeName="dateTime" readOnly="true"/>
+        <ECProperty propertyName="PropCollectionDoublePrimitive" typeName="double" minimumValue="2.3" maximumValue="9.6" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionIGeometryPrimitive" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionIntPrimitive" typeName="int" readOnly="false" minimumValue="0" maximumValue="10000" kindOfQuantity="KindOfQuantity"/>
+        <ECProperty propertyName="PropCollectionLongPrimitive" typeName="long" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionPoint2dPrimitive" typeName="point2d" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionPoint3dPrimitive" typeName="point3d" readOnly="false"/>
+        <ECProperty propertyName="PropCollectionStringPrimitive" typeName="string" readOnly="false"/>
+        <ECProperty propertyName="IntEnumerationPrimitive" typeName="IntEnumeration"/>
+        <ECProperty propertyName="StringEnumerationPrimitive" typeName="StringEnumeration"/>
+        <ECProperty propertyName="PropertyWithCustomAttribute" typeName="string">
+            <ECCustomAttributes>
+                <CustomPrimitivePropertyAttribute xmlns="TestSchema.01.00">
+                </CustomPrimitivePropertyAttribute>
+                <CustomAnyPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomAnyPropertyAttribute>
+                <GeneralCustomAttribute xmlns="TestSchema.01.00">
+                </GeneralCustomAttribute>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="Calculated" typeName="string" readOnly="false">
+            <ECCustomAttributes>
+                <CalculatedECPropertySpecification xmlns="Bentley_Standard_CustomAttributes.01.12">
+                    <ECExpression>&quot;Primitve 10=&quot; &amp; this.Primitive10</ECExpression>
+                </CalculatedECPropertySpecification>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECArrayProperty propertyName="LongArray" typeName="long" readOnly="false" minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="BinaryArray" typeName="binary" readOnly="false" minOccurs="1" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="BooleanArray" typeName="boolean" readOnly="true" minOccurs="0" maxOccurs="10">
+            <ECCustomAttributes>
+                <CustomArrayPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomArrayPropertyAttribute>
+                <CustomAnyPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomAnyPropertyAttribute>
+                <GeneralCustomAttribute xmlns="TestSchema.01.00">
+                </GeneralCustomAttribute>
+            </ECCustomAttributes>
+        </ECArrayProperty>
+        <ECArrayProperty propertyName="DateTimeArray" typeName="dateTime" readOnly="true" minOccurs="1" maxOccurs="10"/>
+        <ECArrayProperty propertyName="DoubleArray" typeName="double" readOnly="false" minOccurs="5" maxOccurs="5"/>
+        <ECArrayProperty propertyName="IGeometryArray" typeName="Bentley.Geometry.Common.IGeometry" readOnly="false" minOccurs="2" maxOccurs="100"/>
+        <ECArrayProperty propertyName="IntArray" typeName="int" readOnly="true" minOccurs="0" maxOccurs="unbounded" kindOfQuantity="KindOfQuantity"/>
+        <ECArrayProperty propertyName="Point2dArray" typeName="point2d" readOnly="false" minOccurs="3" maxOccurs="3"/>
+        <ECArrayProperty propertyName="Point3dArray" typeName="point3d" readOnly="true" minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="StringArray" typeName="string" readOnly="true" minOccurs="1" maxOccurs="15"/>
+        <ECStructProperty propertyName="Struct1" typeName="Struct" readOnly="false">
+            <ECCustomAttributes>
+                <CustomStructPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomStructPropertyAttribute>
+                <CustomAnyPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomAnyPropertyAttribute>
+                <GeneralCustomAttribute xmlns="TestSchema.01.00">
+                </GeneralCustomAttribute>
+            </ECCustomAttributes>
+        </ECStructProperty>
+        <ECStructArrayProperty propertyName="StructArray" typeName="Struct" readOnly="false" minOccurs="0" maxOccurs="unbounded">
+            <ECCustomAttributes>
+                <CustomStructArrayPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomStructArrayPropertyAttribute>
+                <CustomAnyPropertyAttribute xmlns="TestSchema.01.00">
+                </CustomAnyPropertyAttribute>
+                <GeneralCustomAttribute xmlns="TestSchema.01.00">
+                </GeneralCustomAttribute>
+            </ECCustomAttributes>
+        </ECStructArrayProperty>
+        <ECStructArrayProperty propertyName="StructArraySecond" typeName="Struct" minOccurs="1" maxOccurs="100">
+        </ECStructArrayProperty>
+        <ECStructArrayProperty propertyName="StructArrayThird" typeName="Struct" minOccurs="4" maxOccurs="4">
+        </ECStructArrayProperty>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="BaseEntityReferNormal" modifier="Abstract" strength="referencing" strengthDirection="forward">
+        <Source multiplicity="(0..*)" polymorphic="true" roleLabel="refers to">
+            <Class class="BaseEntity"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is referred to by">
+            <Class class="NormalEntityClass"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="EntityReferDerivedNormal" modifier="Sealed" strength="referencing" strengthDirection="forward">
+        <BaseClass>BaseEntityReferNormal</BaseClass>
+        <Source multiplicity="(0..*)" polymorphic="true" roleLabel="refers to">
+            <Class class="Entity"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is referred to by">
+            <Class class="DerivedNormal"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="NormalReferAbstractForward" modifier="Abstract" strength="referencing" strengthDirection="forward">
+        <ECCustomAttributes>
+            <GeneralCustomAttribute xmlns="TestSchema.01.00">
+            </GeneralCustomAttribute>
+            <CustomRelationshipClassAttribute xmlns="TestSchema.01.00">
+            </CustomRelationshipClassAttribute>
+        </ECCustomAttributes>
+        <Source multiplicity="(1..1)" polymorphic="true" roleLabel="refers to" abstractConstraint="NormalEntityClass">
+            <Class class="DerivedNormal"/>
+            <Class class="NormalEntityClass"/>
+            <Class class="SealedDerivedNormal"/>
+        </Source>
+        <Target multiplicity="(0..n)" polymorphic="false" roleLabel="is referred to by" abstractConstraint="AbstractEntityClass">
+            <Class class="AbstractEntityClass"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="DerivedRelationshipClass" modifier="Sealed" strength="referencing" strengthDirection="forward">
+        <BaseClass>NormalReferMixinForward</BaseClass>
+        <Source multiplicity="(1..1)" polymorphic="true" roleLabel="references">
+            <Class class="DerivedNormal"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="false" roleLabel="is referenced by" abstractConstraint="MixinClass">
+            <Class class="DerivedMixin"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="NormalReferAbstractBackward" modifier="Abstract" strength="referencing" strengthDirection="backward">
+        <Source multiplicity="(1..*)" polymorphic="true" roleLabel="is referred to by">
+            <Class class="NormalEntityClass"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="false" roleLabel="refers to" abstractConstraint="AbstractEntityClass" >
+            <Class class="AbstractEntityClass"/>
+            <Class class="AbstractDerivedAbstract"/>
+            <Class class="DerivedAbstract"/>
+            <Class class="DerivedAbstractSecond"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="NormalReferMixinForward" modifier="Abstract" strength="referencing" strengthDirection="forward">
+        <Source multiplicity="(0..*)" polymorphic="true" roleLabel="references">
+            <Class class="NormalEntityClass"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is referenced by" abstractConstraint="MixinClass">
+            <Class class="DerivedMixin"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SealedHoldNormalForward" modifier="Sealed" strength="holding" strengthDirection="forward">
+        <Source multiplicity="(1..1)" polymorphic="true" roleLabel="holds">
+            <Class class="SealedEntityClass"/>
+        </Source>
+        <Target multiplicity="(0..*)" polymorphic="true" roleLabel="is held by" abstractConstraint="NormalEntityClass">
+            <Class class="NormalEntityClass"/>
+            <Class class="DerivedNormal"/>
+            <Class class="SealedDerivedNormal"/>
+            <ECCustomAttributes>
+                <CustomRelationshipConstraintAttribute xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttribute>
+                <CustomRelationshipConstraintAttributeSecond xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttributeSecond>
+            </ECCustomAttributes>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SealedHoldNormalBackward" modifier="Abstract" strength="holding" strengthDirection="backward">
+        <Source multiplicity="(0..1)" polymorphic="false" roleLabel="is held by">
+            <Class class="SealedEntityClass"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="true" roleLabel="holds">
+            <Class class="NormalEntityClass"/>
+            <ECCustomAttributes>
+                <CustomRelationshipConstraintAttribute xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttribute>
+                <CustomRelationshipConstraintAttributeSecond xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttributeSecond>
+            </ECCustomAttributes>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="EntityEmbedNormalBackward" modifier="Abstract" strength="embedding" strengthDirection="backward">
+        <Source multiplicity="(0..1)" polymorphic="true" roleLabel="is embedded by">
+            <Class class="Entity"/>
+        </Source>
+        <Target multiplicity="(1..*)" polymorphic="true" roleLabel="embeds">
+            <Class class="NormalEntityClass"/>
+            <ECCustomAttributes>
+                <CustomRelationshipConstraintAttribute xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttribute>
+                <CustomRelationshipConstraintAttributeSecond xmlns="TestSchema.01.00">
+                </CustomRelationshipConstraintAttributeSecond>
+            </ECCustomAttributes>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="EntityReferEntity" modifier="Sealed" strength="referencing" strengthDirection="forward">
+        <ECProperty propertyName="RelationshipProperty" typeName="string" readOnly="false"/>
+        <Source multiplicity="(0..1)" polymorphic="true" roleLabel="references">
+            <Class class="Entity"/>
+        </Source>
+        <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is referenced by">
+            <Class class="Entity"/>
+        </Target>
+    </ECRelationshipClass>
+    <KindOfQuantity typeName="KindOfQuantity" description="Kind of Quantity Description" displayLabel="Kind of Quantity" persistenceUnit="CM" relativeError="1E-3"
+                    presentationUnits="FT;IN" />
+</ECSchema>

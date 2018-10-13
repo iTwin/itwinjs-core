@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "@bentley/bwc/lib/mixins";
+
+.components-property-grid {
+  @include bwc-expandable-blocks-list;
+
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.components-property-grid-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+
+  @supports (-webkit-overflow-scrolling: touch) {
+    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@mixin components-property-list {
+  width: 100%;
+
+  .components--selected {
+    background-color: $bwc-blue-a;
+  }
+
+  .components--clickable {
+    cursor: pointer;
+  }
+  .components--clickable:hover {
+    background-color: $bwc-blue-highlight;
+  }
+}
+
+.components-property-list--horizontal{
+  @include components-property-list;
+
+  display: table;
+  border-collapse: collapse;
+}
+
+.components-property-list--vertical {
+  @include components-property-list;
+}

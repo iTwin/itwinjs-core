@@ -1,0 +1,513 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "LocalOrchestrator",
+      "program": "${workspaceFolder}/test-apps/local-orchestrator/lib/server.js",
+      "cwd": "${workspaceFolder}/test-apps/local-orchestrator",
+      "args": [
+        "./assets/config.json",
+        "./assets/iModelBank.server.config.json",
+        "./assets/iModelBank.logging.config.json",
+        "./assets/backend-registry.json",
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Backend Tests (Integration)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Backend Tests (Offline)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/backend/lib/test/",
+        "--debug",
+        "--recursive",
+        "--offline=mock",
+        "--grep",
+        "#integration",
+        "--invert"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Performance test (Offline)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/backend/lib/perftest",
+        "--debug",
+        "--offline"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Clients Tests (Offline)",
+      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test",
+        "--debug",
+        "--offline",
+        "mock",
+        "--grep",
+        "#integration",
+        "--invert"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Clients Tests (Online)",
+      "program": "${workspaceFolder}/core/clients/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Clients-Backend Tests (Integration)",
+      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients-backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Geometry Tests",
+      "program": "${workspaceFolder}/core/geometry/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/core/geometry",
+      "args": [
+        "--testDir=${workspaceFolder}/core/geometry/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Bentley Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/core/bentley",
+      "args": [
+        "--testDir=${workspaceFolder}/core/bentley/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run EC Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/ecschema-metadata",
+      "args": [
+        "--testDir=${workspaceFolder}/core/ecschema-metadata/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "example-code backend snippet tests",
+      "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/example-code/snippets",
+      "args": [
+        "--testDir=${workspaceFolder}/example-code/snippets/lib/backend",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "example-code app backend tests",
+      "program": "${workspaceFolder}/example-code/app/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/example-code/app",
+      "args": [
+        "--testDir=${workspaceFolder}/example-code/app/lib/backend/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Analysis importer backend tests",
+      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
+      "args": [
+        "--testDir=${workspaceFolder}/test-apps/analysis-importer/backend/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "_Testbed (backend)",
+      "cwd": "${workspaceFolder}/test-apps/testbed/",
+      "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/testbed/floss/electron/index.js",
+        "{\"debug\":true, \"noDevTools\":true, \"path\":\"bootstrap.js\", \"grep\":\"\", \"fgrep\":\"\"}",
+        "--remote-debugging-port=9223"
+      ],
+      "protocol": "inspector",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/testbed/lib/{backend,common}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "_Testbed (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "SimpleViewTest Electron (backend)",
+      "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
+      "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
+        "--remote-debugging-port=9223"
+      ],
+      "protocol": "inspector",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "SimpleViewTest Browser (backend)",
+      "cwd": "${workspaceRoot}/test-apps/simpleviewtest",
+      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/WebMain.js",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[UI] Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[UI] Tests: Framework",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/framework",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[UI] Tests: 9zone",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/ninezone",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Common",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/common",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.ts"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Backend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/backend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.ts"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Frontend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/frontend",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.ts"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Components",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
+        "tests/**/*.{ts,tsx}"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Integration",
+      "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
+      "env": {
+        "TS_NODE_PROJECT": "./tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "mocha.opts",
+        "src/**/*.ts"
+      ]
+    },
+    {
+      "name": "ui-test-app (frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}/test-apps/ui-test-app",
+      "sourceMapPathOverrides": {
+        // map sources from node_modules to our source directory
+        "webpack:///../frontend/*": "${workspaceFolder}test-apps/ui-test-app/lib/frontend/*",
+        // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "*",
+        "webpack:///packages/*": "${webRoot}/*",
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "ui-test-app (backend)",
+      "program": "${workspaceFolder}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js",
+      "cwd": "${workspaceFolder}/test-apps/ui-test-app",
+      "args": [
+        "start-backend",
+        "--debug=9229"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "timeout": 100000,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run ConnectSettings Tests (Online)",
+      "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients/lib/test/",
+        "--debug",
+        "--recursive",
+        "--grep",
+        "Setting",
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Quantity Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/quantity",
+      "args": [
+        "--testDir=${workspaceFolder}/core/quantity/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Quantity Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/core/quantity",
+      "args": [
+        "--testDir=${workspaceFolder}/core/quantity/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug agent-test-app",
+      "program": "${workspaceRoot}/test-apps/agent-test-app/lib/Main.js",
+      "cwd": "${workspaceRoot}/test-apps/agent-test-app/",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Analysis backend tests",
+      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/test-apps/analysis-importer",
+      "args": [
+        "--testDir=${workspaceFolder}/test-apps/analysis-importer/lib/backend/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+  ],
+  "compounds": [
+    {
+      "name": "Run Testbed (all)",
+      "configurations": [
+        "_Testbed (frontend)",
+        "_Testbed (backend)"
+      ]
+    }
+  ]
+}
