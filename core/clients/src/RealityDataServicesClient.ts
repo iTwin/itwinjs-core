@@ -382,7 +382,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets reality data corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @param tileRequest method to fetch tile data from (either getTileJson or getTileContent)
    * @returns tile data json
    */
@@ -402,7 +402,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets a reality data tile json corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @returns tile data json
    */
   public async getTileJsonFromUrl(token: AccessToken, url: string): Promise<any> {
@@ -412,7 +412,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets a reality data tile content corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @returns tile data content
    */
   public async getTileContentFromUrl(token: AccessToken, url: string): Promise<any> {

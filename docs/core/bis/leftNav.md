@@ -3,7 +3,6 @@
 - [Introduction](./index.md)
 - [Modeling with BIS](./intro/modeling-with-bis.md)
 - [BIS Organization](./intro/bis-organization.md)
-- [BIS Ecosystem](./intro/bis-ecosystem.md)
 - [Fabric of the Universe](./intro/fabric-of-the-universe.md)
 - [Element Fundamentals](./intro/element-fundamentals.md)
 - [Codes](./intro/codes.md)

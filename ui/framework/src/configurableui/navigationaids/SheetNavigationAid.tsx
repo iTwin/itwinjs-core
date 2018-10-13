@@ -70,7 +70,10 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Querys for sheet info and sets as sheetData */
-  private async _setupSheets() {
+  private _setupSheets = async () => {
+    if (!this.props.iModelConnection.views.getViewList)
+      return;
+
     const sheets = await this.props.iModelConnection.views.getViewList({ from: "BisCore.SheetViewDefinition" });
     sheets.forEach((element: any) => {
       this._sheetData.push({ name: element.name, viewId: element.id });
@@ -118,7 +121,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Updates view to next highest index in sheetData */
-  private async _handleOnClickRightArrow() {
+  private _handleOnClickRightArrow = async () => {
     this.setState((_prevState) => (
       { index: (this.state.index + 1) % this.state.sheetData.length }
     ));
@@ -126,7 +129,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Updates view to currently set sheet */
-  private async _updateView() {
+  private _updateView = async () => {
     const viewState = await this.props.iModelConnection.views.load(this.state.sheetData[this.state.index].viewId);
     if (this._viewport)
       this._viewport.changeView(viewState);

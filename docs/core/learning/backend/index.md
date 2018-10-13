@@ -18,7 +18,6 @@ These packages provide the following functions to support backend operations:
 * Administration
   * [IModelHost](./IModelHost.md)
   * [Initialize Logging](../common/Logging.md)
-  * [Configure FeatureGates](../common/FeatureGates.md)
 
 * IModelDb
   * [Open an IModelDb](./IModelDb.md)

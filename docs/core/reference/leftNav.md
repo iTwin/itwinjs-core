@@ -50,7 +50,6 @@
 - [iModels]($common:iModels)
 - [RPC Interface]($common:RpcInterface)
 - [ECSQL]($common:ECSQL)
-- [Feature Gates]($common:FeatureGates)
 - [All]($common:All)
 
 ---
