@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added a README with link to iModel.js documentation.",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Caleb.Shafer@bentley.com"
+}

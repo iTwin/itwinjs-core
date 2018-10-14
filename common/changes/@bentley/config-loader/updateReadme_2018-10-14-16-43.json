@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update README to contain a better description of the package and link to iModel.js documentation.",
+      "packageName": "@bentley/config-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "Caleb.Shafer@bentley.com"
+}
