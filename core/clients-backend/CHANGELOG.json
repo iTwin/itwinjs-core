@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "0.157.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixing scripts for linux"
+          },
+          {
+            "comment": "Added a README with link to iModel.js documentation."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.156.0",
       "tag": "@bentley/imodeljs-clients-backend_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",

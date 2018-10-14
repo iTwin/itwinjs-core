@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.157.0",
+      "tag": "@bentley/imodeljs-backend_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixing scripts for linux"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.156.0",
       "tag": "@bentley/imodeljs-backend_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",
