@@ -38,9 +38,7 @@ Analysis Models contain Analysis Elements, but they may also contain other types
 
 As Analysis Models are used to assist in the design or understanding of physical infrastructure, Analysis Models are often linked to PhysicalModels.
 
-<!--
-TODO: Finish this section. Likely reference [Information Hierarchy](./information-hierarchy.md).
--->
+<!-- TODO: Finish this section. Likely reference [Information Hierarchy](./information-hierarchy.md). -->
 
 ## Typical Analysis Model Workflows
 

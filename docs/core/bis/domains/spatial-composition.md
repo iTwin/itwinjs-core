@@ -82,7 +82,7 @@ Naming :
 
 ### CompositeComposesSubComposites
 
-*TODO derive from `BIS` equivalent of `IElementOwnsChildElements`.*
+<!-- TODO derive from `BIS` equivalent of `IElementOwnsChildElements`. -->
 
 Naming :
 1 - Equivalent of : `IfcRelAggregates`.
