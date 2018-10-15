@@ -125,10 +125,10 @@ export class HitDetail {
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
   /**
-   * Get the tooltip string for this HitDetail.
+   * Get the tooltip content for this HitDetail.
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
-  public async getToolTip(): Promise<string> {
+  public async getToolTip(): Promise<HTMLElement | string> {
     if (!this.isElementHit)
       return IModelApp.viewManager.getDecorationToolTip(this);
 

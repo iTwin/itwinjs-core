@@ -201,16 +201,16 @@ export class NotificationManager {
   public readonly toolTipLocation = new Point2d();
   /** Show a ToolTip window.
    * @param htmlElement The HTMLElement that that anchors the toolTip.
-   * @param message The message to display inside the ToolTip. May include HTML.
+   * @param message What to display inside the ToolTip. String may include HTML.
    * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param options Options that supply additional information about how the ToolTip should function.
    */
-  public openToolTip(_htmlElement: HTMLElement, message: string, location?: XAndY, options?: ToolTipOptions): void {
+  public openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void {
     this.toolTipLocation.setFrom(location);
     this._showToolTip(_htmlElement, message, location, options);
   }
 
-  protected _showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+  protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void { }
 
   /** Hides the Pointer message. */
   public closePointerMessage(): void {

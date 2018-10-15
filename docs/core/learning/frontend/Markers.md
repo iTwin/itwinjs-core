@@ -1,3 +1,4 @@
+![markerset sample](./markers_sample.png "Example showing a set of Markers")
 # Markers
 
 A [Marker]($frontend) is a [CanvasDecoration]($frontend), whose position follows a fixed location in world space. Markers draw on top of all scene graphics, and provide visual cues about locations of interest. The name and the concept derive from the same type in the [Google Maps api](https://developers.google.com/maps/documentation/javascript/markers).

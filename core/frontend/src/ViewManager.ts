@@ -31,9 +31,9 @@ export interface Decorator {
 
   /** If [[testDecorationHit]] returned true, implement this method to return the tooltip message for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
-   * @returns A promise with the string with the tooltip message. May contain HTML.
+   * @returns A promise with the HTMLElement or string (that may contain HTML) with the tooltip message.
    */
-  getDecorationToolTip?(hit: HitDetail): Promise<string>;
+  getDecorationToolTip?(hit: HitDetail): Promise<HTMLElement | string>;
 
   /** If [[testDecorationHit]] returned true, implement this method to handle a button event for this Decorator.
    * @param hit The HitDetail about the decoration that was picked.
@@ -314,7 +314,7 @@ export class ViewManager {
   /** Get the tooltip for a pickable decoration.
    *  @hidden
    */
-  public async getDecorationToolTip(hit: HitDetail): Promise<string> {
+  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     for (const decorator of this.decorators) {
       if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
         return decorator.getDecorationToolTip(hit);

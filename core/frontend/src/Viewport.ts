@@ -1874,7 +1874,7 @@ export class ScreenViewport extends Viewport {
    * @param options the ToolTip options
    * @note There is only one ToolTip window, so calling this method more than once will move the toolTip and show the second message.
    */
-  public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
+  public openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
   }
 

@@ -189,7 +189,7 @@ export class AccuSnap implements Decorator {
     }
   }
 
-  private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: string) {
+  private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: HTMLElement | string) {
     if (IModelApp.viewManager.doesHostHaveFocus)
       vp.openToolTip(msg, viewPt);
   }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@Bentley.com"
+}
