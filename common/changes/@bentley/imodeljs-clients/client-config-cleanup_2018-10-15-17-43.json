@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleaned up frontend configuration. ",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Ramanujam.Raman@bentley.com"
+}
