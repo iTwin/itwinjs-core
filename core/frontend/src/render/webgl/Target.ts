@@ -7,7 +7,7 @@
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -207,6 +207,8 @@ export abstract class Target extends RenderTarget {
   public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
+  public analysisStyle?: AnalysisStyle;
+  public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
@@ -399,6 +401,9 @@ export abstract class Target extends RenderTarget {
     viewZ: new Vector3d(),
     vec3: new Vector3d(),
     point3: new Point3d(),
+    //  visibleEdges: new HiddenLine.Style({}),
+    // hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
+    animationDisplay: undefined,
   };
 
   public changeFrustum(plan: RenderPlan): void {
@@ -489,6 +494,8 @@ export abstract class Target extends RenderTarget {
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
     this._transparencyThreshold = 0.0;
+    this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
+    this.analysisTexture = plan.analysisTexture;
 
     let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
     if (plan.activeVolume !== undefined)

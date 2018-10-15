@@ -701,7 +701,7 @@ export class Range1d extends RangeBase {
       let value;
       for (value of json) {
         const v = value;
-        if (v)
+        if (v !== undefined)
           this.extendX(v);
       }
     } else if (json.low && json.low && json.high && json.high) {

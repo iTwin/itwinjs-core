@@ -1119,7 +1119,7 @@ export namespace Gradient {
   }
 
   /** @hidden Gradient settings specific to thematic mesh display */
-  export class ThematicSettings {
+  export class ThematicSettings implements ThematicSettingsProps {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
@@ -1142,6 +1142,20 @@ export namespace Gradient {
       result.rangeLow = json.rangeLow;
       result.rangeHigh = json.rangeHigh;
       return result;
+    }
+    public clone(out?: ThematicSettings): ThematicSettings {
+      const result = undefined !== out ? out : new ThematicSettings();
+      result.copyFrom(this);
+      return result;
+    }
+
+    public copyFrom(other: ThematicSettingsProps): void {
+      this.mode = other.mode;
+      this.stepCount = other.stepCount;
+      this.marginColor = new ColorDef(other.marginColor);
+      this.colorScheme = other.colorScheme;
+      this.rangeLow = other.rangeLow;
+      this.rangeHigh = other.rangeHigh;
     }
   }
 
@@ -2125,5 +2139,62 @@ export namespace TextureMapping {
       }
       return params;
     }
+  }
+}
+/** Properties for display of analysis data */
+export interface AnalysisStyleProps {
+  inputName?: string;
+  displacementChannelName?: string;
+  scalarChannelName?: string;
+  normalChannelName?: string;
+  displacementScale: number;
+  scalarRange?: Range1d;
+  scalarThematicSettings?: Gradient.ThematicSettingsProps;
+  inputRange?: Range1d;
+}
+
+export class AnalysisStyle implements AnalysisStyleProps {
+  public inputName?: string;
+  public displacementChannelName?: string;
+  public scalarChannelName?: string;
+  public normalChannelName?: string;
+  public displacementScale: number = 1.0;
+  public scalarRange?: Range1d;
+  public scalarThematicSettings?: Gradient.ThematicSettings;
+  public inputRange?: Range1d;
+  public scalarThematicTexture?: RenderTexture;
+
+  public static fromJSON(json?: AnalysisStyleProps) {
+    const result = new AnalysisStyle();
+    if (!json)
+      return result;
+
+    result.inputName = json.inputName;
+    result.displacementChannelName = json.displacementChannelName;
+    result.scalarChannelName = json.scalarChannelName;
+    result.normalChannelName = json.normalChannelName;
+    result.displacementScale = json.displacementScale;
+    result.scalarRange = json.scalarRange ? Range1d.fromJSON(json.scalarRange) : undefined;
+    result.scalarThematicSettings = json.scalarThematicSettings ? Gradient.ThematicSettings.fromJSON(json.scalarThematicSettings) : undefined;
+    result.inputRange = json.inputRange ? Range1d.fromJSON(json.inputRange) : undefined;
+    return result;
+  }
+
+  public copyFrom(source: AnalysisStyle) {
+    this.inputName = source.inputName;
+    this.displacementChannelName = source.displacementChannelName;
+    this.scalarChannelName = source.scalarChannelName;
+    this.normalChannelName = source.normalChannelName;
+    this.displacementScale = source.displacementScale;
+    if (source.scalarRange) this.scalarRange = source.scalarRange.clone();
+    if (source.scalarThematicSettings) this.scalarThematicSettings = source.scalarThematicSettings.clone();
+    this.scalarThematicSettings = source.scalarThematicSettings;
+    if (source.inputRange) this.inputRange = source.inputRange.clone();
+  }
+
+  public clone(out?: AnalysisStyle): AnalysisStyle {
+    const result = undefined !== out ? out : new AnalysisStyle();
+    result.copyFrom(this);
+    return result;
   }
 }
