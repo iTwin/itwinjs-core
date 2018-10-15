@@ -166,10 +166,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    if (Config.App.has(UrlDiscoveryClient.configURL))
-      return Config.App.get(UrlDiscoveryClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${UrlDiscoveryClient.configURL}`);
+    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
   }
 
   /**
@@ -193,12 +190,13 @@ export class UrlDiscoveryClient extends Client {
   /**
    * Discovers a URL given the search key.
    * @param searchKey Search key registered for the service.
+   * @param regionId Override region to use for URL discovery.
    * @returns Registered URL for the service.
    */
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, KnownRegions.PROD);
     const options: RequestOptions = {
       method: "GET",
       qs: {

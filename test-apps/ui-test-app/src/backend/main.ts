@@ -8,8 +8,7 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelTileRpcInterface, IModelReadRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
-IModelJsConfig.init(); // Read config into process.env
-Config.App.merge(process.env);
+IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
 // initialize logging
 Logger.initializeToConsole();
