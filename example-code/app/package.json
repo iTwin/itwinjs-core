@@ -26,7 +26,7 @@
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",
-    "electron": "2.0.1",
+    "electron": "2.0.8",
     "express": "^4.16.3",
     "fs-extra": "^6.0.1",
     "fuse.js": "^3.2.0",
