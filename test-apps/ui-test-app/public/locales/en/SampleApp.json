@@ -90,12 +90,34 @@
     "alertMessageBox": "Alert",
     "openMessageBox": "Open Message Box",
     "setLengthFormatMetric": "Set Format Metric",
-    "setLengthFormatImperial": "Set Format Imperial"
+    "setLengthFormatImperial": "Set Format Imperial",
+    "openRadial": "Open Radial Menu",
+    "outputMessage": "Call outputMessage"
   },
   "MeasureByPoints": {
     "Prompt": {
       "FirstPoint": "Enter first point",
       "NextPoint": "Select next point"
     }
+  },
+  "tools": {
+    "select": "Select",
+    "measure": "Measure",
+    "fitView": "Fit View",
+    "windowArea": "Window Area",
+    "rotate": "Rotate",
+    "zoom": "Zoom",
+    "pan": "Pan",
+    "walk": "Walk",
+    "fly": "Fly",
+    "toggleCamera": "Toggle Camera"
+  },
+  "widgets": {
+    "NavigationTree": "Navigation Tree",
+    "BreadcrumbDemo": "Breadcrumb Demo",
+    "ModelSelector": "Model Selector",
+    "StatusBar": "Status Bar",
+    "VerticalPropertyGrid": "Vertical PropertyGrid",
+    "HorizontalPropertyGrid": "Horizontal PropertyGrid"
   }
 }

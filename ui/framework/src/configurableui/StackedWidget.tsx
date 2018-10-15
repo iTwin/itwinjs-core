@@ -22,7 +22,8 @@ import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
  */
 export interface WidgetTabProps {
   isActive: boolean;
-  icon: IconInfo;
+  iconInfo: IconInfo;
+  title: string;
 }
 
 /** Properties for a Widget in a [[StackedWidget]].
@@ -112,6 +113,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
       const mode = !isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
         <WidgetTab
+          title={tab.title}
           key={`${stackedWidget.id}_${index}`}
           anchor={this.props.horizontalAnchor}
           mode={mode}
@@ -121,7 +123,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
-          <Icon iconInfo={tab.icon} />
+          <Icon iconInfo={tab.iconInfo} />
         </WidgetTab>
       );
     });

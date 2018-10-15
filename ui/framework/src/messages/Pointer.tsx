@@ -46,7 +46,7 @@ export interface PointerMessageChangedEventArgs {
 
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
-/** Pointer message pops up near pointer when attemping an invalid interaction. */
+/** Pointer message pops up near pointer when attempting an invalid interaction. */
 export class Pointer extends React.Component<PointerProps> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
 
@@ -114,7 +114,7 @@ export class Pointer extends React.Component<PointerProps> {
   }
 
   public componentWillUnmount(): void {
-    Pointer.onPointerMessageChangedEvent.addListener(this._handlePointerMessageChangedEvent);
+    Pointer.onPointerMessageChangedEvent.removeListener(this._handlePointerMessageChangedEvent);
   }
 
   private _handleContainIn = (message: HTMLElement) => {

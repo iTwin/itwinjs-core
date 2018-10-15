@@ -7,14 +7,13 @@
 import { UiEvent } from "@bentley/ui-core";
 
 import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
-import { ToolItemDef } from "./Item";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -45,7 +44,6 @@ export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedE
  */
 export interface ToolActivatedEventArgs {
   toolId: string;
-  toolItem?: ToolItemDef;
 }
 
 /** Tool Activated Event class.
@@ -122,6 +120,17 @@ export class FrontstageManager {
   private static _contentControlActivatedEvent: ContentControlActivatedEvent = new ContentControlActivatedEvent();
   private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
   private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
+
+  /** Initializes the FrontstageManager */
+  public static initialize() {
+
+    if (IModelApp && IModelApp.toolAdmin) {
+      IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
+        if (FrontstageManager.activeFrontstageDef)
+          FrontstageManager.activeFrontstageDef.setActiveToolId(tool.toolId);
+      });
+    }
+  }
 
   /** Get Frontstage Activated event. */
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
@@ -227,8 +236,8 @@ export class FrontstageManager {
    * @return  Tool Setting React node of the active tool, or undefined if there is no active tool or Tool Settings for the active tool.
    */
   public static get activeToolSettingsNode(): React.ReactNode | undefined {
-    const activeToolItem = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolItem : undefined;
-    const toolUiProvider = (activeToolItem) ? activeToolItem.toolUiProvider : undefined;
+    const activeToolInformation = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolInformation : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
       return toolUiProvider.toolSettingsNode;
@@ -240,8 +249,8 @@ export class FrontstageManager {
    * @return  Tool Assistance React node of the active tool, or undefined if there is no active tool or Tool Assistance for the active tool.
    */
   public static get activeToolAssistanceNode(): React.ReactNode | undefined {
-    const activeToolItem = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolItem : undefined;
-    const toolUiProvider = (activeToolItem) ? activeToolItem.toolUiProvider : undefined;
+    const activeToolInformation = this.activeFrontstageDef ? this.activeFrontstageDef.activeToolInformation : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolAssistanceNode)
       return toolUiProvider.toolAssistanceNode;

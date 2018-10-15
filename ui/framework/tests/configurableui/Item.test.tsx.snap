@@ -15,6 +15,7 @@ exports[`CommandButton <CommandButton /> renders correctly 1`] = `
   isDisabled={false}
   key="addMessage"
   onClick={[Function]}
+  title="tests.label"
 />
 `;
 
@@ -34,5 +35,6 @@ exports[`ToolButton <ToolButton /> renders correctly 1`] = `
   isDisabled={false}
   key="tool1"
   onClick={[Function]}
+  title="tests.label"
 />
 `;

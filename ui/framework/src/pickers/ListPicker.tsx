@@ -177,7 +177,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
       <ExpandableItem
         {...this.props}
         panel={this.getExpandedContent()}>
-        <ToolbarIcon onClick={this._toggleIsExpanded}
+        <ToolbarIcon
+          title={this.props.title}
+          onClick={this._toggleIsExpanded}
           icon={
             <i className={"icon " + (this.props.iconClass ? this.props.iconClass : "icon-list")} />
           }

@@ -37,6 +37,9 @@ export class ConfigurableUiManager {
     ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
     ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
     ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
+
+    // Initialize the FrontstageManager
+    FrontstageManager.initialize();
   }
 
   /** Loads common Group, Tool and Command items into the item map.

@@ -42,18 +42,17 @@ describe("CommandButton", () => {
   });
 
   const commandHandler1 = {
-    messageId: "", parameters: null,
     execute: () => {
     },
   };
 
   describe("<CommandButton />", () => {
     it("should render", () => {
-      mount(<CommandButton commandId="addMessage" iconClass="icon-placeholder" commandHandler={commandHandler1} />);
+      mount(<CommandButton commandId="addMessage" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" commandHandler={commandHandler1} />);
     });
 
     it("renders correctly", () => {
-      shallow(<CommandButton commandId="addMessage" iconClass="icon-placeholder" commandHandler={commandHandler1} />).should.matchSnapshot();
+      shallow(<CommandButton commandId="addMessage" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" commandHandler={commandHandler1} />).should.matchSnapshot();
     });
   });
 

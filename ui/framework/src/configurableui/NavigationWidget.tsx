@@ -17,6 +17,7 @@ import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
 import { IModelApp, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
+import { ViewUtilities } from "../utils";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  */
@@ -120,7 +121,9 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current && args.current.view) {
       const navigationAidId = this._getNavigationAid(args.current!.view.classFullName);
-      FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+      setImmediate(() => {
+        FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+      });
     }
   }
 
@@ -130,7 +133,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
    * @returns The ID of the navigation aid to be displayed.
    */
   private _getNavigationAid = (classFullName: string) => {
-    const className = classFullName.substring(classFullName.indexOf(":") + 1);
+    const className = ViewUtilities.getBisBaseClass(classFullName);
     let navigationAidId = "";
     switch (className) {
       case "SheetViewDefinition":

@@ -2,10 +2,11 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/classes.scss";
 
 .sheet-navigation {
-  height: 64px;
-  width: 64px;
+  height: 100%;
+  width: 100%;
   box-sizing: border-box;
   border-color: #4D575F;
   border-width: 1px;
@@ -18,19 +19,23 @@
   align-items: center;
   justify-content: center;
   > .sheet-title {
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: bold;
   }
   > .sheet-name {
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     z-index: 1;
+    height: 40px;
+    overflow: hidden;
+    margin: 0 2px;
   }
   > .sheet-container {
       flex: 1 1 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 11px;
       > * {
         text-align: center;
       }

@@ -5,6 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
+import { ViewUtilities } from "../utils/ViewUtilities";
 import ListPicker, { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
@@ -76,30 +77,6 @@ export class ViewSelector extends React.Component<any, any> {
   }
 
   /**
-   * Determines if given class is a spatial view.
-   * @param classname Name of class to check
-   */
-  public static isSpatial(classname: string): boolean {
-    return classname === "SpatialViewDefinition" || classname === "OrthographicViewDefinition";
-  }
-
-  /**
-   * Determines if given class is a drawing view.
-   * @param classname Name of class to check
-   */
-  public static isDrawing(classname: string): boolean {
-    return classname === "DrawingViewDefinition";
-  }
-
-  /**
-   * Determines if given class is a sheet view.
-   * @param classname Name of class to check
-   */
-  public static isSheet(classname: string): boolean {
-    return classname === "SheetViewDefinition";
-  }
-
-  /**
    * Fetches ViewDefinitionProps for a model.
    * @param imodel Model to query from props
    */
@@ -142,11 +119,11 @@ export class ViewSelector extends React.Component<any, any> {
         enabled: false,
         type: ListItemType.Item,
       };
-      if (ViewSelector.isSpatial(viewProp.bisBaseClass!))
+      if (ViewUtilities.isSpatial(viewProp.bisBaseClass!))
         views3d.push(viewItem);
-      else if (ViewSelector.isDrawing(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isDrawing(viewProp.bisBaseClass!))
         views2d.push(viewItem);
-      else if (ViewSelector.isSheet(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isSheet(viewProp.bisBaseClass!))
         sheets.push(viewItem);
       else
         unknown.push(viewItem);

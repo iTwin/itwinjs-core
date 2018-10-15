@@ -19,6 +19,8 @@ export interface ItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when the item is clicked. */
   onClick?: () => void;
+  /** Title for the item. */
+  title?: string;
 }
 
 /** Toolbar item component. Used in [[Toolbar]] */
@@ -35,6 +37,7 @@ export default class Item extends React.Component<ItemProps> {
         onClick={this._handleClick}
         className={className}
         style={this.props.style}
+        title={this.props.title}
       >
         <div className="nz-gradient"></div>
         {this.props.children}

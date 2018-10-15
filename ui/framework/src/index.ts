@@ -17,7 +17,7 @@ export * from "./messages/InputField";
 export * from "./messages/Pointer";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/ViewSelector";
-export * from "./utils/redux-ts";
+export * from "./utils";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,

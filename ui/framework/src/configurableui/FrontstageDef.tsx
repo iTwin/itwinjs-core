@@ -6,7 +6,6 @@
 
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneProps, ZoneDef, ZoneDefFactory } from "./ZoneDef";
-import { ToolItemDef } from "./Item";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
 import { ContentLayoutManager, ContentLayoutDef } from "./ContentLayout";
@@ -19,6 +18,7 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { ViewportContentControl } from "./ViewportContentControl";
 import { WidgetControl } from "./WidgetControl";
+import { ToolInformation } from "./ToolInformation";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -42,7 +42,7 @@ export enum SelectionScope {
   Model,
 }
 
-/** Props for a Frontstage.
+/** Properties for a Frontstage.
  */
 export interface FrontstageProps extends ItemPropsList {
   id: string;
@@ -77,7 +77,7 @@ export interface FrontstageProps extends ItemPropsList {
 // FrontstageDef class
 // -----------------------------------------------------------------------------
 
-/** FrontstageDef class.
+/** FrontstageDef class. Application Frontstages can subclass this base class.
  */
 export class FrontstageDef {
   public id: string = "";
@@ -112,19 +112,22 @@ export class FrontstageDef {
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
 
-  private _activeToolItem?: ToolItemDef;
-
   public defaultLayout?: ContentLayoutDef;
 
-  /** Gets the [[ContentGroup]] for this Frontstage */
+  /** The [[ContentGroup]] for this Frontstage */
   public contentGroup?: ContentGroup;
 
+  private _activeToolId: string = "";
+  private _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
+
+  /** Constructs the [[FrontstageDef]] and optionally initializes it based on the given [[FrontstageProps]]  */
   constructor(frontstageProps?: FrontstageProps) {
     if (frontstageProps) {
       this.initializeFromProps(frontstageProps);
     }
   }
 
+  /** Initializes the [[FrontstageDef]] from [[FrontstageProps]]  */
   public initializeFromProps(frontstageProps: FrontstageProps): void {
     this.id = frontstageProps.id;
     this.defaultToolId = frontstageProps.defaultToolId;
@@ -171,25 +174,34 @@ export class FrontstageDef {
     this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
   }
 
+  /** Finds an item based on a given id */
   public findItem(id: string): ItemDefBase | undefined {
     return this.items.get(id);
   }
 
+  /** Gets the active tool id */
   public get activeToolId(): string {
-    return (this._activeToolItem) ? this._activeToolItem.id : "";
+    return this._activeToolId;
   }
 
-  public get activeToolItem(): ToolItemDef | undefined {
-    return this._activeToolItem;
+  /** Sets the active tool id */
+  public setActiveToolId(toolId: string): void {
+    if (this._activeToolId !== toolId) {
+      this._activeToolId = toolId;
+
+      if (!this._toolInformationMap.get(toolId))
+        this._toolInformationMap.set(toolId, new ToolInformation(toolId));
+
+      FrontstageManager.onToolActivatedEvent.emit({ toolId });
+    }
   }
 
-  // TODO - connect to Redux
-  public setActiveToolItem(toolItem: ToolItemDef): void {
-    this._activeToolItem = toolItem;
-    toolItem.onActivated();
-    FrontstageManager.onToolActivatedEvent.emit({ toolId: toolItem.id, toolItem });
+  /** Gets the active tool's [[ToolInformation]] */
+  public get activeToolInformation(): ToolInformation | undefined {
+    return this._toolInformationMap.get(this._activeToolId);
   }
 
+  /** Handles when the Frontstage becomes activated */
   public onActivated(): void {
     if (!this.defaultLayout) {
       this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
@@ -205,6 +217,7 @@ export class FrontstageDef {
     });
   }
 
+  /** Returns once the contained widgets and content controls are ready to use */
   public waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
@@ -218,6 +231,7 @@ export class FrontstageDef {
     return Promise.all(controlReadyPromises).then(() => { });
   }
 
+  /** Sets the active view content control */
   public setActiveView(newContent: ContentControl, oldContent?: ContentControl): void {
     if (oldContent)
       oldContent.onDeactivated();
@@ -225,6 +239,7 @@ export class FrontstageDef {
     FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
   }
 
+  /** Gets a [[ZoneDef]] based on a given zone id */
   public getZoneDef(zoneId: number): ZoneDef | undefined {
     let zoneDef;
 
@@ -262,6 +277,7 @@ export class FrontstageDef {
     return zoneDef;
   }
 
+  /** Gets a list of [[ZoneDef]]s */
   public get zoneDefs(): ZoneDef[] {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];
     const zoneDefs: ZoneDef[] = [];
@@ -275,6 +291,7 @@ export class FrontstageDef {
     return zoneDefs;
   }
 
+  /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
     for (const zoneDef of this.zoneDefs) {
       const widgetDef = zoneDef.findWidgetDef(id);
@@ -284,7 +301,7 @@ export class FrontstageDef {
     return undefined;
   }
 
-  /** Gets the list of [[WidgetControl]] */
+  /** Gets the list of [[WidgetControl]]s */
   public get widgetControls(): WidgetControl[] {
     const widgetControls = new Array<WidgetControl>();
     for (const zoneDef of this.zoneDefs) {
@@ -297,14 +314,14 @@ export class FrontstageDef {
     return widgetControls;
   }
 
-  /** Gets the list of [[ContentControl]] */
+  /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
     if (this.contentGroup)
       return this.contentGroup.getContentControls();
     return [];
   }
 
-  /** Gets the list of ScreenViewport  */
+  /** Gets the list of ScreenViewports  */
   public get viewports(): Readonly<ScreenViewport[]> {
     const viewports = new Array<ScreenViewport>();
     if (this.contentControls) {

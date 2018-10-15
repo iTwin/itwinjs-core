@@ -17,6 +17,7 @@ import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import UiFramework from "../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
@@ -44,12 +45,20 @@ export interface ToolSettingsZoneProps extends CommonProps {
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
 
+  private _title: string;
+
   /** hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,
     isNestedPopoverOpen: false,
   };
+
+  constructor(props: ToolSettingsZoneProps) {
+    super(props);
+
+    this._title = UiFramework.i18n.translate("UiFramework:general.toolSettings");
+  }
 
   public render(): React.ReactNode {
     if (FrontstageManager.activeToolAssistanceNode || FrontstageManager.activeToolSettingsNode) {
@@ -152,6 +161,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     if (FrontstageManager.activeToolSettingsNode) {
       return (
         <ToolbarIcon
+          title={this._title}
           key="0"
           isActive={
             this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings
