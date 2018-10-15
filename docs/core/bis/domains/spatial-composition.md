@@ -20,7 +20,7 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 
 ## Classes
 
-### CompositeElement (is a [SpatialLocationElement]())
+### CompositeElement (is a [SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement))
 
 A spatial element that may be Composite of other CompositeElements
 

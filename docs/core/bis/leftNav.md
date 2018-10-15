@@ -68,3 +68,4 @@
 - [Phenomenon](./ec/ec-phenomenon.md)
 - [UnitSystem](./ec/ec-unitsystem.md)
 - [Format](./ec/ec-format.md)
+- [ECName](./ec/ec-name.md)
