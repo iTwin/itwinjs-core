@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.158.0",
+      "tag": "@bentley/imodeljs-clients_v0.158.0",
+      "date": "Mon, 15 Oct 2018 19:36:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cleaned up frontend configuration. "
+          },
+          {
+            "comment": "add default Buddi URL and region and a added docs for region id"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.157.0",
       "tag": "@bentley/imodeljs-clients_v0.157.0",
       "date": "Sun, 14 Oct 2018 17:20:06 GMT",

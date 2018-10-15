@@ -1,6 +1,13 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Sun, 14 Oct 2018 17:20:06 GMT and should not be manually modified.
+This log was last generated on Mon, 15 Oct 2018 19:36:09 GMT and should not be manually modified.
+
+## 0.158.0
+Mon, 15 Oct 2018 19:36:09 GMT
+
+### Updates
+
+- change noConfigLoader to configLoader default false
 
 ## 0.157.0
 Sun, 14 Oct 2018 17:20:06 GMT
