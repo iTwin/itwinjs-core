@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -83,7 +83,7 @@ export class MeshBuilder {
 
   /**
    * add data from polyface into mesh builder
-   * @param polyface the indexed polyface to iterate the facets of in order to load each facet's triangles' vertices
+   * @param polyface the indexed polyface to iterate the facets of to load each facet's triangles' vertices
    * @param props the properties required for this operation
    */
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {

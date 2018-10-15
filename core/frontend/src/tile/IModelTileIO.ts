@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -48,9 +48,13 @@ import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
 
-/** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer. */
+/** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
+ * @hidden
+ */
 export namespace IModelTileIO {
-  /** Flags describing the geometry contained within a tile */
+  /** Flags describing the geometry contained within a tile.
+   * @hidden
+   */
   export const enum Flags {
     /** No special flags */
     None = 0,
@@ -60,7 +64,9 @@ export namespace IModelTileIO {
     Incomplete = 1 << 2,
   }
 
-  /** Header embedded at the beginning of the binary tile data describing its contents */
+  /** Header embedded at the beginning of the binary tile data describing its contents.
+   * @hidden
+   */
   export class Header extends TileIO.Header {
     /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
@@ -113,7 +119,9 @@ export namespace IModelTileIO {
   const maxLeafTolerance = 1.0;
   const minElementsPerTile = 100;
 
-  /** Deserializes an iModel tile. */
+  /** Deserializes an iModel tile.
+   * @hidden
+   */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
 
@@ -196,7 +204,6 @@ export namespace IModelTileIO {
 
       // We will only attempt to include the texture if material is undefined
       let textureMapping;
-      let thematicRange;
       if (!material) {
         const textureJson = json.texture;
         textureMapping = undefined !== textureJson ? this.textureMappingFromJson(textureJson) : undefined;
@@ -211,14 +218,11 @@ export namespace IModelTileIO {
               // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
               textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
             }
-            if (undefined !== gradient.thematicSettings) {
-              thematicRange = gradient.thematicSettings.range;
-            }
           }
         }
       }
 
-      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping, thematicRange);
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
     }
 
     /** @hidden */
@@ -572,7 +576,6 @@ export namespace IModelTileIO {
         hasBakedLighting: this._hasBakedLighting,
         material: displayParams.material,
         texture,
-        thematicRange: displayParams.thematicRange,
       };
     }
 

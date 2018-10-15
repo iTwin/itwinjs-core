@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range1d, Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef,
   ColorIndex,
@@ -549,7 +549,6 @@ export interface SurfaceParams {
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
   readonly material?: RenderMaterial;
-  readonly thematicRange?: Range1d;
 }
 
 /**

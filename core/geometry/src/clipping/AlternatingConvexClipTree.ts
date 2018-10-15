@@ -1,21 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Angle } from "../Geometry";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d } from "../geometry3d/Range";
+import { Angle } from "../geometry3d/Angle";
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { PolygonOps } from "../PointHelpers";
-import { CurvePrimitive, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurvePrimitive";
-import { CurveCollection } from "../curve/CurveChain";
+import { PolygonOps } from "../geometry3d/PointHelpers";
+
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveCollection } from "../curve/CurveCollection";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
+
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Range1dArray } from "../numerics/Range1dArray";
 

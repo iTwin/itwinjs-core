@@ -1,14 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module CartesianGeometry */
 
-import { Segment1d, Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { GrowableFloat64Array } from "../GrowableArray";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";

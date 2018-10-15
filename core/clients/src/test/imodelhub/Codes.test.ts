@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -40,7 +40,8 @@ describe("iModelHub CodeHandler", () => {
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
   const alctx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);

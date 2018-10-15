@@ -15,8 +15,9 @@ An app [frontend](../learning/Glossary.md#frontend) typically has a different "m
     * Entitlements
     * Other platform integration
   * [Tailor the GUI](#change-the-gui)
-  * [Select the appropriate backends](#backends-for-frontends)
 * [Configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
+    * You may apply the [backends-for-frontends pattern](#backends-for-frontends).
+    * Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
 
 An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuation. For more information, see:
 * [Web app](../learning/WriteAnInteractiveWebApp.md)

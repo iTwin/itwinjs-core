@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// Copied from imodeljs-react-scripts
+// Copied from \tools\webpack\scripts\utils
 
 const spawn = require('cross-spawn');
 const chalk = require('chalk');
@@ -15,18 +15,18 @@ function simpleSpawn(cmd, args, cwd) {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd: cwd,
-      env: Object.assign({FORCE_COLOR: "1"}, process.env),
+      env: Object.assign({ FORCE_COLOR: "1" }, process.env),
       stdio: 'pipe'
     });
 
     child.stdout.on('data', (data) => {
-        process.stdout.write(data);
-      })
+      process.stdout.write(data);
+    })
     child.stderr.on('data', (data) => {
       process.stderr.write(data);
     })
-    child.on('error', function(data) { console.log(chalk.red(data)); });
-    child.on('close', (code)=> resolve(code));
+    child.on('error', function (data) { console.log(chalk.red(data)); });
+    child.on('close', (code) => resolve(code));
     simpleSpawn.children.push(child);
   });
 }
@@ -35,19 +35,19 @@ function simpleSpawnSync(cmd, args, cwd) {
   if (!cwd)
     cwd = process.cwd();
 
-    const child = spawn.sync(cmd, args, {
-      cwd: cwd,
-      env: Object.assign({FORCE_COLOR: "1"}, process.env),
-      stdio: 'inherit'
-    });
+  const child = spawn.sync(cmd, args, {
+    cwd: cwd,
+    env: Object.assign({ FORCE_COLOR: "1" }, process.env),
+    stdio: 'inherit'
+  });
 
-    if (child.status !== 0){
-      process.exit(child.status);
-    }
+  if (child.status !== 0) {
+    process.exit(child.status);
+  }
 }
 
 simpleSpawn.children = [];
-simpleSpawn.killAll = function() {
+simpleSpawn.killAll = function () {
   simpleSpawn.children.forEach((proc) => {
     proc.stdin.end();
   });
@@ -75,8 +75,8 @@ function handleInterrupts(callback) {
       });
   }
 
-  ['SIGINT', 'SIGTERM'].forEach(function(sig) {
-    process.on(sig, function() {
+  ['SIGINT', 'SIGTERM'].forEach(function (sig) {
+    process.on(sig, function () {
       callback();
     });
   });

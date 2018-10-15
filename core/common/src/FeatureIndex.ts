@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
 import { ColorDef } from "./ColorDef";
 
+/** @hidden */
 export class NonUniformColor {
   public readonly colors: Uint32Array;
   public readonly indices: Uint16Array;
@@ -18,6 +19,7 @@ export class NonUniformColor {
   }
 }
 
+/** @hidden */
 export class ColorIndex {
   private _color: ColorDef | NonUniformColor;
 
@@ -38,12 +40,14 @@ export class ColorIndex {
   }
 }
 
+/** @hidden */
 export const enum FeatureIndexType {
   Empty,
   Uniform,
   NonUniform,
 }
 
+/** @hidden */
 export class FeatureIndex {
   public type: FeatureIndexType = FeatureIndexType.Empty;
   public featureID: number = 0;

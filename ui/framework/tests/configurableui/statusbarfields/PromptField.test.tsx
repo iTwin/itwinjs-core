@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -70,13 +70,13 @@ describe("PromptField", () => {
       <StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />
     </Provider>);
 
-    UiFramework.store.dispatch({ type: "ConfigurableUI:SET_TOOLPROMPT", payload: "Hello World!" });
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Hello World!" });
     wrapper.update();
 
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-text").text()).to.eq("Hello World!");
 
-    UiFramework.store.dispatch({ type: "ConfigurableUI:SET_TOOLPROMPT", payload: "Goodbye!" });
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Goodbye!" });
     wrapper.update();
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-text").text()).to.eq("Goodbye!");

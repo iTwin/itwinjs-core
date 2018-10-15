@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -52,6 +52,7 @@ export const NpcCorners = [
 NpcCorners.forEach((corner) => Object.freeze(corner));
 Object.freeze(NpcCorners);
 
+/** The center point of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
 // tslint:disable-next-line:variable-name
 export const NpcCenter = new Point3d(.5, .5, .5);
 Object.freeze(NpcCenter);

@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Numerics */
 
-import { } from "../PointVector";
-import { Range1d } from "../Range";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { Range1d } from "../geometry3d/Range";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 /**
  * A Range1d array is a set of intervals, such as occur when a line is clipped to a (nonconvex) polygon
  */

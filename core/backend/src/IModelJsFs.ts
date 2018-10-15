@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
@@ -45,6 +45,9 @@ export class IModelJsFs {
 
   /** Write to a file. */
   public static writeFileSync(path: string, str: string, wflag: string = "w"): void { fs.writeFileSync(path, str, { flag: wflag }); }
+
+  /** Append to a file. */
+  public static appendFileSync(path: string, str: string): void { fs.appendFileSync(path, str); }
 
   /** Make a copy of a file */
   public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }

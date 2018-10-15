@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -29,7 +29,7 @@ function mockGetVersionsByIdWithThumbnails(imodelId: Guid, versionId: Guid, thum
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `${versionId}?$select=` + getSelectStatement(thumbnailSizes));
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 function mockGetVersionsByNameWithThumbnails(imodelId: Guid, name: string, thumbnailSizes: ThumbnailSize[], ...versions: Version[]) {
@@ -38,7 +38,7 @@ function mockGetVersionsByNameWithThumbnails(imodelId: Guid, name: string, thumb
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version", `?$filter=Name+eq+%27${name}%27&$select=` + getSelectStatement(thumbnailSizes));
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
 describe("iModelHub VersionHandler", () => {
@@ -49,7 +49,8 @@ describe("iModelHub VersionHandler", () => {
   const imodelName = "imodeljs-clients Versions test";
   const actx = new ActivityLoggingContext("");
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");

@@ -76,3 +76,4 @@ ProjectScope/SmallThumbnail/********-****-****-****-************/$file
 ProjectScope/iModel/
 ProjectScope/iModel/********-****-****-****-************
 ProjectScope/iModel/?$filter=Name+eq+'*'
+ProjectScope/iModel/?$orderby=CreatedDate+asc&$top=*

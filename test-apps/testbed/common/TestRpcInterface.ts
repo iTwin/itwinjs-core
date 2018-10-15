@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse } from "@bentley/imodeljs-common";
@@ -38,7 +38,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
 
-  public static version = "1.0.0";
+  public static version = "1.1.1";
 
   public static types = () => [
     TestOp1Params,

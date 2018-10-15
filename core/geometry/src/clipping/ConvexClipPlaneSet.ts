@@ -1,18 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range1d } from "../Range";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { Matrix4d } from "../numerics/Geometry4d";
-import { Geometry, Angle } from "../Geometry";
-import { PolygonOps } from "../PointHelpers";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { PolygonOps } from "../geometry3d/PointHelpers";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";

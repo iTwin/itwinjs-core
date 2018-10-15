@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point2d, Point3d } from "../PointVector";
-import { Transform, Matrix3d } from "../Transform";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Checker } from "./Checker";
 // import { prettyPrint } from "./testFunctions";
 import { Sample } from "../serialization/GeometrySamples";

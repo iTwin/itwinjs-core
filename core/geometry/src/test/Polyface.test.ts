@@ -1,29 +1,31 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
 import { Sample } from "../serialization/GeometrySamples";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Point2d, Point3d, Vector3d } from "../PointVector";
-import { Matrix3d } from "../Transform";
-import { Transform } from "../Transform";
-import { Range3d } from "../Range";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Transform } from "../geometry3d/Transform";
+import { Range3d } from "../geometry3d/Range";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { LineString3d } from "../curve/LineString3d";
-import { ParityRegion, Loop } from "../curve/CurveChain";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
 import { SweepContour } from "../solid/SweepContour";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { GeometryCoreTestIO } from "./IModelJson.test";
-import { StrokeOptions } from "../geometry-core";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { prettyPrint } from "./testFunctions";
 import { Arc3d } from "../curve/Arc3d";
-import { AngleSweep } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden

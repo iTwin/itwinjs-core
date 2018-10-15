@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
@@ -63,7 +63,7 @@ describe("ContentControl", () => {
       expect(contentGroup).to.not.be.undefined;
 
       if (contentGroup) {
-        const contentSet = contentGroup.getContentSet();
+        const contentSet = contentGroup.getContentNodes();
         expect(contentSet.length).to.eq(1);
 
         const contentControl = contentGroup.getControlFromElement(contentSet[0]);
@@ -81,8 +81,8 @@ describe("ContentControl", () => {
   const contentGroup2: ContentGroup = new ContentGroup({
     id: "contentGroup2",
     contents: [
-      { classId: "TestContentControl", applicationData: "data1" },
-      { classId: "TestContentControl", applicationData: "data2" },
+      { classId: TestContentControl, applicationData: "data1" },
+      { classId: TestContentControl, applicationData: "data2" },
     ],
   });
 
@@ -111,7 +111,7 @@ describe("ContentControl", () => {
       expect(contentGroup).to.not.be.undefined;
 
       if (contentGroup) {
-        const contentSet = contentGroup.getContentSet();
+        const contentSet = contentGroup.getContentNodes();
         expect(contentSet.length).to.eq(2);
 
         const contentControl = contentGroup.getControlFromElement(contentSet[0]);

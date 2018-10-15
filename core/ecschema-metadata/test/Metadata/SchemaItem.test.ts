@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 
-import Schema from "../../src/Metadata/Schema";
-import { ECObjectsError } from "../../src/Exception";
-import SchemaItem from "../../src/Metadata/SchemaItem";
-import { SchemaKey, SchemaItemKey, SchemaItemType } from "../../src/ECObjects";
-import EntityClass from "../../src/Metadata/EntityClass";
+import Schema from "./../../src/Metadata/Schema";
+import { ECObjectsError } from "./../../src/Exception";
+import SchemaItem from "./../../src/Metadata/SchemaItem";
+import { SchemaItemType } from "./../../src/ECObjects";
+import SchemaKey, { SchemaItemKey } from "./../../src/SchemaKey";
+import EntityClass from "./../../src/Metadata/EntityClass";
 
 describe("SchemaItem", () => {
   describe("fromJson", () => {

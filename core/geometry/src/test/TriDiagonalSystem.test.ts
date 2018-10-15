@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
 import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
-import { Point3d } from "../PointVector";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 /* tslint:disable:variable-name no-console*/
 
 class TestFixture {

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../PointVector";
-import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { SmallSystem } from "./Polynomials";
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries

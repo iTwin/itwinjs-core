@@ -1,20 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class TestData {
-  public static user = {
-    email: "Regular.IModelJsTestUser@mailinator.com",
-    password: "Regular@iMJs",
-  };
-
-  public static connectClient = new ConnectClient("QA");
-  public static imodelClient = new IModelHubClient("QA");
+  public static get user() {
+    return {
+      email: Config.App.getString("imjs_test_regular_user_name"),
+      password: Config.App.getString("imjs_test_regular_user_password"),
+    };
+  }
+  // Use QA
+  public static connectClient = new ConnectClient();
+  public static imodelClient = new IModelHubClient();
   public static accessToken: AccessToken;
   public static testProjectId: string;
   public static testIModelId: string;
@@ -28,10 +30,13 @@ export class TestData {
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(alctx, TestData.user.email, TestData.user.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx,
+      Config.App.getString("imjs_test_regular_user_name"),
+      Config.App.getString("imjs_test_regular_user_password"));
+
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(alctx, authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(alctx, authToken!);
     assert(accessToken);
 
     return accessToken;

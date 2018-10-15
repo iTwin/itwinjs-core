@@ -1,11 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as semver from "semver";
 import { app, protocol, BrowserWindow } from "electron";
-import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
 
 /**
@@ -48,17 +46,6 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
       icon: iconPath,
     });
     mainWindow.on("closed", () => mainWindow = undefined);
-
-    if (isDevBuild) {
-      // install some devtools extensions for easier react and redux debugging
-      await installExtension(REACT_DEVELOPER_TOOLS);
-      await installExtension(REDUX_DEVTOOLS);
-
-      // NEEDSWORK: older versions of the redux devtools have been causing the frontend to crash, so just make sure we have a new enough version
-      const reduxDevtoolsInfo = (BrowserWindow.getDevToolsExtensions() as any)["Redux DevTools"];
-      if (!reduxDevtoolsInfo || semver.gt("2.15.3", reduxDevtoolsInfo.version))
-        await installExtension(REDUX_DEVTOOLS, true);
-    }
 
     // load the frontend
     //    in development builds, the frontend assets are served by the webpack devserver

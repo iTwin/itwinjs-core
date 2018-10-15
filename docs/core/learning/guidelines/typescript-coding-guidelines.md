@@ -13,7 +13,6 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 6. Use `_` as a prefix for private properties.
 7. Use whole words in names when possible. Only use abbreviations where their use is common and obvious.
 8. We use "Id", "3d", "2d" rather than capital D.
-9. Do not use `Dgn` as a prefix in TypeScript code. Often no prefix is necessary, but if it is, prefer `IModel` or `Db` instead.
 
 ## Files
 
@@ -41,7 +40,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## General Constructs
 
-1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing at best and a bug at worst.
+1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing and error prone. Our TSLint rules enforce this.
 2. Use curly braces `{}` instead of `new Object()`.
 3. Use brackets `[]` instead of `new Array()`.
 
@@ -56,7 +55,7 @@ Programmer monitors are almost always wider than they are tall. It is common for
 1. If a function has only a single statement, it **should be** on one line.
 
 ```ts
-  // WRONG !!!
+  // No !!!
   public middle(): number {
      return this.minimum + ((this.maximum - this.minimum) / 2.0);
   }
@@ -224,11 +223,11 @@ class Role {
 }
 ```
 
-## Enforcing getters for certain function names
+## Prefer getters where possible
 
-If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). By doing this, the method may be accessed as a property of the object rather than as a function. This avoids confusion over whether it is necessary to include parenthesis when using the method to gain access to the value.
+If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). This way the method is accessed as a property rather than as a function. This avoids confusion over whether it is necessary to include parenthesis to access the value, and the caller will get a compile error if they are included. This rule is enforced by TsLint.
 
-This rule will be enforced by the Typescript linter. If the value being returned is expensive to compute, consider using a different name for the method to reflect this. Possible examples may include prefixing the name with words such as "compute" or "calculate".
+If the value being returned is expensive to compute, consider using a different name to reflect this. Possible prefixes are "compute" or "calculate", etc.
 
 ## Don't repeat type names unnecessarily
 
@@ -242,7 +241,7 @@ TypeScript is all about adding types to JavaScript. However, the compiler automa
   let width = 7.3; // correct
   public isReady = false; // correct
   public readonly origin = new Point3d(); // correct
-  const upVector: Vector3d = rMatrix.getRow(1); // fine, helps readability. Not strictly necessary.
+  const upVector: Vector3d = rMatrix.getRow(1); // good, helps readability. Not strictly necessary.
 ```
 
 However, as stated above, it is a good idea to always include the return type of a function if it is more than one line, to make sure no return path has an unexpected type.
@@ -255,8 +254,7 @@ For public-facing APIs we have decided to prefer exceptions (`throw new Error`) 
 2. Exceptions let you return the natural return value of success rather than an unnatural composite object.
 3. Exceptions can carry more information than a status return.
 4. Status returns can be ignored, but exceptions can't. If the immediate layer does not handle the exception it will be bubbled up to the outer layer.
-5. Note that TypeScript/JavaScript doesn't have the same library boundary issues that C++ has with exceptions
-6. The optional `message` property of an `Error` should (if defined) hold an English debugging message that is not meant to be localized. Instead, applications should catch errors and then separately provide a context-appropriate localized message.
+5. The optional `message` property of an `Error` should (if defined) hold an English debugging message that is not meant to be localized. Instead, applications should catch errors and then separately provide a context-appropriate localized message.
 
 > Note: Returning `SomeType` and throwing an `Error` is generally preferred over returning `SomeType | undefined`.
 
@@ -370,16 +368,17 @@ A correctly implemented program that interprets a JSON string containing an XYZ 
 
 ## Copyright notice
 
-Every .ts file should have this notice as its **first 3 lines**:
+Every .ts file should have this notice as its **first lines**:
 
 ```ts
 /*---------------------------------------------------------------------------------------------
-| $Copyright: (c) 20xx Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 20xx - present Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 ```
 
 verbatim, with the xx replaced with the current year.
 
 ## Source Code Editor
 
-1. While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **TSLint** extension for Visual Studio Code and using our **tslint.json** to get real-time feedback.
+While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **TSLint** extension for Visual Studio Code and using our **tslint.json** to get real-time feedback.

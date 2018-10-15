@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -8,7 +8,9 @@ import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Angle, AngleProps } from "@bentley/geometry-core";
 
-/** The type of a [[Light]] */
+/** The type of a [[Light]]
+ * @hidden
+ */
 export const enum LightType {
   Invalid = 0,
   Solar = 1,     // Sunlight
@@ -22,7 +24,9 @@ export const enum LightType {
   SkyOpening = 9,
 }
 
-/** Parameters to create a [[Light]] */
+/** Parameters to create a [[Light]]
+ * @hidden
+ */
 export interface LightProps {
   lightType?: LightType;  // the type of light from LightType enum
   intensity?: number;     // intensity of the light
@@ -35,7 +39,9 @@ export interface LightProps {
   lumens?: number;
 }
 
-/** A light to illuminate the contents of a scene. */
+/** A light to illuminate the contents of a scene.
+ * @hidden
+ */
 export class Light {
   public lightType: LightType;
   public intensity: number;
@@ -66,13 +72,17 @@ export class Light {
   public get isVisible(): boolean { return this.isValid && this.intensity > 0.0; }
 }
 
-/** Properties of a [[LightType.Spot]] light. */
+/** Properties of a [[LightType.Spot]] light.
+ * @hidden
+ */
 export interface SpotProps extends LightProps {
   inner?: AngleProps;
   outer?: AngleProps;
 }
 
-/** A light from a single location. */
+/** A light from a single location.
+ * @hidden
+ */
 export class Spot extends Light {
   public inner: Angle;
   public outer: Angle;

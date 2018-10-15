@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -22,6 +22,9 @@ export interface NavigationItemProps {
   onClicked?: () => any;
 }
 
+/**
+ * A single navigation item
+ */
 export class NavigationItem extends React.Component<NavigationItemProps> {
 
   constructor(props: NavigationItemProps, context?: any) {
@@ -102,6 +105,9 @@ export interface NavigationListState {
   isPinned: boolean;
 }
 
+/**
+ * Navigation component for IModel open
+ */
 export class NavigationList extends React.Component<NavigationListProps, NavigationListState> {
 
   public static defaultProps: Partial<NavigationListProps> = {

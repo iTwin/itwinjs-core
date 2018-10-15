@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`InputFieldMessage should render correctly 1`] = `
+<Portal
+  containerInfo={<body />}
+>
+  <WithOnOutsideClick
+    className="nz-popup-message-inputField"
+  >
+    <WithTheme
+      className="nz-popup-message-inputField"
+      icon={
+        <i
+          className="icon icon-status-error-hollow"
+        />
+      }
+      status={2}
+    >
+      <Component
+        buttons={
+          <WithTheme
+            onClick={[Function]}
+          >
+            <i
+              className="icon icon-close"
+            />
+          </WithTheme>
+        }
+        className="message-inputField-content"
+        label={<div />}
+      />
+    </WithTheme>
+  </WithOnOutsideClick>
+</Portal>
+`;

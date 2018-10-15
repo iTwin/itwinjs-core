@@ -1,12 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
 process.env.NODE_ENV = "prod";
-
-const isCI = (process.env.TF_BUILD);
 
 const paths = require("./config/paths");
 const path = require("path");
@@ -22,7 +20,7 @@ process.on("unhandledRejection", err => {
   throw err;
 });
 
-if (argv.config === undefined){
+if (argv.config === undefined) {
   console.log("Please provide a configuration file as input with the --config parameter.")
   process.exit(1);
 }
@@ -32,20 +30,20 @@ var mergedOutput = mergeJson(file);
 delete mergedOutput.extends;
 
 var mergedString = json.stringify(mergedOutput, null, 2);
-if (argv.out === undefined){
+if (argv.out === undefined) {
   console.log(mergedString);
 }
-else{
+else {
   fs.writeFileSync(argv.out, mergedString);
 }
 
-function mergeJson(jsonFilePath){
+function mergeJson(jsonFilePath) {
   var jsonFile = json.parse(fs.readFileSync(jsonFilePath).toString(), null, true);
 
-  if (jsonFile.extends !== undefined && typeof jsonFile.extends === "string"){
+  if (jsonFile.extends !== undefined && typeof jsonFile.extends === "string") {
     var baseFileName = path.resolve(path.dirname(jsonFilePath), jsonFile.extends)
 
-    if (!fs.existsSync(baseFileName)){
+    if (!fs.existsSync(baseFileName)) {
       baseFileName = path.resolve(path.dirname(jsonFilePath), path.join("node_modules", jsonFile.extends));
     }
 

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { Sample } from "../serialization/GeometrySamples";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Point3d } from "../PointVector";
-import { Transform } from "../Transform";
-import { Matrix3d } from "../Transform";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Checker } from "./Checker";
 import { expect } from "chai";

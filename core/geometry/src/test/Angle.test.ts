@@ -1,13 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { YawPitchRollAngles, Geometry, Angle, AngleSweep, AxisOrder, Complex, Point3d, Matrix3d, Vector3d } from "../geometry-core";
-import { Range1d } from "../Range";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Complex } from "../numerics/Complex";
+import { Range1d } from "../geometry3d/Range";
+import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { YawPitchRollAngles } from "../geometry3d/YawPitchRollAngles";
+import { Geometry, AxisOrder } from "../Geometry";
+
 import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { OrderedRotationAngles } from "../OrderedRotationAngles";
+import { OrderedRotationAngles } from "../geometry3d/OrderedRotationAngles";
 
 /* tslint:disable:no-console */
 class AngleTests {
@@ -769,6 +776,6 @@ describe("MiscAngles", () => {
       ck.testAngleNoShift(angleA, angleDe);
     }
     expect(ck.getNumErrors()).equals(0);
-});
+  });
 
 });

@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { UrlDescriptor, DeploymentEnv } from "../Client";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
@@ -12,10 +11,10 @@ import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
-import { Config, FileHandler } from "..";
+import { FileHandler } from "..";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-
+import { Config } from "../Config";
 /**
  * Provides default options for iModelHub requests.
  */
@@ -36,26 +35,21 @@ export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
+  public static readonly configURL = "imjs_imodelhub_url";
+  public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
+  public static readonly configRegion = "imjs_imodelhub_region";
   protected _agent: https.Agent;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-imodelhubapi.bentley.com",
-    QA: "https://qa-imodelhubapi.bentley.com",
-    PROD: "https://imodelhubapi.bentley.com",
-    PERF: "https://perf-imodelhubapi.bentley.com",
-  };
-
   /**
    * Create an instance of IModelBaseHandler.
    * @hidden
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
-    super(deploymentEnv, "sv1.1", "https://connect-wsg20.bentley.com");
+  public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
+    super("sv1.1");
     this._fileHandler = fileHandler;
-    if (!Config.isBrowser)
+    if (!(typeof window === "undefined"))
       this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
   }
 
@@ -88,9 +82,38 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelBaseHandler._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(IModelBaseHandler.configURL))
+      return Config.App.get(IModelBaseHandler.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${IModelBaseHandler.configURL}`);
   }
 
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(IModelBaseHandler.configRelyingPartyUri))
+      return Config.App.get(IModelBaseHandler.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${IModelBaseHandler.configRelyingPartyUri}`);
+  }
+
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(IModelBaseHandler.configRegion))
+      return Config.App.get(IModelBaseHandler.configRegion);
+
+    return undefined;
+  }
   /**
    * Get the agent used for imodelhub connection pooling.
    * @returns The agent used for imodelhub connection pooling.
@@ -113,8 +136,8 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Resolves to the (delegation) access token.
    */
   public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(alctx, authorizationToken, this.relyingPartyUri);
+    const imsClient = new ImsDelegationSecureTokenClient();
+    return imsClient.getToken(alctx, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /**

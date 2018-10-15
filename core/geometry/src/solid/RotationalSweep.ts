@@ -1,18 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Solid */
 
-import { } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { CurveCollection } from "../curve/CurveChain";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Ray3d } from "../AnalyticGeometry";
-import { Geometry, Angle, AxisOrder } from "../Geometry";
-import { GeometryHandler } from "../GeometryHandler";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Geometry, AxisOrder } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";
 

@@ -1,18 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedRelationshipClass } from "../Interfaces";
-import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType, SchemaItemKey, CustomAttributeContainerType, strengthDirectionToString, primitiveTypeToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PropertyType, PropertyTypeUtils, propertyTypeToString } from "../PropertyTypes";
+import { PrimitiveType, StrengthDirection, parsePrimitiveType, CustomAttributeContainerType, strengthDirectionToString, primitiveTypeToString } from "../ECObjects";
+import { ECName, SchemaItemKey } from "./../SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { PropertyType, PropertyTypeUtils, propertyTypeToString } from "./../PropertyTypes";
 import ECClass, { StructClass } from "./Class";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import { AnyClass } from "../Interfaces";
-import { RelationshipClass } from "..";
+import RelationshipClass from "./RelationshipClass";
 import processCustomAttributes, { serializeCustomAttributes, CustomAttributeSet } from "./CustomAttribute";
 import Enumeration from "./Enumeration";
 

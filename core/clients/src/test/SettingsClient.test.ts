@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -9,6 +9,8 @@ import { SettingsStatus, SettingsResult } from "../SettingsAdmin";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { KnownRegions } from "../Client";
+import { Config } from "../Config";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {
@@ -27,7 +29,7 @@ function arraysEqual(array1: any, array2: any) {
 
 chai.should();
 
-describe("ConnectSettingsClient-User", () => {
+describe.skip("ConnectSettingsClient-User", () => {
   let accessToken: AccessToken;
   let authToken: AuthorizationToken;
   let projectId: string;
@@ -37,16 +39,14 @@ describe("ConnectSettingsClient-User", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      return;
-
-    TestConfig.deploymentEnv = "DEV";
-    connectClient = new ConnectClient(TestConfig.deploymentEnv);
-    settingsClient = new ConnectSettingsClient(TestConfig.deploymentEnv, "1001");
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
+      this.skip();
+    connectClient = new ConnectClient();
+    settingsClient = new ConnectSettingsClient("1001");
     authToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(actx, authToken);
 
-    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, TestConfig.projectName, "test");
+    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.projectName, "test");
 
     projectId = project.wsgId;
     chai.expect(projectId);
@@ -56,23 +56,8 @@ describe("ConnectSettingsClient-User", () => {
 
   });
 
-  it("should setup its URLs", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
-    const url: string = await settingsClient.getUrl(actx);
-    if ((TestConfig.deploymentEnv === "QA") || (TestConfig.deploymentEnv === "PERF"))
-      chai.expect(url).equals("https://qa-connect-productsettingsservice.bentley.com");
-
-    else if (TestConfig.deploymentEnv === "DEV")
-      chai.expect(url).equals("https://dev-connect-productsettingsservice.bentley.com");
-
-    else
-      chai.expect(url).equals("https://connect-productsettingsservice.bentley.com");
-  });
-
   // Application User Setting
-  it("should save and retrieve a User setting for this Application", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a User setting for this Application (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -110,7 +95,7 @@ describe("ConnectSettingsClient-User", () => {
   });
 
   // Project/Application/User -specific  Setting
-  it("should save and retrieve a Project User setting for this Application", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project User setting for this Application (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -148,7 +133,7 @@ describe("ConnectSettingsClient-User", () => {
   });
 
   // iModel/Application/User -specific  Setting
-  it("should save and retrieve an iModel User setting for this Application", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an iModel User setting for this Application (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -185,7 +170,7 @@ describe("ConnectSettingsClient-User", () => {
   });
 
   // Project/User -specific  Setting
-  it("should save and retrieve a Project User setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project User setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -223,7 +208,7 @@ describe("ConnectSettingsClient-User", () => {
   });
 
   // IModel/User -specific  Setting
-  it("should save and retrieve an IModel User setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an IModel User setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -262,7 +247,7 @@ describe("ConnectSettingsClient-User", () => {
 
 });
 
-describe("ConnectSettingsClient-Administrator", () => {
+describe.skip("ConnectSettingsClient-Administrator", () => {
   let accessToken: AccessToken;
   let authToken: AuthorizationToken;
   let projectId: string;
@@ -272,16 +257,18 @@ describe("ConnectSettingsClient-Administrator", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
+      this.skip();
+
     if (TestConfig.enableMocks)
       return;
 
-    TestConfig.deploymentEnv = "DEV";
-    connectClient = new ConnectClient(TestConfig.deploymentEnv);
-    settingsClient = new ConnectSettingsClient(TestConfig.deploymentEnv, "1001");
+    connectClient = new ConnectClient();
+    settingsClient = new ConnectSettingsClient("1001");
     authToken = await TestConfig.login(TestUsers.super);
     accessToken = await connectClient.getAccessToken(actx, authToken);
 
-    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, TestConfig.projectName, "test");
+    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.projectName, "test");
 
     projectId = project.wsgId;
     chai.expect(projectId);
@@ -292,7 +279,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application Setting
-  it("should save and retrieve an Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -329,7 +316,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application/Project Setting
-  it("should save and retrieve a Project/Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -367,7 +354,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 
   // Application/IModel Setting
-  it("should save and retrieve an iModel/Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an iModel/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -405,7 +392,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 
   // Project Setting (application independent)
-  it("should save and retrieve a Project Setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -443,7 +430,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 
   // IModel Setting (application independent)
-  it("should save and retrieve an iModel Setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve an iModel Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -492,16 +479,15 @@ describe("Reading non-user settings from ordinary user", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      return;
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
+      this.skip();
 
-    TestConfig.deploymentEnv = "DEV";
-    connectClient = new ConnectClient(TestConfig.deploymentEnv);
-    settingsClient = new ConnectSettingsClient(TestConfig.deploymentEnv, "1001");
+    connectClient = new ConnectClient();
+    settingsClient = new ConnectSettingsClient("1001");
     authToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(actx, authToken);
 
-    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, TestConfig.projectName, "test");
+    const { project, iModel } = await TestConfig.queryTestCase(accessToken, TestConfig.projectName, "test");
 
     projectId = project.wsgId;
     chai.expect(projectId);
@@ -512,7 +498,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application Setting
-  it("should successfully retrieve an Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -523,7 +509,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application/Project Setting
-  it("should successfully retrieve a Project/Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -535,7 +521,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Application/IModel Setting
-  it("should successfully retrieve an iModel/Application Setting", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an iModel/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -547,7 +533,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // Project Setting (application independent)
-  it("should successfully retrieve a Project Setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve a Project Setting (Application independent)  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -559,7 +545,7 @@ describe("Reading non-user settings from ordinary user", () => {
   });
 
   // IModel Setting (application independent)
-  it("should successfully retrieve an iModel Setting (Application independent)", async function (this: Mocha.ITestCallbackContext) {
+  it("should successfully retrieve an iModel Setting (Application independent) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

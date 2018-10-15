@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -13,6 +13,8 @@ import {
 import { IModelDb, OpenParams } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
+import { SpatialCategory } from "../Category";
+import { DictionaryModel } from "../Model";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
@@ -223,5 +225,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
     const view = new Uint32Array(blob.buffer);
     return Id64.fromUint32Pair(view[0], view[1]);
+  }
+  public async getSpatialCategoryId(iModelToken: IModelToken, categoryName: string): Promise<Id64 | undefined> {
+    const iModelDb = IModelDb.find(iModelToken);
+    const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 }

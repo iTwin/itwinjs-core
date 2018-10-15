@@ -1,34 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewSelector } from "./ViewSelector";
+import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
-import "./IModelCard.scss";
-import { IModelViewsSelectedFunc } from "./IModelOpen";
-import { Id64String } from "@bentley/bentleyjs-core";
 import { Popup, Position} from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
+import "./IModelCard.scss";
 
 export interface IModelCardProps {
   showDescription?: boolean;
   iModel: IModelInfo;
-  cardClassName?: string;
-  thumbnailClassName?: string;
-  fallbackIconClassName?: string;
-  nameClassName?: string;
   accessToken: AccessToken;
-  onViewsClicked?: () => any;
-  selectModel: () => void;
-  onIModelViewsSelected: IModelViewsSelectedFunc;
-
-   // actions:
-   setSelectedViews: (viewsSelected: Id64String[]) => any;
+  onSelectIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
 }
 
 interface IModelCardState {
@@ -38,6 +26,9 @@ interface IModelCardState {
   showPopupTest: boolean;
 }
 
+/**
+ * Card representing a single IModel
+ */
 export class IModelCard extends React.Component<IModelCardProps, IModelCardState> {
 
   constructor(props: IModelCardProps, context?: any) {
@@ -64,8 +55,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onCardClicked = () => {
-    // if (this.props.selectModel)
-    //  this.props.selectModel();
     this.setState({ showViews: true });
   }
 
@@ -81,14 +70,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showViews: false });
   }
 
-  private _onViewsSelected = (iModelInfo: IModelInfo, iModelConnection: IModelConnection, views: ViewDefinitionProps[]) => {
-    const viewIds: Id64String[] = new Array<Id64String>();
-    for (const view of views ) {
-      viewIds.push (view.id!);
-    }
-
-    this.props.onIModelViewsSelected(iModelInfo.projectInfo, iModelConnection, viewIds);
-    this.props.setSelectedViews(viewIds);
+  private _onViewsSelected = (views: ViewDefinitionProps[]) => {
+    this._onViewsClose();
+    if (this.props.onSelectIModel)
+      this.props.onSelectIModel (this.props.iModel, views);
   }
 
   private _onViewsClicked = () => {
@@ -102,7 +87,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   private _onCloseOptions = () => {
-    // alert ("on close options");
     this.setState({ showOptions: false });
   }
 
@@ -169,7 +153,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
           {this.props.showDescription && this.renderDescription()}
         </div>
         {this.state.showViews &&
-          <ViewSelector accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
+          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
         {this.state.showPopupTest && <PopupTest onClose={this._onClosePopupTest} />}
       </div>
     );

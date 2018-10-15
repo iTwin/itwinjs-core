@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-// @ts-ignore
-import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-// @ts-ignore
-import { Range3d, Point3d, Arc3d, Point2d } from "@bentley/geometry-core";
+import { IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { Range3d, Point3d, Point2d } from "@bentley/geometry-core";
 import * as path from "path";
-// @ts-ignore
-import { Geometry, MeshBuilder, Mesh, ToleranceRatio, GraphicBuilderCreateParams, System, GraphicType, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointLists, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef } from "./ColorDef";
-import { ViewFlags } from "./Render";
+import { ViewFlags, AnalysisStyle } from "./Render";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
 export interface ViewStateData {
@@ -35,6 +35,7 @@ export interface DisplayStyleProps extends ElementProps {
   viewFlags: ViewFlags;
   backgroundColor: ColorDef;
   monochromeColor: ColorDef;
+  AnalysisStyle?: AnalysisStyle;
 }
 
 export interface ViewQueryParams extends EntityQueryParams {
@@ -48,7 +49,7 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   description?: string;
 }
 
-/** Properties of [[ViewFlags]] */
+/** JSON representation of [[ViewFlags]] */
 export interface ViewFlagProps {
   /** If true, don't show construction class. */
   noConstruct?: boolean;
@@ -62,7 +63,7 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** If true, use continuous rendering. */
+  /** @hidden This doesn't belong here - it is not persistent. */
   contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
@@ -92,10 +93,12 @@ export interface ViewFlagProps {
   hlMatColors?: boolean;
   /** If true, show view with monochrome settings. */
   monochrome?: boolean;
-  /** Edge mask. 0=none, 1=generate mask, 2=use mask. */
+  /** @hidden unused */
   edgeMask?: number;
   /** [[RenderMode]] */
   renderMode?: number;
+  /** Display background map. */
+  backgroundMap?: boolean;
 }
 
 /** properties of a camera */

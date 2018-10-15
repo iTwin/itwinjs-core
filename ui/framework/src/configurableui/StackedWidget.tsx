@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
@@ -18,24 +18,27 @@ import TabSeparator from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Separa
 import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
 
-/** Props for a StackedWidget Tab.
+/** Properties for a [[StackedWidget]] Tab.
  */
-export interface TabProps {
+export interface WidgetTabProps {
   isActive: boolean;
   icon: IconInfo;
 }
 
-/** Props for a Widget in a StackedWidget.
+/** Properties for a Widget in a [[StackedWidget]].
  */
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
-  tabs: TabProps[];
+  tabs: WidgetTabProps[];
+  isStatusBar: boolean;
 }
 
-/** Props for the StackedWidget React component.
+/** Properties for the [[StackedWidget]] React component.
  */
 export interface StackedWidgetProps {
   children?: React.ReactNode;
+  fillZone: boolean;
+  isFloating: boolean;
   zoneId: number;
   widgets: EachWidgetProps[];
   widgetChangeHandler: WidgetChangeHandler;
@@ -77,17 +80,19 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
 
     return (
       <NZ_StackedWidget
-        horizontalAnchor={this.props.horizontalAnchor}
-        verticalAnchor={this.props.verticalAnchor}
         content={this.props.children}
-        tabs={tabs}
-        isOpen={isWidgetOpen}
+        fillZone={this.props.fillZone}
+        horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
+        isFloating={this.props.isFloating}
+        isOpen={isWidgetOpen}
         onResize={
-          (x, y, handle) => {
-            this._handleOnWidgetResize(this.props.zoneId, x, y, handle);
+          (x, y, handle, filledHeightDiff) => {
+            this._handleOnWidgetResize(this.props.zoneId, x, y, handle, filledHeightDiff);
           }
         }
+        tabs={tabs}
+        verticalAnchor={this.props.verticalAnchor}
       />
     );
   }
@@ -103,7 +108,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
   }
 
   private getWidgetTabs(stackedWidget: EachWidgetProps, isWidgetOpen: boolean): JSX.Element[] {
-    return stackedWidget.tabs.map((tab: TabProps, index: number) => {
+    return stackedWidget.tabs.map((tab: WidgetTabProps, index: number) => {
       const mode = !isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
         <WidgetTab
@@ -112,7 +117,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           mode={mode}
           lastPosition={this.props.lastPosition}
           onClick={() => this._handleWidgetTabClick(stackedWidget.id, index)}
-          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset)}
+          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset, stackedWidget.isStatusBar)}
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
@@ -122,16 +127,18 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     });
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, isStatusBar: boolean) => {
     this.props.widgetChangeHandler.handleTabDragStart(widgetId, tabId, initialPosition, offset);
+    if (isStatusBar)
+      this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
   private _handleTabDragEnd = () => {
     this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
-  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle) => {
-    this.props.widgetChangeHandler.handleResize(zoneId, x, y, handle);
+  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this.props.widgetChangeHandler.handleResize(zoneId, x, y, handle, filledHeightDiff);
   }
 
   private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -44,7 +44,6 @@ const config = {
     nodeExternals({
       whitelist: [
         ...helpers.modulesToExcludeFromTests,
-        /bwc-polymer/,
         /\.s?css$/,
         /\.svg$/,
         /\.d\.ts$/,
@@ -53,7 +52,7 @@ const config = {
   ],
 
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
-  // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
+  // See the discussion in https://github.com/facebook/create-react-app/issues/343.
   devtool: "inline-source-map",
   output: {
     path: paths.appLib,
@@ -65,7 +64,7 @@ const config = {
     // This allows you to set a fallback for where Webpack should look for modules.
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
-    // https://github.com/facebookincubator/create-react-app/issues/253
+    // https://github.com/facebook/create-react-app/issues/253
     modules: ["node_modules", paths.appNodeModules, paths.appSrc].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean)
@@ -73,7 +72,7 @@ const config = {
     // These are the reasonable defaults supported by the Node ecosystem.
     // We also include JSX as a common component filename extension to support
     // some tools, although we do not recommend using it, see:
-    // https://github.com/facebookincubator/create-react-app/issues/290
+    // https://github.com/facebook/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
     extensions: [
@@ -162,12 +161,12 @@ const config = {
     new webpack.DefinePlugin(env.frontendStringified),
     // Watcher doesn't work well if you mistype casing in a path so we use
     // a plugin that prints an error when you attempt to do this.
-    // See https://github.com/facebookincubator/create-react-app/issues/240
+    // See https://github.com/facebook/create-react-app/issues/240
     new CaseSensitivePathsPlugin(),
     // If you require a missing module and then `npm install` it, you still have
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
-    // See https://github.com/facebookincubator/create-react-app/issues/186
+    // See https://github.com/facebook/create-react-app/issues/186
     // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     // Automatically make React and sinon available
     new webpack.ProvidePlugin({

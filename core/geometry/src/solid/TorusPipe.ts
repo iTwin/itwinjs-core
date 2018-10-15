@@ -1,21 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Solid */
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Geometry, Angle, AngleSweep } from "../Geometry";
-import { GeometryHandler, UVSurface } from "../GeometryHandler";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
-import { Loop, Path, CurveCollection } from "../curve/CurveChain";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
+import { CurveCollection } from "../curve/CurveCollection";
 import { Arc3d } from "../curve/Arc3d";
-import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 /**
  * the stored form of the torus pipe is oriented for positive volume:
  *

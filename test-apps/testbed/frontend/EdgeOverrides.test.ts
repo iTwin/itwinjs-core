@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -37,18 +37,17 @@ describe("EdgeOverrides", () => {
   });
   it("init properly sets member values", () => {
     const override = new EdgeOverrides();
-    let style = new HiddenLine.Style({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0 });
-    let color = FloatPreMulRgba.fromColorDef(style.color);
+    let style = HiddenLine.Style.fromJSON({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0 });
+    const color = FloatPreMulRgba.fromColorDef(style.color!);
     override.init(true, style);
     expect(override.overridesColor).to.equal(true);
     expect(override.overridesWeight).to.equal(false);
     expect(override.color!.equals(color)).to.equal(true);
     expect(override.overridesAlpha).to.equal(true);
     expect(override.overridesLineCode).to.equal(true);
-    expect(override.lineCode!).to.equal(LineCode.valueFromLinePixels(style.pattern));
+    expect(override.lineCode!).to.equal(LineCode.valueFromLinePixels(style.pattern!));
 
-    style = new HiddenLine.Style({ ovrColor: false, color: 0xf00c, width: 5, pattern: LinePixels.Invalid });
-    color = FloatPreMulRgba.fromColorDef(style.color);
+    style = HiddenLine.Style.fromJSON({ ovrColor: false, color: 0xf00c, width: 5, pattern: LinePixels.Invalid });
     override.init(false, style);
     expect(override.overridesColor).to.equal(false);
     expect(override.overridesWeight).to.equal(true);

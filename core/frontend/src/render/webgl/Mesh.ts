@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -30,7 +30,6 @@ import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
-import { Range1d } from "@bentley/geometry-core";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -43,7 +42,6 @@ export class MeshData implements IDisposable {
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
   public readonly lut: VertexLUT;
-  public readonly thematicRange?: Range1d;
 
   private constructor(lut: VertexLUT, params: MeshParams) {
     this.lut = lut;
@@ -54,8 +52,6 @@ export class MeshData implements IDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
-    this.thematicRange = params.surface.thematicRange;
-
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
@@ -145,9 +141,8 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this._mesh.texture; }
   public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
-  public get thematicRange() { return this._mesh.thematicRange; }
-
   public get lut() { return this._mesh.lut; }
+  public get hasScalarAnimation() { return this._mesh.lut.auxParams !== undefined; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
     super();

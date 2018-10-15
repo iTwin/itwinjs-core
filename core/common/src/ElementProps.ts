@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64, Id64String, GuidProps } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, GuidProps, Logger } from "@bentley/bentleyjs-core";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
@@ -50,7 +50,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning);
       return r.id;
     }
     return Id64.fromJSON(json);

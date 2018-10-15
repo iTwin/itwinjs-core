@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/icons-webfont/dist/bentley-icons-webfont.css";
+import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { FrontstageManager } from "@bentley/ui-framework";
 import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
 import { ItemPropsList, GroupItemProps } from "@bentley/ui-framework";
 import { TaskPropsList } from "@bentley/ui-framework";
@@ -53,21 +52,16 @@ export class AppUi {
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
-
-    if (!FrontstageManager.activeFrontstageDef) {
-      const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    }
   }
 
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.loadFrontstage(new Frontstage1().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage2().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage3().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage4().defineProps());
-    ConfigurableUiManager.loadFrontstage(new Frontstage5().defineProps());
+    ConfigurableUiManager.addFrontstage(new Frontstage1());
+    ConfigurableUiManager.addFrontstage(new Frontstage2());
+    ConfigurableUiManager.addFrontstage(new Frontstage3());
+    ConfigurableUiManager.addFrontstage(new Frontstage4());
+    ConfigurableUiManager.addFrontstage(new Frontstage5());
   }
 
   /** Define Common Items used in different Frontstages.

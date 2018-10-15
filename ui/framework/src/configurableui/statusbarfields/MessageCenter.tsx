@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
@@ -20,17 +20,20 @@ import MessageCenterTab from "@bentley/ui-ninezone/lib/footer/message-center/Tab
 import MessageCenterMessage from "@bentley/ui-ninezone/lib/footer/message-center/Message";
 import MessageCenter, { MessageCenterButton } from "@bentley/ui-ninezone/lib/footer/message-center/MessageCenter";
 
+/** Properties for the [[MessageCenterField]] React component */
 export interface MessageCenterProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
 }
 
+/** Enum for the [[MessageCenterField]] active tab */
 export enum MessageCenterActiveTab {
   AllMessages,
   Problems,
 }
 
+/** State for the [[MessageCenterField]] React component */
 export interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
 }

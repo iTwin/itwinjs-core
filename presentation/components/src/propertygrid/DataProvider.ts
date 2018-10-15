@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
@@ -224,8 +224,8 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
 
   protected invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
-    if (this.getData)
-      this.getData.cache.clear();
+    if (this.getMemoizedData)
+      this.getMemoizedData.cache.clear();
     if (this.onDataChanged)
       this.onDataChanged.raiseEvent();
   }
@@ -271,7 +271,8 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
   /**
    * Returns property data.
    */
-  public getData = _.memoize(async (): Promise<PropertyData> => {
+  // tslint:disable-next-line:naming-convention
+  protected getMemoizedData = _.memoize(async (): Promise<PropertyData> => {
     const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)
       return createDefaultPropertyData();
@@ -287,6 +288,13 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
       this.includeFieldsWithNoValues, callbacks);
     return await builder.buildPropertyData();
   });
+
+  /**
+   * Returns property data.
+   */
+  public getData(): Promise<PropertyData> {
+    return this.getMemoizedData();
+  }
 }
 
 const createDefaultPropertyData = (): PropertyData => ({

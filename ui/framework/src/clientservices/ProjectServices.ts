@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { AccessToken, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
 
 // This file defines the Project-related service interface that applications can provide if they want to override the default behavior.
 
@@ -33,7 +33,6 @@ export interface ProjectInfo {
 
 /** Interface for Project services */
 export interface ProjectServices {
-  deploymentEnv: DeploymentEnv;
 
   // Retrieve the Projects for the specified ProjectScope to which the logged in user has access.
   // the top and skip arguments are used for paging when there are large numbers of projects.

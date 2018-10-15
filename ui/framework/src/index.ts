@@ -1,13 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./UiFramework";
 
 export * from "./overallcontent/OverallContent";
 export * from "./overallcontent/state";
-export * from "./openimodel/OpenIModel";
-export * from "./openimodel/state";
 export * from "./FrameworkState";
 export * from "./UiFramework";
 export * from "./clientservices/LoginServices";
@@ -19,6 +17,7 @@ export * from "./messages/InputField";
 export * from "./messages/Pointer";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/ViewSelector";
+export * from "./utils/redux-ts";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,

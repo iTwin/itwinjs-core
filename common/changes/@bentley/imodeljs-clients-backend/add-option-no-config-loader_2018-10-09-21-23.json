@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Respond to change in signature of iModelJsConfig.init()",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Affan.Khan@bentley.com"
+}

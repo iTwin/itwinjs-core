@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -24,7 +24,7 @@ const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   mode: "development",
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
-  // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
+  // See the discussion in https://github.com/facebook/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
   externals: {
     // This is needed to install electron devtools extensions.
@@ -40,7 +40,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     // If you require a missing module and then `npm install` it, you still have
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
-    // See https://github.com/facebookincubator/create-react-app/issues/186
+    // See https://github.com/facebook/create-react-app/issues/186
     // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
   ],
   // Turn off performance hints during development because we don't do any

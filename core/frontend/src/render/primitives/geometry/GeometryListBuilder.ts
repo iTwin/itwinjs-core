@@ -1,14 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
 import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
 import { GraphicParams, RenderTexture, Gradient, ElementAlignedBox3d, FeatureTable } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
-import { ViewContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
 import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../../System";
@@ -181,9 +179,4 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   }
 
   public reset(): void { this.primitives = []; }
-}
-
-export class PrimitiveBuilderContext extends ViewContext {
-  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: RenderSystem) { super(viewport); }
-  public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }

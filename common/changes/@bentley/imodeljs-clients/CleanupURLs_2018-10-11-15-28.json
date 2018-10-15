@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated docs to change URL that were used as example but pointed to actuall internal server",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Affan.Khan"
+}

@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { prettyPrint } from "./testFunctions";
 import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { Point2d, Point3d, Vector2d, Vector3d } from "../PointVector";
-import { Point3dArrayCarrier, Point3dArray } from "../PointHelpers";
-import { Transform } from "../Transform";
-import { Matrix3d } from "../Transform";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArrayCarrier, Point3dArray } from "../geometry3d/PointHelpers";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Sample } from "../serialization/GeometrySamples";
-import { Angle } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 
 /* tslint:disable: no-console */
 

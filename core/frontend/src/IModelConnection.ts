@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
@@ -38,7 +38,9 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
-  /** The set of Tiles for this IModelConnection. */
+  /** The set of Tiles for this IModelConnection.
+   * @hidden
+   */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
@@ -286,7 +288,7 @@ export class IModelConnection extends IModel {
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
@@ -298,7 +300,7 @@ export class IModelConnection extends IModel {
   public async saveChanges(description?: string): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     if (OpenMode.ReadWrite !== this.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
@@ -595,7 +597,9 @@ export namespace IModelConnection {
     }
   }
 
-  /** Provides access to tiles associated with an IModelConnection */
+  /** Provides access to tiles associated with an IModelConnection
+   * @hidden
+   */
   export class Tiles {
     /** @hidden */
     private _iModel: IModelConnection;

@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module CheckBoxList */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { Checkbox } from "@bentley/bwc/lib/inputs/Checkbox";
@@ -34,7 +36,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   public render() {
-    const className = classnames ("chk-listboxitem-checkbox");
+    const className = classnames("chk-listboxitem-checkbox");
     return (
       <li>
         <Checkbox checked={this.props.checked} disabled={this.props.disabled} className={className} label={this.props.label} onClick={this._onClick} />

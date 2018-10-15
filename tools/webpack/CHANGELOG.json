@@ -2,6 +2,77 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.155.0",
+      "tag": "@bentley/webpack-tools_v0.155.0",
+      "date": "Tue, 09 Oct 2018 18:21:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updating copyrights"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.154.0",
+      "tag": "@bentley/webpack-tools_v0.154.0",
+      "date": "Tue, 09 Oct 2018 16:09:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.153.0",
+      "tag": "@bentley/webpack-tools_v0.153.0",
+      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added flag to skip looking for imodeljs-config"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.152.0",
+      "tag": "@bentley/webpack-tools_v0.152.0",
+      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "config-loader cannot locate imodeljs-config folder automatically in some cases"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.151.0",
+      "tag": "@bentley/webpack-tools_v0.151.0",
+      "date": "Thu, 04 Oct 2018 21:10:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.150.0",
+      "tag": "@bentley/webpack-tools_v0.150.0",
+      "date": "Thu, 04 Oct 2018 21:06:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updating copyrights"
+          },
+          {
+            "comment": "Fixed inconsistency between backend and frontend LicenseWebpackPlugin configs and added README."
+          },
+          {
+            "comment": "Added configuration system to imodeljs and removed urls/credentials"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/dev-cors-proxy-server\" from `0.0.7` to `0.0.8`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.146.0",
       "tag": "@bentley/webpack-tools_v0.146.0",
       "date": "Tue, 02 Oct 2018 14:51:50 GMT",

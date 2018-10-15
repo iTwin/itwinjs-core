@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -7,13 +7,12 @@
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { NpcCenter, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
+import { ScreenViewport, Viewport, linePlaneIntersect } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -889,7 +888,7 @@ export class ToolAdmin {
       const auxYRoot = auxRMatrixRoot.getRow(1);
       auxNormalRoot = (Math.abs(auxXRoot.dotProduct(viewZRoot)) > Math.abs(auxYRoot.dotProduct(viewZRoot))) ? auxXRoot : auxYRoot;
     }
-    LegacyMath.linePlaneIntersect(pointActive, pointActive, viewZRoot, auxOriginRoot, auxNormalRoot, perpendicular);
+    linePlaneIntersect(pointActive, pointActive, viewZRoot, auxOriginRoot, auxNormalRoot, perpendicular);
   }
 
   public adjustPointToGrid(pointActive: Point3d, vp: Viewport) {

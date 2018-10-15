@@ -1,18 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ValidationTextbox */
 
 import * as React from "react";
-// import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
+import { MessageManager } from "../configurableui";
 
 import "./ValidationTextbox.scss";
-
-// import { XAndY } from "@bentley/geometry-core";b
-import { MessageManager } from "../configurableui";
-// import Css from "@bentley/ui-ninezone/lib/utilities/Css";
 
 export enum InputStatus {
   Valid = 0,
@@ -42,7 +38,6 @@ export interface ValidationTextboxProps {
  * for empty if no method for onValueChanged is provided.
  */
 export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
-  private _inputElement: HTMLInputElement | null = null;
   private _isValid: boolean = true;
 
   /** @hidden */
@@ -66,7 +61,6 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
         style={sizeStyle}>
         <input
           className={this._isValid ? validClassNames : invalidClassNames}
-          ref={(el) => { this._inputElement = el; }}
           onChange={this._validateText}
           onKeyUp={this._validateText}
           onPaste={this._validateText}
@@ -89,8 +83,8 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
     this._isValid = false;
     let value = "";
 
-    if (this._inputElement)
-      value = this._inputElement.value;
+    if (event.target)
+      value = event.target.value;
 
     this._calculateIsValid(value);
 

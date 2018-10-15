@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core/lib/PointVector";
+import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, BriefcaseManager } from "../../backend";

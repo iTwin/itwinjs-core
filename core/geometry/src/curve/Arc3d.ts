@@ -1,22 +1,32 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
 
-import { Geometry, AxisOrder, Angle, AngleSweep, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
 import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
-import { Point3d, Vector3d, XYAndZ } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
-import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
-import { StrokeOptions } from "../curve/StrokeOptions";
+import { XYAndZ } from "../geometry3d/XYZProps";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { StrokeOptions } from "./StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";
-import { Matrix4d, Point4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
 
 /* tslint:disable:variable-name no-empty*/
 /**
@@ -29,7 +39,6 @@ import { Matrix4d, Point4d } from "../numerics/Geometry4d";
  * * Non-perpendicular vectors are always elliptic.
  * *  vectors of unequal length are always elliptic.
  * * To create an ellipse in the common "major and minor axis" form of an ellipse:
- *
  * ** vector0 is the vector from the center to the major axis extreme.
  * ** vector90 is the vector from the center to the minor axis extreme.
  * ** note the constructing the vectors to the extreme points makes them perpendicular.

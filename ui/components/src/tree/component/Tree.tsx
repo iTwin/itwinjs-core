@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
@@ -35,13 +35,14 @@ export interface TreeEvents {
   onChildrenLoaded: (node: InspireTreeNode) => void;
 }
 
+/** State for the [[Tree]] React component  */
 export interface TreeState {
   rootNodes: InspireTreeNode[];
   /** @hidden */
   highlightingEngine?: HighlightingEngine;
 }
 
-/** Props for the Tree React component  */
+/** Props for the [[Tree]] React component  */
 export interface TreeProps {
   onTreeReloaded?: () => void;
   dataProvider: InspireTreeDataProvider;
@@ -55,7 +56,7 @@ export interface TreeProps {
   key?: any;
 }
 
-/** Props for the Tree React component  */
+/** Type definition of the Props for the [[Tree]] React component  */
 export type Props = TreeProps & Partial<TreeEvents>;
 
 /**
@@ -230,7 +231,7 @@ export default class Tree extends React.Component<Props, TreeState> {
       if (this.props.dropProps) {
         const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
         dropProps.onDropTargetOver = (args: DropTargetArguments) => {
-          // populate tree information while it's accessable
+          // populate tree information while it's accessible
           args.dropLocation = data;
           if (args.dropRect) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
@@ -245,7 +246,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           if (onDropTargetOver) onDropTargetOver(args);
         };
         dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
-          // populate tree information while it's accessable
+          // populate tree information while it's accessible
           args.dropLocation = data;
           if (args.dropRect) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
@@ -261,7 +262,7 @@ export default class Tree extends React.Component<Props, TreeState> {
           return args;
         };
         dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
-          // populate tree information while it's accessable
+          // populate tree information while it's accessible
           args.dropLocation = data;
           if (canDropTargetDrop) return canDropTargetDrop(args);
           return true;

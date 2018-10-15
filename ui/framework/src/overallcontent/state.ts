@@ -1,24 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OverallContent */
 
-// @ts-ignore
-import { createAction, Action, ActionsUnion, ActionWithPayload } from "../utils/redux-ts";
+import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** The overall content that is displayed in the UI. */
 export enum OverallContentPage {
+  OfflinePage = -3,
   SelectIModelPage = -2,
-  ConfigurableUIPage = -1,
+  ConfigurableUiPage = -1,
 }
 
 /** An object with a function that creates each Overall Content Action that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
 export const OverallContentActions = {
   setOverallPage: (newPage: OverallContentPage | number) => createAction("OverallContent:SET_PAGE", newPage),
   setAccessToken: (accessToken: AccessToken) => createAction("OverallContent:SET_ACCESS_TOKEN", accessToken),
-  goToConfigurableUI: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
+  clearAccessToken: () => createAction("OverallContent:CLEAR_ACCCESS_TOKEN"),
+  goToConfigurableUi: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
 };
 
 /** The union of all actions that are handled by our reducer. */
@@ -41,8 +42,10 @@ export function OverallContentReducer(state: OverallContentState = initialState,
       return { ...state, currentPage: action.payload };
     case "OverallContent:SET_ACCESS_TOKEN":
       return { ...state, accessToken: action.payload as any };
+    case "OverallContent:CLEAR_ACCCESS_TOKEN":
+      return { ...state, accessToken: undefined };
     case "OpenIModel:SETSELECTEDVIEWS":
-      return { ...state, currentPage: OverallContentPage.ConfigurableUIPage };
+      return { ...state, currentPage: OverallContentPage.ConfigurableUiPage };
   }
   return state;
 }

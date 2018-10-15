@@ -1,5 +1,5 @@
 # AccessToken
-A client must have an [AccessToken]($imodeljs-clients) in order to open an iModel. To obtain an AccessToken, the client must first obtain a [AuthorizationToken]($imodeljs-clients). That requires an IMS login.
+A client must have an [AccessToken]($imodeljs-clients) to open an iModel. To obtain an AccessToken, the client must first obtain a [AuthorizationToken]($imodeljs-clients). That requires an IMS login.
 
 *Example:*
 ``` ts

@@ -1,6 +1,50 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+*Version update only*
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+*Version update only*
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+### Updates
+
+- Change ColorDef to ColorDefProps in GeometryStream wire format interfaces.
+- IModelError now requires the message parameter
+- RpcInterface docs
+- more docs
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:01 GMT
+
+### Updates
+
+- Add RPC Changes
+- Add README.md
+- RpcInterfaceStatus
+- RpcInterface docs
+- docs
+- Updating copyrights
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

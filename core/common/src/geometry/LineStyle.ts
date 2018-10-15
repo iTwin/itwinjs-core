@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Symbology */
@@ -9,9 +9,10 @@ import { Id64 } from "@bentley/bentleyjs-core";
 
 export namespace LineStyle {
 
-  /** GeometryStream entry to modify the line style appearance without changing the line style definition.
-   * Applies to the style previously established by a GeometryAppearanceProps or current subCategory appearance.
+  /** Modify the line style appearance without changing the line style definition.
+   * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
    * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
+   * @see [[GeometryStreamEntryProps]]
    */
   export interface ModifierProps {
     /** Optional scale to apply to all length values, 1.0 if undefined */
@@ -77,7 +78,7 @@ export namespace LineStyle {
     }
 
     /** Compare two LineStyle.Modifier for equivalence */
-    public isEqualTo(other: Modifier): boolean {
+    public equals(other: Modifier): boolean {
       if (this === other)   // same pointer
         return true;
 
@@ -174,14 +175,14 @@ export namespace LineStyle {
       return new Info(this.styleId, this.styleMod ? this.styleMod.clone() : undefined);
     }
 
-    public isEqualTo(other: Info): boolean {
+    public equals(other: Info): boolean {
       if (this === other)
         return true;
       if (!this.styleId.equals(other.styleId))
         return false;
       if ((this.styleMod === undefined) !== (other.styleMod === undefined))
         return false;
-      if (this.styleMod && !this.styleMod.isEqualTo(other.styleMod!))
+      if (this.styleMod && !this.styleMod.equals(other.styleMod!))
         return false;
       return true;
     }

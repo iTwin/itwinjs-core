@@ -1,6 +1,6 @@
 ﻿# The iModel.js Library
 
-Copyright © Bentley Systems, Inc. 2018
+Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
 The [iModel.js](http://imodeljs.org) library is an open source library for creating and accessing iModels.
 
@@ -48,7 +48,7 @@ Each package will have its own **node_modules** directory which will contain sym
 * [Git](https://git-scm.com/)
 * [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 8.11.x. The Node installation also includes the **npm** package manager.
 * [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
-* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 2.7.2
+* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 3.0 of TypeScript.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 ### Linux
@@ -63,9 +63,13 @@ You must install the following on a Linux computer before attempting to run imod
 2. Install dependencies: `rush install`
 3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
-5. Run tests: `npm test -s`
+5. Run tests:
+    * All tests: `rush test`
+    * Core tests: `npm test -s`
+    * UI tests: `npm run test:ui -s`
+    * Presentation tests: `npm run test:presentation -s`
 
-The `-s` option is short for `--silent` which results in a less verbose command.
+The `-s` option for `npm` is short for `--silent` which results in a less verbose command.
 That part of the command is optional depending on the desired verbosity level.
 
 Note that all build instructions are designed to run from the imodeljs-core root directory.
@@ -84,8 +88,7 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 5. Add changelog entry (which could potentially cover several commits): `rush change`
 6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **testbed**), then `rush change` will indicate that a changelog entry is not needed.
 7. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
-8. Add/stage this new file or files using the "+" in VS Code or from the command line using `git add <name of file>` (can use `git status` to get name of file)
-9. In order to keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
+8. To keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
 10. Push changes
 
 If using the command line, steps 5 through 9 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.

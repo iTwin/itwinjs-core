@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
@@ -11,7 +11,6 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
 
-import { UiFramework } from "../UiFramework";
 import { ProjectInfo } from "./ProjectServices";
 import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
@@ -44,7 +43,7 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Initialize the iModelHub Api */
   constructor() {
-    this._hubClient = new IModelHubClient(UiFramework.projectServices.deploymentEnv);
+    this._hubClient = new IModelHubClient();
   }
 
   /** Get all iModels in a project */

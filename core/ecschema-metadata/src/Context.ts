@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { SchemaKey, SchemaMatchType, SchemaItemKey } from "./ECObjects";
+import { SchemaMatchType } from "./ECObjects";
+import SchemaKey, { SchemaItemKey } from "./SchemaKey";
 import Schema, { MutableSchema } from "./Metadata/Schema";
 import SchemaItem from "./Metadata/SchemaItem";
 
@@ -119,11 +120,11 @@ export class SchemaCache implements ISchemaLocater {
 /**
  * The SchemaContext, context object is used to facilitate schema and schema item location.
  *
- * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context in order to delete a schema object.
+ * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context to delete a schema object.
  *
  * The context is made up of a group of Schema Locators.
  */
-export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
+export default class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
   private _knownSchemas: SchemaCache;

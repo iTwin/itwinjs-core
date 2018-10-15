@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
 
 import * as React from "react";
@@ -22,7 +23,7 @@ enum BreadcrumbMode {
   Input = "input",
 }
 
-/** Property interface for Breadcrumb */
+/** Property interface for [[Breadcrumb]] component */
 export interface BreadcrumbProps {
   /** Manager to coordinate state between Breadcrumb element and BreadrcumbDetails element. */
   path: BreadcrumbPath;
@@ -121,7 +122,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
             width={this.props.width!}
             delimiter={this.props.delimiter!}
             onOutsideClick={this._handleOutsideClick}
-            />
+          />
         </div>
       </div>
     );
@@ -132,7 +133,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   private _handleModeSwitch = (mode: BreadcrumbMode) => {
-    this.setState({currentMode: mode});
+    this.setState({ currentMode: mode });
   }
 }
 
@@ -496,7 +497,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
   private _dragProps: DragSourceProps = {};
   constructor(props: BreadcrumbDropdownNodeProps) {
     super(props);
-    const {node, parent, dataProvider, dragProps, dropProps: drop } = props;
+    const { node, parent, dataProvider, dragProps, dropProps: drop } = props;
     if ((dragProps && (dragProps.onDragSourceBegin || dragProps.onDragSourceEnd)) ||
       (drop && (drop.onDropTargetOver || drop.onDropTargetDrop))) {
       if (dragProps) {
@@ -549,7 +550,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
     }
   }
   public render(): React.ReactNode {
-    const {node, nodeChildren, path } = this.props;
+    const { node, nodeChildren, path } = this.props;
     const label = node && "label" in node ? node.label : " ";
     let button = (
       <div>
@@ -558,7 +559,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
       </div>
     );
     if (this._dragProps.onDragSourceBegin || this._dragProps.onDragSourceEnd ||
-        this._dropProps.onDropTargetOver || this._dropProps.onDropTargetDrop) {
+      this._dropProps.onDropTargetOver || this._dropProps.onDropTargetDrop) {
       button = (
         <DragDropBreadcrumbButton dragProps={this._dragProps} dropProps={this._dropProps}>
           <span className={classnames("icon", (node && node.iconPath) || (!node && "icon-browse") || "")} /> {label}
@@ -597,7 +598,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
   }
 }
 
-/** Property interface for BreadcrumbDetails */
+/** Property interface for the [[BreadcrumbDetails]] component */
 export interface BreadcrumbDetailsProps {
   /** Path data object shared by Breadcrumb component */
   path: BreadcrumbPath;

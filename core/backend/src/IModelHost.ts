@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelHost */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { DeploymentEnv, IModelClient } from "@bentley/imodeljs-clients";
+import { IModelClient } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -22,9 +22,6 @@ import { BriefcaseManager } from "./BriefcaseManager";
  * Configuration of imodeljs-backend.
  */
 export class IModelHostConfiguration {
-  /** The deployment environment of Connect and iModelHub Services - this identifies up the location used to find Projects and iModels */
-  public hubDeploymentEnv: DeploymentEnv = "QA";
-
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
@@ -57,7 +54,7 @@ export class IModelHost {
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** Configured FeatureGates for this IModelHost. */
+  /** @hidden */
   public static readonly features = new FeatureGates();
 
   /** This method must be called before any iModel.js services are used.

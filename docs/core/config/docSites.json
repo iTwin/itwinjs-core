@@ -23,7 +23,7 @@
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
-    "favicon": "landing-page/assets/imodeljsimodeljs.ico",
+    "favicon": "landing-page/assets/imodeljs_16.png",
     "docSiteOrder": [
       "landing-page",
       "getting-started",
@@ -50,11 +50,12 @@
       "frontend": "imodeljs-frontend",
       "backend": "imodeljs-backend",
       "clients": "imodeljs-clients",
+      "quantity": "imodeljs-quantity",
       "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
     },
-    "editDocsBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fdocs%2Fcore%2F",
-    "editSrcBaseURL": "https://bentleycs.visualstudio.com/iModelTechnologies/iModelTechnologies/_git/imodeljs?path=%2Fcore%2F"
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "ogShareImage": "landing-page/assets/twitter-share.png"
   }
 }

@@ -4,7 +4,6 @@
     "target": "es2017",
     "skipLibCheck": true,
     "module": "commonjs",
-    "baseUrl": "./node_modules",
     "outDir": "./lib",
     "jsx": "react"
   },

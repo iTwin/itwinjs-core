@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
@@ -19,7 +19,7 @@ export const enum StandardTypeConverterTypeNames {
   Boolean = "boolean",
   Float = "float",
   Int = "int",
-  Hexdecimal = "hexadecimal",
+  Hexadecimal = "hexadecimal",
   Enum = "enum",
   Point2d = "point2d",
   Point3d = "point3d",
@@ -50,7 +50,8 @@ export interface NullableOperatorProcessor {
   isNotNull(value: any): boolean;
 }
 
-export interface AsyncErrorMsg {
+/** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]] */
+export interface AsyncErrorMessage {
   briefMsg: string;
   detailedMsg?: string;
   priority?: OutputMessagePriority;
@@ -60,10 +61,11 @@ export interface AsyncErrorMsg {
   displayTime?: number;
 }
 
+/** Asynchronous Value Process Result */
 export interface AsyncValueProcessingResult {
   returnValue?: PropertyValue;
   encounteredError: boolean;
-  errorMsg?: AsyncErrorMsg;
+  errorMsg?: AsyncErrorMessage;
 }
 
 /**

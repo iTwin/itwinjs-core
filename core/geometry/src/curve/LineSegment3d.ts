@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,13 +7,18 @@
 
 import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { CurvePrimitive, GeometryQuery, CurveLocationDetail, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { StrokeOptions } from "./StrokeOptions";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/

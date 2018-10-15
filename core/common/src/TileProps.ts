@@ -1,23 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
 import { TransformProps, Range3dProps } from "@bentley/geometry-core";
 
-/**
- * The metadata describing a single Tile.
- * Note that a Tile's metadata is distinct from its content (geometry, from which graphics are created).
- * Before a Tile's content is loaded, some of the metadata may be in an unknown state.
- * For example, the content range is derived from the geometry; if the geometry has not been loaded, the content range cannot be computed.
- * Therefore after loading a Tile's content, some metadata may change:
- *  - isLeaf may be set to true
- *  - sizeMultiplier may be set to a value > 1.0
- *  - contentRange may be set to a non-null range
- *  - maximumSize may be set to zero if the tile content is empty.
- * Due to tile caching optimizations, some of this metadata may be retrieved from the backend cache before the tile content is loaded.
- */
+/** @hidden */
 export interface TileProps {
   /** The unique identifier of the tile's content */
   contentId: string;
@@ -33,7 +22,7 @@ export interface TileProps {
   isLeaf?: boolean;
 }
 
-/** The metdata describing a TileTree */
+/** @hidden */
 export interface TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   id: string;

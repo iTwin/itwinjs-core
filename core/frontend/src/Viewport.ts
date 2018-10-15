@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ,
+  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
 } from "@bentley/geometry-core";
-import { Plane3dByOriginAndUnitNormal, Ray3d } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { StandardView, StandardViewId } from "./StandardView";
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -17,8 +17,7 @@ import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps, AnalysisStyle } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -27,10 +26,14 @@ import { ToolSettings } from "./tools/ToolAdmin";
 import { GraphicType } from "./render/GraphicBuilder";
 import { ToolTipOptions } from "./NotificationManager";
 
-/** A function which customizes the appearance of Features within a Viewport. */
+/** A function which customizes the appearance of Features within a Viewport.
+ * @see [[Viewport.addFeatureOverrides]]
+ */
 export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
 
-/** Viewport synchronization flags. */
+/** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
+ * @hidden
+ */
 export class SyncFlags {
   private _decorations = false;
   private _scene = false;
@@ -238,12 +241,14 @@ export const enum CoordSystem {
 
   /**
    * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
-   * For 2d views, it is the coordinate system of the GeometricModel2d] that the view shows.
+   * For 2d views, it is the coordinate system of the GeometricModel2d that the view shows.
    */
   World,
 }
 
-/** Object to animate a Frustum transition of a viewport. The Viewport will show as many frames as necessary during the supplied duration. */
+/** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
+ * @see [[Viewport.animateFrustumChange]]
+ */
 class Animator {
   private readonly _currFrustum = new Frustum();
   private _startTime?: BeTimePoint;
@@ -265,7 +270,7 @@ class Animator {
 
   /**
    * Move to the appropriate frame, based on the current time, for the current animation.
-   * @return true when finished
+   * @return true when finished to terminate the animation.
    */
   public animate(): boolean {
     const currTime = BeTimePoint.now();
@@ -291,7 +296,7 @@ class Animator {
     return done;
   }
 
-  /** Abort this animation, moving to the final frame. */
+  /** Abort this animation, moving immediately to the final frame. */
   public interrupt(): void {
     if (this._startTime)
       this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
@@ -372,8 +377,18 @@ export interface ViewChangeOptions {
   marginPercent?: MarginPercent;
 }
 
-/**
- * A ViewFrustum holds information about a frustum used by a Viewport.
+/** Options to allow changing the view rotation with zoomTo methods. */
+export interface ZoomToOptions {
+  /** Set view rotation from standard view identifier. */
+  standardViewId?: StandardViewId;
+  /** Set view rotation relative to placement of first element or props entry. */
+  placementRelativeId?: StandardViewId;
+  /** Set view rotation from Matrix3d. */
+  viewRotation?: Matrix3d;
+}
+
+/** Supplies facilities for interacting with a [[Viewport]]'s frustum.
+ * @hidden
  */
 export class ViewFrustum {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
@@ -400,7 +415,9 @@ export class ViewFrustum {
   /** @hidden */
   public readonly worldToNpcMap = Map4d.createIdentity();
 
+  /** @hidden */
   public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
+  /** @hidden */
   public readonly invalidFrustum: boolean = false;
 
   private _view: ViewState;
@@ -427,6 +444,7 @@ export class ViewFrustum {
 
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
+   *  @hidden
    */
   protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
     if (this._aspectRatioLocked)
@@ -687,10 +705,12 @@ export class ViewFrustum {
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
+  /** @hidden */
   public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
     return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked);
   }
 
+  /** @hidden */
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
     const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, plane);
     return vf.invalidFrustum ? undefined : vf;
@@ -833,7 +853,7 @@ export class ViewFrustum {
 }
 
 /**
- * A Viewport renders one or more Models onto an `HTMLCanvasElement`.
+ * A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
  * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
@@ -841,6 +861,8 @@ export class ViewFrustum {
  *
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
+ *
+ * @see [[ViewManager]]
  */
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
@@ -849,16 +871,26 @@ export abstract class Viewport implements IDisposable {
   private _animationFraction: number = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
-  /** Time the current flash started */
+  /** Time the current flash started.
+   * @hidden
+   */
   public flashUpdateTime?: BeTimePoint;
-  /** Current flash intensity from [0..1] */
+  /** Current flash intensity from [0..1]
+   * @hidden
+   */
   public flashIntensity = 0;
-  /** The length of time that the flash intensity will increase (in seconds) */
+  /** The length of time that the flash intensity will increase (in seconds)
+   * @hidden
+   */
   public flashDuration = 0;
   private _flashedElem?: string;         // id of currently flashed element
-  /** Id of last flashed element */
+  /** Id of last flashed element.
+   * @hidden
+   */
   public lastFlashedElem?: string;
-  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
+  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer.
+   * @hidden
+   */
   public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
@@ -867,20 +899,29 @@ export abstract class Viewport implements IDisposable {
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
 
+  /** @hidden */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
+  /** This viewport's rotation matrix. */
   public get rotation(): Matrix3d { return this._viewFrustum.rotation; }
+  /** The vector between the opposite corners of this viewport's extents. */
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
+  /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
+  /** @hidden */
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
 
+  /** @hidden */
   public get animationFraction(): number { return this._animationFraction; }
+  /** @hidden */
   public set animationFraction(fraction: number) { this._animationFraction = fraction; this.sync.invalidateAnimationFraction(); }
 
+  /** @hidden */
   protected readonly _viewRange: ViewRect = new ViewRect();
 
-  /** Get the rectangle of this Viewport in ViewCoordinates. */
+  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates. */
   public abstract get viewRect(): ViewRect;
+  /** @hidden */
   public get isAspectRatioLocked(): boolean { return false; }
 
   /** @hidden */
@@ -892,14 +933,14 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public readonly sync = new SyncFlags();
   /** The settings that control how elements are hilited in this Viewport. */
-  public readonly hilite = new Hilite.Settings();
+  public hilite = new Hilite.Settings();
 
   /**
    * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
-  /** The [ViewFlags]($common) that determine how this Viewport is rendered.  */
+  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.  */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   /** @hidden */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
@@ -914,6 +955,8 @@ export abstract class Viewport implements IDisposable {
       this.invalidateScene();
     }
   }
+  /** @hidden */
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
@@ -926,6 +969,7 @@ export abstract class Viewport implements IDisposable {
   /** Construct a new Viewport
    * @param htmlElement The HTMLDivElement for the Viewport. This constructor will create a canvas to draw the graphics.
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
+   * @hidden
    */
   protected constructor(target: RenderTarget) {
     this._target = target;
@@ -936,22 +980,23 @@ export abstract class Viewport implements IDisposable {
     this._target = dispose(this._target);
   }
 
-  /** Determine whether continuous rendering is enabled. */
+  /** @hidden */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
-
-  /** Set whether or not continuous rendering is enabled. */
+  /** @hidden */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }
   /** @hidden */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
+  /** @hidden */
   public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
 
   /**
-   * Sets a function which can customize the appearance of features within a viewport.
-   * If defined, this function will be invoked whenever the overrides are determined to need refreshing.
-   * The overrides can be explicitly marked as needing a refresh by calling ViewState.setFeatureOverridesDirty().
+   * Sets a function which can customize the appearance of [[Feature]]s within a viewport.
+   * If defined, this function will be invoked whenever the overrides are determined to need updating.
+   * The overrides can be explicitly marked as needing a refresh by calling [[ViewState.setFeatureOverridesDirty]].
+   * @see [[FeatureSymbology.Overrides]]
    */
   public set addFeatureOverrides(addFeatureOverrides: AddFeatureOverrides | undefined) {
     if (addFeatureOverrides !== this._addFeatureOverrides) {
@@ -973,6 +1018,7 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the currently *flashed* element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element
    * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]])
+   * @hidden
    */
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this._flashedElem) {
@@ -1093,6 +1139,7 @@ export abstract class Viewport implements IDisposable {
     return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
   }
 
+  /** Orient this viewport to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId): void {
     this.view.setStandardRotation(id);
     this.setupFromView();
@@ -1117,7 +1164,7 @@ export abstract class Viewport implements IDisposable {
     return this.doSetupFromView(this.view);
   }
 
-  /** Call [[setupFromView]] on this Viewport and optionally  save previous state in view undo stack */
+  /** Call [[setupFromView]] on this Viewport and optionally save previous state in view undo stack */
   public synchWithView(_saveInUndo: boolean): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
@@ -1305,16 +1352,30 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of PlacementProps. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions) {
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (placementProps.length === 0)
       return;
 
-    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+    if (undefined !== options) {
+      if (undefined !== options.standardViewId) {
+        this.view.setStandardRotation(options.standardViewId);
+      } else if (undefined !== options.placementRelativeId) {
+        const firstProps = placementProps[0];
+        const firstPlacement = hasAngle(firstProps) ? Placement2d.fromJSON(firstProps) : Placement3d.fromJSON(firstProps);
+        const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
+        viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
+        this.view.setRotation(viewRotation);
+      } else if (undefined !== options.viewRotation) {
+        this.view.setRotation(options.viewRotation);
+      }
+    }
+
+    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (const props of placementProps) {
@@ -1327,11 +1388,11 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of ElementProps. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
    * @param props element props. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions) {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions) {
     if (elementProps.length === 0)
       return;
     const placementProps: PlacementProps[] = [];
@@ -1343,11 +1404,11 @@ export abstract class Viewport implements IDisposable {
   }
 
   /**
-   * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
+   * Zoom the view to a show the tightest box around a given set of elements. Optionally, change view rotation.
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
-   * @param options options that control how the view change works
+   * @param options options that control how the view change works and whether to change view rotation.
    */
-  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions): Promise<void> {
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
     this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
   }
 
@@ -1454,7 +1515,7 @@ export abstract class Viewport implements IDisposable {
       eyeVec = this._viewFrustum.rotation.getRow(2).clone();
 
     eyeVec.normalizeInPlace();
-    LegacyMath.linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
+    linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
     // // get origin and point in view coordinate system
     const pointView = point.clone();
@@ -1648,7 +1709,7 @@ export abstract class Viewport implements IDisposable {
    * Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
    * @param selector Specifies which aspect(s) of data to read.
-   * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
+   * @returns a [[Pixel.Buffer]] object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     const viewRect = this.viewRect;
@@ -1662,6 +1723,7 @@ export abstract class Viewport implements IDisposable {
    * Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
    * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
+   * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero()): ImageBuffer | undefined {
     return this.target.readImage(rect, targetSize);
@@ -1699,7 +1761,7 @@ export abstract class Viewport implements IDisposable {
 
 /**
  * An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
- * In order to render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
+ * To render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
  * Every frame, the ViewManager will update the Viewport's state and re-render its contents if anything has changed.
  * To halt this loop, use ViewManager.dropViewport() to remove the viewport from the ViewManager.
  *
@@ -1707,11 +1769,14 @@ export abstract class Viewport implements IDisposable {
  * This is achieved by invoking the viewport's dispose() method. ViewManager.dropViewport() invokes dispose() on the viewport by default.
  *
  * The lifetime of a ScreenViewport typically follows a pattern:
+ * ```
  *  1. Application creates the viewport via ScreenViewport.create()
  *  2. The viewport is added to the render loop via ViewManager.addViewport()
  *  3. When the application is finished with the viewport, it removes it from the render loop and disposes of it via ViewManager.dropViewport().
+ * ```
  *
  * In some cases it may be useful to temporarily suspend a viewport's render loop. In this case the lifetime of the viewport proceeds as follows:
+ * ```
  *  1. Application creates the viewport via ScreenViewport.create()
  *  2. The viewport is added to the render loop via ViewManager.addViewport()
  *  3. At some point the render loop is suspended via ViewManager.dropViewport(viewport, false), indicating the viewport should not be disposed.
@@ -1719,6 +1784,7 @@ export abstract class Viewport implements IDisposable {
  *  5. When the application is finished with the viewport:
  *    5a. If it is currently registered with the ViewManager, it is dropped and disposed of via ViewManager.dropViewport()
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
+ * ```
  */
 export class ScreenViewport extends Viewport {
   private _evController?: EventController;
@@ -1729,21 +1795,33 @@ export class ScreenViewport extends Viewport {
   private readonly _backStack: ViewState[] = [];
   private _currentBaseline?: ViewState;
 
-  /** The canvas created to hold the view contents. */
-  public readonly canvas: HTMLCanvasElement;
-
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
+  /** The canvas to display the view contents. */
+  public readonly canvas: HTMLCanvasElement;
+  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
   public readonly decorationDiv: HTMLDivElement;
+  /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
   public readonly toolTipDiv: HTMLDivElement;
 
-  public static create(parentDiv: HTMLDivElement, view: ViewState) {
+  /**
+   * Create a new ScreenViewport that shows a View of an iModel into an HTMLDivElement. This method will create a new HTMLCanvasElement as a child of the supplied parentDiv.
+   * It also creates two new child HTMLDivElements: one of class "overlay-decorators" for HTML overlay decorators, and one of class
+   * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
+   * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
+   * @param view The ViewState for the ScreenViewport.
+   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to be "live". You must also ensure your dispose of it properly.
+   */
+  public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
   }
 
+  /** Remove all of the children of an HTMLDivElement.
+   * @hidden
+   */
   public static removeAllChildren(el: HTMLDivElement) {
     while (el.lastChild)
       el.removeChild(el.lastChild);
@@ -1791,6 +1869,13 @@ export class ScreenViewport extends Viewport {
     this.setCursor();
   }
 
+  /**
+   * Open the toolTip window in this ScreenViewport with the supplied message and location. The tooltip will be a child of [[ScreenViewport.toolTipDiv]].
+   * @param message The message to display
+   * @param location The position of the toolTip, in view coordinates. If undefined, use center of view.
+   * @param options the ToolTip options
+   * @note There is only one ToolTip window, so calling this method more than once will move the toolTip and show the second message.
+   */
   public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
   }
@@ -1815,11 +1900,13 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
+  /** @hidden */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
 
+  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @hidden */
@@ -1844,33 +1931,41 @@ export class ScreenViewport extends Viewport {
       this.canvas.style.cursor = cursor;
   }
 
+  /** @hidden */
   public synchWithView(saveInUndo: boolean): void {
     super.setupFromView();
     if (saveInUndo)
       this.saveViewUndo();
   }
 
+  /**
+   * Change the ViewState of this Viewport
+   * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
+   */
   public changeView(view: ViewState) {
     this.clearViewUndo();
     super.changeView(view);
     this.saveViewUndo();
   }
 
+  /** @hidden */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
+  /** @hidden */
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this._backStack.length; }
 
-  /** True if an redoable viewing operation exists on the stack */
+  /** True if a redoable viewing operation exists on the stack */
   public get isRedoPossible(): boolean { return 0 < this._forwardStack.length; }
 
-  /** Clear the view undo buffers of this Viewport. */
+  /** Clear the undo buffers of this Viewport. This resets the undo stack. */
   public clearViewUndo(): void {
     this._currentBaseline = undefined;
     this._forwardStack.length = 0;
     this._backStack.length = 0;
   }
 
+  /** Saves the current state of this viewport's [[ViewState]] in the undo stack, such that it can be restored by a call to [[ScreenViewport.doUndo]]. */
   public saveViewUndo(): void {
     if (!this.view)
       return;
@@ -2011,4 +2106,24 @@ export class OffScreenViewport extends Viewport {
     this.target.setViewRect(rect, temporary);
     this.changeView(this.view);
   }
+}
+
+/** @hidden */
+export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void {
+  let dot = 0;
+  if (lineNormal)
+    dot = lineNormal.dotProduct(planeNormal);
+  else
+    perpendicular = true;
+
+  let temp: Vector3d;
+  if (perpendicular || Math.abs(dot) < .001) {
+    const t = linePt.vectorTo(planePt).dotProduct(planeNormal);
+    temp = planeNormal.scale(t);
+  } else {
+    const t = (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;
+    temp = lineNormal!.scale(t);
+  }
+
+  outP.setFrom(temp.plus(linePt));
 }

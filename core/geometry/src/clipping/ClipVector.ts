@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,11 +7,12 @@
 
 import { ClipShape, ClipMask } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
-import { Point3d, Segment1d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { Geometry } from "../Geometry";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 
 /** Class holding an array structure of shapes defined by clip plane sets */

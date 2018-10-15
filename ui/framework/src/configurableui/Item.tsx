@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
@@ -138,6 +138,7 @@ export class CommandItemDef extends ItemDefBase {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/** State for the various Toolbar button React components */
 export interface ItemButtonState {
   itemDef: ItemDefBase;
 }
@@ -170,6 +171,7 @@ export class CommandButton extends React.Component<CommandItemProps, ItemButtonS
   }
 }
 
+/** State for the ToolButton React component */
 export interface ToolItemButtonState {
   itemDef: ToolItemDef;
   activeTool: boolean;

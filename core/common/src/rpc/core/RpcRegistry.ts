@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -71,7 +71,7 @@ export class RpcRegistry {
       const endpoints = responses.reduce((a, b) => a.concat(b), []);
       for (const endpoint of endpoints) {
         const definition = this.definitionClasses.get(endpoint.interfaceName);
-        endpoint.compatible = (definition && definition.version === endpoint.interfaceVersion) ? true : false;
+        endpoint.compatible = (definition && RpcInterface.isVersionCompatible(endpoint.interfaceVersion, definition.version)) ? true : false;
       }
 
       return endpoints;

@@ -8,15 +8,13 @@ The goal of this document is to provide a high-level overview of how you can get
 ## Asking Questions
 
 Have a question?
-Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/questions/tagged/imodeljs) using the tag `imodeljs`.
+Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/tags/imodeljs) using the tag `imodeljs`.
 
-The community will be eager to assist you.
-Your well-worded question will serve as a resource to others searching for help.
+The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
-Your comments and feedback are welcome.
-For general comments or discussion please [click here](https://github.com/imodeljs/imodeljs/labels/discussion) to contribute via GitHub issues using the `discussion` label.
+Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/imodeljs/imodeljs/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
 ## Reporting Issues
 

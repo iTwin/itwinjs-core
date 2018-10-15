@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
 import { Vector3d, XYAndZ } from "@bentley/geometry-core";
 
+/** @hidden */
 export class OctEncodedNormal {
   private static _scratchUInt16 = new Uint16Array(1);
   private static clamp(val: number, minVal: number, maxVal: number): number { return val < minVal ? minVal : (val > maxVal ? maxVal : val); }
@@ -46,6 +47,7 @@ export class OctEncodedNormal {
   }
 }
 
+/** @hidden */
 export class OctEncodedNormalPair {
   constructor(public first: OctEncodedNormal, public second: OctEncodedNormal) { }
 }

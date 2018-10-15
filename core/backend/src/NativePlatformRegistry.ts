@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Portability */
@@ -81,7 +81,7 @@ export class NativePlatformRegistry {
 
     if (typeof (process) === "undefined") {
       // We are running in an unknown platform.
-      throw new IModelError(IModelStatus.NotFound);
+      throw new IModelError(IModelStatus.NotFound, "Error - running in an unknown platform");
     }
 
     // We are running in node or electron.

@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState, DeploymentEnv } from "../index";
-import { TestConfig } from "./TestConfig";
+import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "../index";
 import nock = require("nock");
+import { TestConfig } from "./TestConfig";
+import { KnownRegions } from "../Client";
+import { Config } from "../Config";
 
 export enum RequestType {
   Get,
@@ -271,12 +273,10 @@ export class ResponseBuilder {
 }
 
 export class UrlDiscoveryMock {
-  private static readonly _regionMap: { [deploymentEnv: string]: number } = { DEV: 103, QA: 102, PROD: 0, PERF: 294 };
-
-  public static mockGetUrl(searchKey: string, env: DeploymentEnv, returnedUrl: string) {
+  public static mockGetUrl(searchKey: string, env: KnownRegions, returnedUrl: string) {
     if (!TestConfig.enableMocks)
       return;
-    ResponseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get,
-      `/WebService/GetUrl/?url=${searchKey}&region=${this._regionMap[env]}`, { result: { url: returnedUrl } });
+    ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,
+      `/GetUrl/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
   }
 }

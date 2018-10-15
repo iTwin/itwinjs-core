@@ -11,6 +11,8 @@ The following app configurations are supported:
 
 See the [app architecture overview](../../learning/SoftwareArchitecture.md) for more on app structure.
 
+See [best practices](../backend/BestPractices.md) for writing frontend code and using ECSQL efficiently.
+
 An app's frontend always implements its own frontend script and resources.
 
 An app's frontend will often depend on npm packages to help implement its GUI.

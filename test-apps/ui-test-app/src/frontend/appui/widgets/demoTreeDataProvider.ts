@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { TreeNodeItem, TreeDataProvider, MutableTreeDataProvider, TreeDataChangeEvent } from "@bentley/ui-components";
@@ -128,26 +128,26 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       return n.children.length;
     return 0;
   },
-  AddRootNode: (rootNode: TreeNodeItem): void => {
+  addRootNode: (rootNode: TreeNodeItem): void => {
     const rn = TreeNodeItemToDemoNode(rootNode);
     rn.parentId = undefined;
     data.push(rn);
     treeDataChangeEvent.raiseEvent();
   },
-  InsertRootNode: (rootNode: TreeNodeItem, index: number): void => {
+  insertRootNode: (rootNode: TreeNodeItem, index: number): void => {
     const rn = TreeNodeItemToDemoNode(rootNode);
     rn.parentId = undefined;
     data.splice(index, 0, rn);
     treeDataChangeEvent.raiseEvent();
   },
-  RemoveRootNode: (rootNode: TreeNodeItem): void => {
+  removeRootNode: (rootNode: TreeNodeItem): void => {
     const n = getNodeIndexById(data, rootNode.id);
     if (n !== -1) {
       data.splice(n, 1);
       treeDataChangeEvent.raiseEvent();
     }
   },
-  MoveRootNode: (rootNode: TreeNodeItem, newIndex: number): void => {
+  moveRootNode: (rootNode: TreeNodeItem, newIndex: number): void => {
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < data.length; i++) {
       const node = data[i];
@@ -160,7 +160,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       }
     }
   },
-  AddChildNode: (parent: TreeNodeItem, child: TreeNodeItem): void => {
+  addChildNode: (parent: TreeNodeItem, child: TreeNodeItem): void => {
     const p = getNodeById(data, parent.id);
 
     if (p) {
@@ -172,7 +172,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       return;
     }
   },
-  InsertChildNode: (parent: TreeNodeItem, child: TreeNodeItem, index: number): void => {
+  insertChildNode: (parent: TreeNodeItem, child: TreeNodeItem, index: number): void => {
     const p = getNodeById(data, parent.id);
     if (p) {
       if (!p.children) p.children = [];
@@ -183,7 +183,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       return;
     }
   },
-  RemoveChildNode: (parent: TreeNodeItem, child: TreeNodeItem): void => {
+  removeChildNode: (parent: TreeNodeItem, child: TreeNodeItem): void => {
     const p = getNodeById(data, parent.id);
     if (p && p.children) {
       const n = getNodeIndexById(p, child.id);
@@ -194,7 +194,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       }
     }
   },
-  MoveChildNode: (parent: TreeNodeItem, child: TreeNodeItem, newIndex: number): void => {
+  moveChildNode: (parent: TreeNodeItem, child: TreeNodeItem, newIndex: number): void => {
     const p = getNodeById(data, parent.id);
     if (p && p.children) {
       // tslint:disable-next-line:prefer-for-of
@@ -210,7 +210,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
       }
     }
   },
-  IsDescendent: (parent: TreeNodeItem, nodeItem: TreeNodeItem): boolean => {
+  isDescendent: (parent: TreeNodeItem, nodeItem: TreeNodeItem): boolean => {
     if (parent.id === nodeItem.id)
       return true;
     const p = getNodeById(data, parent.id);
@@ -220,7 +220,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
     }
     return false;
   },
-  GetRootNodeIndex: (rootNode: TreeNodeItem): number => {
+  getRootNodeIndex: (rootNode: TreeNodeItem): number => {
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < data.length; i++) {
       if (data[i].id === rootNode.id) {
@@ -229,7 +229,7 @@ export const demoMutableTreeDataProvider: TreeDataProvider & MutableTreeDataProv
     }
     return -1;
   },
-  GetChildNodeIndex: (parent: TreeNodeItem, child: TreeNodeItem): number => {
+  getChildNodeIndex: (parent: TreeNodeItem, child: TreeNodeItem): number => {
     const p = getNodeById(data, parent.id);
     if (p && p.children) {
       // tslint:disable-next-line:prefer-for-of
@@ -265,36 +265,36 @@ export const treeDropTargetDropCallback = (args: DropTargetArguments): DropTarge
     if (args.dropLocation) {
       if ("id" in args.dropLocation) {
         const dropNode = args.dropLocation as TreeNodeItem;
-        const exists = demoMutableTreeDataProvider.GetChildNodeIndex(dropNode, dragNode) !== -1;
-        if (!demoMutableTreeDataProvider.IsDescendent(dragNode, dropNode)) {
+        const exists = demoMutableTreeDataProvider.getChildNodeIndex(dropNode, dragNode) !== -1;
+        if (!demoMutableTreeDataProvider.isDescendent(dragNode, dropNode)) {
           if (args.row !== undefined) {
             if (exists && parentId === args.dropLocation.id && args.dropEffect === DropEffects.Move) {
-              demoMutableTreeDataProvider.MoveChildNode(dropNode, dragNode, args.row);
+              demoMutableTreeDataProvider.moveChildNode(dropNode, dragNode, args.row);
               args.dropStatus = DropStatus.Drop;
               args.local = true;
             } else if (!exists) {
-              demoMutableTreeDataProvider.InsertChildNode(dropNode, dragNode, args.row);
+              demoMutableTreeDataProvider.insertChildNode(dropNode, dragNode, args.row);
               args.dropStatus = DropStatus.Drop;
             }
           } else if (!exists && (parentId !== args.dropLocation.id || args.dropEffect === DropEffects.Copy)) {
-            demoMutableTreeDataProvider.AddChildNode(dropNode, dragNode);
+            demoMutableTreeDataProvider.addChildNode(dropNode, dragNode);
             args.dropStatus = DropStatus.Drop;
           }
         }
       } else { // "id" field in dropLocation, must be root/dataProvider
         const treeId = args.dropLocation;
-        const exists = demoMutableTreeDataProvider.GetRootNodeIndex(dragNode) !== -1;
+        const exists = demoMutableTreeDataProvider.getRootNodeIndex(dragNode) !== -1;
         if (args.row !== undefined) {
           if (exists && parentId === treeId && args.dropEffect === DropEffects.Move) {
-              demoMutableTreeDataProvider.MoveRootNode(dragNode, args.row);
-              args.dropStatus = DropStatus.Drop;
-              args.local = true;
+            demoMutableTreeDataProvider.moveRootNode(dragNode, args.row);
+            args.dropStatus = DropStatus.Drop;
+            args.local = true;
           } else if (!exists) {
-            demoMutableTreeDataProvider.InsertRootNode(dragNode, args.row);
+            demoMutableTreeDataProvider.insertRootNode(dragNode, args.row);
             args.dropStatus = DropStatus.Drop;
           }
         } else if (!exists && (parentId !== treeId || args.dropEffect === DropEffects.Copy)) {
-          demoMutableTreeDataProvider.AddRootNode(dragNode);
+          demoMutableTreeDataProvider.addRootNode(dragNode);
           args.dropStatus = DropStatus.Drop;
         }
       }
@@ -310,11 +310,11 @@ export const treeDragSourceEndCallback = (args: DragSourceArguments) => {
       extendedData: { ...args.dataObject },
       hasChildren: false,
     };
-    if (args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local ) {
+    if (args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) {
       if ("id" in args.parentObject) {
-        demoMutableTreeDataProvider.RemoveChildNode(args.parentObject, dragNode);
+        demoMutableTreeDataProvider.removeChildNode(args.parentObject, dragNode);
       } else { // no parent object, must be root.
-        demoMutableTreeDataProvider.RemoveRootNode(dragNode);
+        demoMutableTreeDataProvider.removeRootNode(dragNode);
       }
     }
   }
@@ -338,8 +338,8 @@ export const treeCanDropTargetDropCallback = (args: DropTargetArguments) => {
     if (args.dropLocation) {
       if ("id" in args.dropLocation) {
         const dropNode = args.dropLocation as TreeNodeItem;
-        const exists = demoMutableTreeDataProvider.GetChildNodeIndex(dropNode, dragNode) !== -1;
-        if (!demoMutableTreeDataProvider.IsDescendent(dragNode, dropNode)) {
+        const exists = demoMutableTreeDataProvider.getChildNodeIndex(dropNode, dragNode) !== -1;
+        if (!demoMutableTreeDataProvider.isDescendent(dragNode, dropNode)) {
           if (args.row !== undefined) {
             if (exists && parentId === args.dropLocation.id && args.dropEffect === DropEffects.Move) {
               return true;
@@ -352,7 +352,7 @@ export const treeCanDropTargetDropCallback = (args: DropTargetArguments) => {
         }
       } else { // "id" field in dropLocation, must be root/dataProvider
         const treeId = args.dropLocation;
-        const exists = demoMutableTreeDataProvider.GetRootNodeIndex(dragNode) !== -1;
+        const exists = demoMutableTreeDataProvider.getRootNodeIndex(dragNode) !== -1;
         if (args.row !== undefined) {
           if (exists && parentId === treeId && args.dropEffect === DropEffects.Move) {
             return true;

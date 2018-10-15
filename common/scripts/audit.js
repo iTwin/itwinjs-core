@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 const path = require("path");
 const fs = require("fs");
 const { spawnSync } = require("child_process");
@@ -34,6 +39,13 @@ for (const k of Object.keys(shrinkwrap.dependencies)) {
     const keyHash = ssri.fromData(jsonOut.runId + ' ' + k, { algorithms: ['sha256'] }).hexDigest();
     hashes[keyHash] = k.replace("@rush-temp/", "@bentley/");
   }
+}
+
+if (jsonOut.error) {
+  console.error(jsonOut.error.summary);
+  console.log("##vso[task.logissue type=error;]Rush audit failed. This may be caused by a problem with the npm-shrinkwrap.json.");
+  console.log("##vso[task.complete result=Failed;]DONE")
+  process.exit(0);
 }
 
 for (const action of jsonOut.actions) {

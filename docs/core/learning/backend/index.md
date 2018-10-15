@@ -1,11 +1,14 @@
 # App backend development
 
 Backend code is the portion of an app that:
+
 * Runs on a computer with a copy of an iModel
 * Has access to the local file system
 * Can use native libraries
 
-A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend). See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iModelJs apps are structured.
+A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend). See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iModel.js apps are structured.
+
+See [best practices](./BestPractices.md) for writing backend code.
 
 App backends require the `@bentley/imodeljs-backend` npm package.
 The [common packages](..\common\index.md) will also be required.
@@ -15,7 +18,6 @@ These packages provide the following functions to support backend operations:
 * Administration
   * [IModelHost](./IModelHost.md)
   * [Initialize Logging](../common/Logging.md)
-  * [Configure FeatureGates](../common/FeatureGates.md)
 
 * IModelDb
   * [Open an IModelDb](./IModelDb.md)
@@ -30,6 +32,7 @@ These packages provide the following functions to support backend operations:
   * [Access Elements](./AccessElements.md)
   * [Create Elements](./CreateElements.md)
   * [Access ElementAspects](./AccessElementAspects.md)
+  * [Create ElementAspects](./CreateElementAspects.md)
   * [Access Models](./AccessModels.md)
   * [Create Models](./CreateModels.md)
 

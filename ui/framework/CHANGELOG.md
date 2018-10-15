@@ -1,6 +1,54 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 02 Oct 2018 14:51:50 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+
+## 0.155.0
+Tue, 09 Oct 2018 18:21:41 GMT
+
+### Updates
+
+- Updating copyrights
+
+## 0.154.0
+Tue, 09 Oct 2018 16:09:16 GMT
+
+*Version update only*
+
+## 0.153.0
+Tue, 09 Oct 2018 12:08:40 GMT
+
+### Updates
+
+- skip all test and remove oidc credentials
+- Setup logout, and cleaned up the OIDC API a little. 
+- Made UiFramework.initialize's oidcConfiguration argument optional.
+
+## 0.152.0
+Fri, 05 Oct 2018 21:52:26 GMT
+
+### Updates
+
+- Added support for ConfigurableUiControlConstructor for classId as an alternative to using registerControl/createControl with string Ids
+- Fixed await in FrontstageManager.setActiveFrontstageDef
+
+## 0.151.0
+Thu, 04 Oct 2018 21:10:57 GMT
+
+*Version update only*
+
+## 0.150.0
+Thu, 04 Oct 2018 21:06:02 GMT
+
+### Updates
+
+- Removed obsolete code and improved documentation
+- FrontstageManager.setActiveFrontstageDef now returns a Promise that is fulfulled when the FrontstageDef & ScreenViewports are ready
+- Updated/added README.md files for ui packages. Changed case to 'ConfigurableUi'
+- Removed dead code and added documentation
+- UI package documentation
+- Upgraded BWC to 6.0.3 and icons-webfont to 6.6.1. Made 'ConfigurableUI' case consistent across uses.
+- Updating copyrights
+- Added configuration system to imodeljs and removed urls/credentials
 
 ## 0.146.0
 Tue, 02 Oct 2018 14:51:50 GMT

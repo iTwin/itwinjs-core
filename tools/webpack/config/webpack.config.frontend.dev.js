@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -26,7 +26,7 @@ const baseConfiguration = require("./webpack.config.frontend.base")(publicPath);
 const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   mode: "development",
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
-  // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
+  // See the discussion in https://github.com/facebook/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
@@ -69,7 +69,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       // In development "style" loader enables hot editing of CSS.
       {
         test: /\.s?css$/,
-        use: [ 
+        use: [
           require.resolve("style-loader"),
           {
             loader: require.resolve("css-loader"),
@@ -81,7 +81,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
             loader: require.resolve("postcss-loader"),
             options: {
               // Necessary for external CSS imports to work
-              // https://github.com/facebookincubator/create-react-app/issues/2677
+              // https://github.com/facebook/create-react-app/issues/2677
               ident: "postcss",
               plugins: () => [
                 require("postcss-flexbugs-fixes"),
@@ -105,11 +105,11 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
     // This is necessary to emit hot updates (currently CSS only):
-    new webpack.HotModuleReplacementPlugin(),      
+    new webpack.HotModuleReplacementPlugin(),
     // If you require a missing module and then `npm install` it, you still have
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
-    // See https://github.com/facebookincubator/create-react-app/issues/186
+    // See https://github.com/facebook/create-react-app/issues/186
     // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     new plugins.WatchBackendPlugin(),
   ],

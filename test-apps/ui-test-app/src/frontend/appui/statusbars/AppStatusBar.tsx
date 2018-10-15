@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -12,7 +12,7 @@ import { MessageCenterField, SnapModeField, PromptField } from "@bentley/ui-fram
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
 
-class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }

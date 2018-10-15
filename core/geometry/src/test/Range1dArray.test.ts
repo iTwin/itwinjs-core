@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
-import { } from "../PointVector";
-import { Range1d } from "../Range";
+import { Range1d } from "../geometry3d/Range";
 import { Range1dArray } from "../numerics/Range1dArray";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { GrowableFloat64Array } from "../GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 

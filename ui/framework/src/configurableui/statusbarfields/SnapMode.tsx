@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
@@ -8,7 +8,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 
 import { SnapMode } from "@bentley/imodeljs-frontend";
-import { ConfigurableUIActions } from "../state";
+import { ConfigurableUiActions } from "../state";
 import { StatusBarFieldId, IStatusBar } from "../StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 
@@ -132,14 +132,14 @@ export class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> 
 
 // Used by Redux to map dispatch functions to props entry. This requires SnapModeFieldProps interface above to include a setSnapMode entry */
 const mapDispatch = {
-  setSnapMode: ConfigurableUIActions.setSnapMode,
+  setSnapMode: ConfigurableUiActions.setSnapMode,
 };
 
 /** Function used by Redux to map state data in Redux store to props that are used to render this component. */
 function mapStateToProps(state: any) {
-  return { snapMode: state.frameworkState!.configurableUIState.snapMode };
+  return { snapMode: state.frameworkState!.configurableUiState.snapMode };
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/** Snap Mode Field React component that is Redux connected. */ // tslint:disable-next-line:variable-name
 export const SnapModeField = connect(mapStateToProps, mapDispatch)(SnapModeFieldComponent);

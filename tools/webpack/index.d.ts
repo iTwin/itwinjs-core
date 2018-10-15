@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 /// <reference types="node" />
 /// <reference types="mocha" />
 /// <reference types="chai" />
@@ -12,7 +17,7 @@ declare var shallow: typeof import("enzyme").shallow;
 declare var mount: typeof import("enzyme").mount;
 
 declare namespace Polymer {
-  type Element = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {class: string, children: any};
+  type Element = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { class: string, children: any };
 
   var Element: {
     prototype: Element;
@@ -44,7 +49,7 @@ declare namespace WebdriverIO {
     public isSameDimensions: boolean;
     public isExactSameImage: boolean;
   }
-  
+
   interface Client<T> {
     saveViewportScreenshot(filename?: string, options?: Object): void;
     saveElementScreenshot(filename: string | undefined, elementSelector: string, options?: Object): void;

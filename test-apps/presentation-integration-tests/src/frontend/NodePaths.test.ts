@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -44,7 +44,7 @@ describe("NodesPaths", () => {
     });
   });
 
-  it.skip("gets node paths", async () => {
+  it("gets node paths", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/NodePaths/getNodePaths");
     /*
     [BisCore:RepositoryModel] 0x1

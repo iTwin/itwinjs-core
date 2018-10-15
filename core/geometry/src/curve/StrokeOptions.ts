@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
 
-import { Geometry, Angle } from "../Geometry";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 /* tslint:disable:variable-name no-empty */
 
 /** tolerance blob for various stroking methods.

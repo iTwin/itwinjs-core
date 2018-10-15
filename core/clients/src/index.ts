@@ -1,9 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ECJsonTypeMap";
 export * from "./Client";
+export * from "./Config";
 export * from "./Token";
 export * from "./UserProfile";
 export * from "./ConnectClients";
@@ -21,6 +22,7 @@ export * from "./RealityDataServicesClient";
 export * from "./TileDataAccessClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
+export * from "./oidc";
 
 // NOTE: Do not export UrlFileHandler - "fs" dependency
 // NOTE: Do not export IModelBank - UrlFileHandler dependency

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@ import Schema from "../../src/Metadata/Schema";
 
 import Unit from "../../src/Metadata/Unit";
 import Format from "../../src/Metadata/Format";
-import { SchemaContext } from "../../src/Context";
+import SchemaContext from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
 
 describe("KindOfQuantity", () => {

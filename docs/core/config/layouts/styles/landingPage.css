@@ -1,41 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 #main-landing-wrapper {
   margin-bottom: 0em !important;
-  background-color: #fffefae3
+  background-color: #EFF8FF;
+}
+
+#main-landing-wrapper #middle-content-wrapper {
+  margin: 2em 5% !important;
 }
 
 .imodeljs-header-tagline {
-    max-width: 75%;
-    text-align: center;
-    line-height: 1em;
-    margin: 10px auto;
+  max-width: 50%;
+  text-align: center;
+  line-height: 1em;
+  margin: 3em auto;
+  background: #002A44C0;
 }
 
 .imodeljs-header-tagline p {
   color: white;
-  line-height: 1em;
-  margin-bottom: 1em;
+  line-height: 1.5em;
+  font-size: 48px;
+  text-align: center;
+  text-shadow: 0px 2px 4.5px rgba(0, 42, 68, 0.004);
 }
 
 p.digital-twin {
-  color: yellow;
-  font-size: 350%;
-}
-
-p.tagline-magic {
-  font-size: 160%;
-  margin-bottom: 1.3em;
-}
-
-p.tagline-unlocking {
-  color: rgb(241, 241, 241);
-  font-size: 300%;
-  line-height: 1;
-  margin-bottom: .3em;
+  font-weight: bold;
 }
 
 .overlay {
-  transition: .5s ease;
-  opacity: 0;
+  opacity: 1;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -49,10 +47,11 @@ p.tagline-unlocking {
   align-items: center;
   position: relative;
   margin-bottom: 1em;
+  flex-direction: column;
 }
 
 .example-view-demonstrator {
-  opacity: 1;
+  opacity: 0.3;
   display: block;
   width: 100%;
   height: auto;
@@ -60,16 +59,53 @@ p.tagline-unlocking {
   backface-visibility: hidden;
 }
 
-#demo-container:hover .example-view-demonstrator {
-  opacity: 0.3;
-}
-
-#demo-container:hover .overlay {
-  opacity: 1;
+.iframe-viewer {
+  width: 690px;
+  height: 431px;
+  border-width: 1px;
+  border-color: #CFDFEA;
 }
 
 #viewiModelBtn {
   background-color: #6c757d;
   background-image: none;
   color: white;
+}
+
+.nav-landing-container .navbar-nav {
+  background: #002A44C0;
+  border-radius: 25px;
+}
+
+.middle-content-image {
+  width: 20%;
+  height: 20%;
+  margin-bottom: 3em;
+}
+
+.middle-content-text {
+  max-width: 900px;
+  min-width: 300px;
+  margin-bottom: 3em;
+}
+
+@media screen and (max-width: 767px) {
+  .nav-landing-container .navbar-nav {
+    padding-right: 15px;
+    max-width: 38%;
+  }
+  .middle-content-image {
+    width: 40%;
+    height: 40%;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .middle-content-group {
+    flex-flow: column;
+    align-items: center;
+  }
+  .imodeljs-header-tagline p {
+    font-size: 29px;
+  }
 }

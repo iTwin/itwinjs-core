@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module SelectionSet */
@@ -332,8 +332,6 @@ export class SelectionTool extends PrimitiveTool {
 
     if (this.selectByPointsEnd(ev))
       return EventHandled.Yes;
-
-    /* ###TODO: Could allow pick on marker type decorations here. Return on EventHandled.Yes to allow marker to pop-up info dialog, etc. */
 
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))

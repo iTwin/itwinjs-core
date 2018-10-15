@@ -21,7 +21,7 @@ The application contained within this directory provides a test environment for 
 
 The application may be ran as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
-* In order to get started one must follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
+* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 
 * Before starting SimpleViewTest, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see [here](#Environment\ Variables).
 

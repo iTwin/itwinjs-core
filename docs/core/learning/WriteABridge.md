@@ -63,7 +63,7 @@ Rather than starting over when the source data changes, a bridge should be able 
 
 In the case of source data that was previously converted and has changed, the bridge should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the bridge should delete the results of the previous conversion. Source data that has been added should be inserted.
 
-In order to do incremental updates, a bridge must do Id mapping and change-detection.
+To do incremental updates, a bridge must do Id mapping and change-detection.
 
 ### Id mapping
 

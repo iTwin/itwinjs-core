@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -28,5 +28,10 @@ export default class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
     }
+  }
+
+  /** Waits until all async operations finish */
+  public static async flushAsyncOperations() {
+    return new Promise((resolve) => setImmediate(resolve));
   }
 }

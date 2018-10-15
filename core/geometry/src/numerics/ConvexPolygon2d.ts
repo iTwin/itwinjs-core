@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Numerics */
 
-import { Point2d, Vector2d } from "../PointVector";
-import { Range1d } from "../Range";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Range1d } from "../geometry3d/Range";
 import { Geometry } from "../Geometry";
 
 export class Ray2d {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -13,7 +13,7 @@ import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry } from "@bentley/geometry-core";
-import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 
 /**
  * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Solid */
 
-import { CurveCollection } from "../curve/CurveChain";
-import { GeometryQuery } from "../curve/CurvePrimitive";
-import { Transform } from "../Transform";
+import { CurveCollection } from "../curve/CurveCollection";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Transform } from "../geometry3d/Transform";
 /**
  * Base class for SolidPrimitve variants.
  *

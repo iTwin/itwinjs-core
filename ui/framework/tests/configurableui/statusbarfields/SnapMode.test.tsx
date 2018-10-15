@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
@@ -85,7 +86,7 @@ describe("SnapModeField", () => {
       wrapper.update();
 
       // ensure the snap mode selected sets the state of the store.
-      const snapMode = TestUtils.store.getState().frameworkState!.configurableUIState.snapMode;
+      const snapMode = TestUtils.store.getState().frameworkState!.configurableUiState.snapMode;
       expect(snapMode).to.eq(modes[i]);
 
       // the indicator field should contain the selected snap icon.

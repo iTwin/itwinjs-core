@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ViewSelector should render correctly 1`] = `
+<ListPicker
+  iconClass="icon-saved-view"
+  items={Array []}
+  onExpanded={[Function]}
+  setEnabled={[Function]}
+  title="savedViews.views"
+/>
+`;

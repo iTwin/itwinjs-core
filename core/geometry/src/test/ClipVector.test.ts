@@ -1,18 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
-import { Point2d, Point3d, Vector2d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { ClipShape, ClipMask } from "../clipping/ClipPrimitive";
 import { ClipVector } from "../clipping/ClipVector";
 import { SmallSystem } from "../numerics/Polynomials";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { Matrix4d } from "../numerics/Geometry4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 
 // External test functions
 import { clipShapesAreEqual } from "./ClipPrimitives.test";

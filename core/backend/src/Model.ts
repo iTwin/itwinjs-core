@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
@@ -82,7 +82,7 @@ export class GeometricModel extends Model {
   public queryExtents(): AxisAlignedBox3d {
     const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
     if (error)
-      throw new IModelError(error.status);
+      throw new IModelError(error.status, "Error querying model extents");
     return AxisAlignedBox3d.fromJSON(JSON.parse(result!).modelExtents);
   }
 }

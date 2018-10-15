@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -11,7 +11,7 @@ const paths = require("./paths");
 const protocol = process.env.HTTPS === "true" ? "https" : "http";
 const host = process.env.HOST || "0.0.0.0";
 
-module.exports = function(proxy, allowedHost) {
+module.exports = function (proxy, allowedHost) {
   return {
     // WebpackDevServer 2.4.3 introduced a security fix that prevents remote
     // websites from potentially accessing local content through DNS rebinding:
@@ -19,8 +19,8 @@ module.exports = function(proxy, allowedHost) {
     // https://medium.com/webpack/webpack-dev-server-middleware-security-issues-1489d950874a
     // However, it made several existing use cases such as development in cloud
     // environment or subdomains in development significantly more complicated:
-    // https://github.com/facebookincubator/create-react-app/issues/2271
-    // https://github.com/facebookincubator/create-react-app/issues/2233
+    // https://github.com/facebook/create-react-app/issues/2271
+    // https://github.com/facebook/create-react-app/issues/2233
     // While we're investigating better solutions, for now we will take a
     // compromise. Since our WDS configuration only serves files in the `public`
     // folder we won't consider accessing them a vulnerability. However, if you
@@ -33,7 +33,7 @@ module.exports = function(proxy, allowedHost) {
       !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === "true",
     // Enable gzip compression of generated files.
     compress: true,
-    // Silence WebpackDevServer"s own logs since they"re generally not useful.
+    // Silence WebpackDevServer's own logs since they"re generally not useful.
     // It will still show compile warnings and errors with this setting.
     clientLogLevel: "none",
     // By default WebpackDevServer serves physical files from current directory
@@ -50,7 +50,7 @@ module.exports = function(proxy, allowedHost) {
     // for files like `favicon.ico`, `manifest.json`, and libraries that are
     // for some reason broken when imported through Webpack. If you just want to
     // use an image, put it in `src` and `import` it from JavaScript instead.
-    contentBase:  [ paths.appPublic, paths.appLibPublic ],
+    contentBase: [paths.appPublic, paths.appLibPublic],
     // By default files from `contentBase` will not trigger a page reload.
     watchContentBase: true,
     // Enable hot reloading server. It will provide /sockjs-node/ endpoint
@@ -66,17 +66,17 @@ module.exports = function(proxy, allowedHost) {
     // by listening to the compiler events with `compiler.hooks[...].tap` calls above.
     quiet: true,
     // Reportedly, this avoids CPU overload on some systems.
-    // https://github.com/facebookincubator/create-react-app/issues/293
+    // https://github.com/facebook/create-react-app/issues/293
     watchOptions: {
       ignored: /node_modules[\\/]+[^@][^b]/,
     },
     // Enable HTTPS if the HTTPS environment variable is set to "true"
     https: protocol === "https",
-    host: host,
+    host,
     overlay: false,
     historyApiFallback: {
       // Paths with dots should still use the history fallback.
-      // See https://github.com/facebookincubator/create-react-app/issues/387.
+      // See https://github.com/facebook/create-react-app/issues/387.
       disableDotRule: true,
     },
     public: allowedHost,

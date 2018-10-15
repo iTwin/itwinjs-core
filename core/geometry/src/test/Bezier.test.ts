@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -8,10 +8,11 @@ import { UnivariateBezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier
 import { Geometry } from "../Geometry";
 import { PascalCoefficients } from "../numerics/PascalCoefficients";
 import { LineString3d } from "../curve/LineString3d";
-import { Point2d, Point3d } from "../PointVector";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 /* tslint:disable:no-console */
 describe("Bezier", () => {
   it("HelloWorld", () => {

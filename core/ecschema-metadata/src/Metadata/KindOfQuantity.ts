@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor, LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
 import Schema from "./Schema";
 import Format, { IFormat } from "./Format";
 import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import OverrideFormat from "./OverrideFormat";
 
 export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;

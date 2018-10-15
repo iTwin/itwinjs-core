@@ -1,15 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Iterable } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 import { Geometry } from "./GeometryPrimitives";
 
-export class GeometryList extends Iterable<Geometry> {
+export class GeometryList {
+  private _list: Geometry[] = [];
+
   public get first(): Geometry | undefined { return this._list[0]; }
   public get isEmpty(): boolean { return this._list.length === 0; }
   public get length(): number { return this._list.length; }
@@ -28,4 +29,9 @@ export class GeometryList extends Iterable<Geometry> {
     return range;
   }
   public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
+
+  public [Symbol.iterator]() {
+    let key = 0;
+    return { next: (): IteratorResult<Geometry> => { const result = key < this._list.length ? { value: this._list[key], done: false } : { value: this._list[key - 1], done: true }; key++; return result; } };
+  }
 }

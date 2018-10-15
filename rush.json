@@ -1,5 +1,5 @@
 {
-  "rushVersion": "5.1.0",
+  "rushVersion": "5.3.2",
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projectFolderMinDepth": 2,
@@ -19,6 +19,13 @@
     {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/config-loader",
+      "projectFolder": "tools/config-loader",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

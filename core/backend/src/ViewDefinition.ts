@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
@@ -411,7 +411,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 /**
- * The position in space of a [[Light]]
+ * The position in space of a Light.
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
   /** Whether this light is currently turned on. */

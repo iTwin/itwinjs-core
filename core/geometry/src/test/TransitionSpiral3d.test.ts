@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 // import { Point3d, Vector3d } from "../PointVector";
 // import { Range1d } from "../Range";
-// import { Matrix3d, Transform } from "../Transform";
+// import { Matrix3d, Transform } from "../geometry3d/Transform";
 
 import { TransitionConditionalProperties } from "../curve/TransitionSpiral";
-import { Angle } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 

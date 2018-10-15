@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OverallContent */
@@ -8,17 +8,21 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { User } from "oidc-client";
 import { OidcProvider } from "redux-oidc";
-import { AccessToken, UserProfile } from "@bentley/imodeljs-clients";
+import { AccessToken, OidcFrontendClient } from "@bentley/imodeljs-clients";
 import { OverallContentPage, OverallContentActions } from "./state";
-import { OpenIModel } from "../openimodel/OpenIModel";
-import { ConfigurableUIContent } from "../configurableui/ConfigurableUIContent";
-import { IModelViewsSelectedFunc } from "../openimodel/IModelOpen";
+import { IModelOpen } from "../openimodel/IModelOpen";
+import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
-import { SignInPage } from "../oidc/SignIn";
+import { SignIn } from "../oidc/SignIn";
 import { CallbackPage } from "../oidc/Callback";
 import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
+import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { IModelInfo } from "../clientservices/IModelServices";
 import { UiFramework } from "../UiFramework";
+import { Id64String } from "@bentley/bentleyjs-core";
+
+type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
 /** Props for the OverallContentComponent React component */
 export interface OverallContentProps {
@@ -29,10 +33,12 @@ export interface OverallContentProps {
   appBackstage?: React.ReactNode;
   currentPage: OverallContentPage | number;
   onIModelViewsSelected: IModelViewsSelectedFunc;
+  onWorkOffline?: () => void; // Note: this will be removed!
   user: User;
   accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
   setAccessToken: (accessToken: AccessToken) => any;
+  clearAccessToken: () => any;
 }
 
 function mapStateToProps(state: any) {
@@ -46,6 +52,7 @@ function mapStateToProps(state: any) {
 const mapDispatch = {
   setOverallPage: OverallContentActions.setOverallPage,
   setAccessToken: OverallContentActions.setAccessToken,
+  clearAccessToken: OverallContentActions.clearAccessToken,
 };
 
 /**
@@ -58,24 +65,46 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     super(props);
   }
 
+  // called when an imodel (and views) have been selected on the IModelOpen
+  private _onOpenIModel(iModelInfo: IModelInfo, views: ViewDefinitionProps[]) {
+
+    // view ids are passed as params
+    const viewIds: Id64String[] = new Array<Id64String>();
+    for (const view of views) {
+      viewIds.push(view.id!);
+    }
+
+    // open the imodel and set the page
+    // Note: this should be refactored, just seems like hack!
+    this.props.onIModelViewsSelected(iModelInfo, viewIds);
+    this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
+  }
+
+  // called when the "Offline" is clicked on the Sign In.
+  private _onOffline() {
+    if (this.props.onWorkOffline)
+      this.props.onWorkOffline();
+    this.props.setOverallPage(OverallContentPage.OfflinePage);
+  }
+
   public componentDidMount() {
     const user = this.props.user;
-    if (!user || user.expired)
-      return;
+    if (user && !user.expired) {
+      const accessToken: AccessToken = OidcFrontendClient.createAccessToken(user);
+      this.props.setAccessToken(accessToken);
+    }
+  }
 
-    const startsAt: Date = new Date(user.expires_at - user.expires_in!);
-    const expiresAt: Date = new Date(user.expires_at);
-    const userProfile = new UserProfile(user.profile.given_name, user.profile.family_name, user.profile.email!, user.profile.sub, user.profile.org_name!, user.profile.org!, user.profile.ultimate_site!, user.profile.usage_country_iso!);
-
-    const accessToken: AccessToken = AccessToken.fromJsonWebTokenString(user.access_token, userProfile, startsAt, expiresAt);
-    this.props.setAccessToken(accessToken);
+  public componentDidUpdate(oldProps: OverallContentProps) {
+    if ((!this.props.user || this.props.user.expired) && (oldProps.accessToken))
+      this.props.clearAccessToken();
   }
 
   public render(): JSX.Element | undefined {
     let element: JSX.Element | undefined;
     if (window.location.pathname === "/signin-oidc") {
       element = <CallbackPage />;
-    } else if (!this.props.accessToken) {
+    } else if (!this.props.accessToken && OverallContentPage.OfflinePage !== this.props.currentPage) {
       const appHeaderProps: ApplicationHeaderProps = {
         icon: this.props.appHeaderIcon,
         message: this.props.appHeaderMessage,
@@ -85,19 +114,16 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignInPage />
+          <SignIn onSignIn={() => UiFramework.userManager.signinRedirect()} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
-      const openIModelProps = {
-        onIModelViewsSelected: this.props.onIModelViewsSelected,
-      };
-      element = <OpenIModel {...openIModelProps} />;
-    } else if (OverallContentPage.ConfigurableUIPage === this.props.currentPage) {
+      element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel.bind(this)} />;
+    } else if (OverallContentPage.ConfigurableUiPage === this.props.currentPage || OverallContentPage.OfflinePage === this.props.currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,
       };
-      element = <ConfigurableUIContent {...configurableUiContentProps} />;
+      element = <ConfigurableUiContent {...configurableUiContentProps} />;
     } else if (React.Children.count(this.props.children) > this.props.currentPage) {
       element = React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
     }

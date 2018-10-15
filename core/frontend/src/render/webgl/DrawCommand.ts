@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -96,7 +96,8 @@ export abstract class DrawCommand {
   public get featureIndexType(): FeatureIndexType { return undefined !== this.primitive ? this.primitive.featureIndexType : FeatureIndexType.Empty; }
   public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
-  public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; } public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
+  public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
+  public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
 
   public isPushCommand(branch?: Branch) {

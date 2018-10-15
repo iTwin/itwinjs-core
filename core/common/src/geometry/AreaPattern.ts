@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
 import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
-import { ColorDef } from "../ColorDef";
+import { ColorDef, ColorDefProps } from "../ColorDef";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
 export namespace AreaPattern {
@@ -39,7 +39,9 @@ export namespace AreaPattern {
     }
   }
 
-  /** GeometryStream entry for adding a hatch, cross-hatch, or area pattern to a planar region */
+  /** Definition of a hatch, cross-hatch, or area pattern that can be applied to the interior of a planar region.
+   * @see [[GeometryStreamEntryProps]]
+   */
   export interface ParamsProps {
     /** Pattern offset (relative to placement), 0.0,0.0,0.0 if undefined */
     origin?: XYZProps;
@@ -56,16 +58,16 @@ export namespace AreaPattern {
     /** Scale to apply to area pattern symbol, 1.0 if undefined */
     scale?: number;
     /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
-    color?: ColorDef;
+    color?: ColorDefProps;
     /** Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol */
     weight?: number;
     /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled, false if undefined */
     invisibleBoundary?: boolean;
     /** Set to allow snapping to pattern geometry, false if undefined */
     snappable?: boolean;
-    /** GeometryPart id to use for tiled area pattern display */
+    /** [[GeometryPart]] id to use for tiled area pattern display */
     symbolId?: Id64String;
-    /** Define an area pattern by supplying hatch line definitions instead of using a GeometryPart */
+    /** Define an area pattern by supplying hatch line definitions instead of using a [[GeometryPart]] */
     defLines?: HatchDefLineProps[];
   }
 
@@ -97,7 +99,7 @@ export namespace AreaPattern {
       result.angle1 = json.angle1 ? Angle.fromJSON(json.angle1) : undefined;
       result.angle2 = json.angle2 ? Angle.fromJSON(json.angle2) : undefined;
       result.scale = json.scale;
-      result.color = json.color;
+      result.color = json.color ? ColorDef.fromJSON(json.color) : undefined;
       result.weight = json.weight;
       result.invisibleBoundary = json.invisibleBoundary;
       result.snappable = json.snappable;
@@ -114,7 +116,7 @@ export namespace AreaPattern {
       return Params.fromJSON(this);
     }
 
-    public isEqualTo(other: Params): boolean {
+    public equals(other: Params): boolean {
       if (this === other)
         return true;    // Same pointer
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Errors */
@@ -100,6 +100,14 @@ export const enum BriefcaseStatus {
   CannotDelete = 0x20004,
   VersionNotFound = 0x20005,
   CannotApplyChanges = 0x20006,
+}
+
+/** RpcInterface status codes */
+export enum RpcInterfaceStatus {
+  Success = 0,
+  RPC_INTERFACE_ERROR_BASE = 0x21000,
+  /** The RpcInterface implemented by the server is incompatible with the interface requested by the client. */
+  IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
 /** Error status from various ChangeSet operations */
@@ -485,6 +493,9 @@ export class BentleyError extends Error {
       case BriefcaseStatus.CannotCopy: return "CannotCopy";
       case BriefcaseStatus.CannotDelete: return "CannotDelete";
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
+
+      // RpcInterface
+      case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
 
       // ChangeSetStatus
       case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";

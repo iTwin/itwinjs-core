@@ -1,83 +1,53 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set, BeTimePoint, Id64Array, Id64String, Id64Arg, assert } from "@bentley/bentleyjs-core";
+
+import { assert, BeTimePoint, Id64, Id64Arg, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, Matrix3d, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, PolyfaceBuilder, StrokeOptions, Map4d, LowAndHighXYZ, LowAndHighXY,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags, SubCategoryAppearance,
-  GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride, ViewStateData, SheetProps, ViewAttachmentProps,
+  AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
+  SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
+  ViewFlags, ViewStateData, AnalysisStyle,
 } from "@bentley/imodeljs-common";
-import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
-import { ElementState } from "./EntityState";
-import { DisplayStyleState, DisplayStyle3dState, DisplayStyle2dState } from "./DisplayStyleState";
-import { ModelSelectorState } from "./ModelSelectorState";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { IModelConnection } from "./IModelConnection";
-import { DecorateContext, SceneContext } from "./ViewContext";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
+import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
-import { Viewport } from "./Viewport";
-import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState, GeometricModel2dState } from "./ModelState";
+import { IModelConnection } from "./IModelConnection";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { RenderGraphic } from "./render/System";
-import { Attachments, SheetBorder } from "./Sheet";
-import { TileTree } from "./tile/TileTree";
 import { GraphicType } from "./render/GraphicBuilder";
+import { StandardView, StandardViewId } from "./StandardView";
+import { TileTree } from "./tile/TileTree";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { Viewport } from "./Viewport";
 
+/** Describes the orientation of the grid displayed within a [[Viewport]]. */
 export const enum GridOrientationType {
+  /** Oriented with the view. */
   View = 0,
+  /** Top */
   WorldXY = 1, // Top
+  /** Right */
   WorldYZ = 2, // Right
+  /** Front */
   WorldXZ = 3, // Front
+  /** Oriented by the [[AuxCoordSystem]] */
   AuxCoord = 4,
+  /** @hidden
+   * ###TODO not implemented - see ViewState.drawGrid.
+   */
   GeoCoord = 5,
 }
 
-export const enum StandardViewId {
-  NotStandard = -1,
-  Top = 0,
-  Bottom = 1,
-  Left = 2,
-  Right = 3,
-  Front = 4,
-  Back = 5,
-  Iso = 6,
-  RightIso = 7,
-}
-
-/** @hidden */
-// tslint:disable-next-line:variable-name
-export const StandardView = {
-  Top: Matrix3d.identity,
-  Bottom: Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1),
-  Left: Matrix3d.createRowValues(0, -1, 0, 0, 0, 1, -1, 0, 0),
-  Right: Matrix3d.createRowValues(0, 1, 0, 0, 0, 1, 1, 0, 0),
-  Front: Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0),
-  Back: Matrix3d.createRowValues(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-  Iso: Matrix3d.createRowValues(
-    0.707106781186548, -0.70710678118654757, 0.00000000000000000,
-    0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    -0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-  RightIso: Matrix3d.createRowValues(
-    0.707106781186548, 0.70710678118654757, 0.00000000000000000,
-    -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-    0.577350269189626, -0.57735026918962573, 0.57735026918962573),
-};
-Object.freeze(StandardView);
-
-const standardViewMatrices = [
-  StandardView.Top, StandardView.Bottom, StandardView.Left, StandardView.Right,
-  StandardView.Front, StandardView.Back, StandardView.Iso, StandardView.RightIso,
-];
-standardViewMatrices.forEach((view) => Object.freeze(view));
-Object.freeze(standardViewMatrices);
-
+/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
 export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
@@ -98,8 +68,8 @@ export const enum ViewStatus {
 }
 
 /**
- * Margins for white space to be left around view volumes for ViewDefinition.lookAtVolume.
- * Values mean "percent of view" and must be between 0 and .25.
+ * Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
+ * Values mean "fraction of view size" and must be between 0 and .25.
  */
 export class MarginPercent {
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
@@ -124,7 +94,11 @@ export class ViewSubCategories {
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
   public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
 
-  /** Asynchronously populates this cache with information about subcategories belonging to the specified set of categories. */
+  /**
+   * Asynchronously populates this cache with information about subcategories belonging to the specified set of categories.
+   * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
+   * categories in the ViewState's [[CategorySelector]].
+   */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     const where = [...categoryIds].join(",");
     if (0 === where.length)
@@ -136,6 +110,8 @@ export class ViewSubCategories {
 
   /**
    * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
+   * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
+   * categories.
    */
   public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
@@ -171,8 +147,8 @@ export class ViewSubCategories {
 }
 
 /**
- * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
- * Subclasses of ViewDefinition determine which model(s) are viewed.
+ * The front-end state of a [[ViewDefinition]] element.
+ * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState {
@@ -183,9 +159,13 @@ export abstract class ViewState extends ElementState {
   public isPrivate?: boolean;
   /** Time this ViewState was saved in view undo. */
   public undoTime?: BeTimePoint;
+  /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
+   * It is populated on-demand as new categories are added to the selector.
+   */
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
+  /** @hidden */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -197,23 +177,37 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** @hidden */
   public static createFromStateData(_viewStateData: ViewStateData, _cat: CategorySelectorState, _iModel: IModelConnection): ViewState | undefined { return undefined; }
 
-  /** Get the ViewFlags from the displayStyle of this ViewState. */
+  /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
+   * @note Do not modify this object directly. Instead, use the setter as follows:
+   *
+   *  ```ts
+   *  const flags = viewState.viewFlags.clone();
+   *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
+   *  viewState.viewFlags = flags;
+   *  ```ts
+   */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
-
   /** Set the ViewFlags and mark them as dirty if they have changed. */
   public set viewFlags(newFlags: ViewFlags) {
-    if (!this.viewFlags.isEqualTo(newFlags)) {
+    if (!this.viewFlags.equals(newFlags)) {
       this.setFeatureOverridesDirty();
       this.displayStyle.viewFlags = newFlags;
     }
   }
+  /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.AnalysisStyle; }
 
-  /** Determine whether this ViewState exactly matches another */
+  /** Determine whether this ViewState exactly matches another.
+   * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
+   */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
-  /** Determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  /** Determine whether this ViewState is equivalent to another for the purposes of display.
+   * @see [[ViewState.equals]] for determining exact equality.
+   */
   public equalState(other: ViewState): boolean {
     return (this.isPrivate === other.isPrivate &&
       this.categorySelector.id.equals(other.categorySelector.id) &&
@@ -247,6 +241,7 @@ export abstract class ViewState extends ElementState {
     return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
+  /** @hidden */
   public cancelAllTileLoads(): void {
     this.forEachModel((model) => {
       const tileTree = model.tileTree;
@@ -255,7 +250,7 @@ export abstract class ViewState extends ElementState {
     });
   }
 
-  /** Returns true if all the tile trees for this view are loaded. */
+  /** @hidden */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachModel((model: GeometricModelState) => {
@@ -266,19 +261,34 @@ export abstract class ViewState extends ElementState {
     return allLoaded;
   }
 
-  /** Get the name of the ViewDefinition of this ViewState */
+  /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
   public get name(): string { return this.code.getValue(); }
 
-  /** Get the background color */
+  /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
   private _neverDrawn?: Id64Set;
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
 
+  /**
+   * IDs of a set of elements which should not be rendered within this view.
+   * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
+   * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
+   */
   public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+
+  /**
+   * IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
+   * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
+   * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
+   */
   public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
 
+  /** Clear the set of always-drawn elements.
+   * @see [[alwaysDrawn]]
+   */
   public clearAlwaysDrawn(): void {
     if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
       this.alwaysDrawn.clear();
@@ -287,6 +297,9 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Clear the set of never-drawn elements.
+   * @see [[neverDrawn]]
+   */
   public clearNeverDrawn(): void {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
@@ -294,30 +307,59 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Specify the IDs of a set of elements which should never be rendered within this view.
+   * @see [[neverDrawn]].
+   */
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this.setFeatureOverridesDirty();
   }
 
+  /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * @param ids The IDs of the elements to always draw.
+   * @param exclusive If true, *only* the specified elements will be drawn.
+   * @see [[alwaysDrawn]]
+   * @see [[isAlwaysDrawnExclusive]]
+   */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this.setFeatureOverridesDirty();
   }
 
+  /** Remove any [[SubCategoryOverride]] for the specified subcategory.
+   * @param id The ID of the subcategory.
+   * @see [[overrideSubCategory]]
+   */
   public dropSubCategoryOverride(id: Id64String) {
     this.displayStyle.dropSubCategoryOverride(id);
     this.setFeatureOverridesDirty();
   }
 
+  /** Override the symbology of geometry belonging to a specific subcategory when rendered within this view.
+   * @param id The ID of the subcategory.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @see [[dropSubCategoryOverride]]
+   */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
     this.displayStyle.overrideSubCategory(id, ovr);
     this.setFeatureOverridesDirty();
   }
 
+  /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this view.
+   * @param id The ID of the subcategory.
+   * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
+   * @see [[overrideSubCategory]]
+   */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
 
-  /** Returns the appearance of the subcategory with the specified Id within this view, possibly as overridden by the display style. */
+  /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this view.
+   * Every [[SubCategory]] defines a base symbology independent of any [[ViewState]].
+   * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[ViewState]], it will be applied to the subcategory's base symbology.
+   * @param id The ID of the subcategory.
+   * @return The symbology of the subcategory within this view, including any overrides.
+   * @see [[overrideSubCategory]]
+   */
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     const app = this.subCategories.getSubCategoryAppearance(id);
     if (undefined === app)
@@ -327,6 +369,7 @@ export abstract class ViewState extends ElementState {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
+  /** @hidden */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
@@ -339,7 +382,7 @@ export abstract class ViewState extends ElementState {
       return !ovr.invisible;
   }
 
-  /** Returns true if the set of elements returned by getAlwaysDrawn() are the *only* elements rendered by this view controller */
+  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /**
@@ -384,43 +427,61 @@ export abstract class ViewState extends ElementState {
       return;
 
     // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : { };
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
   }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
+  /** @hidden */
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
+  /** Mark the [[FeatureSymbology.Overrides]] associated with this view as "dirty".
+   * Typically this is handled internally.
+   * Conditions that may cause the overrides to become dirty include:
+   *  - Toggling the display of a category within the view.
+   *  - Changing the symbology associated with a [[SubCategory]] within the view by adding a [[SubCategoryOverride]]
+   *  - Changes in some application state that affects the [[AddFeatureOverrides]] function registered with [[Viewport]].
+   * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
+   */
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
+  /** @hidden */
   public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
+  /** @hidden */
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
+  /** Get the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract getViewedExtents(): AxisAlignedBox3d;
+  /** Compute a range in [[CoordSystem.World]] coordinates that tightly encloses the contents of this view.
+   * @see [[FitViewTool]].
+   */
   public abstract computeFitRange(): Range3d;
 
-  /** Override this if you want to perform some logic on each iteration of the render loop. */
+  /** Override this if you want to perform some logic on each iteration of the render loop.
+   * @hidden
+   */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
-  /** Determine whether this ViewDefinition views a given model */
+  /** Returns true if this view displays the contents of a [[Model]] specified by ID. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
-  /** Get the origin of this view */
+  /** Get the origin of this view in [[CoordSystem.World]] coordinates. */
   public abstract getOrigin(): Point3d;
 
-  /** Get the extents of this view */
+  /** Get the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract getExtents(): Vector3d;
 
   /** Get the 3x3 ortho-normal Matrix3d for this view. */
   public abstract getRotation(): Matrix3d;
 
-  /** Set the origin of this view */
+  /** Set the origin of this view in [[CoordSystem.World]] coordinates. */
   public abstract setOrigin(viewOrg: Point3d): void;
 
-  /** Set the extents of this view */
+  /** Set the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
@@ -431,26 +492,34 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
+  /** @hidden */
   public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
 
+  /** @hidden */
   public createTerrain(context: SceneContext): void {
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
   }
+
+  /** @hidden */
   public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
 
-  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate() */
+  /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
+   * @hidden
+   */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.decorate(context);
   }
 
-  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
+  /** @hidden */
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
 
+  /** Orient this view to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
-  /**  Get the target point of the view. If there is no camera, center is returned. */
+  /** Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
 
   /**  Get the point at the geometric center of the view. */
@@ -459,6 +528,7 @@ export abstract class ViewState extends ElementState {
     return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
+  /** @hidden */
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
     if (!vp.isGridOn)
@@ -570,7 +640,12 @@ export abstract class ViewState extends ElementState {
 
   /**
    * Initialize the origin, extents, and rotation from an existing Frustum
+   * This function is commonly used in the implementation of [[ViewTool]]s as follows:
+   *  1. Obtain the ViewState's initial frustum.
+   *  2. Modify the frustum based on user input.
+   *  3. Update the ViewState to match the modified frustum.
    * @param frustum the input Frustum.
+   * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
   public setupFromFrustum(inFrustum: Frustum): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
@@ -589,7 +664,7 @@ export abstract class ViewState extends ElementState {
       return ViewStatus.InvalidWindow;
 
     // if we're close to one of the standard views, adjust to it to remove any "fuzz"
-    standardViewMatrices.some((test) => { if (test.maxDiff(frustMatrix) > 1.0e-7) return false; frustMatrix.setFrom(test); return true; });
+    StandardView.adjustToStandardRotation(frustMatrix);
 
     const xDir = frustMatrix.getColumn(0);
     const yDir = frustMatrix.getColumn(1);
@@ -631,6 +706,7 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
+  /** @hidden */
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
     const viewAspect = extents.x / extents.y;
@@ -657,6 +733,7 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
   }
 
+  /** @hidden */
   public showFrustumErrorMessage(status: ViewStatus): void {
     let key: string;
     switch (status) {
@@ -670,6 +747,7 @@ export abstract class ViewState extends ElementState {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
   }
 
+  /** @hidden */
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -697,29 +775,37 @@ export abstract class ViewState extends ElementState {
     return error;
   }
 
-  /** Peek to see if a view detail is defined. May return undefined. */
+  /** Returns the view detail associated with the specified name, or undefined if none such exists.
+   * @hidden
+   */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
-  /** Get the current value of a view detail. If not present, return empty object. */
+  /** Get the current value of a view detail. If not present, returns an empty object.
+   * @hidden
+   */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
-  /** Change the value of a view detail. */
+  /** Change the value of a view detail.
+   * @hidden
+   */
   public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
-  /** Remove a view detail. */
+  /** Remove a view detail.
+   * @hidden
+   */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
-  /** get the auxiliary coordinate system state object for this ViewState, if present */
+  /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
     if (!this._auxCoordSystem)
       this._auxCoordSystem = this.createAuxCoordSystem("");
     return this._auxCoordSystem;
   }
 
-  /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
+  /** Get the ID of the auxiliary coordinate system for this ViewState */
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.
@@ -1720,121 +1806,4 @@ export class DrawingViewState extends ViewState2d {
 
   public static get className() { return "DrawingViewDefinition"; }
   public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
-}
-
-/** A view of a SheetModel */
-export class SheetViewState extends ViewState2d {
-  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
-    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
-    // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
-  }
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
-    super(props, iModel, categories, displayStyle);
-    if (categories instanceof SheetViewState) {
-      // we are coming from clone...
-      this.sheetSize = categories.sheetSize.clone();
-      this._attachmentIds = categories._attachmentIds;
-      this._attachments = categories._attachments;
-    } else {
-      this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
-      this._attachmentIds = [];
-      attachments.forEach((idProp) => this._attachmentIds.push(idProp));
-      this._attachments = new Attachments.AttachmentList();
-    }
-  }
-
-  public static get className() { return "SheetViewDefinition"; }
-  public readonly sheetSize: Point2d;
-  private _attachmentIds: Id64Array;
-  private _attachments: Attachments.AttachmentList;
-  private _all3dAttachmentTilesLoaded: boolean = true;
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
-
-  /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles. */
-  public markAttachment3dSceneIncomplete() {
-    // NB: 2d attachments will draw to completion once they have a tile tree... but 3d attachments create new tiles for each
-    // depth, and therefore report directly to the ViewState whether or not new tiles are being loaded
-    this._all3dAttachmentTilesLoaded = false;
-  }
-
-  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics. */
-  public async load(): Promise<void> {
-    await super.load();
-
-    // Set the size of the sheet
-    const model = this.getViewedModel();
-    if (model === undefined)
-      return;
-
-    this._attachments.clear();
-
-    // Query all of the attachment properties using their ids
-    const attachmentPropList = await this.iModel.elements.getProps(this._attachmentIds) as ViewAttachmentProps[];
-
-    // For each ViewAttachmentProps, load the view that the attachment references. Once the view is loaded, officially construct the attachment & add it to the array.
-    for (const attachmentProps of attachmentPropList) {
-      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => {
-        if (view.is3d())
-          this._attachments.add(new Attachments.Attachment3d(attachmentProps, view as ViewState3d));
-        else
-          this._attachments.add(new Attachments.Attachment2d(attachmentProps, view as ViewState2d));
-      });
-    }
-  }
-
-  /** If any attachments have not yet been loaded or are waiting on tiles, invalidate the scene. */
-  public onRenderFrame(_viewport: Viewport) {
-    if (!this._attachments.allReady || !this._all3dAttachmentTilesLoaded)
-      _viewport.sync.invalidateScene();
-  }
-
-  /** Adds the Sheet view to the scene, along with any of this sheet's attachments. */
-  public createScene(context: SceneContext) {
-    // This will be set to false by the end of the function if any 3d attachments are waiting on tiles...
-    this._all3dAttachmentTilesLoaded = true;
-
-    super.createScene(context);
-
-    if (!this._attachments.allReady) {
-      let i = 0;
-      while (i < this._attachments.length) {
-        const loadStatus = this._attachments.load(i, this, context);
-
-        // If load fails, attachment gets dropped from the list
-        if (loadStatus === Attachments.State.Ready || loadStatus === Attachments.State.Loading)
-          i++;
-      }
-    }
-
-    // Draw all attachments that have a status of ready
-    for (const attachment of this._attachments.list)
-      if (attachment.isReady)
-        attachment.tree!.drawScene(context);
-  }
-
-  /** Create a sheet border decoration graphic. */
-  private createBorder(width: number, height: number, context: DecorateContext): RenderGraphic {
-    const border = SheetBorder.create(width, height, context);
-    const builder = context.createGraphicBuilder(GraphicType.ViewBackground);
-    border.addToBuilder(builder);
-    return builder.finish();
-  }
-
-  public decorate(context: DecorateContext): void {
-    super.decorate(context);
-    if (this.sheetSize !== undefined) {
-      const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
-      context.setViewBackground(border);
-    }
-  }
-
-  public computeFitRange(): Range3d {
-    const size = this.sheetSize;
-    if (0 >= size.x || 0 >= size.y)
-      return super.computeFitRange();
-    else
-      return new Range3d(0, 0, -1, size.x, size.y, 1);
-  }
 }

@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range3d, PointString3d } from "../geometry-core";
-import { Point3dArray } from "../PointHelpers";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { PointString3d } from "../curve/PointString3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Sample } from "../serialization/GeometrySamples";
 
 function exercisePointString3d(ck: Checker, lsA: PointString3d) {

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.147.0",
+  "version": "0.155.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -28,7 +28,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "0.147.0",
+    "@bentley/build-tools": "0.155.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.10.3",

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -16,39 +16,50 @@ exports.builder = (yargs) =>
       describe: `The port for the web backend to listen on for (inspector) debugging.`
     },
   })
-  .options({
-    "electronDebug": {
-      type: "string",
-      describe: `The port for the electron main process to listen on for (inspector) debugging.`
-    },
-  })
-  .options({
-    "electronRemoteDebug": {
-      type: "string",
-      describe: `The port for the electron render process to listen on for (chrome) debugging.`
-    },
-  })
-  .options({
-    "noElectron": {
-      type: "boolean",
-      describe: `Don't start the electron app.`
-    },
-  })
-  .options({
-    "noWeb": {
-      type: "boolean",
-      describe: `Don't start the web backend.`
-    },
-  });
+    .options({
+      "electronDebug": {
+        type: "string",
+        describe: `The port for the electron main process to listen on for (inspector) debugging.`
+      },
+    })
+    .options({
+      "electronRemoteDebug": {
+        type: "string",
+        describe: `The port for the electron render process to listen on for (chrome) debugging.`
+      },
+    })
+    .options({
+      "noElectron": {
+        type: "boolean",
+        describe: `Don't start the electron app.`
+      },
+    })
+    .options({
+      "noWeb": {
+        type: "boolean",
+        describe: `Don't start the web backend.`
+      },
+    })
+    .options({
+      "noConfigLoader": {
+        type: "boolean",
+        default: "false",
+        describe: "do not run config-loader to locate a iModelJS config",
+      },
+    });
 
 exports.handler = async (argv) => {
+  if (!argv.noConfigLoader) {
+    process.env.IMODELJS_NO_CONFIG_LOADER = true;
+  } else {
+    console.log("Skipping search for iModelJS config directory");
+  }
 
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("development");
-
   const paths = require("../config/paths");
   const config = require("../config/webpack.config.backend.dev");
-  const { watchBackend }= require("./utils/webpackWrappers");
+  const { watchBackend } = require("./utils/webpackWrappers");
 
   const nodeDebugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
   const electronDebugOptions = (argv.electronDebug) ? ["--inspect-brk=" + argv.electronDebug] : [];
@@ -66,7 +77,7 @@ exports.handler = async (argv) => {
     names.push("web-serv");
     colors.push("cyan");
   }
-  
+
   if (!argv.noElectron) {
     args.push(["node", require.resolve("nodemon/bin/nodemon"), "--no-colors", "--watch", paths.appBuiltMainJs, "node_modules/electron/cli.js", ...electronDebugOptions, ...electronRemoteDebugOptions, paths.appBuiltMainJs]);
     names.push("electron");

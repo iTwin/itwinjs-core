@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
-import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { EnvMacroSubst, DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
+import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
+import { DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
@@ -15,14 +15,6 @@ import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager"
 import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
 
-const defaultsCfg = {
-    "ROBOT-WORLD-FEATURE-READWRITE": "true",
-    "ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS": "false",
-    "ROBOT-WORLD-DEFAULT-LOG-LEVEL": "Error",
-    "ROBOT-WORLD-SEQ-URL": "http://localhost",
-    "ROBOT-WORLD-SEQ-PORT": "5341",
-};
-
 // An example of how to implement a service.
 // This example manages a fictional domain called "robot world",
 // where robots move around on a grid, and they bump into each obstacles,
@@ -30,20 +22,6 @@ const defaultsCfg = {
 // The service exposes APIs to manage robots and barriers and to query their state.
 // In particular, the service does collision detection between robots and obstacles.
 export class RobotWorldEngine {
-
-    // __PUBLISH_EXTRACT_START__ FeatureGates.defineFeatureGates
-
-    private static readFeatureGates(): void {
-
-        // Read the configuration parameters for my service.
-        // Some config params might be specified as envvars. Substitute actual values.
-        const config = require(path.join(IModelHost.appAssetsDir!, "RobotWorldEngine.config.json"));
-        EnvMacroSubst.replaceInProperties(config, true, defaultsCfg);
-
-        // Define the feature gates that were passed in the config parameters on IModelHost, using "robot." as a prefix
-        config.features.forEach((gate: { name: string, val: any }) => IModelHost.features.setGate("robot." + gate.name, gate.val));
-    }
-    // __PUBLISH_EXTRACT_END__
 
     public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
         let robotCount: number = 0;
@@ -107,26 +85,6 @@ export class RobotWorldEngine {
         iModelDb.elements.updateElement(r);
     }
 
-    // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
-    // An experimental method. It is in the release build, but only turned on in some deployments.
-    public static fuseRobots(iModelDb: IModelDb, r1Id: Id64String, r2Id: Id64String) {
-        if (!IModelHost.features.check("robot.experimental.methods"))
-            return;
-
-        // The gate is open. Go ahead and perform the function.
-        // ...
-        // __PUBLISH_EXTRACT_END__
-        // Create an assembly with r1 and r2 as the children and a new (hidden) element as the head.
-        const r1 = iModelDb.elements.getElement(r1Id) as Robot;
-        const r2 = iModelDb.elements.getElement(r2Id) as Robot;
-        const parent = iModelDb.elements.createElement({ classFullName: InformationRecordElement.classFullName, model: r1.model, code: Code.createEmpty() });
-        const parentId = iModelDb.elements.insertElement(parent);
-        r1.parent = new RelatedElement({ id: parentId });
-        r2.parent = new RelatedElement({ id: parentId });
-        iModelDb.elements.updateElement(r1);
-        iModelDb.elements.updateElement(r2);
-    }
-
     // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
     public static insertRobot(iModelDb: IModelDb, modelId: Id64String, name: string, location: Point3d): Id64String {
         const props: GeometricElement3dProps = {
@@ -161,8 +119,6 @@ export class RobotWorldEngine {
         else
             config.appAssetsDir = KnownLocations.packageAssetsDir;
         IModelHost.startup(config);
-
-        this.readFeatureGates();
 
         // Can't to this, as our logging config uses Bunyan/Seq, and we don't really want to do that here.
         // initializeLogging();

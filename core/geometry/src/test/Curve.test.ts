@@ -1,32 +1,36 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Angle, AngleSweep } from "../Geometry";
-import { Segment1d, Point3d, Vector3d, Point2d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { CurveIntervalRole, CurveLocationDetail, CurvePrimitive, CoordinateXYZ } from "../curve/CurvePrimitive";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Sample } from "../serialization/GeometrySamples";
 import { Geometry } from "../Geometry";
-import { Ray3d } from "../AnalyticGeometry";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
 import { IModelJson } from "../serialization/IModelJsonSchema";
-import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { BezierCurve3dH, BezierCurve3d } from "../bspline/BezierCurve";
-import { Point4d } from "../numerics/Geometry4d";
-
+import { Point4d } from "../geometry4d/Point4d";
+import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 /* tslint:disable:no-console */
 
 class ExerciseCurve {

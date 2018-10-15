@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { AxisAlignedBox3d, RpcInterface, RpcManager, IModel, IModelToken, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, RpcInterface, RpcManager, IModel, IModelToken, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, ElementProps } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, ExclusiveAccessOption } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
+import { PhysicalPartition, InformationPartitionElement } from "../Element";
+import { PhysicalModel, DictionaryModel } from "../Model";
+import { SpatialCategory } from "../Category";
 
 /**
  * The backend implementation of IModelWriteRpcInterface.
@@ -43,5 +46,39 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
             return Promise.reject(new Error("failed to save thumbnail"));
 
         return Promise.resolve();
+    }
+    public async insertElement(iModelToken: IModelToken, elementProps: ElementProps): Promise<Id64> {
+        return IModelDb.find(iModelToken).elements.insertElement(elementProps);
+    }
+
+    public async  createAndInsertPhysicalPartition(iModelToken: IModelToken, modelName: string): Promise<Id64> {
+        const iModelDb = IModelDb.find(iModelToken);
+        const modelCode = InformationPartitionElement.createCode(iModelDb, IModelDb.rootSubjectId, modelName);
+        if (iModelDb.elements.queryElementIdByCode(modelCode) !== undefined)
+            return Promise.reject("Model already exists");
+
+        const modeledElementProps: ElementProps = {
+            classFullName: PhysicalPartition.classFullName,
+            iModel: iModelDb,
+            parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+            model: IModel.repositoryModelId,
+            code: modelCode,
+        };
+        const modeledElement = iModelDb.elements.createElement(modeledElementProps);
+        return iModelDb.elements.insertElement(modeledElement);
+    }
+
+    public async createAndInsertPhysicalModel(iModelToken: IModelToken, modeledElementId: Id64, privateModel: boolean = false): Promise<Id64> {
+        const iModelDb = IModelDb.find(iModelToken);
+        const newModel = iModelDb.models.createModel({ modeledElement: { id: modeledElementId }, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+        return iModelDb.models.insertModel(newModel);
+    }
+    // Create a SpatialCategory, insert it, and set its default appearance
+    public async createAndInsertSpatialCategory(iModelToken: IModelToken, categoryName: string): Promise<Id64> {
+        const iModelDb = IModelDb.find(iModelToken);
+        const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
+        const cat: SpatialCategory = SpatialCategory.create(dictionary, categoryName);
+        cat.id = iModelDb.elements.insertElement(cat);
+        return cat.id;
     }
 }

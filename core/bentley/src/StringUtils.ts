@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
@@ -8,6 +8,7 @@
 // ###TODO use TextDecoder where available
 // From https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Core/getStringFromTypedArray.js
 // which is itself inspired by https://github.com/inexorabletash/text-encoding
+// @hidden
 namespace Utf8ToString {
   function inRange(a: number, min: number, max: number): boolean { return min <= a && a <= max; }
 

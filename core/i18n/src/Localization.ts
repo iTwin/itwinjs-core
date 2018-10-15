@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module AppAdministration */
@@ -14,7 +14,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 export interface I18NOptions {
   urlTemplate?: string;
 }
-
+/** Supplies Internationalization services. Internally, this class uses the [i18next](https://www.i18next.com/) package. */
 export class I18N {
   private _i18n: i18n;
   private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();

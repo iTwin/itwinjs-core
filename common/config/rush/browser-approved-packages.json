@@ -12,11 +12,15 @@
     },
     {
       "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/bwc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/config-loader",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
@@ -27,7 +31,7 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/icons-webfont",
+      "name": "@bentley/icons-generic-webfont",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
@@ -73,10 +77,6 @@
     {
       "name": "@bentley/presentation-frontend",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/svg-icons",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -231,16 +231,8 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "electron-builder",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal", "tools" ]
-    },
-    {
-      "name": "electron-devtools-installer",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "enzyme",
@@ -371,6 +363,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "json5",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -448,7 +444,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "openid-client",

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
@@ -23,7 +23,7 @@ import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
 
 /** Interface defining callbacks for widget changes */
 export interface WidgetChangeHandler {
-  handleResize(zoneId: number, x: number, y: number, handle: ResizeHandle): void;
+  handleResize(zoneId: number, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
   handleTabClick(widgetId: number, tabIndex: number): void;
   handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps): void;
   handleTabDragEnd(): void;
@@ -132,7 +132,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   public render(): React.ReactNode {
     return (
-      <>
+      <div id="frontstage-composer">
         {this.renderModalFrontstage()}
 
         {this._frontstageDef &&
@@ -144,7 +144,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
             zoneDefProvider={this}
           />
         }
-      </>
+      </div>
     );
   }
 
@@ -165,9 +165,9 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     this.layout();
   }
 
-  public handleResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle) => {
+  public handleResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleResize(zoneId, x, y, handle, prevState.nineZone);
+      const nineZone = FrontstageManager.NineZoneStateManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone);
       return {
         nineZone,
       };

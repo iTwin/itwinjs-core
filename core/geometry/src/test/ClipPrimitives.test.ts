@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -9,9 +9,10 @@ import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../clip
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Geometry } from "../Geometry";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Triangulator } from "../topology/Triangulation";

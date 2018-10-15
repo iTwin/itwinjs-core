@@ -1,13 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
 import * as React from "react";
 import { ReactNode } from "react";
-
-// import { OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import { ZoneDef } from "./ZoneDef";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
@@ -26,7 +24,6 @@ import StatusMessageLayout from "@bentley/ui-ninezone/lib/footer/message/content
 import MessageLabel from "@bentley/ui-ninezone/lib/footer/message/content/Label";
 import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
 import MessageStatus from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-// import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
 import { BlueButton as Button } from "@bentley/bwc/lib/buttons/BlueButton";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend/lib/frontend";
 
@@ -42,6 +39,7 @@ import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 
+/** Enum for StatusBar Message Type */
 export enum StatusBarMessageType {
   None,
   Activity,
@@ -50,6 +48,7 @@ export enum StatusBarMessageType {
   Sticky,
 }
 
+/** State for the [[StatusBar]] React component */
 export interface StatusBarState {
   openWidget: StatusBarFieldId;
   visibleMessage: StatusBarMessageType;
@@ -59,6 +58,7 @@ export interface StatusBarState {
   toastMessageStage: ToastMessageStage;
 }
 
+/** Properties for the [[StatusBar]] React component */
 export interface StatusBarProps {
   zoneDef: ZoneDef;
   isInFooterMode: boolean;
@@ -157,7 +157,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   /**
-   * Hides ActivityMessage after cancelation
+   * Hides ActivityMessage after cancellation
    */
   private _handleActivityMessageCancelledEvent = () => {
     this.setState((_prevState) => ({
@@ -282,7 +282,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
   }
 
   /**
-   * Returns ActvityMessage to display with most recent values
+   * Returns ActivityMessage to display with most recent values
    * reflecting activity progress.
    */
   private getActivityMessage(): React.ReactNode {

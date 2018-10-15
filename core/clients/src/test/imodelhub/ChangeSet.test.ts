@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
@@ -28,10 +28,10 @@ function mockPostNewChangeSet(imodelId: Guid, changeSet: ChangeSet) {
   const cs = new ChangeSet();
   deepAssign(cs, changeSet);
   cs.id! = cs.id!;
-  cs.uploadUrl = `${utils.defaultUrl}/imodelhub-${imodelId}/123456`;
+  cs.uploadUrl = `${utils.IModelHubUrlMock.getUrl()}/imodelhub-${imodelId}/123456`;
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
@@ -45,7 +45,7 @@ function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
 
   const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockCreateChangeSet(imodelId: Guid, changeSet: ChangeSet) {
@@ -70,7 +70,8 @@ describe("iModelHub ChangeSetHandler", () => {
   const followingChangeSetBackwardVersionId = "FollowingChangeSet-backward-Version.Id";
   const followingChangesetBackwardChangesetId = "FollowingChangeSet-backward-ChangeSet.Id";
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    this.enableTimeouts(false);
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
@@ -152,7 +153,7 @@ describe("iModelHub ChangeSetHandler", () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${followingChangesetBackwardChangesetId}+eq+%27${lastButOneId}%27`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
     }
     const followingChangeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().fromId(lastButOneId));
     chai.expect(followingChangeSets.length).to.be.equal(1);
@@ -217,7 +218,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().latest().top(1));
 
     let error: IModelHubClientError | undefined;
-    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    const invalidClient = new IModelHubClient();
     try {
       await invalidClient.ChangeSets().download(actx, changeSets, utils.workDir);
     } catch (err) {
@@ -242,7 +243,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
   it("should fail creating a ChangeSet with no file handler", async () => {
     let error: IModelHubClientError | undefined;
-    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    const invalidClient = new IModelHubClient();
     try {
       await invalidClient.ChangeSets().create(actx, accessToken, imodelId, new ChangeSet(), utils.workDir);
     } catch (err) {
@@ -289,7 +290,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
@@ -313,7 +314,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[0], mockedChangeSets[1], mockedChangeSets[2]]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
@@ -341,7 +342,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const filter = `${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersion.id!}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
     }
 
@@ -369,7 +370,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const filter = `${followingChangeSetBackwardVersionId}+eq+%27${mockedVersion[1].id!}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[2], mockedChangeSets[1]]));
     }
 
@@ -401,7 +402,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
 
@@ -436,7 +437,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[1]));
     }
 
@@ -462,7 +463,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
         `?$filter=${filter}`);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
     }
     const changeSets: ChangeSet[] = await iModelClient.ChangeSets().get(actx, accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());

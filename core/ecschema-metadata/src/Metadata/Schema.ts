@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -13,11 +13,12 @@ import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import Unit from "./Unit";
 import PropertyCategory from "./PropertyCategory";
-import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion, SchemaItemKey, CustomAttributeContainerType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import SchemaReadHelper from "./../Deserialization/Helper";
+import { ECClassModifier, PrimitiveType, CustomAttributeContainerType } from "./../ECObjects";
+import SchemaKey, { ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
-import { SchemaContext } from "../Context";
+import SchemaContext from "./../Context";
 import UnitSystem from "./UnitSystem";
 import Phenomenon from "./Phenomenon";
 import Format from "./Format";

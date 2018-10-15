@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/IRulesetVariablesManager";
+import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 
 /** @hidden */
 export enum NativePlatformRequestTypes {
@@ -33,7 +33,7 @@ export interface NativePlatformDefinition extends IDisposable {
   addRuleset(serializedRulesetJson: string): string;
   removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
-  handleRequest(db: any, options: string): Promise<string>;
+  handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
 }
@@ -91,7 +91,8 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public handleRequest(db: any, options: string): Promise<string> {
+    public handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string> {
+      activityLoggingContext.enter();
       return new Promise((resolve, reject) => {
         this._nativeAddon.handleRequest(db, options, (response) => {
           try {

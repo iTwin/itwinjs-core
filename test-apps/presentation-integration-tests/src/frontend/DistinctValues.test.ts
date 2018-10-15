@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -24,7 +24,7 @@ describe("DistinctValues", async () => {
     terminate();
   });
 
-  it.skip("gets distinct content values", async () => {
+  it("gets distinct content values", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/DistinctValues/getRelatedDistinctValues");
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };

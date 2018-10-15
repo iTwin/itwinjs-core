@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OtherServices */
 
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { DeploymentEnv, UrlDescriptor } from "./Client";
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
 import { URL } from "url";
@@ -120,21 +119,17 @@ export class FileAccessKey extends WsgInstance {
  */
 export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
+  public static readonly configURL = "imjs_reality_data_service_url";
+  public static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
+  public static readonly configRegion = "imjs_reality_data_service_region";
   private _blobUrl: any;
   private _blobRoot: undefined | string;
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-realitydataservices-eus.cloudapp.net",
-    QA: "https://qa-connect-realitydataservices.bentley.com",
-    PROD: "https://connect-realitydataservices.bentley.com",
-    PERF: "https://perf-realitydataservices-eus.cloudapp.net",
-  };
 
   /**
    * Creates an instance of RealityDataServicesClient.
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv, "v2.5", RealityDataServicesClient._defaultUrlDescriptor[deploymentEnv] + "/");
+  public constructor() {
+    super("v2.5");
   }
 
   /**
@@ -168,7 +163,36 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return RealityDataServicesClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(RealityDataServicesClient.configURL))
+      return Config.App.get(RealityDataServicesClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${RealityDataServicesClient.configURL}`);
+  }
+
+  /**
+   * Gets theRelyingPartyUrl for the service.
+   * @returns RelyingPartyUrl for the service.
+   */
+  protected getRelyingPartyUrl(): string {
+    if (Config.App.has(RealityDataServicesClient.configRelyingPartyUri))
+      return Config.App.get(RealityDataServicesClient.configRelyingPartyUri) + "/";
+
+    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
+      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
+        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
+    }
+
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataServicesClient.configRelyingPartyUri}`);
+  }
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(RealityDataServicesClient.configRegion))
+      return Config.App.get(RealityDataServicesClient.configRegion);
+
+    return undefined;
   }
 
   /**
@@ -277,7 +301,7 @@ export class RealityDataServicesClient extends WsgClient {
   public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<URL> {
     const urlString = await this.getTileDataBlobUrl(alctx, token, projectId, tilesId, name);
     if (typeof this._blobUrl === "undefined")
-      this._blobUrl = (Config.isBrowser) ? new window.URL(urlString) : new URL(urlString);
+      this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
     return Promise.resolve(this._blobUrl);
   }
 
@@ -358,7 +382,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets reality data corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @param tileRequest method to fetch tile data from (either getTileJson or getTileContent)
    * @returns tile data json
    */
@@ -378,7 +402,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets a reality data tile json corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @returns tile data json
    */
   public async getTileJsonFromUrl(token: AccessToken, url: string): Promise<any> {
@@ -388,7 +412,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets a reality data tile content corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--fb1696c8-c074-4c76-a539-a5546e048cc6/S3MX/RealityData/62ad85eb-854f-4814-b7de-3479855a2165/Medium_3SM.json
+   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @returns tile data content
    */
   public async getTileContentFromUrl(token: AccessToken, url: string): Promise<any> {

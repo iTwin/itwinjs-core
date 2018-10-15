@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -10,6 +10,9 @@ interface BlockingPromptProps {
   prompt: string;
 }
 
+/**
+ * Display a message box centered in the view port with lightbox (ghosting background)
+ */
 export class BlockingPrompt extends React.Component<BlockingPromptProps> {
 
   constructor(props: BlockingPromptProps, context?: any) {

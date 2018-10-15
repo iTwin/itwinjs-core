@@ -1,18 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./Assert";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BeSQLite";
-export * from "./Clone";
 export * from "./Compare";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
 export * from "./IndexMap";
-export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./ActivityLoggingContext";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
@@ -13,7 +13,7 @@
 export function defaultClone<T>(value: T) { return value; }
 
 /**
- * Computes the position at which the specified value should be inserted in order to maintain sorted order within a sorted array.
+ * Given a sorted array, computes the position at which the specified value should be inserted into the array so that the array remains sorted.
  * @param value The value whose position is to be computed.
  * @param list An array of U already sorted according to the comparison criterion.
  * @param compare A function accepting a value of type T and a value of type U and returning a negative value if lhs < rhs,
@@ -152,7 +152,7 @@ export class SortedArray<T> {
   public get(index: number): T | undefined { return index < this.length ? this._array[index] : undefined; }
 
   /**
-   * Computes the position at which the specified value should be inserted in order to maintain sorted order.
+   * Computes the position at which the specified value should be inserted to maintain sorted order.
    * @param value The value whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
    */

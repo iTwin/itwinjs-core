@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -7,6 +7,17 @@
 const fs = require("fs");
 const path = require("path");
 const paths = require("./paths");
+
+// Load iModelJS configuration
+if (process.env.IMODELJS_NO_CONFIG_LOADER) {
+  const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
+  const configEnv = configLoader.IModelJsConfig.init(false /*suppress error*/);
+  if (configEnv && process.env) {
+    Object.assign(process.env, configEnv);
+  } else {
+    console.log("Webpack failed to locate iModelJs configuration");
+  }
+}
 
 // Make sure that including paths.js after env.js will read .env variables.
 delete require.cache[require.resolve("./paths")];
@@ -43,12 +54,12 @@ dotenvFiles.forEach(dotenvFile => {
 
 // We support resolving modules according to `NODE_PATH`.
 // This lets you use absolute paths in imports inside large monorepos:
-// https://github.com/facebookincubator/create-react-app/issues/253.
+// https://github.com/facebook/create-react-app/issues/253.
 // It works similar to `NODE_PATH` in Node itself:
 // https://nodejs.org/api/modules.html#modules_loading_from_the_global_folders
 // Note that unlike in Node, only *relative* paths from `NODE_PATH` are honored.
 // Otherwise, we risk importing Node.js core modules into an app instead of Webpack shims.
-// https://github.com/facebookincubator/create-react-app/issues/1023#issuecomment-265344421
+// https://github.com/facebook/create-react-app/issues/1023#issuecomment-265344421
 // We also resolve them to make sure all tools using them work consistently.
 const appDirectory = fs.realpathSync(process.cwd());
 process.env.NODE_PATH = (process.env.NODE_PATH || "")
@@ -60,10 +71,11 @@ process.env.NODE_PATH = (process.env.NODE_PATH || "")
 // Grab NODE_ENV and REACT_APP_* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
 const REACT_APP = /^REACT_APP_/i;
-
+// Grab all the imjs_* var for core and test
+const IMJS = /^imjs_/i;
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
-    .filter(key => REACT_APP.test(key))
+    .filter((key) => { return REACT_APP.test(key) || IMJS.test(key); })
     .reduce(
       (env, key) => {
         env[key] = process.env[key];
@@ -89,8 +101,8 @@ function getClientEnvironment(publicUrl) {
       return env;
     }, {}),
   };
-  
-  // On the backend, we still want to use Webpack DefinePlugin to make these 
+
+  // On the backend, we still want to use Webpack DefinePlugin to make these
   // compile-time environment variables available (and fixed), but we *also*
   //  want to preserve other run-time environment variables.
   // So we'll use Webpack DefinePlugin to rewrite specific values (i.e., `process.env.NODE_ENV` ===> `"development"`)

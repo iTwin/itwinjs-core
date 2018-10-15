@@ -1,16 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import RulesetSchema from "../../../Ruleset.schema.json";
 import { Ruleset } from "../../../lib";
-
-jsf.option({
-  optionalsProbability: 0.8,
-  maxItems: 5,
-  maxLength: 20,
-});
 
 const hasIndexSignature = (o: any): o is { [key: string]: string } => {
   return typeof o === "object";
@@ -33,7 +26,14 @@ const fixEmptyStrings = <T extends { [key: string]: any }>(obj: T) => {
 };
 
 export const createRandomRuleset = async () => {
-  const ruleset: Ruleset = await jsf.resolve(RulesetSchema);
+  const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
+  jsf.option({
+    optionalsProbability: 0.8,
+    maxItems: 5,
+    maxLength: 20,
+  });
+  const ruleset: Ruleset = jsf.generate(RulesetSchema);
+  jsf.reset();
   fixEmptyStrings(ruleset);
   return ruleset;
 };

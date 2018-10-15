@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
 import { IModelApp } from "./IModelApp";
 import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve, PointString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Viewport, ScreenViewport } from "./Viewport";
+import { Viewport, ScreenViewport, linePlaneIntersect } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { StandardViewId, ViewState } from "./ViewState";
+import { StandardViewId } from "./StandardView";
+import { ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeButton, InputCollector } from "./tools/Tool";
 import { SnapMode, SnapDetail, SnapHeat, HitDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
@@ -2114,7 +2114,7 @@ export class AccuDraw {
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
         const axes = ThreeAxes.createFromMatrix3d(rMatrix);
         this.accountForAuxRotationPlane(axes, this.flags.auxRotationPlane);
-        LegacyMath.linePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
+        linePlaneIntersect(outPtP, inPtP, axes.z, pointOnPlaneP, normalVectorP, false);
       } else {
         projectionVector = inPtP.vectorTo(pointOnPlaneP);
         distance = projectionVector.dotProduct(normalVectorP);

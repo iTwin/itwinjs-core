@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { app, protocol, BrowserWindow } from "electron";
-import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
 
 /**
@@ -49,10 +48,6 @@ export default function initialize(rpcs: RpcInterfaceDefinition[]) {
       icon: iconPath,
     });
     mainWindow.on("closed", () => mainWindow = undefined);
-
-    // install some devtools extensions for easier react and redux debugging
-    installExtension(REACT_DEVELOPER_TOOLS);
-    installExtension(REDUX_DEVTOOLS);
 
     // load the frontend
     //    in development builds, the frontend assets are served by the webpack devserver

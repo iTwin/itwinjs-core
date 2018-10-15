@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 import { SelectionMode, hasFlag, SelectionModeFlags } from "./SelectionModes";
 import { Range2d } from "@bentley/geometry-core";
 
+/** Prototype for a Selection Changed handler */
 export declare type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void;
 
 /**
@@ -44,7 +45,7 @@ export interface SingleSelectionHandler<TItem> {
 export interface MultiSelectionHandler<TItem> {
   /**
    * Shift selects between two items.
-   * @returns Items that were selected.
+   * Returns items that were selected.
    */
   selectBetween: (item1: TItem, item2: TItem) => TItem[];
 
@@ -170,11 +171,11 @@ export class DragAction<Item> {
         const insideCurrent = currentRange.containsXY(c, r);
         // If item is in only one of the ranges that means it's selection needs to be toggled.
         if ((insidePrevious || insideCurrent) && insideCurrent !== insidePrevious) {
-          const itemHanlder = this._itemSelectionHandlers[r][c];
-          if (itemHanlder.isSelected())
-            deselections.push(itemHanlder.item());
+          const itemHandler = this._itemSelectionHandlers[r][c];
+          if (itemHandler.isSelected())
+            deselections.push(itemHandler.item());
           else
-            selections.push(itemHanlder.item());
+            selections.push(itemHandler.item());
         }
       }
     }

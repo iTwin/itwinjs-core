@@ -1,25 +1,30 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import * as geometry from "../geometry-core";
-import { Point3d, Vector3d } from "../PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { GeometryQuery, CoordinateXYZ } from "../curve/CurvePrimitive";
+import { GeometryQuery} from "../curve/GeometryQuery";
+import {CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { AngleSweep, Angle } from "../Geometry";
-import { Loop, Path, ParityRegion } from "../curve/CurveChain";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
 import { Sphere } from "../solid/Sphere";
 import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { Transform, Matrix3d } from "../Transform";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { TorusPipe } from "../solid/TorusPipe";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
-import { Ray3d } from "../AnalyticGeometry";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { IModelJson } from "../serialization/IModelJsonSchema";
 
 /* tslint:disable:no-console */
 
@@ -30,7 +35,7 @@ function emitCategoryHeader(name: string) {
 }
 // emit a single geometry fragment in bare json form ...
 function emitIModelJson(classname: string, description: string, g: GeometryQuery) {
-  const imjs = geometry.IModelJson.Writer.toIModelJson(g);
+  const imjs = IModelJson.Writer.toIModelJson(g);
   console.log("| " + classname + " | " + description + " | `", JSON.stringify(imjs) + "`|");
 }
 // Typical snippets for sandbox windows . . . . These assume that

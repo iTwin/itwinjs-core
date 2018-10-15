@@ -14,12 +14,6 @@ All submissions require a code review. We use GitHub pull requests for this purp
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
-## Filing GitHub issues
-
-Please follow the guidelines specified in the
-[ISSUE_TEMPLATE](https://github.com/imodeljs/ISSUE_TEMPLATE.md)
-file.
-
 ### Asking Questions
 
-Have a question? Rather than opening an issue, please ask on Stack Overflow using the tag imodeljs.
+Have a question? Rather than opening an issue, please ask on [Stack Overflow](https://stackoverflow.com/tags/imodeljs) using the tag imodeljs.

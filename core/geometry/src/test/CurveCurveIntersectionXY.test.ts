@@ -1,19 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d, Point2d } from "../PointVector";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { CurveCurve, CurveLocationDetailArrayPair } from "../curve/CurveCurveIntersectXY";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { Matrix4d, Map4d } from "../numerics/Geometry4d";
-import { Transform } from "../Transform";
+import { Map4d } from "../geometry4d/Map4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Transform } from "../geometry3d/Transform";
 import { Arc3d } from "../curve/Arc3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { GeometryCoreTestIO } from "./IModelJson.test";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { GeometryQuery } from "../curve/GeometryQuery";
 
 function createSamplePerspectiveMaps(): Map4d[] {
   const origin = Point3d.create(-20, -20, -1);

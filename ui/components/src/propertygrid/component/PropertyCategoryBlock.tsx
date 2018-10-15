@@ -1,42 +1,37 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { ExpandableBlock } from "./ExpandableBlock";
+import { ExpandableBlock } from "@bentley/ui-core/";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /**
  * Props for the PropertyCategoryBlock React component
  */
 export interface PropertyCategoryBlockProps {
+  /** Category of the properties */
   category: PropertyCategory;
-  onBlockHeaderPressed?: () => void;
+  /** Callback to when PropertyCategoryBlock gets expended or collapsed */
+  onExpansionToggled?: (categoryName: string) => void;
 }
 
 /**
  * PropertyCategoryBlock React component
  */
 export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlockProps> {
-
-  constructor(props: any) {
-    super(props);
-    this.onClick = this.onClick.bind(this);
-    this.onKeyPress = this.onKeyPress.bind(this);
-  }
-
   private toggleExpansion() {
-    if (this.props.onBlockHeaderPressed)
-      this.props.onBlockHeaderPressed();
+    if (this.props.onExpansionToggled)
+      this.props.onExpansionToggled(this.props.category.name);
   }
 
-  private onClick(_evt: React.MouseEvent<HTMLDivElement>) {
+  private _onClick = () => {
     this.toggleExpansion();
   }
 
-  private onKeyPress(evt: React.KeyboardEvent<HTMLDivElement>) {
+  private _onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     /// Prevent page from scrolling when clicking [Space]:
     if (evt.key === " ") {
       evt.preventDefault();
@@ -51,8 +46,8 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
     return (
       <ExpandableBlock
         isExpanded={this.props.category.expand}
-        onClick={this.onClick}
-        onKeyPress={this.onKeyPress}
+        onClick={this._onClick}
+        onKeyPress={this._onKeyPress}
         title={this.props.category.label}
       >
         {this.props.children}

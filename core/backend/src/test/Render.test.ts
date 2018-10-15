@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps, Gradient } from "@bentley/imodeljs-common";
-import { Angle } from "../../../geometry/lib/Geometry";
+import { Angle } from "@bentley/geometry-core";
 
 describe("Render", () => {
 
@@ -88,7 +88,7 @@ describe("Render", () => {
     });
 
     const symbCopy = symb.clone();
-    assert.isTrue(symb.isEqualTo(symbCopy));
+    assert.isTrue(symb.equals(symbCopy));
 
     // Assert that ordering of symbology is correct using implemented compare method
     const symbArr: Gradient.Symb[] = [];
@@ -142,7 +142,7 @@ describe("Render", () => {
         assert.isTrue(current.keys[0].color.tbgr > prev.keys[0].color.tbgr);
         continue;
       }
-      assert.isTrue(current.isEqualTo(prev));
+      assert.isTrue(current.equals(prev));
     }
   });
 });

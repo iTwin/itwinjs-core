@@ -46,9 +46,4 @@ The following samples showcase the iModel.js API in action:
 
 ## Support
 
-The following are some useful support links:
-
-- [Stack Overflow Questions](https://stackoverflow.com/questions/ask?tags=imodeljs+typescript)
-- [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
-- [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
-- [Discussion Board](https://github.com/imodeljs/imodeljs/labels/discussion)
+Please see the [Community Resources](../learning/CommunityResources.md) page for the best places to get more help.

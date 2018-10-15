@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module UiSettings */
 
 import { expect } from "chai";
 import { LocalUiSettings, UiSettingsStatus } from "../../src/index";
 const storageMock = () => {
-  const storage: {[key: string]: any} = {};
+  const storage: { [key: string]: any } = {};
   return {
     setItem: (key: string, value: string) => {
       storage[key] = value || "";
@@ -32,15 +33,15 @@ describe("LocalUiSettings", () => {
     expect(initialLocalUiSettings).to.not.be.undefined;
   });
   describe("saveSetting", () => {
-    const localUiSettings = new LocalUiSettings({localStorage: storageMock()} as Window);
+    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
     it("Should save setting correctly", () => {
-      const result = localUiSettings.saveSetting("Testing", "TestData", {test123: "4567"});
+      const result = localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
       expect(result.status).to.equal(UiSettingsStatus.Sucess);
     });
   });
   describe("getSetting", () => {
-    const localUiSettings = new LocalUiSettings({localStorage: storageMock()} as Window);
-    localUiSettings.saveSetting("Testing", "TestData", {test123: "4567"});
+    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
     it("Should load setting correctly", () => {
       const result = localUiSettings.getSetting("Testing", "TestData");
       expect(result.status).to.equal(UiSettingsStatus.Sucess);
@@ -53,8 +54,8 @@ describe("LocalUiSettings", () => {
     });
   });
   describe("deleteSetting", () => {
-    const localUiSettings = new LocalUiSettings({localStorage: storageMock()} as Window);
-    localUiSettings.saveSetting("Testing", "TestData", {test123: "4567"});
+    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
     it("Should remove setting correctly", () => {
       const result = localUiSettings.deleteSetting("Testing", "TestData");
       expect(result.status).to.equal(UiSettingsStatus.Sucess);

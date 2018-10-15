@@ -1,23 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Solid */
 
-import { Vector3d } from "../PointVector";
-import { Transform } from "../Transform";
+import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
 
-import { CurveCollection } from "../curve/CurveChain";
-import { FrameBuilder } from "../FrameBuilder";
-import { Ray3d } from "../AnalyticGeometry";
+import { CurveCollection } from "../curve/CurveCollection";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { Triangulator } from "../topology/Triangulation";
 import { LineString3d } from "../curve/LineString3d";
-import { AnyCurve, Loop, ParityRegion } from "../curve/CurveChain";
+import { AnyCurve } from "../curve/CurveChain";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { PolygonOps } from "../PointHelpers";
+import { PolygonOps } from "../geometry3d/PointHelpers";
 
 /**
  * Sweepable contour with Transform for local to world interaction.

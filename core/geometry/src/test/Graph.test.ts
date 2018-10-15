@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -9,10 +9,10 @@ import { expect } from "chai";
 import { Checker } from "./Checker";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { Matrix3d } from "../Transform";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
@@ -20,11 +20,11 @@ import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../topology/Ha
 import { Merger, GraphMerge } from "../topology/Merging";
 import { Triangulator } from "../topology/Triangulation";
 
-import { Angle } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Sample } from "../serialization/GeometrySamples";
-import { GeometryCoreTestIO } from "./IModelJson.test";
-import { Loop } from "../curve/CurveChain";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { Loop } from "../curve/Loop";
+import { GeometryQuery } from "../curve/GeometryQuery";
 
 function exportGraph(graph: HalfEdgeGraph, filename: string) {
   const toExport = PolyfaceBuilder.graphToPolyface(graph);

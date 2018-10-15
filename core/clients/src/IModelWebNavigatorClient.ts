@@ -1,30 +1,23 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OtherServices */
 
-import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
-
+import { Client } from "./Client";
+import { Config } from "./Config";
 /**
  * Client wrapper to IModel Web Service
  */
 export class IModelWebNavigatorClient extends Client {
   public static readonly searchKey: string = "iModelWeb.Url";
-
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-imodelweb.bentley.com",
-    QA: "https://qa-connect-imodelweb.bentley.com",
-    PROD: "https://connect-imodelweb.bentley.com",
-    PERF: "https://connect-imodelweb.bentley.com",
-  };
-
+  public static readonly configURL = "imjs_imodelweb_url";
+  public static readonly configRegion = "imjs_imodelweb_region";
   /**
    * Creates an instance of IModelWebNavigatorClient.
-   * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
-    super(deploymentEnv);
+  public constructor() {
+    super();
   }
 
   /**
@@ -40,7 +33,21 @@ export class IModelWebNavigatorClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return IModelWebNavigatorClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(IModelWebNavigatorClient.configURL))
+      return Config.App.get(IModelWebNavigatorClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${IModelWebNavigatorClient.configURL}`);
+  }
+
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(IModelWebNavigatorClient.configRegion))
+      return Config.App.get(IModelWebNavigatorClient.configRegion);
+
+    return undefined;
   }
 
 }

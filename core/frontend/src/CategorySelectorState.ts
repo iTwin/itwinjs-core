@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -8,7 +8,14 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { CategorySelectorProps } from "@bentley/imodeljs-common";
 
-/** A list of Categories to be displayed in a view. */
+/** A set of Categories to be displayed in a [[ViewState]].
+ * Elements belonging to categories not specified in the category selector will not be drawn in the view.
+ * By default, geometry belonging to any [[SubCategory]] of a visible Category is also visible in the view,
+ * unless the [[SubCategoryAppearance]] or [[SubCategoryOverride]] specifies that it should be invisible.
+ * @note To change the set of categories visible in a [[ViewState]] currently associated with a [[Viewport]],
+ * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
+ * @see [[Category]]
+ */
 export class CategorySelectorState extends ElementState {
   public categories: Set<string> = new Set<string>();
   constructor(props: CategorySelectorProps, iModel: IModelConnection) {

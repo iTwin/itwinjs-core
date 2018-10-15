@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
-import { Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { Point3dArray } from "../PointHelpers";
-import { GeometryHandler } from "../GeometryHandler";
-import { GeometryQuery } from "./CurvePrimitive";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GeometryQuery } from "./GeometryQuery";
 /* tslint:disable:variable-name no-empty*/
 
 /**

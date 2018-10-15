@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -24,6 +24,9 @@ interface ProjectDropdownState {
   showProjectsDialog: boolean;
 }
 
+/**
+ * List of projects in a dropdown
+ */
 export class ProjectDropdown extends React.Component<ProjectDropdownProps, ProjectDropdownState> {
   private _itemHeight: number = 3.25; // each item (project) height is (n-em) in the dropdown
 

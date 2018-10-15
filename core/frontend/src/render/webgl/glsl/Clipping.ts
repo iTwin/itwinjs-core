@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
+import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
@@ -154,7 +154,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
-  });
+  }, VariablePrecision.High);
   frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }
 
@@ -166,7 +166,7 @@ function addClippingMask(prog: ProgramBuilder) {
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
-  });
+  }, VariablePrecision.High);
 
   addWindowToTexCoords(prog.frag);
   prog.frag.set(FragmentShaderComponent.ApplyClipping, applyClipMask);

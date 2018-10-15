@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -12,7 +12,7 @@ export class ImageUtil {
   /** Get a string describing the mime type associated with an ImageSource format. */
   public static getImageSourceMimeType(format: ImageSourceFormat): string { return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png"; }
 
-  /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify an ImageSourceFormat. */
+  /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
   public static getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
     switch (mimeType) {
       case "image/jpeg": return ImageSourceFormat.Jpeg;

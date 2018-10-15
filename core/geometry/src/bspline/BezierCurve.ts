@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,19 +7,25 @@
 
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { Point3d, Vector3d, Point2d, Segment1d } from "../PointVector";
-import { Point4d, Matrix4d } from "../numerics/Geometry4d";
-import { Range3d } from "../Range";
-import { Transform } from "../Transform";
-import { Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { CurvePrimitive, CurveLocationDetail } from "../curve/CurvePrimitive";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry, Angle } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 
 import { LineString3d } from "../curve/LineString3d";
-import { Point3dArray } from "../PointHelpers";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCoffs, UnivariateBezier, BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
 import { BSplineCurve3d } from "./BSplineCurve";

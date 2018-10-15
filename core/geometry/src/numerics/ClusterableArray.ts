@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Numerics */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Point3d } from "../PointVector";
-import { GrowableBlockedArray, GrowableXYZArray } from "../GrowableArray";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { GrowableBlockedArray, GrowableXYZArray } from "../geometry3d/GrowableArray";
 
 export class ClusterableArray extends GrowableBlockedArray {
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.

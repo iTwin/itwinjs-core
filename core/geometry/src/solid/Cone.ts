@@ -1,20 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Solid */
 
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
-import { GeometryQuery } from "../curve/CurvePrimitive";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
-import { GeometryHandler, UVSurface } from "../GeometryHandler";
+import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Loop, CurveCollection } from "../curve/CurveChain";
-import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
+import { Loop } from "../curve/Loop";
+import { CurveCollection } from "../curve/CurveCollection";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";

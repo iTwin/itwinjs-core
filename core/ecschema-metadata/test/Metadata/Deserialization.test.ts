@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../src/Metadata/Schema";
-import { SchemaContext } from "../../src/Context";
-import { ECObjectsError } from "../../src/Exception";
-import { SchemaDeserializationVisitor } from "../../src/Interfaces";
-import SchemaReadHelper from "../../src/Deserialization/Helper";
-import { AnyClass } from "../../src/Interfaces";
-import { SchemaItemType } from "../../src/ECObjects";
-import { NavigationProperty } from "../../src/Metadata/Property";
+import Schema from "./../../src/Metadata/Schema";
+import SchemaContext from "./../../src/Context";
+import { ECObjectsError } from "./../../src/Exception";
+import { SchemaDeserializationVisitor } from "./../../src/Interfaces";
+import SchemaReadHelper from "./../../src/Deserialization/Helper";
+import { AnyClass } from "./../../src/Interfaces";
+import { SchemaItemType } from "./../../src/ECObjects";
+import { NavigationProperty } from "./../../src/Metadata/Property";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {

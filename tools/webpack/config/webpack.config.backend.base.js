@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -64,7 +64,7 @@ module.exports = (publicPath) => {
       // This allows you to set a fallback for where Webpack should look for modules.
       // We placed these paths second because we want `node_modules` to "win"
       // if there are any conflicts. This matches Node resolution mechanism.
-      // https://github.com/facebookincubator/create-react-app/issues/253
+      // https://github.com/facebook/create-react-app/issues/253
       modules: ["node_modules", paths.appNodeModules, paths.appSrc].concat(
         (process.env.NODE_PATH || "").split(path.delimiter).filter(Boolean)
       ),
@@ -156,7 +156,7 @@ module.exports = (publicPath) => {
       }),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
-      // See https://github.com/facebookincubator/create-react-app/issues/240
+      // See https://github.com/facebook/create-react-app/issues/240
       new CaseSensitivePathsPlugin(),
     ]
   };

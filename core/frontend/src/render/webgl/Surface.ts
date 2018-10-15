@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -82,7 +82,6 @@ export class SurfaceGeometry extends MeshGeometry {
     if (this.isClassifier)
       return RenderPass.Classification;
     const mat = this.isLit ? this._mesh.material : undefined;
-    const tex = this.texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
 
@@ -99,9 +98,8 @@ export class SurfaceGeometry extends MeshGeometry {
         return opaquePass;
       }
     }
-
-    if (undefined !== tex && this.wantTextures(target)) {
-      if (tex.hasTranslucency)
+    if (undefined !== this.texture && this.wantTextures(target, true)) {
+      if (this.texture.hasTranslucency)
         return RenderPass.Translucent;
 
       // material may have texture weight < 1 - if so must account for material or element alpha below
@@ -129,7 +127,7 @@ export class SurfaceGeometry extends MeshGeometry {
       return false;
 
     // Don't invert white pixels of textures...
-    return !this.isTextured || !this.wantTextures(target);
+    return !this.wantTextures(target, this.isTextured);
   }
   public get material(): Material | undefined { return this._mesh.material; }
 
@@ -155,7 +153,7 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
-    if (this.isTextured && this.wantTextures(target)) {
+    if (this.wantTextures(target, this.isTextured)) {
       flags |= SurfaceFlags.HasTexture;
     }
 
@@ -185,11 +183,16 @@ export class SurfaceGeometry extends MeshGeometry {
     this._indices = indices;
   }
 
-  private wantTextures(target: Target): boolean {
+  private wantTextures(target: Target, surfaceTextureExists: boolean): boolean {
+    if (this.hasScalarAnimation && undefined !== target.analysisTexture)
+      return true;
+
+    if (!surfaceTextureExists)
+      return false;
+
     if (this.isGlyph) {
       return true;
     }
-
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;
 

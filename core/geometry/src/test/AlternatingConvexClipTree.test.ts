@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { Checker, UsageSums, SaveAndRestoreCheckTransform } from "./Checker";
-import { Point3d, Vector3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Geometry, AngleSweep } from "../Geometry";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 import { AlternatingCCTreeNode } from "../clipping/AlternatingConvexClipTree";
-import { CurvePrimitive, CurveLocationDetailPair } from "../curve/CurvePrimitive";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -12,11 +12,12 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "./ViewState";
+import { DrawingViewState, OrthographicViewState, SpatialViewState } from "./ViewState";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { SheetViewState } from "./Sheet";
 
-/** Interface for drawing "decorations" into, or on top of, the active views.
- * Decorators generate Decorations.
+/** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
+ * Decorators generate [[Decorations]].
  */
 export interface Decorator {
   /** Implement this method to add Decorations into the supplied DecorateContext. */
@@ -61,6 +62,8 @@ export interface SelectedViewportChangedArgs {
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
  * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via the static member [[IModelApp.viewManager]].
+ *
+ * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  */
 export class ViewManager {
   public inDynamicsMode = false;
@@ -121,6 +124,7 @@ export class ViewManager {
    */
   public readonly onViewResume = new BeUiEvent<ScreenViewport>();
 
+  /** @hidden */
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
       return;
@@ -136,16 +140,20 @@ export class ViewManager {
         vp.changeDynamics(undefined);
     }
   }
+
+  /** @hidden */
   public beginDynamicsMode() { this.inDynamicsMode = true; }
+  /** @hidden */
   public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
 
-  /** Set the selected view to undefined. */
+  /** Set the selected [[Viewport]] to undefined. */
   public clearSelectedView(): void {
     const previousVp = this.selectedView;
     this._selectedView = undefined;
     this.notifySelectedViewportChanged(previousVp, undefined);
   }
 
+  /** Sets the selected [[Viewport]]. */
   public setSelectedView(vp: ScreenViewport | undefined): BentleyStatus {
     if (undefined === vp)
       vp = this.getFirstOpenView();
@@ -168,6 +176,7 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
+  /** @hidden */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
     this.onSelectedViewportChanged.emit({ previous, current });
@@ -207,7 +216,7 @@ export class ViewManager {
    * Remove a Viewport from the list of opened views, and optionally dispose of it.
    * Typically a Viewport is dropped when it is no longer of any use to the application, in which case it should also be
    * disposed of as it may hold significant GPU resources.
-   * However in some cases a Viewport may be temporarily dropped in order to suspend rendering; and subsequently re-added to
+   * However in some cases a Viewport may be temporarily dropped to suspend rendering; and subsequently re-added to
    * resume rendering - for example, when the Viewport is temporarily hidden by other UI elements.
    * In the latter case it is up to the caller to ensure the Viewport is properly disposed of when it is no longer needed.
    * Attempting to invoke any function on a Viewport after it has been disposed is an error.
@@ -236,18 +245,28 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
+  /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
   public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
+  /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  /** @hidden */
   public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  /** @hidden */
   public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  /** @hidden */
   public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
+  /** @hidden */
   public invalidateScenes(): void { this._invalidateScenes = true; }
+  /** @hidden */
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
+  /** @hidden */
   public onNewTilesReady(): void { this.invalidateScenes(); }
 
-  // Invoked by ToolAdmin event loop.
+  /** Invoked by ToolAdmin event loop.
+   * @hidden
+   */
   public renderLoop(): void {
     if (0 === this._viewports.length) return;
     if (this._skipSceneCreation)
@@ -280,7 +299,7 @@ export class ViewManager {
     return () => { this.dropDecorator(decorator); };
   }
 
-  /** Drop (remove) a Decorator so it is no longer active.
+  /** Drop (remove) a [[Decorator]] so it is no longer active.
    * @param decorator The Decorator to drop.
    * @note Does nothing if decorator is not currently active.
    *

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
@@ -8,7 +8,7 @@ import { defaultClone, lowerBound } from "./SortedArray";
 
 /**
  * Maintains a mapping of keys to values.
- * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type.
+ * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type (and for any other type).
  * The user supplies a key comparison function to the constructor, which must meet the following criteria given 'lhs' and 'rhs' of type K:
  *  - If lhs is equal to rhs, returns 0
  *  - If lhs is less than rhs, returns a negative value
@@ -131,7 +131,7 @@ export class Dictionary<K, V> {
   }
 
   /**
-   * Computes the position at which the specified key should be inserted in order to maintain sorted order.
+   * Computes the position at which the specified key should be inserted to maintain sorted order.
    * @param key The key whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent key already exists at that index.
    */

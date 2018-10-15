@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Picker */
@@ -11,7 +11,7 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
-export default class ViewSelector extends React.Component<any, any> {
+export class ViewSelector extends React.Component<any, any> {
   /** Creates a ViewSelector */
   constructor(props: any) {
     super(props);
@@ -107,8 +107,22 @@ export default class ViewSelector extends React.Component<any, any> {
     const params: ViewQueryParams = {};
     params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
     params.where = "";
-    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
-    return viewProps as ViewDefinitionProps[];
+    const viewProps = await this._getViewProps(imodel, params);
+    return viewProps;
+  }
+
+  /**
+   * Gets props for specified imodel.
+   * @param imodel Model to query for props
+   * @param params Parameters for view query
+   */
+  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams) {
+    try {
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
+      return viewProps as ViewDefinitionProps[];
+    } catch {
+      return [] as ViewDefinitionProps[];
+    }
   }
 
   /**
@@ -226,3 +240,5 @@ export default class ViewSelector extends React.Component<any, any> {
     );
   }
 }
+
+export default ViewSelector;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -18,6 +18,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
 import { ChildDragLayer } from "./ChildDragLayer";
 import { RootDragLayer } from "./ParentDragLayer";
+
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -66,8 +67,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
       <div>
         <label htmlFor="recieves_row">Can accept rows: </label>
         <input id="recieves_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
-            this.setState({checked: (event.target as HTMLInputElement).checked});
-          }}/>
+          this.setState({ checked: (event.target as HTMLInputElement).checked });
+        }} />
         <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}
           dragProps={dragProps}
           dropProps={dropProps}

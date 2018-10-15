@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -27,7 +27,13 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public getOperationFromPath(path: string): SerializedRpcOperation {
     const components = path.split("/");
     const operationComponent = components.slice(-1)[0];
-    const [interfaceDefinition, interfaceVersion, operationName] = operationComponent.split("-");
+
+    const firstHyphen = operationComponent.indexOf("-");
+    const lastHyphen = operationComponent.lastIndexOf("-");
+    const interfaceDefinition = operationComponent.slice(0, firstHyphen);
+    const interfaceVersion = operationComponent.slice(firstHyphen + 1, lastHyphen);
+    const operationName = operationComponent.slice(lastHyphen + 1);
+
     return { interfaceDefinition, operationName, interfaceVersion };
   }
 

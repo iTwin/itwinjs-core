@@ -1,21 +1,28 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
 
-import { Geometry, AngleSweep, Angle, AxisOrder } from "../Geometry";
-import { Segment1d, Point3d } from "../PointVector";
-import { Range3d } from "../Range";
-import { Transform, Matrix3d } from "../Transform";
+import { Geometry, AxisOrder } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Quadrature } from "../numerics/Quadrature";
-import { GeometryHandler } from "../GeometryHandler";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { CurvePrimitive, GeometryQuery } from "./CurvePrimitive";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { StrokeOptions } from "./StrokeOptions";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 
-import { Plane3dByOriginAndUnitNormal, Ray3d, Plane3dByOriginAndVectors } from "../AnalyticGeometry";
-import { IStrokeHandler } from "../GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 // import {} from "./";
 

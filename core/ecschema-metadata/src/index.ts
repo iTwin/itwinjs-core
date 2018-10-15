@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./ECObjects";
-export * from "./Constants";
+export { default as ECStringConstants } from "./Constants";
 export * from "./Context";
+export * from "./SchemaKey";
 export * from "./Interfaces";
 export * from "./DelayedPromise";
 export * from "./Exception";

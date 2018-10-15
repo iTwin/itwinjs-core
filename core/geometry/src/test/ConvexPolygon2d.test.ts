@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { Checker } from "./Checker";
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../PointVector";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Ray2d, ConvexPolygon2d } from "../numerics/ConvexPolygon2d";
-import { PolygonOps } from "../PointHelpers";
+import { PolygonOps } from "../geometry3d/PointHelpers";
 
 /* tslint:disable:no-console no-trailing-whitespace */
 

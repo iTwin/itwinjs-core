@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 // import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
 import { Sample } from "../serialization/GeometrySamples";
-import { Point3d, Vector3d } from "../PointVector";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineString3d } from "../curve/LineString3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { IStrokeHandler } from "../GeometryHandler";
-import { FrameBuilder } from "../FrameBuilder";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 // import { Geometry } from "../Geometry";
 
 import { Checker } from "./Checker";

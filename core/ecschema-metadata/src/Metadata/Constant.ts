@@ -1,14 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItemType, SchemaItemKey } from "../ECObjects";
-import { SchemaItemVisitor, LazyLoadedPhenomenon } from "../Interfaces";
+
 import Schema from "./Schema";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import SchemaItem from "./SchemaItem";
 import Phenomenon from "./Phenomenon";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor, LazyLoadedPhenomenon } from "./../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 
 /**
  * A Constant is a specific type of Unit that represents a number.
@@ -33,8 +35,8 @@ export default class Constant extends SchemaItem {
 
   private loadConstantProperties(jsonObj: any) {
     if (undefined === jsonObj.definition)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'definition' attribute.`);
-    if (typeof(jsonObj.definition) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'definition' attribute.`);
+    if (typeof (jsonObj.definition) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute. It should be of type 'string'.`);
     if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute.`);
@@ -42,14 +44,14 @@ export default class Constant extends SchemaItem {
       this._definition = jsonObj.definition; // so, if we have yet to define the definition variable, assign it the json definition
 
     if (undefined !== jsonObj.numerator) { // optional; default is 1.0
-      if (typeof(jsonObj.numerator) !== "number")
+      if (typeof (jsonObj.numerator) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'numerator' attribute. It should be of type 'number'.`);
       if (jsonObj.numerator !== this._numerator) // if numerator isnt default value of 1.0, reassign numerator variable
         this._numerator = jsonObj.numerator;
     }
 
     if (undefined !== jsonObj.denominator) { // optional; default is 1.0
-      if (typeof(jsonObj.denominator) !== "number")
+      if (typeof (jsonObj.denominator) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'denominator' attribute. It should be of type 'number'.`);
       if (jsonObj.denominator !== this._denominator) // if denominator isnt default value of 1.0, reassign denominator variable
         this._denominator = jsonObj.denominator;
@@ -59,11 +61,11 @@ export default class Constant extends SchemaItem {
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     if (this.phenomenon !== undefined)
-      schemaJson.phenomenon   = this.phenomenon!.fullName;
-    schemaJson.definition  = this.definition;
+      schemaJson.phenomenon = this.phenomenon!.fullName;
+    schemaJson.definition = this.definition;
     if (this.numerator !== undefined)
       schemaJson.numerator = this.numerator;
-    schemaJson.denominator  = this.denominator;
+    schemaJson.denominator = this.denominator;
     return schemaJson;
   }
 
@@ -80,19 +82,19 @@ export default class Constant extends SchemaItem {
   public fromJsonSync(jsonObj: any): void {
     super.fromJsonSync(jsonObj);
     if (undefined === jsonObj.phenomenon)
-    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'phenomenon' attribute.`);
-    if (typeof(jsonObj.phenomenon) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} does not have the required 'phenomenon' attribute.`);
+    if (typeof (jsonObj.phenomenon) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     const schemaItemKey = this.schema.getSchemaItemKey(jsonObj.phenomenon);
     if (!schemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
-       async () => {
+      async () => {
         const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
         if (undefined === phenom)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
         return phenom;
-    });
+      });
     this.loadConstantProperties(jsonObj);
   }
 

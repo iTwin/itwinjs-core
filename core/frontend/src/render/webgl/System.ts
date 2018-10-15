@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -632,7 +632,7 @@ export class System extends RenderSystem {
     const sheetTilePolys: IndexedPolyface[] = [];
 
     // Texture params for this sheet tile will always go from (0,0) to (1,1). However, we may be dealing with a tile that is a sub-division. Store the
-    // lower-left corner in order to subtract from point values later in order to get UV params.
+    // lower-left corner to subtract from point values later to get UV params.
     const sheetTileRange = Range3d.createArray(corners);
     const sheetTileScale = 1 / (sheetTileRange.high.x - sheetTileRange.low.x);
     const sheetTileOrigin = sheetTileRange.low;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as http2 from "http2";
@@ -14,6 +14,9 @@ import { CONSTANTS } from "../common/Testbed";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { HttpServerRequest, HttpServerResponse } from "../../../core/common/lib/rpc/web/WebAppRpcProtocol";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Config } from "@bentley/imodeljs-clients";
+IModelJsConfig.init(true, false, Config.App);
 const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;

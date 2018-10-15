@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
@@ -116,13 +116,13 @@ export class AppNotificationManager extends NotificationManager {
 
   /**
    * Show a Pointer message.
-   * @param _message  Text to display in message.
-   * @param _location The place to display the message.
+   * @param message  Text to display in message.
    */
   protected _showPointerMessage(message: NotifyMessageDetails): void {
     PointerMessage.showMessage(message);
   }
 
+  /** Hide a Pointer message. */
   protected _hidePointerMessage(): void {
     PointerMessage.hideMessage();
   }

@@ -1,3 +1,11 @@
-# ECSchema Metadata
+# @bentley/ecschema-metadata
 
-The ECSchema Metadata package provides an API to work directly with the metadata of a BIS Schema.
+Copyright © Bentley Systems, Inc. 2018
+
+## Description
+
+The __@bentley/ecschema-metadata__ package contains classes for working with EC metadata.
+
+## Documentation
+
+See the [iModel.js](https://www.imodeljs.org) documentation for more information.

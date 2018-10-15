@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -14,51 +14,70 @@ import {
   NotifyMessageDetails,
   OutputMessagePriority,
   OutputMessageType,
+  RelativePosition,
 } from "@bentley/imodeljs-frontend";
 
-import { FrontstageProps, FrontstageManager } from "@bentley/ui-framework";
-import { GroupButton } from "@bentley/ui-framework";
-import { ToolButton, ToolItemDef, CommandItemDef } from "@bentley/ui-framework";
-import { ToolWidget } from "@bentley/ui-framework";
-import { ZoneState } from "@bentley/ui-framework";
-import { WidgetState } from "@bentley/ui-framework";
-import { NavigationWidget } from "@bentley/ui-framework";
-import { ContentLayoutDef, ContentLayoutProps } from "@bentley/ui-framework";
-import { ContentGroup, ContentProps } from "@bentley/ui-framework";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {
+  FrontstageProps,
+  FrontstageManager,
+  FrontstageDef,
+  GroupButton,
+  ToolButton,
+  ToolItemDef,
+  CommandItemDef,
+  ToolWidget,
+  ZoneState,
+  WidgetState,
+  NavigationWidget,
+  ContentLayoutDef,
+  ContentLayoutProps,
+  ContentGroup,
+  ContentProps,
+  ModalDialogManager,
+  ViewSelector,
+  ModelSelectorWidgetControl,
+} from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
-import ViewSelector from "@bentley/ui-framework/lib/pickers/ViewSelector";
+import { IModelViewportControl } from "../contentviews/IModelViewport";
+import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import rotateIcon from "../icons/rotate.svg";
-import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 // import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
-export class ViewsFrontstage {
+export class ViewsFrontstage extends FrontstageDef {
 
-  constructor(public viewIds: Id64String[], private _iModelConnection: IModelConnection) {
+  constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
+    super();
+    this.initializeFromProps(this.defineProps());
   }
 
-  public defineProps(): FrontstageProps | undefined {
+  public defineProps(): FrontstageProps {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewIds.length);
-    if (!contentLayoutProps)
-      return undefined;
+    if (!contentLayoutProps) {
+      throw (Error("Could not find layout ContentLayoutProps from number of viewIds: " + this.viewIds.length));
+    }
+
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
 
     // create the content props.
     const contentProps: ContentProps[] = [];
     for (const viewId of this.viewIds) {
       const thisContentProps: ContentProps = {
-        classId: "IModelViewport",
-        applicationData: { viewId, iModelConnection: this._iModelConnection },
+        classId: IModelViewportControl,
+        applicationData: { viewId, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
     }
@@ -81,7 +100,7 @@ export class ViewsFrontstage {
             defaultState: WidgetState.Open,
             isFreeform: true,
             applicationData: { key: "value" },
-            reactElement: this.getToolWidget(),
+            reactElement: <FrontstageToolWidget />,
           },
         ],
       },
@@ -103,7 +122,7 @@ export class ViewsFrontstage {
           {
             defaultState: WidgetState.Open,
             isFreeform: true,
-            reactElement: this.getNavigationWidget(),
+            reactElement: <FrontstageNavigationWidget />,
           },
         ],
       },
@@ -112,19 +131,19 @@ export class ViewsFrontstage {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
+            classId: NavigationTreeWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "BreadcrumbDemoWidget",
+            classId: BreadcrumbDemoWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "ModelSelectorWidget",
+            classId: ModelSelectorWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-3d-cube",
             labelKey: "SampleApp:Test.my-label",
@@ -149,7 +168,7 @@ export class ViewsFrontstage {
         allowsMerging: false,
         widgetProps: [
           {
-            classId: "AppStatusBar",
+            classId: AppStatusBarWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -164,13 +183,13 @@ export class ViewsFrontstage {
         widgetProps: [
           {
             id: "VerticalPropertyGrid",
-            classId: "VerticalPropertyGridDemoWidget",
+            classId: VerticalPropertyGridWidgetControl,
             defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "HorizontalPropertyGridDemoWidget",
+            classId: HorizontalPropertyGridWidgetControl,
             defaultState: WidgetState.Off,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -181,6 +200,11 @@ export class ViewsFrontstage {
 
     return frontstageProps;
   }
+}
+
+/** Define a ToolWidget with Buttons to display in the TopLeft zone.
+ */
+class FrontstageToolWidget extends React.Component<{}> {
 
   private _fitToViewCommand = () => {
     IModelApp.tools.run("View.Fit", IModelApp.viewManager.selectedView, true);
@@ -266,28 +290,28 @@ export class ViewsFrontstage {
 
   private _handleTool4Keypress = (event: any) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", "", OutputMessageType.Pointer);
+    const viewport = IModelApp.viewManager.selectedView!.parentDiv;
     const midX = window.innerWidth / 2;
     const midY = window.innerHeight / 2;
-    const offset = 200;
     switch (event.keyCode) {
       case 37:
         details.briefMessage = "Left pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX - offset, y: midY });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Left);
         IModelApp.notifications.outputMessage(details);
         break;
       case 38:
         details.briefMessage = "Up pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY - offset });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Top);
         IModelApp.notifications.outputMessage(details);
         break;
       case 39:
         details.briefMessage = "Right pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX + offset, y: midY });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Right);
         IModelApp.notifications.outputMessage(details);
         break;
       case 40:
         details.briefMessage = "Down pressed";
-        details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv, { x: midX, y: midY + offset });
+        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Bottom);
         IModelApp.notifications.outputMessage(details);
         break;
     }
@@ -318,93 +342,6 @@ export class ViewsFrontstage {
   }
   */
 
-  /** Define a ToolWidget with Buttons to display in the TopLeft zone.
-   */
-  private getToolWidget(): React.ReactNode {
-    const myToolItem1 = new ToolItemDef({
-      toolId: "tool1",
-      iconClass: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
-      applicationData: { key: "value" },
-    });
-
-    const setLengthFormatMetricCommand = new CommandItemDef({
-      commandId: "setLengthFormatMetric",
-      iconClass: "icon-info",
-      labelKey: "SampleApp:buttons.setLengthFormatMetric",
-      commandHandler: {
-        execute: () => {
-          IModelApp.quantityFormatter.useImperialFormats = false;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
-        },
-      },
-    });
-
-    const setLengthFormatImperialCommand = new CommandItemDef({
-      commandId: "setLengthFormatImperial",
-      iconClass: "icon-info",
-      labelKey: "SampleApp:buttons.setLengthFormatImperial",
-      commandHandler: {
-        execute: () => {
-          IModelApp.quantityFormatter.useImperialFormats = true;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
-        },
-      },
-    });
-
-    const horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
-        items={
-          <>
-            <ToolButton toolId="Select" iconClass="icon-zoom" />
-            <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this._fitToViewCommand} />
-            <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this._windowAreaCommand} />
-            <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this._toggleCameraCommand} />
-            <ToolButton toolId="walk" iconClass="icon-walk" execute={this._walkCommand} />
-            <ToolButton toolId="rotate" iconElement={this.rotateSvgIcon()} execute={this._rotateCommand} />
-            <ToolButton toolId="measure" iconClass="icon-measure-distance" execute={this._measurePointsCommand} />
-            <GroupButton
-              labelKey="SampleApp:buttons.toolGroup"
-              iconClass="icon-placeholder"
-              items={[setLengthFormatMetricCommand, setLengthFormatImperialCommand]}
-              direction={Direction.Bottom}
-              itemsInColumn={4}
-            />
-
-          </>
-        }
-      />;
-
-    const verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Right}
-        items={
-          <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" isEnabled={false} execute={this._tool1} />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" isEnabled={false} execute={this._tool2} />
-            <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isVisible={false} execute={this._tool3} />
-            <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
-            <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
-            <GroupButton
-              labelKey="SampleApp:buttons.anotherGroup"
-              iconClass="icon-placeholder"
-              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
-              direction={Direction.Right}
-            />
-          </>
-        }
-      />;
-
-    return (
-      <ToolWidget
-        appButtonId="SampleApp.BackstageToggle"
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
-      />
-    );
-  }
-
   private radialMenu(): React.ReactNode {
     return (
       <TestRadialMenu
@@ -412,37 +349,125 @@ export class ViewsFrontstage {
     );
   }
 
-  /** Define a NavigationWidget with Buttons to display in the TopRight zone.
-   */
-  private getNavigationWidget(): React.ReactNode {
-    const horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
-        items={
-          <>
-            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
-            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-            <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
-          </>
-        }
-      />;
+  private _myToolItem1 = new ToolItemDef({
+    toolId: "tool1",
+    iconClass: "icon-placeholder",
+    labelKey: "SampleApp:buttons.tool1",
+    applicationData: { key: "value" },
+  });
 
-    const verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Right}
-        items={
-          <>
-            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
-          </>
-        }
-      />;
+  private _setLengthFormatMetricCommand = new CommandItemDef({
+    commandId: "setLengthFormatMetric",
+    iconClass: "icon-info",
+    labelKey: "SampleApp:buttons.setLengthFormatMetric",
+    commandHandler: {
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = false;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
+      },
+    },
+  });
 
+  private _setLengthFormatImperialCommand = new CommandItemDef({
+    commandId: "setLengthFormatImperial",
+    iconClass: "icon-info",
+    labelKey: "SampleApp:buttons.setLengthFormatImperial",
+    commandHandler: {
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = true;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
+      },
+    },
+  });
+
+  private _horizontalToolbar =
+    <Toolbar
+      expandsTo={Direction.Bottom}
+      items={
+        <>
+          <ToolButton toolId="Select" iconClass="icon-zoom" />
+          <ToolButton toolId="fitToView" iconClass="icon-fit-to-view" execute={this._fitToViewCommand} />
+          <ToolButton toolId="windowArea" iconClass="icon-window-area" execute={this._windowAreaCommand} />
+          <ToolButton toolId="toggleCamera" iconClass="icon-camera" execute={this._toggleCameraCommand} />
+          <ToolButton toolId="walk" iconClass="icon-walk" execute={this._walkCommand} />
+          <ToolButton toolId="rotate" iconElement={this.rotateSvgIcon()} execute={this._rotateCommand} />
+          <ToolButton toolId="measure" iconClass="icon-measure-distance" execute={this._measurePointsCommand} />
+          <GroupButton
+            labelKey="SampleApp:buttons.toolGroup"
+            iconClass="icon-placeholder"
+            items={[this._setLengthFormatMetricCommand, this._setLengthFormatImperialCommand]}
+            direction={Direction.Bottom}
+            itemsInColumn={4}
+          />
+
+        </>
+      }
+    />;
+
+  private _verticalToolbar =
+    <Toolbar
+      expandsTo={Direction.Right}
+      items={
+        <>
+          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" isEnabled={false} execute={this._tool1} />
+          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" isEnabled={false} execute={this._tool2} />
+          <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isVisible={false} execute={this._tool3} />
+          <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
+          <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+          <GroupButton
+            labelKey="SampleApp:buttons.anotherGroup"
+            iconClass="icon-placeholder"
+            items={[this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            direction={Direction.Right}
+          />
+        </>
+      }
+    />;
+
+  public render() {
+    return (
+      <ToolWidget
+        appButtonId="SampleApp.BackstageToggle"
+        horizontalToolbar={this._horizontalToolbar}
+        verticalToolbar={this._verticalToolbar}
+      />
+    );
+  }
+}
+
+/** Define a NavigationWidget with Buttons to display in the TopRight zone.
+ */
+class FrontstageNavigationWidget extends React.Component {
+  private _horizontalToolbar =
+    <Toolbar
+      expandsTo={Direction.Bottom}
+      items={
+        <>
+          <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
+          <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+        </>
+      }
+    />;
+
+  private _verticalToolbar =
+    <Toolbar
+      expandsTo={Direction.Right}
+      items={
+        <>
+          <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+          <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+        </>
+      }
+    />;
+
+  public render() {
     return (
       <NavigationWidget
         navigationAidId="CubeNavigationAid"
-        horizontalToolbar={horizontalToolbar}
-        verticalToolbar={verticalToolbar}
+        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection!}
+        horizontalToolbar={this._horizontalToolbar}
+        verticalToolbar={this._verticalToolbar}
       />
     );
   }

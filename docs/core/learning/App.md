@@ -77,7 +77,7 @@ The data-access part of an app is called the [backend](https://en.wikipedia.org/
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
-An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](./AppTailoring.md#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](./RpcInterface.md) and are encouraged.
+An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](./AppTailoring.md#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](./RpcInterface.md) and are encouraged.
 
 App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
@@ -91,6 +91,6 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](./RpcInterface.md) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. Both the UI and functionality of the app frontend [can be tailored](./AppTailoring.md) to best fit each desired configuration and target platform.
+The frontend makes requests on backend services to access iModel content. The frontend uses [RpcInterfaces](./RpcInterface.md) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. Both the UI and functionality of the app frontend [can be tailored](./AppTailoring.md) to best fit each desired configuration and target platform.
 
 See [the learning article](./frontend/index.md) for how to write a frontend.

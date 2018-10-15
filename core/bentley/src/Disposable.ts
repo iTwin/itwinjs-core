@@ -1,17 +1,45 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-/** An interface for disposable objects. Users of such objects should
- * call the dispose method when the object is not needed.
+/** Interface adopted by a type which has deterministic cleanup logic.
+ * For example:
+ *  - Most rendering-related types, such as [[RenderGraphic]] and [[Viewport]], own WebGL resources which must be explicitly released when no longer needed.
+ *  - Some low-level objects like [[ECDb]] own native types defined in C++ code which must be explicitly released when no longer needed.
+ *
+ * A similar concept exists in languages like C++ (implemented as "destructors") and C# ("IDisposable").
+ * However, because TypeScript and Javascript lack any built-in support for deterministic destruction, it is up to the programmer to ensure dispose() is called appropriately.
+ * Failure to do so may result in memory leaks or leaking of other resources.
+ *
+ * IDisposable tends to be contagious; that is, if a type has members which implement IDisposable, that type should also implement IDisposable to dispose of those members.
+ *
+ * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf by imodel.js.
+ * However, always consult the documentation for an IDisposable type to determine under what circumstances you are expected to explicitly dispose of it.
  */
 export interface IDisposable {
+  /** Disposes of any resources owned by this object.
+   * @note The object is generally considered unusable after it has been disposed of.
+   */
   dispose(): void;
 }
 
-/** Function for disposing of a disposable object that may be undefined.
+/** Convenience function for disposing of a disposable object that may be undefined.
+ * This is primarily used to simplify implementations of [[IDisposable.dispose]].
+ * As a simple example:
+ * ```ts
+ *  class Disposable implements IDisposable {
+ *    public member1?: DisposableType1;
+ *    public member2?: DisposableType2;
+ *
+ *    public dispose() {
+ *      this.member1 = dispose(this.member1); // If member1 is defined, dispose of it and set it to undefined.
+ *      this.member2 = dispose(this.member2); // Likewise for member2.
+ *    }
+ *  }
+ * ```
+ * @param disposable The object to be disposed of.
  * @returns undefined
  */
 export function dispose(disposable?: IDisposable): undefined {
@@ -20,14 +48,17 @@ export function dispose(disposable?: IDisposable): undefined {
   return undefined;
 }
 
-/** Function for disposing of a array of disposable objects. The array argument may be undefined.
+/** Disposes of and empties a list of disposable objects.
+ * @param list The list of disposable obejcts.
  * @returns undefined
  */
 export function disposeArray(list?: IDisposable[]): undefined {
   if (undefined === list)
     return undefined;
+
   for (const entry of list)
-    entry.dispose();
+    dispose(entry);
+
   list.length = 0;
   return undefined;
 }

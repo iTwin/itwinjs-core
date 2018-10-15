@@ -1,19 +1,32 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Serialization */
 
-import { Geometry, Angle, AngleSweep } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal, Ray3d } from "../AnalyticGeometry";
-import { Point3d, Vector3d, Point2d, Vector2d, Segment1d } from "../PointVector";
-import { Transform, Matrix3d } from "../Transform";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Angle } from "../geometry3d/Angle";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 
-import { Range1d, Range2d, Range3d } from "../Range";
-import { CurvePrimitive, GeometryQuery } from "../curve/CurvePrimitive";
-import { Point4d, Matrix4d, Map4d } from "../numerics/Geometry4d";
-import { Path, Loop, ParityRegion, UnionRegion, BagOfCurves } from "../curve/CurveChain";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Map4d } from "../geometry4d/Map4d";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { UnionRegion } from "../curve/UnionRegion";
+import { BagOfCurves } from "../curve/CurveCollection";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
@@ -32,7 +45,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
+import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 
@@ -191,7 +204,7 @@ export class Sample {
       quadrant4.clone()]));
     return result;
   }
-  public static createBsplineCurves(): BSplineCurve3d[] {
+  public static createBsplineCurves(includeMultipleKnots: boolean = false): BSplineCurve3d[] {
     const result: BSplineCurve3d[] = [];
     const zScale = 0.1;
     for (const order of [2, 3, 4, 5]) {
@@ -202,9 +215,27 @@ export class Sample {
       const curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
       result.push(curve);
     }
+    if (includeMultipleKnots) {
+      const interiorKnotCandidates = [1, 2, 2, 3, 4, 5, 5, 6, 7, 7, 8];
+      for (const order of [3, 4]) {
+        const numPoints = 8;
+        const points = [];
+        for (let i = 0; i < numPoints; i++)
+          points.push(Point3d.create(i, i * i, 0));
+        const knots = [];
+        for (let i = 0; i < order - 1; i++) knots.push(0);
+        const numInteriorNeeded = numPoints - order;
+        for (let i = 0; i < numInteriorNeeded; i++)knots.push(interiorKnotCandidates[i]);
+        const lastKnot = knots[knots.length - 1] + 1;
+        for (let i = 0; i < order - 1; i++) knots.push(lastKnot);
+        const curve = BSplineCurve3d.create(points, knots, order);
+        if (curve)
+          result.push(curve);
+      }
+    }
     return result;
-
   }
+
   public static createBspline3dHCurves(): BSplineCurve3dH[] {
     const result: BSplineCurve3dH[] = [];
     const zScale = 0.1;

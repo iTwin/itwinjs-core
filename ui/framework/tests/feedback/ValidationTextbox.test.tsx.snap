@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ValidationTextbox render should render correctly 1`] = `
+<div
+  className="ValidationTextbox"
+  style={
+    Object {
+      "width": "12em",
+    }
+  }
+>
+  <input
+    className="ValidationTextbox-input"
+    onBlur={[Function]}
+    onChange={[Function]}
+    onCut={[Function]}
+    onKeyUp={[Function]}
+    onPaste={[Function]}
+    placeholder=""
+    style={
+      Object {
+        "width": "12em",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`ValidationTextbox should render correctly 1`] = `
+<div
+  className="ValidationTextbox"
+  style={
+    Object {
+      "width": "12em",
+    }
+  }
+>
+  <input
+    className="ValidationTextbox-input"
+    onBlur={[Function]}
+    onChange={[Function]}
+    onCut={[Function]}
+    onKeyUp={[Function]}
+    onPaste={[Function]}
+    placeholder=""
+    style={
+      Object {
+        "width": "12em",
+      }
+    }
+  />
+</div>
+`;

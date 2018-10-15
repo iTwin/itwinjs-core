@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
@@ -58,20 +58,14 @@ export interface RequestQueryStringifyOptions {
   // sep -> delimiter, eq deprecated, encode -> encode
 }
 
-export interface RequestProxyConfig {
-  host: string;
-  port: number;
-}
-
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
   auth?: RequestBasicCredentials;
   body?: any;
   qs?: any | RequestQueryOptions;
-  proxy?: RequestProxyConfig;
   responseType?: string;
-  timeout?: number; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
+  timeout?: number | { deadline?: number, response?: number }; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
   stream?: any; // Optional stream to read the response to/from (only for NodeJs applications)
   readStream?: any; // Optional stream to read input from (only for NodeJs applications)
   buffer?: any;
@@ -82,6 +76,8 @@ export interface RequestOptions {
   retryCallback?: (error: any, response: any) => boolean;
   progressCallback?: (progress: ProgressInfo) => void;
   agent?: https.Agent;
+  retries?: number;
+  useCorsProxy?: boolean;
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299
@@ -204,8 +200,18 @@ export class ResponseError extends BentleyError {
  */
 export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
   alctx.enter();
-  const proxyUrl = Config.devCorsProxyServer ? Config.devCorsProxyServer + url : url;
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, options.retryCallback);
+  let proxyUrl = "";
+  if (options.useCorsProxy === true) {
+    proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
+    if (proxyUrl === "")
+      proxyUrl = url;
+    else
+      proxyUrl = proxyUrl.replace(/\/$/, "") + "/" + url;
+  } else {
+    proxyUrl = url;
+  }
+  const retries = typeof options.retries === "undefined" ? 4 : options.retries;
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
 
   if (options.headers) {
     sareq = sareq.set(options.headers);
@@ -282,7 +288,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (Config.isBrowser) {
+    if (typeof window !== "undefined") {
       throw new Error("This option is not supported on browsers");
     }
 
@@ -307,7 +313,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   }
 
   if (options.stream) {
-    if (Config.isBrowser) {
+    if (typeof window !== "undefined") {
       throw new Error("This option is not supported on browsers");
     }
 

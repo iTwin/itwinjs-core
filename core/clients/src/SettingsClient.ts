@@ -1,36 +1,30 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Settings */
 
 import { request, RequestOptions, Response } from "./Request";
-import { Client, DeploymentEnv, UrlDescriptor } from "./Client";
+import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Config } from "./Config";
 
-/** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored to CONNECT. */
+/** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
   private _authToken?: AuthorizationToken;
   private _accessToken?: AccessToken;
   public static readonly searchKey: string = "ProductSettingsService.RP";
-  private static readonly _defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-connect-productsettingsservice.bentley.com",
-    QA: "https://qa-connect-productsettingsservice.bentley.com",
-    PROD: "https://connect-productsettingsservice.bentley.com",
-    PERF: "https://qa-connect-productsettingsservice.bentley.com",
-  };
-
+  public static readonly configURL = "IMGS_PRODUCT_SETTING_SERVICE_URL";
+  public static readonly configRegion = "IMGS_PRODUCT_SETTING_SERVICE_REGION";
   /**
    * Creates an instance of ConnectSettingsClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, public applicationId: string) {
-    super(deploymentEnv);
-  }
+  public constructor(public applicationId: string) { super(); }
 
   private async getAccessToken(alctx: ActivityLoggingContext, authToken: AuthorizationToken): Promise<AccessToken> {
     const baseUrl: string = await this.getUrl(alctx);
@@ -40,7 +34,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
     this._accessToken = undefined;
     this._authToken = authToken;
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
+    const imsClient = new ImsDelegationSecureTokenClient();
     this._accessToken = await imsClient.getToken(alctx, this._authToken, baseUrl);
     return this._accessToken;
   }
@@ -49,18 +43,29 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
-  protected getUrlSearchKey(): string {
-    return ConnectSettingsClient.searchKey;
-  }
+  protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 
   /**
    * Gets the default URL for the service.
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    return ConnectSettingsClient._defaultUrlDescriptor[this.deploymentEnv];
+    if (Config.App.has(ConnectSettingsClient.configURL))
+      return Config.App.get(ConnectSettingsClient.configURL);
+
+    throw new Error(`Service URL not set. Set it in Config.App using key ${ConnectSettingsClient.configURL}`);
   }
 
+  /**
+   * Override default region for this service
+   * @returns region id or undefined
+   */
+  protected getRegion(): number | undefined {
+    if (Config.App.has(ConnectSettingsClient.configRegion))
+      return Config.App.get(ConnectSettingsClient.configRegion);
+
+    return undefined;
+  }
   // gets the portion of the Url that encapsulates the type of setting requested.
   private getUrlOptions(settingNamespace: string, settingName: string, userSpecific: boolean, applicationSpecific: boolean, projectId?: string, iModelId?: string) {
     // The types of settings are:
@@ -138,8 +143,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     }, (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
-      else
-        return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
+      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
     });
   }
 
@@ -163,8 +167,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     }, (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
-      else
-        return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
+      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
     });
   }
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
@@ -403,7 +403,7 @@ export declare class NativeDgnDb {
   public getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
 
   /**
-   * Add the lock, code, and other resource request that would be needed in order to carry out the specified operation.
+   * Add the lock, code, and other resource request that would be needed to carry out the specified operation.
    * @param req The request object, which accumulates requests.
    * @param elemId The ID of an existing element or the {modelid, code} properties that specify a new element.
    * @param opcode The operation that will be performed on the element.
@@ -411,7 +411,7 @@ export declare class NativeDgnDb {
   public buildBriefcaseManagerResourcesRequestForElement(req: NativeBriefcaseManagerResourcesRequest, elemId: string, opcode: DbOpcode): RepositoryStatus;
 
   /**
-   * Add the lock, code, and other resource request that would be needed in order to carry out the specified operation.
+   * Add the lock, code, and other resource request that would be needed to carry out the specified operation.
    * @param req The request object, which accumulates requests.
    * @param modelId The ID of a model
    * @param opcode The operation that will be performed on the model.
@@ -419,7 +419,7 @@ export declare class NativeDgnDb {
   public buildBriefcaseManagerResourcesRequestForModel(req: NativeBriefcaseManagerResourcesRequest, modelId: string, opcode: DbOpcode): RepositoryStatus;
 
   /**
-   * Add the resource request that would be needed in order to carry out the specified operation.
+   * Add the resource request that would be needed to carry out the specified operation.
    * @param req The request object, which accumulates requests.
    * @param relKey Identifies a LinkTableRelationship: {classFullName, id}
    * @param opcode The operation that will be performed on the LinkTableRelationships.

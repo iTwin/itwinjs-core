@@ -1,23 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
+import { ElementAspectProps, ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
 import { Id64, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: IModelDb;
-  let accessToken: AccessToken;
+
+  // tslint:prefer-const:false
+  const accessToken: AccessToken = (AccessToken as any);
   const activityContext = new ActivityLoggingContext("");
 
   before(async () => {
     iModel = IModelTestUtils.openIModel("test.bim");
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
   after(() => {
@@ -222,14 +223,20 @@ describe("Example Code", () => {
   it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
     const elementId = new Id64();
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
-    // __PUBLISH_EXTRACT_START__ Elements.getUniqueAspect
-    const elementAspect: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
-    // __PUBLISH_EXTRACT_END__
-    elementAspect;
-    // __PUBLISH_EXTRACT_START__ Elements.getMultiAspects
+    // __PUBLISH_EXTRACT_START__ Elements.getAspects
     const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
+
+    // __PUBLISH_EXTRACT_START__ Elements.insertAspect
+    const aspectProps: ElementAspectProps = {
+      classFullName: "SomeDomain:SomeAspectClass",
+      element: { id: elementId },
+      stringProp: "s1",
+      numberProp: 1,
+    };
+    iModel.elements.insertAspect(aspectProps);
+    // __PUBLISH_EXTRACT_END__
   });
 
 });

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItemType } from "../ECObjects";
-import { SchemaItemVisitor } from "../Interfaces";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemType } from "./../ECObjects";
+import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
 
 export default class Phenomenon extends SchemaItem {
