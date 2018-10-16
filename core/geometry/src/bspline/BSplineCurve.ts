@@ -23,7 +23,9 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { KnotVector } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
-import { BezierCurve3d, BezierCurve3dH, BezierCurveBase } from "./BezierCurve";
+import { BezierCurveBase } from "./BezierCurveBase";
+import { BezierCurve3dH } from "./BezierCurve3dH";
+import { BezierCurve3d } from "./BezierCurve3d";
 import { BSpline1dNd } from "./BSpline1dNd";
 
 /**
@@ -148,9 +150,18 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return result;
   }
+
 }
 
 export class BSplineCurve3d extends BSplineCurve3dBase {
+
+  private _workBezier?: BezierCurve3dH;
+  private initializeWorkBezier(): BezierCurve3dH {
+    if (this._workBezier === undefined)
+      this._workBezier = BezierCurve3dH.createOrder(this.order);
+    return this._workBezier;
+  }
+
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3d; }
   public tryTransformInPlace(transform: Transform): boolean { Point3dArray.multiplyInPlace(transform, this._bcurve.packedData); return true; }
 
@@ -298,13 +309,23 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   public quickLength(): number { return Point3dArray.sumLengths(this._bcurve.packedData); }
-  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
+  public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
+    const needBeziers = (handler as any).announceBezierCurve;
+    const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
-    const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
+    let numStrokes;
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      if (this._bcurve.knots.isIndexOfRealSpan(spanIndex)) {
-        {
-          handler.announceIntervalForUniformStepStrokes(this, numPerSpan,
+      const bezier = this.getSaturatedBezierSpan3dOr3dH(spanIndex, false, workBezier);
+      if (bezier) {
+        numStrokes = bezier.strokeCount(options);
+        if (needBeziers) {
+          (handler as any).announceBezierCurve(bezier, numStrokes, this,
+            spanIndex,
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
+
+        } else {
+          handler.announceIntervalForUniformStepStrokes(this, numStrokes,
             this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
             this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
         }
@@ -312,20 +333,16 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
   }
 
-  public emitStrokes(dest: LineString3d, _options?: StrokeOptions): void {
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
+    const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
-    const numPerSpan = 5; // NEEDS WORK -- apply stroke options to get better count !!!
-    const fractionStep = 1.0 / numPerSpan;
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      if (this._bcurve.knots.isIndexOfRealSpan(spanIndex)) {
-        for (let i = 0; i <= numPerSpan; i++) {
-          const spanFraction = i * fractionStep;
-          const point = this.evaluatePointInSpan(spanIndex, spanFraction);
-          dest.appendStrokePoint(point);
-        }
-      }
+      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      if (bezier)
+        bezier.emitStrokes(dest, options);
     }
   }
+
   /**
    * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
    * (b) (degree-1) wrapped points,

@@ -498,11 +498,13 @@ export class Geometry {
   }
   /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget;
    */
-  public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0): number | undefined {
+  public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number,
+    targetF: number = 0,
+    defaultResult?: number): number | undefined {
     const g = Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
     if (g)
       return Geometry.interpolate(x0, g, x1);
-    return undefined;
+    return defaultResult;
   }
   /** For a line f(x) whose function values at x=0 and x=1 are f0 and f1, return the x value at which f(x)=fTarget;
    */
@@ -555,4 +557,10 @@ export class Geometry {
    * @param apply01 if false, accept all x.
    */
   public static isIn01(x: number, apply01: boolean = true): boolean { return apply01 ? x >= 0.0 && x <= 1.0 : true; }
+  /** Test if x is in simple 0..1 interval.  But optionally skip the test.  (this odd behavior is very convenient for code that sometimes does not do the filtering.)
+   * @param x value to test.
+   * @param apply01 if false, accept all x.
+   */
+  public static isIn01WithTolerance(x: number, tolerance: number): boolean { return x + tolerance >= 0.0 && x - tolerance <= 1.0; }
+
 }

@@ -1250,6 +1250,7 @@ export class Matrix3d implements BeJSONFunctions {
       origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
       result);
   }
+
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
    * Multiply times point with coordinates `[x,y,z,w]`

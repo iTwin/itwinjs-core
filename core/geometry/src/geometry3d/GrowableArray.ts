@@ -468,6 +468,23 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     const index = 3 * pointIndex;
     return Point3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
   }
+  /**
+   * Get a point by index, strongly typed as a Point3d.
+   * @param pointIndexA start point index
+   * @param pointIndexB end point index
+   * @param result optional result
+   */
+  public getVector3dBetweenIndices(pointIndexA: number, pointIndexB: number, result?: Vector3d): Vector3d | undefined {
+    const indexA = 3 * pointIndexA;
+    const indexB = 3 * pointIndexB;
+    const inuse = this._inUse;  // this is a point count, not double count.
+    if (pointIndexA >= 0 && pointIndexA < inuse
+      && pointIndexB >= 0 && pointIndexB < inuse)
+      return Vector3d.createStartEndXYZXYZ(
+        this._data[indexA], this._data[indexA + 1], this._data[indexA + 2],
+        this._data[indexB], this._data[indexB + 1], this._data[indexB + 2], result);
+    return undefined;
+  }
 
   /** copy xyz into strongly typed Point3d */
   public atPoint3dIndex(pointIndex: number, result?: Point3d): Point3d | undefined {
@@ -482,7 +499,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
-  /** copy xyz into strongly typed Point3d */
+  /** copy xyz into strongly typed Vector3d */
   public atVector3dIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined {
     const index = 3 * vectorIndex;
     if (vectorIndex >= 0 && vectorIndex < this._inUse) {
@@ -783,6 +800,18 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return 0.0;
   }
+  /** Return the distance between an array point and the input point. */
+  public distanceIndexToPoint(i: number, spacePoint: Point3d): number {
+    if (i >= 0 && i < this._inUse) {
+      const i0 = 3 * i;
+      return Geometry.hypotenuseXYZ(
+        spacePoint.x - this._data[i0],
+        spacePoint.y - this._data[i0 + 1],
+        spacePoint.z - this._data[i0 + 2]);
+    }
+    return 0.0;
+  }
+
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)

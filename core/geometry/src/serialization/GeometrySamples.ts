@@ -28,7 +28,7 @@ import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { Sphere } from "../solid/Sphere";
 import { Cone } from "../solid/Cone";
@@ -48,6 +48,8 @@ import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 
 /* tslint:disable:no-console */
 
@@ -204,13 +206,16 @@ export class Sample {
       quadrant4.clone()]));
     return result;
   }
+  /** Create (unweighted) bspline curves.
+   * order varies from 2 to 5
+   */
   public static createBsplineCurves(includeMultipleKnots: boolean = false): BSplineCurve3d[] {
     const result: BSplineCurve3d[] = [];
-    const zScale = 0.1;
+    const yScale = 0.1;
     for (const order of [2, 3, 4, 5]) {
       const points = [];
       for (const x of [0, 1, 2, 3, 4, 5, 7]) {
-        points.push(Point3d.create(1, x, zScale * (1 + x * x)));
+        points.push(Point3d.create(x, yScale * (1 + x * x), 0.0));
       }
       const curve = BSplineCurve3d.createUniformKnots(points, order) as BSplineCurve3d;
       result.push(curve);
@@ -235,22 +240,36 @@ export class Sample {
     }
     return result;
   }
-
+  /** Create weighted bspline curves.
+   * order varies from 2 to 5
+   */
   public static createBspline3dHCurves(): BSplineCurve3dH[] {
     const result: BSplineCurve3dH[] = [];
-    const zScale = 0.1;
+    const yScale = 0.1;
     for (const weightVariation of [0, 0.125]) {
       for (const order of [2, 3, 4, 5]) {
         const points = [];
         for (const x of [0, 1, 2, 3, 4, 5, 7]) {
-          points.push(Point4d.create(1, x, zScale * (1 + x * x), 1.0 + weightVariation * Math.sin(x * Math.PI * 0.25)));
+          points.push(Point4d.create(x, yScale * (1 + x * x), 0.0, 1.0 + weightVariation * Math.sin(x * Math.PI * 0.25)));
         }
         const curve = BSplineCurve3dH.createUniformKnots(points, order) as BSplineCurve3dH;
         result.push(curve);
       }
     }
     return result;
+  }
 
+  /**
+   * Create both unweigthed and weighted bspline curves.
+   * (This is the combined results from createBsplineCurves and createBspline3dHCurves)
+   */
+  public static createMixedBsplineCurves(): BSplineCurve3dBase[] {
+    const arrayA = Sample.createBsplineCurves();
+    const arrayB = Sample.createBspline3dHCurves();
+    const result = [];
+    for (const a of arrayA) result.push(a);
+    for (const b of arrayB) result.push(b);
+    return result;
   }
 
   // create a plane from origin and normal coordinates -- default to 001 normal if needed.
@@ -471,8 +490,9 @@ export class Sample {
   /**
    * Return a single rigid transform with all terms nonzero.
    */
-  public static createMessyRigidTransform(): Transform {
-    return Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
+  public static createMessyRigidTransform(fixedPoint?: Point3d): Transform {
+    return Transform.createFixedPointAndMatrix(
+      fixedPoint ? fixedPoint : Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
   }
   public static createRigidAxes(): Matrix3d[] {
@@ -1310,5 +1330,37 @@ export class Sample {
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
           Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
     ];
+  }
+  public static createTwistingBezier(order: number,
+    x0: number,
+    y0: number,
+    r: number,
+    thetaStepper: AngleSweep,
+    phiStepper: AngleSweep,
+    weightInterval?: Segment1d,
+  ): CurvePrimitive | undefined {
+
+    if (weightInterval !== undefined) {
+      const points = [];
+      for (let i = 0; i < order; i++) {
+        const theta = thetaStepper.fractionToRadians(i);
+        const phi = phiStepper.fractionToRadians(i);
+        const weight = weightInterval.fractionToPoint(i / (order - 1));
+        points.push(Point4d.create(
+          weight * (x0 + r * Math.cos(theta)),
+          weight * (y0 + r * Math.sin(theta)),
+          weight * Math.sin(phi), weight));
+      }
+      return BezierCurve3dH.create(points)!;
+    } else {
+      const points = [];
+      for (let i = 0; i < order; i++) {
+        const theta = thetaStepper.fractionToRadians(i);
+        const phi = phiStepper.fractionToRadians(i);
+        points.push(Point3d.create(x0 + r * Math.cos(theta), y0 + r * Math.sin(theta), Math.sin(phi)));
+      }
+      return BezierCurve3d.create(points);
+    }
+    return undefined;
   }
 }

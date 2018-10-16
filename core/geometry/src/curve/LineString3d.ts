@@ -20,7 +20,7 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail} from "./CurveLocationDetail";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurveIntervalRole } from "./CurveLocationDetail";
 import { AxisOrder } from "../Geometry";
 import { Clipper } from "../clipping/ClipUtils";
@@ -375,9 +375,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return Point3d.createZero();
     return this._points.getPoint3dAt(0);
   }
+  /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
     return this._points.getPoint3dAt(i, result);
   }
+  /** If i and j are both valid indices, return the vector from point i to point j
+   */
+  public vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined {
+    return this._points.getVector3dBetweenIndices(i, j, result);
+  }
+
   public numPoints(): number { return this._points.length; }
 
   public endPoint() {
@@ -406,6 +413,31 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   public curveLength(): number { return this._points.sumLengths(); }
+  public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+    const numSegments = this._points.length - 1;
+    if (fraction1 === fraction0 || numSegments < 1)
+      return 0.0;
+    if (fraction1 < fraction0)
+      return this.curveLengthBetweenFractions(fraction1, fraction0);
+    const scaledFraction0 = fraction0 * numSegments;
+    const scaledFraction1 = fraction1 * numSegments;
+    const index0 = Math.max(1, Math.ceil(scaledFraction0));
+    const index1 = Math.min(Math.floor(scaledFraction1), numSegments - 1);
+    const localFraction0 = index0 - scaledFraction0;
+    const localFraction1 = scaledFraction1 - index1;
+    if (index0 > index1) {
+      // the interval is entirely within a single segment
+      return Math.abs(scaledFraction1 - scaledFraction0) * this._points.distance(index0 - 1, index0);
+    } else {
+      // there is leading partial interval, 0 or more complete segments, and a trailing partial interval.
+      // (either or both partial may be zero length)
+      let sum = localFraction0 * this._points.distance(index0 - 1, index0)
+        + localFraction1 * this._points.distance(index1, index1 + 1);
+      for (let i = index0; i < index1; i++)
+        sum += this._points.distance(i, i + 1);
+      return sum;
+    }
+  }
 
   public quickLength(): number { return this.curveLength(); }
 

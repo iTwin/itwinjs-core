@@ -130,6 +130,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** @returns Return the point at fractional position along the line segment. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d { return this._point0.interpolate(fraction, this._point1, result); }
   public curveLength(): number { return this._point0.distance(this._point1); }
+  public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+    return Math.abs (fraction1 - fraction0) * this._point0.distance(this._point1);
+  }
   public quickLength(): number { return this.curveLength(); }
 
   /**
@@ -215,7 +218,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       this._point1.setFromJSON(json[1]);
     }
   }
-
+/** A simple line segment's fraction and distance are proportional. */
+  public getFractionToDistanceScale(): number | undefined { return this.curveLength (); }
   /**
    * Place the lineSegment3d start and points in a json object
    * @return {*} [[x,y,z],[x,y,z]]

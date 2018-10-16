@@ -10,13 +10,16 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3d, BezierCurveBase } from "../bspline/BezierCurve";
+import { BezierCurveBase } from "../bspline/BezierCurveBase";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { Sample } from "../serialization/GeometrySamples";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Path } from "../curve/Path";
 import { prettyPrint } from "./testFunctions";
 
@@ -35,6 +38,34 @@ function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number)
     points.push(Point3d.create(a * c, b * s, 0.0));
   }
   return points;
+}
+/** Check if the linestring edgelengths and angle meet stroke options demands
+ * @param edgeLengthFactor factor to apply to edgeLength conditions
+ * @param angleFactor factor to apply to angle conditions
+ */
+function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: LineString3d, options: StrokeOptions,
+  angleFactor: number = 1.1, edgeLengthFactor: number = 1.1): boolean {
+  const numPoints = linestring.numPoints();
+  let ok = true;
+  if (ck.testLE(3, numPoints, "Expect 3 or more strokes")) {
+    let maxRadians = 0;
+    const vector0 = linestring.vectorBetween(0, 1)!;
+    let vector1;
+    let maxEdgeLength = vector0.magnitude();
+    for (let i = 1; i + 1 < numPoints; i++) {
+      vector1 = linestring.vectorBetween(i, i + 1)!;
+      maxEdgeLength = Geometry.maxXY(maxEdgeLength, vector1.magnitude());
+      maxRadians = Geometry.maxXY(maxRadians, vector0.angleTo(vector1).radians);
+      vector0.setFromVector3d(vector1);
+    }
+    if (options.maxEdgeLength)
+      if (!ck.testLE(maxRadians, edgeLengthFactor * options.maxEdgeLength, "strokeProperties edge length", curve))
+        ok = false;
+    if (options.angleTol)
+      if (!ck.testLE(maxRadians, angleFactor * options.angleTol.radians, "stroke properties angle", curve))
+        ok = false;
+  }
+  return ok;
 }
 /* tslint:disable:no-console */
 describe("BsplineCurve", () => {
@@ -95,6 +126,41 @@ describe("BsplineCurve", () => {
       }
     }
     ck.checkpoint("End BsplineCurve.HelloWorld");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("strokes", () => {
+    const ck = new Checker();
+    const bcurves = Sample.createMixedBsplineCurves();
+    const defaultOption = StrokeOptions.createForCurves();
+    const angleOptions = StrokeOptions.createForCurves();
+    angleOptions.angleTol = Angle.createDegrees(5.0);
+    const edgeLengthOptions = StrokeOptions.createForCurves();
+    edgeLengthOptions.maxEdgeLength = 0.5;
+    const allOptions = [defaultOption, angleOptions, edgeLengthOptions];
+    const allGeometry: GeometryQuery[] = [];
+    let xShift = 0.0;
+    const dxShift = 10.0;
+    const dyShift = 10.0;
+    for (const curve of bcurves) {
+      translateAndPush(allGeometry, curve.clone(), xShift, 0.0);
+      let yShift = dyShift;
+      for (const options of allOptions) {
+        const linestring = LineString3d.create();
+        curve.emitStrokes(linestring, options);
+        const angleFactor = curve.order <= 2 ? 1000 : 1.6;  // suppress angle test on linear case.  Be fluffy on others.
+        translateAndPush(allGeometry, linestring, xShift, yShift);
+        if (!checkStrokeProperties(ck, curve, linestring, options, angleFactor, 1.1)) {
+          linestring.clear();
+          curve.emitStrokes(linestring, options);
+        }
+        yShift += dyShift;
+      }
+      xShift += dxShift;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "strokes");
+
+    ck.checkpoint("End BsplineCurve.strokes");
     expect(ck.getNumErrors()).equals(0);
   });
 

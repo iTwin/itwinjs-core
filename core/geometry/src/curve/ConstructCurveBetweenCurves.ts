@@ -83,6 +83,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     }
     return undefined;
   }
+
   /**
    * Construct a geometry item which is fractionally interpolated btween two others.
    * * The construction is only supported between certain types:
