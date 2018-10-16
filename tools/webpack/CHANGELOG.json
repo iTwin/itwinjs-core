@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.159.0",
+      "tag": "@bentley/webpack-tools_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix a issue where web-tool fail to skip lookup for config dir"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.158.0",
       "tag": "@bentley/webpack-tools_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",

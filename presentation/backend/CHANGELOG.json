@@ -2,6 +2,12 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "0.159.0",
+      "tag": "@bentley/presentation-backend_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.158.0",
       "tag": "@bentley/presentation-backend_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",

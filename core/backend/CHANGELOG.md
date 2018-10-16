@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 15 Oct 2018 19:36:09 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Oct 2018 14:09:09 GMT and should not be manually modified.
+
+## 0.159.0
+Tue, 16 Oct 2018 14:09:09 GMT
+
+### Updates
+
+- move up to new version of addon (updated electron dependency to 2.0.8)
+- Removed KnownRegions Enum
 
 ## 0.158.0
 Mon, 15 Oct 2018 19:36:09 GMT

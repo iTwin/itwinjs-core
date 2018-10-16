@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.159.0",
+      "tag": "@bentley/imodeljs-backend_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "move up to new version of addon (updated electron dependency to 2.0.8)"
+          },
+          {
+            "comment": "Removed KnownRegions Enum"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.158.0",
       "tag": "@bentley/imodeljs-backend_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",
