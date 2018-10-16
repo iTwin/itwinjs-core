@@ -700,9 +700,8 @@ export class Range1d extends RangeBase {
     if (Array.isArray(json)) {
       let value;
       for (value of json) {
-        const v = value;
-        if (v)
-          this.extendX(v);
+        if (Number.isFinite(value))
+          this.extendX(value);
       }
     } else if (json.low && json.low && json.high && json.high) {
       this.setNull();

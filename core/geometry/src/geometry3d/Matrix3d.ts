@@ -1346,7 +1346,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  /** Multiply the matrix * (x,y,z), i.e. the vector (x,y,z) is a column vector on the right.
+  /** Multiply the matrix * (x,y,0), i.e. the vector (x,y,z) is a column vector on the right.
    *   @return the vector result
    */
   public multiplyXY(x: number, y: number, result?: Vector3d): Vector3d {
