@@ -13,19 +13,13 @@
           <h2>Create New Sample Project</h2>
           <h4>Provisions a new project for use testing your application</h4>
           <hr />
-          <h4 style="margin-top:0px;">Project Information
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer who will own this project. This is the only individual who will be
+              able to request updates to the client registrations.</em>
           </h4>
           <fieldset class="pure-group">
             <table>
-              <tr>
-                <td>
-                  <label for="ProjectName">Project Name: <br />
-                    <em>The name of the CONNECT Project.</em></label>
-                </td>
-                <td>
-                  <input id="ProjectName" name="ProjectName" size="30" required />
-                </td>
-              </tr>
               <tr>
                 <td>
                   <label for="DeveloperName">Developer Name: <br />
@@ -46,6 +40,22 @@
                   <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
                   <span class="email-invalid" style="display:none">
                     Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Project Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ProjectName">Project Name: <br />
+                    <em>The name of the CONNECT Project.</em></label>
+                </td>
+                <td>
+                  <input id="ProjectName" name="ProjectName" size="30" required />
                 </td>
               </tr>
               <tr>
@@ -73,7 +83,6 @@
               </tr>
             </table>
           </fieldset>
-
           <button class="button-success pure-button button-xlarge">Submit</button>
         </div>
 
@@ -89,9 +98,8 @@
   </div>
 </div>
 
-
-<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
 <script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
 <script>
   function generateEmail(callingForm, emailTo, emailSubject) {
     var emailBody = '';
