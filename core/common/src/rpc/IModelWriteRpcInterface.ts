@@ -21,7 +21,7 @@ import { ElementProps } from "../ElementProps";
  */
 export abstract class IModelWriteRpcInterface extends RpcInterface {
     /** The version of the interface. */
-    public static version = "1.0.0";
+    public static version = "0.1.0";
 
     /** The types that can be marshaled by the interface. */
     public static types = () => [
@@ -41,10 +41,4 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     public saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward.apply(this, arguments); }
     /** @hidden */
     public insertElement(_iModelToken: IModelToken, _elementProps: ElementProps): Promise<Id64> { return this.forward.apply(this, arguments); }
-    /** @hidden */
-    public createAndInsertPhysicalPartition(_iModelToken: IModelToken, _modelName: string): Promise<Id64> { return this.forward.apply(this, arguments); }
-    /** @hidden */
-    public createAndInsertPhysicalModel(_iModelToken: IModelToken, _modeledElementId: Id64, _privateModel: boolean = false): Promise<Id64> { return this.forward.apply(this, arguments); }
-    /** @hidden */
-    public createAndInsertSpatialCategory(_iModelToken: IModelToken, _categoryName: string): Promise<Id64> { return this.forward.apply(this, arguments); }
 }
