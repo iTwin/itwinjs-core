@@ -51,7 +51,7 @@
     "@types/react-redux": "^5.0.15",
     "@types/semver": "^5.5.0",
     "cpx": "^1.5.0",
-    "electron": "2.0.8",
+    "electron": "^2.0.8",
     "electron-chromedriver": "^2.0.0",
     "react-test-renderer": "^16.4.2",
     "rimraf": "^2.6.2",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "move up to new version of addon (updated electron dependency to 2.0.8)",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Sam.Wilson@Bentley.com"
+}
