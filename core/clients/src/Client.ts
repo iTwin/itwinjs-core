@@ -9,14 +9,6 @@ import { Config } from "./Config";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** The deployment environment of the services - this also identifies the URL location of the service */
-export enum KnownRegions {
-  DEV = 103,
-  QA = 102,
-  PROD = 0,
-  PERF = 294,
-}
-
 const loggingCategory = "imodeljs-clients.Clients";
 
 /** Provider for default RequestOptions, used by Client to set defaults.
@@ -177,7 +169,7 @@ export class UrlDiscoveryClient extends Client {
     if (Config.App.has(UrlDiscoveryClient.configRegion))
       return Config.App.get(UrlDiscoveryClient.configRegion);
 
-    return KnownRegions.PROD; // return production
+    return 0;
   }
   /**
    * Gets the URL for the discovery service
@@ -196,7 +188,7 @@ export class UrlDiscoveryClient extends Client {
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, KnownRegions.PROD);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",
       qs: {

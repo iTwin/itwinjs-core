@@ -5,7 +5,6 @@
 import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "../index";
 import nock = require("nock");
 import { TestConfig } from "./TestConfig";
-import { KnownRegions } from "../Client";
 import { Config } from "../Config";
 
 export enum RequestType {
@@ -273,7 +272,7 @@ export class ResponseBuilder {
 }
 
 export class UrlDiscoveryMock {
-  public static mockGetUrl(searchKey: string, env: KnownRegions, returnedUrl: string) {
+  public static mockGetUrl(searchKey: string, env: number, returnedUrl: string) {
     if (!TestConfig.enableMocks)
       return;
     ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,

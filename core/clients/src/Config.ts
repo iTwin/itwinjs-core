@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Config */
-import { KnownRegions } from "./Client";
 
 type ValueType = string | boolean | number;
 
@@ -15,10 +14,6 @@ export class Config {
     private constructor() { }
 
     private appendSystemVars() {
-        this.set("imjs_env_dev", Number(KnownRegions.DEV));
-        this.set("imjs_env_qa", Number(KnownRegions.QA));
-        this.set("imjs_env_perf", Number(KnownRegions.PERF));
-        this.set("imjs_env_prod", Number(KnownRegions.PROD));
         this.set("imjs_env_is_browser", Boolean(typeof window !== undefined));
         if (typeof process.env !== "undefined") {
             this.merge(process.env);

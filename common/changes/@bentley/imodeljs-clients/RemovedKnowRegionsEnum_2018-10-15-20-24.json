@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed KnownRegions Enum",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "khanaffan@gmail.com"
+}
