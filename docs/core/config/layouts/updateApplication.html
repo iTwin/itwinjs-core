@@ -11,7 +11,34 @@
       <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycby4TvSEAREx01P9anh-iTBOnQT4a660Yg4Frm5O7xxELknYSi0/exec">
         <div class="form-elements">
           <h2>Update an application you have already registered with Bentley</h2>
-          <hr />
+
+          <h4 style="margin-top:0px;">Developer Contact Information</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
 
           <h4 style="margin-top:0px;">Application Information</h4>
           <fieldset class="pure-group">
@@ -118,26 +145,11 @@
       {{>loaderScript}}
     </article>
   </div>
-  <div id='inner-table-of-contents'>\
+  <div id='inner-table-of-contents'>
     <!-- {{>inner_table_of_contents}} -->
   </div>
 </div>
 
-
-<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
 <script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
-<script>
-  function generateEmail(callingForm, emailTo, emailSubject) {
-    var emailBody = '';
-    $('#' + $(callingForm)[0].id).children('input').each(function () {
-      if ($(this)[0].type !== 'submit' && $(this)[0].type !== 'reset')
-        emailBody += $(this)[0].name + ": " + $(this).val() + '%0D%0A';
-    });
-    location.href = "mailto:" + emailTo + "?" +
-      (emailSubject ? "&subject=" + emailSubject : "") +
-      (emailBody ? "&body=" + emailBody : "");
-  }
-</script>
- -->
 
 {{>footer}}
