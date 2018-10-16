@@ -99,19 +99,5 @@
 </div>
 
 <script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
-<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
-<script>
-  function generateEmail(callingForm, emailTo, emailSubject) {
-    var emailBody = '';
-    $('#' + $(callingForm)[0].id).children('input').each(function () {
-      if ($(this)[0].type !== 'submit' && $(this)[0].type !== 'reset')
-        emailBody += $(this)[0].name + ": " + $(this).val() + '%0D%0A';
-    });
-    location.href = "mailto:" + emailTo + "?" +
-      (emailSubject ? "&subject=" + emailSubject : "") +
-      (emailBody ? "&body=" + emailBody : "");
-  }
-</script>
--->
 
 {{>footer}}
