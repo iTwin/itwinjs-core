@@ -12,8 +12,11 @@
   margin: 2em 5% !important;
 }
 
-a:hover.nav-link {
-  text-decoration: underline;
+#navbar7 li:hover {
+  height: 35px;
+  border-bottom-color: white;
+  border-bottom: 2px solid white;
+  transition: all .15s ease-in-out;
 }
 
 .imodeljs-header-tagline {
@@ -77,7 +80,7 @@ p.digital-twin {
 
 .nav-landing-container .navbar-nav {
   background: #002A44C0;
-  border-radius: 25px;
+  border-radius: 10px;
 }
 
 .middle-content-group {

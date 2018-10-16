@@ -9,11 +9,10 @@
       {{{editLink this}}}
 
       <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbws2Y0kXmCoM6vHR2w3ezx92FS4wdrLt8-Mo7YRlz0sZ69pgiPI/exec">
-        <h2>Create New Sample Project</h2>
-        <h4>Provisions a new project for use testing your application</h4>
-        <hr />
-
         <div class="form-elements">
+          <h2>Create New Sample Project</h2>
+          <h4>Provisions a new project for use testing your application</h4>
+          <hr />
           <h4 style="margin-top:0px;">Project Information
           </h4>
           <fieldset class="pure-group">
@@ -24,14 +23,36 @@
                     <em>The name of the CONNECT Project.</em></label>
                 </td>
                 <td>
-                  <input id="ProjectName" name="ProjectName" size="30" />
+                  <input id="ProjectName" name="ProjectName" size="30" required />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://ims.bentley.com/IMS/Registration" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://ims.bentley.com/IMS/Registration" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
                 </td>
               </tr>
               <tr>
                 <td>
                   <label for="ProjectParticipants">Project Participants: <br />
                     <em>The email of other developers who should have access to the Project / Sample iModel.<br />
-                      They will be required to have a valid Bentley IMS profile before they can sign-in.</em></label>
+                      They will be required to have a valid Bentley profile before they can sign-in.</em></label>
                 </td>
                 <td>
                   <textarea id="ProjectParticipants" name="ProjectParticipants" cols="40" rows="5"></textarea>
@@ -56,11 +77,7 @@
           <button class="button-success pure-button button-xlarge">Submit</button>
         </div>
 
-        <!-- Customise the Thankyou Message People See when they submit the form: -->
-        <div class="thankyou_message" style="display:none;">
-          <h2>We are processing your request. You can expect an email response from
-            iModeljs.Sample.Request@bentley.com within 24 hours.</h2>
-        </div>
+        {{>thank_you_message email='iModeljs.Sample.Request@bentley.com'}}
 
       </form>
 
@@ -73,7 +90,7 @@
 </div>
 
 
-<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')" -->
+<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
 <script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
 <script>
   function generateEmail(callingForm, emailTo, emailSubject) {
@@ -87,6 +104,6 @@
       (emailBody ? "&body=" + emailBody : "");
   }
 </script>
-
+-->
 
 {{>footer}}

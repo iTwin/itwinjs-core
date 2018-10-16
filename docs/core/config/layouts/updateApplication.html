@@ -8,11 +8,11 @@
     <article id="main" class='main-content'>
       {{{editLink this}}}
 
-      <form class="gform pure-form pure-form-stacked" method="POST" action="TODO">
-        <h2>Update an application you have already registered with Bentley</h2>
-        <hr />
-
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycby4TvSEAREx01P9anh-iTBOnQT4a660Yg4Frm5O7xxELknYSi0/exec">
         <div class="form-elements">
+          <h2>Update an application you have already registered with Bentley</h2>
+          <hr />
+
           <h4 style="margin-top:0px;">Application Information</h4>
           <fieldset class="pure-group">
             <table>
@@ -111,11 +111,7 @@
           <button class="button-success pure-button button-xlarge">Submit</button>
         </div>
 
-        <!-- Customise the Thankyou Message People See when they submit the form: -->
-        <div class="thankyou_message" style="display:none;">
-          <h2>We are processing your request. You can expect an email response from
-            iModeljs.App.Registration@bentley.com within 24 hours.</h2>
-        </div>
+        {{>thank_you_message email='iModeljs.App.Registration@bentley.com'}}
 
       </form>
 
@@ -128,7 +124,7 @@
 </div>
 
 
-<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')" -->
+<!-- <form id="registrationForm" class="gform" action="javascript:;" onsubmit="javascript:generateEmail(this, 'will.bentley@bentley.com', 'Developer registration')"
 <script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
 <script>
   function generateEmail(callingForm, emailTo, emailSubject) {
@@ -142,6 +138,6 @@
       (emailBody ? "&body=" + emailBody : "");
   }
 </script>
-
+ -->
 
 {{>footer}}
