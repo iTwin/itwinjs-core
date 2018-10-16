@@ -3,6 +3,7 @@
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projectFolderMinDepth": 2,
+  "ensureConsistentVersions": true,
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
