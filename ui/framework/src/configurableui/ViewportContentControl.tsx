@@ -31,6 +31,8 @@ export class ViewportContentControl extends ContentControl {
   /** Gets the type of ConfigurableUiControl, which is 'Viewport' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Viewport; }
 
+  /** Returns true if this control is a Viewport control. */
+  public get isViewport(): boolean { return true; }
   /** Gets the ScreenViewport */
   public get viewport(): ScreenViewport | undefined { return this._viewport; }
   /** Sets the ScreenViewport */

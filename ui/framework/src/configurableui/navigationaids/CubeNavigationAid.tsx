@@ -16,6 +16,7 @@ import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
 import { ViewRotationChangeEventArgs, ViewRotationCube } from "@bentley/ui-components";
+import { ContentViewManager } from "../ContentViewManager";
 
 /** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport */
 export class CubeNavigationAidControl extends NavigationAidControl {
@@ -123,12 +124,15 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
-    const { animation, dragging, endRotMatrix } = this.state;
-    const matrix = endRotMatrix;
-    const newMatrix = args.viewport.rotation;
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    if (activeContentControl && activeContentControl.isViewport && activeContentControl.viewport === args.viewport) {
+      const { animation, dragging, endRotMatrix } = this.state;
+      const matrix = endRotMatrix;
+      const newMatrix = args.viewport.rotation;
 
-    if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging)
-      this.setState({ startRotMatrix: matrix, endRotMatrix: newMatrix, animation: 1 });
+      if (!matrix.isAlmostEqual(newMatrix) && animation >= 1 && !dragging)
+        this.setState({ startRotMatrix: matrix, endRotMatrix: newMatrix, animation: 1 });
+    }
   }
 
   private _animate = (timestamp: number) => {

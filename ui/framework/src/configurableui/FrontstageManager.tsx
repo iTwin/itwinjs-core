@@ -11,6 +11,7 @@ import { ContentControl } from "./ContentControl";
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
+import { ContentViewManager } from "./ContentViewManager";
 
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
@@ -221,6 +222,13 @@ export class FrontstageManager {
       frontstageDef.onActivated();
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
       await frontstageDef.waitUntilReady();
+      if (frontstageDef.contentControls.length >= 1) {
+        // TODO: get content control to activate from state info
+        const contentControl = frontstageDef.contentControls[0];
+        contentControl.isReady.then(() => {
+          ContentViewManager.setActiveContent(contentControl.reactElement);
+        });
+      }
     }
   }
 

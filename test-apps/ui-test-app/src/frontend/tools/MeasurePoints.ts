@@ -88,11 +88,11 @@ export class MeasurePointsTool extends PrimitiveTool {
     IModelApp.accuSnap.enableSnap(true);
 
     if (0 === this.points.length) {
-      IModelApp.notifications.outputPromptByKey("SampleApp:MeasureByPoints.Prompt.FirstPoint");
+      IModelApp.notifications.outputPromptByKey("SampleApp:tools.Measure.ByPoints.Prompts.FirstPoint");
       return;
     }
 
-    IModelApp.notifications.outputPromptByKey("SampleApp:MeasureByPoints.Prompt.NextPoint");
+    IModelApp.notifications.outputPromptByKey("SampleApp:tools.Measure.ByPoints.Prompts.NextPoint");
 
     const hints = new AccuDrawHintBuilder();
     hints.enableSmartRotation = true;
@@ -147,7 +147,10 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    if (this.points.length < 1)
+      IModelApp.toolAdmin.startDefaultTool();
+    else
+      this.onReinitialize();
     return EventHandled.No;
   }
 

@@ -102,7 +102,17 @@
   },
   "tools": {
     "select": "Select",
-    "measure": "Measure",
+    "Measure": {
+      "ByPoints": {
+        "keyin": "Measure ByPoints",
+        "description": "Measure distance between points",
+        "flyover": "Measure ByPoints",
+        "Prompts": {
+          "FirstPoint": "Enter first point",
+          "NextPoint": "Select next point"
+        }
+      }
+    },
     "fitView": "Fit View",
     "windowArea": "Window Area",
     "rotate": "Rotate",

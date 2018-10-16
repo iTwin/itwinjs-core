@@ -6,6 +6,7 @@
 
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./FrontstageManager";
+import { ContentControl } from "./ContentControl";
 
 /** MouseDownChanged Event Args class.
  */
@@ -51,6 +52,20 @@ export class ContentViewManager {
 
   public static getActiveContent(): React.ReactNode | undefined {
     return this._activeContent;
+  }
+
+  public static getActiveContentControl(): ContentControl | undefined {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+
+    if (this._activeContent && activeFrontstageDef) {
+      if (activeFrontstageDef) {
+        const activeContentGroup = activeFrontstageDef.contentGroup;
+        if (activeContentGroup) {
+          return activeContentGroup.getControlFromElement(this._activeContent);
+        }
+      }
+    }
+    return undefined;
   }
 
   public static setActiveContent(activeContent?: React.ReactNode): void {

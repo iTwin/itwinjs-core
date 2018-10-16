@@ -62,6 +62,8 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl 
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
+import { MeasureByPointsButton } from "../tooluiproviders/MeasurePoints";
+
 import rotateIcon from "../icons/rotate.svg";
 // import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
@@ -215,10 +217,6 @@ export class ViewsFrontstage extends FrontstageDef {
  */
 class FrontstageToolWidget extends React.Component<{}> {
 
-  private _measurePointsTool = () => {
-    IModelApp.tools.run("Measure.Points", IModelApp.viewManager.selectedView);
-  }
-
   private _tool1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
@@ -356,7 +354,7 @@ class FrontstageToolWidget extends React.Component<{}> {
       items={
         <>
           <ToolButton toolId={SelectionTool.toolId} labelKey="SampleApp:tools.select" iconClass="icon-cursor" />
-          <ToolButton toolId="Measure.Points" labelKey="SampleApp:tools.measure" iconClass="icon-measure-distance" execute={this._measurePointsTool} />
+          <MeasureByPointsButton />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconClass="icon-placeholder"
