@@ -94,9 +94,11 @@ export class AppNotificationManager extends NotificationManager {
     return false;
   }
 
-  protected toolTipIsOpen(): boolean {
-    return ElementTooltip.isTooltipVisible;
-  }
+  /** Hides the Pointer message. */
+  public closePointerMessage(): void { this._hidePointerMessage(); }
+
+  public get isToolTipSupported(): boolean { return true; }
+  public get isToolTipOpen(): boolean { return ElementTooltip.isTooltipVisible; }
 
   /** Clear the ToolTip if it is currently open. If not open, does nothing. */
   public clearToolTip(): void {

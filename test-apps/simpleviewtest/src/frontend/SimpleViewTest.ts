@@ -1689,7 +1689,8 @@ class SVTNotifications extends NotificationManager {
     return Promise.resolve(MessageBoxValue.Ok);
   }
 
-  protected toolTipIsOpen(): boolean { return undefined !== this._toolTip; }
+  public get isToolTipSupported(): boolean { return true; }
+  public get isToolTipOpen(): boolean { return undefined !== this._toolTip; }
 
   public clearToolTip(): void {
     if (!this.isToolTipOpen)
