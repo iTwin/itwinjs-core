@@ -7,12 +7,12 @@
   "scripts": {
     "build": "tsc 1>&2",
     "lint": "tslint -p . 1>&2",
-    "webpack": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js build electron --configLoader=true",
+    "webpack": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js build electron --useConfigLoader",
     "electron": "electron ./lib/main.js",
-    "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start --configLoader=true",
-    "start:frontend": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start-frontend --configLoader=true",
-    "test": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js test --configLoader=true",
-    "cover": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js cover --configLoader=true",
+    "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start --useConfigLoader",
+    "start:frontend": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start-frontend --useConfigLoader",
+    "test": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js test --useConfigLoader",
+    "cover": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js cover --useConfigLoader",
     "clean": "rimraf lib dist package-deps.json",
     "docs": ""
   },

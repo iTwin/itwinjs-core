@@ -28,15 +28,17 @@ exports.builder = (yargs) =>
 
     })
     .options({
-      "configLoader": {
+      "useConfigLoader": {
         type: "boolean",
-        default: "false",
         describe: "Use auto locate imodel.js config folder."
       }
     });
 
 exports.handler = async (argv) => {
-  process.env.IMODELJS_CONFIG_LOADER = argv.configLoader ? true : false;
+  if (argv.useConfigLoader) {
+    process.env.IMODELJS_USE_CONFIG_LOADER = "yes";
+  }
+
   // Do this as the first thing so that any code reading it knows the right env.
   require("./utils/initialize")("production");
 
