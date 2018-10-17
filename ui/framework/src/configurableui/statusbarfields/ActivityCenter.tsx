@@ -15,12 +15,14 @@ import StatusLayout from "@bentley/ui-ninezone/lib/footer/message/content/status
 import Progress from "@bentley/ui-ninezone/lib/footer/message/content/Progress";
 import { MessageManager, ActivityMessageEventArgs } from "../MessageManager";
 
+/** Properties for the [[ActivityCenterField]] component */
 export interface ActivityCenterProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
 }
 
+/** State for the [[ActivityCenterField]] component */
 export interface ActivityCenterState {
   title: string;
   percentage: number;

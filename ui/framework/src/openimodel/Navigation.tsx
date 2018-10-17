@@ -2,17 +2,20 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import "./Navigation.scss";
 
-// Highlight style of the Navigation List.
+/** Highlight style of the Navigation List. */
 export enum NavigationHighlightStyle {
   movingbar, // highlight bar will move (animate) up and down the list
   bar,       // bar will fill (animate)
 }
 
+/** Properties for the [[NavigationItem]] component */
 export interface NavigationItemProps {
   label?: string;
   icon?: string;
@@ -93,6 +96,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
   }
 }
 
+/** Properties for the [[NavigationList]] component */
 export interface NavigationListProps {
   onClick?: (navItem: NavigationItem) => any;
   onExpandChanged?: (isPinned: boolean) => any;
@@ -100,7 +104,7 @@ export interface NavigationListProps {
   highlightStyle?: NavigationHighlightStyle;
 }
 
-export interface NavigationListState {
+interface NavigationListState {
   activeTab: number;
   isPinned: boolean;
 }
@@ -121,7 +125,7 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
   }
 
   private _handleClick = (tabIndex: number) => {
-    this.setState( { activeTab: tabIndex });
+    this.setState({ activeTab: tabIndex });
   }
 
   // toggle pinned state

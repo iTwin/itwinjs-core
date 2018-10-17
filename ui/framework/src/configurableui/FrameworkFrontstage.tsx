@@ -20,7 +20,7 @@ import NineZone, { NineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone/l
 // Frontstage React component
 // -----------------------------------------------------------------------------
 
-/** Props for the FrameworkFrontstage component.
+/** Properties for the [[FrameworkFrontstage]] component.
  */
 export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;

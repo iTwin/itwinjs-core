@@ -15,7 +15,7 @@ describe("ConfigurableUiContent", () => {
     await TestUtils.initializeUiFramework();
   });
 
-  it("SingleContent should render", () => {
+  it("ConfigurableUiContent should render", () => {
     const wrapper = mount(
       <Provider store={TestUtils.store} >
         <ConfigurableUiContent />
@@ -24,7 +24,7 @@ describe("ConfigurableUiContent", () => {
     wrapper.unmount();
   });
 
-  it("SingleContent renders correctly", () => {
+  it("ConfigurableUiContent renders correctly", () => {
     shallow(
       <Provider store={TestUtils.store} >
         <ConfigurableUiContent />

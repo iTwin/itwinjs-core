@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetControlProps } from "@bentley/ui-framework";
+import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -24,7 +24,7 @@ export class NavigationTreeWidgetControl extends WidgetControl {
   }
 }
 
-interface NavigationTreeProps extends WidgetControlProps {
+interface NavigationTreeProps extends WidgetComponentProps {
   iModelConnection?: IModelConnection;
 }
 

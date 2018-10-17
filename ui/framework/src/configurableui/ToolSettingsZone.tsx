@@ -34,7 +34,7 @@ export interface ToolSettingsZoneState {
   isNestedPopoverOpen: boolean;
 }
 
-/** Props for the ToolSettingsZone React component.
+/** Properties for the [[ToolSettingsZone]] React component.
  */
 export interface ToolSettingsZoneProps extends CommonProps {
   zoneDef?: ZoneDef;

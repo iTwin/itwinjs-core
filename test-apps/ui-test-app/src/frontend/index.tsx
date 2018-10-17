@@ -26,6 +26,7 @@ import {
     AppNotificationManager,
     IModelInfo,
     FrontstageManager,
+    createAction, ActionsUnion, DeepReadonly,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -34,8 +35,6 @@ import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./a
 import "./index.scss";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
-
-import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;

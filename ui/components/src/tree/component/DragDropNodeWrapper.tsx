@@ -11,7 +11,7 @@ import { withDragSource, withDropTarget } from "../../dragdrop";
 
 import "./DragDropNodeWrapper.scss";
 
-/** Props for the TreeNode React component */
+/** Properties for the [[DragDropTreeNodeComponent]] React component */
 /** @hidden */
 export interface DragDropNodeProps extends NodeProps {
   isOver?: boolean;

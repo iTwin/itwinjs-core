@@ -40,7 +40,7 @@ export interface ZoneDefProvider {
   getZoneDef(zoneId: number): ZoneDef | undefined;
 }
 
-/** Props for the FrontstageComposer component.
+/** Properties for the [[FrontstageComposer]] component.
  */
 export interface FrontstageComposerProps {
   className?: string;

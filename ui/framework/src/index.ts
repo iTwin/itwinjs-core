@@ -53,6 +53,10 @@ export * from "./utils";
  * Classes for working with a modal dialog
  */
 /**
+ * @docs-group-description DragDrop
+ * Classes for working with Drag & Drop
+ */
+/**
  * @docs-group-description FrameworkState
  * Classes for working with the Framework state
  */
@@ -90,11 +94,7 @@ export * from "./utils";
  */
 /**
  * @docs-group-description Picker
- * Classes for working a picker
- */
-/**
- * @docs-group-description redux-ts
- * TypeScript based helper classes for working with Redux
+ * Classes for working with various pickers
  */
 /**
  * @docs-group-description StatusBar
@@ -109,8 +109,8 @@ export * from "./utils";
  * Classes for working Tool Settings
  */
 /**
- * @docs-group-description Utils
- * Various utility classes for working with a UI.
+ * @docs-group-description Utilities
+ * Various utility classes for working with a UI and Redux.
  */
 /**
  * @docs-group-description Widget

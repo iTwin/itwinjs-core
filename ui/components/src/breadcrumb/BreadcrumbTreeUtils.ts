@@ -43,10 +43,10 @@ export class BreadcrumbTreeUtils {
     return undefined;
   }
   /**
-   * Transforms a node list from [[BreadcrumbTreeUtils.pathTo]] into a string, composed of tree node labels seperated by a given delimiter character.
+   * Transforms a node list from [[BreadcrumbTreeUtils.pathTo]] into a string, composed of tree node labels separated by a given delimiter character.
    * @param pathList List of nodes to convert to delimited string.
    * @param delimiter String delimiter to insert between tree node labels.
-   * @returns String of tree node labels seperated by delimiter.
+   * @returns String of tree node labels separated by delimiter.
    */
   public static nodeListToString = (pathList: ReadonlyArray<Readonly<TreeNodeItem>>, delimiter: string): string => {
     const p: string[] = [];
@@ -63,9 +63,9 @@ export class BreadcrumbTreeUtils {
 
   /**
    * Takes a string in the format of the return value of [[BreadcrumbTreeUtils.nodeListToString]], and finds the tree node
-   * object in dataProvider based on the delimiter seperating tree node labels.
+   * object in dataProvider based on the delimiter separating tree node labels.
    * @param dataProvider Tree data provider to search for target in.
-   * @param pathString String path value generated from [[BreadcrumTreeUtils.nodeListToString]] to be used to locate tree node.
+   * @param pathString String path value generated from [[BreadcrumbTreeUtils.nodeListToString]] to be used to locate tree node.
    * @param delimiter String delimiter used in [[BreadcrumbTreeUtils.nodeListToString]], to distinguish each between each node.
    * @returns Tree node located by the pathString parameter.
    */
@@ -110,7 +110,7 @@ export class BreadcrumbTreeUtils {
    * The .list field of the returned object contains all tree nodes that are children of the last tree node in the .items field
    * that match the substring following the last instance of the delimiter parameter in pathString.
    * @param dataProvider Tree data provider to search for target in.
-   * @param pathString String path value generated from [[BreadcrumTreeUtils.nodeListToString]] to be used to locate tree nodes.
+   * @param pathString String path value generated from [[BreadcrumbTreeUtils.nodeListToString]] to be used to locate tree nodes.
    * @param delimiter String delimiter used in [[BreadcrumbTreeUtils.nodeListToString]], to distinguish each between each node.
    * @param hasChildren Specifies whether to filter all items in .list, leaving only nodes with children.
    * @returns Object with a .items field: a list of all parent tree nodes and a .list field: all child nodes matching last substring delimited by

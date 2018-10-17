@@ -35,10 +35,8 @@ import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 
 import { Frontstage1 } from "./frontstages/Frontstage1";
-import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
-import { Frontstage5 } from "./frontstages/Frontstage5";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -58,10 +56,8 @@ export class AppUi {
    */
   private static defineFrontstages() {
     ConfigurableUiManager.addFrontstage(new Frontstage1());
-    ConfigurableUiManager.addFrontstage(new Frontstage2());
     ConfigurableUiManager.addFrontstage(new Frontstage3());
     ConfigurableUiManager.addFrontstage(new Frontstage4());
-    ConfigurableUiManager.addFrontstage(new Frontstage5());
   }
 
   /** Define Common Items used in different Frontstages.
@@ -322,8 +318,8 @@ export class AppUi {
       horizontalSplit: {
         id: "FourQuadrants.MainHorizontal",
         percentage: 0.50,
-        top: { verticalSplit: { id: "FourQuadrants.TopVert", percentage: 0.60, left: 0, right: 1 } },
-        bottom: { verticalSplit: { id: "FourQuadrants.BottomVert", percentage: 0.40, left: 2, right: 3 } },
+        top: { verticalSplit: { id: "FourQuadrants.TopVert", percentage: 0.50, left: 0, right: 1 } },
+        bottom: { verticalSplit: { id: "FourQuadrants.BottomVert", percentage: 0.50, left: 2, right: 3 } },
       },
     };
 
@@ -398,7 +394,7 @@ export class AppUi {
     const workflowPropsList: WorkflowPropsList = {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
-        classid: "taskpicker-class",
+        classId: "taskpicker-class",
         iconClass: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },

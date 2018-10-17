@@ -17,8 +17,8 @@ export enum VisibilityMode {
   Timeout,
 }
 
-/** Properties of [[Group]] component. */
-export interface GroupProps extends CommonProps {
+/** Properties of [[TabGroup]] component. */
+export interface TabGroupProps extends CommonProps {
   /** Describes to which side the widget of this tab is anchored. */
   anchor: HorizontalAnchor;
   /** Actual tabs. See: [[Draggable]], [[TabSeparator]], [[Tab]] */
@@ -29,7 +29,7 @@ export interface GroupProps extends CommonProps {
 
 /** Tab group component for stacked widget. */
 // tslint:disable-next-line:variable-name
-export const Group: React.StatelessComponent<GroupProps> = (props: GroupProps) => {
+export const TabGroup: React.StatelessComponent<TabGroupProps> = (props: TabGroupProps) => {
   const className = classnames(
     "nz-widget-rectangular-tab-group",
     props.handleMode === VisibilityMode.OnHover && "nz-handle-hover",
@@ -48,4 +48,4 @@ export const Group: React.StatelessComponent<GroupProps> = (props: GroupProps) =
   );
 };
 
-export default Group;
+export default TabGroup;

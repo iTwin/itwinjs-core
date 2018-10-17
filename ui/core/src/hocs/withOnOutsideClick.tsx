@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-/** Props for withOnOutsideClick React higher-order component */
+/** Properties for [[withOnOutsideClick]] React higher-order component */
 export interface WithOnOutsideClickProps {
   /** outside click callback function */
   onOutsideClick?: () => void;

@@ -2,11 +2,17 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import "./ProjectTabs.scss";
 
+/**
+ * Properties for the [[ProjectTab]] component. A temporary tab component.  Do not reuse!
+ * @hidden
+ */
 export interface TabProps {
   label?: string;
   icon?: string;
@@ -18,6 +24,7 @@ export interface TabProps {
 
 /**
  * A temporary tab component.  Do not reuse!
+ * @hidden
  */
 export class ProjectTab extends React.Component<TabProps> {
 
@@ -64,17 +71,21 @@ export class ProjectTab extends React.Component<TabProps> {
   }
 }
 
+/** Properties for the [[ProjectTabs]] component
+ * @hidden
+ */
 export interface TabsProps {
   onClick?: (tabIndex: number) => any;
   defaultTab: number;
 }
 
-export interface TabsState {
+interface TabsState {
   activeTab: number;
 }
 
 /**
  * List of tabs.  Do not reuse!
+ * @hidden
  */
 export class ProjectTabs extends React.Component<TabsProps, TabsState> {
 
@@ -86,7 +97,7 @@ export class ProjectTabs extends React.Component<TabsProps, TabsState> {
 
   // set active tab
   private _handleTabClick = (tabIndex: number, onTabClick: () => any) => {
-    this.setState( { activeTab: tabIndex });
+    this.setState({ activeTab: tabIndex });
 
     // fire the tab onClick
     if (onTabClick) {
@@ -98,24 +109,25 @@ export class ProjectTabs extends React.Component<TabsProps, TabsState> {
       this.props.onClick(tabIndex);
   }
 
-private renderChildren() {
-  return React.Children.map(this.props.children, (child: any, i) => {
-    return React.cloneElement(child, {
-      isActive: i === this.state.activeTab,
-      index: i,
-      selectedTabIndex: this.state.activeTab,
-      onTabClicked: this._handleTabClick.bind(this, i, child.props.onTabClicked) });
+  private renderChildren() {
+    return React.Children.map(this.props.children, (child: any, i) => {
+      return React.cloneElement(child, {
+        isActive: i === this.state.activeTab,
+        index: i,
+        selectedTabIndex: this.state.activeTab,
+        onTabClicked: this._handleTabClick.bind(this, i, child.props.onTabClicked),
+      });
     });
   }
 
   public render() {
     return (
       <div className="tabs">
-          <nav>
-            <ul>
-              {this.renderChildren()}
-           </ul>
-          </nav>
+        <nav>
+          <ul>
+            {this.renderChildren()}
+          </ul>
+        </nav>
       </div>
     );
   }

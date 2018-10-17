@@ -8,17 +8,17 @@ import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./FrontstageManager";
 import { ContentControl } from "./ContentControl";
 
-/** MouseDownChanged Event Args class.
+/** [[MouseDownChangedEvent]] Args interface.
  */
 export interface MouseDownChangedEventArgs {
   mouseDown: boolean;
 }
 
-/** MouseDownChanged Event class.
+/** Mouse Down Changed Event class.
  */
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { }
 
-/** ActiveContentChanged Event Args class.
+/** [[ActiveContentChangedEvent]] Args interface.
  */
 export interface ActiveContentChangedEventArgs {
   oldContent?: React.ReactNode;
@@ -29,7 +29,7 @@ export interface ActiveContentChangedEventArgs {
  */
 export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
 
-/** IModel View Manager class.
+/** Content View Manager class.
  */
 export class ContentViewManager {
   private static _mouseDown: boolean = false;

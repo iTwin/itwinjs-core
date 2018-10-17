@@ -17,7 +17,7 @@
 - [SplitButton]($core:SplitButton)
 - [Toggle]($core:Toggle)
 - [Tree]($core:Tree)
-- [Utils]($core:Utils)
+- [Utilities]($core:Utilities)
 - [All]($core:All)
 
 ---
@@ -79,11 +79,11 @@
 - [Notification]($framework:Notification)
 - [OpenIModel]($framework:OpenIModel)
 - [OverallContent]($framework:OverallContent)
-- [redux-ts]($framework:redux-ts)
+- [Picker]($framework:Picker)
 - [StatusBar]($framework:StatusBar)
 - [Task]($framework:Task)
 - [ToolSettings]($framework:ToolSettings)
-- [Utils]($framework:Utils)
+- [Utilities]($framework:Utilities)
 - [Widget]($framework:Widget)
 - [Workflow]($framework:Workflow)
 - [Zone]($framework:Zone)

@@ -42,7 +42,7 @@ export interface TreeState {
   highlightingEngine?: HighlightingEngine;
 }
 
-/** Props for the [[Tree]] React component  */
+/** Properties for the [[Tree]] React component  */
 export interface TreeProps {
   onTreeReloaded?: () => void;
   dataProvider: InspireTreeDataProvider;
@@ -56,7 +56,7 @@ export interface TreeProps {
   key?: any;
 }
 
-/** Type definition of the Props for the [[Tree]] React component  */
+/** Type definition of the properties for the [[Tree]] React component  */
 export type Props = TreeProps & Partial<TreeEvents>;
 
 /**

@@ -17,12 +17,11 @@ export class ToolInformation {
 
   /** Get the ToolUiProvider registered for this tool */
   public get toolUiProvider(): ToolUiProvider | undefined {
-    // TODO - should call getConfigurable if widget is sharable
     if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
       const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
       if (toolUiProvider) {
         if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
-          throw Error("ToolItemDef.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
+          throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
         this._toolUiProvider = toolUiProvider;

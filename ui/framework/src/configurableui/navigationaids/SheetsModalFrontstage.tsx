@@ -80,7 +80,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   }
 }
 
-/** Props for CardContainer */
+/** Properties for [[CardContainer]] */
 export interface CardContainerProps {
   cards: CardInfo[];
   searchValue: string;
@@ -158,7 +158,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
   }
 }
 
-/** Props for SheetCard */
+/** Properties for [[SheetCard]] */
 export interface SheetCardProps {
   label: string;
   index: number;
@@ -167,7 +167,7 @@ export interface SheetCardProps {
   onClick: () => void;
 }
 
-/** State for SheetCard */
+/** State for [[SheetCard]] */
 export interface SheetCardState {
   isActive: boolean;
   isHover: boolean;

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-/** Props for withIsPressed React higher-order component */
+/** Properties for [[withIsPressed]] React higher-order component */
 export interface WithIsPressedProps {
   /** initial value for pressed status */
   isPressed?: boolean;

@@ -27,7 +27,7 @@ export class DefaultProjectServices implements ProjectServices {
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {
-    console.log("Working on project", thisProject.name); // tslint:disable-line:no-console
+    // console.log("Working on project", thisProject.name); // tslint:disable-line:no-console
     const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.number ? thisProject.number : "", thisProject.wsgId);
     return thisProjectInfo;
   }

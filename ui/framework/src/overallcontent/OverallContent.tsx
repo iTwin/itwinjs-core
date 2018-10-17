@@ -24,7 +24,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 
 type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
-/** Props for the OverallContentComponent React component */
+/** Properties for the [[OverallContent]] React component */
 export interface OverallContentProps {
   appHeaderIcon: React.ReactNode;
   appHeaderMessage: string;

@@ -22,12 +22,14 @@ import { UiFramework } from "../UiFramework";
 // tslint:disable-next-line:variable-name
 const ContainedGroup = WithContainInViewport(Group);
 
+/** Enum for the list picker item type */
 export enum ListItemType {
   Item = 0,
-  Seperator = 1,
+  Separator = 1,
   Container = 2,
 }
 
+/** List picker item */
 export interface ListItem {
   key: any;
   name: string;
@@ -36,6 +38,7 @@ export interface ListItem {
   children?: ListItem[];
 }
 
+/** Properties for the [[ListPickerBase]] component */
 export interface ListPickerProps {
   title: string;
   items: ListItem[];
@@ -44,12 +47,14 @@ export interface ListPickerProps {
   onExpanded?: (expand: boolean) => void;
 }
 
+/** State for the [[ListPickerBase]] component */
 export interface ListPickerState {
   expanded: boolean;
 }
 
 let lastOpenedPicker: ListPickerBase | undefined;
 
+/** Properties for the [[ListPickerItem]] component */
 export interface ListPickerItemProps extends CommonProps {
   key: any;
   isActive?: boolean;
@@ -58,6 +63,7 @@ export interface ListPickerItemProps extends CommonProps {
   label?: string;
 }
 
+/** List Picker Item React component */
 export class ListPickerItem extends React.Component<ListPickerItemProps> {
   /** Renders ListPickerItem */
   public render() {
@@ -78,10 +84,12 @@ export class ListPickerItem extends React.Component<ListPickerItemProps> {
   }
 }
 
+/** Properties for the [[ExpandableSection]] component */
 export interface ExpandableSectionProps extends CommonProps {
   title?: string;
 }
 
+/** Expandable Section React component used by [[ListPickerBase]] */
 export class ExpandableSection extends React.Component<ExpandableSectionProps, any> {
   /** Creates an ExpandableSection */
   constructor(props: ExpandableSectionProps, context: any) {
@@ -207,9 +215,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
               onClick={() => { this.props.setEnabled(item, !item.enabled); }}
             />
           );
-        case ListItemType.Seperator:
+        case ListItemType.Separator:
           return (
-            <div key={itemIndex.toString()} className="ListPicker-seperator" />
+            <div key={itemIndex.toString()} className="ListPicker-separator" />
           );
         case ListItemType.Container:
           if (item.children!.length !== 0) {
@@ -243,6 +251,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
   }
 }
 
+/** Properties for the [[ListPicker]] component */
 export interface ListPickerPropsExtended extends ListPickerProps {
   enableAllFunc?: () => void;
   disableAllFunc?: () => void;
@@ -257,7 +266,7 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
   public static get Key_All() { return -3; }
   public static get Key_None() { return -2; }
   public static get Key_Invert() { return -1; }
-  public static get Key_Seperator() { return -4; }
+  public static get Key_Separator() { return -4; }
 
   /** Creates a ListPicker */
   constructor(props: ListPickerPropsExtended) {
@@ -286,7 +295,7 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
       newItems.push({ key: ListPicker.Key_Invert, name: UiFramework.i18n.translate("UiFramework:pickerButtons.invert"), enabled: false, type: ListItemType.Item });
     }
     if (this.props.enableAllFunc || this.props.disableAllFunc || this.props.invertFunc) {
-      newItems.push({ key: ListPicker.Key_Seperator, name: UiFramework.i18n.translate("UiFramework:pickerButtons.seperator"), enabled: false, type: ListItemType.Seperator });
+      newItems.push({ key: ListPicker.Key_Separator, name: UiFramework.i18n.translate("UiFramework:pickerButtons.separator"), enabled: false, type: ListItemType.Separator });
     }
 
     // Push items
@@ -299,7 +308,7 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
    * @param item Item to check
    */
   public isSpecialItem(item: ListItem) {
-    return item.key === ListPicker.Key_All || item.key === ListPicker.Key_Invert || item.key === ListPicker.Key_None || item.type !== ListItemType.Item || item.key === ListPicker.Key_Seperator;
+    return item.key === ListPicker.Key_All || item.key === ListPicker.Key_Invert || item.key === ListPicker.Key_None || item.type !== ListItemType.Item || item.key === ListPicker.Key_Separator;
   }
 
   /** Renders ListPicker */

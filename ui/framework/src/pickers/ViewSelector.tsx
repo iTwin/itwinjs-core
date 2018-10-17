@@ -12,6 +12,7 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
+/** View Selector React component */
 export class ViewSelector extends React.Component<any, any> {
   /** Creates a ViewSelector */
   constructor(props: any) {
@@ -93,7 +94,7 @@ export class ViewSelector extends React.Component<any, any> {
    * @param imodel Model to query for props
    * @param params Parameters for view query
    */
-  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams) {
+  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams): Promise<ViewDefinitionProps[]> {
     try {
       const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
       return viewProps as ViewDefinitionProps[];
@@ -105,7 +106,7 @@ export class ViewSelector extends React.Component<any, any> {
   /**
    * Query the views and set the initial state with the iModel's views.
    */
-  public async loadViews() {
+  public async loadViews(): Promise<void> {
     // Query views and add them to state
     const views3d: ListItem[] = [];
     const views2d: ListItem[] = [];
@@ -136,7 +137,7 @@ export class ViewSelector extends React.Component<any, any> {
    * Update state of the entries in the widget.
    * @param viewId Identifier for the relevant view
    */
-  public async updateState(viewId?: any) {
+  public async updateState(viewId?: any): Promise<void> {
     // Wait for initialization finished
     if (!this.state.initialized)
       return;

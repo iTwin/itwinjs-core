@@ -25,7 +25,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Props for the FrameworkZone Component.
+/** Properties for the [[FrameworkZone]] Component.
  */
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;

@@ -2,16 +2,19 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import { UiFramework } from "../UiFramework";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { Popup, Position} from "@bentley/ui-core";
+import { Popup, Position } from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
 import "./IModelCard.scss";
 
+/** Properties for the [[IModelCard]] component */
 export interface IModelCardProps {
   showDescription?: boolean;
   iModel: IModelInfo;
@@ -73,7 +76,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   private _onViewsSelected = (views: ViewDefinitionProps[]) => {
     this._onViewsClose();
     if (this.props.onSelectIModel)
-      this.props.onSelectIModel (this.props.iModel, views);
+      this.props.onSelectIModel(this.props.iModel, views);
   }
 
   private _onViewsClicked = () => {
@@ -142,10 +145,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
             <div className="options" >
               <span className="icon icon-more-2" onClick={this._onShowOptions}></span>
               <Popup isShown={this.state.showOptions} position={Position.BottomRight}
-                    onClose={this._onClose}>
+                onClose={this._onClose}>
                 <ul className="options-dropdown">
-                  <li onClick={this._onViewsClicked}><span className="icon icon-visibility"/>Views</li>
-                  <li onClick={this._onPopupTestClicked}><span className="icon icon-placeholder"/>Details</li>
+                  <li onClick={this._onViewsClicked}><span className="icon icon-visibility" />Views</li>
+                  <li onClick={this._onPopupTestClicked}><span className="icon icon-placeholder" />Details</li>
                 </ul>
               </Popup>
             </div>

@@ -44,6 +44,8 @@ export interface PointerMessageChangedEventArgs {
   pt?: XAndY;
 }
 
+/** Pointer Message Changed Event emitted by the [[Pointer]] component
+ */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
 /** Pointer message pops up near pointer when attempting an invalid interaction. */

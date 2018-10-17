@@ -8,6 +8,7 @@ import { ConfigurableUiControlType, ConfigurableCreateInfo } from "./Configurabl
 import { ContentControl } from "./ContentControl";
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ViewUtilities } from "../utils";
 
 /** The base class for Frontstage Viewport content controls.
  */
@@ -46,4 +47,37 @@ export class ViewportContentControl extends ContentControl {
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> { return this._isReady; }
+
+  /** Get the NavigationAidControl associated with this ContentControl */
+  public get navigationAidControl(): string {
+    let navigationAidId = "";
+    if (this._viewport) {
+      navigationAidId = this._getNavigationAid(this._viewport.view.classFullName);
+    }
+    return navigationAidId;
+  }
+
+  /**
+   * Fetches appropriate NavigationAid based on the class of the current viewport.
+   * @param classFullName The full name of the current viewport class.
+   * @returns The ID of the navigation aid to be displayed.
+   */
+  private _getNavigationAid = (classFullName: string) => {
+    const className = ViewUtilities.getBisBaseClass(classFullName);
+    let navigationAidId = "";
+    switch (className) {
+      case "SheetViewDefinition":
+        navigationAidId = "SheetNavigationAid";
+        break;
+      case "DrawingViewDefinition":
+        navigationAidId = "DrawingNavigationAid"; // TODO
+        break;
+      case "SpatialViewDefinition":
+      case "OrthographicViewDefinition":
+        navigationAidId = "CubeNavigationAid";
+        break;
+    }
+    return navigationAidId;
+  }
+
 }

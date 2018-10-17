@@ -130,6 +130,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+/** Properties for the [[SplitContainer]] component */
 interface SplitContainerProps {
   contentA: React.ReactNode;
   contentB: React.ReactNode;
@@ -139,7 +140,7 @@ interface SplitContainerProps {
   splitterStateId?: string;
 }
 
-/** SplitContainer class.
+/** Split Container class.
  */
 class SplitContainer extends React.Component<SplitContainerProps> {
 
@@ -190,7 +191,7 @@ interface SingleContentProps {
   content: React.ReactNode;
 }
 
-/** SingleContentContainer class.
+/** Single Content Container class.
  */
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
@@ -220,7 +221,7 @@ interface LayoutSplit {
   isLocked: boolean;
 }
 
-/** HorizontalSplit class.
+/** Horizontal Split class.
  */
 class HorizontalSplit implements LayoutSplit {
   private _topIndex: number = -1;
@@ -308,7 +309,7 @@ class HorizontalSplit implements LayoutSplit {
   }
 }
 
-/** VerticalSplit class.
+/** Vertical Split class.
  */
 class VerticalSplit implements LayoutSplit {
   private _leftIndex: number = -1;
@@ -396,7 +397,7 @@ class VerticalSplit implements LayoutSplit {
   }
 }
 
-/** ContentLayoutDef class.
+/** Content Layout Definition class.
  */
 export class ContentLayoutDef {
   public id: string = "";
@@ -434,14 +435,14 @@ export class ContentLayoutDef {
   }
 }
 
-/** State for the ContentLayout.
+/** State for the [[ContentLayout]].
  */
 export interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
 }
 
-/** Props for the ContentLayout React component.
+/** Properties for the [[ContentLayout]] React component.
  */
 export interface ContentLayoutReactProps {
   contentLayout: ContentLayoutDef;
@@ -449,7 +450,7 @@ export interface ContentLayoutReactProps {
   isInFooterMode: boolean;
 }
 
-/** ContentLayout React component.
+/** Content Layout React component.
  */
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
   private _contentContainer?: React.ReactNode;

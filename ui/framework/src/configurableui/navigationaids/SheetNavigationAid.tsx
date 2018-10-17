@@ -93,7 +93,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
       sheetData: [],
     };
 
-    if (!this.props.iModelConnection.views.getViewList)
+    if (!this.props.iModelConnection || !this.props.iModelConnection.views.getViewList)
       return stateData;
 
     let viewId = "";

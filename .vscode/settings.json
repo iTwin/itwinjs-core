@@ -24,6 +24,7 @@
     "Accu",
     "BENTLEYCONFIG",
     "Backends",
+    "CADID",
     "Cloneable",
     "Elems",
     "Frenet",

@@ -27,7 +27,7 @@ export interface WorkflowProps extends ItemProps {
 /** Properties for a TaskPicker.
  */
 export interface TaskPickerProps extends IconLabelProps {
-  classid: string;
+  classId: string;
 }
 
 /** Workflow Properties List definition.
