@@ -13,9 +13,9 @@ Writing an iModel.js application requires the following software:
   - This is the source code control system for the iModel.js repositories.
 
 ## Code Samples
+**_Note: Samples must be registered before they can be run._**
 
 The following samples showcase the iModel.js API in action:
-
 - [Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)
   - Embed an iModel.js viewport into your application to display graphical data.
   - Browse iModel catalog and view element properties.
@@ -26,7 +26,6 @@ The following samples showcase the iModel.js API in action:
 ## Developer Registration
 Before registering [click here](https://imsoidc.bentley.com) to prepare your Bentley profile.
 
-**_Samples must be registered before they can be run._**
 ### Register a New Application
 - [Agent Application](./agent-application.md) - Such as iModel Query Agent
 - [Browser Application](./spa-application.md) - Such as Simple Viewer App
