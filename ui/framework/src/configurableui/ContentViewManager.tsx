@@ -54,6 +54,7 @@ export class ContentViewManager {
     return this._activeContent;
   }
 
+  /** Return the active ContentControl. */
   public static getActiveContentControl(): ContentControl | undefined {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
 

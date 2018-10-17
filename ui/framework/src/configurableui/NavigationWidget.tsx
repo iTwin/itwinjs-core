@@ -41,7 +41,10 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     return this._reactElement;
   }
 
-  public renderCornerItem(): React.ReactNode | undefined {
+  public renderCornerItem(): React.ReactNode {
+    if (FrontstageManager.isLoading)
+      return null;
+
     if (!this._navigationAidControl && this._navigationAidId) {
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
@@ -63,7 +66,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       );
     }
 
-    return undefined;
+    return null;
   }
 
   public updateNavigationAid(navigationAidId: string, imodel?: IModelConnection): void {

@@ -110,6 +110,8 @@ export interface ModalFrontstageInfo {
 /** Frontstage Manager class.
  */
 export class FrontstageManager {
+  private static _isLoading = true;
+
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
   private static _frontstageDefs = new Map<string, FrontstageDef>();
@@ -132,6 +134,9 @@ export class FrontstageManager {
       });
     }
   }
+
+  /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
+  public static get isLoading(): boolean { return this._isLoading; }
 
   /** Get Frontstage Activated event. */
   public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
@@ -216,20 +221,22 @@ export class FrontstageManager {
    * @returns A Promise that is fulfilled when the [[FrontstageDef]] is ready.
    */
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
+    this._isLoading = true;
     this._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {
       frontstageDef.onActivated();
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
       await frontstageDef.waitUntilReady();
-      if (frontstageDef.contentControls.length >= 1) {
+      this._isLoading = false;
+      if (frontstageDef.contentControls.length >= 0) {
         // TODO: get content control to activate from state info
         const contentControl = frontstageDef.contentControls[0];
-        contentControl.isReady.then(() => {
+        if (contentControl)
           ContentViewManager.setActiveContent(contentControl.reactElement);
-        });
       }
     }
+    this._isLoading = false;
   }
 
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
