@@ -563,6 +563,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "resolve",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },

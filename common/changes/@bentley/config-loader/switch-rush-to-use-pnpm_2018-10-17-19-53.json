@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clean up package dependencies and scripts",
+      "packageName": "@bentley/config-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "shaun.sewall@bentley.com"
+}
