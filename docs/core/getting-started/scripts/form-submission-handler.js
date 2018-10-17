@@ -5,12 +5,8 @@
   }
 
   function validateHuman(honeypot) {
-    if (honeypot) {  //if hidden form filled up
-      console.log("Robot Detected!");
+    if (honeypot)  //if hidden form filled up
       return true;
-    } else {
-      console.log("Welcome Human!");
-    }
   }
 
   // get all data in form and return object
@@ -55,7 +51,6 @@
     formData.formGoogleSheetName = form.dataset.sheet || "responses"; // default sheet name
     formData.formGoogleSendEmail = form.dataset.email || ""; // no email by default
 
-    console.log(formData);
     return formData;
   }
 
@@ -103,7 +98,6 @@
   }
 
   function loaded() {
-    console.log("Contact form submission handler loaded successfully.");
     // bind to the submit event of our form
     var forms = document.querySelectorAll("form.gform");
     for (var i = 0; i < forms.length; i++) {
@@ -113,7 +107,7 @@
   document.addEventListener("DOMContentLoaded", loaded, false);
 
   function disableAllButtons(form) {
-    var buttons = form.querySelectorAll("button");
+    var buttons = form.querySelectorAll(".pure-button");
     for (var i = 0; i < buttons.length; i++) {
       buttons[i].disabled = true;
     }

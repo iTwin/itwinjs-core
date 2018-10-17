@@ -2,6 +2,45 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.159.0",
+      "tag": "@bentley/imodeljs-clients_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed KnownRegions Enum"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.158.0",
+      "tag": "@bentley/imodeljs-clients_v0.158.0",
+      "date": "Mon, 15 Oct 2018 19:36:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cleaned up frontend configuration. "
+          },
+          {
+            "comment": "add default Buddi URL and region and a added docs for region id"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.157.0",
+      "tag": "@bentley/imodeljs-clients_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixing scripts for linux"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.156.0",
       "tag": "@bentley/imodeljs-clients_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",

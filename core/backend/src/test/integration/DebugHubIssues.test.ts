@@ -5,7 +5,7 @@
 import * as path from "path";
 import { assert } from "chai";
 import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, KnownRegions } from "@bentley/imodeljs-clients";
+import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
@@ -106,7 +106,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.PROD)) {
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0) {
       assert.fail("this test require production environment");
     }
 

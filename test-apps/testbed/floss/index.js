@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
-
 'use strict';
 
 const path = require('path');
@@ -80,6 +75,9 @@ function floss(options, done) {
     );
     childProcess.stdout.on('data', (data) => {
         process.stdout.write(data);
+    });
+    childProcess.stderr.on('data', (data) => {
+        process.stderr.write(data);
     });
     childProcess.on('close', (code) => {
         if (code !== 0) {

@@ -7,8 +7,6 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../FormDataManagementClient";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { KnownRegions } from "../Client";
-import { Config } from "../Config";
 
 chai.should();
 
@@ -20,8 +18,6 @@ describe.skip("FormDataManagementClient", () => {
   const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
 
     this.enableTimeouts(false);
     actx = new ActivityLoggingContext("");

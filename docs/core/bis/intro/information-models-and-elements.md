@@ -10,7 +10,7 @@ BIS defines a set of InformationContentElement subclasses to further classify an
 
 ## Key Information Element Classes
 
-TODO - add class hierarchy diagram
+<!-- TODO - add class hierarchy diagram -->
 
 ### InformationContentElement
 
@@ -97,7 +97,12 @@ See [Information Hierarchy](./information-hierarchy.md) for more details.
 
 ### Document
 
-TODO
+A Document is a collection of information that is intended to be understood together as a whole.
+
+Document subclasses include:
+
+- Drawing
+- Sheet
 
 ## Typical Models for Specific Information Elements
 

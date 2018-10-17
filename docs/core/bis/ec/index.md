@@ -46,4 +46,4 @@ The remaining kinds of elements are also direct members of an ECSchema:
 
 - **[Format](./ec-format.md)** defines how to format a numeric value when displaying it to the user or for a report
 
-The items that are direct members of an ECSchema must have names that are unique among all items that are direct members of an ECSchema, e.g., an ECEntityClass cannot have the same name as an ECStructClass. Uniqueness is determined using case-insensitive comparisons. See [ECName](ec-name.md) for EC Naming Rules.
+The items that are direct members of an ECSchema must have names that are unique among all items that are direct members of an ECSchema, e.g., an ECEntityClass cannot have the same name as an ECStructClass. Uniqueness is determined using case-insensitive comparisons. See [ECName](./ec-name.md) for EC Naming Rules.

@@ -6,7 +6,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
-const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/);
+const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/, true /* suppress message */);
 if (configEnv) {
   Object.assign(process.env, configEnv);
 } else {

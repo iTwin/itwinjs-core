@@ -27,11 +27,6 @@
 ./domains/*
 ./intro/appendix-c-bis-domain-design-fundamentals.md
 ./intro/bis-schema-validation.md
-./intro/documents.md
-./intro/dynamic-data.md
-./intro/forms-profiles-and-features.md
-./intro/requirements.md
-./intro/types-instances-and-catalogs.md
 ./intro/units.md
 -->
 
@@ -68,3 +63,4 @@
 - [Phenomenon](./ec/ec-phenomenon.md)
 - [UnitSystem](./ec/ec-unitsystem.md)
 - [Format](./ec/ec-format.md)
+- [ECName](./ec/ec-name.md)

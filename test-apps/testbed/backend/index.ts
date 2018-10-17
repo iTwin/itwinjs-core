@@ -16,7 +16,7 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { HttpServerRequest, HttpServerResponse } from "../../../core/common/lib/rpc/web/WebAppRpcProtocol";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
-IModelJsConfig.init(true, false, Config.App);
+IModelJsConfig.init(true, true, Config.App);
 const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;

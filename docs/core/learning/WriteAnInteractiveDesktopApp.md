@@ -14,4 +14,6 @@ You must write an [Electron-specific main](../learning/AppTailoring.md) to do th
 * Identify the main html page.
 
 ## 3. Package and Deploy
-You must then package the app as an Electron app. This requires using the Electron build tools ... *TBD*
+You must then package the app as an Electron app.
+
+iModelJs supports [Electron](https://electronjs.org/) version ^2.0.8.

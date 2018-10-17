@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
 import { assert } from "chai";
 
 import SchemaXmlFileLocater from "./../../src/Deserialization/SchemaXmlFileLocater";
@@ -18,7 +19,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
   beforeEach(() => {
     locater = new SchemaXmlFileLocater();
-    locater.addSchemaSearchPath(__dirname + "\\..\\assets\\");
+    locater.addSchemaSearchPath(path.join(__dirname, "..", "Assets"));
     context = new SchemaContext();
     context.addLocater(locater);
   });

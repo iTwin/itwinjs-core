@@ -11,8 +11,6 @@ import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
 import { IModelHubClient } from "..";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { KnownRegions } from "../Client";
-import { Config } from "../Config";
 chai.should();
 
 describe.skip("RealityDataServicesClient", () => {
@@ -28,8 +26,6 @@ describe.skip("RealityDataServicesClient", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
