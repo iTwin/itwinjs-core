@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "0.159.0",
+  "version": "0.160.0",
   "description": "Configuration loader for test",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/build-tools": "0.159.0",
+    "@bentley/build-tools": "0.160.0",
     "cache-require-paths": "^0.3.0",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",

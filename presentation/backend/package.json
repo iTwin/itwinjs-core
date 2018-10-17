@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-backend",
-  "version": "0.159.0",
+  "version": "0.160.0",
   "description": "Backend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -36,17 +36,17 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.159.0",
-    "@bentley/imodeljs-common": "0.159.0",
-    "@bentley/imodeljs-backend": "0.159.0",
-    "@bentley/presentation-common": "0.159.0"
+    "@bentley/bentleyjs-core": "0.160.0",
+    "@bentley/imodeljs-common": "0.160.0",
+    "@bentley/imodeljs-backend": "0.160.0",
+    "@bentley/presentation-common": "0.160.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.159.0",
-    "@bentley/build-tools": "0.159.0",
-    "@bentley/imodeljs-common": "0.159.0",
-    "@bentley/imodeljs-backend": "0.159.0",
-    "@bentley/presentation-common": "0.159.0",
+    "@bentley/bentleyjs-core": "0.160.0",
+    "@bentley/build-tools": "0.160.0",
+    "@bentley/imodeljs-common": "0.160.0",
+    "@bentley/imodeljs-backend": "0.160.0",
+    "@bentley/presentation-common": "0.160.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
