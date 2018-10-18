@@ -8,8 +8,7 @@
     "jsx": "react"
   },
   "include": [
-    "./src/**/*.ts",
-    "../components/src/viewport/ViewRotationCub.ts"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "lib",
