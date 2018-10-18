@@ -1,6 +1,9 @@
 # AccessToken
 
-An application must have an [AccessToken]($imodeljs-clients) to access an iModel on the iModelHub. AccessTokens are JSON Web Tokens, and based on the OAuth 2.0 protocol. The iModel.js API uses the OAuth 2.0 protocol for both authentication and authorization. The implementation conforms to the [OpenID Connect](https://openid.net/connect/) specification, and is built on [IdentityServer4](http://docs.identityserver.io/en/release/) framework, an officially [certified](https://openid.net/certification/) implementation of OpenID Connect.
+An application must fetch an [AccessToken]($imodeljs-clients) from the Bentley Authorization Server to access various services including the iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iModel.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like the iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
+
+The Bentley Authorization Service is built on the [IdentityServer4](http://docs.identityserver.io/en/release/) framework, an officially [certified](https://openid.net/certification/) implementation of OpenID Connect.
+
 
 ## Using OAuth 2.0 to Access iModel.js APIs
 The API supports common OAuth 2.0 scenarios of Web Frontend Applications, Agent or Service Applications, Desktop and Mobile Applications. All applications need to follow the same basic pattern:
