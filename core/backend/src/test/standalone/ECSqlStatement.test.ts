@@ -78,6 +78,281 @@ describe("ECSqlStatement", () => {
     });
   });
 
+  it("Bind numeric and date strings", () => {
+    using(ECDbTestHelper.createECDb(_outDir, "bindnumericanddatestrings.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+          <ECProperty propertyName="dt" typeName="dateTime"/>
+          <ECProperty propertyName="fooId" typeName="long" extendedTypeName="Id"/>
+        </ECEntityClass>
+      </ECSchema>`), (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+
+        const r: ECSqlInsertResult = ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", (stmt: ECSqlStatement) => {
+          return stmt.stepForInsert();
+        });
+        assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+
+        ecdb.withPreparedStatement("SELECT 1 FROM ts.Foo WHERE n=?", (stmt: ECSqlStatement) => {
+          const nNum: number = 20;
+          const nStr: string = "20";
+          const nDt: string = "-4713-01-21T12:00:00Z";
+          const nHexStr: string = "0x14";
+
+          stmt.bindInteger(1, nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(nNum);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([nNum]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(nStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([nStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, nDt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Date time string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, nDt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Date time string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(nDt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Date time string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([nDt]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Date time string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, nHexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Hex string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, nHexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Hex string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(nHexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Hex string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([nHexStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "Hex string is not parsed. SQLite just converts it to something which does not match");
+          stmt.reset();
+          stmt.clearBindings();
+        });
+
+        ecdb.withPreparedStatement("SELECT 1 FROM ts.Foo WHERE dt=?", (stmt: ECSqlStatement) => {
+          const dtStr: string = "2018-10-18T12:00:00Z";
+          const num: number = 2458410;
+          const str: string = "2458410";
+          const hexStr: string = "0x25832a";
+
+          stmt.bindDateTime(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(dtStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([{ type: ECSqlStringType.DateTime, value: dtStr }]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([dtStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindInteger(1, num));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValue(1, num));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.getBinder(1).bind(num));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValues([num]));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindString(1, str));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValue(1, str));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.getBinder(1).bind(str));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValues([str]));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindString(1, hexStr));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValue(1, hexStr));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.getBinder(1).bind(hexStr));
+          stmt.clearBindings();
+
+          assert.throw(() => stmt.bindValues([hexStr]));
+          stmt.clearBindings();
+        });
+
+        ecdb.withPreparedStatement("SELECT 1 FROM ts.Foo WHERE fooId=?", (stmt: ECSqlStatement) => {
+          const num: number = 20;
+          const str: string = "20";
+          const dt: string = "-4713-01-21T12:00:00Z";
+          const hexStr: string = "0x14";
+
+          stmt.bindId(1, new Id64(hexStr));
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([new Id64(hexStr)]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(hexStr);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([hexStr]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(str);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([str]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindInteger(1, num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(num);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([num]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindString(1, dt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, dt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.getBinder(1).bind(dt);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here");
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValues([dt]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here");
+          stmt.reset();
+          stmt.clearBindings();
+        });
+      });
+  });
+
   it("Bind Numbers", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindnumbers.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -88,7 +363,7 @@ describe("ECSqlStatement", () => {
       <ECProperty propertyName="S" typeName="string"/>
       <ECProperty propertyName="Description" typeName="string"/>
     </ECEntityClass>
-    </ECSchema>`), (ecdb) => {
+    </ECSchema>`), (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen);
 
         const doubleVal: number = 3.5;

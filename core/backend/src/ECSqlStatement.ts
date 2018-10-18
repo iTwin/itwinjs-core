@@ -101,6 +101,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     this._stmt = undefined; // discard the peer JS object as garbage
   }
 
+  /** Binds the specified value to the specified ECSQL parameter.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
+   * @param parameter Index (1-based) or name of the parameter
+   */
+  public bindValue(parameter: number | string, val: any): void { this.getBinder(parameter).bind(val); }
+
   /** Binds null to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    */
@@ -218,7 +225,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         if (paramValue === undefined || paramValue === null)
           continue;
 
-        ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
+        this.bindValue(paramIndex, paramValue);
       }
       return;
     }
@@ -229,7 +236,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       if (paramValue === undefined || paramValue === null)
         continue;
 
-      ECSqlBindingHelper.bindValue(this.getBinder(paramName), paramValue);
+      this.bindValue(paramName, paramValue);
     }
   }
 
@@ -359,6 +366,15 @@ export class ECSqlBinder {
   private _binder: NativeECSqlBinder;
 
   public constructor(binder: NativeECSqlBinder) { this._binder = binder; }
+
+  /** Binds the specified value to the ECSQL parameter.
+   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModel.js types to be used for the different ECSQL parameter types.
+   * @param val Value to bind
+   */
+  public bind(val: any): void {
+    ECSqlBindingHelper.bindValue(this, val);
+  }
 
   /** Binds null to the ECSQL parameter. */
   public bindNull(): void {
