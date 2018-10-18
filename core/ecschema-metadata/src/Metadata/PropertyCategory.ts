@@ -11,13 +11,14 @@ import Schema from "./Schema";
 
 export default class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
-  protected _priority: number = 0;
+  protected _priority: number;
 
   get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.PropertyCategory;
+    this._priority = 0;
   }
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {

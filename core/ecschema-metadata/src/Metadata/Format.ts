@@ -37,25 +37,37 @@ export interface IFormat {
 
 export default class Format extends SchemaItem implements IFormat {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
-  protected _roundFactor: number = 0.0;
-  protected _type: FormatType = FormatType.Decimal; // required; options are decimal, frational, scientific, station
-  protected _precision: number = DecimalPrecision.Six; // required
+  protected _roundFactor: number;
+  protected _type: FormatType; // required; options are decimal, frational, scientific, station
+  protected _precision: number; // required
+  protected _showSignOption: ShowSignOption; // options: noSign, onlyNegative, signAlways, negativeParentheses
+  protected _decimalSeparator: string; // optional; default is based on current locale.... TODO: Default is based on current locale
+  protected _thousandSeparator: string; // optional; default is based on current locale.... TODO: Default is based on current locale
+  protected _uomSeparator: string; // optional; default is " "; defined separator between magnitude and the unit
+  protected _stationSeparator: string; // optional; default is "+"
+  protected _formatTraits: FormatTraits;
+  protected _spacer: string; // optional; default is " "
+  protected _includeZero: boolean; // optional; default is true
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
-  protected _showSignOption: ShowSignOption = ShowSignOption.OnlyNegative; // options: noSign, onlyNegative, signAlways, negativeParentheses
-  protected _decimalSeparator: string = "."; // optional; default is based on current locale.... TODO: Default is based on current locale
-  protected _thousandSeparator: string = ","; // optional; default is based on current locale.... TODO: Default is based on current locale
-  protected _uomSeparator = " "; // optional; default is " "; defined separator between magnitude and the unit
-  protected _stationSeparator = "+"; // optional; default is "+"
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
-  protected _formatTraits: FormatTraits = 0x0;
-  protected _spacer: string = " "; // optional; default is " "
-  protected _includeZero: boolean = true; // optional; default is true
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Format;
+
+    this._roundFactor = 0.0;
+    this._type = FormatType.Decimal;
+    this._precision = DecimalPrecision.Six;
+    this._showSignOption = ShowSignOption.OnlyNegative;
+    this._decimalSeparator = ".";
+    this._thousandSeparator = ",";
+    this._uomSeparator = " ";
+    this._stationSeparator = "+";
+    this._formatTraits = 0x0;
+    this._spacer = " ";
+    this._includeZero = true;
   }
 
   get roundFactor(): number { return this._roundFactor; }
