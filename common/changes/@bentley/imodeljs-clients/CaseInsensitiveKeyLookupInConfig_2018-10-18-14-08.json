@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow case-insensitive lookup of keys from Config.App",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "khanaffan@gmail.com"
+}
