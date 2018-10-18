@@ -9,7 +9,7 @@ The Bentley Authorization Service is built on the [IdentityServer4](http://docs.
 The API supports common OAuth 2.0 scenarios of Web Frontend Applications, Agent or Service Applications, Desktop and Mobile Applications. All applications need to follow the same basic pattern:
 
 ### 1. Register the application to obtain OAuth 2.0 credentials.
-Use the [developer registration page](https://imodeljs.github.io/iModelJs-docs-output/getting-started/#developer-registration) to register your applications and get the credentials. In the case of Frontend, Desktop and Mobile Applications, the credentials will include just a Client Id. In the case of Agent or Service Applications it will include a client Id, client secret, a service user name and a service user password.
+Use the [developer registration page](../../getting-started/index.md#developer-registration) to register your applications and get the credentials. In the case of Frontend, Desktop and Mobile Applications, the credentials will include just a Client Id. In the case of Agent or Service Applications it will include a client Id, client secret, a service user name and a service user password.
 
 ### 2. Obtain an access token from the Bentley Authorization Server
 Before your application can access an iModel on the iModelHub, it must obtain an access token that grants the required access. The way you make the request depends on the application you are building.

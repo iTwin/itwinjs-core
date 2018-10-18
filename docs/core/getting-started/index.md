@@ -13,7 +13,7 @@ Writing an iModel.js application requires the following software:
   - This is the source code control system for the iModel.js repositories.
 
 ## Code Samples
-**_Note: Samples must be registered before they can be run._**
+**_Note: Samples must be registered, and require a sample Project/iModel. See [Developer Registration](#developer-registration)_**
 
 The following samples showcase the iModel.js API in action:
 - [Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)
