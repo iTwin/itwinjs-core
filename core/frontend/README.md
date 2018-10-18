@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-frontend
+# @bentley/imodeljs-frontend
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

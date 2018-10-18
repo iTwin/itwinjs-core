@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-i18n
+# @bentley/imodeljs-i18n
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

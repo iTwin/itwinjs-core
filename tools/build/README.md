@@ -1,4 +1,4 @@
-﻿# @bentley/build-tools
+# @bentley/build-tools
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

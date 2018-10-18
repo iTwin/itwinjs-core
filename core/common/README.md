@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-common
+# @bentley/imodeljs-common
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
