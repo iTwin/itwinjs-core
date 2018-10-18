@@ -243,7 +243,7 @@ export class GraphicBranch implements IDisposable {
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    public constructor(public readonly elementId?: Id64,
+    public constructor(public readonly elementId?: Id64String,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
       public readonly planarity: Planarity = Planarity.Unknown) { }
@@ -310,7 +310,7 @@ export namespace Pixel {
  */
 export class PackedFeatureTable {
   private readonly _data: Uint32Array;
-  public readonly modelId: Id64;
+  public readonly modelId: Id64String;
   public readonly maxFeatures: number;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
@@ -320,7 +320,7 @@ export class PackedFeatureTable {
    * This is used internally when deserializing Tiles in iMdl format.
    * @hidden
    */
-  public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number, type: BatchType) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType) {
     this._data = data;
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
@@ -369,15 +369,15 @@ export class PackedFeatureTable {
       assert(undefined !== subCategoryIndex); // we inserted it above...
       subCategoryIndex |= (feature.geometryClass << 24);
 
-      uint32s[index + 0] = Id64.getLowUint32(feature.elementId);
-      uint32s[index + 1] = Id64.getHighUint32(feature.elementId);
+      uint32s[index + 0] = Id64.getLowerUint32(feature.elementId);
+      uint32s[index + 1] = Id64.getUpperUint32(feature.elementId);
       uint32s[index + 2] = subCategoryIndex;
     }
 
     subcategories.forEach((index: number, id: string, _map) => {
       const index32 = subCategoriesOffset + 2 * index;
-      uint32s[index32 + 0] = Id64.getLowUint32(id);
-      uint32s[index32 + 1] = Id64.getHighUint32(id);
+      uint32s[index32 + 0] = Id64.getLowerUint32(id);
+      uint32s[index32 + 1] = Id64.getUpperUint32(id);
     });
 
     return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures, featureTable.type);
@@ -415,7 +415,7 @@ export class PackedFeatureTable {
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
-  public findElementId(featureIndex: number): Id64 | undefined {
+  public findElementId(featureIndex: number): Id64String | undefined {
     if (featureIndex >= this.numFeatures)
       return undefined;
     else
@@ -443,7 +443,7 @@ export class PackedFeatureTable {
 
   private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
 
-  private readId(offset32: number): Id64 {
+  private readId(offset32: number): Id64String {
     return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
   }
 }
@@ -507,7 +507,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract setHiliteSet(hilited: Set<string>): void;
   /** @hidden */
-  public abstract setFlashed(elementId: Id64, intensity: number): void;
+  public abstract setFlashed(elementId: Id64String, intensity: number): void;
   /** @hidden */
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   /** @hidden */

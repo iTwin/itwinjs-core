@@ -3,6 +3,6 @@
 exports[`Viewport withUnifiedSelection renders correctly 1`] = `
 <ViewportComponent
   imodel={null}
-  viewDefinitionId={"0x1719b000000f6be"}
+  viewDefinitionId="0x1719b000000f6be"
 />
 `;

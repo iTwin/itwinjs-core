@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 
-export type ClassId = Id64;
+export type ClassId = Id64String;
 
-export type InstanceId = Id64;
+export type InstanceId = Id64String;
 
 /** A key that uniquely identifies an instance in an iModel */
 export interface InstanceKey {
@@ -24,7 +24,7 @@ export interface InstanceKeyJSON {
 
 /** Deserializes [[InstanceKey]] from [[InstanceKeyJSON]] */
 export const instanceKeyFromJSON = (json: InstanceKeyJSON): InstanceKey => {
-  return { ...json, id: new Id64(json.id) };
+  return { ...json, id: Id64.fromJSON(json.id) };
 };
 
 /** An array of [[InstanceKey]] objects */
@@ -46,7 +46,7 @@ export interface ClassInfoJSON {
 
 /** Deserializes [[ClassInfo]] from [[ClassInfoJSON]] */
 export const classInfoFromJSON = (json: ClassInfoJSON): ClassInfo => {
-  return { ...json, id: new Id64(json.id) };
+  return { ...json, id: Id64.fromJSON(json.id) };
 };
 
 /** A single choice in enumeration */

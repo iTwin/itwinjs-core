@@ -70,7 +70,7 @@ export namespace FeatureSymbology {
       const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
       const transparency = undefined !== ovr.transparency ? ovr.transparency : undefined;
       const weight = undefined !== ovr.weight ? ovr.weight : undefined;
-      const ignoresMaterial = undefined !== ovr.material && !ovr.material.isValid ? true : undefined;
+      const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
       return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
     }
 
@@ -229,7 +229,7 @@ export namespace FeatureSymbology {
       const { elementId, subCategoryId, geometryClass } = feature;
       let elemApp, alwaysDrawn = false;
 
-      if (!Id64.isInvalidId(elementId)) {
+      if (!Id64.isInvalid(elementId)) {
         if (this.isNeverDrawn(elementId))
           return undefined;
 
@@ -243,7 +243,7 @@ export namespace FeatureSymbology {
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
-      if (!Id64.isInvalidId(subCategoryId)) {
+      if (!Id64.isInvalid(subCategoryId)) {
         if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
           return undefined;
 
@@ -274,7 +274,7 @@ export namespace FeatureSymbology {
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
-      if (!Id64.isInvalidId(subCategoryId)) {
+      if (!Id64.isInvalid(subCategoryId)) {
         const subCat = this.getSubCategoryOverrides(subCategoryId);
         if (undefined !== subCat)
           app = subCat.extendAppearance(app);
@@ -302,7 +302,7 @@ export namespace FeatureSymbology {
     /** Returns true if the specified Feature is visible within a [[ViewState]] to which these Overrides are applied. */
     public isFeatureVisible(feature: Feature): boolean {
       const { elementId, subCategoryId, geometryClass } = feature;
-      const isValidElemId = !Id64.isInvalidId(elementId);
+      const isValidElemId = !Id64.isInvalid(elementId);
 
       if (isValidElemId && this.isNeverDrawn(elementId))
         return false;

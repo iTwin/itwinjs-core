@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Element, IModelDb, GeometricElement3d, ECSqlStatement, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Id64, DbResult } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -21,9 +21,9 @@ describe("Useful ECSQL spatial queries", () => {
   });
 
   it("should execute spatial queries", () => {
-    let modelId: Id64 | undefined;
+    let modelId: Id64String | undefined;
     for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
-      modelId = iModel.models.getSubModel(new Id64(eidStr)).id;
+      modelId = iModel.models.getSubModel(Id64.fromString(eidStr)).id;
     }
     assert(modelId !== undefined);
     if (modelId === undefined)

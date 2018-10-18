@@ -39,9 +39,9 @@ describe("RpcInterface", () => {
   });
 
   it("should support toJSON/fromJSON", async () => {
-    const id1 = new Id64();
+    const id1 = Id64.invalid;
     const id2 = await TestRpcInterface.getClient().op2(id1);
-    assert.isTrue(id1.equals(id2));
+    assert.equal(id1, id2);
   });
 
   it("should support toJSON and fall back to constructor when fromJSON does not exist", async () => {
@@ -57,7 +57,7 @@ describe("RpcInterface", () => {
     map1.set(true, { y: "b" });
     map1.set(false, new Date());
     map1.set("params", new TestOp1Params(1, 1));
-    map1.set("id", new Id64());
+    map1.set("id", Id64.invalid);
 
     const map2 = await TestRpcInterface.getClient().op4(map1);
     assert.equal(map1.size, map2.size);
@@ -84,7 +84,7 @@ describe("RpcInterface", () => {
     set1.add({ y: "b" });
     set1.add(new Date());
     set1.add(new TestOp1Params(1, 1));
-    set1.add(new Id64());
+    set1.add(Id64.invalid);
 
     const set2 = await TestRpcInterface.getClient().op5(set1);
     assert.equal(set1.size, set2.size);

@@ -130,12 +130,12 @@ describe("Ruleset Variables", async () => {
     const id64ArrayValue = await variables.getId64s(variableId);
     expect(id64ArrayValue.length).to.equal(valueArray.length);
     for (const value of valueArray) {
-      const id = new Id64([value, 0]);
-      expect(id64ArrayValue.find((x) => x.equals(id))).to.not.be.equal(undefined);
+      const id = Id64.fromLocalAndBriefcaseIds(value, 0);
+      expect(id64ArrayValue.find((x) => x === (id))).to.not.be.equal(undefined);
     }
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value.isValid).to.be.false;
+    expect(Id64.isValid(id64Value)).to.be.false;
 
     const intValue = await variables.getInt(variableId);
     expect(intValue).to.equal(0);
@@ -156,7 +156,7 @@ describe("Ruleset Variables", async () => {
     expect(id64ArrayValue.length).to.equal(0);
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value).to.deep.eq(new Id64([value, 0]));
+    expect(id64Value).to.deep.eq(Id64.fromLocalAndBriefcaseIds(value, 0));
 
     const intArrayValue = await variables.getInts(variableId);
     expect(intArrayValue.length).to.equal(0);
@@ -174,7 +174,7 @@ describe("Ruleset Variables", async () => {
     expect(id64ArrayValue.length).to.equal(0);
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value).to.deep.eq(new Id64([value ? 1 : 0, 0]));
+    expect(id64Value).to.deep.eq(Id64.fromLocalAndBriefcaseIds(value ? 1 : 0, 0));
 
     const intArrayValue = await variables.getInts(variableId);
     expect(intArrayValue.length).to.equal(0);
@@ -195,7 +195,7 @@ describe("Ruleset Variables", async () => {
     expect(id64ArrayValue.length).to.equal(0);
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value.isValid).to.be.false;
+    expect(Id64.isValid(id64Value)).to.be.false;
 
     const intArrayValue = await variables.getInts(variableId);
     expect(intArrayValue.length).to.equal(0);
@@ -222,7 +222,7 @@ describe("Ruleset Variables", async () => {
     expect(stringValue).to.equal("");
 
     const boolValue = await variables.getBool(variableId);
-    expect(boolValue).to.eq(value.isValid);
+    expect(boolValue).to.eq(Id64.isValid(value));
   });
 
   it("accessing Id64[] variable with different types", async () => {
@@ -242,7 +242,7 @@ describe("Ruleset Variables", async () => {
     expect(intArrayValue.length).to.equal(valueArray.length);
 
     const id64Value = await variables.getId64(variableId);
-    expect(id64Value.isValid).to.be.false;
+    expect(Id64.isValid(id64Value)).to.be.false;
 
     const intValue = await variables.getInt(variableId);
     expect(intValue).to.equal(0);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 
@@ -94,8 +94,8 @@ export namespace TileIO {
     public get nextFloat64(): number { return this.read(8, (view) => view.getFloat64(this.curPos, true)); }
     /** Read 3 64-bit floating point numbers at the current read position, advance by 24 bytes, and return a Point3d constructed from the 3 numbers. */
     public get nextPoint3d64(): Point3d { return new Point3d(this.nextFloat64, this.nextFloat64, this.nextFloat64); }
-    /** Read a uint64 at the current read position, advance by 8 bytes, and return the uint64 value as an Id64. */
-    public get nextId64(): Id64 { return Id64.fromUint32Pair(this.nextUint32, this.nextUint32); }
+    /** Read a uint64 at the current read position, advance by 8 bytes, and return the uint64 value as an Id64String. */
+    public get nextId64(): Id64String { return Id64.fromUint32Pair(this.nextUint32, this.nextUint32); }
 
     /** Read the next numBytes bytes into a Uint8Array and advance by numBytes. */
     public nextBytes(numBytes: number): Uint8Array {

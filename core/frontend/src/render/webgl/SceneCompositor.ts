@@ -13,7 +13,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
-import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
@@ -169,7 +169,7 @@ class PixelBuffer implements Pixel.Buffer {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getElementId(pixelIndex: number): Id64 | undefined {
+  private getElementId(pixelIndex: number): Id64String | undefined {
     if (undefined === this._elemIdLow || undefined === this._elemIdHi)
       return undefined;
 
@@ -623,7 +623,7 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private findFlashedClassifier(cmdsByIndex: DrawCommands): number {
-    if (!this._target.flashedElemId.isValid)
+    if (!Id64.isValid(this._target.flashedElemId))
       return -1; // nothing flashed
     for (let i = 1; i < cmdsByIndex.length; i += 3) {
       const command = cmdsByIndex[i];

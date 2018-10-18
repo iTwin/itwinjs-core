@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64, Guid, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Guid, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -34,7 +34,7 @@ import {
  */
 export abstract class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
-  public readonly model: Id64;
+  public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
   public readonly code: Code;
   /** The parent element, if present, of this element. */
@@ -64,8 +64,12 @@ export abstract class Element extends Entity implements ElementProps {
    */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (this.id.isValid) val.id = this.id;
-    if (this.code.spec.isValid) val.code = this.code;
+    if (Id64.isValid(this.id))
+      val.id = this.id;
+
+    if (Id64.isValid(this.code.spec))
+      val.code = this.code;
+
     val.model = this.model;
     if (this.parent) val.parent = this.parent;
     if (this.federationGuid) val.federationGuid = this.federationGuid;
@@ -104,7 +108,7 @@ export abstract class Element extends Entity implements ElementProps {
     const addKey = (key: string) => "<b>%{iModelJs:Element." + key + "}:</b> "; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
     const msg: string[] = [];
     const display = this.getDisplayLabel();
-    msg.push(display ? display : addKey("Id") + this.id.value + ", " + addKey("Type") + this.className);
+    msg.push(display ? display : addKey("Id") + this.id + ", " + addKey("Type") + this.className);
 
     if (this.category)
       msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
@@ -125,7 +129,7 @@ export abstract class Element extends Entity implements ElementProps {
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
   /** The Id of the [[Category]] for this GeometricElement. */
-  public category: Id64;
+  public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
 
@@ -368,7 +372,7 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
-  public border?: Id64;
+  public border?: Id64String;
   /** @hidden */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -378,14 +382,14 @@ export class Sheet extends Document implements SheetProps {
   public height: number;
   public width: number;
   public scale?: number;
-  public sheetTemplate?: Id64;
+  public sheetTemplate?: Id64String;
   /** @hidden */
   constructor(props: SheetProps, iModel: IModelDb) {
     super(props, iModel);
     this.height = JsonUtils.asDouble(props.height);
     this.width = JsonUtils.asDouble(props.width);
     this.scale = props.scale;
-    this.sheetTemplate = props.sheetTemplate ? new Id64(props.sheetTemplate) : undefined;
+    this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
 }
 

@@ -6,7 +6,7 @@
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
-import { Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -27,7 +27,7 @@ const loggingCategory: string = "imodeljs-backend.ChangeSummaryManager";
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface ChangeSummary {
-  id: Id64;
+  id: Id64String;
   changeSet: { wsgId: string, parentWsgId: string, description: string, pushDate: string, author: string };
 }
 
@@ -38,9 +38,9 @@ export interface ChangeSummary {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface InstanceChange {
-  id: Id64;
-  summaryId: Id64;
-  changedInstance: { id: Id64, className: string };
+  id: Id64String;
+  summaryId: Id64String;
+  changedInstance: { id: Id64String, className: string };
   opCode: ChangeOpCode;
   isIndirect: boolean;
 }
@@ -132,7 +132,7 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(actx: ActivityLoggingContext, accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64[]> {
+  public static async extractChangeSummaries(actx: ActivityLoggingContext, accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
     actx.enter();
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
@@ -179,13 +179,13 @@ export class ChangeSummaryManager {
       // extract summaries from end changeset through start changeset, so that we only have to go back in history
       const changeSetCount: number = changeSetInfos.length;
       const endChangeSetIx: number = changeSetCount - 1;
-      const summaries: Id64[] = [];
+      const summaries: Id64String[] = [];
       for (let i = endChangeSetIx; i >= 0; i--) {
         const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
         const currentChangeSetId: string = currentChangeSetInfo.wsgId;
         Logger.logInfo(loggingCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
-        const existingSummaryId: Id64 | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
+        const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
         if (!!existingSummaryId) {
           Logger.logInfo(loggingCategory, `Change Summary for changeset #${i + 1} already exists. It is not extracted again.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
           summaries.push(existingSummaryId);
@@ -214,7 +214,7 @@ export class ChangeSummaryManager {
         Logger.logTrace(loggingCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        const changeSummaryId = new Id64(stat.result!);
+        const changeSummaryId = Id64.fromString(stat.result!);
         summaries.push(changeSummaryId);
         let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
         if (currentChangeSetInfo.userCreated) {
@@ -340,18 +340,18 @@ export class ChangeSummaryManager {
 
   private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.01.00.01.ecschema.xml"); }
 
-  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): Id64 | undefined {
+  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): Id64String | undefined {
     return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?",
       (stmt: ECSqlStatement) => {
         stmt.bindString(1, changeSetId);
         if (DbResult.BE_SQLITE_ROW === stmt.step())
-          return new Id64(stmt.getValue(0).getId());
+          return Id64.fromString(stmt.getValue(0).getId());
 
         return undefined;
       });
   }
 
-  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64, changesetWsgId: string, changesetParentWsgId?: string, description?: string, changesetPushDate?: string, changeSetAuthor?: string): void {
+  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: string, changesetParentWsgId?: string, description?: string, changesetPushDate?: string, changeSetAuthor?: string): void {
     changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,Author) VALUES(?,?,?,?,?,?)",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
@@ -385,7 +385,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
+  public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64String): ChangeSummary {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
@@ -393,7 +393,7 @@ export class ChangeSummaryManager {
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
+          throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId}.`);
 
         const row = stmt.getRow();
         return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, description: row.description, pushDate: row.pushDate, author: row.author } };
@@ -411,7 +411,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
+  public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64String): InstanceChange {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
@@ -421,15 +421,15 @@ export class ChangeSummaryManager {
           JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `, (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId.value}.`);
+          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
 
         const row = stmt.getRow();
-        const changedInstanceId = new Id64(row.changedInstanceId);
+        const changedInstanceId = Id64.fromJSON(row.changedInstanceId);
         const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
         return {
-          id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+          id: instanceChangeId, summaryId: Id64.fromJSON(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
           opCode: op, isIndirect: row.isIndirect,
         };
       });
@@ -445,7 +445,7 @@ export class ChangeSummaryManager {
    * @returns Returns names of the properties whose values have changed for the given instance change
    * @throws [IModelError]($common) if the change cache file hasn't been attached, or in case of other errors.
    */
-  public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64): string[] {
+  public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[] {
     return iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
@@ -489,7 +489,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if instance change does not exist, if there are not property value changes for the instance change,
    *        if the change cache file hasn't been attached, or in case of other errors.
    */
-  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string {
+  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64String, summaryId: Id64String, changedInstance: { id: Id64String, className: string } }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string {
     let selectClauseItems: string[];
     if (!changedPropertyNames) {
       // query property value changes just to build a SELECT statement against the class of the changed instance
@@ -498,7 +498,7 @@ export class ChangeSummaryManager {
       selectClauseItems = changedPropertyNames;
 
     if (selectClauseItems.length === 0)
-      throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
+      throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id}.`);
 
     let ecsql: string = "SELECT ";
     selectClauseItems.map((item: string, index: number) => {

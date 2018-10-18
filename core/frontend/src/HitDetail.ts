@@ -115,7 +115,7 @@ export class HitDetail {
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public get isElementHit(): boolean { return !Id64.isInvalidId(this.sourceId) && !Id64.isTransientId(this.sourceId); }
+  public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean { return this.viewport.iModel.models.getLoaded(this.sourceId) !== undefined; }
   /** Create a deep copy of this HitDetail */

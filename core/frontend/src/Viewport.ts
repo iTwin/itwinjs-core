@@ -10,7 +10,7 @@ import {
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, StopWatch, assert, Id64Arg, IDisposable, dispose, Id64 } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
@@ -1688,7 +1688,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (this.processFlash()) {
-      target.setFlashed(new Id64(this._flashedElem!), this.flashIntensity);
+      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
     }
 

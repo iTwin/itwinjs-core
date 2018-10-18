@@ -74,14 +74,14 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getString(variableId)).to.deep.eq("");
       expect(await vars.getInt(variableId)).to.deep.eq(0);
       expect(await vars.getInts(variableId)).to.deep.eq([]);
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64());
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.invalid);
       expect(await vars.getId64s(variableId)).to.deep.eq([]);
 
       await vars.setBool(variableId, true);
       expect(await vars.getString(variableId)).to.deep.eq("");
       expect(await vars.getInt(variableId)).to.deep.eq(1);
       expect(await vars.getInts(variableId)).to.deep.eq([]);
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64([1, 0]));
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.fromLocalAndBriefcaseIds(1, 0));
       expect(await vars.getId64s(variableId)).to.deep.eq([]);
     });
 
@@ -107,7 +107,7 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getBool(variableId)).to.deep.eq(true);
       expect(await vars.getString(variableId)).to.deep.eq("");
       expect(await vars.getInts(variableId)).to.deep.eq([]);
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64([value, 0]));
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.fromLocalAndBriefcaseIds(value, 0));
       expect(await vars.getId64s(variableId)).to.deep.eq([]);
     });
 
@@ -133,8 +133,8 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getBool(variableId)).to.deep.eq(false);
       expect(await vars.getString(variableId)).to.deep.eq("");
       expect(await vars.getInt(variableId)).to.deep.eq(0);
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64());
-      expect(await vars.getId64s(variableId)).to.deep.eq(value.map((v) => new Id64([v, 0])));
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.invalid);
+      expect(await vars.getId64s(variableId)).to.deep.eq(value.map((v) => Id64.fromLocalAndBriefcaseIds(v, 0)));
     });
 
   });
@@ -142,7 +142,7 @@ describe("RulesetVariablesManager", () => {
   describe("Id64", () => {
 
     it("returns invalid Id64 if there's no value", async () => {
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64());
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.invalid);
     });
 
     it("sets and returns value", async () => {
@@ -156,9 +156,9 @@ describe("RulesetVariablesManager", () => {
     it("handles type conversion", async () => {
       const value = createRandomId();
       await vars.setId64(variableId, value);
-      expect(await vars.getBool(variableId)).to.deep.eq(value.isValid);
+      expect(await vars.getBool(variableId)).to.deep.eq(Id64.isValid(value));
       expect(await vars.getString(variableId)).to.deep.eq("");
-      expect(await vars.getInt(variableId)).to.deep.eq(value.getHighUint32());
+      expect(await vars.getInt(variableId)).to.deep.eq(Id64.getUpperUint32(value));
       expect(await vars.getInts(variableId)).to.deep.eq([]);
       expect(await vars.getId64s(variableId)).to.deep.eq([]);
     });
@@ -185,8 +185,8 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getBool(variableId)).to.deep.eq(false);
       expect(await vars.getString(variableId)).to.deep.eq("");
       expect(await vars.getInt(variableId)).to.deep.eq(0);
-      expect(await vars.getInts(variableId)).to.deep.eq(value.map((v) => v.getHighUint32()));
-      expect(await vars.getId64(variableId)).to.deep.eq(new Id64());
+      expect(await vars.getInts(variableId)).to.deep.eq(value.map((v) => Id64.getUpperUint32(v)));
+      expect(await vars.getId64(variableId)).to.deep.eq(Id64.invalid);
     });
 
   });

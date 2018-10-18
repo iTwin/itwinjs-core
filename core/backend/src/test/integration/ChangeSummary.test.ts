@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus, using, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64String, Id64, PerfLogger, ChangeSetStatus, using, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary } from "../../ChangeSummaryManager";
@@ -197,7 +197,7 @@ describe.skip("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel);
     try {
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
+      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -218,7 +218,7 @@ describe.skip("ChangeSummary", () => {
           rowCount++;
           const row: any = myStmt.getRow();
           assert.equal(row.className, "IModelChange.ChangeSet");
-          assert.equal(row.summary.id, summaryIds[rowCount - 1].value);
+          assert.equal(row.summary.id, summaryIds[rowCount - 1]);
           assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
           assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
           assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
@@ -247,9 +247,9 @@ describe.skip("ChangeSummary", () => {
       await iModel.reverseChanges(actx, accessToken, IModelVersion.asOfChangeSet(changesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { currentVersionOnly: true });
+      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
-      assert.isTrue(summaryIds[0].isValid);
+      assert.isTrue(Id64.isValidId64(summaryIds[0]));
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -261,7 +261,7 @@ describe.skip("ChangeSummary", () => {
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, changesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id, summaryIds[0].value);
+        assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
         assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
@@ -286,7 +286,7 @@ describe.skip("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), endVersion);
     try {
       assert.exists(iModel);
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { startVersion });
+      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { startVersion });
       assert.equal(summaryIds.length, 2);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
@@ -301,7 +301,7 @@ describe.skip("ChangeSummary", () => {
         // Change summaries are extracted from end to start, so order is inverse of changesets
         assert.equal(row.wsgId, endChangeSetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id, summaryIds[0].value);
+        assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
         assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
@@ -310,7 +310,7 @@ describe.skip("ChangeSummary", () => {
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, startChangeSetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id, summaryIds[1].value);
+        assert.equal(row.summary.id, summaryIds[1]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
         assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
       });
@@ -334,7 +334,7 @@ describe.skip("ChangeSummary", () => {
       await iModel.reverseChanges(actx, accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { currentVersionOnly: true });
+      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(testIModelId)));
 
@@ -348,7 +348,7 @@ describe.skip("ChangeSummary", () => {
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, firstChangesetId);
         assert.isDefined(row.summary);
-        assert.equal(row.summary.id, summaryIds[0].value);
+        assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
         assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
@@ -470,14 +470,14 @@ describe.skip("ChangeSummary", () => {
         perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
-          const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
+          const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, Id64.fromJSON(row.id));
           changeSummaries.push(csum);
         }
         perfLogger.dispose();
       });
 
       for (const changeSummary of changeSummaries) {
-        const filePath = path.join(outDir, "imodelid_" + testIModels[1].id + "_changesummaryid_" + changeSummary.id.value + ".changesummary.json");
+        const filePath = path.join(outDir, "imodelid_" + testIModels[1].id + "_changesummaryid_" + changeSummary.id + ".changesummary.json");
         if (IModelJsFs.existsSync(filePath))
           IModelJsFs.unlinkSync(filePath);
 
@@ -488,7 +488,7 @@ describe.skip("ChangeSummary", () => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();
 
-            const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+            const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, Id64.fromJSON(row.id));
             switch (instanceChange.opCode) {
               case ChangeOpCode.Insert: {
                 const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));

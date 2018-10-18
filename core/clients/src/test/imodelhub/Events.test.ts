@@ -210,7 +210,7 @@ describe("iModelHub EventHandler", () => {
     chai.expect(event!.iModelId!.toString()).to.be.equal(imodelId.toString());
     const typedEvent = event as CodeEvent;
     chai.assert(typedEvent);
-    chai.expect(typedEvent.codeSpecId).to.be.instanceof(Id64);
+    chai.expect(typeof typedEvent.codeSpecId).to.equal("string");
   });
 
   it("should receive events through listener", async function (this: Mocha.ITestCallbackContext) {
@@ -270,8 +270,8 @@ describe("iModelHub EventHandler", () => {
     const typedEvent = event as LockEvent;
     chai.assert(!!typedEvent);
     chai.assert(!!typedEvent.objectIds![0]);
-    chai.assert(typedEvent.objectIds![0].isValid);
-    chai.expect(typedEvent.objectIds![0].toString()).to.be.equal(new Id64("0x1").toString());
+    chai.assert(Id64.isValidId64(typedEvent.objectIds![0]));
+    chai.expect(typedEvent.objectIds![0].toString()).to.be.equal(Id64.fromString("0x1").toString());
     chai.expect(typedEvent.lockLevel).to.be.equal(LockLevel.Shared);
     chai.expect(typedEvent.lockType).to.be.equal(LockType.Model);
   });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
@@ -17,7 +17,7 @@ import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
-  public parentModel: Id64;
+  public parentModel: Id64String;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
@@ -102,7 +102,7 @@ export abstract class GeometricModelState extends ModelState {
   }
 
   private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id.value) : this.id.value;
+    const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
       tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary));

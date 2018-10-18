@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelDb, ECSqlStatement, Element, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -68,7 +68,7 @@ describe("Useful ECSQL queries", () => {
 
   it("should select all elements in a model", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-elements-in-model
-    const modelId: Id64 = IModelDb.repositoryModelId;
+    const modelId: Id64String = IModelDb.repositoryModelId;
     iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`, (statement: ECSqlStatement) => {
       statement.bindId("modelId", modelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -80,7 +80,7 @@ describe("Useful ECSQL queries", () => {
 
   it("should select all top-level elements in a model", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-top-level-elements-in-model
-    const modelId: Id64 = IModelDb.repositoryModelId;
+    const modelId: Id64String = IModelDb.repositoryModelId;
     iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, (statement: ECSqlStatement) => {
       statement.bindId("modelId", modelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -92,7 +92,7 @@ describe("Useful ECSQL queries", () => {
 
   it("should select all child elements of the specified element", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-child-elements
-    const parentId: Id64 = IModelDb.rootSubjectId;
+    const parentId: Id64String = IModelDb.rootSubjectId;
     iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`, (statement: ECSqlStatement) => {
       statement.bindId("parentId", parentId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {

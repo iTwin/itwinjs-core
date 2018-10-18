@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64Set, Id64, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
@@ -214,19 +214,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return val;
   }
 
-  public async getDefaultViewId(iModelToken: IModelToken): Promise<Id64> {
+  public async getDefaultViewId(iModelToken: IModelToken): Promise<Id64String> {
     const context = ActivityLoggingContext.current;
     context.enter();
 
     const spec = { namespace: "dgn_View", name: "DefaultView" };
     const blob = IModelDb.find(iModelToken).queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
-      return Id64.invalidId;
+      return Id64.invalid;
 
     const view = new Uint32Array(blob.buffer);
     return Id64.fromUint32Pair(view[0], view[1]);
   }
-  public async getSpatialCategoryId(iModelToken: IModelToken, categoryName: string): Promise<Id64 | undefined> {
+  public async getSpatialCategoryId(iModelToken: IModelToken, categoryName: string): Promise<Id64String | undefined> {
     const iModelDb = IModelDb.find(iModelToken);
     const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);

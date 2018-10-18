@@ -55,7 +55,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined !== ovrsArray) {
       for (const ovrJson of ovrsArray) {
         const subCatId = Id64.fromJSON(ovrJson.subCategory);
-        if (subCatId.isValid) {
+        if (Id64.isValid(subCatId)) {
           const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
           if (subCatOvr.anyOverridden)
             this.overrideSubCategory(subCatId, subCatOvr);
@@ -410,24 +410,24 @@ export class SkyGradient extends SkyBox {
  */
 export class SkySphere extends SkyBox {
   /** The ID of the texture element which supplies the skybox image. */
-  public textureId: Id64;
+  public textureId: Id64String;
 
-  private constructor(textureId: Id64, display?: boolean) {
+  private constructor(textureId: Id64String, display?: boolean) {
     super({ display });
     this.textureId = textureId;
   }
 
   /** @hidden */
   public static fromJSON(json: SkyBoxProps): SkySphere | undefined {
-    const textureId = new Id64(undefined !== json.image ? json.image.texture : undefined);
-    return undefined !== textureId && textureId.isValid ? new SkySphere(textureId, json.display) : undefined;
+    const textureId = Id64.fromJSON(undefined !== json.image ? json.image.texture : undefined);
+    return undefined !== textureId && Id64.isValid(textureId) ? new SkySphere(textureId, json.display) : undefined;
   }
 
   public toJSON(): SkyBoxProps {
     const val = super.toJSON();
     val.image = {
       type: SkyBoxImageType.Spherical,
-      texture: this.textureId.value,
+      texture: this.textureId,
     };
     return val;
   }
@@ -448,14 +448,14 @@ export class SkySphere extends SkyBox {
  * @see [[SkyBox.createFromJSON]].
  */
 export class SkyCube extends SkyBox implements SkyCubeProps {
-  public readonly front: Id64;
-  public readonly back: Id64;
-  public readonly top: Id64;
-  public readonly bottom: Id64;
-  public readonly right: Id64;
-  public readonly left: Id64;
+  public readonly front: Id64String;
+  public readonly back: Id64String;
+  public readonly top: Id64String;
+  public readonly bottom: Id64String;
+  public readonly right: Id64String;
+  public readonly left: Id64String;
 
-  private constructor(front: Id64, back: Id64, top: Id64, bottom: Id64, right: Id64, left: Id64, display?: boolean) {
+  private constructor(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean) {
     super({ display });
 
     this.front = front;
@@ -481,20 +481,20 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
     val.image = {
       type: SkyBoxImageType.Cube,
       textures: {
-        front: this.front.value,
-        back: this.back.value,
-        top: this.top.value,
-        bottom: this.bottom.value,
-        right: this.right.value,
-        left: this.left.value,
+        front: this.front,
+        back: this.back,
+        top: this.top,
+        bottom: this.bottom,
+        right: this.right,
+        left: this.left,
       },
     };
     return val;
   }
 
   /** @hidden */
-  public static create(front: Id64, back: Id64, top: Id64, bottom: Id64, right: Id64, left: Id64, display?: boolean): SkyCube | undefined {
-    if (!front.isValid || !back.isValid || !top.isValid || !bottom.isValid || !right.isValid || !left.isValid)
+  public static create(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean): SkyCube | undefined {
+    if (!Id64.isValid(front) || !Id64.isValid(back) || !Id64.isValid(top) || !Id64.isValid(bottom) || !Id64.isValid(right) || !Id64.isValid(left))
       return undefined;
     else
       return new SkyCube(front, back, top, bottom, right, left, display);
@@ -503,7 +503,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   /** @hidden */
   public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
-    const textureIds = new Set<string>([this.front.value, this.back.value, this.top.value, this.bottom.value, this.right.value, this.left.value]);
+    const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
     const promises = new Array<Promise<TextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
@@ -524,8 +524,8 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       const textureImages = [
-        idToImage.get(this.front.value)!, idToImage.get(this.back.value)!, idToImage.get(this.top.value)!,
-        idToImage.get(this.bottom.value)!, idToImage.get(this.right.value)!, idToImage.get(this.left.value)!,
+        idToImage.get(this.front)!, idToImage.get(this.back)!, idToImage.get(this.top)!,
+        idToImage.get(this.bottom)!, idToImage.get(this.right)!, idToImage.get(this.left)!,
       ];
 
       const texture = system.createTextureFromCubeImages(textureImages[0], textureImages[1], textureImages[2], textureImages[3], textureImages[4], textureImages[5], iModel, params);

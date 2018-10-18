@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
+import { JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Config } from "@bentley/imodeljs-clients";
@@ -746,7 +746,7 @@ export class MeasurePointsTool extends PrimitiveTool {
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next.value;
+      this._snapGeomId = this.iModel.transientIds.next;
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
 
@@ -964,7 +964,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   public constructor() {
     super(activeViewState.iModelConnection!);
     this._extents = this.iModel.projectExtents;
-    this._boxId = this.iModel.transientIds.next.value;
+    this._boxId = this.iModel.transientIds.next;
     this.updateDecorationListener(true);
 
     const image = ImageUtil.fromUrl("map_pin.svg");
@@ -1018,7 +1018,10 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
       showControls = true;
       if (iModel.selectionSet.size > 1) {
-        iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+        iModel.selectionSet.elements.forEach((val) => {
+          if (this._boxId !== val && !this._controlIds.includes(val))
+            showControls = false;
+        });
       }
     }
 
@@ -1029,12 +1032,12 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 
     const transientIds = iModel.transientIds;
     if (0 === this._controlIds.length) {
-      this._controlIds[0] = transientIds.next.value;
-      this._controlIds[1] = transientIds.next.value;
-      this._controlIds[2] = transientIds.next.value;
-      this._controlIds[3] = transientIds.next.value;
-      this._controlIds[4] = transientIds.next.value;
-      this._controlIds[5] = transientIds.next.value;
+      this._controlIds[0] = transientIds.next;
+      this._controlIds[1] = transientIds.next;
+      this._controlIds[2] = transientIds.next;
+      this._controlIds[3] = transientIds.next;
+      this._controlIds[4] = transientIds.next;
+      this._controlIds[5] = transientIds.next;
     }
 
     const xOffset = 0.5 * this._extents.xLength();

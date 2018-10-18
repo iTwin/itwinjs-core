@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -37,17 +37,17 @@ class OvrUniform {
   public get anyTranslucent() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 > this.rgba.alpha; }
   public get anyHilited() { return this.isFlagSet(OvrFlags.Hilited); }
 
-  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashed: Id64) {
+  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashed: Id64String) {
     this.update(map, hilite, flashed, ovrs);
   }
 
-  public update(map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
+  public update(map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64String, ovrs?: FeatureSymbology.Overrides) {
     assert(map.isUniform);
 
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
     const feature = map.uniform!;
-    const isFlashed = flashedElemId.isValid && feature.elementId === flashedElemId.value;
+    const isFlashed = Id64.isValid(flashedElemId) && feature.elementId === flashedElemId;
     const isHilited = hilites.has(feature.elementId);
 
     if (undefined === ovrs) {
@@ -116,7 +116,7 @@ class OvrNonUniform {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
-  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64): TextureHandle | undefined {
+  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -127,23 +127,25 @@ class OvrNonUniform {
 
     const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
-    this.buildLookupTable(creator, map, ovrs, hilite, flashedElemId);
+    this.buildLookupTable(creator, map, ovrs, flashedElemId, hilite);
 
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  public update(map: PackedFeatureTable, lut: TextureHandle, hilites: Set<string>, flashedElemId: Id64, ovrs?: FeatureSymbology.Overrides) {
+  public update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Set<string>, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
-    if (undefined === ovrs)
-      this.updateFlashedAndHilited(updater, map, hilites, flashedElemId);
-    else
-      this.buildLookupTable(updater, map, ovrs, hilites, flashedElemId);
+    if (undefined === ovrs) {
+      this.updateFlashedAndHilited(updater, map, flashedElemId, hilites);
+    } else {
+      assert(undefined !== hilites);
+      this.buildLookupTable(updater, map, ovrs, flashedElemId, hilites!);
+    }
 
     (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, hilites: Set<string>, flashedElemId: Id64) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Set<string>) {
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -172,7 +174,7 @@ class OvrNonUniform {
       }
 
       let flags = OvrFlags.None;
-      if (hilites.has(feature.elementId)) {
+      if (hilites!.has(feature.elementId)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -214,7 +216,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid && feature.elementId === flashedElemId.value)
+      if (Id64.isValid(flashedElemId) && feature.elementId === flashedElemId)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -226,12 +228,17 @@ class OvrNonUniform {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Set<string>) {
+    // NB: If hilites is undefined, it means the hilited set has not changed...
     this.anyOverridden = false;
     this.anyHilited = false;
 
+    const flashedElemIdParts = Id64.isValid(flashedElemId) ? { lo: Id64.getLowerUint32(flashedElemId), hi: Id64.getUpperUint32(flashedElemId) } : undefined;
+    const haveFlashed = undefined !== flashedElemIdParts;
+    const haveHilited = undefined !== hilites;
+    const needElemId = haveFlashed || haveHilited;
+
     for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getFeature(i);
       const dataIndex = i * 4 * 2;
       const oldFlags = data.getFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
@@ -241,8 +248,15 @@ class OvrNonUniform {
         continue;
       }
 
-      const isFlashed = feature.elementId === flashedElemId.value;
-      const isHilited = hilites.has(feature.elementId);
+      const elemIdParts = needElemId ? map.getElementIdParts(i) : undefined;
+      const isFlashed = haveFlashed && elemIdParts!.low === flashedElemIdParts!.lo && elemIdParts!.high === flashedElemIdParts!.hi;
+
+      // NB: If hilited set has not changed, retain previous hilite flag.
+      let isHilited: boolean;
+      if (undefined !== hilites)
+        isHilited = hilites.has(Id64.fromUint32Pair(elemIdParts!.low, elemIdParts!.high));
+      else
+        isHilited = 0 !== (oldFlags & OvrFlags.Hilited);
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -340,7 +354,7 @@ export class FeatureOverrides implements IDisposable {
       if (this.isUniform)
         this._uniform!.update(features, hilite, this.target.flashedElemId, ovrs);
       else
-        this._nonUniform!.update(features, this.lut!, hilite, this.target.flashedElemId, ovrs);
+        this._nonUniform!.update(features, this.lut!, this.target.flashedElemId, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
 
       this._lastOverridesUpdated = styleLastUpdated;
       this._lastFlashUpdated = flashLastUpdated;

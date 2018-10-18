@@ -11,7 +11,7 @@ import { RpcManager } from "../RpcManager";
 import { IModel, IModelToken } from "../IModel";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
 import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ElementProps } from "../ElementProps";
 
 /**
@@ -40,5 +40,5 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     public updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward.apply(this, arguments); }
     public saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward.apply(this, arguments); }
     /** @hidden */
-    public insertElement(_iModelToken: IModelToken, _elementProps: ElementProps): Promise<Id64> { return this.forward.apply(this, arguments); }
+    public insertElement(_iModelToken: IModelToken, _elementProps: ElementProps): Promise<Id64String> { return this.forward.apply(this, arguments); }
 }

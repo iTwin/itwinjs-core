@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "Paul.Connelly@bentley.com"
+}

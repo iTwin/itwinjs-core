@@ -209,8 +209,8 @@ export abstract class ViewState extends ElementState {
    */
   public equalState(other: ViewState): boolean {
     return (this.isPrivate === other.isPrivate &&
-      this.categorySelector.id.equals(other.categorySelector.id) &&
-      this.displayStyle.id.equals(other.displayStyle.id) &&
+      this.categorySelector.id === other.categorySelector.id &&
+      this.displayStyle.id === other.displayStyle.id &&
       this.categorySelector.equalState(other.categorySelector) &&
       this.displayStyle.equalState(other.displayStyle) &&
       JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails()));
@@ -232,7 +232,7 @@ export abstract class ViewState extends ElementState {
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (acsId.isValid) {
+    if (Id64.isValid(acsId)) {
       const props = await this.iModel.elements.getProps(acsId);
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
@@ -805,7 +805,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the ID of the auxiliary coordinate system for this ViewState */
-  public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.
    * @param acs the new AuxiliaryCoordinateSystem for this view. If undefined, no AuxiliaryCoordinateSystem will be used.
@@ -813,7 +813,7 @@ export abstract class ViewState extends ElementState {
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
     this._auxCoordSystem = acs;
     if (acs)
-      this.setDetail("acs", acs.id.value);
+      this.setDetail("acs", acs.id);
     else
       this.removeDetail("acs");
   }
@@ -1653,7 +1653,7 @@ export class SpatialViewState extends ViewState3d {
     if (!super.equalState(other))
       return false;
 
-    if (!this.modelSelector.id.equals(other.modelSelector.id))
+    if (this.modelSelector.id !== other.modelSelector.id)
       return false;
 
     return this.modelSelector.equalState(other.modelSelector);
@@ -1719,7 +1719,7 @@ export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
-  public readonly baseModelId: Id64;
+  public readonly baseModelId: Id64String;
   private _viewedExtents?: AxisAlignedBox3d;
 
   public static get className() { return "ViewDefinition2d"; }
@@ -1743,14 +1743,14 @@ export abstract class ViewState2d extends ViewState {
 
   /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
-    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    const model = this.iModel.models.getLoaded(this.baseModelId);
     if (model && !(model instanceof GeometricModel2dState))
       return undefined;
     return model;
   }
 
   public equalState(other: ViewState2d): boolean {
-    return this.baseModelId.equals(other.baseModelId) &&
+    return this.baseModelId === other.baseModelId &&
       this.origin.isAlmostEqual(other.origin) &&
       this.delta.isAlmostEqual(other.delta) &&
       this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
@@ -1760,7 +1760,7 @@ export abstract class ViewState2d extends ViewState {
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      const model = this.iModel.models.getLoaded(this.baseModelId.value);
+      const model = this.iModel.models.getLoaded(this.baseModelId);
       if (undefined !== model && model.isGeometricModel) {
         const tree = (model as GeometricModelState).getOrLoadTileTree();
         if (undefined !== tree) {
@@ -1788,7 +1788,7 @@ export abstract class ViewState2d extends ViewState {
   public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
   public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
-    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    const model = this.iModel.models.getLoaded(this.baseModelId);
     if (undefined !== model && model.isGeometricModel)
       func(model as GeometricModelState);
   }

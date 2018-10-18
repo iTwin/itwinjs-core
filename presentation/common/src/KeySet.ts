@@ -69,7 +69,7 @@ export default class KeySet {
   public get instanceKeys(): Map<string, Set<InstanceId>> {
     const map = new Map<string, Set<InstanceId>>();
     for (const entry of this._instanceKeys)
-      map.set(entry["0"], new Set([...entry["1"]].map((key: string) => new Id64(key))));
+      map.set(entry["0"], new Set([...entry["1"]].map((key: string) => Id64.fromJSON(key))));
     return map;
   }
 
@@ -164,9 +164,9 @@ export default class KeySet {
     } else if (this.isInstanceKey(value)) {
       if (!this._instanceKeys.has(value.className))
         this._instanceKeys.set(value.className, new Set());
-      this._instanceKeys.get(value.className)!.add(value.id.value);
+      this._instanceKeys.get(value.className)!.add(value.id);
     } else if (this.isEntityProps(value)) {
-      this.add({ className: value.classFullName, id: new Id64(value.id) } as InstanceKey);
+      this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
@@ -219,7 +219,7 @@ export default class KeySet {
     } else if (this.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
       if (set)
-        set.delete(value.id.value);
+        set.delete(value.id);
     } else if (this.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else {
@@ -239,7 +239,7 @@ export default class KeySet {
       return this._nodeKeys.has(JSON.stringify(value));
     if (this.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
-      return !!(set && set.has(value.id.value));
+      return !!(set && set.has(value.id));
     }
     if (this.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);

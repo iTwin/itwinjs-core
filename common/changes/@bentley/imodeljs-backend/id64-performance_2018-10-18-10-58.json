@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Breaking changes to optimize usage of 64-bit IDs.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

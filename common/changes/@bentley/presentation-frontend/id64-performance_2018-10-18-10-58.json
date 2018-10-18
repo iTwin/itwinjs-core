@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Breaking changes to optimize usage of 64-bit IDs.",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

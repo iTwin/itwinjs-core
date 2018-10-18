@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
@@ -568,11 +568,11 @@ export namespace Attachments {
   export abstract class Tree extends TileTree {
     public graphicsClip?: ClipVector;
 
-    public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64) {
+    public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       const isLeaf = loader.is3dAttachment;
       super(new TileTree.Params(
-        modelId.value,
+        modelId,
         {
           contentId: "",
           range: {
@@ -708,7 +708,7 @@ export namespace Attachments {
     public readonly featureTable: PackedFeatureTable;
 
     private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-      super(new TileLoader3d(), view.iModel, new Id64(""));
+      super(new TileLoader3d(), view.iModel, Id64.invalid);
 
       this.tileColor = tileColorSequence.next;
       const featureTable = new FeatureTable(1);
@@ -805,7 +805,7 @@ export namespace Attachments {
     /** DEBUG ONLY - The color of the attachment bounding box if drawn. */
     public static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef = ColorDef.red;
     // ---------------------------------------------------
-    public id: Id64;
+    public id: Id64String;
     public readonly view: ViewState;
     public scale: number;
     public placement: Placement2d;
@@ -814,7 +814,7 @@ export namespace Attachments {
     protected _tree?: Tree;
 
     protected constructor(props: ViewAttachmentProps, view: ViewState) {
-      this.id = new Id64(props.id);
+      this.id = Id64.fromJSON(props.id);
       this.view = view;
       this.displayPriority = 0;
       let scale: number | undefined;

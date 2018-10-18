@@ -15,7 +15,7 @@ import {
   createRandomDescriptor,
 } from "@bentley/presentation-common/tests/_helpers/random";
 import { PromiseContainer } from "@bentley/presentation-common/tests/_helpers/Promises";
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/presentation-common";
@@ -40,7 +40,7 @@ describe("Viewport withUnifiedSelection", () => {
     NoRenderApp.shutdown();
   });
 
-  let viewDefinitionId: Id64;
+  let viewDefinitionId: Id64String;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const selectionHandlerMock = moq.Mock.ofType<ViewportSelectionHandler>();
   beforeEach(() => {
@@ -216,10 +216,10 @@ describe("ViewportSelectionHandler", () => {
 
   const createElementProps = (ids: Id64Arg): ElementProps[] => {
     return [...Id64.toIdSet(ids)].map((id: string): ElementProps => ({
-      id: new Id64(id),
+      id: Id64.fromString(id),
       classFullName: `class_name_${id}`,
       code: Code.createEmpty(),
-      model: new Id64(id),
+      model: Id64.fromString(id),
     }));
   };
 

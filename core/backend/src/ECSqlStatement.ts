@@ -24,7 +24,7 @@ const loggingCategory = "imodeljs-backend.ECSqlStatement";
  * > Insert statements can be used with ECDb only, not with IModelDb.
  */
 export class ECSqlInsertResult {
-  public constructor(public status: DbResult, public id?: Id64) { }
+  public constructor(public status: DbResult, public id?: Id64String) { }
 }
 
 /** Executes ECSQL statements.
@@ -140,7 +140,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
+  public bindId(parameter: number | string, val: Id64String | Id64): void { this.getBinder(parameter).bindId(val); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -270,7 +270,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public stepForInsert(): ECSqlInsertResult {
     const r: { status: DbResult, id: string } = this._stmt!.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
-      return new ECSqlInsertResult(r.status, new Id64(r.id));
+      return new ECSqlInsertResult(r.status, Id64.fromString(r.id));
 
     return new ECSqlInsertResult(r.status);
   }
@@ -415,7 +415,7 @@ export class ECSqlBinder {
   /** Binds an Id value to the ECSQL parameter.
    * @param val Id value. If passed as string it must be the hexadecimal representation of the Id.
    */
-  public bindId(val: Id64String | ECSqlTypedString): void {
+  public bindId(val: Id64String | ECSqlTypedString | Id64): void {
     const stat: DbResult = this._binder.bindId(ECSqlTypeHelper.toIdString(val));
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding Id", Logger.logWarning, loggingCategory);
@@ -870,7 +870,7 @@ class ECSqlValueHelper {
     }
   }
 
-  public static queryClassName(ecdb: ECDb, classId: Id64, tableSpace?: string): string {
+  public static queryClassName(ecdb: ECDb, classId: Id64String, tableSpace?: string): string {
     if (!tableSpace)
       tableSpace = "main";
 
@@ -879,7 +879,7 @@ class ECSqlValueHelper {
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId + " in table space " + tableSpace + ".");
 
         return stmt.getValue(0).getString() + "." + stmt.getValue(1).getString();
       });
@@ -907,7 +907,7 @@ class ECSqlTypeHelper {
     return (val.type !== undefined && val.type === ECSqlStringType.Id && val.value !== undefined && typeof (val.value) === "string");
   }
 
-  public static toIdString(val: ECSqlTypedString | Id64String): string {
+  public static toIdString(val: ECSqlTypedString | Id64String | Id64): string {
     if (ECSqlTypeHelper.isIdString(val))
       return val.value;
 

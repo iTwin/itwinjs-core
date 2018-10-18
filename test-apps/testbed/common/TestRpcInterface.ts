@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 export class TestOp1Params {
@@ -42,7 +42,6 @@ export abstract class TestRpcInterface extends RpcInterface {
 
   public static types = () => [
     TestOp1Params,
-    Id64,
     Date,
     Map,
     Set,
@@ -59,7 +58,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward.apply(this, arguments);
   }
 
-  public async op2(_id: Id64): Promise<Id64> {
+  public async op2(_id: Id64String): Promise<Id64String> {
     return this.forward.apply(this, arguments);
   }
 

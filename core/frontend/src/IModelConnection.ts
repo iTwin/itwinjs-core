@@ -396,7 +396,7 @@ export namespace IModelConnection {
             ctor = await this._iModel.findRegisteredBaseClass(props.classFullName, ModelState); // must wait for this
           }
           const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-          this.loaded.set(modelState.id.value, modelState as ModelState); // save it in loaded set
+          this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
         }
       } catch (err) { }  // ignore error, we had nothing to do.
     }
@@ -431,7 +431,7 @@ export namespace IModelConnection {
     public constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [root subject element]($docs/bis/intro/glossary.md#subject-root) for this iModel. */
-    public get rootSubjectId(): Id64 { return new Id64("0x1"); }
+    public get rootSubjectId(): Id64String { return "0x1"; }
 
     /** Get a set of element ids that satisfy a query */
     public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
@@ -467,7 +467,7 @@ export namespace IModelConnection {
       this._loaded = [];
       const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken);
       for (const codeSpec of codeSpecArray) {
-        this._loaded.push(new CodeSpec(this._iModel, new Id64(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
+        this._loaded.push(new CodeSpec(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
     }
 
@@ -476,12 +476,12 @@ export namespace IModelConnection {
      * @returns The CodeSpec with the specified Id
      * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
      */
-    public async getById(codeSpecId: Id64): Promise<CodeSpec> {
-      if (!codeSpecId.isValid)
+    public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
+      if (!Id64.isValid(codeSpecId))
         return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id.equals(codeSpecId));
+      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
         return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
 
@@ -548,13 +548,13 @@ export namespace IModelConnection {
      * within a view selection dialog, or similar purposes.
      * @returns the ID of the default view, or an invalid ID if no default view is defined.
      */
-    public async queryDefaultViewId(): Promise<Id64> {
+    public async queryDefaultViewId(): Promise<Id64String> {
       return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken);
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+      const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, viewDefinitionId);
       const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
       const className = viewStateData.viewDefinitionProps.classFullName;
@@ -588,10 +588,12 @@ export namespace IModelConnection {
      * @throws `Error` exception if the thumbnail wasn't successfully saved.
      */
     public async saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void> {
-      const id = new Id64(viewId);
+      const id = Id64.fromString(viewId.toString());
       const val = new Uint8Array(thumbnail.image.length + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
       new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
-      new Uint32Array(val.buffer, 8).set([id.getLowUint32(), id.getHighUint32()]); // viewId is 8 bytes starting at offset 8
+      const low32 = Id64.getLowerUint32(id);
+      const high32 = Id64.getUpperUint32(id);
+      new Uint32Array(val.buffer, 8).set([low32, high32]); // viewId is 8 bytes starting at offset 8
       new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
       return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken, val);
     }

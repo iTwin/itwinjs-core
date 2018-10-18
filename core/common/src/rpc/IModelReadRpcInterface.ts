@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Id64, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { Code } from "../Code";
@@ -39,7 +39,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     AccessToken,
     IModelVersion,
     IModelToken,
-    Id64,
     Point2d,
     Point3d,
     Vector2d,
@@ -74,5 +73,5 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
   public getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward.apply(this, arguments); }
   public getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public getDefaultViewId(_iModelToken: IModelToken): Promise<Id64> { return this.forward.apply(this, arguments); }
+  public getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward.apply(this, arguments); }
 }

@@ -24,21 +24,21 @@ describe("Tools", () => {
   });
 
   it("ElementAgenda tests", () => {
-    const ids = [new Id64("0x1"), new Id64("0x2"), new Id64("0x3"), new Id64("0x4")];
+    const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const agenda = new ElementAgenda(imodel);
     assert.equal(agenda.iModel, imodel);
     assert.equal(agenda.count, 0);
     agenda.add(ids[0]);
     assert.equal(agenda.length, 1, "add with Id64");
-    agenda.add([ids[0].value, ids[1].value]);
+    agenda.add([ids[0], ids[1]]);
     agenda.setSource(ModifyElementSource.Selected);
     assert.equal(agenda.length, 2, "add with array");
     assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource selected");
-    const idsSet = new Set([ids[0].value, ids[1].value, ids[2].value, ids[3].value]);
+    const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     agenda.add(idsSet);
     agenda.setSource(ModifyElementSource.Group);
     assert.equal(agenda.length, 4, "add with IdSet");
-    ids.forEach((id) => assert.isTrue(agenda.has(id.value)));
+    ids.forEach((id) => assert.isTrue(agenda.has(id)));
     assert.isFalse(agenda.has("0x11"), "should not find");
     assert.equal(agenda.getSource(), ModifyElementSource.Group, "setSource group");
     agenda.hilite();
@@ -60,7 +60,7 @@ describe("Tools", () => {
   });
 
   it("SelectionSet tests", () => {
-    const ids = [new Id64("0x1"), new Id64("0x2"), new Id64("0x3"), new Id64("0x4")];
+    const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const selSet = imodel.selectionSet;
     let numCalls = 0;
     let lastType = SelectEventType.Clear;
@@ -77,17 +77,17 @@ describe("Tools", () => {
     assert.isFalse(selSet.isSelected(ids[1]), "not selected");
     assert.equal(numCalls, 1, "listener called");
     assert.equal(lastType, SelectEventType.Add, "add event type1");
-    selSet.add([ids[0].value, ids[1].value]);
+    selSet.add([ids[0], ids[1]]);
     assert.equal(numCalls, 2, "listener called again");
     assert.equal(lastType, SelectEventType.Add, "add event type again");
     assert.equal(selSet.size, 2, "add with array");
-    selSet.add([ids[0].value, ids[1].value]);
+    selSet.add([ids[0], ids[1]]);
     assert.equal(numCalls, 2, "added ones that are already present should not invoke callback");
-    const idsSet = new Set([ids[0].value, ids[1].value, ids[2].value, ids[3].value]);
+    const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     selSet.add(idsSet, false);
     assert.equal(numCalls, 2, "no callback");
     assert.equal(selSet.size, 4, "add with IdSet");
-    ids.forEach((id) => assert.isTrue(selSet.has(id.value)));
+    ids.forEach((id) => assert.isTrue(selSet.has(id)));
     selSet.remove(ids[1]);
     assert.equal(lastType, SelectEventType.Remove, "remove event type");
     assert.equal(numCalls, 3, "remove callback");

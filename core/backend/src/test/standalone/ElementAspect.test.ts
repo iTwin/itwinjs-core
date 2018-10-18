@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { ElementAspectProps } from "@bentley/imodeljs-common";
 import { Element, PhysicalElement } from "../../Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "../../ElementAspect";
@@ -24,7 +23,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to get aspects from test file", () => {
-    const element = iModel.elements.getElement(new Id64("0x17"));
+    const element = iModel.elements.getElement("0x17");
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
@@ -87,7 +86,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert and delete MultiAspects", () => {
-    const element: Element = iModel.elements.getElement(new Id64("0x17"));
+    const element: Element = iModel.elements.getElement("0x17");
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
@@ -108,7 +107,7 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert and delete UniqueAspects", () => {
-    const element: Element = iModel.elements.getElement(new Id64("0x17"));
+    const element: Element = iModel.elements.getElement("0x17");
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 

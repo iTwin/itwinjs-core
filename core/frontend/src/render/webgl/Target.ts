@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -175,7 +175,7 @@ export abstract class Target extends RenderTarget {
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: Set<string>;
   private _hiliteUpdateTime = BeTimePoint.now();
-  private _flashedElemId = Id64.invalidId;
+  private _flashedElemId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
@@ -236,7 +236,7 @@ export abstract class Target extends RenderTarget {
   public get hilite(): Set<string> { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
-  public get flashedElemId(): Id64 { return this._flashedElemId; }
+  public get flashedElemId(): Id64String { return this._flashedElemId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
@@ -383,8 +383,8 @@ export abstract class Target extends RenderTarget {
     this._hilite = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
-  public setFlashed(id: Id64, intensity: number) {
-    if (!id.equals(this._flashedElemId)) {
+  public setFlashed(id: Id64String, intensity: number) {
+    if (id !== this._flashedElemId) {
       this._flashedElemId = id;
       this._flashedUpdateTime = BeTimePoint.now();
     }
