@@ -1574,7 +1574,7 @@ export class SceneLights {
   public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
-/** Describes the display properties of geometry in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
+/** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
  * @see [[GeometryStreamProps]].
  */
 export class GeometryParams {
@@ -1635,6 +1635,11 @@ export class GeometryParams {
    */
   public pattern?: AreaPattern.Params;
 
+  /** Create a GeometryParams given a [[Category]] Id for a [[GeometricElement]] and optional [[SubCategory]] Id. The [[SubCategory.appearance]] establishes the non-overriden display properties of
+   * graphics in a GeometricElement's [[GeometryStreamProps]]. A GeometricElement refers to a single Category through [[GeometricElement.category]], while it's graphics can appear on multiple SubCategories
+   * by adding a [[GeometryAppearanceProps]] with a SubCategory change to the GeometryStream.
+   * @note If a valid SubCategory Id is not supplied, the default SubCategory for the parent Category is used. To be considered valid, [[SubCategory.getCategoryId]] must refer to the specified Category Id.
+   */
   constructor(public categoryId: Id64String, public subCategoryId = Id64.invalid) {
     if (Id64.isValid(subCategoryId))
       this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);

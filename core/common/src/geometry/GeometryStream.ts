@@ -132,6 +132,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   subRange?: LowAndHighXYZ;
 }
 
+/** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]]. */
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
 /** GeometryStreamBuilder is a helper class for populating the [[GeometryStreamProps]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */
