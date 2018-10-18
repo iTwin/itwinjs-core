@@ -110,10 +110,11 @@
                   <label for="AdditionalRedirectURIs">Additional Redirect URIs: <br />
                     <em>Your applications callback URI which specifies where we redirect<br />
                       users after they have chosen whether or not to authenticate your application.<br />
-                      Enter as many as you like. Must be over HTTPS.</em></label>
+                      Enter as many as you like. <br />
+                      Must be over HTTPS unless registered as a localhost.</em></label>
                 </td>
                 <td>
-                  <textarea id="AdditionalRedirectURIs" name="AdditionalRedirectURIs" rows="5" cols="40"></textarea>
+                  <textarea id="AdditionalRedirectURIs" name="AdditionalRedirectURIs" rows="5" cols="40" placeholder="Example: http://localhost:3000/signin-callback"></textarea>
                 </td>
               </tr>
               <tr>
@@ -126,11 +127,12 @@
               </tr>
               <tr>
                 <td>
-                  <label for="NewPostLogoutURI">New Post Logout URI: <br /><em>Where users can be returned to after
-                      logging out. This must be HTTPS.</em></label>
+                  <label for="NewPostLogoutURI">New Post Logout URIs: <br /><em>Where users can be returned to after
+                      logging out.<br />
+                      Must be over HTTPS unless registered as a localhost.</em></label>
                 </td>
                 <td>
-                  <input id="NewPostLogoutURI" name="NewPostLogoutURI" placeholder="Optional" size="35" />
+                  <textarea id="NewPostLogoutURI" name="NewPostLogoutURI" rows="5" cols="40" placeholder="Example: http://localhost:3000/signout-callback"></textarea>
                 </td>
               </tr>
             </table>

@@ -124,25 +124,27 @@
                       where we redirect users after they have chosen <br />
                       whether or not to authenticate your application.<br />
                       Enter as many as you would like. <br />
-                      Must be over HTTPS. </em> </label>
+                      Must be over HTTPS unless registered as a localhost. </em> </label>
                 </td>
                 <td>
-                  <textarea id="RedirectURIs" name="RedirectURIs" cols="37" rows="5" required></textarea>
+                  <textarea id="RedirectURIs" name="RedirectURIs" cols="40" rows="5" required placeholder="Example: http://localhost:3000/signin-callback"></textarea>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <label for="PostLogoutURI">Post Logout URI: <br /><em>Where users can be returned to after logging
+                  <label for="PostLogoutURI">Post Logout URIs: <br /><em>Where users can be returned to after logging
                       out.<br />
-                      This must be HTTPS.</em></label>
+                      Must be over HTTPS unless registered as a localhost.</em></label>
                 </td>
                 <td>
-                  <input id="PostLogoutURI" name="PostLogoutURI" placeholder="Optional" size="35" />
+                  <textarea id="PostLogoutURI" name="PostLogoutURI" placeholder="Example: http://localhost:3000/signout-callback"
+                    cols="40" rows="5"></textarea>
                 </td>
               </tr>
             </table>
           </fieldset>
-          <button class="button-success pure-button button-xlarge">Submit</button>
+          <button class="
+                    button-success pure-button button-xlarge">Submit</button>
         </div>
 
         {{>thank_you_message email='iModeljs.App.Registration@bentley.com'}}
